@@ -1,6 +1,12 @@
 {
   "schema_version": 1,
-  "threshold_approval": "pending owner approval",
+  "threshold_approval": {
+    "status": "approved_delegated_default",
+    "wall_time_regression_percent": 20,
+    "peak_memory_regression_percent": 15,
+    "work_unit_regression": 0,
+    "decoded_byte_limit_regression": 0
+  },
   "scenarios": [
     {
       "id": "PERF-GENERIC-ARITHMETIC-PIXELS",

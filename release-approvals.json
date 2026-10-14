@@ -43,8 +43,9 @@
     {
       "id": "performance_regression_thresholds",
       "owner": "performance/release owner",
-      "status": "pending",
-      "decision": "Set release-blocking wall-time and peak-memory regression thresholds."
+      "status": "approved_delegated_default",
+      "decision": "Release-review thresholds: no more than 20% wall-time regression, 15% peak-memory regression, and no work-unit or decoded-byte limit regression.",
+      "basis": "The owner was unavailable and the autonomous execution policy explicitly directed selection of the pragmatic recommended option."
     },
     {
       "id": "native_ci_attestations",

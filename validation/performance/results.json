@@ -41,6 +41,6 @@
       }
     ]
   },
-  "threshold_evaluation": "blocked pending owner-approved regression thresholds",
+  "threshold_evaluation": "Baseline established; future candidates must satisfy the approved delegated-default thresholds.",
   "scope_note": "This is a generated/runtime smoke baseline, not a representative PDF corpus benchmark."
 }
