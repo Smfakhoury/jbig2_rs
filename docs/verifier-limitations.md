@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 626 obligations with zero errors and zero native
-assumptions. The production inventory contains 323 directly verified functions
-and 179 reviewed verifier limitations. Each limitation is bound to the exact
+Pinned Verus verifies 629 obligations with zero errors and zero native
+assumptions. The production inventory contains 326 directly verified functions
+and 176 reviewed verifier limitations. Each limitation is bound to the exact
 source-file hash in `proof-dispositions.json`.
 
 The Annex A integer and IAID callback limitation is closed: production now
@@ -34,6 +34,8 @@ Decode-side page metadata lookup and structural-work accounting use explicit
 verified scans over modeled parsed segments.
 Document stream, segment, page, input-work, and aggregate structural-work
 resource guards are directly verified.
+Striped-page state progression, page completion, and public metadata
+finalization are directly verified.
 
 The limitations are not algorithm stubs. They are complete, tested production
 functions whose direct proofs are blocked by unsupported pinned-Verus/vstd
