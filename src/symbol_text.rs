@@ -2179,6 +2179,7 @@ pub(crate) fn parse_symbol_dictionary_header(
 
 /// Complete, validated text-region segment data header.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct TextRegionHeader {
     pub(crate) region: RegionInfo,
     pub(crate) config: TextRegionConfig,
@@ -2187,6 +2188,7 @@ pub(crate) struct TextRegionHeader {
 }
 
 /// Parses a text-region segment data header and returns its byte length.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) fn parse_text_region_header(
     payload: &[u8],
     limits: &Limits,

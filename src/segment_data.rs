@@ -36,6 +36,7 @@ pub(crate) struct RegionInfo {
         Ok(info) =>
             crate::spec::segments::dimensions_within_limits(info.width, info.height, *limits)
                 && final(reader).position == old(reader).position + 17
+                && final(reader).position <= final(reader).bytes@.len()
                 && crate::spec::segments::region_flags_match(
                     info,
                     old(reader).bytes@[old(reader).position as int + 16],
