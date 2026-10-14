@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "3dc1512cc411e8830eaa09c73811446b94cb8183",
-  "tracked_functions": 187,
+  "production_source_revision": "ba633a9fd13b4cb3fd3872fb7b5b93b0352b8569",
+  "tracked_functions": 186,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -71,7 +71,7 @@
     },
     {
       "id": "VL-009",
-      "count": 49,
+      "count": 48,
       "priority": "high",
       "surface": "Symbol/text orchestration",
       "mitigation": "Replace RefCell/dynamic callbacks with a concrete entropy-state enum, adopt verified FallibleVec, and use completed bitmap/generic contracts.",

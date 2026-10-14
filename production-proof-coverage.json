@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 614,
+  "verus_verified_obligations": 616,
   "native_assumptions": [],
   "counts": {
-    "verified": 315,
-    "reviewed-verifier-limitation": 187,
+    "verified": 316,
+    "reviewed-verifier-limitation": 186,
     "audited-forwarder": 0,
     "native-assumption": 0,
     "incomplete": 0
@@ -3705,7 +3705,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::parse_region_info"
       ]
@@ -3716,7 +3716,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::parse_page_information"
       ]
@@ -3727,7 +3727,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::parse_end_of_stripe"
       ]
@@ -3738,7 +3738,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::require_empty"
       ]
@@ -3749,7 +3749,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec allocation required by profile-list materialization.",
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": []
     },
     {
@@ -3758,7 +3758,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::validate_profiles_length"
       ]
@@ -3769,7 +3769,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::parse_extension"
       ]
@@ -3780,7 +3780,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::classify_extension"
       ]
@@ -3791,7 +3791,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::validate_extension_flags"
       ]
@@ -3802,7 +3802,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::validate_comment"
       ]
@@ -3813,7 +3813,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::code_unit_is_zero"
       ]
@@ -3824,7 +3824,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::comment_terminates_at_end"
       ]
@@ -3835,7 +3835,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::advance_code_unit"
       ]
@@ -3846,7 +3846,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::parse_combination_operator"
       ]
@@ -3857,7 +3857,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::enforce_dimension_limits"
       ]
@@ -3868,7 +3868,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "ebcfced3cdbbf554eb91f8feab6b35cbda5989f1863ef24a5d4953a3dca9ec50",
+      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
       "verus_functions": [
         "jbig2_rs_production::segment_data::require_length"
       ]
@@ -4082,7 +4082,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::widen_u32_i64"
       ]
@@ -4093,7 +4093,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::widen_u8_i64"
       ]
@@ -4104,7 +4104,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::widen_u8_i32"
       ]
@@ -4115,7 +4115,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::widen_bool_i64"
       ]
@@ -4126,7 +4126,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4135,7 +4135,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4144,7 +4144,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4153,7 +4153,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4162,7 +4162,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4171,7 +4171,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4180,7 +4180,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4189,7 +4189,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::error::DecodeError::from"
       ]
@@ -4200,7 +4200,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::IntegerField::slot"
       ]
@@ -4211,7 +4211,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4220,7 +4220,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4229,7 +4229,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4238,7 +4238,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4247,7 +4247,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::ResourceTracker::charge_work"
       ]
@@ -4258,7 +4258,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::ResourceTracker::charge_bitmap"
       ]
@@ -4269,7 +4269,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::parse_symbol_dictionary_flags"
       ]
@@ -4280,7 +4280,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::two_bit_choice"
       ]
@@ -4291,7 +4291,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::parse_text_region_flags"
       ]
@@ -4302,7 +4302,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::parse_text_huffman_flags"
       ]
@@ -4313,7 +4313,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::text_huffman_selector"
       ]
@@ -4324,7 +4324,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::four_way_choice"
       ]
@@ -4335,7 +4335,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::refinement_choice"
       ]
@@ -4346,7 +4346,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::same_table_parameter"
       ]
@@ -4357,7 +4357,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4366,7 +4366,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4375,7 +4375,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4384,7 +4384,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::check_symbol_counts"
       ]
@@ -4395,7 +4395,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::new"
       ]
@@ -4406,7 +4406,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::begin_height_class"
       ]
@@ -4417,7 +4417,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::add_symbol"
       ]
@@ -4428,7 +4428,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::finish_height_class"
       ]
@@ -4439,7 +4439,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::finish"
       ]
@@ -4450,7 +4450,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::checked_unsigned_delta"
       ]
@@ -4461,7 +4461,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4470,7 +4470,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4479,7 +4479,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::extend_lengths"
       ]
@@ -4490,7 +4490,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4499,7 +4499,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::checked_symbol_id"
       ]
@@ -4510,7 +4510,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4519,7 +4519,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::refinement_geometry"
       ]
@@ -4530,7 +4530,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::floor_divide_by_two"
       ]
@@ -4541,7 +4541,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4550,7 +4550,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4559,7 +4559,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::new"
       ]
@@ -4570,7 +4570,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::begin_strip"
       ]
@@ -4581,7 +4581,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::place_first"
       ]
@@ -4592,7 +4592,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::place_subsequent"
       ]
@@ -4603,7 +4603,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::place_current"
       ]
@@ -4614,7 +4614,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::end_strip"
       ]
@@ -4625,7 +4625,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::finish"
       ]
@@ -4636,7 +4636,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4645,7 +4645,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::apply_operator"
       ]
@@ -4656,7 +4656,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::set_pixel_checked"
       ]
@@ -4667,7 +4667,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::check_dimensions"
       ]
@@ -4678,7 +4678,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::enforce_limit"
       ]
@@ -4689,7 +4689,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::signed_byte",
         "jbig2_rs_production::symbol_text::symbol_text_spec::signed_byte"
@@ -4701,7 +4701,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::read_at_pixel"
       ]
@@ -4712,7 +4712,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::parse_symbol_dictionary_header"
       ]
@@ -4721,10 +4721,12 @@
       "id": "symbol_text::parse_text_region_header",
       "file": "src/symbol_text.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
+      "verus_functions": [
+        "jbig2_rs_production::symbol_text::parse_text_region_header"
+      ]
     },
     {
       "id": "symbol_text::symbol_id_code_length",
@@ -4732,7 +4734,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::symbol_id_code_length"
       ]
@@ -4743,7 +4745,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::ResolvedTable::table"
       ]
@@ -4754,7 +4756,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4763,7 +4765,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4772,7 +4774,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::find_table_binding"
       ]
@@ -4783,7 +4785,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::HuffmanFieldTables::empty"
       ]
@@ -4794,7 +4796,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4803,7 +4805,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4812,7 +4814,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4821,7 +4823,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::HuffmanFieldTables::table_for"
       ]
@@ -4832,7 +4834,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::new",
         "jbig2_rs_production::symbol_text::TextRegionState::new"
@@ -4844,7 +4846,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::IntegerContexts::slot_mut"
       ]
@@ -4855,7 +4857,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::new",
         "jbig2_rs_production::symbol_text::TextRegionState::new"
@@ -4867,7 +4869,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4876,7 +4878,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4885,7 +4887,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::new",
         "jbig2_rs_production::symbol_text::TextRegionState::new"
@@ -4897,7 +4899,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4906,7 +4908,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::validate_bounded_arithmetic_terminator"
       ]
@@ -4917,7 +4919,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4926,7 +4928,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::validate_bounded_arithmetic_marker"
       ]
@@ -4937,7 +4939,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::byte_align"
       ]
@@ -4948,7 +4950,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4957,7 +4959,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::new",
         "jbig2_rs_production::symbol_text::TextRegionState::new"
@@ -4969,7 +4971,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4978,7 +4980,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4987,7 +4989,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -4996,7 +4998,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5005,7 +5007,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::new",
         "jbig2_rs_production::symbol_text::TextRegionState::new"
@@ -5017,7 +5019,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5026,7 +5028,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::generic_template_from_u8"
       ]
@@ -5037,7 +5039,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::refinement_template_from_u8"
       ]
@@ -5048,7 +5050,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5057,7 +5059,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5066,7 +5068,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5075,7 +5077,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::symbol_by_id"
       ]
@@ -5086,7 +5088,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5095,7 +5097,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::log2_strip_size"
       ]
@@ -5106,7 +5108,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5115,7 +5117,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5124,7 +5126,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5133,7 +5135,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5142,7 +5144,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5151,7 +5153,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5160,7 +5162,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     },
     {
@@ -5169,7 +5171,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration.",
-      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
+      "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
       "verus_functions": []
     }
   ]
