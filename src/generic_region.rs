@@ -1499,24 +1499,28 @@ fn refinement_context(
     context
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires crate::spec::bitmap::storage_valid(reference),
+))]
 fn refinement_prediction(
     reference: &Bitmap,
     x: u32,
     y: u32,
     parameters: RefinementParameters,
 ) -> Option<bool> {
-    let mut common = None;
-    for dy in -1_i32..=1 {
-        for dx in -1_i32..=1 {
-            let value = sample_reference(reference, x, y, TemplateOffset::new(dx, dy), parameters);
-            match common {
-                None => common = Some(value),
-                Some(previous) if previous == value => {}
-                Some(_) => return None,
-            }
-        }
+    let common = sample_reference(reference, x, y, TemplateOffset::new(-1, -1), parameters);
+    if sample_reference(reference, x, y, TemplateOffset::new(0, -1), parameters) != common
+        || sample_reference(reference, x, y, TemplateOffset::new(1, -1), parameters) != common
+        || sample_reference(reference, x, y, TemplateOffset::new(-1, 0), parameters) != common
+        || sample_reference(reference, x, y, TemplateOffset::new(0, 0), parameters) != common
+        || sample_reference(reference, x, y, TemplateOffset::new(1, 0), parameters) != common
+        || sample_reference(reference, x, y, TemplateOffset::new(-1, 1), parameters) != common
+        || sample_reference(reference, x, y, TemplateOffset::new(0, 1), parameters) != common
+        || sample_reference(reference, x, y, TemplateOffset::new(1, 1), parameters) != common
+    {
+        return None;
     }
-    common
+    Some(common)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(
