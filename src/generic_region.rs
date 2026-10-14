@@ -318,6 +318,7 @@ pub(crate) struct DecodedGenericRegion {
 /// retaining dictionary statistics must use [`Self::try_snapshot`] so memory
 /// limits and allocation failure remain observable.
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericContexts {
     template: GenericTemplate,
     extended_template: bool,
@@ -353,6 +354,7 @@ impl GenericContexts {
     }
 
     /// Reset all contexts to `I = 0, MPS = 0`.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn reset(&mut self) -> Result<(), GenericRegionError> {
         validate_generic_context_layout(self.template, self.extended_template, &self.contexts)?;
         reset_contexts(&mut self.contexts);
@@ -428,6 +430,7 @@ pub(crate) struct GenericArithmeticCall<'a> {
 /// Calling [`Self::decode_bitmap`] does not reset either the entropy decoder or
 /// the contexts.
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericArithmeticSession<'a> {
     decoder: ArithmeticDecoder<'a>,
     contexts: GenericContexts,
@@ -486,11 +489,13 @@ impl<'a> GenericArithmeticSession<'a> {
 
     /// Current compressed-byte position. A recognized marker is not consumed,
     /// so this equals the marker prefix offset after marker recognition.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) const fn consumed_byte_offset(&self) -> usize {
         self.decoder.byte_position()
     }
 
     /// Offset of a marker already observed by the arithmetic decoder.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn observed_marker_offset(&self) -> Option<usize> {
         self.decoder.marker().map(|marker| marker.offset)
     }
@@ -502,6 +507,7 @@ impl<'a> GenericArithmeticSession<'a> {
     /// requested decisions. The complete input block was already checked by
     /// [`Self::new`], so the returned offset is still authoritative when
     /// [`Self::observed_marker_offset`] is `None`.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn validate_final_marker(&self) -> Result<usize, GenericRegionError> {
         validate_observed_marker(&self.decoder, self.coded_length)?;
         self.coded_length
@@ -1092,6 +1098,7 @@ impl RefinementTemplate {
 /// Retention is explicitly fallible through [`Self::try_snapshot`]; this type
 /// intentionally does not implement [`Clone`].
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementContexts {
     template: RefinementTemplate,
     contexts: Vec<ArithmeticContext>,
@@ -1123,6 +1130,7 @@ impl RefinementContexts {
     }
 
     /// Reset all contexts to `I = 0, MPS = 0`.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn reset(&mut self) -> Result<(), GenericRegionError> {
         validate_refinement_context_layout(self.template, &self.contexts)?;
         reset_contexts(&mut self.contexts);
