@@ -1,0 +1,8 @@
+/target/
+/fuzz/target/
+/fuzz/corpus/
+/fuzz/artifacts/
+/verus-*/
+/*.zip
+/verus-production.json
+/production-proof-coverage-ci.json

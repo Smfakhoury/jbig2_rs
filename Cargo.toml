@@ -1,0 +1,28 @@
+[package]
+name = "jbig2_rs"
+version = "0.0.1"
+edition = "2021"
+description = "Memory-safe JBIG2 decoder under development"
+repository = "https://github.com/microsoft/jbig2_rs"
+readme = "README.md"
+publish = false
+include = [
+  "/src/**/*.rs",
+  "/README.md",
+  "/SECURITY.md",
+]
+
+[lib]
+name = "jbig2_rs"
+path = "src/lib.rs"
+
+[lints.rust]
+missing_docs = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = [
+  "cfg(fuzzing)",
+  "cfg(jbig2_validation)",
+  "cfg(verus_keep_ghost)",
+] }
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }

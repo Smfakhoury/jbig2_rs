@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "status": "smoke_baseline_passed",
+  "recorded_at": "2026-10-13T21:33:57.908Z",
+  "source_revision": null,
+  "environment": {
+    "os": "linux",
+    "rustc": "1.89.0",
+    "profile": "release"
+  },
+  "command": "cargo test --release --all-features",
+  "tests": {
+    "passed": 159,
+    "failed": 0
+  },
+  "wall_seconds": 4.79,
+  "peak_kib": 333604,
+  "threshold_evaluation": "blocked pending owner-approved regression thresholds",
+  "scope_note": "This is a generated/runtime smoke baseline, not a representative PDF corpus benchmark."
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "cargo_rust_toolchain": "1.89.0",
+  "fuzz_rust_toolchain": "nightly-2026-10-12",
+  "cargo_fuzz_version": "0.13.2",
+  "verus": {
+    "version": "0.2026.05.24.ecee80a",
+    "commit": "ecee80a2139923d503338e6989f79fb690ec7847",
+    "rust_toolchain": "1.95.0",
+    "linux_archive_url": "https://github.com/verus-lang/verus/releases/download/release/0.2026.05.24.ecee80a/verus-0.2026.05.24.ecee80a-x86-linux.zip",
+    "linux_archive_sha256": "323a44c0d787ce9a788665e1c6922360c44a72d1b9696359ec4f7bf5fbbc63e6"
+  },
+  "source_revision": null,
+  "note": "source_revision must be an immutable commit before any release attestation is signed."
+}

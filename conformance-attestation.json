@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "status": "not_run",
+  "source_revision": null,
+  "implementation_tests": {
+    "total": 159,
+    "passed": 159,
+    "failed": 0
+  },
+  "normative_vectors": {
+    "approved": false,
+    "total": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "community_regressions": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "differential": {
+    "oracles": [
+      {
+        "name": "jbig2dec",
+        "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
+        "status": "pinned; execution pending legal approval"
+      },
+      {
+        "name": "Poppler",
+        "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
+        "status": "pinned; execution pending legal approval"
+      }
+    ],
+    "cases": 0,
+    "agreements": 0,
+    "reviewed_disagreements": 0,
+    "unresolved_disagreements": 0
+  },
+  "release_gate": "blocked"
+}

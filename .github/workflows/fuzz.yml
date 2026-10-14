@@ -1,0 +1,24 @@
+name: Fuzz smoke test
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly-2026-10-12
+      - run: cargo install cargo-fuzz --version 0.13.2 --locked
+      - run: cargo fuzz build
+      - run: cargo fuzz run file_header_arbitrary -- -max_total_time=60
+      - run: cargo fuzz run file_header_structured -- -max_total_time=60
+      - run: cargo fuzz run document_arbitrary -- -max_total_time=60
+      - run: cargo fuzz run arithmetic -- -max_total_time=60
+      - run: cargo fuzz run huffman -- -max_total_time=60
+      - run: cargo fuzz run mmr -- -max_total_time=60
+      - run: cargo fuzz run generic_region -- -max_total_time=60

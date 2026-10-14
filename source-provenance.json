@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": 1,
+  "generated_at": "2026-10-13T18:11:09.595Z",
+  "policy": {
+    "standards_text_committed": false,
+    "non_redistributable_assets_committed": false,
+    "third_party_uploads_permitted": false,
+    "cela_approval_required_before_redistribution": true,
+    "legal_approval_required_before_crate_publication": true
+  },
+  "normative_documents": [
+    {
+      "id": "ITU-T T.88 (08/2018)",
+      "title": "Information technology - Lossy/lossless coding of bi-level images",
+      "edition": "2.0",
+      "approved": "2018-08-29",
+      "status": "in force",
+      "unique_id": "11.1002/1000/13688",
+      "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
+      "acquisition": "Freely available ITU package, inspected locally and not committed",
+      "package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
+      "document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
+      "used_for": [
+        "Normative algorithm and bitstream requirements",
+        "Clause mapping",
+        "Annex F profile analysis"
+      ],
+      "redistribution": "Do not redistribute or commit the standards document."
+    },
+    {
+      "id": "ISO/IEC 14492:2019",
+      "title": "Information technology - Lossy/lossless coding of bi-level images",
+      "edition": "2",
+      "published": "2019-03",
+      "status": "published; ISO lifecycle stage 90.60 under review when checked on 2026-10-13",
+      "source_url": "https://www.iso.org/standard/75396.html",
+      "acquisition": "Authoritative public metadata only; no ISO document acquired",
+      "used_for": [
+        "Edition and lifecycle verification",
+        "Cross-designation verification with ITU-T T.88 (08/2018)"
+      ],
+      "redistribution": "No ISO standards document is stored or redistributed."
+    }
+  ],
+  "consolidated_history": [
+    {
+      "itu_id": "ITU-T T.88 (02/2000)",
+      "iso_id": "ISO/IEC 14492:2001",
+      "status": "superseded/withdrawn by the current edition"
+    },
+    {
+      "itu_id": "ITU-T T.88 (2000) Amendment 1",
+      "iso_id": "ISO/IEC 14492:2001/Amd 1:2004",
+      "itu_approved": "2003-06-29",
+      "itu_unique_id": "11.1002/1000/6388",
+      "status": "integrated into the current edition; prior ISO amendment withdrawn"
+    },
+    {
+      "itu_id": "ITU-T T.88 (2000) Amendment 2",
+      "iso_id": "ISO/IEC 14492:2001/Amd 2:2003",
+      "itu_approved": "2003-06-29",
+      "itu_unique_id": "11.1002/1000/6389",
+      "status": "integrated into the current edition; prior ISO amendment withdrawn"
+    },
+    {
+      "itu_id": "ITU-T T.88 (2000) Amendment 3",
+      "iso_id": "ISO/IEC 14492:2001/Amd 3:2012",
+      "title": "Extension to colour coding",
+      "itu_approved": "2011-05-14",
+      "itu_unique_id": "11.1002/1000/11312",
+      "status": "integrated into the current edition; prior ISO amendment withdrawn"
+    }
+  ],
+  "corrigenda": {
+    "applicable_to_current_edition": [],
+    "verification": "Neither authoritative current-edition lifecycle page listed a separate corrigendum when checked on 2026-10-13."
+  },
+  "profiles": {
+    "document": "Normative Annex F of ITU-T T.88 (08/2018) / ISO/IEC 14492:2019",
+    "separate_profile_document": null,
+    "defined_profile_ids": [
+      "0x00000001",
+      "0x00000002",
+      "0x00000003",
+      "0x00000004",
+      "0x00000005",
+      "0x00000006",
+      "0x00000007",
+      "0x00000008"
+    ],
+    "project_profile": "Project-defined broad bi-level decoder profile; not an Annex F conformance claim"
+  },
+  "normative_references": [
+    {
+      "id": "ITU-T T.6 (1988)",
+      "applicability": "MMR coding",
+      "source_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items",
+      "acquisition": "Freely available ITU publication, inspected locally and not committed",
+      "document_sha256": "8ccbe2d203e03ee2ac37478d50d2d946bab49dfb45376eb0f773009d183a7767",
+      "redistribution": "Do not redistribute or commit the standards document.",
+      "approval_required": "Legal approval remains required before redistribution; implementation use is recorded for the Phase 1 MMR decoder."
+    },
+    {
+      "id": "ITU-T T.45 (2000)",
+      "applicability": "Colour run-length coding",
+      "phase_1": "Not applicable because colour palette decoding is unsupported."
+    },
+    {
+      "id": "ISO/IEC 8859-1:1998",
+      "applicability": "Normative character-set reference",
+      "phase_1": "Review when implementing extension/profile metadata."
+    },
+    {
+      "id": "ISO/IEC 10646:2017",
+      "applicability": "Normative character-set reference",
+      "phase_1": "Review when implementing extension/profile metadata."
+    }
+  ],
+  "candidate_validation_assets": [
+    {
+      "id": "ITU-T-T.88-2018-electronic-conformance-data",
+      "container": "JBIG2_ConformanceData-A20180829.zip",
+      "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
+      "sha256": "fe3de9056d94b20db3a6ab17032c621a7f05b6ecb1db84b4b58d0825fd6b7033",
+      "expected_use": "Normative conformance validation if approved",
+      "license": "No standalone vector license was established during bootstrap.",
+      "redistribution": "blocked pending standards/legal owner and CELA approval",
+      "committed": false,
+      "used": false,
+      "note": "The authoritative package contains 26 JBIG2/BMP files. Per-file provenance and hashes must be generated before any file is used."
+    },
+    {
+      "id": "ITU-T-T.88-2018-sample-software",
+      "container": "JBIG2_SampleSoftware-A20180829.zip",
+      "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
+      "sha256": "c9e7fc74d4792653de258be4f77c05d639ced4518dd57cc5a6ddfda541e2d181",
+      "expected_use": "Potential black-box reference only if separately approved",
+      "license_notice_sha256": "571ade3714056c78ad23dd8f4471fd49f15d019cdd50ab8c3771d47694980176",
+      "license_summary": "Limited-purpose copyright license for conforming implementation, evaluation, and conformance determination; no patent license.",
+      "redistribution": "blocked pending legal review",
+      "derivation": "prohibited unless explicitly approved",
+      "committed": false,
+      "used": false
+    }
+  ],
+  "differential_oracles": [
+    {
+      "name": "jbig2dec",
+      "source_url": "https://github.com/ArtifexSoftware/jbig2dec",
+      "status": "pinned candidate black-box executable only",
+      "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
+      "license": "GNU AGPL v3 or later, with an additional AFPL Ghostscript linking permission",
+      "redistribution": "prohibited by project policy pending legal review; never included in the crate",
+      "license_review": "pending CELA approval for CI use"
+    },
+    {
+      "name": "Poppler",
+      "source_url": "https://gitlab.freedesktop.org/poppler/poppler",
+      "status": "pinned candidate black-box executable only",
+      "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
+      "license": "Repository COPYING contains GNU GPL v2; file-level and later-version terms require legal review",
+      "redistribution": "prohibited by project policy pending legal review; never included in the crate",
+      "license_review": "pending CELA approval for CI use"
+    }
+  ],
+  "approvals": {
+    "standards_legal_owner": "pending",
+    "conformance_vector_use": "pending",
+    "conformance_vector_redistribution": "pending",
+    "sample_software_use": "pending",
+    "cela_publication": "pending"
+  }
+}

@@ -1,0 +1,1768 @@
+//! JBIG2 Huffman table construction and decoding (T.88, Annex B).
+
+use core::mem::size_of;
+
+use crate::reader::{bit_reader, BitReader, ByteReader};
+use crate::{
+    DecodeError, HuffmanErrorKind as HuffmanTableError, LimitExceeded, LimitKind, Limits,
+    MalformedError,
+};
+#[cfg(verus_keep_ghost)]
+use vstd::prelude::*;
+
+#[cfg(verus_keep_ghost)]
+#[rustfmt::skip]
+#[path = "../specs/huffman.rs"]
+mod huffman_spec;
+
+#[cfg(verus_keep_ghost)]
+#[rustfmt::skip]
+#[path = "../proofs/shared/huffman.rs"]
+mod huffman_shared;
+
+#[cfg(verus_keep_ghost)]
+#[rustfmt::skip]
+#[path = "../proofs/spec_properties/huffman.rs"]
+mod huffman_properties;
+
+#[cfg(verus_keep_ghost)]
+#[macro_use]
+#[rustfmt::skip]
+#[path = "../proofs/production_impl/huffman.rs"]
+mod huffman_proofs;
+
+const MAX_PREFIX_LEN: usize = 255;
+
+/// Error from Huffman table parsing, construction, or value decoding.
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum HuffmanError {
+    Decode(DecodeError),
+    InvalidTable(HuffmanTableError),
+}
+
+impl From<DecodeError> for HuffmanError {
+    fn from(error: DecodeError) -> Self {
+        Self::Decode(error)
+    }
+}
+
+impl From<MalformedError> for HuffmanError {
+    fn from(error: MalformedError) -> Self {
+        Self::Decode(error.into())
+    }
+}
+
+impl From<LimitExceeded> for HuffmanError {
+    fn from(error: LimitExceeded) -> Self {
+        Self::Decode(error.into())
+    }
+}
+
+impl From<HuffmanError> for DecodeError {
+    fn from(error: HuffmanError) -> Self {
+        match error {
+            HuffmanError::Decode(error) => error,
+            HuffmanError::InvalidTable(kind) => {
+                Self::Malformed(MalformedError::InvalidHuffman(kind))
+            }
+        }
+    }
+}
+
+/// The result of decoding one Huffman-coded value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum HuffmanValue {
+    Integer(i32),
+    OutOfBand,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum LineKind {
+    Normal,
+    Lower,
+    Upper,
+    OutOfBand,
+}
+
+/// One line of a JBIG2 Huffman table before canonical codes are assigned.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) struct HuffmanLine {
+    pub(crate) prefix_len: u8,
+    pub(crate) range_len: u8,
+    pub(crate) range_low: i64,
+    pub(crate) kind: LineKind,
+}
+
+impl HuffmanLine {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out.prefix_len == prefix_len,
+            out.range_len == range_len,
+            out.range_low == range_low as i64,
+            out.kind == LineKind::Normal,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    pub(crate) const fn normal(range_low: i32, prefix_len: u8, range_len: u8) -> Self {
+        Self {
+            prefix_len,
+            range_len,
+            range_low: range_low as i64,
+            kind: LineKind::Normal,
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out.prefix_len == prefix_len,
+            out.range_len == 32,
+            out.range_low == range_low,
+            out.kind == LineKind::Lower,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    pub(crate) const fn lower(range_low: i64, prefix_len: u8) -> Self {
+        Self {
+            prefix_len,
+            range_len: 32,
+            range_low,
+            kind: LineKind::Lower,
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out.prefix_len == prefix_len,
+            out.range_len == 32,
+            out.range_low == range_low as i64,
+            out.kind == LineKind::Upper,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    pub(crate) const fn upper(range_low: i32, prefix_len: u8) -> Self {
+        Self {
+            prefix_len,
+            range_len: 32,
+            range_low: range_low as i64,
+            kind: LineKind::Upper,
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out.prefix_len == prefix_len,
+            out.range_len == 0,
+            out.range_low == 0,
+            out.kind == LineKind::OutOfBand,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    pub(crate) const fn out_of_band(prefix_len: u8) -> Self {
+        Self {
+            prefix_len,
+            range_len: 0,
+            range_low: 0,
+            kind: LineKind::OutOfBand,
+        }
+    }
+}
+
+/// One of the fifteen standard Huffman tables in T.88 Annex B.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum StandardHuffmanTable {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct WideCode {
+    // Little-endian limbs. Annex B permits prefix lengths through 255 bits.
+    limbs: [u64; 4],
+}
+
+impl WideCode {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == huffman_spec::checked_add_small(self, value),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[allow(clippy::cast_lossless, clippy::if_not_else)]
+    fn checked_add_small(self, value: u32) -> Option<Self> {
+        let value64 = value as u64;
+        let (low, carry) = if value64 <= u64::MAX - self.limbs[0] {
+            (self.limbs[0] + value64, false)
+        } else {
+            (value64 - (u64::MAX - self.limbs[0]) - 1, true)
+        };
+        if !carry {
+            return Some(Self {
+                limbs: [low, self.limbs[1], self.limbs[2], self.limbs[3]],
+            });
+        }
+        if self.limbs[1] != u64::MAX {
+            return Some(Self {
+                limbs: [low, self.limbs[1] + 1, self.limbs[2], self.limbs[3]],
+            });
+        }
+        if self.limbs[2] != u64::MAX {
+            return Some(Self {
+                limbs: [low, 0, self.limbs[2] + 1, self.limbs[3]],
+            });
+        }
+        if self.limbs[3] != u64::MAX {
+            Some(Self {
+                limbs: [low, 0, 0, self.limbs[3] + 1],
+            })
+        } else {
+            None
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == huffman_spec::checked_shift_left_one(self),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn checked_shift_left_one(self) -> Option<Self> {
+        if self.limbs[3] >> 63 != 0 {
+            return None;
+        }
+        Some(Self {
+            limbs: [
+                self.limbs[0] << 1,
+                (self.limbs[1] << 1) | (self.limbs[0] >> 63),
+                (self.limbs[2] << 1) | (self.limbs[1] >> 63),
+                (self.limbs[3] << 1) | (self.limbs[2] >> 63),
+            ],
+        })
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires bit <= 1,
+        ensures out == huffman_spec::append_bit(self, bit),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn append_bit(self, bit: u32) -> Option<Self> {
+        self.checked_shift_left_one()?.checked_add_small(bit)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == huffman_spec::fits_in_bits(self, bit_count),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn fits_in_bits(self, bit_count: usize) -> bool {
+        if bit_count >= 256 {
+            return true;
+        }
+        let limb = bit_count / 64;
+        let bit = bit_count % 64;
+        if limb < 3 && self.limbs[3] != 0 {
+            return false;
+        }
+        if limb < 2 && self.limbs[2] != 0 {
+            return false;
+        }
+        if limb < 1 && self.limbs[1] != 0 {
+            return false;
+        }
+        bit == 0 || self.limbs[limb] >> bit == 0
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == huffman_spec::small_distance_from(self, lower, upper_bound),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[allow(clippy::cast_lossless, clippy::cast_possible_truncation)]
+    fn small_distance_from(self, lower: Self, upper_bound: u32) -> Option<u32> {
+        let (difference0, borrow0) = subtract_limb(self.limbs[0], lower.limbs[0], false);
+        let (difference1, borrow1) = subtract_limb(self.limbs[1], lower.limbs[1], borrow0);
+        let (difference2, borrow2) = subtract_limb(self.limbs[2], lower.limbs[2], borrow1);
+        let (difference3, borrow) = subtract_limb(self.limbs[3], lower.limbs[3], borrow2);
+        let difference = [difference0, difference1, difference2, difference3];
+        if borrow || difference[1] != 0 || difference[2] != 0 || difference[3] != 0 {
+            return None;
+        }
+        if difference[0] > u32::MAX as u64 {
+            return None;
+        }
+        let distance = difference[0] as u32;
+        if distance < upper_bound {
+            Some(distance)
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == huffman_spec::subtract_limb(left, right, borrow),
+))]
+#[allow(clippy::bool_to_int_with_if)]
+fn subtract_limb(left: u64, right: u64, borrow: bool) -> (u64, bool) {
+    let borrow_value = if borrow { 1 } else { 0 };
+    let (partial, first_borrow) = if left >= right {
+        (left - right, false)
+    } else {
+        (u64::MAX - (right - left) + 1, true)
+    };
+    let (value, second_borrow) = if partial >= borrow_value {
+        (partial - borrow_value, false)
+    } else {
+        (u64::MAX, true)
+    };
+    (value, first_borrow || second_borrow)
+}
+
+/// A validated table with canonical prefix codes assigned as in T.88 B.3.
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) struct HuffmanTable {
+    lines: Vec<HuffmanLine>,
+    ordered_lines: Vec<u32>,
+    length_count: [u32; MAX_PREFIX_LEN + 1],
+    first_code: [WideCode; MAX_PREFIX_LEN + 1],
+    first_line: [u32; MAX_PREFIX_LEN + 1],
+    max_prefix_len: u8,
+}
+
+impl HuffmanTable {
+    /// Validates table lines and assigns their canonical prefix codes.
+    pub(crate) fn new(lines: &[HuffmanLine], limits: &Limits) -> Result<Self, HuffmanError> {
+        validate_lines(lines)?;
+        check_table_memory(lines.len(), limits)?;
+
+        let mut owned_lines = Vec::new();
+        try_reserve_exact::<HuffmanLine>(&mut owned_lines, lines.len())?;
+        for &line in lines {
+            owned_lines.push(line);
+        }
+
+        let mut length_count = [0_u32; MAX_PREFIX_LEN + 1];
+        for line in lines {
+            if line.prefix_len != 0 {
+                let count = length_count
+                    .get_mut(usize::from(line.prefix_len))
+                    .ok_or(HuffmanTableError::Oversubscribed)
+                    .map_err(HuffmanError::InvalidTable)?;
+                *count = count
+                    .checked_add(1)
+                    .ok_or(HuffmanTableError::Oversubscribed)
+                    .map_err(HuffmanError::InvalidTable)?;
+            }
+        }
+
+        let max_prefix_len = length_count
+            .iter()
+            .rposition(|&count| count != 0)
+            .and_then(|length| u8::try_from(length).ok())
+            .ok_or(HuffmanTableError::NoCodes)
+            .map_err(HuffmanError::InvalidTable)?;
+
+        let mut first_code = [WideCode::default(); MAX_PREFIX_LEN + 1];
+        let mut first_line = [0_u32; MAX_PREFIX_LEN + 1];
+        let mut ordered_lines = Vec::new();
+        try_reserve_exact::<u32>(&mut ordered_lines, lines.len())?;
+
+        let mut length = 1_usize;
+        while length <= usize::from(max_prefix_len) {
+            let previous = canonical_first_code(first_code[length - 1], length_count[length - 1])
+                .ok_or(HuffmanTableError::Oversubscribed)
+                .map_err(HuffmanError::InvalidTable)?;
+            first_code[length] = previous;
+
+            let count = length_count[length];
+            if count != 0 {
+                if !canonical_range_fits(previous, count, length) {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::Oversubscribed,
+                    ));
+                }
+                first_line[length] = u32::try_from(ordered_lines.len())
+                    .map_err(|_| HuffmanError::InvalidTable(HuffmanTableError::Oversubscribed))?;
+                for (index, line) in lines.iter().enumerate() {
+                    if usize::from(line.prefix_len) == length {
+                        let index = u32::try_from(index).map_err(|_| {
+                            HuffmanError::InvalidTable(HuffmanTableError::Oversubscribed)
+                        })?;
+                        ordered_lines.push(index);
+                    }
+                }
+            }
+            length += 1;
+        }
+
+        Ok(Self {
+            lines: owned_lines,
+            ordered_lines,
+            length_count,
+            first_code,
+            first_line,
+            max_prefix_len,
+        })
+    }
+
+    /// Decodes the coded table structure described by T.88 B.2.
+    ///
+    /// `bytes` is exactly one code table segment payload, including at most
+    /// seven zero padding bits after the final table line.
+    pub(crate) fn from_encoded(bytes: &[u8], limits: &Limits) -> Result<Self, HuffmanError> {
+        let byte_count = u64::try_from(bytes.len()).map_err(|_| MalformedError::IntegerOverflow)?;
+        if byte_count > limits.max_stream_bytes {
+            return Err(LimitExceeded {
+                kind: LimitKind::StreamBytes,
+                limit: limits.max_stream_bytes,
+                actual: byte_count,
+            }
+            .into());
+        }
+
+        let mut header = ByteReader::new(bytes);
+        let flags = header.read_u8()?;
+        if flags & 0x80 != 0 {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::ReservedFlags(flags),
+            ));
+        }
+        let low = i32::from_be_bytes(header.read_u32()?.to_be_bytes());
+        let high = i32::from_be_bytes(header.read_u32()?.to_be_bytes());
+        if low >= high {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidBounds { low, high },
+            ));
+        }
+
+        let (has_oob, prefix_bits, range_bits) = encoded_table_fields(flags);
+        let mut encoded_lines = bit_reader(header.remaining_bytes());
+        let mut lines = Vec::new();
+        let mut current = i64::from(low);
+        let high_i64 = i64::from(high);
+
+        while current < high_i64 {
+            let prefix_len = read_u8_bits(&mut encoded_lines, prefix_bits)?;
+            let range_len = read_u8_bits(&mut encoded_lines, range_bits)?;
+            if range_len > 32 {
+                return Err(HuffmanError::InvalidTable(
+                    HuffmanTableError::InvalidRangeLength(range_len),
+                ));
+            }
+            let range_low = i32::try_from(current).map_err(|_| {
+                HuffmanError::InvalidTable(HuffmanTableError::InvalidRangePartition)
+            })?;
+            push_parsed_line(
+                &mut lines,
+                HuffmanLine::normal(range_low, prefix_len, range_len),
+                limits,
+            )?;
+            let width = 1_i64
+                .checked_shl(u32::from(range_len))
+                .ok_or(MalformedError::IntegerOverflow)?;
+            current = current
+                .checked_add(width)
+                .ok_or(MalformedError::IntegerOverflow)?;
+        }
+        if current != high_i64 {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangePartition,
+            ));
+        }
+
+        let low_prefix = read_u8_bits(&mut encoded_lines, prefix_bits)?;
+        push_parsed_line(
+            &mut lines,
+            HuffmanLine::lower(i64::from(low) - 1, low_prefix),
+            limits,
+        )?;
+        let high_prefix = read_u8_bits(&mut encoded_lines, prefix_bits)?;
+        push_parsed_line(&mut lines, HuffmanLine::upper(high, high_prefix), limits)?;
+        if has_oob {
+            let oob_prefix = read_u8_bits(&mut encoded_lines, prefix_bits)?;
+            push_parsed_line(&mut lines, HuffmanLine::out_of_band(oob_prefix), limits)?;
+        }
+
+        let remaining_bits = padding_bit_count(header.remaining(), encoded_lines.bit_position)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        if remaining_bits > 7 {
+            return Err(HuffmanError::InvalidTable(HuffmanTableError::TrailingBits(
+                remaining_bits as u64,
+            )));
+        }
+        if remaining_bits != 0 {
+            let padding =
+                encoded_lines.read_bits(u8::try_from(remaining_bits).map_err(|_| {
+                    HuffmanError::InvalidTable(HuffmanTableError::TrailingBits(
+                        remaining_bits as u64,
+                    ))
+                })?)?;
+            if padding != 0 {
+                return Err(HuffmanError::InvalidTable(
+                    HuffmanTableError::NonZeroPadding,
+                ));
+            }
+        }
+
+        Self::new(&lines, limits)
+    }
+
+    /// Constructs one of the standard tables in T.88 B.5.
+    pub(crate) fn standard(
+        table: StandardHuffmanTable,
+        limits: &Limits,
+    ) -> Result<Self, HuffmanError> {
+        Self::new(standard_lines(table), limits)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == huffman_spec::table_has_oob(self),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    pub(crate) fn has_oob(&self) -> bool {
+        let mut index = 0;
+        let mut found = false;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                index <= self.lines@.len(),
+                found == exists|line_index: int|
+                    0 <= line_index < index
+                    && self.lines@[line_index].kind == LineKind::OutOfBand,
+            decreases self.lines@.len() - index,
+        ))]
+        while index < self.lines.len() {
+            match self.lines[index].kind {
+                LineKind::OutOfBand => found = true,
+                LineKind::Normal | LineKind::Lower | LineKind::Upper => {}
+            }
+            index += 1;
+        }
+        #[cfg(verus_keep_ghost)]
+        production_huffman_has_oob!(self);
+        found
+    }
+
+    /// Decodes one integer or OOB value according to T.88 B.4.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires huffman_spec::reader_valid(old(reader)),
+        ensures huffman_spec::reader_valid(final(reader)),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    pub(crate) fn decode(&self, reader: &mut BitReader<'_>) -> Result<HuffmanValue, HuffmanError> {
+        let mut code = WideCode { limbs: [0; 4] };
+        let mut length = 1_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                huffman_spec::reader_valid(reader),
+                1 <= length,
+                length <= self.max_prefix_len as usize + 1,
+            decreases self.max_prefix_len as usize + 1 - length,
+        ))]
+        while length <= self.max_prefix_len as usize {
+            #[cfg(verus_keep_ghost)]
+            let start = reader.bit_position;
+            let bit = match reader.read_bits(1) {
+                Ok(bit) => bit,
+                Err(error) => {
+                    return Err(HuffmanError::Decode(DecodeError::Malformed(error)));
+                }
+            };
+            #[cfg(verus_keep_ghost)]
+            production_huffman_one_bit!(reader, start, bit);
+            code = code
+                .append_bit(bit)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            let count = self.length_count[length];
+            if let Some(distance) = code.small_distance_from(self.first_code[length], count) {
+                let ordered_index = self.first_line[length]
+                    .checked_add(distance)
+                    .ok_or(MalformedError::IntegerOverflow)?
+                    as usize;
+                let line_index = *self
+                    .ordered_lines
+                    .get(ordered_index)
+                    .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
+                let line = self
+                    .lines
+                    .get(line_index as usize)
+                    .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
+                return decode_line(*line, reader);
+            }
+            length = next_prefix_length(length, usize::from(self.max_prefix_len));
+        }
+        Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))
+    }
+
+    #[cfg(test)]
+    fn code_for_line(&self, line_index: usize) -> Option<(WideCode, u8)> {
+        let line = self.lines.get(line_index)?;
+        let length = usize::from(line.prefix_len);
+        if length == 0 {
+            return None;
+        }
+        let first = usize::try_from(self.first_line[length]).ok()?;
+        let count = usize::try_from(self.length_count[length]).ok()?;
+        let within_length = self
+            .ordered_lines
+            .get(first..first.checked_add(count)?)?
+            .iter()
+            .position(|&candidate| usize::try_from(candidate).ok() == Some(line_index))?;
+        let code = self.first_code[length].checked_add_small(u32::try_from(within_length).ok()?)?;
+        Some((code, line.prefix_len))
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires length <= _maximum, _maximum < usize::MAX,
+    ensures
+        out == length + 1,
+        _maximum + 1 - out < _maximum + 1 - length,
+))]
+fn next_prefix_length(length: usize, _maximum: usize) -> usize {
+    length + 1
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == huffman_spec::canonical_first_code(previous, count),
+))]
+fn canonical_first_code(previous: WideCode, count: u32) -> Option<WideCode> {
+    match previous.checked_add_small(count) {
+        Some(sum) => sum.checked_shift_left_one(),
+        None => None,
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires count > 0,
+    ensures out == huffman_spec::canonical_range_fits(first, count, length),
+))]
+fn canonical_range_fits(first: WideCode, count: u32, length: usize) -> bool {
+    match first.checked_add_small(count - 1) {
+        Some(last) => last.fits_in_bits(length),
+        None => false,
+    }
+}
+
+fn standard_lines(table: StandardHuffmanTable) -> &'static [HuffmanLine] {
+    match table {
+        StandardHuffmanTable::A => &TABLE_A,
+        StandardHuffmanTable::B => &TABLE_B,
+        StandardHuffmanTable::C => &TABLE_C,
+        StandardHuffmanTable::D => &TABLE_D,
+        StandardHuffmanTable::E => &TABLE_E,
+        StandardHuffmanTable::F => &TABLE_F,
+        StandardHuffmanTable::G => &TABLE_G,
+        StandardHuffmanTable::H => &TABLE_H,
+        StandardHuffmanTable::I => &TABLE_I,
+        StandardHuffmanTable::J => &TABLE_J,
+        StandardHuffmanTable::K => &TABLE_K,
+        StandardHuffmanTable::L => &TABLE_L,
+        StandardHuffmanTable::M => &TABLE_M,
+        StandardHuffmanTable::N => &TABLE_N,
+        StandardHuffmanTable::O => &TABLE_O,
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires huffman_spec::reader_valid(old(reader)),
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        huffman_spec::reader_valid(final(reader)),
+        match out {
+            Ok(HuffmanValue::OutOfBand) =>
+                line.kind == LineKind::OutOfBand
+                && final(reader).bit_position == old(reader).bit_position,
+            Ok(HuffmanValue::Integer(value)) =>
+                line.kind != LineKind::OutOfBand
+                && final(reader).bit_position
+                    == old(reader).bit_position + line.range_len as usize
+                && huffman_spec::decoded_line_value(
+                    line,
+                    crate::spec::readers::bits_value(
+                        old(reader).bytes@,
+                        old(reader).bit_position as nat,
+                        line.range_len as nat,
+                    ),
+                    value,
+                ),
+            Err(_) =>
+                final(reader).bit_position == old(reader).bit_position
+                || (
+                    line.kind != LineKind::OutOfBand
+                    && line.range_len <= 32
+                    && final(reader).bit_position
+                        == old(reader).bit_position + line.range_len as usize
+                ),
+        },
+))]
+#[allow(
+    clippy::cast_lossless,
+    clippy::cast_possible_truncation,
+    clippy::manual_let_else
+)]
+fn decode_line(
+    line: HuffmanLine,
+    reader: &mut BitReader<'_>,
+) -> Result<HuffmanValue, HuffmanError> {
+    match line.kind {
+        LineKind::OutOfBand => return Ok(HuffmanValue::OutOfBand),
+        LineKind::Normal | LineKind::Lower | LineKind::Upper => {}
+    }
+    let offset = reader.read_bits(line.range_len)? as i64;
+    let candidate = match line.kind {
+        LineKind::Lower => line.range_low.checked_sub(offset),
+        LineKind::Normal | LineKind::Upper => line.range_low.checked_add(offset),
+        LineKind::OutOfBand => None,
+    };
+    let value = match candidate {
+        Some(value) => value,
+        None => {
+            return Err(HuffmanError::Decode(DecodeError::Malformed(
+                MalformedError::IntegerOverflow,
+            )));
+        }
+    };
+    if value < i32::MIN as i64 || value > i32::MAX as i64 {
+        return Err(HuffmanError::Decode(DecodeError::Malformed(
+            MalformedError::IntegerOverflow,
+        )));
+    }
+    Ok(HuffmanValue::Integer(value as i32))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        huffman_spec::reader_valid(old(reader)),
+        count <= 8,
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        match out {
+            Ok(value) =>
+                final(reader).bit_position == old(reader).bit_position + count as usize
+                && value as nat == crate::spec::readers::bits_value(
+                    old(reader).bytes@,
+                    old(reader).bit_position as nat,
+                    count as nat,
+                ),
+            Err(_) => final(reader).bit_position == old(reader).bit_position,
+        },
+))]
+#[allow(clippy::cast_lossless, clippy::cast_possible_truncation)]
+fn read_u8_bits(reader: &mut BitReader<'_>, count: u8) -> Result<u8, HuffmanError> {
+    #[cfg(verus_keep_ghost)]
+    let start = reader.bit_position;
+    let value = match reader.read_bits(count) {
+        Ok(value) => value,
+        Err(error) => {
+            return Err(HuffmanError::Decode(DecodeError::Malformed(error)));
+        }
+    };
+    #[cfg(verus_keep_ghost)]
+    production_huffman_u8_bits!(reader, start, count, value);
+    if value > u8::MAX as u32 {
+        Err(HuffmanError::InvalidTable(
+            HuffmanTableError::InvalidRangePartition,
+        ))
+    } else {
+        Ok(value as u8)
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(remaining) =>
+            payload_bytes <= usize::MAX / 8
+            && consumed_bits <= payload_bytes * 8
+            && remaining == payload_bytes * 8 - consumed_bits,
+        None =>
+            payload_bytes > usize::MAX / 8
+            || consumed_bits > payload_bytes * 8,
+    },
+))]
+fn padding_bit_count(payload_bytes: usize, consumed_bits: usize) -> Option<usize> {
+    match payload_bytes.checked_mul(8) {
+        Some(bits) => bits.checked_sub(consumed_bits),
+        None => None,
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures
+        out.0 == (flags & 1 != 0),
+        out.1 == ((((flags >> 1) & 7) as u16 + 1) as u8),
+        out.2 == ((((flags >> 4) & 7) as u16 + 1) as u8),
+))]
+#[allow(clippy::cast_lossless, clippy::cast_possible_truncation)]
+fn encoded_table_fields(flags: u8) -> (bool, u8, u8) {
+    let prefix_bits = (((flags >> 1) & 7) as u16 + 1) as u8;
+    let range_bits = (((flags >> 4) & 7) as u16 + 1) as u8;
+    (flags & 1 != 0, prefix_bits, range_bits)
+}
+
+fn push_parsed_line(
+    lines: &mut Vec<HuffmanLine>,
+    line: HuffmanLine,
+    limits: &Limits,
+) -> Result<(), HuffmanError> {
+    let new_len = lines
+        .len()
+        .checked_add(1)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    check_table_memory(new_len, limits)?;
+    let requested_bytes = allocation_size::<HuffmanLine>(new_len)?;
+    lines
+        .try_reserve(1)
+        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    lines.push(line);
+    Ok(())
+}
+
+fn try_reserve_exact<T>(values: &mut Vec<T>, count: usize) -> Result<(), HuffmanError> {
+    let requested_bytes = allocation_size::<T>(count)?;
+    values
+        .try_reserve_exact(count)
+        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    Ok(())
+}
+
+fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
+    count
+        .checked_mul(size_of::<T>())
+        .and_then(|bytes| u64::try_from(bytes).ok())
+        .ok_or(MalformedError::IntegerOverflow)
+}
+
+fn table_memory(line_count: usize) -> Result<u64, MalformedError> {
+    let fixed =
+        u64::try_from(size_of::<HuffmanTable>()).map_err(|_| MalformedError::IntegerOverflow)?;
+    let per_line = size_of::<HuffmanLine>()
+        .checked_add(size_of::<u32>())
+        .ok_or(MalformedError::IntegerOverflow)?;
+    let variable_count = line_count
+        .checked_mul(per_line)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    fixed
+        .checked_add(allocation_size::<u8>(variable_count)?)
+        .ok_or(MalformedError::IntegerOverflow)
+}
+
+#[allow(clippy::cast_lossless)]
+fn check_table_memory(line_count: usize, limits: &Limits) -> Result<(), HuffmanError> {
+    let line_count_u64 = line_count as u64;
+    if line_count_exceeds_symbol_limit(line_count, limits.max_symbols) {
+        return Err(LimitExceeded {
+            kind: LimitKind::Symbols,
+            limit: limits.max_symbols as u64,
+            actual: line_count_u64,
+        }
+        .into());
+    }
+    let actual = table_memory(line_count)?;
+    if actual > limits.max_decoder_managed_memory_bytes {
+        return Err(LimitExceeded {
+            kind: LimitKind::Memory,
+            limit: limits.max_decoder_managed_memory_bytes,
+            actual,
+        }
+        .into());
+    }
+    if !line_count_fits_u32(line_count) {
+        return Err(HuffmanError::InvalidTable(
+            HuffmanTableError::Oversubscribed,
+        ));
+    }
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == (line_count as nat > maximum as nat),
+))]
+#[allow(clippy::cast_lossless)]
+fn line_count_exceeds_symbol_limit(line_count: usize, maximum: u32) -> bool {
+    line_count as u64 > maximum as u64
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == (line_count as nat <= u32::MAX as nat),
+))]
+#[allow(clippy::cast_lossless, clippy::checked_conversions)]
+fn line_count_fits_u32(line_count: usize) -> bool {
+    line_count as u64 <= u32::MAX as u64
+}
+
+#[allow(clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) =>
+            lines@.len() > 0
+            && huffman_spec::line_lengths_valid(lines@),
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::cast_lossless, clippy::manual_let_else)]
+fn validate_lines(lines: &[HuffmanLine]) -> Result<(), HuffmanError> {
+    if lines.is_empty() {
+        return Err(HuffmanError::InvalidTable(HuffmanTableError::NoCodes));
+    }
+
+    let mut previous_normal_end: Option<i64> = None;
+    let mut first_normal_start: Option<i64> = None;
+    let mut lower: Option<i64> = None;
+    let mut upper: Option<i64> = None;
+    let mut oob_seen = false;
+    let mut special_seen = false;
+    let mut active_lower_seen = false;
+
+    let mut index = 0;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= lines@.len(),
+            forall|checked: int| 0 <= checked < index ==>
+                lines@[checked].range_len <= 32,
+        decreases lines@.len() - index,
+    ))]
+    while index < lines.len() {
+        let line = lines[index];
+        if line.range_len > 32 {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangeLength(line.range_len),
+            ));
+        }
+        match line.kind {
+            LineKind::Normal => {
+                if special_seen {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::InvalidLineOrder,
+                    ));
+                }
+                let width_minus_one = if line.range_len == 32 {
+                    u32::MAX as i64
+                } else {
+                    let width = 1_i64 << line.range_len;
+                    match width.checked_sub(1) {
+                        Some(value) => value,
+                        None => {
+                            return Err(HuffmanError::Decode(DecodeError::Malformed(
+                                MalformedError::IntegerOverflow,
+                            )));
+                        }
+                    }
+                };
+                let end = match line.range_low.checked_add(width_minus_one) {
+                    Some(end) => end,
+                    None => {
+                        return Err(HuffmanError::Decode(DecodeError::Malformed(
+                            MalformedError::IntegerOverflow,
+                        )));
+                    }
+                };
+                if line.range_low < i32::MIN as i64
+                    || line.range_low > i32::MAX as i64
+                    || end < i32::MIN as i64
+                    || end > i32::MAX as i64
+                {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::InvalidRangePartition,
+                    ));
+                }
+                if let Some(previous) = previous_normal_end {
+                    if previous.checked_add(1) != Some(line.range_low) {
+                        return Err(HuffmanError::InvalidTable(
+                            HuffmanTableError::InvalidRangePartition,
+                        ));
+                    }
+                } else {
+                    first_normal_start = Some(line.range_low);
+                }
+                previous_normal_end = Some(end);
+            }
+            LineKind::Lower => {
+                special_seen = true;
+                if lower.is_some() {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::DuplicateSpecialLine,
+                    ));
+                }
+                lower = Some(line.range_low);
+                if upper.is_some() || oob_seen || line.range_len != 32 {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::InvalidLineOrder,
+                    ));
+                }
+                active_lower_seen = line.prefix_len != 0;
+            }
+            LineKind::Upper => {
+                special_seen = true;
+                if upper.is_some() {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::DuplicateSpecialLine,
+                    ));
+                }
+                upper = Some(line.range_low);
+                if oob_seen || line.range_len != 32 {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::InvalidLineOrder,
+                    ));
+                }
+            }
+            LineKind::OutOfBand => {
+                special_seen = true;
+                if oob_seen {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::DuplicateSpecialLine,
+                    ));
+                }
+                if line.range_len != 0 {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::InvalidSpecialLine,
+                    ));
+                }
+                oob_seen = true;
+            }
+        }
+        index += 1;
+    }
+
+    let first = match first_normal_start {
+        Some(first) => first,
+        None => {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangePartition,
+            ));
+        }
+    };
+    let last = match previous_normal_end {
+        Some(last) => last,
+        None => {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangePartition,
+            ));
+        }
+    };
+    if let Some(base) = lower {
+        if first.checked_sub(1) != Some(base) || (base < i32::MIN as i64 && active_lower_seen) {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidSpecialLine,
+            ));
+        }
+    }
+    if let Some(base) = upper {
+        if last.checked_add(1) != Some(base) || base < i32::MIN as i64 || base > i32::MAX as i64 {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidSpecialLine,
+            ));
+        }
+    }
+    #[cfg(verus_keep_ghost)]
+    production_huffman_line_lengths!();
+    Ok(())
+}
+
+const TABLE_A: [HuffmanLine; 4] = [
+    HuffmanLine::normal(0, 1, 4),
+    HuffmanLine::normal(16, 2, 8),
+    HuffmanLine::normal(272, 3, 16),
+    HuffmanLine::upper(65_808, 3),
+];
+
+const TABLE_B: [HuffmanLine; 7] = [
+    HuffmanLine::normal(0, 1, 0),
+    HuffmanLine::normal(1, 2, 0),
+    HuffmanLine::normal(2, 3, 0),
+    HuffmanLine::normal(3, 4, 3),
+    HuffmanLine::normal(11, 5, 6),
+    HuffmanLine::upper(75, 6),
+    HuffmanLine::out_of_band(6),
+];
+
+const TABLE_C: [HuffmanLine; 9] = [
+    HuffmanLine::normal(-256, 8, 8),
+    HuffmanLine::normal(0, 1, 0),
+    HuffmanLine::normal(1, 2, 0),
+    HuffmanLine::normal(2, 3, 0),
+    HuffmanLine::normal(3, 4, 3),
+    HuffmanLine::normal(11, 5, 6),
+    HuffmanLine::lower(-257, 8),
+    HuffmanLine::upper(75, 7),
+    HuffmanLine::out_of_band(6),
+];
+
+const TABLE_D: [HuffmanLine; 6] = [
+    HuffmanLine::normal(1, 1, 0),
+    HuffmanLine::normal(2, 2, 0),
+    HuffmanLine::normal(3, 3, 0),
+    HuffmanLine::normal(4, 4, 3),
+    HuffmanLine::normal(12, 5, 6),
+    HuffmanLine::upper(76, 5),
+];
+
+const TABLE_E: [HuffmanLine; 8] = [
+    HuffmanLine::normal(-255, 7, 8),
+    HuffmanLine::normal(1, 1, 0),
+    HuffmanLine::normal(2, 2, 0),
+    HuffmanLine::normal(3, 3, 0),
+    HuffmanLine::normal(4, 4, 3),
+    HuffmanLine::normal(12, 5, 6),
+    HuffmanLine::lower(-256, 7),
+    HuffmanLine::upper(76, 6),
+];
+
+const TABLE_F: [HuffmanLine; 14] = [
+    HuffmanLine::normal(-2048, 5, 10),
+    HuffmanLine::normal(-1024, 4, 9),
+    HuffmanLine::normal(-512, 4, 8),
+    HuffmanLine::normal(-256, 4, 7),
+    HuffmanLine::normal(-128, 5, 6),
+    HuffmanLine::normal(-64, 5, 5),
+    HuffmanLine::normal(-32, 4, 5),
+    HuffmanLine::normal(0, 2, 7),
+    HuffmanLine::normal(128, 3, 7),
+    HuffmanLine::normal(256, 3, 8),
+    HuffmanLine::normal(512, 4, 9),
+    HuffmanLine::normal(1024, 4, 10),
+    HuffmanLine::lower(-2049, 6),
+    HuffmanLine::upper(2048, 6),
+];
+
+const TABLE_G: [HuffmanLine; 15] = [
+    HuffmanLine::normal(-1024, 4, 9),
+    HuffmanLine::normal(-512, 3, 8),
+    HuffmanLine::normal(-256, 4, 7),
+    HuffmanLine::normal(-128, 5, 6),
+    HuffmanLine::normal(-64, 5, 5),
+    HuffmanLine::normal(-32, 4, 5),
+    HuffmanLine::normal(0, 4, 5),
+    HuffmanLine::normal(32, 5, 5),
+    HuffmanLine::normal(64, 5, 6),
+    HuffmanLine::normal(128, 4, 7),
+    HuffmanLine::normal(256, 3, 8),
+    HuffmanLine::normal(512, 3, 9),
+    HuffmanLine::normal(1024, 3, 10),
+    HuffmanLine::lower(-1025, 5),
+    HuffmanLine::upper(2048, 5),
+];
+
+const TABLE_H: [HuffmanLine; 21] = [
+    HuffmanLine::normal(-15, 8, 3),
+    HuffmanLine::normal(-7, 9, 1),
+    HuffmanLine::normal(-5, 8, 1),
+    HuffmanLine::normal(-3, 9, 0),
+    HuffmanLine::normal(-2, 7, 0),
+    HuffmanLine::normal(-1, 4, 0),
+    HuffmanLine::normal(0, 2, 1),
+    HuffmanLine::normal(2, 5, 0),
+    HuffmanLine::normal(3, 6, 0),
+    HuffmanLine::normal(4, 3, 4),
+    HuffmanLine::normal(20, 6, 1),
+    HuffmanLine::normal(22, 4, 4),
+    HuffmanLine::normal(38, 4, 5),
+    HuffmanLine::normal(70, 5, 6),
+    HuffmanLine::normal(134, 5, 7),
+    HuffmanLine::normal(262, 6, 7),
+    HuffmanLine::normal(390, 7, 8),
+    HuffmanLine::normal(646, 6, 10),
+    HuffmanLine::lower(-16, 9),
+    HuffmanLine::upper(1670, 9),
+    HuffmanLine::out_of_band(2),
+];
+
+const TABLE_I: [HuffmanLine; 22] = [
+    HuffmanLine::normal(-31, 8, 4),
+    HuffmanLine::normal(-15, 9, 2),
+    HuffmanLine::normal(-11, 8, 2),
+    HuffmanLine::normal(-7, 9, 1),
+    HuffmanLine::normal(-5, 7, 1),
+    HuffmanLine::normal(-3, 4, 1),
+    HuffmanLine::normal(-1, 3, 1),
+    HuffmanLine::normal(1, 3, 1),
+    HuffmanLine::normal(3, 5, 1),
+    HuffmanLine::normal(5, 6, 1),
+    HuffmanLine::normal(7, 3, 5),
+    HuffmanLine::normal(39, 6, 2),
+    HuffmanLine::normal(43, 4, 5),
+    HuffmanLine::normal(75, 4, 6),
+    HuffmanLine::normal(139, 5, 7),
+    HuffmanLine::normal(267, 5, 8),
+    HuffmanLine::normal(523, 6, 8),
+    HuffmanLine::normal(779, 7, 9),
+    HuffmanLine::normal(1291, 6, 11),
+    HuffmanLine::lower(-32, 9),
+    HuffmanLine::upper(3339, 9),
+    HuffmanLine::out_of_band(2),
+];
+
+const TABLE_J: [HuffmanLine; 21] = [
+    HuffmanLine::normal(-21, 7, 4),
+    HuffmanLine::normal(-5, 8, 0),
+    HuffmanLine::normal(-4, 7, 0),
+    HuffmanLine::normal(-3, 5, 0),
+    HuffmanLine::normal(-2, 2, 2),
+    HuffmanLine::normal(2, 5, 0),
+    HuffmanLine::normal(3, 6, 0),
+    HuffmanLine::normal(4, 7, 0),
+    HuffmanLine::normal(5, 8, 0),
+    HuffmanLine::normal(6, 2, 6),
+    HuffmanLine::normal(70, 5, 5),
+    HuffmanLine::normal(102, 6, 5),
+    HuffmanLine::normal(134, 6, 6),
+    HuffmanLine::normal(198, 6, 7),
+    HuffmanLine::normal(326, 6, 8),
+    HuffmanLine::normal(582, 6, 9),
+    HuffmanLine::normal(1094, 6, 10),
+    HuffmanLine::normal(2118, 7, 11),
+    HuffmanLine::lower(-22, 8),
+    HuffmanLine::upper(4166, 8),
+    HuffmanLine::out_of_band(2),
+];
+
+const TABLE_K: [HuffmanLine; 13] = [
+    HuffmanLine::normal(1, 1, 0),
+    HuffmanLine::normal(2, 2, 1),
+    HuffmanLine::normal(4, 4, 0),
+    HuffmanLine::normal(5, 4, 1),
+    HuffmanLine::normal(7, 5, 1),
+    HuffmanLine::normal(9, 5, 2),
+    HuffmanLine::normal(13, 6, 2),
+    HuffmanLine::normal(17, 7, 2),
+    HuffmanLine::normal(21, 7, 3),
+    HuffmanLine::normal(29, 7, 4),
+    HuffmanLine::normal(45, 7, 5),
+    HuffmanLine::normal(77, 7, 6),
+    HuffmanLine::upper(141, 7),
+];
+
+const TABLE_L: [HuffmanLine; 13] = [
+    HuffmanLine::normal(1, 1, 0),
+    HuffmanLine::normal(2, 2, 0),
+    HuffmanLine::normal(3, 3, 1),
+    HuffmanLine::normal(5, 5, 0),
+    HuffmanLine::normal(6, 5, 1),
+    HuffmanLine::normal(8, 6, 1),
+    HuffmanLine::normal(10, 7, 0),
+    HuffmanLine::normal(11, 7, 1),
+    HuffmanLine::normal(13, 7, 2),
+    HuffmanLine::normal(17, 7, 3),
+    HuffmanLine::normal(25, 7, 4),
+    HuffmanLine::normal(41, 8, 5),
+    HuffmanLine::upper(73, 8),
+];
+
+const TABLE_M: [HuffmanLine; 13] = [
+    HuffmanLine::normal(1, 1, 0),
+    HuffmanLine::normal(2, 3, 0),
+    HuffmanLine::normal(3, 4, 0),
+    HuffmanLine::normal(4, 5, 0),
+    HuffmanLine::normal(5, 4, 1),
+    HuffmanLine::normal(7, 3, 3),
+    HuffmanLine::normal(15, 6, 1),
+    HuffmanLine::normal(17, 6, 2),
+    HuffmanLine::normal(21, 6, 3),
+    HuffmanLine::normal(29, 6, 4),
+    HuffmanLine::normal(45, 6, 5),
+    HuffmanLine::normal(77, 7, 6),
+    HuffmanLine::upper(141, 7),
+];
+
+const TABLE_N: [HuffmanLine; 5] = [
+    HuffmanLine::normal(-2, 3, 0),
+    HuffmanLine::normal(-1, 3, 0),
+    HuffmanLine::normal(0, 1, 0),
+    HuffmanLine::normal(1, 3, 0),
+    HuffmanLine::normal(2, 3, 0),
+];
+
+const TABLE_O: [HuffmanLine; 13] = [
+    HuffmanLine::normal(-24, 7, 4),
+    HuffmanLine::normal(-8, 6, 2),
+    HuffmanLine::normal(-4, 5, 1),
+    HuffmanLine::normal(-2, 4, 0),
+    HuffmanLine::normal(-1, 3, 0),
+    HuffmanLine::normal(0, 1, 0),
+    HuffmanLine::normal(1, 3, 0),
+    HuffmanLine::normal(2, 4, 0),
+    HuffmanLine::normal(3, 5, 1),
+    HuffmanLine::normal(5, 6, 2),
+    HuffmanLine::normal(9, 7, 4),
+    HuffmanLine::lower(-25, 7),
+    HuffmanLine::upper(25, 7),
+];
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ALL_STANDARD_TABLES: [StandardHuffmanTable; 15] = [
+        StandardHuffmanTable::A,
+        StandardHuffmanTable::B,
+        StandardHuffmanTable::C,
+        StandardHuffmanTable::D,
+        StandardHuffmanTable::E,
+        StandardHuffmanTable::F,
+        StandardHuffmanTable::G,
+        StandardHuffmanTable::H,
+        StandardHuffmanTable::I,
+        StandardHuffmanTable::J,
+        StandardHuffmanTable::K,
+        StandardHuffmanTable::L,
+        StandardHuffmanTable::M,
+        StandardHuffmanTable::N,
+        StandardHuffmanTable::O,
+    ];
+
+    fn bits(bit_string: &str) -> Vec<u8> {
+        let mut bytes = vec![0_u8; bit_string.len().div_ceil(8)];
+        for (position, bit) in bit_string.bytes().enumerate() {
+            if bit == b'1' {
+                bytes[position / 8] |= 1 << (7 - position % 8);
+            }
+        }
+        bytes
+    }
+
+    fn decode_bits(table: &HuffmanTable, bit_string: &str) -> HuffmanValue {
+        let bytes = bits(bit_string);
+        let mut reader = bit_reader(&bytes);
+        table.decode(&mut reader).expect("valid encoded value")
+    }
+
+    fn append_code(output: &mut String, code: WideCode, length: u8) {
+        for position in (0..usize::from(length)).rev() {
+            let limb = position / 64;
+            let bit = position % 64;
+            output.push(if code.limbs[limb] >> bit & 1 == 0 {
+                '0'
+            } else {
+                '1'
+            });
+        }
+    }
+
+    fn encoded_line(table: &HuffmanTable, index: usize, offset: u32) -> String {
+        let (code, length) = table.code_for_line(index).expect("active line");
+        let line = table.lines[index];
+        let mut encoded = String::new();
+        append_code(&mut encoded, code, length);
+        for position in (0..line.range_len).rev() {
+            encoded.push(if offset >> position & 1 == 0 {
+                '0'
+            } else {
+                '1'
+            });
+        }
+        encoded
+    }
+
+    fn code_string(table: &HuffmanTable, index: usize) -> String {
+        let (code, length) = table.code_for_line(index).expect("active line");
+        let mut result = String::new();
+        append_code(&mut result, code, length);
+        result
+    }
+
+    #[test]
+    fn annex_b_table_a_codes_and_endpoints() {
+        let table =
+            HuffmanTable::standard(StandardHuffmanTable::A, &Limits::default()).expect("table A");
+        assert_eq!(decode_bits(&table, "00000"), HuffmanValue::Integer(0));
+        assert_eq!(decode_bits(&table, "01111"), HuffmanValue::Integer(15));
+        assert_eq!(decode_bits(&table, "1000000000"), HuffmanValue::Integer(16));
+        assert_eq!(
+            decode_bits(&table, "1011111111"),
+            HuffmanValue::Integer(271)
+        );
+        assert_eq!(
+            decode_bits(&table, "1100000000000000000"),
+            HuffmanValue::Integer(272)
+        );
+        assert_eq!(
+            decode_bits(&table, "11100000000000000000000000000000000"),
+            HuffmanValue::Integer(65_808)
+        );
+    }
+
+    #[test]
+    fn annex_b_table_b_oob_and_fixed_values() {
+        let table =
+            HuffmanTable::standard(StandardHuffmanTable::B, &Limits::default()).expect("table B");
+        assert_eq!(decode_bits(&table, "0"), HuffmanValue::Integer(0));
+        assert_eq!(decode_bits(&table, "10"), HuffmanValue::Integer(1));
+        assert_eq!(decode_bits(&table, "110"), HuffmanValue::Integer(2));
+        assert_eq!(decode_bits(&table, "1110000"), HuffmanValue::Integer(3));
+        assert_eq!(decode_bits(&table, "111111"), HuffmanValue::OutOfBand);
+    }
+
+    #[test]
+    fn every_line_of_every_standard_table_decodes() {
+        for standard in ALL_STANDARD_TABLES {
+            let table =
+                HuffmanTable::standard(standard, &Limits::default()).expect("standard table");
+            for (index, line) in table.lines.iter().copied().enumerate() {
+                if line.prefix_len == 0 {
+                    continue;
+                }
+                if line.kind == LineKind::OutOfBand {
+                    let encoded = encoded_line(&table, index, 0);
+                    assert_eq!(decode_bits(&table, &encoded), HuffmanValue::OutOfBand);
+                    continue;
+                }
+
+                let encoded = encoded_line(&table, index, 0);
+                assert_eq!(
+                    decode_bits(&table, &encoded),
+                    HuffmanValue::Integer(
+                        i32::try_from(line.range_low).expect("zero-offset value in range")
+                    )
+                );
+
+                let maximum_offset =
+                    match line.kind {
+                        LineKind::Normal => {
+                            if line.range_len == 32 {
+                                u32::MAX
+                            } else {
+                                (1_u32 << line.range_len) - 1
+                            }
+                        }
+
+                        LineKind::Lower => u32::try_from(line.range_low - i64::from(i32::MIN))
+                            .expect("lower endpoint"),
+                        LineKind::Upper => u32::try_from(i64::from(i32::MAX) - line.range_low)
+                            .expect("upper endpoint"),
+                        LineKind::OutOfBand => 0,
+                    };
+                let expected = if line.kind == LineKind::Lower {
+                    line.range_low - i64::from(maximum_offset)
+                } else {
+                    line.range_low + i64::from(maximum_offset)
+                };
+                let encoded = encoded_line(&table, index, maximum_offset);
+                assert_eq!(
+                    decode_bits(&table, &encoded),
+                    HuffmanValue::Integer(i32::try_from(expected).expect("endpoint in range"))
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn standard_prefixes_match_every_annex_b_table() {
+        let expected: [&[&str]; 15] = [
+            &["0", "10", "110", "111"],
+            &["0", "10", "110", "1110", "11110", "111110", "111111"],
+            &[
+                "11111110", "0", "10", "110", "1110", "11110", "11111111", "1111110", "111110",
+            ],
+            &["0", "10", "110", "1110", "11110", "11111"],
+            &[
+                "1111110", "0", "10", "110", "1110", "11110", "1111111", "111110",
+            ],
+            &[
+                "11100", "1000", "1001", "1010", "11101", "11110", "1011", "00", "010", "011",
+                "1100", "1101", "111110", "111111",
+            ],
+            &[
+                "1000", "000", "1001", "11010", "11011", "1010", "1011", "11100", "11101", "1100",
+                "001", "010", "011", "11110", "11111",
+            ],
+            &[
+                "11111100",
+                "111111100",
+                "11111101",
+                "111111101",
+                "1111100",
+                "1010",
+                "00",
+                "11010",
+                "111010",
+                "100",
+                "111011",
+                "1011",
+                "1100",
+                "11011",
+                "11100",
+                "111100",
+                "1111101",
+                "111101",
+                "111111110",
+                "111111111",
+                "01",
+            ],
+            &[
+                "11111100",
+                "111111100",
+                "11111101",
+                "111111101",
+                "1111100",
+                "1010",
+                "010",
+                "011",
+                "11010",
+                "111010",
+                "100",
+                "111011",
+                "1011",
+                "1100",
+                "11011",
+                "11100",
+                "111100",
+                "1111101",
+                "111101",
+                "111111110",
+                "111111111",
+                "00",
+            ],
+            &[
+                "1111010", "11111100", "1111011", "11000", "00", "11001", "110110", "1111100",
+                "11111101", "01", "11010", "110111", "111000", "111001", "111010", "111011",
+                "111100", "1111101", "11111110", "11111111", "10",
+            ],
+            &[
+                "0", "10", "1100", "1101", "11100", "11101", "111100", "1111010", "1111011",
+                "1111100", "1111101", "1111110", "1111111",
+            ],
+            &[
+                "0", "10", "110", "11100", "11101", "111100", "1111010", "1111011", "1111100",
+                "1111101", "1111110", "11111110", "11111111",
+            ],
+            &[
+                "0", "100", "1100", "11100", "1101", "101", "111010", "111011", "111100", "111101",
+                "111110", "1111110", "1111111",
+            ],
+            &["100", "101", "0", "110", "111"],
+            &[
+                "1111100", "111100", "11100", "1100", "100", "0", "101", "1101", "11101", "111101",
+                "1111101", "1111110", "1111111",
+            ],
+        ];
+
+        for (table_number, standard) in ALL_STANDARD_TABLES.into_iter().enumerate() {
+            let table =
+                HuffmanTable::standard(standard, &Limits::default()).expect("standard table");
+            let expected_codes = expected[table_number];
+            assert_eq!(table.lines.len(), expected_codes.len());
+            for (index, expected_code) in expected_codes.iter().enumerate() {
+                assert_eq!(code_string(&table, index), *expected_code);
+            }
+        }
+    }
+
+    #[test]
+    fn canonical_assignment_follows_table_order() {
+        let lines = [
+            HuffmanLine::normal(0, 2, 0),
+            HuffmanLine::normal(1, 1, 0),
+            HuffmanLine::normal(2, 3, 0),
+            HuffmanLine::normal(3, 3, 0),
+        ];
+        let table = HuffmanTable::new(&lines, &Limits::default()).expect("valid table");
+        assert_eq!(decode_bits(&table, "0"), HuffmanValue::Integer(1));
+        assert_eq!(decode_bits(&table, "10"), HuffmanValue::Integer(0));
+        assert_eq!(decode_bits(&table, "110"), HuffmanValue::Integer(2));
+        assert_eq!(decode_bits(&table, "111"), HuffmanValue::Integer(3));
+    }
+
+    #[test]
+    fn parses_annex_b_example_table() {
+        let encoded = [
+            0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x10, 0x49, 0x23, 0x81, 0x80,
+        ];
+        let table = HuffmanTable::from_encoded(&encoded, &Limits::default())
+            .expect("Annex B example table");
+        assert_eq!(
+            decode_bits(&table, "1100000000000000000"),
+            HuffmanValue::Integer(272)
+        );
+        assert_eq!(
+            decode_bits(&table, "11100000000000000000000000000000000"),
+            HuffmanValue::Integer(65_808)
+        );
+    }
+
+    #[test]
+    fn parses_oob_custom_table() {
+        // HTOOB=1, HTPS=2, HTRS=1, low=0, high=1.
+        // Lines are (prefix=1, range=0), lower=0, upper=2, OOB=2.
+        let encoded = [0x03, 0, 0, 0, 0, 0, 0, 0, 1, 0b0100_0101, 0];
+        let table = HuffmanTable::from_encoded(&encoded, &Limits::default()).expect("custom table");
+        assert_eq!(decode_bits(&table, "0"), HuffmanValue::Integer(0));
+        assert_eq!(decode_bits(&table, "11"), HuffmanValue::OutOfBand);
+    }
+
+    #[test]
+    fn rejects_reserved_flags_and_nonzero_padding() {
+        let reserved = [0x80, 0, 0, 0, 0, 0, 0, 0, 1];
+        assert!(matches!(
+            HuffmanTable::from_encoded(&reserved, &Limits::default()),
+            Err(HuffmanError::InvalidTable(
+                HuffmanTableError::ReservedFlags(0x80)
+            ))
+        ));
+
+        let padding = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0b1011_1111];
+        assert!(matches!(
+            HuffmanTable::from_encoded(&padding, &Limits::default()),
+            Err(HuffmanError::InvalidTable(
+                HuffmanTableError::NonZeroPadding
+            ))
+        ));
+    }
+
+    #[test]
+    fn rejects_invalid_bounds_partition_and_range_length() {
+        let bounds = [0, 0, 0, 0, 1, 0, 0, 0, 1];
+        assert!(matches!(
+            HuffmanTable::from_encoded(&bounds, &Limits::default()),
+            Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidBounds { low: 1, high: 1 }
+            ))
+        ));
+
+        // HTRS=6 and the first line has range length 33.
+        let long_range = [0x50, 0, 0, 0, 0, 0, 0, 0, 1, 0b1100_0010];
+        assert!(matches!(
+            HuffmanTable::from_encoded(&long_range, &Limits::default()),
+            Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangeLength(33)
+            ))
+        ));
+
+        // A two-value interval cannot be partitioned by a four-value line.
+        let partition = [0x10, 0, 0, 0, 0, 0, 0, 0, 2, 0b1100_0000];
+        assert!(matches!(
+            HuffmanTable::from_encoded(&partition, &Limits::default()),
+            Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangePartition
+            ))
+        ));
+    }
+
+    #[test]
+    fn rejects_oversubscribed_and_structurally_invalid_tables() {
+        let oversubscribed = [
+            HuffmanLine::normal(0, 1, 0),
+            HuffmanLine::normal(1, 1, 0),
+            HuffmanLine::normal(2, 1, 0),
+        ];
+        assert!(matches!(
+            HuffmanTable::new(&oversubscribed, &Limits::default()),
+            Err(HuffmanError::InvalidTable(
+                HuffmanTableError::Oversubscribed
+            ))
+        ));
+
+        let gap = [HuffmanLine::normal(0, 1, 0), HuffmanLine::normal(2, 1, 0)];
+        assert!(matches!(
+            HuffmanTable::new(&gap, &Limits::default()),
+            Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangePartition
+            ))
+        ));
+
+        let no_codes = [HuffmanLine::normal(0, 0, 0)];
+        assert!(matches!(
+            HuffmanTable::new(&no_codes, &Limits::default()),
+            Err(HuffmanError::InvalidTable(HuffmanTableError::NoCodes))
+        ));
+    }
+
+    #[test]
+    fn invalid_prefix_and_eof_are_oob_safe() {
+        let lines = [HuffmanLine::normal(0, 1, 0), HuffmanLine::normal(1, 3, 0)];
+        let table = HuffmanTable::new(&lines, &Limits::default()).expect("valid sparse table");
+
+        let mut invalid_reader = bit_reader(&[0b1100_0000]);
+        assert!(matches!(
+            table.decode(&mut invalid_reader),
+            Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))
+        ));
+
+        let mut eof_reader = bit_reader(&[0b0000_0001]);
+        eof_reader.bit_position = 7;
+        assert!(matches!(
+            table.decode(&mut eof_reader),
+            Err(HuffmanError::Decode(DecodeError::Malformed(
+                MalformedError::UnexpectedEof {
+                    offset: 8,
+                    needed: 1,
+                    remaining: 0
+                }
+            )))
+        ));
+        assert_eq!(eof_reader.bit_position, 8);
+    }
+
+    #[test]
+    fn open_ranges_reject_values_outside_i32() {
+        let table =
+            HuffmanTable::standard(StandardHuffmanTable::A, &Limits::default()).expect("table A");
+        let encoded = format!("111{:032b}", u32::MAX);
+        let bytes = bits(&encoded);
+        let mut reader = bit_reader(&bytes);
+        assert!(matches!(
+            table.decode(&mut reader),
+            Err(HuffmanError::Decode(DecodeError::Malformed(
+                MalformedError::IntegerOverflow
+            )))
+        ));
+    }
+
+    #[test]
+    fn honors_memory_and_stream_limits() {
+        let limits = Limits {
+            max_decoder_managed_memory_bytes: 1,
+            ..Limits::default()
+        };
+        assert!(matches!(
+            HuffmanTable::standard(StandardHuffmanTable::A, &limits),
+            Err(HuffmanError::Decode(DecodeError::LimitExceeded(
+                LimitExceeded {
+                    kind: LimitKind::Memory,
+                    ..
+                }
+            )))
+        ));
+
+        let limits = Limits {
+            max_stream_bytes: 8,
+            ..Limits::default()
+        };
+        let encoded = [0_u8; 9];
+        assert!(matches!(
+            HuffmanTable::from_encoded(&encoded, &limits),
+            Err(HuffmanError::Decode(DecodeError::LimitExceeded(
+                LimitExceeded {
+                    kind: LimitKind::StreamBytes,
+                    limit: 8,
+                    actual: 9
+                }
+            )))
+        ));
+    }
+
+    #[test]
+    fn supports_prefixes_longer_than_machine_words() {
+        let mut lines = Vec::new();
+        for value in 0..254_i32 {
+            lines.push(HuffmanLine::normal(
+                value,
+                u8::try_from(value + 1).expect("length"),
+                0,
+            ));
+        }
+        lines.push(HuffmanLine::normal(254, 255, 0));
+        lines.push(HuffmanLine::normal(255, 255, 0));
+        let table = HuffmanTable::new(&lines, &Limits::default()).expect("255-bit table");
+        let encoded = encoded_line(&table, 255, 0);
+        assert_eq!(encoded.len(), 255);
+        assert_eq!(decode_bits(&table, &encoded), HuffmanValue::Integer(255));
+    }
+}

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/microsoft/jbig2_rs/release-attestation.schema.json",
+  "title": "jbig2_rs release attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_revision",
+    "crate_version",
+    "support_matrix_sha256",
+    "source_provenance_sha256",
+    "proof_attestation_sha256",
+    "conformance_attestation_sha256",
+    "fuzz_attestation_sha256",
+    "toolchain_sha256",
+    "cargo_gates",
+    "approvals",
+    "publication_enabled"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "source_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "crate_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+    },
+    "support_matrix_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "source_provenance_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "proof_attestation_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "conformance_attestation_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "fuzz_attestation_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "toolchain_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "cargo_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fmt", "clippy", "test", "doc", "package"],
+      "properties": {
+        "fmt": {
+          "const": true
+        },
+        "clippy": {
+          "const": true
+        },
+        "test": {
+          "const": true
+        },
+        "doc": {
+          "const": true
+        },
+        "package": {
+          "const": true
+        }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cela", "architecture", "release_owner"],
+      "properties": {
+        "cela": {
+          "type": "string",
+          "minLength": 1
+        },
+        "architecture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "release_owner": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "publication_enabled": {
+      "const": true
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

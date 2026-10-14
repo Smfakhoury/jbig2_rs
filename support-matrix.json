@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": 1,
+  "project": "jbig2_rs",
+  "milestone": "phase-1-decoder",
+  "approval": {
+    "status": "approved_with_limit_defaults_pending_ratification",
+    "recorded_at": "2026-10-13T18:11:09.595Z",
+    "source": "owner decisions recorded in the project bootstrap session",
+    "pending": [
+      "Ratify max_stream_bytes, max_pages, max_cumulative_decoded_bitmap_bytes, and max_retained_state_bytes before release."
+    ]
+  },
+  "normative_baseline": {
+    "itu": "ITU-T T.88 (08/2018)",
+    "iso": "ISO/IEC 14492:2019, Edition 2",
+    "profile": "Project-defined broad bi-level decoder profile",
+    "profile_note": "This is not a claim of full Annex F profile 0x00000001 conformance because colour palette decoding is excluded."
+  },
+  "rows": [
+    {
+      "feature": "decoder",
+      "status": "required",
+      "clauses": ["6", "7", "8", "Annex A", "Annex B", "Annex C", "Annex D", "Annex E"]
+    },
+    {
+      "feature": "encoder",
+      "status": "deferred",
+      "clauses": ["9", "10", "11"],
+      "note": "A later milestone requires a separately approved encoder profile."
+    },
+    {
+      "feature": "standalone_file_organization",
+      "status": "required",
+      "clauses": ["Annex D"]
+    },
+    {
+      "feature": "sequential_organization",
+      "status": "required",
+      "clauses": ["D.1"]
+    },
+    {
+      "feature": "random_access_organization",
+      "status": "required",
+      "clauses": ["D.2"]
+    },
+    {
+      "feature": "embedded_organization",
+      "status": "required",
+      "clauses": ["D.3"]
+    },
+    {
+      "feature": "pdf_global_and_page_segments",
+      "status": "required",
+      "clauses": ["D.3", "7.1", "7.3"],
+      "note": "The public API must support optional reusable immutable global-segment state."
+    },
+    {
+      "feature": "known_height_pages",
+      "status": "required",
+      "clauses": ["7.4.8", "8"]
+    },
+    {
+      "feature": "unknown_height_pages",
+      "status": "required",
+      "clauses": ["7.4.8", "7.4.10", "8"]
+    },
+    {
+      "feature": "arithmetic_coding",
+      "status": "required",
+      "clauses": ["Annex A", "Annex E"]
+    },
+    {
+      "feature": "standard_huffman_tables",
+      "status": "required",
+      "clauses": ["B.5"]
+    },
+    {
+      "feature": "custom_huffman_tables",
+      "status": "required",
+      "clauses": ["7.4.13", "Annex B"]
+    },
+    {
+      "feature": "mmr_coding",
+      "status": "required",
+      "clauses": ["6.2", "7.4.6", "ITU-T T.6 (1988)"]
+    },
+    {
+      "feature": "generic_regions",
+      "status": "required",
+      "clauses": ["6.2", "7.4.6"]
+    },
+    {
+      "feature": "generic_refinement_regions",
+      "status": "required",
+      "clauses": ["6.3", "7.4.7"]
+    },
+    {
+      "feature": "symbol_dictionaries",
+      "status": "required",
+      "clauses": ["6.5", "7.4.2"]
+    },
+    {
+      "feature": "text_regions",
+      "status": "required",
+      "clauses": ["6.4", "7.4.3"]
+    },
+    {
+      "feature": "pattern_dictionaries",
+      "status": "required",
+      "clauses": ["6.7", "7.4.4"]
+    },
+    {
+      "feature": "halftone_regions",
+      "status": "required",
+      "clauses": ["6.6", "7.4.5", "Annex C"]
+    },
+    {
+      "feature": "immediate_regions",
+      "status": "required",
+      "clauses": ["7.3", "8"]
+    },
+    {
+      "feature": "intermediate_regions",
+      "status": "required",
+      "clauses": ["7.3", "8"]
+    },
+    {
+      "feature": "refinement_aggregation",
+      "status": "required",
+      "clauses": ["6.4", "6.5"]
+    },
+    {
+      "feature": "multiple_pages",
+      "status": "required",
+      "clauses": ["7", "8", "11.3"]
+    },
+    {
+      "feature": "global_segments",
+      "status": "required",
+      "clauses": ["7.1", "7.3", "D.3"]
+    },
+    {
+      "feature": "retention_flags",
+      "status": "required",
+      "clauses": ["7.2.4"]
+    },
+    {
+      "feature": "referred_to_segment_handling",
+      "status": "required",
+      "clauses": ["7.2.5", "7.3.1"]
+    },
+    {
+      "feature": "combination_operators",
+      "status": "required",
+      "clauses": ["4.3", "6", "8.2"]
+    },
+    {
+      "feature": "striped_pages",
+      "status": "required",
+      "clauses": ["7.4.8", "7.4.10", "8"]
+    },
+    {
+      "feature": "colour_palette",
+      "status": "unsupported",
+      "clauses": ["6.8", "7.4.16"],
+      "failure": "typed unsupported-feature error"
+    },
+    {
+      "feature": "lossy_symbol_substitution_by_decoder",
+      "status": "prohibited",
+      "clauses": ["0.2"],
+      "note": "The decoder renders encoded stream semantics and may accept streams produced by lossy encoders."
+    }
+  ],
+  "public_api": {
+    "status": "approved",
+    "requirements": [
+      "High-level decoding from byte slices.",
+      "High-level decoding from bounded std::io::Read inputs.",
+      "A page-sink API that permits callers to release completed pages.",
+      "Reusable immutable global-segment state for embedded/PDF streams.",
+      "Owned bitmap output with explicit width, height, and stride.",
+      "Typed malformed, unsupported, resource-limit, input/output, and allocation errors.",
+      "Segment and coding primitives remain private."
+    ]
+  },
+  "resource_limits": {
+    "policy": "Defaults are independently configurable downward. Raising a limit requires an explicit Limits value and remains subject to checked arithmetic and platform representability.",
+    "max_width": 1000000,
+    "max_height": 1000000,
+    "max_pixels_per_page": 1000000000,
+    "max_decoder_managed_memory_bytes": 1073741824,
+    "max_segments": 100000,
+    "max_symbols": 1000000,
+    "max_references_per_segment": 4096,
+    "max_total_references": 1000000,
+    "max_reference_graph_depth": 128,
+    "max_nesting_depth": 128,
+    "max_work_units": 2000000000,
+    "max_stream_bytes": 1073741824,
+    "max_pages": 10000,
+    "max_cumulative_decoded_bitmap_bytes": 4294967296,
+    "max_retained_state_bytes": 536870912,
+    "ratification": "The last four defaults were selected pragmatically when the owner was unavailable and must be ratified before release."
+  },
+  "release_claims": {
+    "allowed": [
+      "Decoder for the approved project-defined broad bi-level profile, once all gates pass."
+    ],
+    "prohibited": [
+      "Complete JBIG2 codec",
+      "Full JBIG2 conformance",
+      "Annex F profile 0x00000001 conformance",
+      "Encoder support"
+    ]
+  }
+}

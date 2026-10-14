@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "META-ORGANIZATION-EQUIVALENCE",
+      "transformation": "sequential to random-access organization",
+      "invariant": "decoded page dimensions and bitmap bytes",
+      "coverage": "src/decode.rs::sequential_and_random_access_outputs_match"
+    },
+    {
+      "id": "META-REPEAT-DETERMINISM",
+      "transformation": "decode identical bytes twice",
+      "invariant": "DocumentInfo and error classification",
+      "coverage": "src/document.rs::document_inspection_is_deterministic"
+    },
+    {
+      "id": "META-BYTE-READER",
+      "transformation": "failed oversized read followed by exact read",
+      "invariant": "failed read preserves cursor",
+      "coverage": "src/reader.rs"
+    },
+    {
+      "id": "META-COMBINATION-IDENTITIES",
+      "transformation": "Boolean inputs across all operators",
+      "invariant": "OR/AND/XOR/XNOR/REPLACE truth tables",
+      "coverage": "src/bitmap.rs"
+    },
+    {
+      "id": "META-STREAMING-COLLECTION",
+      "transformation": "owned output to page-sink output",
+      "invariant": "page count and bitmap bytes",
+      "coverage": "src/decode.rs"
+    }
+  ]
+}

@@ -1,0 +1,1566 @@
+//! Modified Modified READ (MMR) bitmap decoding.
+//!
+//! This implements the T.6 two-dimensional modes and run tables with the
+//! restrictions imposed by T.88 6.2.6: black is one, white is zero, extension
+//! modes are forbidden, and an EOFB may be omitted only when the caller has a
+//! bounded MMR data block.
+
+// Keep normative prefix bitstrings contiguous so their encoded lengths can be
+// audited directly against T.6 tables.
+#![allow(clippy::unreadable_literal)]
+
+use crate::bitmap::Bitmap;
+use crate::reader::{bit_reader, BitReader};
+use crate::{DecodeError, LimitExceeded, LimitKind, Limits, MalformedError, MmrErrorKind};
+#[cfg(verus_keep_ghost)]
+use vstd::prelude::*;
+
+#[cfg(verus_keep_ghost)]
+#[rustfmt::skip]
+#[path = "../specs/mmr.rs"]
+mod mmr_spec;
+
+#[cfg(verus_keep_ghost)]
+#[rustfmt::skip]
+#[path = "../proofs/shared/mmr.rs"]
+mod mmr_shared;
+
+#[cfg(verus_keep_ghost)]
+#[rustfmt::skip]
+#[path = "../proofs/spec_properties/mmr.rs"]
+mod mmr_properties;
+
+#[cfg(verus_keep_ghost)]
+#[macro_use]
+#[rustfmt::skip]
+#[path = "../proofs/production_impl/mmr.rs"]
+mod mmr_proofs;
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const EOFB: u32 = 0x00_1001;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const MAX_MODE_CODE_BITS: u8 = 7;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const MAX_RUN_CODE_BITS: u8 = 13;
+
+/// Whether the enclosing JBIG2 syntax requires an end-of-facsimile-block code.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum EofbPolicy {
+    /// T.88 requires EOFB because the encoded byte count is not otherwise known.
+    Required,
+    /// The input slice is the complete bounded MMR block, so EOFB is optional.
+    Optional,
+}
+
+/// A fail-closed MMR decoding failure.
+///
+/// Wiring this module into the public decoder should add equivalent cases to
+/// `MalformedError` rather than collapsing these distinctions.
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum MmrError {
+    /// The shared bit reader rejected or exhausted the input.
+    Reader(MalformedError),
+    /// Bitmap allocation or a configured resource limit failed.
+    Bitmap(DecodeError),
+    /// Temporary transition storage could not be allocated.
+    Allocation { requested_bytes: u64 },
+    /// No T.6 two-dimensional mode has the encoded prefix.
+    InvalidMode { bit_offset: usize },
+    /// T.88 forbids all T.6 extension modes, including uncompressed mode.
+    ExtensionMode { bit_offset: usize },
+    /// No run code for the selected colour has the encoded prefix.
+    InvalidRunCode { bit_offset: usize, black: bool },
+    /// A decoded run exceeds the pixels remaining in the row.
+    RunExceedsRow,
+    /// A pass or vertical transition is outside the current row or moves back.
+    InvalidTransition,
+    /// A mode made no semantic progress and could otherwise loop forever.
+    NonProgress,
+    /// The number of modes exceeded a dimension-derived valid-row bound.
+    TooManyModes,
+    /// Required EOFB was absent or truncated.
+    MissingEofb,
+    /// The EOFB value was not the T.6 24-bit marker.
+    InvalidEofb,
+    /// More than byte-alignment padding remained after the bitmap or EOFB.
+    TrailingData,
+    /// T.6 requires zero-valued padding after a present EOFB.
+    NonZeroEofbPadding,
+    /// Input-derived arithmetic could not be represented.
+    IntegerOverflow,
+}
+
+impl From<MalformedError> for MmrError {
+    fn from(error: MalformedError) -> Self {
+        Self::Reader(error)
+    }
+}
+
+impl From<MmrError> for DecodeError {
+    fn from(error: MmrError) -> Self {
+        let kind = match error {
+            MmrError::Reader(error) => return Self::Malformed(error),
+            MmrError::Bitmap(error) => return error,
+            MmrError::Allocation { requested_bytes } => {
+                return Self::Allocation { requested_bytes };
+            }
+            MmrError::IntegerOverflow => return Self::Malformed(MalformedError::IntegerOverflow),
+            MmrError::InvalidMode { bit_offset } => MmrErrorKind::InvalidMode { bit_offset },
+            MmrError::ExtensionMode { bit_offset } => MmrErrorKind::ExtensionMode { bit_offset },
+            MmrError::InvalidRunCode { bit_offset, black } => {
+                MmrErrorKind::InvalidRunCode { bit_offset, black }
+            }
+            MmrError::RunExceedsRow => MmrErrorKind::RunExceedsRow,
+            MmrError::InvalidTransition => MmrErrorKind::InvalidTransition,
+            MmrError::NonProgress => MmrErrorKind::NonProgress,
+            MmrError::TooManyModes => MmrErrorKind::TooManyModes,
+            MmrError::MissingEofb => MmrErrorKind::MissingEofb,
+            MmrError::InvalidEofb => MmrErrorKind::InvalidEofb,
+            MmrError::TrailingData => MmrErrorKind::TrailingData,
+            MmrError::NonZeroEofbPadding => MmrErrorKind::NonZeroPadding,
+        };
+        Self::Malformed(MalformedError::InvalidMmr(kind))
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum Mode {
+    Pass,
+    Horizontal,
+    Vertical(i8),
+    Extension,
+}
+
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct ModeCode {
+    bits: u16,
+    length: u8,
+    mode: Mode,
+}
+
+impl ModeCode {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out.bits == bits, out.length == length, out.mode == mode,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    const fn new(bits: u16, length: u8, mode: Mode) -> Self {
+        Self { bits, length, mode }
+    }
+}
+
+macro_rules! mode_code {
+    ($bits:expr, $length:expr, $mode:expr) => {
+        ModeCode {
+            bits: $bits,
+            length: $length,
+            mode: $mode,
+        }
+    };
+}
+
+// ITU-T T.6, Table 1. Extension represents the fixed 0000001 prefix;
+// the table's following xxx bits do not alter T.88's requirement to reject it.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const MODE_CODES: [ModeCode; 10] = [
+    mode_code!(0b1, 1, Mode::Vertical(0)),
+    mode_code!(0b011, 3, Mode::Vertical(1)),
+    mode_code!(0b010, 3, Mode::Vertical(-1)),
+    mode_code!(0b001, 3, Mode::Horizontal),
+    mode_code!(0b0001, 4, Mode::Pass),
+    mode_code!(0b000011, 6, Mode::Vertical(2)),
+    mode_code!(0b000010, 6, Mode::Vertical(-2)),
+    mode_code!(0b0000011, 7, Mode::Vertical(3)),
+    mode_code!(0b0000010, 7, Mode::Vertical(-3)),
+    mode_code!(0b0000001, 7, Mode::Extension),
+];
+
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct RunCode {
+    bits: u16,
+    length: u8,
+    value: u16,
+    terminal: bool,
+}
+
+impl RunCode {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out.bits == bits,
+            out.length == length,
+            out.value == value,
+            out.terminal,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    const fn terminal(value: u16, bits: u16, length: u8) -> Self {
+        Self {
+            bits,
+            length,
+            value,
+            terminal: true,
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out.bits == bits,
+            out.length == length,
+            out.value == value,
+            !out.terminal,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    const fn makeup(value: u16, bits: u16, length: u8) -> Self {
+        Self {
+            bits,
+            length,
+            value,
+            terminal: false,
+        }
+    }
+}
+
+macro_rules! terminal_code {
+    ($value:expr, $bits:expr, $length:expr) => {
+        RunCode {
+            bits: $bits,
+            length: $length,
+            value: $value,
+            terminal: true,
+        }
+    };
+}
+
+macro_rules! makeup_code {
+    ($value:expr, $bits:expr, $length:expr) => {
+        RunCode {
+            bits: $bits,
+            length: $length,
+            value: $value,
+            terminal: false,
+        }
+    };
+}
+
+// ITU-T T.6, Table 2: white terminating codes for run lengths 0 through 63.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const WHITE_TERMINATING: [RunCode; 64] = [
+    terminal_code!(0, 0b00110101, 8),
+    terminal_code!(1, 0b000111, 6),
+    terminal_code!(2, 0b0111, 4),
+    terminal_code!(3, 0b1000, 4),
+    terminal_code!(4, 0b1011, 4),
+    terminal_code!(5, 0b1100, 4),
+    terminal_code!(6, 0b1110, 4),
+    terminal_code!(7, 0b1111, 4),
+    terminal_code!(8, 0b10011, 5),
+    terminal_code!(9, 0b10100, 5),
+    terminal_code!(10, 0b00111, 5),
+    terminal_code!(11, 0b01000, 5),
+    terminal_code!(12, 0b001000, 6),
+    terminal_code!(13, 0b000011, 6),
+    terminal_code!(14, 0b110100, 6),
+    terminal_code!(15, 0b110101, 6),
+    terminal_code!(16, 0b101010, 6),
+    terminal_code!(17, 0b101011, 6),
+    terminal_code!(18, 0b0100111, 7),
+    terminal_code!(19, 0b0001100, 7),
+    terminal_code!(20, 0b0001000, 7),
+    terminal_code!(21, 0b0010111, 7),
+    terminal_code!(22, 0b0000011, 7),
+    terminal_code!(23, 0b0000100, 7),
+    terminal_code!(24, 0b0101000, 7),
+    terminal_code!(25, 0b0101011, 7),
+    terminal_code!(26, 0b0010011, 7),
+    terminal_code!(27, 0b0100100, 7),
+    terminal_code!(28, 0b0011000, 7),
+    terminal_code!(29, 0b00000010, 8),
+    terminal_code!(30, 0b00000011, 8),
+    terminal_code!(31, 0b00011010, 8),
+    terminal_code!(32, 0b00011011, 8),
+    terminal_code!(33, 0b00010010, 8),
+    terminal_code!(34, 0b00010011, 8),
+    terminal_code!(35, 0b00010100, 8),
+    terminal_code!(36, 0b00010101, 8),
+    terminal_code!(37, 0b00010110, 8),
+    terminal_code!(38, 0b00010111, 8),
+    terminal_code!(39, 0b00101000, 8),
+    terminal_code!(40, 0b00101001, 8),
+    terminal_code!(41, 0b00101010, 8),
+    terminal_code!(42, 0b00101011, 8),
+    terminal_code!(43, 0b00101100, 8),
+    terminal_code!(44, 0b00101101, 8),
+    terminal_code!(45, 0b00000100, 8),
+    terminal_code!(46, 0b00000101, 8),
+    terminal_code!(47, 0b00001010, 8),
+    terminal_code!(48, 0b00001011, 8),
+    terminal_code!(49, 0b01010010, 8),
+    terminal_code!(50, 0b01010011, 8),
+    terminal_code!(51, 0b01010100, 8),
+    terminal_code!(52, 0b01010101, 8),
+    terminal_code!(53, 0b00100100, 8),
+    terminal_code!(54, 0b00100101, 8),
+    terminal_code!(55, 0b01011000, 8),
+    terminal_code!(56, 0b01011001, 8),
+    terminal_code!(57, 0b01011010, 8),
+    terminal_code!(58, 0b01011011, 8),
+    terminal_code!(59, 0b01001010, 8),
+    terminal_code!(60, 0b01001011, 8),
+    terminal_code!(61, 0b00110010, 8),
+    terminal_code!(62, 0b00110011, 8),
+    terminal_code!(63, 0b00110100, 8),
+];
+
+// ITU-T T.6, Table 2: black terminating codes for run lengths 0 through 63.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const BLACK_TERMINATING: [RunCode; 64] = [
+    terminal_code!(0, 0b0000110111, 10),
+    terminal_code!(1, 0b010, 3),
+    terminal_code!(2, 0b11, 2),
+    terminal_code!(3, 0b10, 2),
+    terminal_code!(4, 0b011, 3),
+    terminal_code!(5, 0b0011, 4),
+    terminal_code!(6, 0b0010, 4),
+    terminal_code!(7, 0b00011, 5),
+    terminal_code!(8, 0b000101, 6),
+    terminal_code!(9, 0b000100, 6),
+    terminal_code!(10, 0b0000100, 7),
+    terminal_code!(11, 0b0000101, 7),
+    terminal_code!(12, 0b0000111, 7),
+    terminal_code!(13, 0b00000100, 8),
+    terminal_code!(14, 0b00000111, 8),
+    terminal_code!(15, 0b000011000, 9),
+    terminal_code!(16, 0b0000010111, 10),
+    terminal_code!(17, 0b0000011000, 10),
+    terminal_code!(18, 0b0000001000, 10),
+    terminal_code!(19, 0b00001100111, 11),
+    terminal_code!(20, 0b00001101000, 11),
+    terminal_code!(21, 0b00001101100, 11),
+    terminal_code!(22, 0b00000110111, 11),
+    terminal_code!(23, 0b00000101000, 11),
+    terminal_code!(24, 0b00000010111, 11),
+    terminal_code!(25, 0b00000011000, 11),
+    terminal_code!(26, 0b000011001010, 12),
+    terminal_code!(27, 0b000011001011, 12),
+    terminal_code!(28, 0b000011001100, 12),
+    terminal_code!(29, 0b000011001101, 12),
+    terminal_code!(30, 0b000001101000, 12),
+    terminal_code!(31, 0b000001101001, 12),
+    terminal_code!(32, 0b000001101010, 12),
+    terminal_code!(33, 0b000001101011, 12),
+    terminal_code!(34, 0b000011010010, 12),
+    terminal_code!(35, 0b000011010011, 12),
+    terminal_code!(36, 0b000011010100, 12),
+    terminal_code!(37, 0b000011010101, 12),
+    terminal_code!(38, 0b000011010110, 12),
+    terminal_code!(39, 0b000011010111, 12),
+    terminal_code!(40, 0b000001101100, 12),
+    terminal_code!(41, 0b000001101101, 12),
+    terminal_code!(42, 0b000011011010, 12),
+    terminal_code!(43, 0b000011011011, 12),
+    terminal_code!(44, 0b000001010100, 12),
+    terminal_code!(45, 0b000001010101, 12),
+    terminal_code!(46, 0b000001010110, 12),
+    terminal_code!(47, 0b000001010111, 12),
+    terminal_code!(48, 0b000001100100, 12),
+    terminal_code!(49, 0b000001100101, 12),
+    terminal_code!(50, 0b000001010010, 12),
+    terminal_code!(51, 0b000001010011, 12),
+    terminal_code!(52, 0b000000100100, 12),
+    terminal_code!(53, 0b000000110111, 12),
+    terminal_code!(54, 0b000000111000, 12),
+    terminal_code!(55, 0b000000100111, 12),
+    terminal_code!(56, 0b000000101000, 12),
+    terminal_code!(57, 0b000001011000, 12),
+    terminal_code!(58, 0b000001011001, 12),
+    terminal_code!(59, 0b000000101011, 12),
+    terminal_code!(60, 0b000000101100, 12),
+    terminal_code!(61, 0b000001011010, 12),
+    terminal_code!(62, 0b000001100110, 12),
+    terminal_code!(63, 0b000001100111, 12),
+];
+
+// ITU-T T.6, Table 3: colour-specific make-up codes, 64 through 1728.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const WHITE_MAKEUP: [RunCode; 27] = [
+    makeup_code!(64, 0b11011, 5),
+    makeup_code!(128, 0b10010, 5),
+    makeup_code!(192, 0b010111, 6),
+    makeup_code!(256, 0b0110111, 7),
+    makeup_code!(320, 0b00110110, 8),
+    makeup_code!(384, 0b00110111, 8),
+    makeup_code!(448, 0b01100100, 8),
+    makeup_code!(512, 0b01100101, 8),
+    makeup_code!(576, 0b01101000, 8),
+    makeup_code!(640, 0b01100111, 8),
+    makeup_code!(704, 0b011001100, 9),
+    makeup_code!(768, 0b011001101, 9),
+    makeup_code!(832, 0b011010010, 9),
+    makeup_code!(896, 0b011010011, 9),
+    makeup_code!(960, 0b011010100, 9),
+    makeup_code!(1024, 0b011010101, 9),
+    makeup_code!(1088, 0b011010110, 9),
+    makeup_code!(1152, 0b011010111, 9),
+    makeup_code!(1216, 0b011011000, 9),
+    makeup_code!(1280, 0b011011001, 9),
+    makeup_code!(1344, 0b011011010, 9),
+    makeup_code!(1408, 0b011011011, 9),
+    makeup_code!(1472, 0b010011000, 9),
+    makeup_code!(1536, 0b010011001, 9),
+    makeup_code!(1600, 0b010011010, 9),
+    makeup_code!(1664, 0b011000, 6),
+    makeup_code!(1728, 0b010011011, 9),
+];
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const BLACK_MAKEUP: [RunCode; 27] = [
+    makeup_code!(64, 0b0000001111, 10),
+    makeup_code!(128, 0b000011001000, 12),
+    makeup_code!(192, 0b000011001001, 12),
+    makeup_code!(256, 0b000001011011, 12),
+    makeup_code!(320, 0b000000110011, 12),
+    makeup_code!(384, 0b000000110100, 12),
+    makeup_code!(448, 0b000000110101, 12),
+    makeup_code!(512, 0b0000001101100, 13),
+    makeup_code!(576, 0b0000001101101, 13),
+    makeup_code!(640, 0b0000001001010, 13),
+    makeup_code!(704, 0b0000001001011, 13),
+    makeup_code!(768, 0b0000001001100, 13),
+    makeup_code!(832, 0b0000001001101, 13),
+    makeup_code!(896, 0b0000001110010, 13),
+    makeup_code!(960, 0b0000001110011, 13),
+    makeup_code!(1024, 0b0000001110100, 13),
+    makeup_code!(1088, 0b0000001110101, 13),
+    makeup_code!(1152, 0b0000001110110, 13),
+    makeup_code!(1216, 0b0000001110111, 13),
+    makeup_code!(1280, 0b0000001010010, 13),
+    makeup_code!(1344, 0b0000001010011, 13),
+    makeup_code!(1408, 0b0000001010100, 13),
+    makeup_code!(1472, 0b0000001010101, 13),
+    makeup_code!(1536, 0b0000001011010, 13),
+    makeup_code!(1600, 0b0000001011011, 13),
+    makeup_code!(1664, 0b0000001100100, 13),
+    makeup_code!(1728, 0b0000001100101, 13),
+];
+
+// ITU-T T.6, Table 3: make-up codes shared by white and black.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const COMMON_MAKEUP: [RunCode; 13] = [
+    makeup_code!(1792, 0b00000001000, 11),
+    makeup_code!(1856, 0b00000001100, 11),
+    makeup_code!(1920, 0b00000001101, 11),
+    makeup_code!(1984, 0b000000010010, 12),
+    makeup_code!(2048, 0b000000010011, 12),
+    makeup_code!(2112, 0b000000010100, 12),
+    makeup_code!(2176, 0b000000010101, 12),
+    makeup_code!(2240, 0b000000010110, 12),
+    makeup_code!(2304, 0b000000010111, 12),
+    makeup_code!(2368, 0b000000011100, 12),
+    makeup_code!(2432, 0b000000011101, 12),
+    makeup_code!(2496, 0b000000011110, 12),
+    makeup_code!(2560, 0b000000011111, 12),
+];
+
+/// Decode one complete, byte-bounded JBIG2 MMR bitmap.
+///
+/// `data` must contain exactly the MMR data block, including any optional or
+/// required EOFB and final byte-alignment bits.
+pub(crate) fn decode_mmr(
+    data: &[u8],
+    width: u32,
+    height: u32,
+    limits: &Limits,
+    eofb_policy: EofbPolicy,
+) -> Result<Bitmap, MmrError> {
+    let (bitmap, mut reader) = decode_bitmap(data, width, height, limits)?;
+    finish_block(&mut reader, eofb_policy)?;
+    Ok(bitmap)
+}
+
+/// Decode one EOFB-terminated MMR bitmap at the start of `data`.
+///
+/// Unlike [`decode_mmr`], this accepts bytes after the decoded bitmap. It
+/// requires an exact EOFB immediately after the declared rows, requires every
+/// bit between EOFB and the next byte boundary to be zero, and returns that
+/// byte boundary as `consumed_bytes`. A caller can decode a following bitplane
+/// from `&data[consumed_bytes..]`.
+pub(crate) fn decode_mmr_prefix(
+    data: &[u8],
+    width: u32,
+    height: u32,
+    limits: &Limits,
+) -> Result<(Bitmap, usize), MmrError> {
+    let (bitmap, mut reader) = decode_bitmap(data, width, height, limits)?;
+    finish_required_prefix(&mut reader)?;
+    let consumed_bytes = reader
+        .bit_position
+        .checked_div(8)
+        .ok_or(MmrError::IntegerOverflow)?;
+    Ok((bitmap, consumed_bytes))
+}
+
+fn decode_bitmap<'a>(
+    data: &'a [u8],
+    width: u32,
+    height: u32,
+    limits: &Limits,
+) -> Result<(Bitmap, BitReader<'a>), MmrError> {
+    enforce_input_limit(data, limits)?;
+    let pixels = u64::from(width)
+        .checked_mul(u64::from(height))
+        .ok_or(MmrError::IntegerOverflow)?;
+    let mut work = pixels.checked_mul(2).ok_or(MmrError::IntegerOverflow)?;
+    enforce_work(work, limits)?;
+    let mut bitmap = Bitmap::blank(width, height, limits).map_err(MmrError::Bitmap)?;
+    let mut transitions = allocate_transition_storage(width, &bitmap, limits)?;
+    transitions.push(width);
+    transitions.push(width);
+
+    let mut reader = bit_reader(data);
+    let max_modes = u64::from(width)
+        .checked_mul(2)
+        .and_then(|value| value.checked_add(2))
+        .ok_or(MmrError::IntegerOverflow)?;
+
+    for row in 0..height {
+        let mut x = 0_u32;
+        let mut black = false;
+        let mut mode_count = 0_u64;
+
+        while x < width {
+            mode_count = mode_count.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+            work = work.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+            enforce_work(work, limits)?;
+            if mode_count > max_modes {
+                return Err(MmrError::TooManyModes);
+            }
+            #[cfg(verus_keep_ghost)]
+            production_mmr_mode_budget!(mode_count, max_modes);
+
+            let (b1, b2) = reference_elements(&transitions, x, black, width)?;
+            let mode_offset = reader.bit_position;
+            match decode_mode(&mut reader)? {
+                Mode::Extension => {
+                    return Err(MmrError::ExtensionMode {
+                        bit_offset: mode_offset,
+                    });
+                }
+                Mode::Pass => {
+                    if b2 <= x || b2 > width {
+                        return Err(MmrError::NonProgress);
+                    }
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_pass_progress!(x, b2, width);
+                    fill_span(&mut bitmap, row, x, b2, black)?;
+                    x = b2;
+                }
+                Mode::Horizontal => {
+                    let remaining = width.checked_sub(x).ok_or(MmrError::InvalidTransition)?;
+                    let first = decode_run(&mut reader, black, remaining)?;
+                    let after_first = x.checked_add(first).ok_or(MmrError::IntegerOverflow)?;
+                    let second_remaining = width
+                        .checked_sub(after_first)
+                        .ok_or(MmrError::RunExceedsRow)?;
+                    let second = decode_run(&mut reader, !black, second_remaining)?;
+                    let end = after_first
+                        .checked_add(second)
+                        .ok_or(MmrError::IntegerOverflow)?;
+                    if end > width {
+                        return Err(MmrError::RunExceedsRow);
+                    }
+                    if end == x {
+                        return Err(MmrError::NonProgress);
+                    }
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_horizontal_progress!(x, width, first, second);
+                    fill_span(&mut bitmap, row, x, after_first, black)?;
+                    fill_span(&mut bitmap, row, after_first, end, !black)?;
+                    x = end;
+                }
+                Mode::Vertical(displacement) => {
+                    let target = if displacement < 0 {
+                        b1.checked_sub(u32::from(displacement.unsigned_abs()))
+                    } else {
+                        b1.checked_add(u32::from(displacement.unsigned_abs()))
+                    }
+                    .ok_or(MmrError::InvalidTransition)?;
+                    if target < x || target > width {
+                        return Err(MmrError::InvalidTransition);
+                    }
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_vertical_progress!(x, target, width, black);
+                    fill_span(&mut bitmap, row, x, target, black)?;
+                    x = target;
+                    black = !black;
+                }
+            }
+        }
+
+        collect_transitions(&bitmap, row, width, &mut transitions)?;
+        #[cfg(verus_keep_ghost)]
+        production_mmr_row_termination!(row, height);
+    }
+
+    Ok((bitmap, reader))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => data@.len() <= limits.max_stream_bytes,
+        Err(_) => true,
+    },
+))]
+fn enforce_input_limit(data: &[u8], limits: &Limits) -> Result<(), MmrError> {
+    let actual = u64::try_from(data.len()).map_err(|_error| MmrError::IntegerOverflow)?;
+    if actual > limits.max_stream_bytes {
+        return Err(MmrError::Bitmap(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::StreamBytes,
+                limit: limits.max_stream_bytes,
+                actual,
+            },
+        )));
+    }
+
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => actual <= limits.max_work_units,
+        Err(_) => true,
+    },
+))]
+fn enforce_work(actual: u64, limits: &Limits) -> Result<(), MmrError> {
+    if actual > limits.max_work_units {
+        return Err(MmrError::Bitmap(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::Work,
+                limit: limits.max_work_units,
+                actual,
+            },
+        )));
+    }
+    Ok(())
+}
+
+fn allocate_transition_storage(
+    width: u32,
+    bitmap: &Bitmap,
+    limits: &Limits,
+) -> Result<Vec<u32>, MmrError> {
+    let capacity_u64 = u64::from(width)
+        .checked_add(2)
+        .ok_or(MmrError::IntegerOverflow)?;
+    let transition_bytes = capacity_u64
+        .checked_mul(4)
+        .ok_or(MmrError::IntegerOverflow)?;
+    let bitmap_bytes =
+        u64::try_from(bitmap.bytes().len()).map_err(|_error| MmrError::IntegerOverflow)?;
+    let total = bitmap_bytes
+        .checked_add(transition_bytes)
+        .ok_or(MmrError::IntegerOverflow)?;
+    if total > limits.max_decoder_managed_memory_bytes {
+        return Err(MmrError::Bitmap(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::Memory,
+                limit: limits.max_decoder_managed_memory_bytes,
+                actual: total,
+            },
+        )));
+    }
+    #[cfg(verus_keep_ghost)]
+    production_mmr_memory_bound!(bitmap_bytes, transition_bytes, limits);
+
+    let capacity = usize::try_from(capacity_u64).map_err(|_error| MmrError::IntegerOverflow)?;
+    let mut transitions = Vec::new();
+    transitions
+        .try_reserve_exact(capacity)
+        .map_err(|_error| MmrError::Allocation {
+            requested_bytes: transition_bytes,
+        })?;
+    Ok(transitions)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(old(reader)),
+    ensures
+        mmr_spec::reader_valid(final(reader)),
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).bit_position <= final(reader).bit_position,
+        final(reader).bit_position as nat
+            <= old(reader).bit_position as nat + MAX_MODE_CODE_BITS as nat,
+        match out {
+            Ok(mode) => exists|code: ModeCode|
+                mmr_spec::mode_code_is_normative(code)
+                && code.mode == mode
+                && final(reader).bit_position
+                    == old(reader).bit_position + code.length as usize,
+            Err(_) => true,
+        },
+))]
+fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
+    let start = reader.bit_position;
+    let mut prefix = 0_u16;
+    let mut length = 1_u8;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mmr_spec::reader_valid(reader),
+            reader.bytes@ == old(reader).bytes@,
+            1 <= length <= MAX_MODE_CODE_BITS + 1,
+            start == old(reader).bit_position,
+            reader.bit_position
+                == start + (length - 1) as usize,
+        decreases MAX_MODE_CODE_BITS + 1 - length,
+    ))]
+    while length <= MAX_MODE_CODE_BITS {
+        let bit =
+            u16::try_from(reader.read_bits(1)?).map_err(|_error| MmrError::IntegerOverflow)?;
+        prefix = prefix
+            .checked_mul(2)
+            .and_then(|value| value.checked_add(bit))
+            .ok_or(MmrError::IntegerOverflow)?;
+        let mut index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                index <= MODE_CODES@.len(),
+                mmr_spec::reader_valid(reader),
+                reader.bytes@ == old(reader).bytes@,
+                start == old(reader).bit_position,
+                reader.bit_position == start + length as usize,
+            decreases MODE_CODES@.len() - index,
+        ))]
+        while index < MODE_CODES.len() {
+            let code = MODE_CODES[index];
+            if code.length == length && code.bits == prefix {
+                #[cfg(verus_keep_ghost)]
+                production_mmr_mode_entry!(code, index, prefix, length);
+                return Ok(code.mode);
+            }
+            index += 1;
+        }
+        length = length.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    Err(MmrError::InvalidMode { bit_offset: start })
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(old(reader)),
+    ensures
+        mmr_spec::reader_valid(final(reader)),
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).bit_position <= final(reader).bit_position,
+        match out {
+            Ok(total) => total <= remaining,
+            Err(_) => true,
+        },
+))]
+fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result<u32, MmrError> {
+    let mut total = 0_u32;
+    let mut makeup_count = 0_u32;
+    let max_makeups = remaining
+        .checked_div(64)
+        .and_then(|value| value.checked_add(1))
+        .ok_or(MmrError::IntegerOverflow)?;
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mmr_spec::reader_valid(reader),
+            reader.bytes@ == old(reader).bytes@,
+            old(reader).bit_position <= reader.bit_position,
+            total <= remaining,
+            makeup_count <= max_makeups,
+        decreases max_makeups + 1 - makeup_count,
+    ))]
+    loop {
+        let code = decode_run_code(reader, black)?;
+        total = total
+            .checked_add(u32::from(code.value))
+            .ok_or(MmrError::IntegerOverflow)?;
+        if total > remaining {
+            return Err(MmrError::RunExceedsRow);
+        }
+        if code.terminal {
+            return Ok(total);
+        }
+        #[cfg(verus_keep_ghost)]
+        production_mmr_makeup_bounds!(black, code);
+        makeup_count = makeup_count
+            .checked_add(1)
+            .ok_or(MmrError::IntegerOverflow)?;
+        if makeup_count > max_makeups {
+            return Err(MmrError::RunExceedsRow);
+        }
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(old(reader)),
+    ensures
+        mmr_spec::reader_valid(final(reader)),
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).bit_position <= final(reader).bit_position,
+        final(reader).bit_position as nat
+            <= old(reader).bit_position as nat + MAX_RUN_CODE_BITS as nat,
+        match out {
+            Ok(code) =>
+                mmr_spec::run_code_is_normative(black, code)
+                && final(reader).bit_position
+                    == old(reader).bit_position + code.length as usize,
+            Err(_) => true,
+        },
+))]
+fn decode_run_code(reader: &mut BitReader<'_>, black: bool) -> Result<RunCode, MmrError> {
+    let start = reader.bit_position;
+    let mut prefix = 0_u16;
+    let mut length = 1_u8;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mmr_spec::reader_valid(reader),
+            reader.bytes@ == old(reader).bytes@,
+            1 <= length <= MAX_RUN_CODE_BITS + 1,
+            start == old(reader).bit_position,
+            reader.bit_position
+                == start + (length - 1) as usize,
+        decreases MAX_RUN_CODE_BITS + 1 - length,
+    ))]
+    while length <= MAX_RUN_CODE_BITS {
+        let bit =
+            u16::try_from(reader.read_bits(1)?).map_err(|_error| MmrError::IntegerOverflow)?;
+        prefix = prefix
+            .checked_mul(2)
+            .and_then(|value| value.checked_add(bit))
+            .ok_or(MmrError::IntegerOverflow)?;
+        if let Some(code) = find_run_code(black, prefix, length) {
+            #[cfg(verus_keep_ghost)]
+            production_mmr_run_code_bounds!(black, code);
+            return Ok(code);
+        }
+        length = length.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    Err(MmrError::InvalidRunCode {
+        bit_offset: start,
+        black,
+    })
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(code) =>
+            mmr_spec::run_code_is_normative(black, code)
+            && mmr_spec::run_key_matches(code, bits, length),
+        None => true,
+    },
+))]
+fn find_run_code(black: bool, bits: u16, length: u8) -> Option<RunCode> {
+    let mut index = 0_usize;
+    if black {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                black,
+                index <= BLACK_TERMINATING@.len(),
+            decreases BLACK_TERMINATING@.len() - index,
+        ))]
+        while index < BLACK_TERMINATING.len() {
+            let code = BLACK_TERMINATING[index];
+            if code.length == length && code.bits == bits {
+                #[cfg(verus_keep_ghost)]
+                production_mmr_run_entry!(
+                    BLACK_TERMINATING,
+                    code,
+                    index,
+                    black,
+                    true,
+                    bits,
+                    length
+                );
+                return Some(code);
+            }
+            index += 1;
+        }
+        index = 0;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                black,
+                index <= BLACK_MAKEUP@.len(),
+            decreases BLACK_MAKEUP@.len() - index,
+        ))]
+        while index < BLACK_MAKEUP.len() {
+            let code = BLACK_MAKEUP[index];
+            if code.length == length && code.bits == bits {
+                #[cfg(verus_keep_ghost)]
+                production_mmr_run_entry!(BLACK_MAKEUP, code, index, black, true, bits, length);
+                return Some(code);
+            }
+            index += 1;
+        }
+    } else {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                !black,
+                index <= WHITE_TERMINATING@.len(),
+            decreases WHITE_TERMINATING@.len() - index,
+        ))]
+        while index < WHITE_TERMINATING.len() {
+            let code = WHITE_TERMINATING[index];
+            if code.length == length && code.bits == bits {
+                #[cfg(verus_keep_ghost)]
+                production_mmr_run_entry!(
+                    WHITE_TERMINATING,
+                    code,
+                    index,
+                    black,
+                    false,
+                    bits,
+                    length
+                );
+                return Some(code);
+            }
+            index += 1;
+        }
+        index = 0;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                !black,
+                index <= WHITE_MAKEUP@.len(),
+            decreases WHITE_MAKEUP@.len() - index,
+        ))]
+        while index < WHITE_MAKEUP.len() {
+            let code = WHITE_MAKEUP[index];
+            if code.length == length && code.bits == bits {
+                #[cfg(verus_keep_ghost)]
+                production_mmr_run_entry!(WHITE_MAKEUP, code, index, black, false, bits, length);
+                return Some(code);
+            }
+            index += 1;
+        }
+    }
+    index = 0;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= COMMON_MAKEUP@.len(),
+        decreases COMMON_MAKEUP@.len() - index,
+    ))]
+    while index < COMMON_MAKEUP.len() {
+        let code = COMMON_MAKEUP[index];
+        if code.length == length && code.bits == bits {
+            #[cfg(verus_keep_ghost)]
+            production_mmr_run_entry!(COMMON_MAKEUP, code, index, black, black, bits, length);
+            return Some(code);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        mmr_spec::reference_line_valid(transitions@, width),
+        x <= width,
+    ensures match out {
+        Ok((b1, b2)) => x <= b1 <= b2 <= width,
+        Err(_) => true,
+    },
+))]
+fn reference_elements(
+    transitions: &[u32],
+    x: u32,
+    black: bool,
+    width: u32,
+) -> Result<(u32, u32), MmrError> {
+    if transitions.len() < 2 {
+        return Err(MmrError::InvalidTransition);
+    }
+    let search_end = transitions
+        .len()
+        .checked_sub(1)
+        .ok_or(MmrError::IntegerOverflow)?;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mmr_spec::reference_line_valid(transitions@, width),
+            x <= width,
+            search_end == transitions@.len() - 1,
+            index <= search_end,
+        decreases search_end - index,
+    ))]
+    while index < search_end {
+        let position = *transitions.get(index).ok_or(MmrError::InvalidTransition)?;
+        if position >= x {
+            // Reference transitions alternate from imaginary white. Therefore
+            // the colour immediately after even-indexed transitions is black.
+            let post_transition_black = index % 2 == 0;
+            if post_transition_black != black {
+                let next_index = index.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+                let b2 = *transitions
+                    .get(next_index)
+                    .ok_or(MmrError::InvalidTransition)?;
+                #[cfg(verus_keep_ghost)]
+                production_mmr_reference_bounds!(
+                    transitions,
+                    index,
+                    next_index,
+                    position,
+                    b2,
+                    width
+                );
+                return Ok((position, b2));
+            }
+        }
+        index = index.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    // T.6 2.2.5.2 places either missing reference element at the
+    // imaginary changing element immediately after the line.
+    Ok((width, width))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::bitmap_storage_valid(old(bitmap)),
+    ensures
+        final(bitmap).width == old(bitmap).width,
+        final(bitmap).height == old(bitmap).height,
+        final(bitmap).stride == old(bitmap).stride,
+        final(bitmap).data@.len() == old(bitmap).data@.len(),
+        mmr_spec::bitmap_storage_valid(final(bitmap)),
+))]
+fn fill_span(
+    bitmap: &mut Bitmap,
+    row: u32,
+    start: u32,
+    end: u32,
+    black: bool,
+) -> Result<(), MmrError> {
+    if start > end || end > bitmap.width || row >= bitmap.height {
+        return Err(MmrError::InvalidTransition);
+    }
+    if !black {
+        return Ok(());
+    }
+
+    let row_index = usize::try_from(row).map_err(|_error| MmrError::IntegerOverflow)?;
+    let row_base = row_index
+        .checked_mul(bitmap.stride)
+        .ok_or(MmrError::IntegerOverflow)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(mmr_spec::bitmap_storage_valid);
+    }
+    let mut x = start;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            start <= x <= end,
+            end <= bitmap.width,
+            row < bitmap.height,
+            bitmap.width == old(bitmap).width,
+            bitmap.height == old(bitmap).height,
+            bitmap.stride == old(bitmap).stride,
+            bitmap.data@.len() == old(bitmap).data@.len(),
+            mmr_spec::bitmap_storage_valid(bitmap),
+        decreases end - x,
+    ))]
+    while x < end {
+        #[cfg(verus_keep_ghost)]
+        production_mmr_span_byte!(bitmap, row, x);
+        let byte_in_row = usize::try_from(x / 8).map_err(|_error| MmrError::IntegerOverflow)?;
+        let byte_index = row_base
+            .checked_add(byte_in_row)
+            .ok_or(MmrError::IntegerOverflow)?;
+        if byte_index >= bitmap.data.len() {
+            return Err(MmrError::InvalidTransition);
+        }
+        let byte = &mut bitmap.data[byte_index];
+        let shift = 7_u32.checked_sub(x % 8).ok_or(MmrError::IntegerOverflow)?;
+        *byte |= 1_u8 << shift;
+        x = x.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        mmr_spec::bitmap_storage_valid(bitmap),
+        row < bitmap.height,
+        width <= bitmap.width,
+    ensures match out {
+        Ok(()) =>
+            mmr_spec::reference_line_valid(final(transitions)@, width)
+            && final(transitions)@.len() <= width as nat + 2,
+        Err(_) => true,
+    },
+))]
+fn collect_transitions(
+    bitmap: &Bitmap,
+    row: u32,
+    width: u32,
+    transitions: &mut Vec<u32>,
+) -> Result<(), MmrError> {
+    transitions.clear();
+    #[cfg(verus_keep_ghost)]
+    production_mmr_transition_empty!(width);
+    let mut previous_black = false;
+    let row_index = usize::try_from(row).map_err(|_error| MmrError::IntegerOverflow)?;
+    let row_base = row_index
+        .checked_mul(bitmap.stride)
+        .ok_or(MmrError::IntegerOverflow)?;
+    let mut x = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mmr_spec::bitmap_storage_valid(bitmap),
+            row < bitmap.height,
+            width <= bitmap.width,
+            x <= width,
+            mmr_spec::transition_prefix_valid(transitions@, x, width),
+            transitions@.len() <= x as nat,
+        decreases width - x,
+    ))]
+    while x < width {
+        #[cfg(verus_keep_ghost)]
+        production_mmr_span_byte!(bitmap, row, x);
+        let byte_in_row = usize::try_from(x / 8).map_err(|_error| MmrError::IntegerOverflow)?;
+        let byte_index = row_base
+            .checked_add(byte_in_row)
+            .ok_or(MmrError::IntegerOverflow)?;
+        if byte_index >= bitmap.data.len() {
+            return Err(MmrError::InvalidTransition);
+        }
+        let bit = 7_u32.checked_sub(x % 8).ok_or(MmrError::IntegerOverflow)?;
+        let black = bitmap.data[byte_index] & (1_u8 << bit) != 0;
+        let changed = black != previous_black;
+        #[cfg(verus_keep_ghost)]
+        proof_decl! {
+            let ghost before = transitions@;
+        }
+        if changed {
+            transitions.push(x);
+            previous_black = black;
+        }
+        #[cfg(verus_keep_ghost)]
+        production_mmr_transition_advance!(before, x, width, changed);
+        x = x.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    // One real imaginary end transition and one b2 sentinel.
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost before = transitions@;
+    }
+    transitions.push(width);
+    transitions.push(width);
+    #[cfg(verus_keep_ghost)]
+    production_mmr_transition_finish!(before, width);
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(old(reader)),
+    ensures
+        mmr_spec::reader_valid(final(reader)),
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).bit_position <= final(reader).bit_position,
+        match out {
+            Ok(()) => match policy {
+                EofbPolicy::Optional =>
+                    final(reader).bit_position == old(reader).bit_position,
+                EofbPolicy::Required =>
+                    final(reader).bit_position == old(reader).bytes@.len() * 8
+                    && mmr_spec::exact_eofb(
+                        old(reader).bytes@,
+                        old(reader).bit_position as nat,
+                    ),
+            },
+            Err(_) => true,
+        },
+))]
+fn finish_block(reader: &mut BitReader<'_>, policy: EofbPolicy) -> Result<(), MmrError> {
+    if let EofbPolicy::Optional = policy {
+        return Ok(());
+    }
+    let remaining = remaining_bits(reader)?;
+
+    if remaining < 24 {
+        return Err(MmrError::MissingEofb);
+    }
+    if reader.read_bits(24)? != EOFB {
+        return Err(MmrError::InvalidEofb);
+    }
+
+    let padding = remaining_bits(reader)?;
+    if padding > 7 {
+        return Err(MmrError::TrailingData);
+    }
+    if padding != 0 {
+        let padding_count = u8::try_from(padding).map_err(|_error| MmrError::IntegerOverflow)?;
+        let value = reader.read_bits(padding_count)?;
+        if value != 0 {
+            return Err(MmrError::NonZeroEofbPadding);
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(old(reader)),
+    ensures
+        mmr_spec::reader_valid(final(reader)),
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).bit_position <= final(reader).bit_position,
+        match out {
+            Ok(()) =>
+                old(reader).bit_position as nat + 24
+                    <= final(reader).bit_position as nat
+                && final(reader).bit_position as nat
+                    <= old(reader).bit_position as nat + 31
+                && final(reader).bit_position % 8 == 0
+                && mmr_spec::exact_eofb(
+                    old(reader).bytes@,
+                    old(reader).bit_position as nat,
+                ),
+            Err(_) => true,
+        },
+))]
+fn finish_required_prefix(reader: &mut BitReader<'_>) -> Result<(), MmrError> {
+    if remaining_bits(reader)? < 24 {
+        return Err(MmrError::MissingEofb);
+    }
+    if reader.read_bits(24)? != EOFB {
+        return Err(MmrError::InvalidEofb);
+    }
+
+    let bit_remainder = reader.bit_position % 8;
+    let padding = if bit_remainder == 0 {
+        0
+    } else {
+        8_usize
+            .checked_sub(bit_remainder)
+            .ok_or(MmrError::IntegerOverflow)?
+    };
+    if remaining_bits(reader)? < padding {
+        return Err(MmrError::MissingEofb);
+    }
+    if padding != 0 {
+        let padding_count = u8::try_from(padding).map_err(|_error| MmrError::IntegerOverflow)?;
+        if reader.read_bits(padding_count)? != 0 {
+            return Err(MmrError::NonZeroEofbPadding);
+        }
+    }
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(reader),
+    ensures match out {
+        Ok(remaining) =>
+            remaining == reader.bytes@.len() * 8 - reader.bit_position,
+        Err(_) => true,
+    },
+))]
+fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
+    let total = reader
+        .bytes
+        .len()
+        .checked_mul(8)
+        .ok_or(MmrError::IntegerOverflow)?;
+    total
+        .checked_sub(reader.bit_position)
+        .ok_or(MmrError::IntegerOverflow)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn decode(data: &[u8], width: u32, height: u32) -> Bitmap {
+        decode_mmr(
+            data,
+            width,
+            height,
+            &Limits::default(),
+            EofbPolicy::Optional,
+        )
+        .expect("independently derived MMR vector must decode")
+    }
+
+    fn assert_row(bitmap: &Bitmap, row: u32, expected: &[bool]) {
+        assert_eq!(
+            usize::try_from(bitmap.width()).expect("test width fits usize"),
+            expected.len()
+        );
+        for (x, value) in expected.iter().copied().enumerate() {
+            assert_eq!(
+                bitmap.pixel(u32::try_from(x).expect("test x fits u32"), row,),
+                Some(value),
+                "pixel mismatch at ({x}, {row})"
+            );
+        }
+    }
+
+    #[test]
+    fn all_white_uses_vertical_zero() {
+        let bitmap = decode(&[0x80], 8, 1);
+        assert_row(&bitmap, 0, &[false; 8]);
+    }
+
+    #[test]
+    fn all_black_uses_zero_white_horizontal_run() {
+        let bitmap = decode(&[0x26, 0xA2, 0x80], 8, 1);
+        assert_row(&bitmap, 0, &[true; 8]);
+    }
+
+    #[test]
+    fn horizontal_white_makeup_run_decodes() {
+        let bitmap = decode(&[0x3B, 0x35, 0x0D, 0xC0], 64, 1);
+        assert_row(&bitmap, 0, &[false; 64]);
+    }
+
+    #[test]
+    fn horizontal_black_makeup_run_decodes() {
+        let bitmap = decode(&[0x26, 0xA0, 0x78, 0x6E], 64, 1);
+        assert_row(&bitmap, 0, &[true; 64]);
+    }
+
+    #[test]
+    fn identical_black_rows_update_the_reference_line() {
+        let bitmap = decode(&[0x26, 0xA2, 0xE0], 8, 2);
+        assert_row(&bitmap, 0, &[true; 8]);
+        assert_row(&bitmap, 1, &[true; 8]);
+    }
+
+    #[test]
+    fn identical_islands_use_three_vertical_zero_codes() {
+        let bitmap = decode(&[0x2F, 0xF8], 8, 2);
+        let island = [false, false, true, true, false, false, false, false];
+        assert_row(&bitmap, 0, &island);
+        assert_row(&bitmap, 1, &island);
+    }
+
+    #[test]
+    fn island_shift_right_uses_vertical_right_one() {
+        let bitmap = decode(&[0x2F, 0xDB, 0x80], 8, 2);
+        assert_row(
+            &bitmap,
+            0,
+            &[false, false, true, true, false, false, false, false],
+        );
+        assert_row(
+            &bitmap,
+            1,
+            &[false, false, false, true, true, false, false, false],
+        );
+    }
+
+    #[test]
+    fn island_shift_left_uses_vertical_left_one() {
+        let bitmap = decode(&[0x2F, 0xD2, 0x80], 8, 2);
+        assert_row(
+            &bitmap,
+            0,
+            &[false, false, true, true, false, false, false, false],
+        );
+        assert_row(
+            &bitmap,
+            1,
+            &[false, true, true, false, false, false, false, false],
+        );
+    }
+
+    #[test]
+    fn pass_skips_reference_island() {
+        let bitmap = decode(&[0x2F, 0xC6], 8, 2);
+        assert_row(
+            &bitmap,
+            0,
+            &[false, false, true, true, false, false, false, false],
+        );
+        assert_row(&bitmap, 1, &[false; 8]);
+    }
+
+    #[test]
+    fn required_eofb_can_start_off_byte_boundary() {
+        let bitmap = decode_mmr(
+            &[0x80, 0x08, 0x00, 0x80],
+            8,
+            1,
+            &Limits::default(),
+            EofbPolicy::Required,
+        )
+        .expect("EOFB vector must decode");
+        assert_row(&bitmap, 0, &[false; 8]);
+    }
+
+    #[test]
+    fn required_eofb_rejects_omission() {
+        let error = decode_mmr(&[0x80], 8, 1, &Limits::default(), EofbPolicy::Required)
+            .expect_err("required EOFB must not be omitted");
+        assert!(matches!(error, MmrError::MissingEofb));
+    }
+
+    #[test]
+    fn prefix_decoder_consumes_two_concatenated_eofb_planes() {
+        let stream = [
+            0x80, 0x08, 0x00, 0x80, // all-white plane and EOFB
+            0x26, 0xA2, 0x80, 0x08, 0x00, 0x80, // all-black plane and EOFB
+        ];
+
+        let (white, white_bytes) =
+            decode_mmr_prefix(&stream, 8, 1, &Limits::default()).expect("first prefix must decode");
+        assert_eq!(white_bytes, 4);
+        assert_row(&white, 0, &[false; 8]);
+
+        let remainder = stream
+            .get(white_bytes..)
+            .expect("consumed byte count is within the test stream");
+        let (black, black_bytes) = decode_mmr_prefix(remainder, 8, 1, &Limits::default())
+            .expect("second prefix must decode");
+        assert_eq!(black_bytes, 6);
+        assert_eq!(white_bytes + black_bytes, stream.len());
+        assert_row(&black, 0, &[true; 8]);
+    }
+
+    #[test]
+    fn prefix_decoder_rejects_truncated_eofb() {
+        let error = decode_mmr_prefix(&[0x80, 0x08, 0x00], 8, 1, &Limits::default())
+            .expect_err("23 post-bitmap bits cannot contain EOFB");
+        assert!(matches!(error, MmrError::MissingEofb));
+    }
+
+    #[test]
+    fn prefix_decoder_rejects_nonzero_alignment_padding() {
+        let error = decode_mmr_prefix(&[0x80, 0x08, 0x00, 0x81], 8, 1, &Limits::default())
+            .expect_err("bits after EOFB and before the byte boundary must be zero");
+        assert!(matches!(error, MmrError::NonZeroEofbPadding));
+    }
+
+    #[test]
+    fn extension_mode_is_rejected() {
+        let error = decode_mmr(
+            &[0x02, 0x00],
+            8,
+            1,
+            &Limits::default(),
+            EofbPolicy::Optional,
+        )
+        .expect_err("T.6 extension mode is forbidden by T.88");
+        assert!(matches!(error, MmrError::ExtensionMode { .. }));
+    }
+
+    #[test]
+    fn truncated_horizontal_run_is_rejected() {
+        let error = decode_mmr(&[0x26], 8, 1, &Limits::default(), EofbPolicy::Optional)
+            .expect_err("truncated horizontal run must fail");
+        assert!(matches!(
+            error,
+            MmrError::Reader(MalformedError::UnexpectedEof { .. })
+        ));
+    }
+
+    #[test]
+    fn run_overshoot_is_rejected() {
+        let error = decode_mmr(&[0x33], 4, 1, &Limits::default(), EofbPolicy::Optional)
+            .expect_err("white run 8 must not fit a width-four row");
+        assert!(matches!(error, MmrError::RunExceedsRow));
+    }
+
+    #[test]
+    fn work_limit_is_enforced_before_decoding() {
+        let limits = Limits {
+            max_work_units: 15,
+            ..Limits::default()
+        };
+        let error = decode_mmr(&[0x80], 8, 1, &limits, EofbPolicy::Optional)
+            .expect_err("two raster passes already exceed the work limit");
+        assert!(matches!(
+            error,
+            MmrError::Bitmap(DecodeError::LimitExceeded(LimitExceeded {
+                kind: LimitKind::Work,
+                limit: 15,
+                actual: 16
+            }))
+        ));
+    }
+
+    #[test]
+    fn optional_eofb_accepts_bounded_remainder() {
+        let bitmap = decode_mmr(
+            &[0x80, 0xFF],
+            8,
+            1,
+            &Limits::default(),
+            EofbPolicy::Optional,
+        )
+        .expect("known-length remainder may be skipped");
+        assert_row(&bitmap, 0, &[false; 8]);
+    }
+
+    #[test]
+    fn all_normative_run_codes_are_unique_per_colour() {
+        fn assert_unique(codes: &[RunCode]) {
+            for (index, left) in codes.iter().enumerate() {
+                for right in &codes[index + 1..] {
+                    assert!(
+                        left.length != right.length || left.bits != right.bits,
+                        "duplicate run code"
+                    );
+                }
+            }
+        }
+
+        let mut white = Vec::new();
+        white.extend_from_slice(&WHITE_TERMINATING);
+        white.extend_from_slice(&WHITE_MAKEUP);
+        white.extend_from_slice(&COMMON_MAKEUP);
+        assert_unique(&white);
+
+        let mut black = Vec::new();
+        black.extend_from_slice(&BLACK_TERMINATING);
+        black.extend_from_slice(&BLACK_MAKEUP);
+        black.extend_from_slice(&COMMON_MAKEUP);
+        assert_unique(&black);
+    }
+
+    #[test]
+    fn every_mode_table_entry_decodes() {
+        for expected in MODE_CODES {
+            let shift = u32::from(16_u8 - expected.length);
+            let encoded = expected
+                .bits
+                .checked_shl(shift)
+                .expect("mode code fits two test bytes")
+                .to_be_bytes();
+            let mut reader = bit_reader(&encoded);
+            assert_eq!(
+                decode_mode(&mut reader).expect("table mode must decode"),
+                expected.mode
+            );
+            assert_eq!(reader.bit_position(), usize::from(expected.length));
+        }
+    }
+
+    #[test]
+    fn every_run_table_entry_decodes_for_its_colour() {
+        fn assert_codes_decode(codes: &[RunCode], black: bool) {
+            for expected in codes {
+                let shift = u32::from(16_u8 - expected.length);
+                let encoded = expected
+                    .bits
+                    .checked_shl(shift)
+                    .expect("run code fits two test bytes")
+                    .to_be_bytes();
+                let mut reader = bit_reader(&encoded);
+                let actual = decode_run_code(&mut reader, black).expect("table run must decode");
+                assert_eq!(actual.bits, expected.bits);
+                assert_eq!(actual.length, expected.length);
+                assert_eq!(actual.value, expected.value);
+                assert_eq!(actual.terminal, expected.terminal);
+                assert_eq!(reader.bit_position(), usize::from(expected.length));
+            }
+        }
+
+        assert_codes_decode(&WHITE_TERMINATING, false);
+        assert_codes_decode(&WHITE_MAKEUP, false);
+        assert_codes_decode(&COMMON_MAKEUP, false);
+        assert_codes_decode(&BLACK_TERMINATING, true);
+        assert_codes_decode(&BLACK_MAKEUP, true);
+        assert_codes_decode(&COMMON_MAKEUP, true);
+    }
+}

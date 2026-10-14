@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "threshold_approval": "pending owner approval",
+  "scenarios": [
+    {
+      "id": "PERF-GENERIC-ARITHMETIC-PIXELS",
+      "feature": "arithmetic generic region",
+      "scale_by": ["width", "height", "context template"],
+      "metrics": ["wall_time", "work_units", "allocations", "peak_bytes"]
+    },
+    {
+      "id": "PERF-GENERIC-MMR-PIXELS",
+      "feature": "MMR generic region",
+      "scale_by": ["width", "height", "run transitions"],
+      "metrics": ["wall_time", "work_units", "allocations", "peak_bytes"]
+    },
+    {
+      "id": "PERF-SYMBOL-DICTIONARY",
+      "feature": "symbol dictionary",
+      "scale_by": ["imported symbols", "new symbols", "height classes"],
+      "metrics": ["wall_time", "work_units", "retained_bytes", "peak_bytes"]
+    },
+    {
+      "id": "PERF-TEXT-INSTANCES",
+      "feature": "text region",
+      "scale_by": ["instances", "symbols", "refinement ratio"],
+      "metrics": ["wall_time", "work_units", "decoded_bitmap_bytes"]
+    },
+    {
+      "id": "PERF-HALFTONE-GRID",
+      "feature": "halftone region",
+      "scale_by": ["grid cells", "patterns", "pattern area", "overlap"],
+      "metrics": ["wall_time", "work_units", "peak_bytes"]
+    },
+    {
+      "id": "PERF-REFERENCE-GRAPH",
+      "feature": "segment graph",
+      "scale_by": ["segments", "references", "depth"],
+      "metrics": ["wall_time", "retained_bytes", "peak_bytes"]
+    },
+    {
+      "id": "PERF-MALFORMED-WORST-CASE",
+      "feature": "negative decoding",
+      "scale_by": ["input bytes", "valid prefix length", "failure depth"],
+      "metrics": ["time_to_failure", "work_units", "peak_bytes"]
+    }
+  ],
+  "required_samples": [
+    "legally approved normative vectors",
+    "legally approved representative PDF embedded streams",
+    "generated boundary streams",
+    "reviewed malformed regression cases"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "oracles": [
+    {
+      "name": "jbig2dec",
+      "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
+      "source_url": "https://github.com/ArtifexSoftware/jbig2dec",
+      "license": "GNU AGPL v3 or later with stated AFPL Ghostscript linking permission",
+      "mode": "external black-box process",
+      "build": "not approved",
+      "redistribution": false
+    },
+    {
+      "name": "Poppler",
+      "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
+      "source_url": "https://gitlab.freedesktop.org/poppler/poppler",
+      "license": "GNU GPL v2 COPYING; exact file-level terms pending review",
+      "mode": "external black-box process",
+      "build": "not approved",
+      "redistribution": false
+    }
+  ],
+  "approval": "blocked pending CELA/legal owner review"
+}

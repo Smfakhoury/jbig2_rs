@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "status": "smoke_passed",
+  "source_revision": null,
+  "toolchain": "rustc 1.101.0-nightly (2026-10-12); cargo-fuzz 0.13.2; libfuzzer-sys 0.4.13",
+  "targets": [
+    {
+      "name": "file_header_arbitrary",
+      "build": "passed",
+      "duration_seconds": 30
+    },
+    {
+      "name": "file_header_structured",
+      "build": "passed",
+      "duration_seconds": 30
+    },
+    {
+      "name": "document_arbitrary",
+      "build": "passed",
+      "duration_seconds": 30
+    },
+    {
+      "name": "arithmetic",
+      "build": "passed",
+      "duration_seconds": 30
+    },
+    {
+      "name": "huffman",
+      "build": "passed",
+      "duration_seconds": 30
+    },
+    {
+      "name": "mmr",
+      "build": "passed",
+      "duration_seconds": 30
+    },
+    {
+      "name": "generic_region",
+      "build": "passed",
+      "duration_seconds": 30
+    }
+  ],
+  "total_duration_seconds": 210,
+  "crashes": 0,
+  "timeouts": 0,
+  "ooms": 0,
+  "release_gate": "blocked"
+}
