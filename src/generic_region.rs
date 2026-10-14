@@ -40,6 +40,7 @@ mod generic_region_shared;
 #[path = "../proofs/production_impl/generic_region.rs"]
 mod generic_region_proofs;
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const ARITHMETIC_TERMINATOR: [u8; 2] = [0xff, 0xac];
 const MMR_UNKNOWN_LENGTH_SEPARATOR: [u8; 2] = [0x00, 0x00];
 const MAX_GENERIC_CONTEXTS: usize = 1 << 16;
@@ -1187,6 +1188,7 @@ pub(crate) struct RefinementRegionHeader {
 
 /// Runtime parameters not carried by a standalone refinement data header.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementParameters {
     pub(crate) reference_dx: i32,
     pub(crate) reference_dy: i32,
@@ -1509,6 +1511,10 @@ fn refinement_prediction(
     common
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires crate::spec::bitmap::storage_valid(bitmap),
+))]
+#[allow(clippy::cast_lossless)]
 fn sample_reference(
     bitmap: &Bitmap,
     x: u32,
@@ -1516,29 +1522,41 @@ fn sample_reference(
     offset: TemplateOffset,
     parameters: RefinementParameters,
 ) -> bool {
-    let reference_x = i64::from(x)
-        .checked_sub(i64::from(parameters.reference_dx))
-        .and_then(|value| value.checked_add(i64::from(offset.x)));
-    let reference_y = i64::from(y)
-        .checked_sub(i64::from(parameters.reference_dy))
-        .and_then(|value| value.checked_add(i64::from(offset.y)));
+    let reference_x = (x as i64)
+        .checked_sub(parameters.reference_dx as i64)
+        .and_then(|value| value.checked_add(offset.x as i64));
+    let reference_y = (y as i64)
+        .checked_sub(parameters.reference_dy as i64)
+        .and_then(|value| value.checked_add(offset.y as i64));
     sample_signed(bitmap, reference_x, reference_y)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires crate::spec::bitmap::storage_valid(bitmap),
+))]
+#[allow(clippy::cast_lossless)]
 fn sample_bitmap(bitmap: &Bitmap, x: u32, y: u32, offset: TemplateOffset) -> bool {
-    let sample_x = i64::from(x).checked_add(i64::from(offset.x));
-    let sample_y = i64::from(y).checked_add(i64::from(offset.y));
+    let sample_x = (x as i64).checked_add(offset.x as i64);
+    let sample_y = (y as i64).checked_add(offset.y as i64);
     sample_signed(bitmap, sample_x, sample_y)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires crate::spec::bitmap::storage_valid(bitmap),
+))]
+#[allow(
+    clippy::cast_lossless,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss
+)]
 fn sample_signed(bitmap: &Bitmap, x: Option<i64>, y: Option<i64>) -> bool {
     let (Some(x), Some(y)) = (x, y) else {
         return false;
     };
-    let (Ok(x), Ok(y)) = (u32::try_from(x), u32::try_from(y)) else {
+    if x < 0 || x > u32::MAX as i64 || y < 0 || y > u32::MAX as i64 {
         return false;
-    };
-    bitmap.pixel(x, y).unwrap_or(false)
+    }
+    bitmap.pixel(x as u32, y as u32).unwrap_or(false)
 }
 
 fn read_offset(reader: &mut ByteReader<'_>) -> Result<TemplateOffset, GenericRegionError> {
@@ -1602,6 +1620,7 @@ fn validate_arithmetic_terminator(data: &[u8]) -> Result<(), GenericRegionError>
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn validate_observed_marker(
     decoder: &ArithmeticDecoder<'_>,
     coded_length: usize,
@@ -1733,6 +1752,15 @@ fn refinement_template_code(template: RefinementTemplate) -> u8 {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) =>
+            storage_bytes <= limits.max_retained_state_bytes
+            && storage_bytes as nat * 2
+                <= limits.max_decoder_managed_memory_bytes,
+        Err(_) => true,
+    },
+))]
 fn validate_snapshot_limits(storage_bytes: u64, limits: &Limits) -> Result<(), GenericRegionError> {
     if storage_bytes > limits.max_retained_state_bytes {
         return Err(DecodeError::LimitExceeded(LimitExceeded {
@@ -1742,9 +1770,9 @@ fn validate_snapshot_limits(storage_bytes: u64, limits: &Limits) -> Result<(), G
         })
         .into());
     }
-    let combined = storage_bytes
-        .checked_mul(2)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(combined) = storage_bytes.checked_mul(2) else {
+        return Err(integer_overflow());
+    };
     if combined > limits.max_decoder_managed_memory_bytes {
         return Err(DecodeError::LimitExceeded(LimitExceeded {
             kind: LimitKind::Memory,
@@ -1803,14 +1831,22 @@ fn context_storage_bytes(count: usize) -> Result<u64, GenericRegionError> {
         .ok_or_else(|| MalformedError::IntegerOverflow.into())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) =>
+            bitmap_bytes as nat + context_bytes as nat
+                <= limits.max_decoder_managed_memory_bytes,
+        Err(_) => true,
+    },
+))]
 fn enforce_managed_memory(
     context_bytes: u64,
     bitmap_bytes: u64,
     limits: &Limits,
 ) -> Result<(), GenericRegionError> {
-    let managed = bitmap_bytes
-        .checked_add(context_bytes)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(managed) = bitmap_bytes.checked_add(context_bytes) else {
+        return Err(integer_overflow());
+    };
     if managed > limits.max_decoder_managed_memory_bytes {
         return Err(DecodeError::LimitExceeded(LimitExceeded {
             kind: LimitKind::Memory,
@@ -1982,6 +2018,7 @@ fn integer_overflow() -> GenericRegionError {
     GenericRegionError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn unexpected_eof(offset: usize, needed: usize, remaining: usize) -> GenericRegionError {
     let Ok(offset) = u64::try_from(offset) else {
         return GenericRegionError::Decode(MalformedError::IntegerOverflow.into());
