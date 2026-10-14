@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "status": "internal_candidate_validated_publication_blocked",
-  "candidate_revision": "2d1c56ca1e72b814af0de2d62f37e97c8580046a",
-  "production_source_revision": "ba633a9fd13b4cb3fd3872fb7b5b93b0352b8569",
+  "candidate_revision": "c5388488d4ea0c446d8bc7554933bb7ba646e2a1",
+  "production_source_revision": "581b467c9e7feccf2cb24ae7d47fdadc154afcc6",
   "crate_version": "0.0.1",
   "publication_enabled": false,
   "evidence": {
     "support_matrix_sha256": "b788326119597a4d240733dbc50715034e696d7492a05b24e847ee8f6983dd8c",
     "source_provenance_sha256": "1bd2898d4e345a854c718dcfc3062aa4c4a0d5f65f6fd8b3c3b6387bcf9d4e30",
-    "proof_attestation_sha256": "04f46f0031d8d2e56c38f8e078a6d337685c926babac79686be217642cd26e5c",
-    "conformance_attestation_sha256": "8c6206e8fc469fe6eb81b42446cbb4e3ae0626d4e14a8fee9a6f735863befa1a",
-    "fuzz_attestation_sha256": "7c94d7bac6aa6e48c057158694d744b28f2958bdd83392cee8f3a82099aed385",
+    "proof_attestation_sha256": "1929d88a6081e5ab73e8536ff4cc752593867031accaf54bc8a7ad6a9d15342b",
+    "conformance_attestation_sha256": "b04d9b71d3cb2f51240e7c0f5c3873273688cdb686d6be368b35e630973d501c",
+    "fuzz_attestation_sha256": "ce0c18e1548877541802394d51e9d103cf499cb1397bb99333e68f7802917831",
     "toolchain_sha256": "2b70822b1d375655fac4c8adab7f9697243e7d41666020265a8b0db619949f51",
-    "performance_results_sha256": "09a7c8d3308b2c0ca56ed619060410d328e6903f13a8f03ee3f5f3d1f62cff1a"
+    "performance_results_sha256": "6688c5e76fcabf50d8b82f9174a95e8b26f5dd9fefb8325648ea41ca1df375e9"
   },
   "validation": {
     "implementation_tests": {
@@ -20,13 +20,13 @@
       "failed": 0
     },
     "verus": {
-      "verified_obligations": 616,
+      "verified_obligations": 620,
       "errors": 0,
       "native_assumptions": 0
     },
     "production_functions": {
-      "verified": 316,
-      "reviewed_verifier_limitations": 186,
+      "verified": 318,
+      "reviewed_verifier_limitations": 184,
       "incomplete": 0
     },
     "fuzz": {
