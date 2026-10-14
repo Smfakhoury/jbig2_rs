@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "status": "internal_candidate_validated_publication_blocked",
-  "candidate_revision": "820f8bfec0e71deeebff6e7d3581cb17814f2d0b",
+  "candidate_revision": "5f9a05298d40f8d5ea4c3542fa7523fb0402aede",
   "production_source_revision": "3be3f0bb46a916ef7427ced97c76ef6ac4d1c206",
   "crate_version": "0.0.1",
   "publication_enabled": false,
   "evidence": {
     "support_matrix_sha256": "b788326119597a4d240733dbc50715034e696d7492a05b24e847ee8f6983dd8c",
     "source_provenance_sha256": "1bd2898d4e345a854c718dcfc3062aa4c4a0d5f65f6fd8b3c3b6387bcf9d4e30",
-    "proof_attestation_sha256": "30c2655b04782c9141a7af45a334ab6d0a50da5028980ccc3df1b5e9f07741ba",
+    "proof_attestation_sha256": "7916b7aa176879672482fc919ba309077247adf64683eb4195b4d02f3df814cd",
     "conformance_attestation_sha256": "ebf9d21132823ae2e293151f1a62a50eb725d95e1c7833b3ce80c085ab76be98",
     "fuzz_attestation_sha256": "40f9bbc69908ce737d92fcc711c3dea05ff248592e203882cd515cbda4f48634",
     "toolchain_sha256": "2b70822b1d375655fac4c8adab7f9697243e7d41666020265a8b0db619949f51",
@@ -26,7 +26,7 @@
     },
     "production_functions": {
       "verified": 274,
-      "reviewed_verifier_limitations": 227,
+      "reviewed_verifier_limitations": 226,
       "incomplete": 0
     },
     "fuzz": {
