@@ -406,6 +406,7 @@ impl ArithmeticContext {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl Default for ArithmeticContext {
     fn default() -> Self {
         Self::new()
