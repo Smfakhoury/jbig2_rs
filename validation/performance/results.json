@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "regression_thresholds_passed",
-  "recorded_at": "2026-10-14T10:23:19Z",
-  "source_revision": "98496f118b852e707cf3e785285b1ec43bba7776",
+  "recorded_at": "2026-10-14T10:50:10Z",
+  "source_revision": "a2466aea21282cb3dd92362e824600279ea5d12d",
   "environment": {
     "os": "linux",
     "rustc": "1.89.0",
@@ -15,7 +15,7 @@
     "failed": 0
   },
   "wall_seconds": 0.18,
-  "peak_kib": 109728,
+  "peak_kib": 110020,
   "generated_scaling": {
     "command": "cargo run --release --example perf_smoke",
     "cases": [
@@ -24,29 +24,29 @@
         "height": 64,
         "input_bytes": 102,
         "output_bytes": 512,
-        "elapsed_micros": 65
+        "elapsed_micros": 63
       },
       {
         "width": 512,
         "height": 512,
         "input_bytes": 158,
         "output_bytes": 32768,
-        "elapsed_micros": 1562
+        "elapsed_micros": 1485
       },
       {
         "width": 2048,
         "height": 2048,
         "input_bytes": 350,
         "output_bytes": 524288,
-        "elapsed_micros": 24917
+        "elapsed_micros": 24993
       }
     ]
   },
   "threshold_evaluation": {
     "status": "passed",
-    "baseline_source_revision": "3be3f0bb46a916ef7427ced97c76ef6ac4d1c206",
-    "wall_time_change_percent": 5.88,
-    "peak_memory_change_percent": -4.67,
+    "baseline_source_revision": "98496f118b852e707cf3e785285b1ec43bba7776",
+    "wall_time_change_percent": 0.0,
+    "peak_memory_change_percent": 0.27,
     "maximum_wall_time_regression_percent": 20,
     "maximum_peak_memory_regression_percent": 15,
     "work_unit_or_decoded_byte_limit_regression": false

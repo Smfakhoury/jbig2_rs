@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "full_smoke_passed",
-  "source_revision": "98496f118b852e707cf3e785285b1ec43bba7776",
+  "source_revision": "a2466aea21282cb3dd92362e824600279ea5d12d",
   "toolchain": "rustc 1.101.0-nightly (2026-10-12); cargo-fuzz 0.13.2; libfuzzer-sys 0.4.13",
   "targets": [
     {

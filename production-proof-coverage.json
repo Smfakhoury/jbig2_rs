@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 573,
+  "verus_verified_obligations": 583,
   "native_assumptions": [],
   "counts": {
-    "verified": 281,
-    "reviewed-verifier-limitation": 219,
+    "verified": 291,
+    "reviewed-verifier-limitation": 210,
     "audited-forwarder": 0,
     "native-assumption": 0,
     "incomplete": 0
@@ -1636,7 +1636,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1645,7 +1645,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1654,7 +1654,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1663,7 +1663,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1672,7 +1672,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1681,7 +1681,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::error::DecodeError::from"
       ]
@@ -1692,7 +1692,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::TemplateOffset::new"
       ]
@@ -1703,7 +1703,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericTemplate::from_flags"
       ]
@@ -1714,7 +1714,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericTemplate::context_bits"
       ]
@@ -1725,7 +1725,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericTemplate::sltp_context"
       ]
@@ -1736,7 +1736,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_mmr_flag"
       ]
@@ -1747,7 +1747,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_typical_prediction_flag"
       ]
@@ -1758,7 +1758,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_extended_template_flag"
       ]
@@ -1769,7 +1769,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_reserved_flags"
       ]
@@ -1780,7 +1780,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::TemplateOffset::new"
       ]
@@ -1791,7 +1791,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1800,7 +1800,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1809,7 +1809,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1818,7 +1818,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::TemplateOffset::new"
       ]
@@ -1829,7 +1829,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1838,7 +1838,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1847,7 +1847,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1856,7 +1856,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1865,7 +1865,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1874,7 +1874,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1883,7 +1883,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1892,7 +1892,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1901,7 +1901,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1910,7 +1910,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1919,7 +1919,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1928,7 +1928,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1937,7 +1937,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_slot"
       ]
@@ -1948,7 +1948,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_at"
       ]
@@ -1959,7 +1959,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1968,7 +1968,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -1977,7 +1977,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementTemplate::from_flags"
       ]
@@ -1988,7 +1988,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementTemplate::context_bits"
       ]
@@ -1999,7 +1999,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementTemplate::sltp_context"
       ]
@@ -2010,7 +2010,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::TemplateOffset::new"
       ]
@@ -2021,7 +2021,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2030,7 +2030,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2039,7 +2039,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2048,7 +2048,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2057,7 +2057,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2066,7 +2066,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2075,7 +2075,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2084,7 +2084,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::target_slot"
       ]
@@ -2095,7 +2095,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::target_at"
       ]
@@ -2106,7 +2106,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::reference_slot"
       ]
@@ -2117,7 +2117,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::reference_at"
       ]
@@ -2128,7 +2128,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2137,7 +2137,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2146,7 +2146,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2155,7 +2155,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2164,7 +2164,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2173,7 +2173,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2182,7 +2182,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2191,7 +2191,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_target_adaptive"
       ]
@@ -2202,7 +2202,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2211,7 +2211,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2220,44 +2220,52 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
       "id": "generic_region::generic_context_count",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::generic_context_count"
+      ]
     },
     {
       "id": "generic_region::refinement_context_count",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::refinement_context_count"
+      ]
     },
     {
       "id": "generic_region::validate_generic_context_layout",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::validate_generic_context_layout"
+      ]
     },
     {
       "id": "generic_region::validate_refinement_context_layout",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::validate_refinement_context_layout"
+      ]
     },
     {
       "id": "generic_region::validate_probability_states",
@@ -2265,7 +2273,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2274,7 +2282,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_region_spec::generic_template_code",
         "jbig2_rs_production::generic_region::generic_template_code"
@@ -2286,7 +2294,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::refinement_template_code"
       ]
@@ -2297,7 +2305,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2306,7 +2314,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2315,7 +2323,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2324,7 +2332,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2333,7 +2341,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2342,7 +2350,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::bitmap_storage_bytes"
       ]
@@ -2351,10 +2359,12 @@
       "id": "generic_region::enforce_generic_work",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::enforce_generic_work"
+      ]
     },
     {
       "id": "generic_region::generic_work",
@@ -2362,7 +2372,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_work"
       ]
@@ -2371,37 +2381,56 @@
       "id": "generic_region::enforce_refinement_work",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::enforce_refinement_work"
+      ]
     },
     {
       "id": "generic_region::refinement_work",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::refinement_work"
+      ]
     },
     {
       "id": "generic_region::enforce_work",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::enforce_work"
+      ]
     },
     {
       "id": "generic_region::enforce_input_limit",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::enforce_input_limit"
+      ]
+    },
+    {
+      "id": "generic_region::integer_overflow",
+      "file": "src/generic_region.rs",
+      "visibility": "private",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::integer_overflow"
+      ]
     },
     {
       "id": "generic_region::unexpected_eof",
@@ -2409,7 +2438,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2418,7 +2447,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
@@ -2427,7 +2456,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "7542787289179d4a10b73808707bfea63f7cba616f46e6a153607b44ef754e0c",
+      "file_sha256": "91c7b22d2df6a61e4a9ad63029c0b64d8779b66b888d8b307f0ca0ed75374ee8",
       "verus_functions": []
     },
     {
