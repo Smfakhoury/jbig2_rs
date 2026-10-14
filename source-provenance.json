@@ -166,7 +166,14 @@
       "reproducibility_note": "The executed system binary is pinned by version and hash; building the requested source revision remains future work.",
       "license": "Repository COPYING contains GNU GPL v2; file-level and later-version terms require legal review",
       "redistribution": "prohibited by project policy pending legal review; never included in the crate",
-      "license_review": "CELA-approved for internal/private-CI black-box execution; publication remains pending"
+      "license_review": "CELA-approved for internal/private-CI black-box execution; publication remains pending",
+      "built_version": "26.10.90",
+      "binary_sha256": "2832618f2e369528f9e124e8cf617189b5c7e4e4628530f439f1450f2cf5e25a",
+      "build": "Minimal static pdfimages build in /tmp with optional integrations disabled.",
+      "additional_system_oracle": {
+        "version": "24.02.0",
+        "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814"
+      }
     }
   ],
   "approvals": {

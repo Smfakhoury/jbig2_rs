@@ -29,4 +29,7 @@ python3 validation/conformance/run_itu.py \
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized
 diagnostic hashes, output hashes, and classifications; it never copies oracle
-source or vector content into the repository.
+source or vector content into the repository. Pass `--poppler-revision` when
+the executable was built from a pinned source revision. The committed
+`results.json` records the versioned system comparison, while
+`pinned-poppler-results.json` records the exact approved source revision.

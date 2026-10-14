@@ -6,6 +6,7 @@
     "binary_sha256": "eb0248d7eb623999bf21e20bc1aa6749a06acf8e5c412554dc1fe316770b4b1d"
   },
   "poppler": {
+    "revision": null,
     "version": "24.02.0",
     "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814"
   },

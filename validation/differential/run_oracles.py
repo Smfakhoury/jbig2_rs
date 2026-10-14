@@ -13,6 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--vectors", type=Path, required=True)
 parser.add_argument("--jbig2dec", type=Path, required=True)
 parser.add_argument("--pdfimages", type=Path, required=True)
+parser.add_argument("--poppler-revision")
 parser.add_argument("--output", type=Path, required=True)
 arguments = parser.parse_args()
 
@@ -39,9 +40,13 @@ def parse_pbm(path: Path) -> list[tuple[int, int, bytes]]:
     return pages
 
 
-def diagnostics(text: str, temporary: Path) -> dict:
+def normalized_text(text: str, temporary: Path) -> str:
     normalized = text.replace(str(temporary), "<temporary>")
-    normalized = normalized.replace(str(arguments.vectors), "<vectors>")
+    return normalized.replace(str(arguments.vectors), "<vectors>")
+
+
+def diagnostics(text: str, temporary: Path) -> dict:
+    normalized = normalized_text(text, temporary)
     lowered = normalized.lower()
     return {
         "present": bool(normalized.strip()),
@@ -50,6 +55,13 @@ def diagnostics(text: str, temporary: Path) -> dict:
         "warning_count": lowered.count("warning"),
         "error_count": lowered.count("error"),
     }
+
+
+def tool_version(command: list[str], prefix: str) -> str:
+    process = subprocess.run(command, capture_output=True, text=True, check=False)
+    output = "\n".join((process.stdout, process.stderr)).strip()
+    first_line = output.splitlines()[0] if output else "unknown"
+    return first_line.removeprefix(prefix)
 
 
 def parse_bmp(path: Path) -> tuple[int, int, bytes]:
@@ -167,14 +179,19 @@ with tempfile.TemporaryDirectory(prefix="jbig2-rs-oracles-") as temporary:
             "diagnostics": diagnostics(process.stderr, temporary),
         }
         if output.exists() and expected:
-            pages = parse_pbm(output)
-            oracle["bitmap_sha256"] = [
-                hashlib.sha256(page[2]).hexdigest() for page in pages
-            ]
-            oracle["match"] = len(pages) == len(expected) and all(
-                actual[0:2] == wanted[0:2] and actual[2] == wanted[2]
-                for actual, wanted in zip(pages, expected)
-            )
+            try:
+                pages = parse_pbm(output)
+            except ValueError as error:
+                oracle["match"] = None
+                oracle["output_error"] = normalized_text(str(error), temporary)
+            else:
+                oracle["bitmap_sha256"] = [
+                    hashlib.sha256(page[2]).hexdigest() for page in pages
+                ]
+                oracle["match"] = len(pages) == len(expected) and all(
+                    actual[0:2] == wanted[0:2] and actual[2] == wanted[2]
+                    for actual, wanted in zip(pages, expected)
+                )
         else:
             oracle["match"] = None
         case["oracles"]["jbig2dec"] = oracle
@@ -195,11 +212,19 @@ with tempfile.TemporaryDirectory(prefix="jbig2-rs-oracles-") as temporary:
                 "diagnostics": diagnostics(process.stderr, temporary),
             }
             if len(images) == 1:
-                width, height, raw = parse_pbm(images[0])[0]
-                oracle["bitmap_sha256"] = [hashlib.sha256(raw).hexdigest()]
-                oracle["match"] = (
-                    (width, height) == expected[0][0:2] and raw == expected[0][2]
-                )
+                try:
+                    pages = parse_pbm(images[0])
+                except ValueError as error:
+                    oracle["match"] = None
+                    oracle["output_error"] = normalized_text(str(error), temporary)
+                else:
+                    width, height, raw = pages[0]
+                    oracle["bitmap_sha256"] = [hashlib.sha256(raw).hexdigest()]
+                    oracle["match"] = (
+                        len(pages) == 1
+                        and (width, height) == expected[0][0:2]
+                        and raw == expected[0][2]
+                    )
             else:
                 oracle["match"] = None
             case["oracles"]["poppler"] = oracle
@@ -214,11 +239,12 @@ result = {
     "schema_version": 1,
     "jbig2dec": {
         "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
-        "version": "0.20",
+        "version": tool_version([str(arguments.jbig2dec), "--version"], "jbig2dec "),
         "binary_sha256": hashlib.sha256(arguments.jbig2dec.read_bytes()).hexdigest(),
     },
     "poppler": {
-        "version": "24.02.0",
+        "revision": arguments.poppler_revision,
+        "version": tool_version([str(arguments.pdfimages), "-v"], "pdfimages version "),
         "binary_sha256": hashlib.sha256(arguments.pdfimages.read_bytes()).hexdigest(),
     },
     "cases": cases,
