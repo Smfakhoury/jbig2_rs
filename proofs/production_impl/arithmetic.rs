@@ -31,3 +31,24 @@ macro_rules! production_reveal_decoder_valid {
         }
     };
 }
+
+macro_rules! production_integer_history_index {
+    ($previous:expr) => {
+        proof! {
+            crate::arithmetic::arithmetic_properties::binary_history_index_is_valid(
+                $previous,
+            );
+        }
+    };
+}
+
+macro_rules! production_integer_magnitude {
+    ($magnitude_bits:ident, $offset:ident) => {
+        proof! {
+            crate::arithmetic::arithmetic_properties::integer_magnitude_fits_i64(
+                $magnitude_bits,
+                $offset,
+            );
+        }
+    };
+}

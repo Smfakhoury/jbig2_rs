@@ -503,6 +503,7 @@ impl From<ArithmeticError> for DecodeError {
 
 /// Result of an Annex A arithmetic integer decode.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) enum ArithmeticInteger {
     /// A signed integer value.
     Value(i64),
@@ -642,23 +643,224 @@ impl<'a> ArithmeticDecoder<'a> {
     }
 
     /// Decodes one Annex A integer using exactly 512 procedure-specific contexts.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            arithmetic_spec::decoder_valid(old(self)),
+            forall|index: int| 0 <= index < old(contexts)@.len() ==>
+                arithmetic_spec::context_valid(old(contexts)@[index]),
+        ensures
+            arithmetic_spec::decoder_state_valid(final(self)),
+            forall|index: int| 0 <= index < final(contexts)@.len() ==>
+                arithmetic_spec::context_valid(final(contexts)@[index]),
+            match out {
+                Ok(_) => arithmetic_spec::decoder_valid(final(self)),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[allow(clippy::cast_possible_wrap)]
     pub(crate) fn decode_integer(
         &mut self,
         contexts: &mut [ArithmeticContext; INTEGER_CONTEXT_COUNT],
     ) -> Result<ArithmeticInteger, ArithmeticError> {
-        decode_integer_with(|context_index| self.decode(&mut contexts[context_index]))
+        let mut previous = 1_u16;
+        let sign = self.decode_integer_bit(&mut previous, contexts)?;
+
+        let (bit_count, offset) = if self.decode_integer_bit(&mut previous, contexts)? == 0 {
+            (2, 0_u64)
+        } else if self.decode_integer_bit(&mut previous, contexts)? == 0 {
+            (4, 4)
+        } else if self.decode_integer_bit(&mut previous, contexts)? == 0 {
+            (6, 20)
+        } else if self.decode_integer_bit(&mut previous, contexts)? == 0 {
+            (8, 84)
+        } else if self.decode_integer_bit(&mut previous, contexts)? == 0 {
+            (12, 340)
+        } else {
+            (32, 4436)
+        };
+
+        let magnitude_bits = self.decode_integer_bits(&mut previous, bit_count, contexts)?;
+        let magnitude = offset
+            .checked_add(u64::from(magnitude_bits))
+            .ok_or(MalformedError::IntegerOverflow)?;
+        if sign == 1 && magnitude == 0 {
+            return Ok(ArithmeticInteger::OutOfBand);
+        }
+
+        #[cfg(verus_keep_ghost)]
+        production_integer_magnitude!(magnitude_bits, offset);
+        let magnitude = magnitude as i64;
+        if sign == 0 {
+            Ok(ArithmeticInteger::Value(magnitude))
+        } else {
+            let negative = -magnitude;
+            Ok(ArithmeticInteger::Value(negative))
+        }
     }
 
     /// Decodes one fixed-length Annex A IAID value.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            arithmetic_spec::decoder_valid(old(self)),
+            forall|index: int| 0 <= index < old(contexts)@.len() ==>
+                arithmetic_spec::context_valid(old(contexts)@[index]),
+        ensures
+            arithmetic_spec::decoder_state_valid(final(self)),
+            forall|index: int| 0 <= index < final(contexts)@.len() ==>
+                arithmetic_spec::context_valid(final(contexts)@[index]),
+            match out {
+                Ok(_) => arithmetic_spec::decoder_valid(final(self)),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[allow(clippy::cast_possible_truncation)]
     pub(crate) fn decode_iaid(
         &mut self,
         code_length: u8,
         contexts: &mut [ArithmeticContext],
     ) -> Result<u32, ArithmeticError> {
+        if code_length > MAX_IAID_CODE_LENGTH {
+            return Err(ArithmeticError::InvalidIaidCodeLength(code_length));
+        }
+        let required = 1_usize << code_length;
         let context_count = contexts.len();
-        decode_iaid_with(code_length, context_count, |context_index| {
-            self.decode(&mut contexts[context_index])
-        })
+        if context_count < required {
+            return Err(ArithmeticError::InsufficientContexts {
+                required,
+                actual: context_count,
+            });
+        }
+
+        let mut previous = 1_usize;
+        let mut remaining = code_length;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                arithmetic_spec::decoder_valid(self),
+                contexts@.len() == context_count,
+                forall|index: int| 0 <= index < contexts@.len() ==>
+                    arithmetic_spec::context_valid(contexts@[index]),
+                remaining <= code_length,
+                required <= context_count,
+            decreases remaining,
+        ))]
+        while remaining != 0 {
+            if previous >= context_count {
+                return Err(ArithmeticError::InsufficientContexts {
+                    required,
+                    actual: context_count,
+                });
+            }
+            let decision = self.decode(&mut contexts[previous])?;
+            previous = previous
+                .checked_mul(2)
+                .and_then(|partial| partial.checked_add(usize::from(decision)))
+                .ok_or(MalformedError::IntegerOverflow)?;
+            remaining -= 1;
+        }
+        let value = previous
+            .checked_sub(required)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        if value > u32::MAX as usize {
+            return Err(MalformedError::IntegerOverflow.into());
+        }
+        Ok(value as u32)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            arithmetic_spec::decoder_valid(old(self)),
+            *old(previous) <= 511,
+            forall|index: int| 0 <= index < old(contexts)@.len() ==>
+                arithmetic_spec::context_valid(old(contexts)@[index]),
+        ensures
+            arithmetic_spec::decoder_state_valid(final(self)),
+            *final(previous) <= 511,
+            forall|index: int| 0 <= index < final(contexts)@.len() ==>
+                arithmetic_spec::context_valid(final(contexts)@[index]),
+            match out {
+                Ok(decision) =>
+                    decision <= 1
+                    && arithmetic_spec::decoder_valid(final(self)),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn decode_integer_bit(
+        &mut self,
+        previous: &mut u16,
+        contexts: &mut [ArithmeticContext; INTEGER_CONTEXT_COUNT],
+    ) -> Result<u8, ArithmeticError> {
+        let prior = *previous;
+        let context_index = usize::from(prior & 0x01ff);
+        #[cfg(verus_keep_ghost)]
+        production_integer_history_index!(prior);
+        let decision = self.decode(&mut contexts[context_index])?;
+        let shifted = prior * 2 + u16::from(decision);
+        *previous = if prior < 256 {
+            shifted
+        } else {
+            (shifted & 511) | 256
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            if prior < 256 {
+                assert(prior <= 255);
+                assert(decision <= 1);
+                assert(shifted == prior * 2 + decision as u16);
+                assert(shifted <= 511);
+            } else {
+                assert((shifted & 511) | 256 <= 511) by (bit_vector);
+            }
+        }
+        Ok(decision)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            arithmetic_spec::decoder_valid(old(self)),
+            *old(previous) <= 511,
+            bit_count <= 32,
+            forall|index: int| 0 <= index < old(contexts)@.len() ==>
+                arithmetic_spec::context_valid(old(contexts)@[index]),
+        ensures
+            arithmetic_spec::decoder_state_valid(final(self)),
+            *final(previous) <= 511,
+            forall|index: int| 0 <= index < final(contexts)@.len() ==>
+                arithmetic_spec::context_valid(final(contexts)@[index]),
+            match out {
+                Ok(_) => arithmetic_spec::decoder_valid(final(self)),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn decode_integer_bits(
+        &mut self,
+        previous: &mut u16,
+        bit_count: u8,
+        contexts: &mut [ArithmeticContext; INTEGER_CONTEXT_COUNT],
+    ) -> Result<u32, ArithmeticError> {
+        let mut value = 0_u32;
+        let mut remaining = bit_count;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                arithmetic_spec::decoder_valid(self),
+                *previous <= 511,
+                forall|index: int| 0 <= index < contexts@.len() ==>
+                    arithmetic_spec::context_valid(contexts@[index]),
+                remaining <= bit_count,
+            decreases remaining,
+        ))]
+        while remaining != 0 {
+            let bit = self.decode_integer_bit(previous, contexts)?;
+            value = value
+                .checked_mul(2)
+                .and_then(|partial| partial.checked_add(u32::from(bit)))
+                .ok_or(MalformedError::IntegerOverflow)?;
+            remaining -= 1;
+        }
+        Ok(value)
     }
 
     /// Returns a recognized marker without consuming it.
@@ -815,119 +1017,6 @@ impl<'a> ArithmeticDecoder<'a> {
     }
 }
 
-fn decode_integer_with<F>(mut decode: F) -> Result<ArithmeticInteger, ArithmeticError>
-where
-    F: FnMut(usize) -> Result<u8, ArithmeticError>,
-{
-    let mut previous = 1_u16;
-    let sign = integer_bit(&mut previous, &mut decode)?;
-
-    let (bit_count, offset) = if integer_bit(&mut previous, &mut decode)? == 0 {
-        (2, 0_u64)
-    } else if integer_bit(&mut previous, &mut decode)? == 0 {
-        (4, 4)
-    } else if integer_bit(&mut previous, &mut decode)? == 0 {
-        (6, 20)
-    } else if integer_bit(&mut previous, &mut decode)? == 0 {
-        (8, 84)
-    } else if integer_bit(&mut previous, &mut decode)? == 0 {
-        (12, 340)
-    } else {
-        (32, 4436)
-    };
-
-    let magnitude_bits = integer_bits(&mut previous, bit_count, &mut decode)?;
-    let magnitude = offset
-        .checked_add(u64::from(magnitude_bits))
-        .ok_or(MalformedError::IntegerOverflow)?;
-    if sign == 1 && magnitude == 0 {
-        return Ok(ArithmeticInteger::OutOfBand);
-    }
-
-    let magnitude = i64::try_from(magnitude).map_err(|_| MalformedError::IntegerOverflow)?;
-    if sign == 0 {
-        Ok(ArithmeticInteger::Value(magnitude))
-    } else {
-        let negative = magnitude
-            .checked_neg()
-            .ok_or(MalformedError::IntegerOverflow)?;
-        Ok(ArithmeticInteger::Value(negative))
-    }
-}
-
-fn integer_bits<F>(
-    previous: &mut u16,
-    bit_count: u8,
-    decode: &mut F,
-) -> Result<u32, ArithmeticError>
-where
-    F: FnMut(usize) -> Result<u8, ArithmeticError>,
-{
-    let mut value = 0_u32;
-    let mut remaining = bit_count;
-    while remaining != 0 {
-        let bit = integer_bit(previous, decode)?;
-        value = value
-            .checked_mul(2)
-            .and_then(|partial| partial.checked_add(u32::from(bit)))
-            .ok_or(MalformedError::IntegerOverflow)?;
-        remaining -= 1;
-    }
-    Ok(value)
-}
-
-fn integer_bit<F>(previous: &mut u16, decode: &mut F) -> Result<u8, ArithmeticError>
-where
-    F: FnMut(usize) -> Result<u8, ArithmeticError>,
-{
-    let context_index = (*previous & 0x01ff) as usize;
-    let decision = decode(context_index)?;
-    let shifted = (*previous << 1) | u16::from(decision);
-    *previous = if *previous < 256 {
-        shifted
-    } else {
-        (shifted & 511) | 256
-    };
-    Ok(decision)
-}
-
-fn decode_iaid_with<F>(
-    code_length: u8,
-    context_count: usize,
-    mut decode: F,
-) -> Result<u32, ArithmeticError>
-where
-    F: FnMut(usize) -> Result<u8, ArithmeticError>,
-{
-    if code_length > MAX_IAID_CODE_LENGTH {
-        return Err(ArithmeticError::InvalidIaidCodeLength(code_length));
-    }
-    let required = 1_usize
-        .checked_shl(u32::from(code_length))
-        .ok_or(ArithmeticError::InvalidIaidCodeLength(code_length))?;
-    if context_count < required {
-        return Err(ArithmeticError::InsufficientContexts {
-            required,
-            actual: context_count,
-        });
-    }
-
-    let mut previous = 1_usize;
-    let mut remaining = code_length;
-    while remaining != 0 {
-        let decision = decode(previous)?;
-        previous = previous
-            .checked_mul(2)
-            .and_then(|partial| partial.checked_add(usize::from(decision)))
-            .ok_or(MalformedError::IntegerOverflow)?;
-        remaining -= 1;
-    }
-    let value = previous
-        .checked_sub(required)
-        .ok_or(MalformedError::IntegerOverflow)?;
-    u32::try_from(value).map_err(|_| ArithmeticError::Malformed(MalformedError::IntegerOverflow))
-}
-
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 fn unexpected_eof(offset: usize, needed: usize, remaining: usize) -> ArithmeticError {
     let Ok(offset) = u64::try_from(offset) else {
@@ -959,6 +1048,105 @@ mod tests {
         0x84, 0xc7, 0x3b, 0xfc, 0xe1, 0xa1, 0x43, 0x04, 0x02, 0x20, 0x00, 0x00, 0x41, 0x0d, 0xbb,
         0x86, 0xf4, 0x31, 0x7f, 0xff, 0x88, 0xff, 0x37, 0x47, 0x1a, 0xdb, 0x6a, 0xdf, 0xff, 0xac,
     ];
+
+    fn decode_integer_with<F>(mut decode: F) -> Result<ArithmeticInteger, ArithmeticError>
+    where
+        F: FnMut(usize) -> Result<u8, ArithmeticError>,
+    {
+        let mut previous = 1_u16;
+        let sign = integer_bit(&mut previous, &mut decode)?;
+
+        let (bit_count, offset) = if integer_bit(&mut previous, &mut decode)? == 0 {
+            (2, 0_u64)
+        } else if integer_bit(&mut previous, &mut decode)? == 0 {
+            (4, 4)
+        } else if integer_bit(&mut previous, &mut decode)? == 0 {
+            (6, 20)
+        } else if integer_bit(&mut previous, &mut decode)? == 0 {
+            (8, 84)
+        } else if integer_bit(&mut previous, &mut decode)? == 0 {
+            (12, 340)
+        } else {
+            (32, 4436)
+        };
+
+        let mut magnitude_bits = 0_u32;
+        for _ in 0..bit_count {
+            let bit = integer_bit(&mut previous, &mut decode)?;
+            magnitude_bits = magnitude_bits
+                .checked_mul(2)
+                .and_then(|partial| partial.checked_add(u32::from(bit)))
+                .ok_or(MalformedError::IntegerOverflow)?;
+        }
+        let magnitude = offset
+            .checked_add(u64::from(magnitude_bits))
+            .ok_or(MalformedError::IntegerOverflow)?;
+        if sign == 1 && magnitude == 0 {
+            return Ok(ArithmeticInteger::OutOfBand);
+        }
+
+        let magnitude = i64::try_from(magnitude).map_err(|_| MalformedError::IntegerOverflow)?;
+        if sign == 0 {
+            Ok(ArithmeticInteger::Value(magnitude))
+        } else {
+            Ok(ArithmeticInteger::Value(
+                magnitude
+                    .checked_neg()
+                    .ok_or(MalformedError::IntegerOverflow)?,
+            ))
+        }
+    }
+
+    fn integer_bit<F>(previous: &mut u16, decode: &mut F) -> Result<u8, ArithmeticError>
+    where
+        F: FnMut(usize) -> Result<u8, ArithmeticError>,
+    {
+        let context_index = usize::from(*previous & 0x01ff);
+        let decision = decode(context_index)?;
+        let shifted = (*previous << 1) | u16::from(decision);
+        *previous = if *previous < 256 {
+            shifted
+        } else {
+            (shifted & 511) | 256
+        };
+        Ok(decision)
+    }
+
+    fn decode_iaid_with<F>(
+        code_length: u8,
+        context_count: usize,
+        mut decode: F,
+    ) -> Result<u32, ArithmeticError>
+    where
+        F: FnMut(usize) -> Result<u8, ArithmeticError>,
+    {
+        if code_length > MAX_IAID_CODE_LENGTH {
+            return Err(ArithmeticError::InvalidIaidCodeLength(code_length));
+        }
+        let required = 1_usize
+            .checked_shl(u32::from(code_length))
+            .ok_or(ArithmeticError::InvalidIaidCodeLength(code_length))?;
+        if context_count < required {
+            return Err(ArithmeticError::InsufficientContexts {
+                required,
+                actual: context_count,
+            });
+        }
+
+        let mut previous = 1_usize;
+        for _ in 0..code_length {
+            let decision = decode(previous)?;
+            previous = previous
+                .checked_mul(2)
+                .and_then(|partial| partial.checked_add(usize::from(decision)))
+                .ok_or(MalformedError::IntegerOverflow)?;
+        }
+        let value = previous
+            .checked_sub(required)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        u32::try_from(value)
+            .map_err(|_| ArithmeticError::Malformed(MalformedError::IntegerOverflow))
+    }
 
     #[test]
     fn qe_table_matches_annex_e_table_e_1() {
@@ -1043,6 +1231,78 @@ mod tests {
         assert_eq!(
             context,
             ArithmeticContext::from_state(18, 1).expect("valid state")
+        );
+    }
+
+    #[test]
+    fn concrete_integer_and_iaid_match_callback_reference_procedures() {
+        let mut integer_decoder =
+            ArithmeticDecoder::new(&ANNEX_H_ENCODED).expect("integer decoder");
+        let mut reference_integer_decoder =
+            ArithmeticDecoder::new(&ANNEX_H_ENCODED).expect("reference integer decoder");
+        let mut integer_contexts = [ArithmeticContext::new(); INTEGER_CONTEXT_COUNT];
+        let mut reference_integer_contexts = integer_contexts;
+
+        let actual_integer = integer_decoder
+            .decode_integer(&mut integer_contexts)
+            .expect("concrete integer");
+        let expected_integer = decode_integer_with(|context_index| {
+            reference_integer_decoder.decode(&mut reference_integer_contexts[context_index])
+        })
+        .expect("reference integer");
+        assert_eq!(actual_integer, expected_integer);
+        assert_eq!(integer_contexts, reference_integer_contexts);
+        assert_eq!(
+            (
+                integer_decoder.byte_position,
+                integer_decoder.current_byte,
+                integer_decoder.code,
+                integer_decoder.interval,
+                integer_decoder.bit_count,
+                integer_decoder.marker,
+            ),
+            (
+                reference_integer_decoder.byte_position,
+                reference_integer_decoder.current_byte,
+                reference_integer_decoder.code,
+                reference_integer_decoder.interval,
+                reference_integer_decoder.bit_count,
+                reference_integer_decoder.marker,
+            )
+        );
+
+        let mut iaid_decoder = ArithmeticDecoder::new(&ANNEX_H_ENCODED).expect("IAID decoder");
+        let mut reference_iaid_decoder =
+            ArithmeticDecoder::new(&ANNEX_H_ENCODED).expect("reference IAID decoder");
+        let mut iaid_contexts = [ArithmeticContext::new(); 8];
+        let mut reference_iaid_contexts = iaid_contexts;
+
+        let actual_iaid = iaid_decoder
+            .decode_iaid(3, &mut iaid_contexts)
+            .expect("concrete IAID");
+        let expected_iaid = decode_iaid_with(3, reference_iaid_contexts.len(), |context_index| {
+            reference_iaid_decoder.decode(&mut reference_iaid_contexts[context_index])
+        })
+        .expect("reference IAID");
+        assert_eq!(actual_iaid, expected_iaid);
+        assert_eq!(iaid_contexts, reference_iaid_contexts);
+        assert_eq!(
+            (
+                iaid_decoder.byte_position,
+                iaid_decoder.current_byte,
+                iaid_decoder.code,
+                iaid_decoder.interval,
+                iaid_decoder.bit_count,
+                iaid_decoder.marker,
+            ),
+            (
+                reference_iaid_decoder.byte_position,
+                reference_iaid_decoder.current_byte,
+                reference_iaid_decoder.code,
+                reference_iaid_decoder.interval,
+                reference_iaid_decoder.bit_count,
+                reference_iaid_decoder.marker,
+            )
         );
     }
 
