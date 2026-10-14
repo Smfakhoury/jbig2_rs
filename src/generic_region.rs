@@ -340,7 +340,7 @@ impl GenericContexts {
         extended_template: bool,
         limits: &Limits,
     ) -> Result<Self, GenericRegionError> {
-        let count = generic_context_count(template)?;
+        let count = generic_context_count(template);
         let storage_bytes = context_storage_bytes(count)?;
         let contexts = allocate_contexts(count, 0, limits)?;
         Ok(Self {
@@ -1111,7 +1111,7 @@ impl RefinementContexts {
         template: RefinementTemplate,
         limits: &Limits,
     ) -> Result<Self, GenericRegionError> {
-        let count = refinement_context_count(template)?;
+        let count = refinement_context_count(template);
         let storage_bytes = context_storage_bytes(count)?;
         let contexts = allocate_contexts(count, 0, limits)?;
         Ok(Self {
@@ -1620,24 +1620,50 @@ fn validate_observed_marker(
     Ok(())
 }
 
-fn generic_context_count(template: GenericTemplate) -> Result<usize, GenericRegionError> {
-    1_usize
-        .checked_shl(u32::from(template.context_bits()))
-        .ok_or_else(|| MalformedError::IntegerOverflow.into())
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == match template {
+        GenericTemplate::Template0 => 65_536usize,
+        GenericTemplate::Template1 => 8_192usize,
+        GenericTemplate::Template2 | GenericTemplate::Template3 => 1_024usize,
+    },
+))]
+fn generic_context_count(template: GenericTemplate) -> usize {
+    match template {
+        GenericTemplate::Template0 => 65_536,
+        GenericTemplate::Template1 => 8_192,
+        GenericTemplate::Template2 | GenericTemplate::Template3 => 1_024,
+    }
 }
 
-fn refinement_context_count(template: RefinementTemplate) -> Result<usize, GenericRegionError> {
-    1_usize
-        .checked_shl(u32::from(template.context_bits()))
-        .ok_or_else(|| MalformedError::IntegerOverflow.into())
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == match template {
+        RefinementTemplate::Template0 => 8_192usize,
+        RefinementTemplate::Template1 => 1_024usize,
+    },
+))]
+fn refinement_context_count(template: RefinementTemplate) -> usize {
+    match template {
+        RefinementTemplate::Template0 => 8_192,
+        RefinementTemplate::Template1 => 1_024,
+    }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => contexts@.len() == match template {
+            GenericTemplate::Template0 => 65_536usize,
+            GenericTemplate::Template1 => 8_192usize,
+            GenericTemplate::Template2 | GenericTemplate::Template3 => 1_024usize,
+        },
+        Err(_) => true,
+    },
+))]
 fn validate_generic_context_layout(
     template: GenericTemplate,
     _extended_template: bool,
     contexts: &[ArithmeticContext],
 ) -> Result<(), GenericRegionError> {
-    let expected = generic_context_count(template)?;
+    let expected = generic_context_count(template);
     if contexts.len() != expected {
         return Err(GenericRegionError::ContextIndex {
             index: expected,
@@ -1647,11 +1673,20 @@ fn validate_generic_context_layout(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => contexts@.len() == match template {
+            RefinementTemplate::Template0 => 8_192usize,
+            RefinementTemplate::Template1 => 1_024usize,
+        },
+        Err(_) => true,
+    },
+))]
 fn validate_refinement_context_layout(
     template: RefinementTemplate,
     contexts: &[ArithmeticContext],
 ) -> Result<(), GenericRegionError> {
-    let expected = refinement_context_count(template)?;
+    let expected = refinement_context_count(template);
     if contexts.len() != expected {
         return Err(GenericRegionError::ContextIndex {
             index: expected,
@@ -1795,15 +1830,25 @@ fn enforce_managed_memory(
     },
 ))]
 fn bitmap_storage_bytes(width: u32, height: u32) -> Result<u64, GenericRegionError> {
-    let stride = u64::from(width)
-        .checked_add(7)
-        .ok_or(MalformedError::IntegerOverflow)?
-        / 8;
-    stride
-        .checked_mul(u64::from(height))
-        .ok_or_else(|| MalformedError::IntegerOverflow.into())
+    let Some(stride) = u64::from(width).checked_add(7) else {
+        return Err(integer_overflow());
+    };
+    let Some(bytes) = (stride / 8).checked_mul(u64::from(height)) else {
+        return Err(integer_overflow());
+    };
+    Ok(bytes)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => generic_region_spec::generic_work_spec(
+            width as nat,
+            rows as nat,
+            typical_prediction,
+        ) <= limits.max_work_units,
+        Err(_) => true,
+    },
+))]
 fn enforce_generic_work(
     width: u32,
     rows: u32,
@@ -1832,20 +1877,31 @@ fn generic_work(
     rows: u32,
     typical_prediction: bool,
 ) -> Result<u64, GenericRegionError> {
-    let pixels = u64::from(width)
-        .checked_mul(u64::from(rows))
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let mut work = pixels
-        .checked_mul(17)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(pixels) = u64::from(width).checked_mul(u64::from(rows)) else {
+        return Err(integer_overflow());
+    };
+    let Some(mut work) = pixels.checked_mul(17) else {
+        return Err(integer_overflow());
+    };
     if typical_prediction {
-        work = work
-            .checked_add(u64::from(rows))
-            .ok_or(MalformedError::IntegerOverflow)?;
+        let Some(next_work) = work.checked_add(u64::from(rows)) else {
+            return Err(integer_overflow());
+        };
+        work = next_work;
     }
     Ok(work)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => generic_region_spec::refinement_work_spec(
+            width as nat,
+            height as nat,
+            typical_prediction,
+        ) <= limits.max_work_units,
+        Err(_) => true,
+    },
+))]
 fn enforce_refinement_work(
     width: u32,
     height: u32,
@@ -1855,22 +1911,41 @@ fn enforce_refinement_work(
     enforce_work(refinement_work(width, height, typical_prediction)?, limits)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(work) => work as nat
+            == generic_region_spec::refinement_work_spec(
+                width as nat,
+                height as nat,
+                typical_prediction,
+            ),
+        Err(_) => true,
+    },
+))]
 fn refinement_work(
     width: u32,
     height: u32,
     typical_prediction: bool,
 ) -> Result<u64, GenericRegionError> {
-    let pixels = u64::from(width)
-        .checked_mul(u64::from(height))
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(pixels) = u64::from(width).checked_mul(u64::from(height)) else {
+        return Err(integer_overflow());
+    };
     let multiplier = if typical_prediction { 23 } else { 14 };
-    let work = pixels
-        .checked_mul(multiplier)
-        .and_then(|value| value.checked_add(u64::from(height)))
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(partial) = pixels.checked_mul(multiplier) else {
+        return Err(integer_overflow());
+    };
+    let Some(work) = partial.checked_add(u64::from(height)) else {
+        return Err(integer_overflow());
+    };
     Ok(work)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => work <= limits.max_work_units,
+        Err(_) => work > limits.max_work_units,
+    },
+))]
 fn enforce_work(work: u64, limits: &Limits) -> Result<(), GenericRegionError> {
     if work > limits.max_work_units {
         return Err(DecodeError::LimitExceeded(LimitExceeded {
@@ -1883,8 +1958,14 @@ fn enforce_work(work: u64, limits: &Limits) -> Result<(), GenericRegionError> {
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => data@.len() <= limits.max_stream_bytes,
+        Err(_) => true,
+    },
+))]
 fn enforce_input_limit(data: &[u8], limits: &Limits) -> Result<(), GenericRegionError> {
-    let actual = u64::try_from(data.len()).map_err(|_| MalformedError::IntegerOverflow)?;
+    let actual = u64::try_from(data.len()).map_err(|_error| MalformedError::IntegerOverflow)?;
     if actual > limits.max_stream_bytes {
         return Err(DecodeError::LimitExceeded(LimitExceeded {
             kind: LimitKind::StreamBytes,
@@ -1894,6 +1975,11 @@ fn enforce_input_limit(data: &[u8], limits: &Limits) -> Result<(), GenericRegion
         .into());
     }
     Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn integer_overflow() -> GenericRegionError {
+    GenericRegionError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow))
 }
 
 fn unexpected_eof(offset: usize, needed: usize, remaining: usize) -> GenericRegionError {
