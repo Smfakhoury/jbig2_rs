@@ -1567,10 +1567,29 @@ fn sample_signed(bitmap: &Bitmap, x: Option<i64>, y: Option<i64>) -> bool {
     bitmap.pixel(x as u32, y as u32).unwrap_or(false)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires old(reader).position <= old(reader).bytes@.len(),
+))]
 fn read_offset(reader: &mut ByteReader<'_>) -> Result<TemplateOffset, GenericRegionError> {
-    let x = i8::from_ne_bytes([reader.read_u8()?]);
-    let y = i8::from_ne_bytes([reader.read_u8()?]);
-    Ok(TemplateOffset::new(i32::from(x), i32::from(y)))
+    let x = signed_offset_byte(reader.read_u8()?);
+    let y = signed_offset_byte(reader.read_u8()?);
+    Ok(TemplateOffset::new(x, y))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out as int == if value <= i8::MAX as u8 {
+        value as int
+    } else {
+        value as int - 256
+    },
+))]
+#[allow(clippy::cast_lossless, clippy::checked_conversions)]
+fn signed_offset_byte(value: u8) -> i32 {
+    if value <= i8::MAX as u8 {
+        value as i32
+    } else {
+        value as i32 - 256
+    }
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
