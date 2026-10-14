@@ -1,9 +1,13 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 557 obligations with zero errors and zero native
-assumptions. The production inventory contains 269 directly verified functions
-and 234 reviewed verifier limitations. Each limitation is bound to the exact
+Pinned Verus verifies 565 obligations with zero errors and zero native
+assumptions. The production inventory contains 273 directly verified functions
+and 228 reviewed verifier limitations. Each limitation is bound to the exact
 source-file hash in `proof-dispositions.json`.
+
+The Annex A integer and IAID callback limitation is closed: production now
+uses concrete decoder-state methods with verified context, cursor, and
+probability-state preservation contracts.
 
 The limitations are not algorithm stubs. They are complete, tested production
 functions whose direct proofs are blocked by unsupported pinned-Verus/vstd
@@ -17,6 +21,9 @@ slice coercions, formatting, and `std::io`.
    - Wrap allocation in one reusable verified abstraction.
    - Close bitmap constructors first, then reference/profile/Huffman/MMR
      allocations.
+   - Current pinned-Verus probing confirms `Vec::try_reserve_exact` is
+     unsupported and only offers `assume_specification`; that assumption is
+     not permitted by the project proof policy.
 2. **Deterministic verified stores**
    - Replace proof-facing `HashMap` operations with sorted/indexed vectors.
    - Separate `Read` acquisition from verified slice parsing.

@@ -5,65 +5,23 @@
     {
       "id": "arithmetic::ArithmeticContext::default",
       "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
+      "reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified."
     },
     {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
+      "reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified."
     },
     {
       "id": "arithmetic::ArithmeticError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
-    },
-    {
-      "id": "arithmetic::ArithmeticDecoder::decode_integer",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
-    },
-    {
-      "id": "arithmetic::ArithmeticDecoder::decode_iaid",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
-    },
-    {
-      "id": "arithmetic::decode_integer_with",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
-    },
-    {
-      "id": "arithmetic::integer_bits",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
-    },
-    {
-      "id": "arithmetic::integer_bit",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
-    },
-    {
-      "id": "arithmetic::decode_iaid_with",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops."
+      "reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified."
     },
     {
       "id": "bitmap::Bitmap::blank",

@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 557,
+  "verus_verified_obligations": 565,
   "native_assumptions": [],
   "counts": {
-    "verified": 269,
-    "reviewed-verifier-limitation": 234,
+    "verified": 273,
+    "reviewed-verifier-limitation": 228,
     "audited-forwarder": 0,
     "native-assumption": 0,
     "incomplete": 0
@@ -17,7 +17,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::new"
       ]
@@ -28,7 +28,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::from_state"
       ]
@@ -39,7 +39,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::reset"
       ]
@@ -50,7 +50,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::state_index"
       ]
@@ -61,7 +61,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::mps"
       ]
@@ -71,8 +71,8 @@
       "file": "src/arithmetic.rs",
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "disposition_reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified.",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": []
     },
     {
@@ -81,7 +81,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::reset_contexts"
       ]
@@ -91,8 +91,8 @@
       "file": "src/arithmetic.rs",
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "disposition_reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified.",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": []
     },
     {
@@ -100,8 +100,8 @@
       "file": "src/arithmetic.rs",
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "disposition_reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified.",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": []
     },
     {
@@ -110,7 +110,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::error::DecodeError::from"
       ]
@@ -121,7 +121,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::new"
       ]
@@ -132,7 +132,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode"
       ]
@@ -141,19 +141,45 @@
       "id": "arithmetic::ArithmeticDecoder::decode_integer",
       "file": "src/arithmetic.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
+      "verus_functions": [
+        "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer"
+      ]
     },
     {
       "id": "arithmetic::ArithmeticDecoder::decode_iaid",
       "file": "src/arithmetic.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
+      "verus_functions": [
+        "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_iaid"
+      ]
+    },
+    {
+      "id": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+      "file": "src/arithmetic.rs",
+      "visibility": "private",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
+      "verus_functions": [
+        "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer_bit"
+      ]
+    },
+    {
+      "id": "arithmetic::ArithmeticDecoder::decode_integer_bits",
+      "file": "src/arithmetic.rs",
+      "visibility": "private",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
+      "verus_functions": [
+        "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer_bits"
+      ]
     },
     {
       "id": "arithmetic::ArithmeticDecoder::marker",
@@ -161,7 +187,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::marker"
       ]
@@ -172,7 +198,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::byte_position"
       ]
@@ -183,7 +209,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::renormalize"
       ]
@@ -194,46 +220,10 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::byte_in"
       ]
-    },
-    {
-      "id": "arithmetic::decode_integer_with",
-      "file": "src/arithmetic.rs",
-      "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "verus_functions": []
-    },
-    {
-      "id": "arithmetic::integer_bits",
-      "file": "src/arithmetic.rs",
-      "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "verus_functions": []
-    },
-    {
-      "id": "arithmetic::integer_bit",
-      "file": "src/arithmetic.rs",
-      "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "verus_functions": []
-    },
-    {
-      "id": "arithmetic::decode_iaid_with",
-      "file": "src/arithmetic.rs",
-      "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus cannot specify stateful generic FnMut callback contracts used by Annex A helper loops.",
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
-      "verus_functions": []
     },
     {
       "id": "arithmetic::unexpected_eof",
@@ -241,7 +231,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "6930764c63efcfbbe999dda2e8d7c7d0f087108335d8d4434691dae43657f407",
+      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::unexpected_eof"
       ]

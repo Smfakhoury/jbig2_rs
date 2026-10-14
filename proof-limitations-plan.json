@@ -1,24 +1,25 @@
 {
   "schema_version": 1,
-  "production_source_revision": "2c7330851dee011a3db7da2c67ab4257dbcbc5cf",
-  "tracked_functions": 234,
+  "production_source_revision": "4ed5b53132d1a811081c3d3777f1dbed631b3df5",
+  "tracked_functions": 228,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
       "id": "VL-001",
-      "count": 9,
+      "count": 0,
       "priority": "high",
       "surface": "Arithmetic generic FnMut helpers",
       "mitigation": "Replace generic mutable callback helpers with concrete decoder state-machine methods or contribute stateful callable contracts to vstd.",
-      "exit_criteria": "Annex A integer and IAID helper loops directly verify with cursor/context preservation."
+      "exit_criteria": "Annex A integer and IAID helper loops directly verify with cursor/context preservation.",
+      "status": "completed"
     },
     {
       "id": "VL-002",
-      "count": 6,
+      "count": 9,
       "priority": "low",
-      "surface": "Formatting and std::io conversion",
-      "mitigation": "Keep formatting outside algorithm proofs; model stable IoErrorKind conversion with a small reviewed boundary contract if pinned Verus gains std::io support.",
-      "exit_criteria": "All error conversion/format functions have direct contracts or an approved native-boundary disposition."
+      "surface": "Standard trait, formatting, and std::io boundaries",
+      "mitigation": "Keep formatting outside algorithm proofs; directly verify Default and From implementations when pinned Verus supports these standard traits, and model stable IoErrorKind conversion only through a separately reviewed boundary contract.",
+      "exit_criteria": "All remaining Default, From, formatting, and I/O conversion functions have direct contracts or an approved native-boundary disposition."
     },
     {
       "id": "VL-003",
@@ -98,7 +99,8 @@
       "priority": "highest",
       "surface": "Bitmap allocation",
       "mitigation": "Create a minimal audited FallibleVec reservation contract or upstream a vstd try_reserve_exact specification; prove zero/fill initialization and padding.",
-      "exit_criteria": "Bitmap::blank and Bitmap::filled directly verify without broad assumptions."
+      "exit_criteria": "Bitmap::blank and Bitmap::filled directly verify without broad assumptions.",
+      "investigation": "Pinned Verus rejects Vec::try_reserve_exact as unsupported and suggests assume_specification. Project policy forbids that assumption, so this item remains open pending direct vstd support or a separately reviewed native allocation boundary."
     }
   ],
   "milestones": [
