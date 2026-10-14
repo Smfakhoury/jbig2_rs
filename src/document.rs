@@ -1208,8 +1208,16 @@ pub(crate) fn read_bounded_input<R: Read>(
     Ok(output)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => length as nat <= limits.max_stream_bytes,
+        Err(_) => true,
+    },
+))]
 fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeError> {
-    let actual = u64::try_from(length).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(actual) = u64::try_from(length) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     if actual > limits.max_stream_bytes {
         return Err(LimitExceeded {
             kind: LimitKind::StreamBytes,
@@ -1221,11 +1229,19 @@ fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeErro
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => count as nat + 1 <= limits.max_segments,
+        Err(_) => true,
+    },
+))]
 fn enforce_segment_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {
-    let actual = count
-        .checked_add(1)
-        .and_then(|value| u64::try_from(value).ok())
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(next_count) = count.checked_add(1) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Ok(actual) = u64::try_from(next_count) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     if actual > u64::from(limits.max_segments) {
         return Err(LimitExceeded {
             kind: LimitKind::Segments,
@@ -1237,11 +1253,19 @@ fn enforce_segment_limit(count: usize, limits: &Limits) -> Result<(), DecodeErro
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => count as nat + 1 <= limits.max_pages,
+        Err(_) => true,
+    },
+))]
 fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {
-    let actual = count
-        .checked_add(1)
-        .and_then(|value| u64::try_from(value).ok())
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(next_count) = count.checked_add(1) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Ok(actual) = u64::try_from(next_count) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     if actual > u64::from(limits.max_pages) {
         return Err(LimitExceeded {
             kind: LimitKind::Pages,
@@ -1253,26 +1277,40 @@ fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> 
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn enforce_work_limit(
     input_length: usize,
     segments: &[ParsedSegment<'_>],
     limits: &Limits,
 ) -> Result<(), DecodeError> {
-    let input_work = u64::try_from(input_length).map_err(|_| MalformedError::IntegerOverflow)?;
-    let segment_work =
-        u64::try_from(segments.len()).map_err(|_| MalformedError::IntegerOverflow)?;
-    let reference_work = segments.iter().try_fold(0_u64, |total, segment| {
-        total
-            .checked_add(
-                u64::try_from(segment.header.referred_segments.len())
-                    .map_err(|_| MalformedError::IntegerOverflow)?,
-            )
-            .ok_or(MalformedError::IntegerOverflow)
-    })?;
-    let actual = input_work
-        .checked_add(segment_work)
-        .and_then(|work| work.checked_add(reference_work))
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Ok(input_work) = u64::try_from(input_length) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Ok(segment_work) = u64::try_from(segments.len()) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let mut reference_work = 0_u64;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= segments@.len(),
+        decreases segments@.len() - index,
+    ))]
+    while index < segments.len() {
+        let Ok(count) = u64::try_from(segments[index].header.referred_segments.len()) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        let Some(next) = reference_work.checked_add(count) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        reference_work = next;
+        index += 1;
+    }
+    let Some(partial) = input_work.checked_add(segment_work) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Some(actual) = partial.checked_add(reference_work) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     if actual > limits.max_work_units {
         return Err(LimitExceeded {
             kind: LimitKind::Work,
@@ -1284,8 +1322,16 @@ fn enforce_work_limit(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => input_length as nat <= limits.max_work_units,
+        Err(_) => true,
+    },
+))]
 fn enforce_input_work(input_length: usize, limits: &Limits) -> Result<(), DecodeError> {
-    let actual = u64::try_from(input_length).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(actual) = u64::try_from(input_length) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     if actual > limits.max_work_units {
         return Err(LimitExceeded {
             kind: LimitKind::Work,
