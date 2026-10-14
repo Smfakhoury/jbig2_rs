@@ -1866,11 +1866,26 @@ fn clipped_coordinate(origin: u32, offset: u32, bound: u32) -> Option<u32> {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(page) => crate::views::page_number(page) == number,
+        Err(_) => true,
+    },
+))]
 fn find_page_info(info: &DocumentInfo, number: u32) -> Result<&PageInfo, DecodeError> {
-    info.pages()
-        .iter()
-        .find(|page| page.number() == number)
-        .ok_or_else(|| MalformedError::MissingPageInformation(number).into())
+    let pages = info.pages();
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= pages@.len(),
+        decreases pages@.len() - index,
+    ))]
+    while index < pages.len() {
+        if pages[index].number() == number {
+            return Ok(&pages[index]);
+        }
+        index += 1;
+    }
+    Err(MalformedError::MissingPageInformation(number).into())
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1889,21 +1904,33 @@ fn allocation_size<T>(count: usize) -> Result<u64, DecodeError> {
     Ok(bytes)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn structural_work(
     input_length: usize,
     segments: &[ParsedSegment<'_>],
 ) -> Result<u64, DecodeError> {
-    let input = u64::try_from(input_length).map_err(|_| MalformedError::IntegerOverflow)?;
-    let segment_count =
-        u64::try_from(segments.len()).map_err(|_| MalformedError::IntegerOverflow)?;
-    let references = segments.iter().try_fold(0_u64, |total, segment| {
-        total
-            .checked_add(
-                u64::try_from(segment.header.referred_segments.len())
-                    .map_err(|_| MalformedError::IntegerOverflow)?,
-            )
-            .ok_or(MalformedError::IntegerOverflow)
-    })?;
+    let Ok(input) = u64::try_from(input_length) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Ok(segment_count) = u64::try_from(segments.len()) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let mut references = 0_u64;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= segments@.len(),
+        decreases segments@.len() - index,
+    ))]
+    while index < segments.len() {
+        let Ok(count) = u64::try_from(segments[index].header.referred_segments.len()) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        let Some(next) = references.checked_add(count) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        references = next;
+        index += 1;
+    }
     structural_work_totals(input, segment_count, references)
 }
 

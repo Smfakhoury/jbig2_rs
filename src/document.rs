@@ -363,6 +363,7 @@ impl PageInfo {
 }
 
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct ParsedSegment<'a> {
     pub(crate) header: SegmentHeader,
     #[allow(dead_code)]
@@ -371,6 +372,7 @@ pub(crate) struct ParsedSegment<'a> {
 }
 
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) enum ParsedData {
     Page(PageInformation),
     EndOfStripe(u32),
