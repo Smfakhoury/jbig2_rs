@@ -15,6 +15,32 @@
   },
   "wall_seconds": 0.24,
   "peak_kib": 109324,
+  "generated_scaling": {
+    "command": "cargo run --release --example perf_smoke",
+    "cases": [
+      {
+        "width": 64,
+        "height": 64,
+        "input_bytes": 102,
+        "output_bytes": 512,
+        "elapsed_micros": 73
+      },
+      {
+        "width": 512,
+        "height": 512,
+        "input_bytes": 158,
+        "output_bytes": 32768,
+        "elapsed_micros": 1513
+      },
+      {
+        "width": 2048,
+        "height": 2048,
+        "input_bytes": 350,
+        "output_bytes": 524288,
+        "elapsed_micros": 32737
+      }
+    ]
+  },
   "threshold_evaluation": "blocked pending owner-approved regression thresholds",
   "scope_note": "This is a generated/runtime smoke baseline, not a representative PDF corpus benchmark."
 }

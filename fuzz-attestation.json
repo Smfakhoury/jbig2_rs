@@ -7,40 +7,40 @@
     {
       "name": "file_header_arbitrary",
       "build": "passed",
-      "duration_seconds": 30
+      "duration_seconds": 90
     },
     {
       "name": "file_header_structured",
       "build": "passed",
-      "duration_seconds": 30
+      "duration_seconds": 90
     },
     {
       "name": "document_arbitrary",
       "build": "passed",
-      "duration_seconds": 30
+      "duration_seconds": 90
     },
     {
       "name": "arithmetic",
       "build": "passed",
-      "duration_seconds": 30
+      "duration_seconds": 90
     },
     {
       "name": "huffman",
       "build": "passed",
-      "duration_seconds": 30
+      "duration_seconds": 90
     },
     {
       "name": "mmr",
       "build": "passed",
-      "duration_seconds": 30
+      "duration_seconds": 90
     },
     {
       "name": "generic_region",
       "build": "passed",
-      "duration_seconds": 30
+      "duration_seconds": 90
     }
   ],
-  "total_duration_seconds": 210,
+  "total_duration_seconds": 630,
   "crashes": 0,
   "timeouts": 0,
   "ooms": 0,
