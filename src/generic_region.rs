@@ -9,7 +9,7 @@
 use core::fmt;
 use core::mem::size_of;
 
-use crate::arithmetic::{reset_contexts, ArithmeticContext, ArithmeticDecoder};
+use crate::arithmetic::{reset_contexts, ArithmeticContext, ArithmeticDecoder, ArithmeticError};
 use crate::mmr::{decode_mmr, EofbPolicy, MmrError};
 use crate::reader::ByteReader;
 use crate::segment_data::{parse_region_info, RegionInfo};
@@ -328,6 +328,7 @@ pub(crate) struct GenericContexts {
 
 /// A fallibly allocated retained copy of generic arithmetic statistics.
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericContextSnapshot {
     template: GenericTemplate,
     extended_template: bool,
@@ -377,6 +378,7 @@ impl GenericContexts {
     }
 
     /// Restore retained statistics, rejecting a snapshot for another template.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn restore(
         &mut self,
         snapshot: &GenericContextSnapshot,
@@ -403,7 +405,17 @@ impl GenericContexts {
             });
         }
         validate_probability_states(&snapshot.contexts)?;
-        self.contexts.copy_from_slice(&snapshot.contexts);
+        let mut index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                self.contexts@.len() == snapshot.contexts@.len(),
+                index <= self.contexts@.len(),
+            decreases self.contexts@.len() - index,
+        ))]
+        while index < self.contexts.len() {
+            self.contexts[index] = snapshot.contexts[index];
+            index += 1;
+        }
         Ok(())
     }
 }
@@ -1107,6 +1119,7 @@ pub(crate) struct RefinementContexts {
 
 /// A fallibly allocated retained copy of refinement arithmetic statistics.
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementContextSnapshot {
     template: RefinementTemplate,
     contexts: Vec<ArithmeticContext>,
@@ -1152,6 +1165,7 @@ impl RefinementContexts {
     }
 
     /// Restore retained statistics, rejecting a snapshot for another template.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn restore(
         &mut self,
         snapshot: &RefinementContextSnapshot,
@@ -1171,7 +1185,17 @@ impl RefinementContexts {
             });
         }
         validate_probability_states(&snapshot.contexts)?;
-        self.contexts.copy_from_slice(&snapshot.contexts);
+        let mut index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                self.contexts@.len() == snapshot.contexts@.len(),
+                index <= self.contexts@.len(),
+            decreases self.contexts@.len() - index,
+        ))]
+        while index < self.contexts.len() {
+            self.contexts[index] = snapshot.contexts[index];
+            index += 1;
+        }
         Ok(())
     }
 }
@@ -1767,11 +1791,47 @@ fn validate_refinement_context_layout(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) => forall|index: int| 0 <= index < contexts@.len() ==>
+            contexts@[index].state_index < 47 && contexts@[index].mps <= 1,
+        Err(_) => true,
+    },
+))]
 fn validate_probability_states(contexts: &[ArithmeticContext]) -> Result<(), GenericRegionError> {
-    for context in contexts {
-        ArithmeticContext::from_state(context.state_index(), context.mps())
-            .map_err(DecodeError::from)
-            .map_err(GenericRegionError::from)?;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= contexts@.len(),
+            forall|completed: int| 0 <= completed < index ==>
+                contexts@[completed].state_index < 47
+                    && contexts@[completed].mps <= 1,
+        decreases contexts@.len() - index,
+    ))]
+    while index < contexts.len() {
+        let context = contexts[index];
+        if let Err(error) = ArithmeticContext::from_state(context.state_index(), context.mps()) {
+            let error = match error {
+                ArithmeticError::Malformed(error) => DecodeError::Malformed(error),
+                ArithmeticError::InvalidContextState { state_index, mps } => {
+                    DecodeError::Malformed(MalformedError::InvalidArithmeticContextState {
+                        state_index,
+                        mps,
+                    })
+                }
+                ArithmeticError::InsufficientContexts { required, actual } => {
+                    DecodeError::Malformed(MalformedError::InsufficientArithmeticContexts {
+                        required,
+                        actual,
+                    })
+                }
+                ArithmeticError::InvalidIaidCodeLength(length) => {
+                    DecodeError::Malformed(MalformedError::InvalidIaidCodeLength(length))
+                }
+            };
+            return Err(GenericRegionError::Decode(error));
+        }
+        index += 1;
     }
     Ok(())
 }
