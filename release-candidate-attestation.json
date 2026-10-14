@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
   "status": "internal_candidate_validated_publication_blocked",
-  "candidate_revision": "d3e3a8bb32ee6866a9bc112c9bd10840d5c4b2b2",
-  "production_source_revision": "2c7330851dee011a3db7da2c67ab4257dbcbc5cf",
+  "candidate_revision": "5341f052a124eeac1f11cb9cb5f9f21a3866f49f",
+  "production_source_revision": "4ed5b53132d1a811081c3d3777f1dbed631b3df5",
   "crate_version": "0.0.1",
   "publication_enabled": false,
   "evidence": {
     "support_matrix_sha256": "b788326119597a4d240733dbc50715034e696d7492a05b24e847ee8f6983dd8c",
     "source_provenance_sha256": "1bd2898d4e345a854c718dcfc3062aa4c4a0d5f65f6fd8b3c3b6387bcf9d4e30",
-    "proof_attestation_sha256": "6c2327ce4f8293d59d98a79eea5e7d25fc9ba607ad46589d448c61be2aaee525",
-    "conformance_attestation_sha256": "edf2acc9a97c3b2bbd68895115ea3c48a0b65dcc1738b68eaccfd91a9470a88f",
-    "fuzz_attestation_sha256": "bbcf1d178cb335b2221f347d0bb4915ceb4c0b23b1c3c9942685575972354c97",
+    "proof_attestation_sha256": "4e600a8709acc47116d79047b2191a689fdee1b9c007bef7d50753d39c6427a8",
+    "conformance_attestation_sha256": "a9b05dbc25069b1b8831d070bf18fe3699c70cd2ded751e45981814817c7b7a1",
+    "fuzz_attestation_sha256": "23204506e32c5c9c499d9bfb53557bc747c0cfd35c3660e68bb9a9fd485a7b0b",
     "toolchain_sha256": "2b70822b1d375655fac4c8adab7f9697243e7d41666020265a8b0db619949f51",
-    "performance_results_sha256": "df41d022d0d9b51d9a67eefb4e9d2a72d0a27ea14caff26a96ca6d207bd3cb29"
+    "performance_results_sha256": "9d6172dc5c61c219f7e4c1108254a99288e56ebeccc2d3c8f9ab73c7d37b55c2"
   },
   "validation": {
     "implementation_tests": {
-      "passed": 159,
+      "passed": 160,
       "failed": 0
     },
     "verus": {
-      "verified_obligations": 557,
+      "verified_obligations": 565,
       "errors": 0,
       "native_assumptions": 0
     },
     "production_functions": {
-      "verified": 269,
-      "reviewed_verifier_limitations": 234,
+      "verified": 273,
+      "reviewed_verifier_limitations": 228,
       "incomplete": 0
     },
     "fuzz": {
