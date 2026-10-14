@@ -1,13 +1,14 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 565 obligations with zero errors and zero native
-assumptions. The production inventory contains 273 directly verified functions
-and 228 reviewed verifier limitations. Each limitation is bound to the exact
+Pinned Verus verifies 566 obligations with zero errors and zero native
+assumptions. The production inventory contains 274 directly verified functions
+and 227 reviewed verifier limitations. Each limitation is bound to the exact
 source-file hash in `proof-dispositions.json`.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
 probability-state preservation contracts.
+Default arithmetic-context construction is also directly verified.
 
 The limitations are not algorithm stubs. They are complete, tested production
 functions whose direct proofs are blocked by unsupported pinned-Verus/vstd

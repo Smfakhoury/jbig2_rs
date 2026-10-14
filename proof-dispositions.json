@@ -3,25 +3,18 @@
   "policy": "Every unverified production function must have a reviewed, body-hash-bound disposition. A source change makes the disposition stale.",
   "functions": [
     {
-      "id": "arithmetic::ArithmeticContext::default",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified."
-    },
-    {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
+      "file_sha256": "aab9b40c2d34ff21fd5ae7fbf19a5031a20dd3f92548f5614dfe56df0170c9d6",
       "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified."
+      "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
     },
     {
       "id": "arithmetic::ArithmeticError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "2ce5e4c7930888aef2ce3aabbac0222e552584c4c9c102e3bb04448add5de13a",
+      "file_sha256": "aab9b40c2d34ff21fd5ae7fbf19a5031a20dd3f92548f5614dfe56df0170c9d6",
       "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus does not directly verify the remaining standard Default, From, and formatting trait implementations; Annex A decoder algorithms are directly verified."
+      "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
     },
     {
       "id": "bitmap::Bitmap::blank",
