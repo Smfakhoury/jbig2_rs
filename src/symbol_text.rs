@@ -2320,12 +2320,14 @@ pub(crate) fn symbol_id_code_length(symbol_count: u32) -> Result<u8, SymbolTextE
 /// kilobytes of fixed-size canonical-code arrays, and boxing avoids forcing
 /// every `ResolvedTable` (most of which are small borrows of caller-owned
 /// custom tables) to reserve that much inline space.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 enum ResolvedTable<'a> {
     Owned(Box<HuffmanTable>),
     Borrowed(&'a HuffmanTable),
 }
 
 impl ResolvedTable<'_> {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn table(&self) -> &HuffmanTable {
         match self {
             Self::Owned(table) => table,
@@ -2387,6 +2389,7 @@ fn find_table_binding<'a>(
 /// [`IntegerField::WithinStripT`] and [`IntegerField::RefinementIndicator`]
 /// are intentionally absent: T.88 decodes both as raw fixed-width bits, never
 /// through a Huffman table.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 struct HuffmanFieldTables<'a> {
     aggregation_instances: Option<ResolvedTable<'a>>,
     height_delta: Option<ResolvedTable<'a>>,
@@ -2404,6 +2407,7 @@ struct HuffmanFieldTables<'a> {
 }
 
 impl<'a> HuffmanFieldTables<'a> {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     const fn empty() -> Self {
         Self {
             aggregation_instances: None,
@@ -2547,6 +2551,7 @@ impl<'a> HuffmanFieldTables<'a> {
         Ok(tables)
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn table_for(&self, field: IntegerField) -> Option<&HuffmanTable> {
         let resolved = match field {
             IntegerField::AggregationInstances => self.aggregation_instances.as_ref(),
@@ -2581,6 +2586,7 @@ impl<'a> HuffmanFieldTables<'a> {
 // ---------------------------------------------------------------------------
 
 /// Per-[`IntegerField`] arithmetic probability contexts.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 struct IntegerContexts {
     slots: [[ArithmeticContext; 512]; INTEGER_FIELD_COUNT],
 }
@@ -2592,6 +2598,7 @@ impl IntegerContexts {
         }
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn slot_mut(&mut self, field: IntegerField) -> &mut [ArithmeticContext; 512] {
         &mut self.slots[field.slot()]
     }
