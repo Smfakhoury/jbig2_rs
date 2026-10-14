@@ -796,6 +796,7 @@ fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> 
 }
 
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 struct PageState {
     info: PageInformation,
     last_stripe: Option<u32>,
@@ -811,6 +812,7 @@ impl PageState {
         }
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn add_stripe(&mut self, row: u32) -> Result<(), DecodeError> {
         if !self.info.striped {
             return Err(MalformedError::InvalidStripeEndRow(row).into());
@@ -831,6 +833,7 @@ impl PageState {
         Ok(())
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn finish(&mut self) -> Result<(), DecodeError> {
         if self.ended {
             return Err(MalformedError::DuplicatePageBoundary {
@@ -846,6 +849,7 @@ impl PageState {
         Ok(())
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn into_public(self, number: u32) -> Result<PageInfo, DecodeError> {
         let height = match (self.info.height, self.last_stripe) {
             (Some(height), _) => height,
