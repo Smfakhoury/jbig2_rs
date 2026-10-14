@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 566,
+  "verus_verified_obligations": 573,
   "native_assumptions": [],
   "counts": {
-    "verified": 274,
-    "reviewed-verifier-limitation": 226,
+    "verified": 281,
+    "reviewed-verifier-limitation": 219,
     "audited-forwarder": 0,
     "native-assumption": 0,
     "incomplete": 0
@@ -2436,7 +2436,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2445,7 +2445,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2454,7 +2454,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2463,7 +2463,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2472,7 +2472,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::WorkBudget::new"
       ]
@@ -2483,7 +2483,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::WorkBudget::used"
       ]
@@ -2494,7 +2494,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::WorkBudget::charge"
       ]
@@ -2505,7 +2505,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2514,7 +2514,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::error::DecodeError::from"
       ]
@@ -2525,7 +2525,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::PatternDictionaryHeader::pattern_count"
       ]
@@ -2536,7 +2536,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::halftone_spec::pattern_flags_valid",
         "jbig2_rs_production::halftone::pattern_flags_valid"
@@ -2548,7 +2548,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::template_from_flags"
       ]
@@ -2559,7 +2559,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::parse_pattern_dictionary_header"
       ]
@@ -2570,7 +2570,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::halftone_flags_valid",
         "jbig2_rs_production::halftone::halftone_spec::halftone_flags_valid"
@@ -2582,7 +2582,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::combination_operator"
       ]
@@ -2593,7 +2593,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::signed_grid_origin"
       ]
@@ -2604,7 +2604,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::parse_halftone_header"
       ]
@@ -2615,7 +2615,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::checked_collective_width"
       ]
@@ -2626,7 +2626,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2635,7 +2635,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2644,7 +2644,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::gray_bit_depth_value"
       ]
@@ -2655,7 +2655,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::gray_bit_depth"
       ]
@@ -2666,7 +2666,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::gray_to_binary_bit"
       ]
@@ -2677,7 +2677,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2686,7 +2686,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::grid_fixed_position"
       ]
@@ -2697,7 +2697,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::fixed_to_pixel"
       ]
@@ -2708,7 +2708,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::grid_position"
       ]
@@ -2719,7 +2719,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::half_open_outside"
       ]
@@ -2730,7 +2730,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2739,7 +2739,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::validate_pattern_indices"
       ]
@@ -2750,7 +2750,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2759,7 +2759,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
@@ -2768,7 +2768,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::clipped_axis"
       ]
@@ -2777,37 +2777,45 @@
       "id": "halftone::pattern_adaptive_pixels",
       "file": "src/halftone.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "verus_functions": [
+        "jbig2_rs_production::halftone::pattern_adaptive_pixels"
+      ]
     },
     {
       "id": "halftone::gray_adaptive_pixels",
       "file": "src/halftone.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "verus_functions": [
+        "jbig2_rs_production::halftone::gray_adaptive_pixels"
+      ]
     },
     {
       "id": "halftone::validate_pattern_header",
       "file": "src/halftone.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "verus_functions": [
+        "jbig2_rs_production::halftone::validate_pattern_header"
+      ]
     },
     {
       "id": "halftone::require_bitmap_dimensions",
       "file": "src/halftone.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "verus_functions": [
+        "jbig2_rs_production::halftone::require_bitmap_dimensions"
+      ]
     },
     {
       "id": "halftone::checked_memory_sum",
@@ -2815,7 +2823,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::checked_memory_sum"
       ]
@@ -2826,17 +2834,19 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": []
     },
     {
       "id": "halftone::enforce_bitmap_dimensions",
       "file": "src/halftone.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "verus_functions": [
+        "jbig2_rs_production::halftone::enforce_bitmap_dimensions"
+      ]
     },
     {
       "id": "halftone::enforce_limit",
@@ -2844,7 +2854,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::enforce_limit"
       ]
@@ -2853,10 +2863,12 @@
       "id": "halftone::bitmap_bytes",
       "file": "src/halftone.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "verus_functions": [
+        "jbig2_rs_production::halftone::bitmap_bytes"
+      ]
     },
     {
       "id": "halftone::row_major_offset",
@@ -2864,7 +2876,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
       "verus_functions": [
         "jbig2_rs_production::halftone::halftone_spec::row_major_offset",
         "jbig2_rs_production::halftone::row_major_offset"
@@ -2874,10 +2886,12 @@
       "id": "halftone::pixel_offset",
       "file": "src/halftone.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths.",
-      "file_sha256": "a2b25677451ea08430b244b978288423a667728e608eb8ddfbb4ef5991b45378",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "verus_functions": [
+        "jbig2_rs_production::halftone::pixel_offset"
+      ]
     },
     {
       "id": "huffman::HuffmanError::from",
