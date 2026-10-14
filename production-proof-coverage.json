@@ -5,7 +5,7 @@
   "native_assumptions": [],
   "counts": {
     "verified": 274,
-    "reviewed-verifier-limitation": 227,
+    "reviewed-verifier-limitation": 226,
     "audited-forwarder": 0,
     "native-assumption": 0,
     "incomplete": 0
@@ -3076,15 +3076,6 @@
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::decode"
       ]
-    },
-    {
-      "id": "huffman::HuffmanTable::code_for_line",
-      "file": "src/huffman.rs",
-      "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications.",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "verus_functions": []
     },
     {
       "id": "huffman::next_prefix_length",

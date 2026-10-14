@@ -44,6 +44,21 @@ def production_source(source: str) -> str:
     )[0]
 
 
+def is_test_only_item(source: str, position: int) -> bool:
+    line_start = source.rfind("\n", 0, position) + 1
+    cursor = line_start
+    attributes = []
+    while cursor > 0:
+        previous_end = cursor - 1
+        previous_start = source.rfind("\n", 0, previous_end) + 1
+        line = source[previous_start:previous_end].strip()
+        if not line.startswith("#["):
+            break
+        attributes.append(line)
+        cursor = previous_start
+    return "#[cfg(test)]" in attributes
+
+
 def block_owner(kind: str, header: str) -> str | None:
     header = re.sub(r"\s+", " ", header).strip()
     if kind == "trait":
@@ -107,6 +122,8 @@ def source_functions() -> list[dict]:
         except RuntimeError as error:
             raise RuntimeError(f"{path.relative_to(ROOT)}: {error}") from error
         for match in FUNCTION.finditer(code_without_strings(source)):
+            if is_test_only_item(source, match.start()):
+                continue
             scope = next(
                 (
                     block

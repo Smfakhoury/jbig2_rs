@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "production_source_revision": "3be3f0bb46a916ef7427ced97c76ef6ac4d1c206",
-  "tracked_functions": 227,
+  "tracked_functions": 226,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -63,7 +63,7 @@
     },
     {
       "id": "VL-008",
-      "count": 13,
+      "count": 12,
       "priority": "medium",
       "surface": "Huffman table allocation/construction",
       "mitigation": "Use verified FallibleVec, explicit allocation-size lemmas, and slice-view adapters for static standard tables.",

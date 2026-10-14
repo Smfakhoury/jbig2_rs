@@ -18,11 +18,11 @@
     "algorithm_bodies_verified": false,
     "production_coverage_complete": true,
     "native_assumptions": [],
-    "reviewed_verifier_limitations": 227,
+    "reviewed_verifier_limitations": 226,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "03a3183e2312a1e4dd67421a4856480dfb1fa55409bdb2627fa8ab649475698f",
-  "proof_dispositions_sha256": "2db422c909189106d2268a2a3c38c439616715713f0d792611a4514e81c61a71",
+  "production_proof_coverage_sha256": "b16f6cbdd1dc5826461cfe6b85477ae10e9847a8389fe7e6211a5b7da96ae8e5",
+  "proof_dispositions_sha256": "2f9f779f76145721a1b171927324746ffed2abb2b529d935ef9b50473476a49a",
   "duplicate_executable_proof_source": false,
   "release_gate": "blocked"
 }

@@ -1109,13 +1109,6 @@
       "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
     },
     {
-      "id": "huffman::HuffmanTable::code_for_line",
-      "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
-    },
-    {
       "id": "huffman::standard_lines",
       "file": "src/huffman.rs",
       "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
