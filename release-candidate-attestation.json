@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "status": "blocked_external_approvals",
+  "candidate_revision": "5c6b04610cb671c8b4a68e87c8e4c80891c20e02",
+  "production_source_revision": "e198d95503d03c484bdbbf1cacadb5f459f56794",
+  "crate_version": "0.0.1",
+  "publication_enabled": false,
+  "evidence": {
+    "support_matrix_sha256": "b788326119597a4d240733dbc50715034e696d7492a05b24e847ee8f6983dd8c",
+    "source_provenance_sha256": "e437ee20123a4c8d542816052a18df82bef4aedefad2a2c6d5240a1947fceba4",
+    "proof_attestation_sha256": "90578a1185c402681795b1bc461d570a7e5934b87207eaa5d3020ead6d7cbbab",
+    "conformance_attestation_sha256": "21d78f41f67057e255ff6c265b46e9e55e908f6b0bf650431bfda101faf2176e",
+    "fuzz_attestation_sha256": "d3cf240ead4e66f37e45f051b1be3028268dd4108ef1a53ac430c6ad9e70c130",
+    "toolchain_sha256": "2b70822b1d375655fac4c8adab7f9697243e7d41666020265a8b0db619949f51",
+    "performance_results_sha256": "58c3409270721fff70071a768b7ee4f3be0819fb50c87291f261ab7a4250dd62"
+  },
+  "validation": {
+    "implementation_tests": {
+      "passed": 159,
+      "failed": 0
+    },
+    "verus": {
+      "verified_obligations": 557,
+      "errors": 0,
+      "native_assumptions": 0
+    },
+    "production_functions": {
+      "verified": 269,
+      "reviewed_verifier_limitations": 232,
+      "incomplete": 0
+    },
+    "fuzz": {
+      "targets": 7,
+      "duration_seconds": 630,
+      "crashes": 0,
+      "timeouts": 0,
+      "ooms": 0
+    },
+    "package": {
+      "proof_free": true,
+      "file_count": 22,
+      "verified": true
+    },
+    "cross_target_checks": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-pc-windows-gnu",
+      "x86_64-apple-darwin"
+    ]
+  },
+  "conformance": {
+    "normative_vectors_run": 0,
+    "differential_cases_run": 0,
+    "reason": "Execution is prohibited until the standards/legal owner and CELA approve the vectors and pinned black-box oracles."
+  },
+  "required_approvals": [
+    "resource_limit_ratification",
+    "crate_license",
+    "normative_vector_use",
+    "normative_vector_redistribution",
+    "jbig2dec_oracle_execution",
+    "poppler_oracle_execution",
+    "performance_regression_thresholds",
+    "native_linux_ci",
+    "native_windows_ci",
+    "native_macos_ci",
+    "architecture",
+    "cela",
+    "release_owner",
+    "publication"
+  ],
+  "claims": {
+    "allowed": [
+      "Memory-safe Rust decoder for the approved project-defined broad bi-level profile"
+    ],
+    "prohibited": [
+      "Full JBIG2 conformance",
+      "Complete JBIG2 codec",
+      "Encoder support",
+      "Annex F profile 0x00000001 conformance"
+    ]
+  }
+}

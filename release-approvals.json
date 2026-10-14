@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "candidate_revision": "5c6b04610cb671c8b4a68e87c8e4c80891c20e02",
+  "production_source_revision": "e198d95503d03c484bdbbf1cacadb5f459f56794",
+  "approvals": [
+    {
+      "id": "resource_limit_ratification",
+      "owner": "architecture/release owner",
+      "status": "pending",
+      "decision": "Ratify 1 GiB input, 10,000 pages, 4 GiB cumulative decoded bitmap bytes, and 512 MiB retained state."
+    },
+    {
+      "id": "crate_license",
+      "owner": "CELA/legal and release owner",
+      "status": "pending",
+      "decision": "Select and approve the crate license before adding Cargo license metadata."
+    },
+    {
+      "id": "normative_vector_use",
+      "owner": "standards/legal owner",
+      "status": "pending",
+      "decision": "Approve local execution of the pinned ITU T.88 conformance-data package."
+    },
+    {
+      "id": "normative_vector_redistribution",
+      "owner": "CELA/legal",
+      "status": "pending",
+      "decision": "Approve or prohibit redistribution of each vector; default remains prohibited."
+    },
+    {
+      "id": "jbig2dec_oracle_execution",
+      "owner": "CELA/legal",
+      "status": "pending",
+      "decision": "Approve black-box execution of pinned AGPL jbig2dec revision 6e8205ba61a206a0830f4884ebe52be615735f3d."
+    },
+    {
+      "id": "poppler_oracle_execution",
+      "owner": "CELA/legal",
+      "status": "pending",
+      "decision": "Approve black-box execution of pinned Poppler revision a45f83bdd75a7b1af73eef729383c4291abf27a3."
+    },
+    {
+      "id": "performance_regression_thresholds",
+      "owner": "performance/release owner",
+      "status": "pending",
+      "decision": "Set release-blocking wall-time and peak-memory regression thresholds."
+    },
+    {
+      "id": "native_ci_attestations",
+      "owner": "release owner",
+      "status": "pending",
+      "decision": "Record successful native Linux, Windows, and macOS workflow runs."
+    },
+    {
+      "id": "architecture",
+      "owner": "architecture owner",
+      "status": "pending",
+      "decision": "Approve architecture and reviewed verifier limitations."
+    },
+    {
+      "id": "cela",
+      "owner": "CELA/legal",
+      "status": "pending",
+      "decision": "Approve publication and all third-party validation uses."
+    },
+    {
+      "id": "release_owner",
+      "owner": "release owner",
+      "status": "pending",
+      "decision": "Approve the candidate after all other gates pass."
+    },
+    {
+      "id": "publication",
+      "owner": "release owner",
+      "status": "pending",
+      "decision": "Change publish=false only in a separately reviewed release revision."
+    }
+  ]
+}
