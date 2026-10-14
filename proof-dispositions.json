@@ -971,371 +971,343 @@
     {
       "id": "symbol_text::SymbolTextError::from",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::SymbolTextError::from#2",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::SymbolTextError::from#3",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::SymbolTextError::from#4",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::SymbolTextError::from#5",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::SymbolTextError::from#6",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::SymbolTextError::from#7",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::prepare_symbol_ids",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::associate_dictionary_tables",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::associate_text_tables",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::bind_tables",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_export_runs",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::expand_symbol_code_lengths",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::build_symbol_id_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_checked_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_refined_bitmap",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::required_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::compose_placement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::parse_text_region_header",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::ResolvedTable::table",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::owned_standard_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::resolve_bound_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::HuffmanFieldTables::empty",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanFieldTables::for_dictionary",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanFieldTables::for_nested_aggregate",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanFieldTables::for_text_region",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::HuffmanFieldTables::table_for",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::IntegerContexts::slot_mut",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::ArithmeticEntropy::decode_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::ArithmeticEntropy::decode_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::ArithmeticRefinement::decode_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::normalized_bounded_arithmetic",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::build_symbol_id_runcode_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::read_raw_bits",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::decode_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::decode_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::prepare_symbol_ids",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanRefinement::decode_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::bitmap_from_packed_bytes",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::crop_bitmap_columns",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::clone_bitmap",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::wrap_custom_tables",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_dictionary_single_instance_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_text_region_body",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_one_new_symbol",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_dictionary_arithmetic",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_dictionary_huffman",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::assemble_exported_symbols",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_dictionary",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_text_region",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f128a05a78b17ffb0afcf30466d04bea9317506f70faca712ac8d4db62c3809d",
+      "file_sha256": "268d6c7c94e303096017eb537c96e119aaf8b98d88cead738148ee0d70504c9d",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     }
