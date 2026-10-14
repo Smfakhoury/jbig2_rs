@@ -1590,6 +1590,8 @@ fn validate_target_adaptive(number: u8, offset: TemplateOffset) -> Result<(), Ge
     })
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[allow(clippy::cast_possible_truncation)]
 fn validate_generic_adaptive_values(
     template: GenericTemplate,
     extended_template: bool,
@@ -1600,30 +1602,49 @@ fn validate_generic_adaptive_values(
         GenericTemplate::Template0 => 4,
         _ => 1,
     };
-    for (index, offset) in adaptive.iter().copied().take(count).enumerate() {
-        validate_target_adaptive(
-            u8::try_from(index + 1).map_err(|_| MalformedError::IntegerOverflow)?,
-            offset,
-        )?;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            count <= adaptive@.len(),
+            index <= count,
+        decreases count - index,
+    ))]
+    while index < count {
+        let number = (index + 1) as u8;
+        validate_target_adaptive(number, adaptive[index])?;
+        index += 1;
     }
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn validate_arithmetic_terminator(data: &[u8]) -> Result<(), GenericRegionError> {
-    if !data.ends_with(&ARITHMETIC_TERMINATOR) {
+    if data.len() < 2
+        || data[data.len() - 2] != ARITHMETIC_TERMINATOR[0]
+        || data[data.len() - 1] != ARITHMETIC_TERMINATOR[1]
+    {
         return Err(GenericRegionError::InvalidArithmeticTerminator);
     }
     let final_offset = data
         .len()
         .checked_sub(2)
         .ok_or(GenericRegionError::InvalidArithmeticTerminator)?;
-    for (offset, pair) in data.windows(2).enumerate() {
-        if pair[0] == 0xff && pair[1] > 0x8f && offset != final_offset {
+    let mut offset = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            data@.len() >= 2,
+            final_offset == data@.len() - 2,
+            offset <= data@.len() - 1,
+        decreases data@.len() - 1 - offset,
+    ))]
+    while offset < data.len() - 1 {
+        if data[offset] == 0xff && data[offset + 1] > 0x8f && offset != final_offset {
             return Err(GenericRegionError::UnexpectedArithmeticMarker {
                 offset,
-                code: pair[1],
+                code: data[offset + 1],
             });
         }
+        offset += 1;
     }
     Ok(())
 }
