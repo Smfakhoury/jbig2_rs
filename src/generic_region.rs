@@ -607,8 +607,10 @@ pub(crate) fn decode_generic_region_segment(
     let bitmap = if header.mmr {
         let decoded = decode_mmr(coded, header.region.width, rows, limits, eofb_policy)?;
         pad_bitmap_height(decoded, header.region.height, limits)?
-    } else {
+    } else if unknown_length {
         decode_arithmetic_generic(coded, &header, rows, None, limits)?
+    } else {
+        decode_known_length_arithmetic_generic(coded, &header, rows, limits)?
     };
 
     let consumed_bytes = header_length
@@ -620,6 +622,44 @@ pub(crate) fn decode_generic_region_segment(
         consumed_bytes,
         decoded_rows: rows,
     })
+}
+
+fn decode_known_length_arithmetic_generic(
+    coded: &[u8],
+    header: &GenericRegionHeader,
+    rows: u32,
+    limits: &Limits,
+) -> Result<Bitmap, GenericRegionError> {
+    if coded.ends_with(&ARITHMETIC_TERMINATOR) {
+        return decode_arithmetic_generic(coded, header, rows, None, limits);
+    }
+    if coded.last() != Some(&0xff) {
+        return Err(GenericRegionError::InvalidArithmeticTerminator);
+    }
+    let requested_bytes = u64::try_from(coded.len())
+        .map_err(|_| MalformedError::IntegerOverflow)?
+        .checked_add(1)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    if requested_bytes > limits.max_decoder_managed_memory_bytes {
+        return Err(DecodeError::LimitExceeded(LimitExceeded {
+            kind: LimitKind::Memory,
+            limit: limits.max_decoder_managed_memory_bytes,
+            actual: requested_bytes,
+        })
+        .into());
+    }
+    let mut normalized = Vec::new();
+    normalized
+        .try_reserve_exact(
+            coded
+                .len()
+                .checked_add(1)
+                .ok_or(MalformedError::IntegerOverflow)?,
+        )
+        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    normalized.extend_from_slice(coded);
+    normalized.push(ARITHMETIC_TERMINATOR[1]);
+    decode_arithmetic_generic(&normalized, header, rows, None, limits)
 }
 
 #[derive(Debug)]

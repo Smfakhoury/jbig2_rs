@@ -528,6 +528,7 @@ fn decode_bitmap<'a>(
     for row in 0..height {
         let mut x = 0_u32;
         let mut black = false;
+        let mut initial = true;
         let mut mode_count = 0_u64;
 
         while x < width {
@@ -540,7 +541,7 @@ fn decode_bitmap<'a>(
             #[cfg(verus_keep_ghost)]
             production_mmr_mode_budget!(mode_count, max_modes);
 
-            let (b1, b2) = reference_elements(&transitions, x, black, width)?;
+            let (b1, b2) = reference_elements(&transitions, x, black, width, initial)?;
             let mode_offset = reader.bit_position;
             match decode_mode(&mut reader)? {
                 Mode::Extension => {
@@ -597,6 +598,7 @@ fn decode_bitmap<'a>(
                     black = !black;
                 }
             }
+            initial = false;
         }
 
         collect_transitions(&bitmap, row, width, &mut transitions)?;
@@ -969,6 +971,7 @@ fn reference_elements(
     x: u32,
     black: bool,
     width: u32,
+    initial: bool,
 ) -> Result<(u32, u32), MmrError> {
     if transitions.len() < 2 {
         return Err(MmrError::InvalidTransition);
@@ -988,7 +991,7 @@ fn reference_elements(
     ))]
     while index < search_end {
         let position = *transitions.get(index).ok_or(MmrError::InvalidTransition)?;
-        if position >= x {
+        if position > x || (initial && position == x) {
             // Reference transitions alternate from imaginary white. Therefore
             // the colour immediately after even-indexed transitions is black.
             let post_transition_black = index % 2 == 0;

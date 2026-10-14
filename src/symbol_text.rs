@@ -6,6 +6,7 @@
 //! bounds, placement, and progress checks implemented here.
 
 use core::cell::RefCell;
+use std::borrow::Cow;
 
 use crate::arithmetic::{ArithmeticContext, ArithmeticDecoder, ArithmeticError, ArithmeticInteger};
 use crate::bitmap::{Bitmap, CombinationOperator};
@@ -2744,6 +2745,7 @@ fn validate_bounded_arithmetic_terminator(data: &[u8]) -> Result<(), SymbolTextE
             "embedded arithmetic refinement data is missing its FF AC terminator",
         ));
     }
+
     let final_offset = data
         .len()
         .checked_sub(2)
@@ -2768,6 +2770,42 @@ fn validate_bounded_arithmetic_terminator(data: &[u8]) -> Result<(), SymbolTextE
         offset += 1;
     }
     Ok(())
+}
+
+fn normalized_bounded_arithmetic<'a>(
+    data: &'a [u8],
+    limits: &Limits,
+) -> Result<Cow<'a, [u8]>, SymbolTextError> {
+    if data.ends_with(&BOUNDED_ARITHMETIC_TERMINATOR) {
+        validate_bounded_arithmetic_terminator(data)?;
+        return Ok(Cow::Borrowed(data));
+    }
+    if data.last() != Some(&BOUNDED_ARITHMETIC_TERMINATOR[0]) {
+        return Err(SymbolTextError::InvalidState(
+            "bounded arithmetic data has no terminal marker",
+        ));
+    }
+    let requested_bytes = u64::try_from(data.len())
+        .map_err(|_| MalformedError::IntegerOverflow)?
+        .checked_add(1)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    enforce_limit(
+        LimitKind::Memory,
+        limits.max_decoder_managed_memory_bytes,
+        requested_bytes,
+    )?;
+    let mut normalized = Vec::new();
+    normalized
+        .try_reserve_exact(
+            data.len()
+                .checked_add(1)
+                .ok_or(MalformedError::IntegerOverflow)?,
+        )
+        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    normalized.extend_from_slice(data);
+    normalized.push(BOUNDED_ARITHMETIC_TERMINATOR[1]);
+    validate_bounded_arithmetic_terminator(&normalized)?;
+    Ok(Cow::Owned(normalized))
 }
 
 /// Validates that any marker the decoder actually observed is the declared
@@ -3089,7 +3127,7 @@ impl GenericRefinementDecoder for HuffmanRefinement<'_, '_> {
                 needed: declared_size.into(),
                 remaining: u64::try_from(remaining).map_err(|_| MalformedError::IntegerOverflow)?,
             })?;
-        validate_bounded_arithmetic_terminator(slice)?;
+        let normalized = normalized_bounded_arithmetic(slice, limits)?;
 
         let adaptive = [
             TemplateOffset::new(
@@ -3111,7 +3149,7 @@ impl GenericRefinementDecoder for HuffmanRefinement<'_, '_> {
             reference_dx: request.geometry.reference_dx,
             reference_dy: request.geometry.reference_dy,
         };
-        let mut decoder = ArithmeticDecoder::new(slice)?;
+        let mut decoder = ArithmeticDecoder::new(normalized.as_ref())?;
         let bitmap = decode_refinement_on(
             &mut decoder,
             &mut self.contexts,
@@ -3121,7 +3159,7 @@ impl GenericRefinementDecoder for HuffmanRefinement<'_, '_> {
             limits,
             &mut self.cumulative_work,
         )?;
-        validate_bounded_arithmetic_marker(&decoder, slice.len())?;
+        validate_bounded_arithmetic_marker(&decoder, normalized.len())?;
 
         let advanced_bits = end.checked_mul(8).ok_or(MalformedError::IntegerOverflow)?;
         reader.bit_position = advanced_bits;
@@ -3753,8 +3791,8 @@ fn decode_symbol_dictionary_arithmetic(
     limits: &Limits,
 ) -> ArithmeticDictionaryResult {
     let config = header.config;
-    validate_bounded_arithmetic_terminator(body)?;
-    let decoder_cell = RefCell::new(ArithmeticDecoder::new(body)?);
+    let normalized = normalized_bounded_arithmetic(body, limits)?;
+    let decoder_cell = RefCell::new(ArithmeticDecoder::new(normalized.as_ref())?);
     let mut entropy = ArithmeticEntropy::new(&decoder_cell, code_length, limits)?;
     let mut resources = ResourceTracker::default();
 
@@ -3836,7 +3874,7 @@ fn decode_symbol_dictionary_arithmetic(
 
     {
         let decoder = decoder_cell.borrow();
-        validate_bounded_arithmetic_marker(&decoder, body.len())?;
+        validate_bounded_arithmetic_marker(&decoder, normalized.len())?;
     }
 
     let retained_generic = generic_contexts
@@ -4331,8 +4369,8 @@ pub(crate) fn decode_text_region(
                 "custom tables on an arithmetic text region",
             ));
         }
-        validate_bounded_arithmetic_terminator(body)?;
-        let decoder_cell = RefCell::new(ArithmeticDecoder::new(body)?);
+        let normalized = normalized_bounded_arithmetic(body, limits)?;
+        let decoder_cell = RefCell::new(ArithmeticDecoder::new(normalized.as_ref())?);
         let mut entropy = ArithmeticEntropy::new(&decoder_cell, code_length, limits)?;
         let mut refine = ArithmeticRefinement::new(&decoder_cell, refinement_template, limits)?;
 
@@ -4353,7 +4391,7 @@ pub(crate) fn decode_text_region(
 
         {
             let decoder = decoder_cell.borrow();
-            validate_bounded_arithmetic_marker(&decoder, body.len())?;
+            validate_bounded_arithmetic_marker(&decoder, normalized.len())?;
         }
         (bitmap, body.len())
     };
