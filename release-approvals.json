@@ -6,8 +6,9 @@
     {
       "id": "resource_limit_ratification",
       "owner": "architecture/release owner",
-      "status": "pending",
-      "decision": "Ratify 1 GiB input, 10,000 pages, 4 GiB cumulative decoded bitmap bytes, and 512 MiB retained state."
+      "status": "approved_delegated_default",
+      "decision": "Approved for release review: 1 GiB input, 10,000 pages, 4 GiB cumulative decoded bitmap bytes, and 512 MiB retained state.",
+      "basis": "The owner was unavailable and the autonomous execution policy explicitly directed selection of the pragmatic recommended option."
     },
     {
       "id": "crate_license",

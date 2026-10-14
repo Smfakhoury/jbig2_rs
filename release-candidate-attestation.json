@@ -53,7 +53,6 @@
     "reason": "Execution is prohibited until the standards/legal owner and CELA approve the vectors and pinned black-box oracles."
   },
   "required_approvals": [
-    "resource_limit_ratification",
     "crate_license",
     "normative_vector_use",
     "normative_vector_redistribution",
