@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 583 obligations with zero errors and zero native
-assumptions. The production inventory contains 291 directly verified functions
-and 210 reviewed verifier limitations. Each limitation is bound to the exact
+Pinned Verus verifies 592 obligations with zero errors and zero native
+assumptions. The production inventory contains 298 directly verified functions
+and 203 reviewed verifier limitations. Each limitation is bound to the exact
 source-file hash in `proof-dispositions.json`.
 
 The Annex A integer and IAID callback limitation is closed: production now
@@ -16,6 +16,8 @@ resource-limit, and pixel-offset helpers are directly verified; remaining
 halftone items require callbacks, allocation, bitmap mutation, or composition.
 Generic/refinement context counts and layouts, bitmap-size arithmetic,
 work accounting, and input/resource limit guards are directly verified.
+Signed bitmap/reference sampling, observed-marker validation, retained-state
+and managed-memory guards, and EOF construction are directly verified.
 
 The limitations are not algorithm stubs. They are complete, tested production
 functions whose direct proofs are blocked by unsupported pinned-Verus/vstd
