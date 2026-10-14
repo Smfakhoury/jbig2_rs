@@ -123,12 +123,12 @@
       "container": "JBIG2_ConformanceData-A20180829.zip",
       "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
       "sha256": "fe3de9056d94b20db3a6ab17032c621a7f05b6ecb1db84b4b58d0825fd6b7033",
-      "expected_use": "Normative conformance validation if approved",
+      "expected_use": "Approved internal normative conformance validation",
       "license": "No standalone vector license was established during bootstrap.",
-      "redistribution": "blocked pending standards/legal owner and CELA approval",
+      "redistribution": "prohibited pending the separate public-repository review",
       "committed": false,
-      "used": false,
-      "note": "The authoritative package contains 26 JBIG2/BMP files. Per-file provenance and hashes must be generated before any file is used."
+      "used": true,
+      "note": "The authoritative package contains 26 JBIG2/BMP files. All files have per-file hashes in validation/conformance/itu-t88-2018-manifest.json; no vector is committed."
     },
     {
       "id": "ITU-T-T.88-2018-sample-software",
@@ -148,27 +148,32 @@
     {
       "name": "jbig2dec",
       "source_url": "https://github.com/ArtifexSoftware/jbig2dec",
-      "status": "pinned candidate black-box executable only",
+      "status": "approved pinned internal black-box executable only",
       "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
+      "version": "0.20",
+      "binary_sha256": "eb0248d7eb623999bf21e20bc1aa6749a06acf8e5c412554dc1fe316770b4b1d",
       "license": "GNU AGPL v3 or later, with an additional AFPL Ghostscript linking permission",
       "redistribution": "prohibited by project policy pending legal review; never included in the crate",
-      "license_review": "pending CELA approval for CI use"
+      "license_review": "CELA-approved for internal/private-CI black-box execution; publication remains pending"
     },
     {
       "name": "Poppler",
       "source_url": "https://gitlab.freedesktop.org/poppler/poppler",
-      "status": "pinned candidate black-box executable only",
+      "status": "approved pinned internal black-box executable only",
       "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
+      "executed_version": "24.02.0",
+      "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814",
+      "reproducibility_note": "The executed system binary is pinned by version and hash; building the requested source revision remains future work.",
       "license": "Repository COPYING contains GNU GPL v2; file-level and later-version terms require legal review",
       "redistribution": "prohibited by project policy pending legal review; never included in the crate",
-      "license_review": "pending CELA approval for CI use"
+      "license_review": "CELA-approved for internal/private-CI black-box execution; publication remains pending"
     }
   ],
   "approvals": {
-    "standards_legal_owner": "pending",
-    "conformance_vector_use": "pending",
-    "conformance_vector_redistribution": "pending",
+    "standards_legal_owner": "approved for internal validation",
+    "conformance_vector_use": "approved for internal/private-CI execution",
+    "conformance_vector_redistribution": "prohibited pending public-repository review",
     "sample_software_use": "pending",
-    "cela_publication": "pending"
+    "cela_publication": "internal work approved; publication pending separate review"
   }
 }

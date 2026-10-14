@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "candidate_revision": "5c6b04610cb671c8b4a68e87c8e4c80891c20e02",
-  "production_source_revision": "e198d95503d03c484bdbbf1cacadb5f459f56794",
+  "production_source_revision": "2c7330851dee011a3db7da2c67ab4257dbcbc5cf",
   "approvals": [
     {
       "id": "resource_limit_ratification",
@@ -19,26 +19,29 @@
     {
       "id": "normative_vector_use",
       "owner": "standards/legal owner",
-      "status": "pending",
-      "decision": "Approve local execution of the pinned ITU T.88 conformance-data package."
+      "status": "approved_internal_validation",
+      "decision": "Approved local/private-CI execution of the pinned ITU T.88 conformance-data package.",
+      "basis": "Owner confirmed CELA approval for internal work on 2026-10-14; public release remains separately gated."
     },
     {
       "id": "normative_vector_redistribution",
       "owner": "CELA/legal",
-      "status": "pending",
-      "decision": "Approve or prohibit redistribution of each vector; default remains prohibited."
+      "status": "prohibited_pending_publication_review",
+      "decision": "Do not redistribute vectors before the separate public-repository review."
     },
     {
       "id": "jbig2dec_oracle_execution",
       "owner": "CELA/legal",
-      "status": "pending",
-      "decision": "Approve black-box execution of pinned AGPL jbig2dec revision 6e8205ba61a206a0830f4884ebe52be615735f3d."
+      "status": "approved_internal_validation",
+      "decision": "Approved black-box internal execution of pinned AGPL jbig2dec revision 6e8205ba61a206a0830f4884ebe52be615735f3d; no linking or redistribution.",
+      "basis": "Owner confirmed CELA approval for internal work on 2026-10-14."
     },
     {
       "id": "poppler_oracle_execution",
       "owner": "CELA/legal",
-      "status": "pending",
-      "decision": "Approve black-box execution of pinned Poppler revision a45f83bdd75a7b1af73eef729383c4291abf27a3."
+      "status": "approved_internal_validation",
+      "decision": "Approved black-box internal execution of pinned Poppler revision a45f83bdd75a7b1af73eef729383c4291abf27a3; no linking or redistribution.",
+      "basis": "Owner confirmed CELA approval for internal work on 2026-10-14."
     },
     {
       "id": "performance_regression_thresholds",
@@ -56,14 +59,16 @@
     {
       "id": "architecture",
       "owner": "architecture owner",
-      "status": "pending",
-      "decision": "Approve architecture and reviewed verifier limitations."
+      "status": "approved_with_tracked_limitations",
+      "decision": "Architecture approved with all reviewed verifier limitations tracked by body hash and a continuing mitigation/investigation plan.",
+      "basis": "Owner approval recorded on 2026-10-14."
     },
     {
       "id": "cela",
       "owner": "CELA/legal",
-      "status": "pending",
-      "decision": "Approve publication and all third-party validation uses."
+      "status": "approved_internal_validation_publication_pending",
+      "decision": "Internal validation and third-party black-box use approved; publication remains separately gated.",
+      "basis": "Owner confirmed existing CELA approval on 2026-10-14."
     },
     {
       "id": "release_owner",

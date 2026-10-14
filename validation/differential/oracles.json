@@ -7,7 +7,9 @@
       "source_url": "https://github.com/ArtifexSoftware/jbig2dec",
       "license": "GNU AGPL v3 or later with stated AFPL Ghostscript linking permission",
       "mode": "external black-box process",
-      "build": "not approved",
+      "build": "Makefile.unix build in /tmp at the pinned revision",
+      "version": "0.20",
+      "binary_sha256": "eb0248d7eb623999bf21e20bc1aa6749a06acf8e5c412554dc1fe316770b4b1d",
       "redistribution": false
     },
     {
@@ -16,9 +18,11 @@
       "source_url": "https://gitlab.freedesktop.org/poppler/poppler",
       "license": "GNU GPL v2 COPYING; exact file-level terms pending review",
       "mode": "external black-box process",
-      "build": "not approved",
+      "build": "system pdfimages binary used for validation; requested source revision remains a future reproducibility target",
+      "executed_version": "24.02.0",
+      "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814",
       "redistribution": false
     }
   ],
-  "approval": "blocked pending CELA/legal owner review"
+  "approval": "approved by CELA/legal owner for private internal black-box validation; redistribution and public publication remain prohibited"
 }

@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
+  "container": "conformance.zip",
+  "container_sha256": "fe3de9056d94b20db3a6ab17032c621a7f05b6ecb1db84b4b58d0825fd6b7033",
+  "approval": "CELA-approved for internal/private-CI execution on 2026-10-14",
+  "redistribution": false,
+  "files": [
+    {
+      "path": "JBIG2_ConformanceData-A20180829/F01_200.bmp",
+      "sha256": "40ed586197ad8fda63f70afa55682212cac1899c221c50e4993ef2faa6e836f8",
+      "size_bytes": 505286,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/F01_200_TT10.jb2",
+      "sha256": "b5f2db789f47922a68fe9bffa15dc6e6bdc0dbe40aa9ee7cbe0afbf5e43e59f1",
+      "size_bytes": 12731,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/F01_200_TT10_TT00.bmp",
+      "sha256": "4b8862e3d88c64c7a0a7d8016c603869a07ff21056f59be74631b66a9be7dd49",
+      "size_bytes": 505286,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/F01_200_TT9.jb2",
+      "sha256": "5df3629622b458ddd3ea5f66e6b124c91ed1d62f815474a55e3138784e911b5d",
+      "size_bytes": 16699,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/F01_200_TT9_TT00.bmp",
+      "sha256": "4b8862e3d88c64c7a0a7d8016c603869a07ff21056f59be74631b66a9be7dd49",
+      "size_bytes": 505286,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT1.jb2",
+      "sha256": "d7fed4f97e960c45c404eb94dac84cfcd1dbb77f774aa3c58c052783c130b543",
+      "size_bytes": 860,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT1_TT00.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT1_TT01.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT1_TT02.bmp",
+      "sha256": "86832cb54093ba8095d6dc56d652db0d07e19816964f6ae3e8f73fff93a0f7d6",
+      "size_bytes": 126,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT2.jb2",
+      "sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
+      "size_bytes": 299,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT2_TT00.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT3.jb2",
+      "sha256": "23341708b770936cd199bbfa7a4f7be41b7b0257b38532a3e678710bac46012b",
+      "size_bytes": 294,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT3_TT00.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT4.jb2",
+      "sha256": "872ef6cb28c55b5e7d9f7d04c834896f4b06e52819254b3e2596d022dcc06305",
+      "size_bytes": 282,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT4_TT00.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT5.jb2",
+      "sha256": "ebec26a22425cce27de5feaf91bc8a6528428283cfdeeb5f39825fe1ba992871",
+      "size_bytes": 331,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT5_TT00.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT7.jb2",
+      "sha256": "afa20c52a9fc0c4b33c867338b4447e0be7d402a814fadf52f414ed4d4f08a82",
+      "size_bytes": 310,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest1_TT7_TT00.bmp",
+      "sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+      "size_bytes": 510,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest2.bmp",
+      "sha256": "86832cb54093ba8095d6dc56d652db0d07e19816964f6ae3e8f73fff93a0f7d6",
+      "size_bytes": 126,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest2_TT6.jb2",
+      "sha256": "e53dbbbc54b71e8f873c767a2e321444c26a245728007e4842c8746933df1bad",
+      "size_bytes": 183,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest2_TT6_TT00.bmp",
+      "sha256": "86832cb54093ba8095d6dc56d652db0d07e19816964f6ae3e8f73fff93a0f7d6",
+      "size_bytes": 126,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest3.bmp",
+      "sha256": "846d12606ab2637191a2902954a68083caac5ac9776e36f396b446af2a92e2de",
+      "size_bytes": 982,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest3_TT8.jb2",
+      "sha256": "04e7837975421075d23116584c82520dc011198e3cfbb2eeb3e01fada5d6b30b",
+      "size_bytes": 239,
+      "kind": "encoded_stream",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    },
+    {
+      "path": "JBIG2_ConformanceData-A20180829/codeStreamTest3_TT8_TT00.bmp",
+      "sha256": "a01239798ab3bf65733473f671f31e02808abf194a262a3bc55e8ddf87118f63",
+      "size_bytes": 982,
+      "kind": "expected_bitmap",
+      "license": "ITU T.88 electronic attachment; standalone redistribution terms not established",
+      "redistribution": "prohibited pending public-repository legal review",
+      "expected_use": "internal normative conformance validation"
+    }
+  ]
+}

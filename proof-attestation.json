@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "complete_with_reviewed_verifier_limitations",
-  "source_revision": "e198d95503d03c484bdbbf1cacadb5f459f56794",
+  "source_revision": "2c7330851dee011a3db7da2c67ab4257dbcbc5cf",
   "scope": "Exact production crate rooted at src/lib.rs",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -18,11 +18,11 @@
     "algorithm_bodies_verified": false,
     "production_coverage_complete": true,
     "native_assumptions": [],
-    "reviewed_verifier_limitations": 232,
+    "reviewed_verifier_limitations": 234,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "92fad0b86268a93896cf54933ea555c674a0a72e4c7aa1d19e0f1ae7cd38fb05",
-  "proof_dispositions_sha256": "61d5a274f035b53a233328595cbe54dcfc78cfe8699f25d3f9c723d42a14811d",
+  "production_proof_coverage_sha256": "ace3ea1549cbac781f767ca6353861d0391caca20dbcf71185d7395986c2ac5b",
+  "proof_dispositions_sha256": "3e69f3393373272fe66bd4f147b32f03a70c2195fd6c13c146149c1e6115567d",
   "duplicate_executable_proof_source": false,
   "release_gate": "blocked"
 }

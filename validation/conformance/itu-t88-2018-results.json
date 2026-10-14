@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "source": "ITU-T T.88 (08/2018) electronic conformance data",
+  "redistribution": false,
+  "total": 10,
+  "passed": 2,
+  "reviewed_strict_rejections": 7,
+  "unsupported_profile": 1,
+  "unresolved_failures": 0,
+  "cases": [
+    {
+      "id": "F01_200_TT10",
+      "stream_sha256": "b5f2db789f47922a68fe9bffa15dc6e6bdc0dbe40aa9ee7cbe0afbf5e43e59f1",
+      "expected_pages": 1,
+      "decoder_exit": 0,
+      "pages": [
+        {
+          "index": 0,
+          "expected_width": 1728,
+          "expected_height": 2339,
+          "actual_width": 1728,
+          "actual_height": 2339,
+          "expected_sha256": "a9141a70ba7c21c578c1bc9ee72eaf1b4ab76e29a58f2494c7a6a14694164b5a",
+          "actual_sha256": "a9141a70ba7c21c578c1bc9ee72eaf1b4ab76e29a58f2494c7a6a14694164b5a",
+          "match": true
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "F01_200_TT9",
+      "stream_sha256": "5df3629622b458ddd3ea5f66e6b124c91ed1d62f815474a55e3138784e911b5d",
+      "expected_pages": 1,
+      "decoder_exit": 0,
+      "pages": [
+        {
+          "index": 0,
+          "expected_width": 1728,
+          "expected_height": 2339,
+          "actual_width": 1728,
+          "actual_height": 2339,
+          "expected_sha256": "a9141a70ba7c21c578c1bc9ee72eaf1b4ab76e29a58f2494c7a6a14694164b5a",
+          "actual_sha256": "a9141a70ba7c21c578c1bc9ee72eaf1b4ab76e29a58f2494c7a6a14694164b5a",
+          "match": true
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "id": "codeStreamTest1_TT1",
+      "stream_sha256": "d7fed4f97e960c45c404eb94dac84cfcd1dbb77f774aa3c58c052783c130b543",
+      "expected_pages": 3,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Malformed(UnexpectedEof { offset: 192, needed: 1, remaining: 0 })",
+      "status": "reviewed_strict_rejection",
+      "review": "The MMR sub-block is truncated. Pinned jbig2dec emits recovery warnings and continues leniently; jbig2_rs fails closed."
+    },
+    {
+      "id": "codeStreamTest1_TT2",
+      "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
+      "expected_pages": 1,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
+      "status": "reviewed_strict_rejection",
+      "review": "The declared one-byte MMR collective bitmap cannot complete the declared rows. Pinned jbig2dec reports fatal MMR errors and recovers leniently; jbig2_rs fails closed."
+    },
+    {
+      "id": "codeStreamTest1_TT3",
+      "stream_sha256": "23341708b770936cd199bbfa7a4f7be41b7b0257b38532a3e678710bac46012b",
+      "expected_pages": 1,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "status": "reviewed_strict_rejection",
+      "review": "IAEX produces a negative EXRUNLENGTH although T.88 6.5.4/6.5.10 defines it as an unsigned 32-bit run length. Pinned jbig2dec warns and caps the wrapped value; jbig2_rs rejects it."
+    },
+    {
+      "id": "codeStreamTest1_TT4",
+      "stream_sha256": "872ef6cb28c55b5e7d9f7d04c834896f4b06e52819254b3e2596d022dcc06305",
+      "expected_pages": 1,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "status": "reviewed_strict_rejection",
+      "review": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed."
+    },
+    {
+      "id": "codeStreamTest1_TT5",
+      "stream_sha256": "ebec26a22425cce27de5feaf91bc8a6528428283cfdeeb5f39825fe1ba992871",
+      "expected_pages": 1,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "status": "reviewed_strict_rejection",
+      "review": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed."
+    },
+    {
+      "id": "codeStreamTest1_TT7",
+      "stream_sha256": "afa20c52a9fc0c4b33c867338b4447e0be7d402a814fadf52f414ed4d4f08a82",
+      "expected_pages": 1,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "status": "reviewed_strict_rejection",
+      "review": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed."
+    },
+    {
+      "id": "codeStreamTest2_TT6",
+      "stream_sha256": "e53dbbbc54b71e8f873c767a2e321444c26a245728007e4842c8746933df1bad",
+      "expected_pages": 1,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "status": "reviewed_strict_rejection",
+      "review": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed."
+    },
+    {
+      "id": "codeStreamTest3_TT8",
+      "stream_sha256": "04e7837975421075d23116584c82520dc011198e3cfbb2eeb3e01fada5d6b30b",
+      "expected_pages": 1,
+      "decoder_exit": 1,
+      "pages": [],
+      "stderr": "Error: Unsupported(Colour)",
+      "status": "unsupported_profile",
+      "review": "Colour palette decoding is explicitly outside the approved Phase 1 support matrix."
+    }
+  ]
+}

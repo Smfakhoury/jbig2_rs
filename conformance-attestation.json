@@ -1,17 +1,20 @@
 {
   "schema_version": 1,
-  "status": "not_run",
-  "source_revision": "e198d95503d03c484bdbbf1cacadb5f459f56794",
+  "status": "internal_validation_passed_with_reviewed_differences",
+  "source_revision": "2c7330851dee011a3db7da2c67ab4257dbcbc5cf",
   "implementation_tests": {
     "total": 159,
     "passed": 159,
     "failed": 0
   },
   "normative_vectors": {
-    "approved": false,
-    "total": 0,
-    "passed": 0,
-    "failed": 0
+    "approved": true,
+    "total": 10,
+    "passed": 2,
+    "reviewed_strict_rejections": 7,
+    "unsupported_profile": 1,
+    "unresolved_failures": 0,
+    "results_sha256": "c2f1ed30e17d397d0de5b5be02412c3559d0e0fb981ddbc3efffcebfbc0b3987"
   },
   "community_regressions": {
     "total": 0,
@@ -23,18 +26,26 @@
       {
         "name": "jbig2dec",
         "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
-        "status": "pinned; execution pending legal approval"
+        "version": "0.20",
+        "binary_sha256": "eb0248d7eb623999bf21e20bc1aa6749a06acf8e5c412554dc1fe316770b4b1d",
+        "status": "executed as an approved internal black-box oracle"
       },
       {
         "name": "Poppler",
         "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
-        "status": "pinned; execution pending legal approval"
+        "executed_version": "24.02.0",
+        "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814",
+        "status": "system binary executed as an approved internal black-box oracle; source-revision build remains a reproducibility target"
       }
     ],
-    "cases": 0,
-    "agreements": 0,
-    "reviewed_disagreements": 0,
-    "unresolved_disagreements": 0
+    "unique_cases": 10,
+    "oracle_case_executions": 20,
+    "comparable_outputs": 17,
+    "exact_bitmap_agreements": 3,
+    "reviewed_disagreements": 14,
+    "skipped": 3,
+    "unresolved_disagreements": 0,
+    "results_sha256": "778e7e7d54c5736f44d5fc07f756166b917f8611ff32ac9f24048be898755814"
   },
   "release_gate": "blocked"
 }

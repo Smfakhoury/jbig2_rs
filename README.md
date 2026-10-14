@@ -42,9 +42,12 @@ The decoder implements:
   combination operators;
 - owned, bounded-reader, and page-sink APIs.
 
-Publication and conformance claims remain blocked. Normative vectors and
-differential oracles require legal approval, the production proof inventory is
-not complete, and cross-platform release gates have not been attested.
+Publication and conformance claims remain blocked. CELA-approved private
+validation has executed the official ITU vectors and two independent
+black-box oracles; the resulting strict-rejection and oracle differences are
+tracked under `validation/`. The production proof inventory is complete with
+body-hash-bound reviewed verifier limitations. Crate licensing, native CI,
+release-owner approval, and public-repository review remain open gates.
 
 ## Local checks
 
