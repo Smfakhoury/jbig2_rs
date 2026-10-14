@@ -1201,10 +1201,27 @@ fn clipped_axis(origin: i64, far_edge: i64, bound: u32) -> (i64, i64) {
     (origin.max(0), far_edge.min(bound as i64))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == [
+        (-pattern_width as i32, 0i32),
+        (-3i32, -1i32),
+        (2i32, -2i32),
+        (-2i32, -2i32),
+    ],
+))]
+#[allow(clippy::cast_lossless)]
 fn pattern_adaptive_pixels(pattern_width: u8) -> [(i32, i32); 4] {
-    [(-i32::from(pattern_width), 0), (-3, -1), (2, -2), (-2, -2)]
+    [(-(pattern_width as i32), 0), (-3, -1), (2, -2), (-2, -2)]
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == [
+        (if template <= 1 { 3i32 } else { 2i32 }, -1i32),
+        (-3i32, -1i32),
+        (2i32, -2i32),
+        (-2i32, -2i32),
+    ],
+))]
 const fn gray_adaptive_pixels(template: u8) -> [(i32, i32); 4] {
     [
         (if template <= 1 { 3 } else { 2 }, -1),
@@ -1214,6 +1231,17 @@ const fn gray_adaptive_pixels(template: u8) -> [(i32, i32); 4] {
     ]
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) =>
+            header.pattern_width > 0
+            && header.pattern_height > 0
+            && header.template <= 3
+            && (!header.mmr || header.template == 0),
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::bool_to_int_with_if)]
 fn validate_pattern_header(header: PatternDictionaryHeader) -> Result<(), HalftoneError> {
     if header.pattern_width == 0 || header.pattern_height == 0 {
         return Err(HalftoneError::InvalidPatternDimensions {
@@ -1222,12 +1250,20 @@ fn validate_pattern_header(header: PatternDictionaryHeader) -> Result<(), Halfto
         });
     }
     if header.template > 3 || (header.mmr && header.template != 0) {
-        let encoded = u8::from(header.mmr) | (header.template << 1);
+        let encoded = (if header.mmr { 1 } else { 0 }) | (header.template << 1);
         return Err(HalftoneError::InvalidPatternDictionaryFlags(encoded));
     }
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) =>
+            crate::views::bitmap_width(bitmap) == expected_width
+            && crate::views::bitmap_height(bitmap) == expected_height,
+        Err(_) => true,
+    },
+))]
 fn require_bitmap_dimensions(
     bitmap: &Bitmap,
     expected_width: u32,
@@ -1305,20 +1341,28 @@ fn enforce_halftone_memory(
     )
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(()) =>
+            width <= limits.max_width
+            && height <= limits.max_height
+            && width as nat * height as nat <= limits.max_pixels_per_page,
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::cast_lossless)]
 fn enforce_bitmap_dimensions(
     width: u32,
     height: u32,
     limits: &Limits,
 ) -> Result<(), HalftoneError> {
-    enforce_limit(LimitKind::Width, u64::from(limits.max_width), width.into())?;
-    enforce_limit(
-        LimitKind::Height,
-        u64::from(limits.max_height),
-        height.into(),
-    )?;
-    let pixels = u64::from(width)
-        .checked_mul(u64::from(height))
-        .ok_or(MalformedError::IntegerOverflow)?;
+    enforce_limit(LimitKind::Width, limits.max_width as u64, width as u64)?;
+    enforce_limit(LimitKind::Height, limits.max_height as u64, height as u64)?;
+    let Some(pixels) = (width as u64).checked_mul(height as u64) else {
+        return Err(HalftoneError::Decode(DecodeError::Malformed(
+            MalformedError::IntegerOverflow,
+        )));
+    };
     enforce_limit(LimitKind::PagePixels, limits.max_pixels_per_page, pixels)
 }
 
@@ -1340,14 +1384,27 @@ fn enforce_limit(kind: LimitKind, limit: u64, actual: u64) -> Result<(), Halfton
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bytes) =>
+            bytes as nat
+                == ((width as nat + 7) / 8) * height as nat,
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::cast_lossless)]
 fn bitmap_bytes(width: u32, height: u32) -> Result<u64, HalftoneError> {
-    let stride = u64::from(width)
-        .checked_add(7)
-        .ok_or(MalformedError::IntegerOverflow)?
-        / 8;
-    stride
-        .checked_mul(u64::from(height))
-        .ok_or_else(|| MalformedError::IntegerOverflow.into())
+    let Some(stride) = (width as u64).checked_add(7) else {
+        return Err(HalftoneError::Decode(DecodeError::Malformed(
+            MalformedError::IntegerOverflow,
+        )));
+    };
+    let Some(bytes) = (stride / 8).checked_mul(height as u64) else {
+        return Err(HalftoneError::Decode(DecodeError::Malformed(
+            MalformedError::IntegerOverflow,
+        )));
+    };
+    Ok(bytes)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1371,9 +1428,23 @@ fn row_major_offset(width: u32, x: u32, y: u32) -> u64 {
     u64::from(y) * u64::from(width) + u64::from(x)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(offset) =>
+            offset as nat == halftone_spec::row_major_offset(width, x, y),
+        Err(_) =>
+            halftone_spec::row_major_offset(width, x, y) > usize::MAX,
+    },
+))]
+#[allow(clippy::cast_possible_truncation)]
 fn pixel_offset(width: u32, x: u32, y: u32) -> Result<usize, HalftoneError> {
     let offset = row_major_offset(width, x, y);
-    usize::try_from(offset).map_err(|_error| MalformedError::IntegerOverflow.into())
+    if offset > usize::MAX as u64 {
+        return Err(HalftoneError::Decode(DecodeError::Malformed(
+            MalformedError::IntegerOverflow,
+        )));
+    }
+    Ok(offset as usize)
 }
 
 #[cfg(test)]
