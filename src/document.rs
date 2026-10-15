@@ -1136,7 +1136,14 @@ fn validate_reference_types(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == document_spec::production_is_intermediate_region(segment_type),
+))]
 const fn is_intermediate_region(segment_type: SegmentType) -> bool {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        document_shared::intermediate_region_runtime_fact(segment_type);
+    }
     matches!(
         segment_type,
         SegmentType::IntermediateTextRegion
@@ -1146,6 +1153,7 @@ const fn is_intermediate_region(segment_type: SegmentType) -> bool {
     )
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn validate_page_association(header: &SegmentHeader) -> Result<(), DecodeError> {
     let must_have_page = matches!(
         header.segment_type,
@@ -1166,7 +1174,7 @@ fn validate_page_association(header: &SegmentHeader) -> Result<(), DecodeError> 
             | SegmentType::EndOfStripe
     );
     if (must_have_page && header.page_association == 0)
-        || (header.segment_type == SegmentType::EndOfFile && header.page_association != 0)
+        || (matches!(header.segment_type, SegmentType::EndOfFile) && header.page_association != 0)
     {
         return Err(MalformedError::InvalidPageAssociation {
             segment: header.number,
