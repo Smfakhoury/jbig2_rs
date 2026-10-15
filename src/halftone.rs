@@ -1301,6 +1301,7 @@ fn checked_memory_sum(first: u64, second: u64, third: u64, fourth: u64) -> Optio
         .checked_add(fourth)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn enforce_halftone_memory(
     region_width: u32,
     region_height: u32,
@@ -1309,35 +1310,61 @@ fn enforce_halftone_memory(
     bit_depth: u8,
     limits: &Limits,
 ) -> Result<(), HalftoneError> {
-    let pattern_bytes = patterns.iter().try_fold(0_u64, |total, pattern| {
-        total
-            .checked_add(
-                u64::try_from(pattern.bytes().len())
-                    .map_err(|_| MalformedError::IntegerOverflow)?,
-            )
-            .ok_or(MalformedError::IntegerOverflow)
-    })?;
-    let cells = u64::from(header.grid_width)
-        .checked_mul(u64::from(header.grid_height))
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let values_bytes = cells
-        .checked_mul(4)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let mut pattern_bytes = 0_u64;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= patterns@.len(),
+        decreases patterns@.len() - index,
+    ))]
+    while index < patterns.len() {
+        let Ok(bytes) = u64::try_from(patterns[index].bytes().len()) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        let Some(next) = pattern_bytes.checked_add(bytes) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        pattern_bytes = next;
+        index += 1;
+    }
+    let Some(cells) = u64::from(header.grid_width).checked_mul(u64::from(header.grid_height))
+    else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Some(values_bytes) = cells.checked_mul(4) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     let plane_bytes = bitmap_bytes(header.grid_width, header.grid_height)?;
     let skip_bytes = if header.enable_skip { plane_bytes } else { 0 };
-    let active_planes = u64::from(bit_depth != 0) + u64::from(bit_depth > 1);
-    let active_plane_bytes = plane_bytes
-        .checked_mul(active_planes)
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let gray_peak = checked_memory_sum(pattern_bytes, values_bytes, skip_bytes, active_plane_bytes)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let active_planes = if bit_depth == 0 {
+        0
+    } else if bit_depth == 1 {
+        1
+    } else {
+        2
+    };
+    let Some(active_plane_bytes) = plane_bytes.checked_mul(active_planes) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Some(gray_peak) =
+        checked_memory_sum(pattern_bytes, values_bytes, skip_bytes, active_plane_bytes)
+    else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     let output_bytes = bitmap_bytes(region_width, region_height)?;
-    let render_peak = checked_memory_sum(pattern_bytes, values_bytes, skip_bytes, output_bytes)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let Some(render_peak) =
+        checked_memory_sum(pattern_bytes, values_bytes, skip_bytes, output_bytes)
+    else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let peak = if gray_peak >= render_peak {
+        gray_peak
+    } else {
+        render_peak
+    };
     enforce_limit(
         LimitKind::Memory,
         limits.max_decoder_managed_memory_bytes,
-        gray_peak.max(render_peak),
+        peak,
     )
 }
 
