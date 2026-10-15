@@ -545,6 +545,7 @@ fn read_payload<'a>(
     Ok(payload)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn find_unknown_generic_length(bytes: &[u8]) -> Result<usize, DecodeError> {
     const GENERIC_FLAGS_INDEX: usize = 17;
     const SEARCH_START: usize = 18;
@@ -552,7 +553,7 @@ fn find_unknown_generic_length(bytes: &[u8]) -> Result<usize, DecodeError> {
     if bytes.len() < SEARCH_START + TERMINAL_BYTES {
         return Err(MalformedError::MissingGenericRegionTerminator.into());
     }
-    let declared_height = u32::from_be_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]);
+    let declared_height = read_be_u32_at(bytes, 4);
     let marker = if bytes[GENERIC_FLAGS_INDEX] & 0x01 != 0 {
         [0x00, 0x00]
     } else {
@@ -562,16 +563,20 @@ fn find_unknown_generic_length(bytes: &[u8]) -> Result<usize, DecodeError> {
         .len()
         .checked_sub(TERMINAL_BYTES)
         .ok_or(MalformedError::IntegerOverflow)?;
-    for offset in SEARCH_START..=final_start {
-        if bytes[offset..offset + 2] != marker {
+    let mut offset = SEARCH_START;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            bytes@.len() >= SEARCH_START + TERMINAL_BYTES,
+            final_start == bytes@.len() - TERMINAL_BYTES,
+            SEARCH_START <= offset <= final_start + 1,
+        decreases final_start + 1 - offset,
+    ))]
+    while offset <= final_start {
+        if bytes[offset] != marker[0] || bytes[offset + 1] != marker[1] {
+            offset += 1;
             continue;
         }
-        let row_count = u32::from_be_bytes([
-            bytes[offset + 2],
-            bytes[offset + 3],
-            bytes[offset + 4],
-            bytes[offset + 5],
-        ]);
+        let row_count = read_be_u32_at(bytes, offset + 2);
         if row_count > declared_height {
             return Err(MalformedError::GenericRegionRowCount {
                 declared: declared_height,
@@ -584,6 +589,21 @@ fn find_unknown_generic_length(bytes: &[u8]) -> Result<usize, DecodeError> {
             .ok_or(MalformedError::IntegerOverflow.into());
     }
     Err(MalformedError::MissingGenericRegionTerminator.into())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires offset + 4 <= bytes@.len(),
+    ensures out
+        == ((bytes@[offset as int] as u32) << 24)
+            | ((bytes@[(offset + 1) as int] as u32) << 16)
+            | ((bytes@[(offset + 2) as int] as u32) << 8)
+            | bytes@[(offset + 3) as int] as u32,
+))]
+fn read_be_u32_at(bytes: &[u8], offset: usize) -> u32 {
+    (u32::from(bytes[offset]) << 24)
+        | (u32::from(bytes[offset + 1]) << 16)
+        | (u32::from(bytes[offset + 2]) << 8)
+        | u32::from(bytes[offset + 3])
 }
 
 fn parse_known_segment_data(

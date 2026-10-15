@@ -1610,6 +1610,7 @@ fn checked_page_write_state(
     Ok(Some(next))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn note_page_write(
     page: &mut RuntimePage,
     region: &crate::segment_data::RegionInfo,
