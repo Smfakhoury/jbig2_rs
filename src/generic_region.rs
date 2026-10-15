@@ -294,6 +294,7 @@ fn generic_reserved_flags(flags: u8) -> u8 {
 
 /// Parsed generic-region data header.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericRegionHeader {
     pub(crate) region: RegionInfo,
     pub(crate) mmr: bool,
@@ -1211,6 +1212,7 @@ pub(crate) struct RefinementArithmeticCall {
 
 /// Parsed generic-refinement region header.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementRegionHeader {
     pub(crate) region: RegionInfo,
     pub(crate) template: RefinementTemplate,
