@@ -173,27 +173,6 @@ impl<'a> ByteReader<'a> {
         self.position = end;
         Ok(result)
     }
-
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        requires old(self).position <= old(self).bytes@.len(),
-        ensures
-            final(self).bytes@ == old(self).bytes@,
-            match out {
-                Ok(()) =>
-                    length <= old(self).bytes@.len() - old(self).position
-                    && final(self).position == old(self).position + length,
-                Err(_) =>
-                    final(self).position == old(self).position
-                    && length > old(self).bytes@.len() - old(self).position,
-            },
-    ))]
-    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
-    pub(crate) fn advance(&mut self, length: usize) -> Result<(), MalformedError> {
-        match self.read_bytes(length) {
-            Ok(_bytes) => Ok(()),
-            Err(error) => Err(error),
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy)]

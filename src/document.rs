@@ -528,21 +528,21 @@ fn parse_random_access<'a>(
     Ok(segments)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires old(reader).position <= old(reader).bytes@.len(),
+))]
 fn read_payload<'a>(
     reader: &mut ByteReader<'a>,
     header: &SegmentHeader,
 ) -> Result<&'a [u8], DecodeError> {
     if let Some(length) = header.data_length {
-        let length = usize::try_from(length).map_err(|_| MalformedError::IntegerOverflow)?;
+        let Ok(length) = usize::try_from(length) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
         return Ok(reader.read_bytes(length)?);
     }
     let length = find_unknown_generic_length(reader.remaining_bytes())?;
-    let payload = reader
-        .remaining_bytes()
-        .get(..length)
-        .ok_or(MalformedError::IntegerOverflow)?;
-    reader.advance(length)?;
-    Ok(payload)
+    Ok(reader.read_bytes(length)?)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
