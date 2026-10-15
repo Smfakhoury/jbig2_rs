@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "production_source_revision": "8a3bcfed86616a6ebf2052aec58f87e02abfab88",
+  "production_source_revision": "9144a9028d0fafb16d6199271563ded7d5ccecd5",
   "tracked_functions": 170,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
@@ -83,7 +83,8 @@
       "priority": "high",
       "surface": "Generic/refinement raster paths",
       "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
-      "exit_criteria": "Generic/refinement headers, sessions, snapshots, marker handling, and raster loops directly verify."
+      "exit_criteria": "Generic/refinement headers, sessions, snapshots, marker handling, and raster loops directly verify.",
+      "investigation": "GenericRegionHeader and RefinementRegionHeader types verify directly. Applying direct verification to either composed header parser reproducibly panics pinned Verus/rustc in generic_args.rs, so parser bodies remain tracked pending a toolchain fix or a smaller parser-state decomposition."
     },
     {
       "id": "VL-011",

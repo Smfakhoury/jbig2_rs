@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 638 obligations with zero errors and zero native
+Pinned Verus verifies 642 obligations with zero errors and zero native
 assumptions. The production inventory contains 332 directly verified functions
 and 170 reviewed verifier limitations. Each limitation is bound to the exact
 source-file hash in `proof-dispositions.json`.
@@ -40,6 +40,10 @@ Intermediate-region classification and segment page-association rules are
 directly verified.
 Unknown-length generic framing discovery, explicit big-endian row-count reads,
 and runtime page-write stripe tracking are directly verified.
+Generic and refinement header data types are verified. Directly annotating
+either composed header parser reproducibly crashes the pinned verifier in
+`rustc_middle::ty::generic_args`; the parser bodies remain tracked rather than
+using a workaround or assumption.
 Known- and unknown-length segment payload reads now compose the verified
 bounded reader atomically; the obsolete standalone cursor-advance helper was
 removed.
