@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "9975965916f98864b463cac24e1007acd4151b4e",
-  "tracked_functions": 171,
+  "production_source_revision": "8a3bcfed86616a6ebf2052aec58f87e02abfab88",
+  "tracked_functions": 170,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -39,7 +39,7 @@
     },
     {
       "id": "VL-005",
-      "count": 12,
+      "count": 11,
       "priority": "medium",
       "surface": "Halftone end-to-end paths",
       "mitigation": "Consume verified bitmap mutation contracts and replace generic decoder callbacks with a concrete arithmetic/MMR decoder enum.",

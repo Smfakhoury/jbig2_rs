@@ -635,84 +635,77 @@
     {
       "id": "halftone::HalftoneError::from",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::HalftoneError::from#2",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::decode_generic_region",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::F::decode_generic_region",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::HalftoneError::from#3",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::decode_pattern_dictionary",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::slice_collective_bitmap",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::decode_gray_planes",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::generate_skip_mask",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::decode_halftone_region",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::render_clipped_pattern",
       "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
-    },
-    {
-      "id": "halftone::enforce_halftone_memory",
-      "file": "src/halftone.rs",
-      "file_sha256": "2e45bbfe98b45f33abbd684c3d8a156b4a22e9359f3733514db0af36736dbae2",
+      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
