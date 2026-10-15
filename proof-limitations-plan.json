@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "e9afb7030d5aa2d62ef7655a8bbdddc40384d666",
-  "tracked_functions": 176,
+  "production_source_revision": "c46da2778336d7244ce9e0674b1395d94cef4b80",
+  "tracked_functions": 174,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -79,7 +79,7 @@
     },
     {
       "id": "VL-010",
-      "count": 25,
+      "count": 23,
       "priority": "high",
       "surface": "Generic/refinement raster paths",
       "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
