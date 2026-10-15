@@ -2,7 +2,7 @@
 
 Pinned Verus verifies 638 obligations with zero errors and zero native
 assumptions. The production inventory contains 331 directly verified functions
-and 172 reviewed verifier limitations. Each limitation is bound to the exact
+and 171 reviewed verifier limitations. Each limitation is bound to the exact
 source-file hash in `proof-dispositions.json`.
 
 The Annex A integer and IAID callback limitation is closed: production now
@@ -40,6 +40,9 @@ Intermediate-region classification and segment page-association rules are
 directly verified.
 Unknown-length generic framing discovery, explicit big-endian row-count reads,
 and runtime page-write stripe tracking are directly verified.
+Known- and unknown-length segment payload reads now compose the verified
+bounded reader atomically; the obsolete standalone cursor-advance helper was
+removed.
 
 The limitations are not algorithm stubs. They are complete, tested production
 functions whose direct proofs are blocked by unsupported pinned-Verus/vstd
