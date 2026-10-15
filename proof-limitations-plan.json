@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "c46da2778336d7244ce9e0674b1395d94cef4b80",
-  "tracked_functions": 174,
+  "production_source_revision": "3d0031f13b80b54de4a3a3189b55cc15e47caf04",
+  "tracked_functions": 172,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -31,7 +31,7 @@
     },
     {
       "id": "VL-004",
-      "count": 31,
+      "count": 30,
       "priority": "high",
       "surface": "Document parsing",
       "mitigation": "Split bounded reader acquisition from a verified slice parser and replace iterator/closure-heavy HashMap validation with indexed deterministic vectors.",
@@ -79,7 +79,7 @@
     },
     {
       "id": "VL-010",
-      "count": 23,
+      "count": 22,
       "priority": "high",
       "surface": "Generic/refinement raster paths",
       "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
