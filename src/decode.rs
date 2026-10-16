@@ -446,9 +446,46 @@ fn insert_runtime_page(pages: &mut RuntimePages, number: u32, page: RuntimePage)
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 struct RegionBuffer {
     region: crate::segment_data::RegionInfo,
     bitmap: Bitmap,
+}
+
+type RegionBuffers = Vec<(u32, RegionBuffer)>;
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(index) =>
+            index < buffers@.len()
+            && buffers@[index as int].0 == number,
+        None =>
+            forall|index: int| 0 <= index < buffers@.len() ==>
+                buffers@[index].0 != number,
+    },
+))]
+fn region_buffer_index(buffers: &[(u32, RegionBuffer)], number: u32) -> Option<usize> {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= buffers@.len(),
+            forall|completed: int| 0 <= completed < index ==>
+                buffers@[completed].0 != number,
+        decreases buffers@.len() - index,
+    ))]
+    while index < buffers.len() {
+        if buffers[index].0 == number {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn get_region_buffer(buffers: &RegionBuffers, number: u32) -> Option<&RegionBuffer> {
+    let index = region_buffer_index(buffers, number)?;
+    Some(&buffers[index].1)
 }
 
 struct SymbolResource {
@@ -671,10 +708,10 @@ fn decode_segments<S: PageSink>(
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: page_allocation,
         })?;
-    let mut buffers = HashMap::new();
+    let mut buffers = Vec::new();
     let buffer_allocation = allocation_size::<(u32, RegionBuffer)>(segments.len())?;
     buffers
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: buffer_allocation,
         })?;
@@ -875,7 +912,7 @@ fn decode_segments<S: PageSink>(
 fn decode_generic_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
-    buffers: &mut HashMap<u32, RegionBuffer>,
+    buffers: &mut RegionBuffers,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
     limits: &Limits,
@@ -927,7 +964,7 @@ fn decode_generic_segment(
 fn decode_refinement_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
-    buffers: &mut HashMap<u32, RegionBuffer>,
+    buffers: &mut RegionBuffers,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
     limits: &Limits,
@@ -940,9 +977,8 @@ fn decode_refinement_segment(
         .ok_or(MalformedError::IntegerOverflow)?;
     let owned_snapshot;
     let reference = if let Some(number) = segment.header.referred_segments.first() {
-        let buffer = buffers
-            .get(number)
-            .ok_or(MalformedError::MissingReferredSegment {
+        let buffer =
+            get_region_buffer(buffers, *number).ok_or(MalformedError::MissingReferredSegment {
                 segment: segment.header.number,
                 referred: *number,
             })?;
@@ -1107,7 +1143,7 @@ fn decode_pattern_segment(
 fn decode_halftone_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
-    buffers: &mut HashMap<u32, RegionBuffer>,
+    buffers: &mut RegionBuffers,
     patterns: &HashMap<u32, Vec<Bitmap>>,
     retained: &mut RetainedBudget,
     cumulative_work: &mut DecodeWork,
@@ -1322,7 +1358,7 @@ fn decode_symbol_dictionary_segment(
 fn decode_text_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
-    buffers: &mut HashMap<u32, RegionBuffer>,
+    buffers: &mut RegionBuffers,
     symbols: &HashMap<u32, SymbolResource>,
     tables: &HashMap<u32, HuffmanTable>,
     retained: &mut RetainedBudget,
@@ -1789,14 +1825,14 @@ fn require_auxiliary_page_state(page: &RuntimePage) -> Result<(), DecodeError> {
 }
 
 fn insert_buffer(
-    buffers: &mut HashMap<u32, RegionBuffer>,
+    buffers: &mut RegionBuffers,
     number: u32,
     region: crate::segment_data::RegionInfo,
     bitmap: Bitmap,
     retained: &mut RetainedBudget,
     limits: &Limits,
 ) -> Result<(), DecodeError> {
-    if buffers.contains_key(&number) {
+    if region_buffer_index(buffers, number).is_some() {
         return Err(MalformedError::DuplicateSegmentNumber(number).into());
     }
     let requested_bytes = u64::try_from(std::mem::size_of::<(u32, RegionBuffer)>())
@@ -1805,13 +1841,13 @@ fn insert_buffer(
         .try_reserve(1)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     retain_bitmap(retained, &bitmap, limits)?;
-    buffers.insert(number, RegionBuffer { region, bitmap });
+    buffers.push((number, RegionBuffer { region, bitmap }));
     Ok(())
 }
 
 fn release_referred_buffers(
     segment: &ParsedSegment<'_>,
-    buffers: &mut HashMap<u32, RegionBuffer>,
+    buffers: &mut RegionBuffers,
     retained: &mut RetainedBudget,
 ) -> Result<(), DecodeError> {
     for (index, number) in segment.header.referred_segments.iter().enumerate() {
@@ -1821,7 +1857,8 @@ fn release_referred_buffers(
             .retain_referred_segment(index)
             == Some(false)
         {
-            if let Some(buffer) = buffers.remove(number) {
+            if let Some(index) = region_buffer_index(buffers, *number) {
+                let buffer = buffers.remove(index).1;
                 release_bitmap(retained, &buffer.bitmap)?;
             }
         }
@@ -2684,7 +2721,7 @@ mod tests {
             y: 0,
             operator: crate::bitmap::CombinationOperator::Replace,
         };
-        let mut buffers = HashMap::new();
+        let mut buffers = Vec::new();
         let mut retained = RetainedBudget::new();
         insert_buffer(
             &mut buffers,
