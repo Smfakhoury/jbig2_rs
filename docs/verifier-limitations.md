@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 654 obligations with zero errors and zero native
-assumptions. The production inventory contains 342 directly verified functions
-and 148 reviewed verifier limitations. Nineteen one-line standard trait
+Pinned Verus verifies 655 obligations with zero errors and zero native
+assumptions. The production inventory contains 343 directly verified functions
+and 147 reviewed verifier limitations. Nineteen one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
@@ -14,7 +14,8 @@ also verify through the deterministic registry; immediate composition still
 requires a registry-wide bitmap invariant.
 The runtime page registry now uses deterministic vector storage with verified
 index lookup, immutable/mutable access, insertion/replacement, stripe sealing,
-and auxiliary-page lookup. Other resource stores remain pending.
+auxiliary-page lookup, and immediate composition under a registry-wide bitmap
+invariant. Other resource stores remain pending.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
