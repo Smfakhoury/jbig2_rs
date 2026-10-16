@@ -1535,6 +1535,23 @@ fn compose_immediate(
     let page = pages.get_mut(&segment.header.page_association).ok_or(
         MalformedError::MissingPageInformation(segment.header.page_association),
     )?;
+    compose_immediate_on_page(page, region, bitmap, refinement, work, limits)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(&old(page).bitmap),
+        crate::spec::bitmap::storage_valid(bitmap),
+    ensures crate::spec::bitmap::storage_valid(&final(page).bitmap),
+))]
+fn compose_immediate_on_page(
+    page: &mut RuntimePage,
+    region: &crate::segment_data::RegionInfo,
+    bitmap: &Bitmap,
+    refinement: bool,
+    work: &mut DecodeWork,
+    limits: &Limits,
+) -> Result<(), DecodeError> {
     check_combination_operator(
         page.combination_override,
         region.operator,
@@ -1610,7 +1627,15 @@ fn checked_page_write_state(
     Ok(Some(next))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(&old(page).bitmap),
+    ensures
+        crate::spec::bitmap::storage_valid(&final(page).bitmap),
+        final(page).bitmap.width == old(page).bitmap.width,
+        final(page).bitmap.height == old(page).bitmap.height,
+        final(page).bitmap.stride == old(page).bitmap.stride,
+        final(page).bitmap.data@ == old(page).bitmap.data@,
+))]
 fn note_page_write(
     page: &mut RuntimePage,
     region: &crate::segment_data::RegionInfo,
@@ -1666,6 +1691,11 @@ fn seal_stripe(
     let page = pages
         .get_mut(&page_number)
         .ok_or(MalformedError::MissingPageInformation(page_number))?;
+    seal_stripe_on_page(page, row)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn seal_stripe_on_page(page: &mut RuntimePage, row: u32) -> Result<(), DecodeError> {
     let next_open = checked_seal_stripe_state(page.open_stripe_max_row, row)?;
     page.last_stripe_end = Some(row);
     page.open_stripe_max_row = next_open;
@@ -1679,6 +1709,11 @@ fn require_auxiliary_page(
     let page = pages.get(&segment.header.page_association).ok_or(
         MalformedError::MissingPageInformation(segment.header.page_association),
     )?;
+    require_auxiliary_page_state(page)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn require_auxiliary_page_state(page: &RuntimePage) -> Result<(), DecodeError> {
     if !page.auxiliary_allowed {
         return Err(MalformedError::InvalidPageState(
             "intermediate region on page that forbids auxiliary buffers",
