@@ -66,6 +66,13 @@ pub(super) open spec fn runtime_open_stripe_max_row(
     page.open_stripe_max_row
 }
 
+pub(super) open spec fn runtime_pages_valid(
+    pages: &crate::decode::RuntimePages,
+) -> bool {
+    forall|index: int| 0 <= index < pages@.len() ==>
+        crate::spec::bitmap::storage_valid(&pages@[index].1.bitmap)
+}
+
 pub(super) proof fn page_fields(page: &crate::decode::Page)
     ensures
         page_number(page) == page.number,

@@ -421,9 +421,19 @@ fn get_runtime_page(pages: &RuntimePages, number: u32) -> Option<&RuntimePage> {
     Some(&pages[index].1)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::runtime_pages_valid(old(pages)),
+    ensures match out {
+        Some(page) => crate::spec::bitmap::storage_valid(&page.bitmap),
+        None => true,
+    },
+))]
 fn get_runtime_page_mut(pages: &mut RuntimePages, number: u32) -> Option<&mut RuntimePage> {
     let index = runtime_page_index(pages, number)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(decode_spec::runtime_pages_valid);
+    }
     Some(&mut pages[index].1)
 }
 
@@ -1574,6 +1584,11 @@ fn require_matching_geometry(equal: bool) -> Result<(), DecodeError> {
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires
+        decode_spec::runtime_pages_valid(old(pages)),
+        crate::spec::bitmap::storage_valid(bitmap),
+))]
 fn compose_immediate(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
@@ -1734,7 +1749,9 @@ fn checked_seal_stripe_state(
     Ok(None)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires decode_spec::runtime_pages_valid(old(pages)),
+))]
 fn seal_stripe(pages: &mut RuntimePages, page_number: u32, row: u32) -> Result<(), DecodeError> {
     let page = get_runtime_page_mut(pages, page_number)
         .ok_or(MalformedError::MissingPageInformation(page_number))?;
