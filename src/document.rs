@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::io::Read;
 
 use crate::file_header::{inspect_file_header, Organization};
@@ -28,8 +27,59 @@ mod document_properties;
 #[path = "../proofs/shared/document.rs"]
 mod document_shared;
 
-type SegmentTypes = HashMap<u32, SegmentType>;
-type SegmentDepths = HashMap<u32, u32>;
+type SegmentTypes = Vec<(u32, SegmentType)>;
+type SegmentDepths = Vec<(u32, u32)>;
+type SegmentIndexes = Vec<(u32, usize)>;
+type PageStates = Vec<(u32, PageState)>;
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(index) =>
+            index < entries@.len()
+            && entries@[index as int].0 == number,
+        None =>
+            forall|index: int| 0 <= index < entries@.len() ==>
+                entries@[index].0 != number,
+    },
+))]
+fn keyed_index<T>(entries: &[(u32, T)], number: u32) -> Option<usize> {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= entries@.len(),
+            forall|completed: int| 0 <= completed < index ==>
+                entries@[completed].0 != number,
+        decreases entries@.len() - index,
+    ))]
+    while index < entries.len() {
+        if entries[index].0 == number {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn keyed_get<T>(entries: &[(u32, T)], number: u32) -> Option<&T> {
+    let index = keyed_index(entries, number)?;
+    Some(&entries[index].1)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn keyed_get_mut<T>(entries: &mut [(u32, T)], number: u32) -> Option<&mut T> {
+    let index = keyed_index(entries, number)?;
+    Some(&mut entries[index].1)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn keyed_insert<T>(entries: &mut Vec<(u32, T)>, number: u32, value: T) -> bool {
+    if keyed_index(entries, number).is_some() {
+        return false;
+    }
+    entries.push((number, value));
+    true
+}
 
 /// High-level decoder configuration.
 #[derive(Debug, Clone)]
@@ -195,7 +245,7 @@ impl GlobalSegments {
     /// Number of global segments.
     #[must_use]
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures out == document_spec::global_segment_count(self),
+        ensures out as nat == document_spec::global_segment_count(self),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub fn segment_count(&self) -> usize {
@@ -674,12 +724,12 @@ fn build_document_info(
 fn collect_page_states(
     segments: &[ParsedSegment<'_>],
     limits: &Limits,
-) -> Result<(HashMap<u32, PageState>, Vec<u32>), DecodeError> {
-    let mut page_states: HashMap<u32, PageState> = HashMap::new();
+) -> Result<(PageStates, Vec<u32>), DecodeError> {
+    let mut page_states = Vec::new();
     let page_state_allocation =
         allocation_size::<PageState>(segments.len().min(limits.max_pages as usize))?;
     page_states
-        .try_reserve(segments.len().min(limits.max_pages as usize))
+        .try_reserve_exact(segments.len().min(limits.max_pages as usize))
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: page_state_allocation,
         })?;
@@ -699,7 +749,7 @@ fn collect_page_states(
             continue;
         }
 
-        if !page_states.contains_key(&page) {
+        if keyed_index(&page_states, page).is_none() {
             if segment.header.segment_type != SegmentType::PageInformation {
                 return Err(MalformedError::MissingPageInformation(page).into());
             }
@@ -707,13 +757,13 @@ fn collect_page_states(
             let ParsedData::Page(info) = segment.data else {
                 return Err(MalformedError::MissingPageInformation(page).into());
             };
-            page_states.insert(page, PageState::new(info));
+            let inserted = keyed_insert(&mut page_states, page, PageState::new(info));
+            debug_assert!(inserted);
             page_order.push(page);
             continue;
         }
 
-        let state = page_states
-            .get_mut(&page)
+        let state = keyed_get_mut(&mut page_states, page)
             .ok_or(MalformedError::MissingPageInformation(page))?;
         if state.ended {
             return Err(MalformedError::SegmentAfterEndOfPage {
@@ -741,7 +791,7 @@ fn collect_page_states(
 }
 
 fn finalize_pages(
-    mut page_states: HashMap<u32, PageState>,
+    mut page_states: PageStates,
     page_order: Vec<u32>,
 ) -> Result<Vec<PageInfo>, DecodeError> {
     let mut pages = Vec::new();
@@ -752,9 +802,9 @@ fn finalize_pages(
             requested_bytes: page_allocation,
         })?;
     for number in page_order {
-        let state = page_states
-            .remove(&number)
+        let state_index = keyed_index(&page_states, number)
             .ok_or(MalformedError::MissingPageInformation(number))?;
+        let state = page_states.remove(state_index).1;
         if !state.ended {
             return Err(MalformedError::MissingEndOfPage(number).into());
         }
@@ -787,10 +837,10 @@ fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> 
     let ParsedData::Profiles(global_profiles) = &first_segment.data else {
         return Err(MalformedError::InvalidProfilesSegment(first_segment.header.number).into());
     };
-    let mut page_profiles = HashMap::new();
+    let mut page_profiles = Vec::new();
     let profile_allocation = allocation_size::<(u32, u32)>(segments.len())?;
     page_profiles
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: profile_allocation,
         })?;
@@ -799,7 +849,7 @@ fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> 
             continue;
         }
         let page = segment.header.page_association;
-        if page == 0 || page_profiles.insert(page, segment.header.number).is_some() {
+        if page == 0 || !keyed_insert(&mut page_profiles, page, segment.header.number) {
             return Err(MalformedError::InvalidProfilesSegment(segment.header.number).into());
         }
         let ParsedData::Profiles(profiles) = &segment.data else {
@@ -909,26 +959,26 @@ fn validate_references(
         .into());
     }
 
-    let mut indexes = HashMap::new();
+    let mut indexes = Vec::new();
     let index_allocation = allocation_size::<(u32, usize)>(segments.len())?;
     indexes
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: index_allocation,
         })?;
     for (index, segment) in segments.iter().enumerate() {
-        if globals.is_some_and(|state| state.types.contains_key(&segment.header.number)) {
+        if globals.is_some_and(|state| keyed_index(&state.types, segment.header.number).is_some()) {
             return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
         }
-        if indexes.insert(segment.header.number, index).is_some() {
+        if !keyed_insert(&mut indexes, segment.header.number, index) {
             return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
         }
     }
 
     for segment in segments {
         for referred in &segment.header.referred_segments {
-            let Some(index) = indexes.get(referred) else {
-                if !globals.is_some_and(|state| state.types.contains_key(referred)) {
+            let Some(index) = keyed_get(&indexes, *referred) else {
+                if globals.is_none_or(|state| keyed_index(&state.types, *referred).is_none()) {
                     return Err(MalformedError::MissingReferredSegment {
                         segment: segment.header.number,
                         referred: *referred,
@@ -952,44 +1002,51 @@ fn validate_references(
     }
     validate_retention(segments, &indexes)?;
     let depths = validate_reference_depth(segments, &indexes, globals, limits)?;
-    let mut types = HashMap::new();
+    let mut types = Vec::new();
     let type_allocation = allocation_size::<(u32, SegmentType)>(segments.len())?;
     types
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: type_allocation,
         })?;
     for segment in segments {
-        types.insert(segment.header.number, segment.header.segment_type);
+        let inserted = keyed_insert(
+            &mut types,
+            segment.header.number,
+            segment.header.segment_type,
+        );
+        debug_assert!(inserted);
     }
     Ok((types, depths))
 }
 
 fn validate_retention(
     segments: &[ParsedSegment<'_>],
-    indexes: &HashMap<u32, usize>,
+    indexes: &SegmentIndexes,
 ) -> Result<(), DecodeError> {
-    let mut last_references: HashMap<u32, u32> = HashMap::new();
+    let mut last_references: Vec<(u32, u32)> = Vec::new();
     let retention_allocation = allocation_size::<(u32, u32)>(segments.len())?;
     last_references
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: retention_allocation,
         })?;
     for segment in segments {
         for referred in &segment.header.referred_segments {
-            if !indexes.contains_key(referred) {
+            if keyed_index(indexes, *referred).is_none() {
                 continue;
             }
-            last_references
-                .entry(*referred)
-                .and_modify(|last| *last = (*last).max(segment.header.number))
-                .or_insert(segment.header.number);
+            if let Some(last) = keyed_get_mut(&mut last_references, *referred) {
+                *last = (*last).max(segment.header.number);
+            } else {
+                let inserted = keyed_insert(&mut last_references, *referred, segment.header.number);
+                debug_assert!(inserted);
+            }
         }
     }
 
     for segment in segments {
-        if let Some(last) = last_references.get(&segment.header.number) {
+        if let Some(last) = keyed_get(&last_references, segment.header.number) {
             if !segment.header.retention_flags.retain_this_segment() {
                 return Err(MalformedError::InvalidRetentionFlags {
                     segment: segment.header.number,
@@ -1006,7 +1063,7 @@ fn validate_retention(
             }
         }
         for (index, referred) in segment.header.referred_segments.iter().enumerate() {
-            let Some(last) = last_references.get(referred) else {
+            let Some(last) = keyed_get(&last_references, *referred) else {
                 continue;
             };
             if segment
@@ -1029,7 +1086,7 @@ fn validate_retention(
 
 fn validate_reference_depth(
     segments: &[ParsedSegment<'_>],
-    indexes: &HashMap<u32, usize>,
+    indexes: &SegmentIndexes,
     globals: Option<&GlobalSegments>,
     limits: &Limits,
 ) -> Result<SegmentDepths, DecodeError> {
@@ -1048,10 +1105,10 @@ fn validate_reference_depth(
     );
     ordered.sort_unstable_by_key(|entry| entry.0);
 
-    let mut depths: HashMap<u32, u32> = HashMap::new();
+    let mut depths = Vec::new();
     let depth_allocation = allocation_size::<(u32, u32)>(segments.len())?;
     depths
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: depth_allocation,
         })?;
@@ -1059,10 +1116,10 @@ fn validate_reference_depth(
         let segment = &segments[index].header;
         let mut depth = 1_u32;
         for referred in &segment.referred_segments {
-            let referred_depth = if indexes.contains_key(referred) {
-                depths.get(referred).copied()
+            let referred_depth = if keyed_index(indexes, *referred).is_some() {
+                keyed_get(&depths, *referred).copied()
             } else {
-                globals.and_then(|state| state.depths.get(referred).copied())
+                globals.and_then(|state| keyed_get(&state.depths, *referred).copied())
             }
             .ok_or(MalformedError::MissingReferredSegment {
                 segment: segment.number,
@@ -1082,7 +1139,9 @@ fn validate_reference_depth(
             }
             .into());
         }
-        depths.insert(segment.number, depth);
+        if !keyed_insert(&mut depths, segment.number, depth) {
+            return Err(MalformedError::DuplicateSegmentNumber(segment.number).into());
+        }
     }
     Ok(depths)
 }
@@ -1090,7 +1149,7 @@ fn validate_reference_depth(
 fn validate_reference_types(
     header: &SegmentHeader,
     segments: &[ParsedSegment<'_>],
-    indexes: &HashMap<u32, usize>,
+    indexes: &SegmentIndexes,
     globals: Option<&GlobalSegments>,
 ) -> Result<(), DecodeError> {
     let reference_count = header.referred_segments.len();
@@ -1099,10 +1158,9 @@ fn validate_reference_types(
             .referred_segments
             .get(reference_index)
             .and_then(|number| {
-                indexes
-                    .get(number)
+                keyed_get(indexes, *number)
                     .map(|index| segments[*index].header.segment_type)
-                    .or_else(|| globals.and_then(|state| state.types.get(number).copied()))
+                    .or_else(|| globals.and_then(|state| keyed_get(&state.types, *number).copied()))
             })
     };
     let every_known_is = |predicate: fn(SegmentType) -> bool| {

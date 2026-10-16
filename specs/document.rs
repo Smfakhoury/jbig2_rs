@@ -52,8 +52,8 @@ pub closed spec fn document_pages(
 
 pub closed spec fn global_segment_count(
     globals: &crate::document::GlobalSegments,
-) -> usize {
-    vstd::std_specs::hash::spec_hash_map_len(&globals.types)
+) -> nat {
+    globals.types@.len()
 }
 
 pub closed spec fn global_bytes(
@@ -76,8 +76,7 @@ pub(super) proof fn document_fields(document: &crate::document::DocumentInfo)
 
 pub(super) proof fn global_fields(globals: &crate::document::GlobalSegments)
     ensures
-        global_segment_count(globals)
-            == vstd::std_specs::hash::spec_hash_map_len(&globals.types),
+        global_segment_count(globals) == globals.types@.len(),
         global_bytes(globals) == globals.bytes@,
 {}
 
