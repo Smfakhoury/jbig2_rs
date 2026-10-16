@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "36efcc6fc5b972cb4f3e3b0d456289360cf890bf",
-  "tracked_functions": 147,
+  "production_source_revision": "e3e3706787416064b3deddb8433ddaf913af0cd3",
+  "tracked_functions": 146,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -31,7 +31,7 @@
     },
     {
       "id": "VL-004",
-      "count": 21,
+      "count": 20,
       "priority": "high",
       "surface": "Document parsing",
       "mitigation": "Split bounded reader acquisition from a verified slice parser and replace iterator/closure-heavy HashMap validation with indexed deterministic vectors.",

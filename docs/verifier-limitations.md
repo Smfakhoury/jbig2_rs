@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 675 obligations with zero errors and zero native
-assumptions. The production inventory contains 358 directly verified functions
-and 147 reviewed verifier limitations. Nineteen one-line standard trait
+Pinned Verus verifies 680 obligations with zero errors and zero native
+assumptions. The production inventory contains 362 directly verified functions
+and 146 reviewed verifier limitations. Nineteen one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
@@ -30,6 +30,8 @@ Document segment indexes, global type/depth metadata, page lifecycle state,
 profile tracking, and retention last-reference state now also use deterministic
 vector storage with verified generic keyed lookup/get/mutable-get/insertion.
 Production runtime code no longer uses `HashMap`.
+Segment reference-type validation now uses explicit verified classification
+loops over deterministic local/global type stores.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "complete_with_reviewed_verifier_limitations",
-  "source_revision": "36efcc6fc5b972cb4f3e3b0d456289360cf890bf",
+  "source_revision": "e3e3706787416064b3deddb8433ddaf913af0cd3",
   "scope": "Exact production crate rooted at src/lib.rs",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,19 +11,19 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 675,
-    "verified_production_functions": 358,
+    "verified_obligations": 680,
+    "verified_production_functions": 362,
     "errors": 0,
     "exact_production_source_compiles": true,
     "algorithm_bodies_verified": false,
     "production_coverage_complete": true,
     "native_assumptions": [],
-    "reviewed_verifier_limitations": 147,
+    "reviewed_verifier_limitations": 146,
     "audited_forwarders": 19,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "6f0cd53d331c5ea20295fba9667fd1b2ad5ce23d232cee5c0353588e9ee27872",
-  "proof_dispositions_sha256": "cb26d116721c0d631d3c11db866c25c46ab501f1a27593f2e1ddbf04ec993bea",
+  "production_proof_coverage_sha256": "c437beed61dc396a6573878076a7fb225afbb4aca34cda20d7c5bd933340aea9",
+  "proof_dispositions_sha256": "07cada2d2aa009cc09531beed4ae973dfaae10cc443531bbc7e9550cf0669f5d",
   "duplicate_executable_proof_source": false,
   "release_gate": "blocked"
 }
