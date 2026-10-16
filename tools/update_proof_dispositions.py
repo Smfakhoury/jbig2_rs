@@ -32,7 +32,7 @@ AUDITED_FORWARDERS = {
 REASONS = {
     "src/arithmetic.rs": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified.",
     "src/bitmap.rs": "Pinned vstd has no specification for fallible Vec reservation used by bitmap allocation.",
-    "src/decode.rs": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
+    "src/decode.rs": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths.",
     "src/document.rs": "Pinned Verus lacks Read, HashMap, iterator-closure, and fallible collection specifications used by document parsing.",
     "src/error.rs": "Pinned Verus does not support formatting, dynamic Error machinery, or std::io::ErrorKind conversion.",
     "src/generic_region.rs": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",

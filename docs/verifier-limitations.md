@@ -1,7 +1,7 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 666 obligations with zero errors and zero native
-assumptions. The production inventory contains 351 directly verified functions
+Pinned Verus verifies 670 obligations with zero errors and zero native
+assumptions. The production inventory contains 354 directly verified functions
 and 147 reviewed verifier limitations. Nineteen one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
@@ -23,6 +23,10 @@ The Huffman-table registry uses deterministic vector storage with verified
 index lookup, immutable access, and duplicate-checked insertion.
 The pattern-dictionary registry uses deterministic vector storage with
 verified index lookup, immutable access, and duplicate-checked insertion.
+The symbol-dictionary registry uses deterministic vector storage with verified
+index lookup, immutable access, and duplicate-checked insertion while retaining
+exported bitmap order and optional arithmetic contexts. Runtime decode no
+longer uses `HashMap`; document graph validation remains pending.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
