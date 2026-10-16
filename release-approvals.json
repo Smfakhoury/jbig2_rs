@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "candidate_revision": "7be217774ed18122c7c7eed6fa92ebaf3fbf4bd4",
-  "production_source_revision": "9144a9028d0fafb16d6199271563ded7d5ccecd5",
+  "production_source_revision": "ca60da782234df1bbae515f7aecf44b05b864f50",
   "approvals": [
     {
       "id": "resource_limit_ratification",

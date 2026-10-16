@@ -1,11 +1,13 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 642 obligations with zero errors and zero native
-assumptions. The production inventory contains 332 directly verified functions
-and 151 reviewed verifier limitations. Nineteen one-line standard trait
+Pinned Verus verifies 644 obligations with zero errors and zero native
+assumptions. The production inventory contains 333 directly verified functions
+and 150 reviewed verifier limitations. Nineteen one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
+Generic bitmap row copying now has directly verified row-span bounds, metadata
+preservation, and byte-wise mutation safety.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
