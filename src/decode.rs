@@ -493,11 +493,56 @@ struct SymbolResource {
     contexts: Option<DictionaryContexts>,
 }
 
+type HuffmanTables = Vec<(u32, HuffmanTable)>;
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(index) =>
+            index < tables@.len()
+            && tables@[index as int].0 == number,
+        None =>
+            forall|index: int| 0 <= index < tables@.len() ==>
+                tables@[index].0 != number,
+    },
+))]
+fn huffman_table_index(tables: &[(u32, HuffmanTable)], number: u32) -> Option<usize> {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= tables@.len(),
+            forall|completed: int| 0 <= completed < index ==>
+                tables@[completed].0 != number,
+        decreases tables@.len() - index,
+    ))]
+    while index < tables.len() {
+        if tables[index].0 == number {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn get_huffman_table(tables: &HuffmanTables, number: u32) -> Option<&HuffmanTable> {
+    let index = huffman_table_index(tables, number)?;
+    Some(&tables[index].1)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn insert_huffman_table(tables: &mut HuffmanTables, number: u32, table: HuffmanTable) -> bool {
+    if huffman_table_index(tables, number).is_some() {
+        return false;
+    }
+    tables.push((number, table));
+    true
+}
+
 #[derive(Default)]
 struct InitialResources {
     patterns: HashMap<u32, Vec<Bitmap>>,
     symbols: HashMap<u32, SymbolResource>,
-    tables: HashMap<u32, HuffmanTable>,
+    tables: HuffmanTables,
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -661,7 +706,7 @@ fn decode_global_resources(input: &[u8], limits: &Limits) -> Result<InitialResou
             SegmentType::Tables => {
                 let table = HuffmanTable::from_encoded(segment.payload, limits)
                     .map_err(DecodeError::from)?;
-                resources.tables.insert(segment.header.number, table);
+                let _ = insert_huffman_table(&mut resources.tables, segment.header.number, table);
             }
             SegmentType::PatternDictionary => {
                 decode_pattern_segment(
@@ -728,7 +773,7 @@ fn decode_segments<S: PageSink>(
         })?;
     let table_allocation = allocation_size::<(u32, HuffmanTable)>(segments.len())?;
     tables
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: table_allocation,
         })?;
@@ -888,7 +933,7 @@ fn decode_segments<S: PageSink>(
             SegmentType::Tables => {
                 let table = HuffmanTable::from_encoded(segment.payload, limits)
                     .map_err(DecodeError::from)?;
-                if tables.insert(segment.header.number, table).is_some() {
+                if !insert_huffman_table(&mut tables, segment.header.number, table) {
                     return Err(
                         MalformedError::DuplicateSegmentNumber(segment.header.number).into(),
                     );
@@ -1290,7 +1335,7 @@ fn first_referred_segment(referred: &[u32], owner: u32) -> Result<u32, DecodeErr
 fn decode_symbol_dictionary_segment(
     segment: &ParsedSegment<'_>,
     symbols: &mut HashMap<u32, SymbolResource>,
-    tables: &HashMap<u32, HuffmanTable>,
+    tables: &HuffmanTables,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
     limits: &Limits,
@@ -1360,7 +1405,7 @@ fn decode_text_segment(
     pages: &mut RuntimePages,
     buffers: &mut RegionBuffers,
     symbols: &HashMap<u32, SymbolResource>,
-    tables: &HashMap<u32, HuffmanTable>,
+    tables: &HuffmanTables,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
     limits: &Limits,
@@ -1466,13 +1511,13 @@ fn collect_referred_symbols(
 
 fn collect_referred_tables<'a>(
     segment: &ParsedSegment<'_>,
-    tables: &'a HashMap<u32, HuffmanTable>,
+    tables: &'a HuffmanTables,
 ) -> Result<Vec<&'a HuffmanTable>, DecodeError> {
     let count = segment
         .header
         .referred_segments
         .iter()
-        .filter(|number| tables.contains_key(number))
+        .filter(|number| huffman_table_index(tables, **number).is_some())
         .count();
     let requested_bytes = allocation_size::<&HuffmanTable>(count)?;
     let mut result = Vec::new();
@@ -1480,7 +1525,7 @@ fn collect_referred_tables<'a>(
         .try_reserve_exact(count)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     for number in &segment.header.referred_segments {
-        if let Some(table) = tables.get(number) {
+        if let Some(table) = get_huffman_table(tables, *number) {
             result.push(table);
         }
     }
@@ -1952,7 +1997,7 @@ fn release_referred_symbols(
     Ok(())
 }
 
-fn release_referred_tables(segment: &ParsedSegment<'_>, tables: &mut HashMap<u32, HuffmanTable>) {
+fn release_referred_tables(segment: &ParsedSegment<'_>, tables: &mut HuffmanTables) {
     for (index, number) in segment.header.referred_segments.iter().enumerate() {
         if segment
             .header
@@ -1960,7 +2005,9 @@ fn release_referred_tables(segment: &ParsedSegment<'_>, tables: &mut HashMap<u32
             .retain_referred_segment(index)
             == Some(false)
         {
-            tables.remove(number);
+            if let Some(table_index) = huffman_table_index(tables, *number) {
+                tables.remove(table_index);
+            }
         }
     }
 }
