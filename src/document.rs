@@ -1146,6 +1146,10 @@ fn validate_reference_depth(
     Ok(depths)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires forall|index: int| 0 <= index < indexes@.len() ==>
+        indexes@[index].1 < segments@.len(),
+))]
 fn validate_reference_types(
     header: &SegmentHeader,
     segments: &[ParsedSegment<'_>],
@@ -1153,34 +1157,14 @@ fn validate_reference_types(
     globals: Option<&GlobalSegments>,
 ) -> Result<(), DecodeError> {
     let reference_count = header.referred_segments.len();
-    let known_kind = |reference_index: usize| {
-        header
-            .referred_segments
-            .get(reference_index)
-            .and_then(|number| {
-                keyed_get(indexes, *number)
-                    .map(|index| segments[*index].header.segment_type)
-                    .or_else(|| globals.and_then(|state| keyed_get(&state.types, *number).copied()))
-            })
-    };
-    let every_known_is = |predicate: fn(SegmentType) -> bool| {
-        (0..reference_count).all(|index| known_kind(index).is_none_or(predicate))
-    };
-    let table_count = (0..reference_count)
-        .filter(|index| known_kind(*index) == Some(SegmentType::Tables))
-        .count();
     let valid = match header.segment_type {
         SegmentType::SymbolDictionary => {
-            every_known_is(|kind| {
-                matches!(kind, SegmentType::SymbolDictionary | SegmentType::Tables)
-            }) && table_count <= 4
+            references_are_symbol_resources(header, segments, indexes, globals, 4)
         }
         SegmentType::IntermediateTextRegion
         | SegmentType::ImmediateTextRegion
         | SegmentType::ImmediateLosslessTextRegion => {
-            every_known_is(|kind| {
-                matches!(kind, SegmentType::SymbolDictionary | SegmentType::Tables)
-            }) && table_count <= 8
+            references_are_symbol_resources(header, segments, indexes, globals, 8)
         }
         SegmentType::PatternDictionary
         | SegmentType::IntermediateGenericRegion
@@ -1196,15 +1180,21 @@ fn validate_reference_types(
         SegmentType::IntermediateHalftoneRegion
         | SegmentType::ImmediateHalftoneRegion
         | SegmentType::ImmediateLosslessHalftoneRegion => {
-            reference_count == 1 && known_kind(0) == Some(SegmentType::PatternDictionary)
+            reference_count == 1
+                && matches!(
+                    known_reference_type(header, 0, segments, indexes, globals),
+                    Some(SegmentType::PatternDictionary)
+                )
         }
         SegmentType::IntermediateGenericRefinementRegion => {
-            reference_count == 1 && known_kind(0).is_some_and(is_intermediate_region)
+            reference_count == 1
+                && known_reference_is_intermediate(header, segments, indexes, globals)
         }
         SegmentType::ImmediateGenericRefinementRegion
         | SegmentType::ImmediateLosslessGenericRefinementRegion => {
             reference_count == 0
-                || (reference_count == 1 && known_kind(0).is_some_and(is_intermediate_region))
+                || (reference_count == 1
+                    && known_reference_is_intermediate(header, segments, indexes, globals))
         }
         SegmentType::Extension => true,
     };
@@ -1212,6 +1202,85 @@ fn validate_reference_types(
         return Err(MalformedError::InvalidSegmentReferences(header.number).into());
     }
     Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires forall|index: int| 0 <= index < indexes@.len() ==>
+        indexes@[index].1 < segments@.len(),
+))]
+fn known_reference_type(
+    header: &SegmentHeader,
+    reference_index: usize,
+    segments: &[ParsedSegment<'_>],
+    indexes: &SegmentIndexes,
+    globals: Option<&GlobalSegments>,
+) -> Option<SegmentType> {
+    if reference_index >= header.referred_segments.len() {
+        return None;
+    }
+    let number = header.referred_segments[reference_index];
+    if let Some(entry) = keyed_index(indexes, number) {
+        let segment_index = indexes[entry].1;
+        return Some(segments[segment_index].header.segment_type);
+    }
+    let state = globals?;
+    let kind = keyed_get(&state.types, number)?;
+    Some(*kind)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires forall|index: int| 0 <= index < indexes@.len() ==>
+        indexes@[index].1 < segments@.len(),
+))]
+fn known_reference_is_intermediate(
+    header: &SegmentHeader,
+    segments: &[ParsedSegment<'_>],
+    indexes: &SegmentIndexes,
+    globals: Option<&GlobalSegments>,
+) -> bool {
+    match known_reference_type(header, 0, segments, indexes, globals) {
+        Some(kind) => is_intermediate_region(kind),
+        None => false,
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires forall|entry: int| 0 <= entry < indexes@.len() ==>
+        indexes@[entry].1 < segments@.len(),
+))]
+fn references_are_symbol_resources(
+    header: &SegmentHeader,
+    segments: &[ParsedSegment<'_>],
+    indexes: &SegmentIndexes,
+    globals: Option<&GlobalSegments>,
+    maximum_tables: usize,
+) -> bool {
+    let mut table_count = 0_usize;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= header.referred_segments@.len(),
+            table_count <= index,
+            forall|entry: int| 0 <= entry < indexes@.len() ==>
+                indexes@[entry].1 < segments@.len(),
+        decreases header.referred_segments@.len() - index,
+    ))]
+    while index < header.referred_segments.len() {
+        if let Some(kind) = known_reference_type(header, index, segments, indexes, globals) {
+            match kind {
+                SegmentType::SymbolDictionary => {}
+                SegmentType::Tables => {
+                    table_count += 1;
+                    if table_count > maximum_tables {
+                        return false;
+                    }
+                }
+                _ => return false,
+            }
+        }
+        index += 1;
+    }
+    true
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
