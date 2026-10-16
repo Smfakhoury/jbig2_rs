@@ -7,6 +7,27 @@ ROOT = Path(__file__).resolve().parents[1]
 COVERAGE = ROOT / "production-proof-coverage.json"
 OUTPUT = ROOT / "proof-dispositions.json"
 
+AUDITED_FORWARDERS = {
+    "arithmetic::ArithmeticError::from",
+    "generic_region::GenericRegionError::from",
+    "generic_region::GenericRegionError::from#2",
+    "generic_region::GenericRegionError::from#3",
+    "halftone::HalftoneError::from",
+    "halftone::HalftoneError::from#2",
+    "halftone::HalftoneError::from#3",
+    "huffman::HuffmanError::from",
+    "huffman::HuffmanError::from#2",
+    "huffman::HuffmanError::from#3",
+    "mmr::MmrError::from",
+    "symbol_text::SymbolTextError::from",
+    "symbol_text::SymbolTextError::from#2",
+    "symbol_text::SymbolTextError::from#3",
+    "symbol_text::SymbolTextError::from#4",
+    "symbol_text::SymbolTextError::from#5",
+    "symbol_text::SymbolTextError::from#6",
+    "symbol_text::SymbolTextError::from#7",
+}
+
 REASONS = {
     "src/arithmetic.rs": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified.",
     "src/bitmap.rs": "Pinned vstd has no specification for fallible Vec reservation used by bitmap allocation.",
@@ -28,15 +49,23 @@ functions = []
 for entry in coverage["functions"]:
     if entry["status"] != "incomplete":
         continue
-    reason = REASONS.get(entry["file"])
-    if reason is None:
-        raise RuntimeError(f"no reviewed limitation reason for {entry['file']}")
+    if entry["id"] in AUDITED_FORWARDERS:
+        status = "audited-forwarder"
+        reason = (
+            "One-line standard From trait wrapper around an already verified "
+            "typed constructor or conversion; body hash changes invalidate this audit."
+        )
+    else:
+        status = "reviewed-verifier-limitation"
+        reason = REASONS.get(entry["file"])
+        if reason is None:
+            raise RuntimeError(f"no reviewed limitation reason for {entry['file']}")
     functions.append(
         {
             "id": entry["id"],
             "file": entry["file"],
             "file_sha256": entry["file_sha256"],
-            "status": "reviewed-verifier-limitation",
+            "status": status,
             "reason": reason,
         }
     )

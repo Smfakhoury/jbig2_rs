@@ -13,8 +13,8 @@
       "id": "arithmetic::ArithmeticError::from",
       "file": "src/arithmetic.rs",
       "file_sha256": "aab9b40c2d34ff21fd5ae7fbf19a5031a20dd3f92548f5614dfe56df0170c9d6",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "bitmap::Bitmap::blank",
@@ -447,22 +447,22 @@
       "id": "generic_region::GenericRegionError::from",
       "file": "src/generic_region.rs",
       "file_sha256": "6df2afcc68c0dc82c1d22496e8743d509ba33ddf9cc2e568f93ad9a4b420f033",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#2",
       "file": "src/generic_region.rs",
       "file_sha256": "6df2afcc68c0dc82c1d22496e8743d509ba33ddf9cc2e568f93ad9a4b420f033",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#3",
       "file": "src/generic_region.rs",
       "file_sha256": "6df2afcc68c0dc82c1d22496e8743d509ba33ddf9cc2e568f93ad9a4b420f033",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericContexts::try_snapshot",
@@ -636,15 +636,15 @@
       "id": "halftone::HalftoneError::from",
       "file": "src/halftone.rs",
       "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::HalftoneError::from#2",
       "file": "src/halftone.rs",
       "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::decode_generic_region",
@@ -664,8 +664,8 @@
       "id": "halftone::HalftoneError::from#3",
       "file": "src/halftone.rs",
       "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::decode_pattern_dictionary",
@@ -713,22 +713,22 @@
       "id": "huffman::HuffmanError::from",
       "file": "src/huffman.rs",
       "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#2",
       "file": "src/huffman.rs",
       "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#3",
       "file": "src/huffman.rs",
       "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanTable::new",
@@ -797,8 +797,8 @@
       "id": "mmr::MmrError::from",
       "file": "src/mmr.rs",
       "file_sha256": "02e31c0648939f95c79f9bbbb3fab1e14990ed714b2936023778fbbd26620968",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible transition allocation and complete Bitmap allocation contracts."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "mmr::decode_mmr",
@@ -860,50 +860,50 @@
       "id": "symbol_text::SymbolTextError::from",
       "file": "src/symbol_text.rs",
       "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#2",
       "file": "src/symbol_text.rs",
       "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#3",
       "file": "src/symbol_text.rs",
       "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#4",
       "file": "src/symbol_text.rs",
       "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#5",
       "file": "src/symbol_text.rs",
       "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#6",
       "file": "src/symbol_text.rs",
       "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#7",
       "file": "src/symbol_text.rs",
       "file_sha256": "b390674284d8bb07f8346bbe0cc1083e30fe07227289078e7f32796d0c1b95ff",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::decode_integer",

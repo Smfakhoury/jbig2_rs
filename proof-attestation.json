@@ -18,11 +18,12 @@
     "algorithm_bodies_verified": false,
     "production_coverage_complete": true,
     "native_assumptions": [],
-    "reviewed_verifier_limitations": 170,
+    "reviewed_verifier_limitations": 152,
+    "audited_forwarders": 18,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "2edb61bcded0ef41105ec25ae81daee73ca20d75d21e32234538d5e4ffa35ab4",
-  "proof_dispositions_sha256": "1529aec69c20249c51a21a38a2fc67bb0841bbb902607b57ede3e8fc269e6cb0",
+  "production_proof_coverage_sha256": "9fa7dc030f840e29ac00ae41735f7e743b8f321336e57bdb9742a4ecbe5ee60b",
+  "proof_dispositions_sha256": "06efc94d657d621082e8b85d6fcc1750d68d55e8e649806d02fcea27d7a5b0f2",
   "duplicate_executable_proof_source": false,
   "release_gate": "blocked"
 }

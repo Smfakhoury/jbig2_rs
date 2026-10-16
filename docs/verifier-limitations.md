@@ -2,7 +2,9 @@
 
 Pinned Verus verifies 642 obligations with zero errors and zero native
 assumptions. The production inventory contains 332 directly verified functions
-and 170 reviewed verifier limitations. Each limitation is bound to the exact
+and 152 reviewed verifier limitations. Eighteen one-line private `From` trait
+wrappers are separately classified as audited forwarders. Every limitation and
+forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
 
 The Annex A integer and IAID callback limitation is closed: production now
@@ -44,6 +46,10 @@ Generic and refinement header data types are verified. Directly annotating
 either composed header parser reproducibly crashes the pinned verifier in
 `rustc_middle::ty::generic_args`; the parser bodies remain tracked rather than
 using a workaround or assumption.
+
+Audited forwarders are limited to exact allowlisted standard conversion
+wrappers around verified typed constructors/conversions. They are not native
+assumptions, and any source-file change invalidates their disposition.
 Known- and unknown-length segment payload reads now compose the verified
 bounded reader atomically; the obsolete standalone cursor-advance helper was
 removed.

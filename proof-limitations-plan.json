@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "production_source_revision": "9144a9028d0fafb16d6199271563ded7d5ccecd5",
-  "tracked_functions": 170,
+  "tracked_functions": 152,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -15,7 +15,7 @@
     },
     {
       "id": "VL-002",
-      "count": 8,
+      "count": 7,
       "priority": "low",
       "surface": "Standard trait, formatting, and std::io boundaries",
       "mitigation": "Keep formatting outside algorithm proofs; directly verify Default and From implementations when pinned Verus supports these standard traits, and model stable IoErrorKind conversion only through a separately reviewed boundary contract.",
@@ -23,7 +23,7 @@
     },
     {
       "id": "VL-003",
-      "count": 29,
+      "count": 30,
       "priority": "high",
       "surface": "Decode orchestration",
       "mitigation": "Introduce verified deterministic resource stores and concrete page-sink adapters, replacing HashMap and trait-callback proof dependencies.",
@@ -31,7 +31,7 @@
     },
     {
       "id": "VL-004",
-      "count": 30,
+      "count": 21,
       "priority": "high",
       "surface": "Document parsing",
       "mitigation": "Split bounded reader acquisition from a verified slice parser and replace iterator/closure-heavy HashMap validation with indexed deterministic vectors.",
@@ -39,7 +39,7 @@
     },
     {
       "id": "VL-005",
-      "count": 11,
+      "count": 8,
       "priority": "medium",
       "surface": "Halftone end-to-end paths",
       "mitigation": "Consume verified bitmap mutation contracts and replace generic decoder callbacks with a concrete arithmetic/MMR decoder enum.",
@@ -63,7 +63,7 @@
     },
     {
       "id": "VL-008",
-      "count": 12,
+      "count": 9,
       "priority": "medium",
       "surface": "Huffman table allocation/construction",
       "mitigation": "Use verified FallibleVec, explicit allocation-size lemmas, and slice-view adapters for static standard tables.",
@@ -71,7 +71,7 @@
     },
     {
       "id": "VL-009",
-      "count": 48,
+      "count": 41,
       "priority": "high",
       "surface": "Symbol/text orchestration",
       "mitigation": "Replace RefCell/dynamic callbacks with a concrete entropy-state enum, adopt verified FallibleVec, and use completed bitmap/generic contracts.",
@@ -79,7 +79,7 @@
     },
     {
       "id": "VL-010",
-      "count": 21,
+      "count": 26,
       "priority": "high",
       "surface": "Generic/refinement raster paths",
       "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
@@ -88,7 +88,7 @@
     },
     {
       "id": "VL-011",
-      "count": 5,
+      "count": 4,
       "priority": "high",
       "surface": "MMR allocation/end-to-end wrappers",
       "mitigation": "Use verified transition storage and Bitmap allocation contracts, then close decode_bitmap and its wrappers.",
