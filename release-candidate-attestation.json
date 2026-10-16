@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "status": "internal_candidate_validated_publication_blocked",
-  "candidate_revision": "6abb57f5d03cc90e74cf620ff335150d59c70efb",
-  "production_source_revision": "460e39435dd74c528fe5051a2a005630065922ae",
+  "candidate_revision": "db9f1c1bada1872af39de98a4b1ada8228a92504",
+  "production_source_revision": "f4b7051dd316a400320da16ece9919712c44632a",
   "crate_version": "0.0.1",
   "publication_enabled": false,
   "evidence": {
     "support_matrix_sha256": "b788326119597a4d240733dbc50715034e696d7492a05b24e847ee8f6983dd8c",
     "source_provenance_sha256": "1bd2898d4e345a854c718dcfc3062aa4c4a0d5f65f6fd8b3c3b6387bcf9d4e30",
-    "proof_attestation_sha256": "f31b29c7d9293c2a4198b483b24e8dc656271667b8cbdc78ac609cf9a77ab917",
-    "conformance_attestation_sha256": "88d13e78ab59b00b69e60066521d9f3ccefbf87ec82fc119567a2637d190c934",
-    "fuzz_attestation_sha256": "dfa73c68d845eed2028774104ce7cbeff90c87f085ed2ed3c07a0cb1f13cdd09",
+    "proof_attestation_sha256": "399ba80a5721e71cf459587256709df1f8eb5d64a7e174e9bac971b3ecbfed1b",
+    "conformance_attestation_sha256": "5ee77ce7ffef5187df887479b21806c622b52c9985290eadf82a5e495c9447a4",
+    "fuzz_attestation_sha256": "4cc1c8b372a54c094b19bcedecdd5483d502d86ab82d9d18a2f196187b0f533c",
     "toolchain_sha256": "2b70822b1d375655fac4c8adab7f9697243e7d41666020265a8b0db619949f51",
-    "performance_results_sha256": "61938557c03e29b79e881fe518bc34df13be6be034671fe406693ea4912c08f1"
+    "performance_results_sha256": "eaac8f2036f35659bf910bb0f92544ee191165affab8593cc680cb3eeb334cf8"
   },
   "validation": {
     "implementation_tests": {
@@ -20,13 +20,13 @@
       "failed": 0
     },
     "verus": {
-      "verified_obligations": 654,
+      "verified_obligations": 655,
       "errors": 0,
       "native_assumptions": 0
     },
     "production_functions": {
-      "verified": 342,
-      "reviewed_verifier_limitations": 148,
+      "verified": 343,
+      "reviewed_verifier_limitations": 147,
       "audited_forwarders": 19,
       "incomplete": 0
     },
