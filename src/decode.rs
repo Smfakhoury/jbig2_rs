@@ -385,6 +385,57 @@ struct RuntimePage {
     bitmap: Bitmap,
 }
 
+type RuntimePages = Vec<(u32, RuntimePage)>;
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(index) =>
+            index < pages@.len()
+            && pages@[index as int].0 == number,
+        None =>
+            forall|index: int| 0 <= index < pages@.len() ==>
+                pages@[index].0 != number,
+    },
+))]
+fn runtime_page_index(pages: &[(u32, RuntimePage)], number: u32) -> Option<usize> {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= pages@.len(),
+            forall|completed: int| 0 <= completed < index ==>
+                pages@[completed].0 != number,
+        decreases pages@.len() - index,
+    ))]
+    while index < pages.len() {
+        if pages[index].0 == number {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn get_runtime_page(pages: &RuntimePages, number: u32) -> Option<&RuntimePage> {
+    let index = runtime_page_index(pages, number)?;
+    Some(&pages[index].1)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn get_runtime_page_mut(pages: &mut RuntimePages, number: u32) -> Option<&mut RuntimePage> {
+    let index = runtime_page_index(pages, number)?;
+    Some(&mut pages[index].1)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn insert_runtime_page(pages: &mut RuntimePages, number: u32, page: RuntimePage) {
+    if let Some(index) = runtime_page_index(pages, number) {
+        pages[index].1 = page;
+    } else {
+        pages.push((number, page));
+    }
+}
+
 struct RegionBuffer {
     region: crate::segment_data::RegionInfo,
     bitmap: Bitmap,
@@ -603,10 +654,10 @@ fn decode_segments<S: PageSink>(
     initial_resources: Option<InitialResources>,
     sink: &mut S,
 ) -> Result<(), DecodeError> {
-    let mut pages = HashMap::new();
+    let mut pages = Vec::new();
     let page_allocation = allocation_size::<(u32, RuntimePage)>(info.pages().len())?;
     pages
-        .try_reserve(info.pages().len())
+        .try_reserve_exact(info.pages().len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: page_allocation,
         })?;
@@ -681,7 +732,8 @@ fn decode_segments<S: PageSink>(
                     limits,
                 )?;
                 retained.retain(bitmap_byte_len(&bitmap)?, limits)?;
-                pages.insert(
+                insert_runtime_page(
+                    &mut pages,
                     public.number(),
                     RuntimePage {
                         default_operator: page_data.default_operator,
@@ -766,11 +818,10 @@ fn decode_segments<S: PageSink>(
             }
             SegmentType::EndOfPage => {
                 let number = segment.header.page_association;
-                let page = pages
-                    .remove(&number)
-                    .ok_or(MalformedError::InvalidPageState(
-                        "end-of-page without active page",
-                    ))?;
+                let index = runtime_page_index(&pages, number).ok_or(
+                    MalformedError::InvalidPageState("end-of-page without active page"),
+                )?;
+                let page = pages.remove(index).1;
                 retained.release(bitmap_byte_len(&page.bitmap)?)?;
                 sink.write_page(Page {
                     number,
@@ -813,7 +864,7 @@ fn decode_segments<S: PageSink>(
 
 fn decode_generic_segment(
     segment: &ParsedSegment<'_>,
-    pages: &mut HashMap<u32, RuntimePage>,
+    pages: &mut RuntimePages,
     buffers: &mut HashMap<u32, RegionBuffer>,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
@@ -865,7 +916,7 @@ fn decode_generic_segment(
 
 fn decode_refinement_segment(
     segment: &ParsedSegment<'_>,
-    pages: &mut HashMap<u32, RuntimePage>,
+    pages: &mut RuntimePages,
     buffers: &mut HashMap<u32, RegionBuffer>,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
@@ -894,7 +945,7 @@ fn decode_refinement_segment(
             )
             .into());
         }
-        let page = pages.get(&segment.header.page_association).ok_or(
+        let page = get_runtime_page(pages, segment.header.page_association).ok_or(
             MalformedError::MissingPageInformation(segment.header.page_association),
         )?;
         owned_snapshot = snapshot_region(&page.bitmap, &header.region, limits)?;
@@ -928,7 +979,7 @@ fn decode_refinement_segment(
             limits,
         )?;
     } else {
-        let page = pages.get(&segment.header.page_association).ok_or(
+        let page = get_runtime_page(pages, segment.header.page_association).ok_or(
             MalformedError::MissingPageInformation(segment.header.page_association),
         )?;
         if !page.refinements_allowed {
@@ -1045,7 +1096,7 @@ fn decode_pattern_segment(
 #[allow(clippy::too_many_lines)]
 fn decode_halftone_segment(
     segment: &ParsedSegment<'_>,
-    pages: &mut HashMap<u32, RuntimePage>,
+    pages: &mut RuntimePages,
     buffers: &mut HashMap<u32, RegionBuffer>,
     patterns: &HashMap<u32, Vec<Bitmap>>,
     retained: &mut RetainedBudget,
@@ -1260,7 +1311,7 @@ fn decode_symbol_dictionary_segment(
 #[allow(clippy::too_many_arguments)]
 fn decode_text_segment(
     segment: &ParsedSegment<'_>,
-    pages: &mut HashMap<u32, RuntimePage>,
+    pages: &mut RuntimePages,
     buffers: &mut HashMap<u32, RegionBuffer>,
     symbols: &HashMap<u32, SymbolResource>,
     tables: &HashMap<u32, HuffmanTable>,
@@ -1525,14 +1576,14 @@ fn require_matching_geometry(equal: bool) -> Result<(), DecodeError> {
 
 fn compose_immediate(
     segment: &ParsedSegment<'_>,
-    pages: &mut HashMap<u32, RuntimePage>,
+    pages: &mut RuntimePages,
     region: &crate::segment_data::RegionInfo,
     bitmap: &Bitmap,
     refinement: bool,
     work: &mut DecodeWork,
     limits: &Limits,
 ) -> Result<(), DecodeError> {
-    let page = pages.get_mut(&segment.header.page_association).ok_or(
+    let page = get_runtime_page_mut(pages, segment.header.page_association).ok_or(
         MalformedError::MissingPageInformation(segment.header.page_association),
     )?;
     compose_immediate_on_page(page, region, bitmap, refinement, work, limits)
@@ -1683,13 +1734,9 @@ fn checked_seal_stripe_state(
     Ok(None)
 }
 
-fn seal_stripe(
-    pages: &mut HashMap<u32, RuntimePage>,
-    page_number: u32,
-    row: u32,
-) -> Result<(), DecodeError> {
-    let page = pages
-        .get_mut(&page_number)
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn seal_stripe(pages: &mut RuntimePages, page_number: u32, row: u32) -> Result<(), DecodeError> {
+    let page = get_runtime_page_mut(pages, page_number)
         .ok_or(MalformedError::MissingPageInformation(page_number))?;
     seal_stripe_on_page(page, row)
 }
@@ -1702,11 +1749,12 @@ fn seal_stripe_on_page(page: &mut RuntimePage, row: u32) -> Result<(), DecodeErr
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn require_auxiliary_page(
     segment: &ParsedSegment<'_>,
-    pages: &HashMap<u32, RuntimePage>,
+    pages: &RuntimePages,
 ) -> Result<(), DecodeError> {
-    let page = pages.get(&segment.header.page_association).ok_or(
+    let page = get_runtime_page(pages, segment.header.page_association).ok_or(
         MalformedError::MissingPageInformation(segment.header.page_association),
     )?;
     require_auxiliary_page_state(page)
