@@ -33,210 +33,196 @@
     {
       "id": "decode::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::F::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::Decoder::decode",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_embedded",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_embedded_with_globals",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_embedded_internal",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::PageCollector::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "decode::decode_global_resources",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::decode_segments",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::decode_generic_segment",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::decode_refinement_segment",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::decode_pattern_segment",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::decode_halftone_segment",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::decode_symbol_dictionary_segment",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::decode_text_segment",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::collect_referred_symbols",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::collect_referred_tables",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::copy_bitmap",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::compose_immediate",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
-    },
-    {
-      "id": "decode::seal_stripe",
-      "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
-    },
-    {
-      "id": "decode::require_auxiliary_page",
-      "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::insert_buffer",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::release_referred_buffers",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::release_referred_patterns",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::release_referred_symbols",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::release_referred_tables",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
     {
       "id": "decode::snapshot_region",
       "file": "src/decode.rs",
-      "file_sha256": "5b4e336fc33191a9a66c64b24775df36c6d55df48e46d1e4a50315730d5770ee",
+      "file_sha256": "43eba53c9c28654e27e96a60a028a34645658a09f43dbbd6982266518b784189",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
     },
