@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "regression_thresholds_passed",
-  "recorded_at": "2026-10-16T21:57:17Z",
-  "source_revision": "9d9ec41041aa2b95e5c363d7fd9f2b871896e23a",
+  "recorded_at": "2026-10-16T22:15:04Z",
+  "source_revision": "dbf0d0c307d66c2322a26939bb96ee9b5df42d62",
   "environment": {
     "os": "linux",
     "rustc": "1.89.0",
@@ -14,8 +14,8 @@
     "passed": 160,
     "failed": 0
   },
-  "wall_seconds": 0.16,
-  "peak_kib": 110316,
+  "wall_seconds": 0.17,
+  "peak_kib": 110216,
   "generated_scaling": {
     "command": "cargo run --release --example perf_smoke",
     "cases": [
@@ -44,9 +44,9 @@
   },
   "threshold_evaluation": {
     "status": "passed",
-    "baseline_source_revision": "eaa054593577b4b36a95bfd43e368a078005b47b",
-    "wall_time_change_percent": -5.88,
-    "peak_memory_change_percent": 0.2,
+    "baseline_source_revision": "9d9ec41041aa2b95e5c363d7fd9f2b871896e23a",
+    "wall_time_change_percent": 6.25,
+    "peak_memory_change_percent": -0.09,
     "maximum_wall_time_regression_percent": 20,
     "maximum_peak_memory_regression_percent": 15,
     "work_unit_or_decoded_byte_limit_regression": false
