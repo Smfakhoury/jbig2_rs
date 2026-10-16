@@ -538,9 +538,54 @@ fn insert_huffman_table(tables: &mut HuffmanTables, number: u32, table: HuffmanT
     true
 }
 
+type PatternStore = Vec<(u32, Vec<Bitmap>)>;
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(index) =>
+            index < patterns@.len()
+            && patterns@[index as int].0 == number,
+        None =>
+            forall|index: int| 0 <= index < patterns@.len() ==>
+                patterns@[index].0 != number,
+    },
+))]
+fn pattern_index(patterns: &[(u32, Vec<Bitmap>)], number: u32) -> Option<usize> {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= patterns@.len(),
+            forall|completed: int| 0 <= completed < index ==>
+                patterns@[completed].0 != number,
+        decreases patterns@.len() - index,
+    ))]
+    while index < patterns.len() {
+        if patterns[index].0 == number {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn get_patterns(patterns: &PatternStore, number: u32) -> Option<&[Bitmap]> {
+    let index = pattern_index(patterns, number)?;
+    Some(&patterns[index].1)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn insert_patterns(patterns: &mut PatternStore, number: u32, bitmaps: Vec<Bitmap>) -> bool {
+    if pattern_index(patterns, number).is_some() {
+        return false;
+    }
+    patterns.push((number, bitmaps));
+    true
+}
+
 #[derive(Default)]
 struct InitialResources {
-    patterns: HashMap<u32, Vec<Bitmap>>,
+    patterns: PatternStore,
     symbols: HashMap<u32, SymbolResource>,
     tables: HuffmanTables,
 }
@@ -767,7 +812,7 @@ fn decode_segments<S: PageSink>(
     } = initial_resources.unwrap_or_default();
     let pattern_allocation = allocation_size::<(u32, Vec<Bitmap>)>(segments.len())?;
     patterns
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: pattern_allocation,
         })?;
@@ -786,7 +831,7 @@ fn decode_segments<S: PageSink>(
     let mut retained = RetainedBudget::new();
     retained.retain(initial_retained_bytes, limits)?;
     let mut cumulative_work = DecodeWork::new(initial_work, limits)?;
-    for bitmaps in patterns.values() {
+    for (_, bitmaps) in &patterns {
         let bytes = bitmaps.iter().try_fold(0_u64, |total, bitmap| {
             total
                 .checked_add(bitmap_byte_len(bitmap)?)
@@ -1086,12 +1131,12 @@ fn decode_refinement_segment(
 
 fn decode_pattern_segment(
     segment: &ParsedSegment<'_>,
-    patterns: &mut HashMap<u32, Vec<Bitmap>>,
+    patterns: &mut PatternStore,
     retained: &mut RetainedBudget,
     cumulative_work: &mut DecodeWork,
     limits: &Limits,
 ) -> Result<(), DecodeError> {
-    if patterns.contains_key(&segment.header.number) {
+    if pattern_index(patterns, segment.header.number).is_some() {
         return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
     }
     let mut reader = ByteReader::new(segment.payload);
@@ -1180,7 +1225,9 @@ fn decode_pattern_segment(
     })?;
     cumulative_work.charge(work.used(), limits)?;
     retained.retain(retained_bytes, limits)?;
-    patterns.insert(segment.header.number, decoded);
+    if !insert_patterns(patterns, segment.header.number, decoded) {
+        return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
+    }
     Ok(())
 }
 
@@ -1189,7 +1236,7 @@ fn decode_halftone_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
     buffers: &mut RegionBuffers,
-    patterns: &HashMap<u32, Vec<Bitmap>>,
+    patterns: &PatternStore,
     retained: &mut RetainedBudget,
     cumulative_work: &mut DecodeWork,
     limits: &Limits,
@@ -1197,12 +1244,10 @@ fn decode_halftone_segment(
     let pattern_number =
         first_referred_segment(&segment.header.referred_segments, segment.header.number)?;
     let dictionary =
-        patterns
-            .get(&pattern_number)
-            .ok_or(MalformedError::MissingReferredSegment {
-                segment: segment.header.number,
-                referred: pattern_number,
-            })?;
+        get_patterns(patterns, pattern_number).ok_or(MalformedError::MissingReferredSegment {
+            segment: segment.header.number,
+            referred: pattern_number,
+        })?;
     let mut reader = ByteReader::new(segment.payload);
     let region = parse_region_info(&mut reader, limits)?;
     let header = parse_halftone_header(&mut reader).map_err(DecodeError::from)?;
@@ -1949,7 +1994,7 @@ fn release_bitmap(retained: &mut RetainedBudget, bitmap: &Bitmap) -> Result<(), 
 
 fn release_referred_patterns(
     segment: &ParsedSegment<'_>,
-    patterns: &mut HashMap<u32, Vec<Bitmap>>,
+    patterns: &mut PatternStore,
     retained: &mut RetainedBudget,
 ) -> Result<(), DecodeError> {
     for (index, number) in segment.header.referred_segments.iter().enumerate() {
@@ -1959,7 +2004,8 @@ fn release_referred_patterns(
             .retain_referred_segment(index)
             == Some(false)
         {
-            if let Some(bitmaps) = patterns.remove(number) {
+            if let Some(pattern_index) = pattern_index(patterns, *number) {
+                let bitmaps = patterns.remove(pattern_index).1;
                 let released = bitmaps.iter().try_fold(0_u64, |total, bitmap| {
                     total
                         .checked_add(bitmap_byte_len(bitmap)?)
