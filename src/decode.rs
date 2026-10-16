@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::io::Read;
 
 use crate::document::{
@@ -488,9 +487,59 @@ fn get_region_buffer(buffers: &RegionBuffers, number: u32) -> Option<&RegionBuff
     Some(&buffers[index].1)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 struct SymbolResource {
     exported: Vec<Bitmap>,
     contexts: Option<DictionaryContexts>,
+}
+
+type SymbolStore = Vec<(u32, SymbolResource)>;
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(index) =>
+            index < symbols@.len()
+            && symbols@[index as int].0 == number,
+        None =>
+            forall|index: int| 0 <= index < symbols@.len() ==>
+                symbols@[index].0 != number,
+    },
+))]
+fn symbol_index(symbols: &[(u32, SymbolResource)], number: u32) -> Option<usize> {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= symbols@.len(),
+            forall|completed: int| 0 <= completed < index ==>
+                symbols@[completed].0 != number,
+        decreases symbols@.len() - index,
+    ))]
+    while index < symbols.len() {
+        if symbols[index].0 == number {
+            return Some(index);
+        }
+        index += 1;
+    }
+    None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn get_symbol_resource(symbols: &SymbolStore, number: u32) -> Option<&SymbolResource> {
+    let index = symbol_index(symbols, number)?;
+    Some(&symbols[index].1)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn insert_symbol_resource(
+    symbols: &mut SymbolStore,
+    number: u32,
+    resource: SymbolResource,
+) -> bool {
+    if symbol_index(symbols, number).is_some() {
+        return false;
+    }
+    symbols.push((number, resource));
+    true
 }
 
 type HuffmanTables = Vec<(u32, HuffmanTable)>;
@@ -586,7 +635,7 @@ fn insert_patterns(patterns: &mut PatternStore, number: u32, bitmaps: Vec<Bitmap
 #[derive(Default)]
 struct InitialResources {
     patterns: PatternStore,
-    symbols: HashMap<u32, SymbolResource>,
+    symbols: SymbolStore,
     tables: HuffmanTables,
 }
 
@@ -824,7 +873,7 @@ fn decode_segments<S: PageSink>(
         })?;
     let symbol_allocation = allocation_size::<(u32, SymbolResource)>(segments.len())?;
     symbols
-        .try_reserve(segments.len())
+        .try_reserve_exact(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: symbol_allocation,
         })?;
@@ -839,7 +888,7 @@ fn decode_segments<S: PageSink>(
         })?;
         retained.retain(bytes, limits)?;
     }
-    for resource in symbols.values() {
+    for (_, resource) in &symbols {
         let bytes = resource.exported.iter().try_fold(0_u64, |total, bitmap| {
             total
                 .checked_add(bitmap_byte_len(bitmap)?)
@@ -1379,13 +1428,13 @@ fn first_referred_segment(referred: &[u32], owner: u32) -> Result<u32, DecodeErr
 
 fn decode_symbol_dictionary_segment(
     segment: &ParsedSegment<'_>,
-    symbols: &mut HashMap<u32, SymbolResource>,
+    symbols: &mut SymbolStore,
     tables: &HuffmanTables,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
     limits: &Limits,
 ) -> Result<(), DecodeError> {
-    if symbols.contains_key(&segment.header.number) {
+    if symbol_index(symbols, segment.header.number).is_some() {
         return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
     }
     let imported = collect_referred_symbols(segment, symbols, retained.bytes, limits)?;
@@ -1394,7 +1443,7 @@ fn decode_symbol_dictionary_segment(
         .header
         .referred_segments
         .iter()
-        .filter_map(|number| symbols.get(number))
+        .filter_map(|number| get_symbol_resource(symbols, *number))
         .next_back()
         .and_then(|resource| resource.contexts.as_ref());
     let output = decode_symbol_dictionary(&SymbolDictionaryInput {
@@ -1440,7 +1489,9 @@ fn decode_symbol_dictionary_segment(
         exported: output.exported_symbols,
         contexts: output.retained_contexts,
     };
-    symbols.insert(segment.header.number, resource);
+    if !insert_symbol_resource(symbols, segment.header.number, resource) {
+        return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
+    }
     Ok(())
 }
 
@@ -1449,7 +1500,7 @@ fn decode_text_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
     buffers: &mut RegionBuffers,
-    symbols: &HashMap<u32, SymbolResource>,
+    symbols: &SymbolStore,
     tables: &HuffmanTables,
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
@@ -1503,7 +1554,7 @@ fn decode_text_segment(
 
 fn collect_referred_symbols(
     segment: &ParsedSegment<'_>,
-    symbols: &HashMap<u32, SymbolResource>,
+    symbols: &SymbolStore,
     active_retained_bytes: u64,
     limits: &Limits,
 ) -> Result<Vec<Bitmap>, DecodeError> {
@@ -1511,7 +1562,7 @@ fn collect_referred_symbols(
         .header
         .referred_segments
         .iter()
-        .filter_map(|number| symbols.get(number))
+        .filter_map(|number| get_symbol_resource(symbols, *number))
         .try_fold(0_usize, |total, resource| {
             total
                 .checked_add(resource.exported.len())
@@ -1522,7 +1573,7 @@ fn collect_referred_symbols(
         .header
         .referred_segments
         .iter()
-        .filter_map(|number| symbols.get(number))
+        .filter_map(|number| get_symbol_resource(symbols, *number))
         .try_fold(0_u64, |total, resource| {
             resource.exported.iter().try_fold(total, |sum, bitmap| {
                 sum.checked_add(bitmap_byte_len(bitmap)?)
@@ -1545,7 +1596,7 @@ fn collect_referred_symbols(
         .try_reserve_exact(count)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     for number in &segment.header.referred_segments {
-        if let Some(resource) = symbols.get(number) {
+        if let Some(resource) = get_symbol_resource(symbols, *number) {
             for bitmap in &resource.exported {
                 imported.push(copy_bitmap(bitmap, limits)?);
             }
@@ -2020,7 +2071,7 @@ fn release_referred_patterns(
 
 fn release_referred_symbols(
     segment: &ParsedSegment<'_>,
-    symbols: &mut HashMap<u32, SymbolResource>,
+    symbols: &mut SymbolStore,
     retained: &mut RetainedBudget,
 ) -> Result<(), DecodeError> {
     for (index, number) in segment.header.referred_segments.iter().enumerate() {
@@ -2030,7 +2081,8 @@ fn release_referred_symbols(
             .retain_referred_segment(index)
             == Some(false)
         {
-            if let Some(resource) = symbols.remove(number) {
+            if let Some(symbol_index) = symbol_index(symbols, *number) {
+                let resource = symbols.remove(symbol_index).1;
                 let released = resource.exported.iter().try_fold(0_u64, |total, bitmap| {
                     total
                         .checked_add(bitmap_byte_len(bitmap)?)

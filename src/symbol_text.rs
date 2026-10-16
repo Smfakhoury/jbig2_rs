@@ -3633,6 +3633,7 @@ where
 /// Caller-retained generic/refinement probability state, carried across
 /// symbol dictionaries that cooperatively share one evolving symbol set
 /// (T.88 6.5.8.2.3's "bitmap coding context used"/"retained" flags).
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct DictionaryContexts {
     pub(crate) generic: Option<GenericContextSnapshot>,
     pub(crate) refinement: Option<RefinementContextSnapshot>,
