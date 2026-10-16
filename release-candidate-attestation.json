@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "status": "internal_candidate_validated_publication_blocked",
-  "candidate_revision": "7ab495c1c115a3958f6d3f09076033fa389cfa69",
+  "candidate_revision": "7be217774ed18122c7c7eed6fa92ebaf3fbf4bd4",
   "production_source_revision": "9144a9028d0fafb16d6199271563ded7d5ccecd5",
   "crate_version": "0.0.1",
   "publication_enabled": false,
   "evidence": {
     "support_matrix_sha256": "b788326119597a4d240733dbc50715034e696d7492a05b24e847ee8f6983dd8c",
     "source_provenance_sha256": "1bd2898d4e345a854c718dcfc3062aa4c4a0d5f65f6fd8b3c3b6387bcf9d4e30",
-    "proof_attestation_sha256": "21097ef7de578bd45088423923a403dce164fc3d3d438460d30ea0dfc6673664",
+    "proof_attestation_sha256": "65012133f7869106946e33fd4d717afe66bfb4003f54a0cab70660c5acc53298",
     "conformance_attestation_sha256": "1b77772aefbbed28f82ce67dc4c03e2a5198483106ee14c5af2353730944f146",
     "fuzz_attestation_sha256": "47b0bad05463ff5d107892a533c327d7aadf884f37cfb69beabf146b454bc07b",
     "toolchain_sha256": "2b70822b1d375655fac4c8adab7f9697243e7d41666020265a8b0db619949f51",
@@ -26,8 +26,8 @@
     },
     "production_functions": {
       "verified": 332,
-      "reviewed_verifier_limitations": 152,
-      "audited_forwarders": 18,
+      "reviewed_verifier_limitations": 151,
+      "audited_forwarders": 19,
       "incomplete": 0
     },
     "fuzz": {
