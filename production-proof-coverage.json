@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 655,
+  "verus_verified_obligations": 658,
   "native_assumptions": [],
   "counts": {
-    "verified": 343,
+    "verified": 345,
     "reviewed-verifier-limitation": 147,
     "audited-forwarder": 19,
     "native-assumption": 0,
@@ -383,7 +383,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::Page::number"
       ]
@@ -394,7 +394,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::Page::bitmap"
       ]
@@ -405,7 +405,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::Page::into_bitmap"
       ]
@@ -416,7 +416,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::DecodedDocument::info"
       ]
@@ -427,7 +427,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::DecodedDocument::pages"
       ]
@@ -438,7 +438,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -447,7 +447,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -456,7 +456,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -465,7 +465,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -474,7 +474,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -483,7 +483,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -492,7 +492,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -501,7 +501,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -510,7 +510,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -519,7 +519,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::PageCollector::new"
       ]
@@ -530,7 +530,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::PageCollector::collect_page"
       ]
@@ -541,7 +541,7 @@
       "visibility": "private",
       "status": "audited-forwarder",
       "disposition_reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -550,7 +550,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::runtime_page_index"
       ]
@@ -561,7 +561,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::get_runtime_page"
       ]
@@ -572,7 +572,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::get_runtime_page_mut"
       ]
@@ -583,9 +583,31 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::insert_runtime_page"
+      ]
+    },
+    {
+      "id": "decode::region_buffer_index",
+      "file": "src/decode.rs",
+      "visibility": "private",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
+      "verus_functions": [
+        "jbig2_rs_production::decode::region_buffer_index"
+      ]
+    },
+    {
+      "id": "decode::get_region_buffer",
+      "file": "src/decode.rs",
+      "visibility": "private",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
+      "verus_functions": [
+        "jbig2_rs_production::decode::get_region_buffer"
       ]
     },
     {
@@ -594,7 +616,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::DecodeWork::new"
       ]
@@ -605,7 +627,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::DecodeWork::charge"
       ]
@@ -616,7 +638,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::RetainedBudget::new"
       ]
@@ -627,7 +649,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::RetainedBudget::retain"
       ]
@@ -638,7 +660,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::RetainedBudget::release"
       ]
@@ -649,7 +671,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -658,7 +680,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -667,7 +689,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -676,7 +698,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -685,7 +707,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -694,7 +716,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -703,7 +725,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::first_referred_segment"
       ]
@@ -714,7 +736,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -723,7 +745,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -732,7 +754,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -741,7 +763,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -750,7 +772,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -759,7 +781,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::generic_template"
       ]
@@ -770,7 +792,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::generic_adaptive"
       ]
@@ -781,7 +803,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::same_combination_operator"
       ]
@@ -792,7 +814,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::check_combination_operator"
       ]
@@ -803,7 +825,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::require_matching_geometry"
       ]
@@ -814,7 +836,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::compose_immediate"
       ]
@@ -825,7 +847,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::compose_immediate_on_page"
       ]
@@ -836,7 +858,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::checked_page_write_state"
       ]
@@ -847,7 +869,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::note_page_write"
       ]
@@ -858,7 +880,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::checked_seal_stripe_state"
       ]
@@ -869,7 +891,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::seal_stripe"
       ]
@@ -880,7 +902,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::seal_stripe_on_page"
       ]
@@ -891,7 +913,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::require_auxiliary_page"
       ]
@@ -902,7 +924,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::require_auxiliary_page_state"
       ]
@@ -913,7 +935,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -922,7 +944,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -931,7 +953,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::retain_bitmap"
       ]
@@ -942,7 +964,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::release_bitmap"
       ]
@@ -953,7 +975,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -962,7 +984,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -971,7 +993,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -980,7 +1002,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": []
     },
     {
@@ -989,7 +1011,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::clipped_coordinate"
       ]
@@ -1000,7 +1022,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::find_page_info"
       ]
@@ -1011,7 +1033,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::allocation_size"
       ]
@@ -1022,7 +1044,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::structural_work"
       ]
@@ -1033,7 +1055,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::structural_work_totals"
       ]
@@ -1044,7 +1066,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::checked_work_add"
       ]
@@ -1055,7 +1077,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "5d5f975ef2338df0fc4688115893b1b90f98d5e4f8dd8f67adabaed5f4fa8d85",
+      "file_sha256": "eb06595a051e13502ecfbf7866b3bf02692e3719ec16600f95bf0be445c3b05b",
       "verus_functions": [
         "jbig2_rs_production::decode::bitmap_byte_len"
       ]
