@@ -2,7 +2,7 @@
 
 Pinned Verus verifies 642 obligations with zero errors and zero native
 assumptions. The production inventory contains 332 directly verified functions
-and 152 reviewed verifier limitations. Eighteen one-line private `From` trait
+and 151 reviewed verifier limitations. Nineteen one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
@@ -48,8 +48,10 @@ either composed header parser reproducibly crashes the pinned verifier in
 using a workaround or assumption.
 
 Audited forwarders are limited to exact allowlisted standard conversion
-wrappers around verified typed constructors/conversions. They are not native
-assumptions, and any source-file change invalidates their disposition.
+wrappers around verified typed constructors/conversions and the concrete
+`PageCollector` sink wrapper around its verified collection method. Generic
+callback wrappers are excluded. Forwarders are not native assumptions, and any
+source-file change invalidates their disposition.
 Known- and unknown-length segment payload reads now compose the verified
 bounded reader atomically; the obsolete standalone cursor-advance helper was
 removed.

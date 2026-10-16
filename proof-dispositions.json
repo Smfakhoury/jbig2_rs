@@ -97,8 +97,8 @@
       "id": "decode::PageCollector::write_page",
       "file": "src/decode.rs",
       "file_sha256": "6e66f5db74139eeb8cd560ef473e93d58f68e67ca7d7810d3e5b5f9a1fdc66bb",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths."
+      "status": "audited-forwarder",
+      "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "decode::decode_global_resources",

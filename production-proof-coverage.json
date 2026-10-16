@@ -5,8 +5,8 @@
   "native_assumptions": [],
   "counts": {
     "verified": 332,
-    "reviewed-verifier-limitation": 152,
-    "audited-forwarder": 18,
+    "reviewed-verifier-limitation": 151,
+    "audited-forwarder": 19,
     "native-assumption": 0,
     "incomplete": 0
   },
@@ -539,8 +539,8 @@
       "id": "decode::PageCollector::write_page",
       "file": "src/decode.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks HashMap, fallible allocation, trait callback, and page-sink specifications required by orchestration paths.",
+      "status": "audited-forwarder",
+      "disposition_reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit.",
       "file_sha256": "6e66f5db74139eeb8cd560ef473e93d58f68e67ca7d7810d3e5b5f9a1fdc66bb",
       "verus_functions": []
     },

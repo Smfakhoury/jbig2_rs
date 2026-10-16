@@ -9,6 +9,7 @@ OUTPUT = ROOT / "proof-dispositions.json"
 
 AUDITED_FORWARDERS = {
     "arithmetic::ArithmeticError::from",
+    "decode::PageCollector::write_page",
     "generic_region::GenericRegionError::from",
     "generic_region::GenericRegionError::from#2",
     "generic_region::GenericRegionError::from#3",
