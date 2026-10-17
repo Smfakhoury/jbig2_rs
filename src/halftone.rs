@@ -569,7 +569,7 @@ pub(crate) fn slice_collective_bitmap(
     let count = usize::try_from(pattern_count).map_err(|_| MalformedError::IntegerOverflow)?;
     let mut patterns = Vec::new();
     patterns
-        .try_reserve_exact(count)
+        .try_reserve(count)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: vector_bytes,
         })?;
@@ -715,7 +715,7 @@ const fn gray_to_binary_bit(coded: bool, previous: Option<bool>) -> bool {
 }
 
 /// Decodes Gray-coded planes and reconstructs unsigned pattern indexes.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::cast_lossless, clippy::too_many_arguments)]
 pub(crate) fn decode_gray_planes<D: GenericRegionDecoder>(
     width: u32,
     height: u32,
@@ -761,7 +761,7 @@ pub(crate) fn decode_gray_planes<D: GenericRegionDecoder>(
     let pixel_count = usize::try_from(pixels).map_err(|_| MalformedError::IntegerOverflow)?;
     let mut values = Vec::new();
     values
-        .try_reserve_exact(pixel_count)
+        .try_reserve(pixel_count)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: value_bytes,
         })?;
@@ -948,7 +948,16 @@ fn half_open_outside(
 }
 
 /// Builds the normative skip mask for wholly out-of-bounds patterns.
-#[allow(clippy::too_many_arguments)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && crate::views::bitmap_width(&bitmap) == header.grid_width
+            && crate::views::bitmap_height(&bitmap) == header.grid_height,
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::cast_lossless, clippy::too_many_arguments)]
 pub(crate) fn generate_skip_mask(
     header: &HalftoneHeader,
     region_width: u32,
@@ -963,14 +972,31 @@ pub(crate) fn generate_skip_mask(
         .ok_or(MalformedError::IntegerOverflow)?;
     work.charge(cells)?;
     let mut skip = Bitmap::blank(header.grid_width, header.grid_height, limits)?;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            crate::spec::bitmap::storage_valid(&skip),
+            crate::views::bitmap_width(&skip) == header.grid_width,
+            crate::views::bitmap_height(&skip) == header.grid_height,
+            mg <= header.grid_height,
+        decreases header.grid_height - mg,
+    ))]
     for mg in 0..header.grid_height {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(&skip),
+                crate::views::bitmap_width(&skip) == header.grid_width,
+                crate::views::bitmap_height(&skip) == header.grid_height,
+                ng <= header.grid_width,
+                mg < header.grid_height,
+            decreases header.grid_width - ng,
+        ))]
         for ng in 0..header.grid_width {
             let (x, y) = grid_position(header, ng, mg)?;
             let right = x
-                .checked_add(i64::from(pattern_width))
+                .checked_add(pattern_width as i64)
                 .ok_or(MalformedError::IntegerOverflow)?;
             let bottom = y
-                .checked_add(i64::from(pattern_height))
+                .checked_add(pattern_height as i64)
                 .ok_or(MalformedError::IntegerOverflow)?;
             #[cfg(verus_keep_ghost)]
             production_skip_boundary!(
@@ -1133,7 +1159,13 @@ pub(crate) fn decode_halftone_region<D: GenericRegionDecoder>(
     Ok(output)
 }
 
-#[allow(clippy::similar_names)]
+#[allow(clippy::cast_lossless, clippy::similar_names, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires
+        crate::spec::bitmap::storage_valid(old(destination)),
+        crate::spec::bitmap::storage_valid(pattern),
+    ensures crate::spec::bitmap::storage_valid(final(destination)),
+))]
 fn render_clipped_pattern(
     destination: &mut Bitmap,
     pattern: &Bitmap,
@@ -1141,36 +1173,109 @@ fn render_clipped_pattern(
     y: i64,
     operator: CombinationOperator,
 ) -> Result<(), HalftoneError> {
+    let pattern_width = pattern.width();
+    let pattern_height = pattern.height();
+    let destination_width = destination.width();
+    let destination_height = destination.height();
+    let pattern_width_i64 = pattern_width as i64;
+    let pattern_height_i64 = pattern_height as i64;
     let right = x
-        .checked_add(i64::from(pattern.width()))
+        .checked_add(pattern_width_i64)
         .ok_or(MalformedError::IntegerOverflow)?;
     let bottom = y
-        .checked_add(i64::from(pattern.height()))
+        .checked_add(pattern_height_i64)
         .ok_or(MalformedError::IntegerOverflow)?;
-    let (destination_x_start, destination_x_end) = clipped_axis(x, right, destination.width());
-    let (destination_y_start, destination_y_end) = clipped_axis(y, bottom, destination.height());
+    let (destination_x_start, destination_x_end) = clipped_axis(x, right, destination_width);
+    let (destination_y_start, destination_y_end) = clipped_axis(y, bottom, destination_height);
     if destination_x_start >= destination_x_end || destination_y_start >= destination_y_end {
         return Ok(());
     }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(halftone_spec::clipped_axis_valid);
+        assert(0 <= destination_x_start < destination_x_end);
+        assert(destination_x_end <= destination_width);
+        assert(x <= destination_x_start);
+        assert(destination_x_end <= right);
+        assert(0 <= destination_y_start < destination_y_end);
+        assert(destination_y_end <= destination_height);
+        assert(y <= destination_y_start);
+        assert(destination_y_end <= bottom);
+        assert(right == x + pattern_width_i64);
+        assert(bottom == y + pattern_height_i64);
+    }
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            crate::spec::bitmap::storage_valid(destination),
+            crate::spec::bitmap::storage_valid(pattern),
+            destination_y_start <= destination_y,
+            destination_y <= destination_y_end,
+            0 <= destination_y_start,
+            destination_y_end <= destination_height,
+            y <= destination_y_start,
+            destination_y_end <= bottom,
+            0 <= destination_x_start,
+            destination_x_start < destination_x_end,
+            destination_x_end <= destination_width,
+            x <= destination_x_start,
+            destination_x_end <= right,
+            right == x + pattern_width_i64,
+            bottom == y + pattern_height_i64,
+        decreases destination_y_end - destination_y,
+    ))]
     for destination_y in destination_y_start..destination_y_end {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(destination),
+                crate::spec::bitmap::storage_valid(pattern),
+                destination_x_start <= destination_x,
+                destination_x <= destination_x_end,
+                0 <= destination_x_start,
+                destination_x_end <= destination_width,
+                x <= destination_x_start,
+                destination_x_end <= right,
+                y <= destination_y,
+                destination_y < bottom,
+                0 <= destination_y,
+                destination_y < destination_height,
+                right == x + pattern_width_i64,
+                bottom == y + pattern_height_i64,
+            decreases destination_x_end - destination_x,
+        ))]
         for destination_x in destination_x_start..destination_x_end {
-            let source_x = u32::try_from(
+            let Ok(source_x) = u32::try_from(
                 destination_x
                     .checked_sub(x)
                     .ok_or(MalformedError::IntegerOverflow)?,
-            )
-            .map_err(|_| MalformedError::IntegerOverflow)?;
-            let source_y = u32::try_from(
+            ) else {
+                return Err(MalformedError::IntegerOverflow.into());
+            };
+            let Ok(source_y) = u32::try_from(
                 destination_y
                     .checked_sub(y)
                     .ok_or(MalformedError::IntegerOverflow)?,
-            )
-            .map_err(|_| MalformedError::IntegerOverflow)?;
-            let destination_x =
-                u32::try_from(destination_x).map_err(|_| MalformedError::IntegerOverflow)?;
-            let destination_y =
-                u32::try_from(destination_y).map_err(|_| MalformedError::IntegerOverflow)?;
+            ) else {
+                return Err(MalformedError::IntegerOverflow.into());
+            };
+            let Ok(destination_x) = u32::try_from(destination_x) else {
+                return Err(MalformedError::IntegerOverflow.into());
+            };
+            let Ok(destination_y) = u32::try_from(destination_y) else {
+                return Err(MalformedError::IntegerOverflow.into());
+            };
+            if source_x >= pattern_width || source_y >= pattern_height {
+                return Err(MalformedError::IntegerOverflow.into());
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(source_x as int == destination_x as int - x);
+                assert(source_y as int == destination_y as int - y);
+                assert((destination_x as int) < right);
+                assert((destination_y as int) < bottom);
+                assert(destination_x < destination_width);
+                assert(destination_y < destination_height);
+            }
             let source = pattern
                 .pixel(source_x, source_y)
                 .ok_or(MalformedError::IntegerOverflow)?;

@@ -101,17 +101,20 @@ pub(crate) struct RetentionFlags {
 }
 
 impl RetentionFlags {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn from_bytes(count: u32, bytes: &[u8]) -> Result<Self, DecodeError> {
         let value_count = count
             .checked_add(1)
             .ok_or(MalformedError::IntegerOverflow)?;
-        let capacity = usize::try_from(value_count).map_err(|_| MalformedError::IntegerOverflow)?;
+        let Ok(capacity) = usize::try_from(value_count) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
         let mut values = Vec::new();
-        values
-            .try_reserve_exact(capacity)
-            .map_err(|_| DecodeError::Allocation {
+        if values.try_reserve(capacity).is_err() {
+            return Err(DecodeError::Allocation {
                 requested_bytes: u64::from(value_count),
-            })?;
+            });
+        }
 
         fill_retention_values(&mut values, value_count, bytes)?;
         Ok(Self { values })
@@ -158,6 +161,10 @@ pub(crate) struct SegmentHeader {
     pub(crate) byte_length: usize,
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires old(reader).position <= old(reader).bytes@.len(),
+    ensures final(reader).position <= final(reader).bytes@.len(),
+))]
 pub(crate) fn parse_segment_header(
     reader: &mut ByteReader<'_>,
     limits: &Limits,
@@ -187,6 +194,10 @@ pub(crate) fn parse_segment_header(
     })
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires old(reader).position <= old(reader).bytes@.len(),
+    ensures final(reader).position <= final(reader).bytes@.len(),
+))]
 fn parse_referred_segments(
     reader: &mut ByteReader<'_>,
     segment_number: u32,
@@ -203,12 +214,10 @@ fn parse_referred_segments(
         }
         7 => {
             let remaining_count_bytes = reader.read_bytes(3)?;
-            let count_word = u32::from_be_bytes([
-                first_count_byte,
-                remaining_count_bytes[0],
-                remaining_count_bytes[1],
-                remaining_count_bytes[2],
-            ]);
+            let count_word = (u32::from(first_count_byte) << 24)
+                | (u32::from(remaining_count_bytes[0]) << 16)
+                | (u32::from(remaining_count_bytes[1]) << 8)
+                | u32::from(remaining_count_bytes[2]);
             let count = validate_long_count(count_word)?;
             enforce_reference_limit(count, limits)?;
             let retention_bit_count = count + 1;
@@ -221,17 +230,19 @@ fn parse_referred_segments(
     };
     enforce_reference_limit(count, limits)?;
 
-    let count_usize = usize::try_from(count).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(count_usize) = usize::try_from(count) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     let reference_bytes = reference_width(segment_number);
     let allocation_bytes = u64::from(count)
         .checked_mul(4)
         .ok_or(MalformedError::IntegerOverflow)?;
     let mut referred_segments = Vec::new();
-    referred_segments
-        .try_reserve_exact(count_usize)
-        .map_err(|_| DecodeError::Allocation {
+    if referred_segments.try_reserve(count_usize).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: allocation_bytes,
-        })?;
+        });
+    }
     read_referred_segments_into(
         reader,
         segment_number,
@@ -244,6 +255,9 @@ fn parse_referred_segments(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(
     requires old(reader).position <= old(reader).bytes@.len(),
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
 ))]
 fn read_referred_segments_into(
     reader: &mut ByteReader<'_>,
@@ -257,6 +271,7 @@ fn read_referred_segments_into(
         invariant
             index <= count,
             reader.position <= reader.bytes@.len(),
+            reader.bytes@ == old(reader).bytes@,
         decreases count - index,
     ))]
     while index < count {
@@ -341,7 +356,10 @@ fn validate_short_count(first: u8) -> Result<u32, MalformedError> {
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(count) => count == count_word & 0x1fff_ffff && count > 4,
+        Ok(count) =>
+            count == count_word & 0x1fff_ffff
+            && count > 4
+            && count <= 0x1fff_ffff,
         Err(_) => count_word & 0x1fff_ffff <= 4,
     },
 ))]
@@ -349,6 +367,11 @@ fn validate_long_count(count_word: u32) -> Result<u32, MalformedError> {
     let count = count_word & 0x1FFF_FFFF;
     if count <= 4 {
         return Err(MalformedError::NonCanonicalReferredToCount(count));
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert((count_word & 0x1fff_ffff) <= 0x1fff_ffff) by (bit_vector);
+        assert(count <= 0x1fff_ffff);
     }
     Ok(count)
 }
@@ -493,6 +516,7 @@ fn header_byte_length(start: usize, end: usize) -> Result<usize, MalformedError>
     requires old(reader).position <= old(reader).bytes@.len(),
     ensures
         final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
         match out {
             Ok(value) => if long {
                 final(reader).position == old(reader).position + 4
@@ -504,7 +528,7 @@ fn header_byte_length(start: usize, end: usize) -> Result<usize, MalformedError>
                 final(reader).position == old(reader).position + 1
                     && value == old(reader).bytes@[old(reader).position as int] as u32
             },
-            Err(_) => true,
+            Err(_) => final(reader).position == old(reader).position,
         },
 ))]
 fn read_page_association(reader: &mut ByteReader<'_>, long: bool) -> Result<u32, MalformedError> {

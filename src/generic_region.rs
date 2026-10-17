@@ -7,7 +7,6 @@
 //! that slot.
 
 use core::fmt;
-use core::mem::size_of;
 
 use crate::arithmetic::{reset_contexts, ArithmeticContext, ArithmeticDecoder, ArithmeticError};
 use crate::mmr::{decode_mmr, EofbPolicy, MmrError};
@@ -43,7 +42,9 @@ mod generic_region_proofs;
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 const ARITHMETIC_TERMINATOR: [u8; 2] = [0xff, 0xac];
 const MMR_UNKNOWN_LENGTH_SEPARATOR: [u8; 2] = [0x00, 0x00];
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const MAX_GENERIC_CONTEXTS: usize = 1 << 16;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const MAX_REFINEMENT_CONTEXTS: usize = 1 << 13;
 
 /// A module-local error whose dedicated crate-wide malformed classifications
@@ -364,6 +365,7 @@ impl GenericContexts {
     }
 
     /// Fallibly retain the current statistics for later dictionary use.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn try_snapshot(
         &self,
         limits: &Limits,
@@ -670,7 +672,7 @@ fn decode_known_length_arithmetic_generic(
     }
     let mut normalized = Vec::new();
     normalized
-        .try_reserve_exact(
+        .try_reserve(
             coded
                 .len()
                 .checked_add(1)
@@ -1152,6 +1154,7 @@ impl RefinementContexts {
     }
 
     /// Fallibly retain the current statistics for later dictionary use.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn try_snapshot(
         &self,
         limits: &Limits,
@@ -1898,6 +1901,12 @@ fn validate_snapshot_limits(storage_bytes: u64, limits: &Limits) -> Result<(), G
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(copied) => copied@ == source@,
+        Err(_) => true,
+    },
+))]
 fn try_copy_contexts(
     source: &[ArithmeticContext],
     storage_bytes: u64,
@@ -1906,15 +1915,36 @@ fn try_copy_contexts(
     validate_probability_states(source)?;
     validate_snapshot_limits(storage_bytes, limits)?;
     let mut copied = Vec::new();
-    copied
-        .try_reserve_exact(source.len())
-        .map_err(|_| DecodeError::Allocation {
+    if copied.try_reserve(source.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: storage_bytes,
-        })?;
-    copied.extend_from_slice(source);
+        }
+        .into());
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= source@.len(),
+            copied@ == source@.subrange(0, index as int),
+        decreases source@.len() - index,
+    ))]
+    while index < source.len() {
+        copied.push(source[index]);
+        index += 1;
+    }
     Ok(copied)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(contexts) =>
+            contexts@.len() == count
+            && forall|index: int| 0 <= index < contexts@.len() ==>
+                contexts@[index].state_index == 0
+                && contexts@[index].mps == 0,
+        Err(_) => true,
+    },
+))]
 fn allocate_contexts(
     count: usize,
     bitmap_bytes: u64,
@@ -1926,22 +1956,28 @@ fn allocate_contexts(
     let context_bytes = context_storage_bytes(count)?;
     enforce_managed_memory(context_bytes, bitmap_bytes, limits)?;
     let mut contexts = Vec::new();
-    contexts
-        .try_reserve_exact(count)
-        .map_err(|_| DecodeError::Allocation {
+    if contexts.try_reserve(count).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: context_bytes,
-        })?;
+        }
+        .into());
+    }
     contexts.resize(count, ArithmeticContext::new());
     Ok(contexts)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bytes) => bytes as nat == count as nat * 2,
+        Err(_) => count as nat * 2 > u64::MAX,
+    },
+))]
 fn context_storage_bytes(count: usize) -> Result<u64, GenericRegionError> {
-    u64::try_from(count)
-        .map_err(|_| MalformedError::IntegerOverflow)?
-        .checked_mul(
-            u64::try_from(size_of::<ArithmeticContext>())
-                .map_err(|_| MalformedError::IntegerOverflow)?,
-        )
+    let Ok(count) = u64::try_from(count) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    count
+        .checked_mul(2)
         .ok_or_else(|| MalformedError::IntegerOverflow.into())
 }
 
@@ -2254,27 +2290,68 @@ fn copy_bitmap_row(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(&decoded),
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && bitmap.width == decoded.width
+            && bitmap.height == nominal_height,
+        Err(_) => true,
+    },
+))]
 fn pad_bitmap_height(
     decoded: Bitmap,
     nominal_height: u32,
     limits: &Limits,
 ) -> Result<Bitmap, GenericRegionError> {
-    if decoded.height() == nominal_height {
+    if decoded.height == nominal_height {
         return Ok(decoded);
     }
-    if decoded.height() > nominal_height {
+    if decoded.height > nominal_height {
         return Err(GenericRegionError::RowCountMismatch {
             expected: nominal_height,
-            actual: decoded.height(),
+            actual: decoded.height,
         });
     }
-    let mut padded = Bitmap::blank(decoded.width(), nominal_height, limits)?;
-    let byte_count = decoded.bytes().len();
-    let destination = padded
-        .data
-        .get_mut(..byte_count)
-        .ok_or(MalformedError::IntegerOverflow)?;
-    destination.copy_from_slice(decoded.bytes());
+    let mut padded = Bitmap::blank(decoded.width, nominal_height, limits)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&padded);
+        reveal(crate::spec::bitmap::storage_valid);
+    }
+    let byte_count = decoded.data.len();
+    if byte_count > padded.data.len() {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost padded_data_len = padded.data@.len();
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            crate::spec::bitmap::storage_valid(&decoded),
+            byte_count == decoded.data@.len(),
+            index <= byte_count,
+            byte_count <= padded.data@.len(),
+            padded.width == decoded.width,
+            padded.height == nominal_height,
+            padded.stride as nat
+                == crate::spec::bitmap::stride_for_width(padded.width as nat),
+            padded.data@.len() == padded_data_len,
+            padded_data_len == padded.stride as nat * padded.height as nat,
+        decreases byte_count - index,
+    ))]
+    while index < byte_count {
+        padded.data[index] = decoded.data[index];
+        index += 1;
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&padded);
+        reveal(crate::spec::bitmap::storage_valid);
+    }
     Ok(padded)
 }
 

@@ -198,7 +198,7 @@ impl Decoder {
         }
         let mut bytes = Vec::new();
         bytes
-            .try_reserve_exact(input.len())
+            .try_reserve(input.len())
             .map_err(|_| DecodeError::Allocation {
                 requested_bytes: input_bytes,
             })?;
@@ -559,7 +559,7 @@ fn parse_random_access<'a>(
     let mut segments = Vec::new();
     let segment_allocation = allocation_size::<ParsedSegment<'_>>(headers.len())?;
     segments
-        .try_reserve_exact(headers.len())
+        .try_reserve(headers.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: segment_allocation,
         })?;
@@ -729,7 +729,7 @@ fn collect_page_states(
     let page_state_allocation =
         allocation_size::<PageState>(segments.len().min(limits.max_pages as usize))?;
     page_states
-        .try_reserve_exact(segments.len().min(limits.max_pages as usize))
+        .try_reserve(segments.len().min(limits.max_pages as usize))
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: page_state_allocation,
         })?;
@@ -737,7 +737,7 @@ fn collect_page_states(
     let page_order_capacity = segments.len().min(limits.max_pages as usize);
     let page_order_allocation = allocation_size::<u32>(page_order_capacity)?;
     page_order
-        .try_reserve_exact(page_order_capacity)
+        .try_reserve(page_order_capacity)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: page_order_allocation,
         })?;
@@ -822,7 +822,7 @@ fn finalize_pages(
     let mut pages = Vec::new();
     let page_allocation = allocation_size::<PageInfo>(page_states.len())?;
     pages
-        .try_reserve_exact(page_states.len())
+        .try_reserve(page_states.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: page_allocation,
         })?;
@@ -885,7 +885,7 @@ fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> 
     let mut page_profiles = Vec::new();
     let profile_allocation = allocation_size::<(u32, u32)>(segments.len())?;
     page_profiles
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: profile_allocation,
         })?;
@@ -1047,7 +1047,7 @@ fn validate_references(
     let mut indexes = Vec::new();
     let index_allocation = allocation_size::<(u32, usize)>(segments.len())?;
     indexes
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: index_allocation,
         })?;
@@ -1066,7 +1066,7 @@ fn validate_references(
     let mut types = Vec::new();
     let type_allocation = allocation_size::<(u32, SegmentType)>(segments.len())?;
     types
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: type_allocation,
         })?;
@@ -1172,7 +1172,7 @@ fn validate_retention(
     let mut last_references: Vec<(u32, u32)> = Vec::new();
     let retention_allocation = allocation_size::<(u32, u32)>(segments.len())?;
     last_references
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: retention_allocation,
         })?;
@@ -1266,7 +1266,7 @@ fn validate_reference_depth(
     let ordered_allocation = allocation_size::<(u32, usize)>(segments.len())?;
     let mut ordered = Vec::new();
     ordered
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: ordered_allocation,
         })?;
@@ -1281,7 +1281,7 @@ fn validate_reference_depth(
     let mut depths = Vec::new();
     let depth_allocation = allocation_size::<(u32, u32)>(segments.len())?;
     depths
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: depth_allocation,
         })?;
@@ -1586,7 +1586,7 @@ pub(crate) fn read_bounded_input<R: Read>(
             .into());
         }
         output
-            .try_reserve_exact(count)
+            .try_reserve(count)
             .map_err(|_| DecodeError::Allocation {
                 requested_bytes: new_length_u64,
             })?;

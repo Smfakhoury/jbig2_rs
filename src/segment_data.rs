@@ -184,6 +184,7 @@ pub(crate) fn require_empty(segment_type: u8, payload: &[u8]) -> Result<(), Deco
     require_length(segment_type, payload, 0)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) fn parse_profiles(payload: &[u8]) -> Result<Vec<u32>, DecodeError> {
     if payload.len() < 4 {
         return Err(MalformedError::InvalidSegmentDataLength {
@@ -203,7 +204,7 @@ pub(crate) fn parse_profiles(payload: &[u8]) -> Result<Vec<u32>, DecodeError> {
     let allocation_bytes = u64::from(count)
         .checked_mul(4)
         .ok_or(MalformedError::IntegerOverflow)?;
-    if profiles.try_reserve_exact(count_usize).is_err() {
+    if profiles.try_reserve(count_usize).is_err() {
         return Err(DecodeError::Allocation {
             requested_bytes: allocation_bytes,
         });

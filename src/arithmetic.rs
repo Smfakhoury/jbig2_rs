@@ -334,6 +334,7 @@ const QE_STATES: [QeState; 47] = [
 
 /// An arithmetic probability context.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct ArithmeticContext {
     pub(crate) state_index: u8,

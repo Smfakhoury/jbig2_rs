@@ -136,10 +136,32 @@ impl Bitmap {
     /// exceed `limits`, [`DecodeError::Malformed`] if size arithmetic cannot be
     /// represented, or [`DecodeError::Allocation`] if storage cannot be
     /// reserved.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(bitmap) =>
+                crate::views::bitmap_width(&bitmap) == width
+                && crate::views::bitmap_height(&bitmap) == height
+                && crate::spec::bitmap::storage_valid(&bitmap)
+                && crate::spec::bitmap::limits_allow_bitmap(width, height, limits),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub fn blank(width: u32, height: u32, limits: &Limits) -> Result<Self, DecodeError> {
         Self::filled(width, height, false, limits)
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(bitmap) =>
+                crate::views::bitmap_width(&bitmap) == width
+                && crate::views::bitmap_height(&bitmap) == height
+                && crate::spec::bitmap::storage_valid(&bitmap)
+                && crate::spec::bitmap::limits_allow_bitmap(width, height, limits),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn filled(
         width: u32,
         height: u32,
@@ -148,34 +170,80 @@ impl Bitmap {
     ) -> Result<Self, DecodeError> {
         let (stride, length, length_u64) = checked_bitmap_layout(width, height, limits)?;
         let mut data = Vec::new();
-        data.try_reserve_exact(length)
-            .map_err(|_| DecodeError::Allocation {
+        if data.try_reserve(length).is_err() {
+            return Err(DecodeError::Allocation {
                 requested_bytes: length_u64,
-            })?;
+            });
+        }
         data.resize(length, if value { 0xFF } else { 0 });
 
         if value && width % 8 != 0 {
-            let used_bits = u8::try_from(width % 8).map_err(|_| MalformedError::IntegerOverflow)?;
+            let used_bits = (width % 8) as u8;
             let trailing_mask = 0xFF_u8 << (8 - used_bits);
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    row <= height,
+                    data@.len() == length,
+                    length as nat == stride as nat * height as nat,
+                    stride > 0,
+                decreases height - row,
+            ))]
             for row in 0..height {
-                let row = usize::try_from(row).map_err(|_| MalformedError::IntegerOverflow)?;
-                let final_byte = row
+                let Ok(row) = usize::try_from(row) else {
+                    return Err(MalformedError::IntegerOverflow.into());
+                };
+                let row_offset = row
                     .checked_mul(stride)
-                    .and_then(|offset| offset.checked_add(stride.checked_sub(1)?))
                     .ok_or(MalformedError::IntegerOverflow)?;
-                let byte = data
-                    .get_mut(final_byte)
+                let stride_minus_one = stride
+                    .checked_sub(1)
                     .ok_or(MalformedError::IntegerOverflow)?;
-                *byte &= trailing_mask;
+                let final_byte = row_offset
+                    .checked_add(stride_minus_one)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    assert(row < height as usize);
+                    assert(row_offset as nat == row as nat * stride as nat);
+                    assert(stride_minus_one as nat + 1 == stride as nat);
+                    assert(final_byte as nat
+                        == row_offset as nat + stride_minus_one as nat);
+                    vstd::arithmetic::mul::lemma_mul_inequality(
+                        row as int + 1,
+                        height as int,
+                        stride as int,
+                    );
+                    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
+                        stride as int,
+                        row as int,
+                        1,
+                    );
+                    vstd::arithmetic::mul::lemma_mul_is_commutative(
+                        height as int,
+                        stride as int,
+                    );
+                    assert((row as nat + 1) * stride as nat
+                        <= height as nat * stride as nat);
+                    assert(final_byte as nat + 1
+                        == (row as nat + 1) * stride as nat);
+                    assert(final_byte < data@.len());
+                }
+                data[final_byte] &= trailing_mask;
             }
         }
 
-        Ok(Self {
+        let bitmap = Self {
             width,
             height,
             stride,
             data,
-        })
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(&bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+        }
+        Ok(bitmap)
     }
 
     /// Bitmap width in pixels.

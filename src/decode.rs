@@ -843,14 +843,14 @@ fn decode_segments<S: PageSink>(
     let mut pages = Vec::new();
     let page_allocation = allocation_size::<(u32, RuntimePage)>(info.pages().len())?;
     pages
-        .try_reserve_exact(info.pages().len())
+        .try_reserve(info.pages().len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: page_allocation,
         })?;
     let mut buffers = Vec::new();
     let buffer_allocation = allocation_size::<(u32, RegionBuffer)>(segments.len())?;
     buffers
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: buffer_allocation,
         })?;
@@ -861,19 +861,19 @@ fn decode_segments<S: PageSink>(
     } = initial_resources.unwrap_or_default();
     let pattern_allocation = allocation_size::<(u32, Vec<Bitmap>)>(segments.len())?;
     patterns
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: pattern_allocation,
         })?;
     let table_allocation = allocation_size::<(u32, HuffmanTable)>(segments.len())?;
     tables
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: table_allocation,
         })?;
     let symbol_allocation = allocation_size::<(u32, SymbolResource)>(segments.len())?;
     symbols
-        .try_reserve_exact(segments.len())
+        .try_reserve(segments.len())
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: symbol_allocation,
         })?;
@@ -1593,7 +1593,7 @@ fn collect_referred_symbols(
     }
     let mut imported = Vec::new();
     imported
-        .try_reserve_exact(count)
+        .try_reserve(count)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     for number in &segment.header.referred_segments {
         if let Some(resource) = get_symbol_resource(symbols, *number) {
@@ -1618,7 +1618,7 @@ fn collect_referred_tables<'a>(
     let requested_bytes = allocation_size::<&HuffmanTable>(count)?;
     let mut result = Vec::new();
     result
-        .try_reserve_exact(count)
+        .try_reserve(count)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     for number in &segment.header.referred_segments {
         if let Some(table) = get_huffman_table(tables, *number) {
@@ -1628,6 +1628,18 @@ fn collect_referred_tables<'a>(
     Ok(result)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(source),
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && bitmap.width == source.width
+            && bitmap.height == source.height
+            && bitmap.stride == source.stride
+            && bitmap.data@ == source.data@,
+        Err(_) => true,
+    },
+))]
 fn copy_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, DecodeError> {
     let requested_bytes = bitmap_byte_len(source)?;
     if requested_bytes > limits.max_decoder_managed_memory_bytes {
@@ -1639,15 +1651,33 @@ fn copy_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, DecodeError> 
         .into());
     }
     let mut data = Vec::new();
-    data.try_reserve_exact(source.bytes().len())
-        .map_err(|_error| DecodeError::Allocation { requested_bytes })?;
-    data.extend_from_slice(source.bytes());
-    Ok(Bitmap {
+    if data.try_reserve(source.data.len()).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes });
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= source.data@.len(),
+            data@ == source.data@.subrange(0, index as int),
+        decreases source.data@.len() - index,
+    ))]
+    while index < source.data.len() {
+        data.push(source.data[index]);
+        index += 1;
+    }
+    let bitmap = Bitmap {
         width: source.width,
         height: source.height,
         stride: source.stride,
         data,
-    })
+    };
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&bitmap);
+        crate::views::bitmap_fields(source);
+        reveal(crate::spec::bitmap::storage_valid);
+    }
+    Ok(bitmap)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1986,23 +2016,31 @@ fn insert_buffer(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn release_referred_buffers(
     segment: &ParsedSegment<'_>,
     buffers: &mut RegionBuffers,
     retained: &mut RetainedBudget,
 ) -> Result<(), DecodeError> {
-    for (index, number) in segment.header.referred_segments.iter().enumerate() {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - index,
+    ))]
+    while index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[index];
         if segment
             .header
             .retention_flags
             .retain_referred_segment(index)
             == Some(false)
         {
-            if let Some(index) = region_buffer_index(buffers, *number) {
-                let buffer = buffers.remove(index).1;
+            if let Some(buffer_index) = region_buffer_index(buffers, number) {
+                let buffer = buffers.remove(buffer_index).1;
                 release_bitmap(retained, &buffer.bitmap)?;
             }
         }
+        index += 1;
     }
     Ok(())
 }
@@ -2043,80 +2081,147 @@ fn release_bitmap(retained: &mut RetainedBudget, bitmap: &Bitmap) -> Result<(), 
     retained.release(bitmap_byte_len(bitmap)?)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn release_referred_patterns(
     segment: &ParsedSegment<'_>,
     patterns: &mut PatternStore,
     retained: &mut RetainedBudget,
 ) -> Result<(), DecodeError> {
-    for (index, number) in segment.header.referred_segments.iter().enumerate() {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - index,
+    ))]
+    while index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[index];
         if segment
             .header
             .retention_flags
             .retain_referred_segment(index)
             == Some(false)
         {
-            if let Some(pattern_index) = pattern_index(patterns, *number) {
+            if let Some(pattern_index) = pattern_index(patterns, number) {
                 let bitmaps = patterns.remove(pattern_index).1;
-                let released = bitmaps.iter().try_fold(0_u64, |total, bitmap| {
-                    total
-                        .checked_add(bitmap_byte_len(bitmap)?)
-                        .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))
-                })?;
+                let mut bitmap_index = 0_usize;
+                let mut released = 0_u64;
+                #[cfg_attr(verus_keep_ghost, verus_spec(
+                    invariant bitmap_index <= bitmaps@.len(),
+                    decreases bitmaps@.len() - bitmap_index,
+                ))]
+                while bitmap_index < bitmaps.len() {
+                    released = released
+                        .checked_add(bitmap_byte_len(&bitmaps[bitmap_index])?)
+                        .ok_or(MalformedError::IntegerOverflow)?;
+                    bitmap_index += 1;
+                }
                 retained.release(released)?;
             }
         }
+        index += 1;
     }
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn release_referred_symbols(
     segment: &ParsedSegment<'_>,
     symbols: &mut SymbolStore,
     retained: &mut RetainedBudget,
 ) -> Result<(), DecodeError> {
-    for (index, number) in segment.header.referred_segments.iter().enumerate() {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - index,
+    ))]
+    while index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[index];
         if segment
             .header
             .retention_flags
             .retain_referred_segment(index)
             == Some(false)
         {
-            if let Some(symbol_index) = symbol_index(symbols, *number) {
+            if let Some(symbol_index) = symbol_index(symbols, number) {
                 let resource = symbols.remove(symbol_index).1;
-                let released = resource.exported.iter().try_fold(0_u64, |total, bitmap| {
-                    total
-                        .checked_add(bitmap_byte_len(bitmap)?)
-                        .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))
-                })?;
+                let mut bitmap_index = 0_usize;
+                let mut released = 0_u64;
+                #[cfg_attr(verus_keep_ghost, verus_spec(
+                    invariant bitmap_index <= resource.exported@.len(),
+                    decreases resource.exported@.len() - bitmap_index,
+                ))]
+                while bitmap_index < resource.exported.len() {
+                    released = released
+                        .checked_add(bitmap_byte_len(&resource.exported[bitmap_index])?)
+                        .ok_or(MalformedError::IntegerOverflow)?;
+                    bitmap_index += 1;
+                }
                 retained.release(released)?;
             }
         }
+        index += 1;
     }
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn release_referred_tables(segment: &ParsedSegment<'_>, tables: &mut HuffmanTables) {
-    for (index, number) in segment.header.referred_segments.iter().enumerate() {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - index,
+    ))]
+    while index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[index];
         if segment
             .header
             .retention_flags
             .retain_referred_segment(index)
             == Some(false)
         {
-            if let Some(table_index) = huffman_table_index(tables, *number) {
+            if let Some(table_index) = huffman_table_index(tables, number) {
                 tables.remove(table_index);
             }
         }
+        index += 1;
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(page),
+    ensures match out {
+        Ok(snapshot) =>
+            crate::spec::bitmap::storage_valid(&snapshot)
+            && crate::views::bitmap_width(&snapshot) == region.width
+            && crate::views::bitmap_height(&snapshot) == region.height,
+        Err(_) => true,
+    },
+))]
 fn snapshot_region(
     page: &Bitmap,
     region: &crate::segment_data::RegionInfo,
     limits: &Limits,
 ) -> Result<Bitmap, DecodeError> {
     let mut snapshot = Bitmap::blank(region.width, region.height, limits)?;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            crate::spec::bitmap::storage_valid(page),
+            crate::spec::bitmap::storage_valid(&snapshot),
+            crate::views::bitmap_width(&snapshot) == region.width,
+            crate::views::bitmap_height(&snapshot) == region.height,
+            y <= region.height,
+        decreases region.height - y,
+    ))]
     for y in 0..region.height {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(page),
+                crate::spec::bitmap::storage_valid(&snapshot),
+                crate::views::bitmap_width(&snapshot) == region.width,
+                crate::views::bitmap_height(&snapshot) == region.height,
+                x <= region.width,
+                y < region.height,
+            decreases region.width - x,
+        ))]
         for x in 0..region.width {
             let page_x = clipped_coordinate(region.x, x, page.width());
             let page_y = clipped_coordinate(region.y, y, page.height());

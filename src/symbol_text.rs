@@ -937,7 +937,7 @@ fn bind_tables<'a>(
         .ok_or(MalformedError::IntegerOverflow)?;
     let mut bindings = Vec::new();
     bindings
-        .try_reserve_exact(specifications.len())
+        .try_reserve(specifications.len())
         .map_err(|_error| DecodeError::Allocation { requested_bytes })?;
     let mut custom_index = 0_usize;
     let mut specification_index = 0_usize;
@@ -1213,7 +1213,7 @@ where
         .ok_or(MalformedError::IntegerOverflow)?;
     let mut exported = Vec::new();
     exported
-        .try_reserve_exact(capacity)
+        .try_reserve(capacity)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     let mut index = 0_u32;
     let mut export_flag = false;
@@ -1283,7 +1283,7 @@ where
     let capacity = usize::try_from(symbol_count).map_err(|_| MalformedError::IntegerOverflow)?;
     let mut lengths = Vec::new();
     lengths
-        .try_reserve_exact(capacity)
+        .try_reserve(capacity)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: u64::from(symbol_count),
         })?;
@@ -1367,7 +1367,7 @@ pub(crate) fn build_symbol_id_table(
         .ok_or(MalformedError::IntegerOverflow)?;
     let mut lines = Vec::new();
     lines
-        .try_reserve_exact(lengths.len())
+        .try_reserve(lengths.len())
         .map_err(|_error| DecodeError::Allocation { requested_bytes })?;
     for (index, &length) in lengths.iter().enumerate() {
         let value = i32::try_from(index).map_err(|_error| MalformedError::IntegerOverflow)?;
@@ -2633,7 +2633,7 @@ impl<'a, 'b> ArithmeticEntropy<'a, 'b> {
             requested_bytes,
         )?;
         let mut iaid = Vec::new();
-        iaid.try_reserve_exact(count)
+        iaid.try_reserve(count)
             .map_err(|_| DecodeError::Allocation { requested_bytes })?;
         iaid.resize(count, ArithmeticContext::new());
         Ok(Self {
@@ -2805,7 +2805,7 @@ fn normalized_bounded_arithmetic<'a>(
     )?;
     let mut normalized = Vec::new();
     normalized
-        .try_reserve_exact(
+        .try_reserve(
             data.len()
                 .checked_add(1)
                 .ok_or(MalformedError::IntegerOverflow)?,
@@ -2903,7 +2903,7 @@ fn build_symbol_id_runcode_table(
         .and_then(|bytes| u64::try_from(bytes).ok())
         .ok_or(MalformedError::IntegerOverflow)?;
     runcode_lines
-        .try_reserve_exact(RUNCODE_COUNT)
+        .try_reserve(RUNCODE_COUNT)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     for index in 0..RUNCODE_COUNT {
         let prefix_len =
@@ -2915,7 +2915,7 @@ fn build_symbol_id_runcode_table(
 
     let capacity = usize::try_from(symbol_count).map_err(|_| MalformedError::IntegerOverflow)?;
     let mut runs = Vec::new();
-    runs.try_reserve_exact(capacity)
+    runs.try_reserve(capacity)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: u64::from(symbol_count),
         })?;
@@ -3255,7 +3255,7 @@ fn bitmap_from_packed_bytes(
         }
     }
     let mut data = Vec::new();
-    data.try_reserve_exact(length_usize)
+    data.try_reserve(length_usize)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: length,
         })?;
@@ -3307,7 +3307,7 @@ fn clone_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, SymbolTextEr
         requested_bytes,
     )?;
     let mut data = Vec::new();
-    data.try_reserve_exact(source.data.len())
+    data.try_reserve(source.data.len())
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     data.extend_from_slice(&source.data);
     Ok(Bitmap {
@@ -3362,7 +3362,7 @@ fn wrap_custom_tables<'a>(
         .and_then(|bytes| u64::try_from(bytes).ok())
         .ok_or(MalformedError::IntegerOverflow)?;
     wrapped
-        .try_reserve_exact(custom_tables.len())
+        .try_reserve(custom_tables.len())
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     for &table in custom_tables {
         wrapped.push(CustomHuffmanTable {
@@ -3701,7 +3701,7 @@ where
                 .ok_or(MalformedError::IntegerOverflow)?;
             let mut symbol_refs: Vec<&Bitmap> = Vec::new();
             symbol_refs
-                .try_reserve_exact(capacity)
+                .try_reserve(capacity)
                 .map_err(|_| DecodeError::Allocation { requested_bytes })?;
             symbol_refs.extend(imported.iter());
             symbol_refs.extend(new_symbols.iter());
@@ -3836,7 +3836,7 @@ fn decode_symbol_dictionary_arithmetic(
         usize::try_from(header.new_symbols).map_err(|_| MalformedError::IntegerOverflow)?;
     let mut new_symbols: Vec<Bitmap> = Vec::new();
     new_symbols
-        .try_reserve_exact(new_symbol_capacity)
+        .try_reserve(new_symbol_capacity)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: u64::from(header.new_symbols),
         })?;
@@ -3938,7 +3938,7 @@ fn decode_symbol_dictionary_huffman(
         usize::try_from(header.new_symbols).map_err(|_| MalformedError::IntegerOverflow)?;
     let mut new_symbols: Vec<Bitmap> = Vec::new();
     new_symbols
-        .try_reserve_exact(new_symbol_capacity)
+        .try_reserve(new_symbol_capacity)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: u64::from(header.new_symbols),
         })?;
@@ -3991,7 +3991,7 @@ fn decode_symbol_dictionary_huffman(
                 .and_then(|bytes| u64::try_from(bytes).ok())
                 .ok_or(MalformedError::IntegerOverflow)?;
             widths
-                .try_reserve_exact(remaining)
+                .try_reserve(remaining)
                 .map_err(|_| DecodeError::Allocation {
                     requested_bytes: requested_width_bytes,
                 })?;
@@ -4149,7 +4149,7 @@ fn assemble_exported_symbols(
         .and_then(|bytes| u64::try_from(bytes).ok())
         .ok_or(MalformedError::IntegerOverflow)?;
     exported_symbols
-        .try_reserve_exact(exported_indices.len())
+        .try_reserve(exported_indices.len())
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     for &index in exported_indices {
         let source = symbol_by_id(imported, new_symbols, index)?;
@@ -4314,7 +4314,7 @@ pub(crate) fn decode_text_region(
         .and_then(|bytes| u64::try_from(bytes).ok())
         .ok_or(MalformedError::IntegerOverflow)?;
     symbol_refs
-        .try_reserve_exact(input.symbols.len())
+        .try_reserve(input.symbols.len())
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     symbol_refs.extend(input.symbols.iter());
 

@@ -649,6 +649,7 @@ fn enforce_work(actual: u64, limits: &Limits) -> Result<(), MmrError> {
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn allocate_transition_storage(
     width: u32,
     bitmap: &Bitmap,
@@ -660,8 +661,9 @@ fn allocate_transition_storage(
     let transition_bytes = capacity_u64
         .checked_mul(4)
         .ok_or(MmrError::IntegerOverflow)?;
-    let bitmap_bytes =
-        u64::try_from(bitmap.bytes().len()).map_err(|_error| MmrError::IntegerOverflow)?;
+    let Ok(bitmap_bytes) = u64::try_from(bitmap.bytes().len()) else {
+        return Err(MmrError::IntegerOverflow);
+    };
     let total = bitmap_bytes
         .checked_add(transition_bytes)
         .ok_or(MmrError::IntegerOverflow)?;
@@ -677,13 +679,15 @@ fn allocate_transition_storage(
     #[cfg(verus_keep_ghost)]
     production_mmr_memory_bound!(bitmap_bytes, transition_bytes, limits);
 
-    let capacity = usize::try_from(capacity_u64).map_err(|_error| MmrError::IntegerOverflow)?;
+    let Ok(capacity) = usize::try_from(capacity_u64) else {
+        return Err(MmrError::IntegerOverflow);
+    };
     let mut transitions = Vec::new();
-    transitions
-        .try_reserve_exact(capacity)
-        .map_err(|_error| MmrError::Allocation {
+    if transitions.try_reserve(capacity).is_err() {
+        return Err(MmrError::Allocation {
             requested_bytes: transition_bytes,
-        })?;
+        });
+    }
     Ok(transitions)
 }
 

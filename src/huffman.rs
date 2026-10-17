@@ -345,7 +345,7 @@ impl HuffmanTable {
         check_table_memory(lines.len(), limits)?;
 
         let mut owned_lines = Vec::new();
-        try_reserve_exact::<HuffmanLine>(&mut owned_lines, lines.len())?;
+        try_reserve::<HuffmanLine>(&mut owned_lines, lines.len())?;
         for &line in lines {
             owned_lines.push(line);
         }
@@ -374,7 +374,7 @@ impl HuffmanTable {
         let mut first_code = [WideCode::default(); MAX_PREFIX_LEN + 1];
         let mut first_line = [0_u32; MAX_PREFIX_LEN + 1];
         let mut ordered_lines = Vec::new();
-        try_reserve_exact::<u32>(&mut ordered_lines, lines.len())?;
+        try_reserve::<u32>(&mut ordered_lines, lines.len())?;
 
         let mut length = 1_usize;
         while length <= usize::from(max_prefix_len) {
@@ -826,10 +826,10 @@ fn push_parsed_line(
     Ok(())
 }
 
-fn try_reserve_exact<T>(values: &mut Vec<T>, count: usize) -> Result<(), HuffmanError> {
+fn try_reserve<T>(values: &mut Vec<T>, count: usize) -> Result<(), HuffmanError> {
     let requested_bytes = allocation_size::<T>(count)?;
     values
-        .try_reserve_exact(count)
+        .try_reserve(count)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     Ok(())
 }
