@@ -803,21 +803,21 @@
     {
       "id": "segment_header::RetentionFlags::from_bytes",
       "file": "src/segment_header.rs",
-      "file_sha256": "cc4e6be44965be00d63836b6fa76bb11501fde43ff433ecf7625190b9352c18e",
+      "file_sha256": "227ff5de68870d65838b70b1985e7aa7db41e7fc7cb7ab6a57f71efd58035325",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation required by retained-reference materialization."
     },
     {
       "id": "segment_header::parse_segment_header",
       "file": "src/segment_header.rs",
-      "file_sha256": "cc4e6be44965be00d63836b6fa76bb11501fde43ff433ecf7625190b9352c18e",
+      "file_sha256": "227ff5de68870d65838b70b1985e7aa7db41e7fc7cb7ab6a57f71efd58035325",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation required by retained-reference materialization."
     },
     {
       "id": "segment_header::parse_referred_segments",
       "file": "src/segment_header.rs",
-      "file_sha256": "cc4e6be44965be00d63836b6fa76bb11501fde43ff433ecf7625190b9352c18e",
+      "file_sha256": "227ff5de68870d65838b70b1985e7aa7db41e7fc7cb7ab6a57f71efd58035325",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation required by retained-reference materialization."
     },
