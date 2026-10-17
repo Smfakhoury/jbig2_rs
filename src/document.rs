@@ -1140,24 +1140,78 @@ fn validate_reference_depth(
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: depth_allocation,
         })?;
-    for (_, index) in ordered {
+    validate_reference_depth_ordered(&ordered, segments, indexes, globals, limits, &mut depths)?;
+    Ok(depths)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires
+        forall|entry: int| 0 <= entry < ordered@.len() ==>
+            ordered@[entry].1 < segments@.len(),
+        forall|entry: int| 0 <= entry < indexes@.len() ==>
+            indexes@[entry].1 < segments@.len(),
+))]
+#[allow(clippy::manual_map)]
+fn validate_reference_depth_ordered(
+    ordered: &[(u32, usize)],
+    segments: &[ParsedSegment<'_>],
+    indexes: &SegmentIndexes,
+    globals: Option<&GlobalSegments>,
+    limits: &Limits,
+    depths: &mut SegmentDepths,
+) -> Result<(), DecodeError> {
+    let mut ordered_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            ordered_index <= ordered@.len(),
+            forall|entry: int| 0 <= entry < ordered@.len() ==>
+                ordered@[entry].1 < segments@.len(),
+            forall|entry: int| 0 <= entry < indexes@.len() ==>
+                indexes@[entry].1 < segments@.len(),
+        decreases ordered@.len() - ordered_index,
+    ))]
+    while ordered_index < ordered.len() {
+        let index = ordered[ordered_index].1;
         let segment = &segments[index].header;
         let mut depth = 1_u32;
-        for referred in &segment.referred_segments {
-            let referred_depth = if keyed_index(indexes, *referred).is_some() {
-                keyed_get(&depths, *referred).copied()
+        let mut reference_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                reference_index <= segment.referred_segments@.len(),
+                forall|entry: int| 0 <= entry < indexes@.len() ==>
+                    indexes@[entry].1 < segments@.len(),
+            decreases segment.referred_segments@.len() - reference_index,
+        ))]
+        while reference_index < segment.referred_segments.len() {
+            let referred = segment.referred_segments[reference_index];
+            let referred_depth = if keyed_index(indexes, referred).is_some() {
+                match keyed_get(depths, referred) {
+                    Some(value) => Some(*value),
+                    None => None,
+                }
             } else {
-                globals.and_then(|state| keyed_get(&state.depths, *referred).copied())
+                match globals {
+                    Some(state) => match keyed_get(&state.depths, referred) {
+                        Some(value) => Some(*value),
+                        None => None,
+                    },
+                    None => None,
+                }
+            };
+            let Some(referred_depth) = referred_depth else {
+                return Err(MalformedError::MissingReferredSegment {
+                    segment: segment.number,
+                    referred,
+                }
+                .into());
+            };
+            let Some(candidate) = referred_depth.checked_add(1) else {
+                return Err(MalformedError::IntegerOverflow.into());
+            };
+            if candidate > depth {
+                depth = candidate;
             }
-            .ok_or(MalformedError::MissingReferredSegment {
-                segment: segment.number,
-                referred: *referred,
-            })?;
-            depth = depth.max(
-                referred_depth
-                    .checked_add(1)
-                    .ok_or(MalformedError::IntegerOverflow)?,
-            );
+            reference_index += 1;
         }
         if depth > limits.max_reference_graph_depth {
             return Err(LimitExceeded {
@@ -1167,11 +1221,12 @@ fn validate_reference_depth(
             }
             .into());
         }
-        if !keyed_insert(&mut depths, segment.number, depth) {
+        if !keyed_insert(depths, segment.number, depth) {
             return Err(MalformedError::DuplicateSegmentNumber(segment.number).into());
         }
+        ordered_index += 1;
     }
-    Ok(depths)
+    Ok(())
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(
