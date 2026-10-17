@@ -468,6 +468,12 @@ const COMMON_MAKEUP: [RunCode; 13] = [
 ///
 /// `data` must contain exactly the MMR data block, including any optional or
 /// required EOFB and final byte-alignment bits.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_mmr(
     data: &[u8],
     width: u32,
@@ -487,6 +493,14 @@ pub(crate) fn decode_mmr(
 /// bit between EOFB and the next byte boundary to be zero, and returns that
 /// byte boundary as `consumed_bytes`. A caller can decode a following bitplane
 /// from `&data[consumed_bytes..]`.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok((bitmap, consumed_bytes)) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && consumed_bytes <= data@.len(),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_mmr_prefix(
     data: &[u8],
     width: u32,
@@ -502,6 +516,16 @@ pub(crate) fn decode_mmr_prefix(
     Ok((bitmap, consumed_bytes))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok((bitmap, reader)) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && mmr_spec::reader_valid(&reader)
+            && reader.bytes@ == data@,
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::too_many_lines)]
 fn decode_bitmap<'a>(
     data: &'a [u8],
     width: u32,
@@ -509,28 +533,84 @@ fn decode_bitmap<'a>(
     limits: &Limits,
 ) -> Result<(Bitmap, BitReader<'a>), MmrError> {
     enforce_input_limit(data, limits)?;
+    if data.len() > usize::MAX / 8 {
+        return Err(MmrError::IntegerOverflow);
+    }
     let pixels = u64::from(width)
         .checked_mul(u64::from(height))
         .ok_or(MmrError::IntegerOverflow)?;
     let mut work = pixels.checked_mul(2).ok_or(MmrError::IntegerOverflow)?;
     enforce_work(work, limits)?;
-    let mut bitmap = Bitmap::blank(width, height, limits).map_err(MmrError::Bitmap)?;
+    let mut bitmap = match Bitmap::blank(width, height, limits) {
+        Ok(bitmap) => bitmap,
+        Err(error) => return Err(MmrError::Bitmap(error)),
+    };
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&bitmap);
+        reveal(crate::spec::bitmap::storage_valid);
+        reveal(mmr_spec::bitmap_storage_valid);
+        crate::bitmap::bitmap_shared::stride_covers_width(width);
+    }
     let mut transitions = allocate_transition_storage(width, &bitmap, limits)?;
     transitions.push(width);
     transitions.push(width);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(mmr_spec::reference_line_valid);
+        reveal(mmr_spec::transitions_ordered);
+    }
 
     let mut reader = bit_reader(data);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(mmr_spec::reader_valid);
+    }
     let max_modes = u64::from(width)
         .checked_mul(2)
         .and_then(|value| value.checked_add(2))
         .ok_or(MmrError::IntegerOverflow)?;
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            row <= height,
+            bitmap.width == width,
+            bitmap.height == height,
+            crate::spec::bitmap::storage_valid(&bitmap),
+            mmr_spec::bitmap_storage_valid(&bitmap),
+            mmr_spec::reference_line_valid(transitions@, width),
+            transitions@.len() <= width as nat + 2,
+            mmr_spec::reader_valid(&reader),
+            reader.bytes@ == data@,
+        decreases height - row,
+    ))]
     for row in 0..height {
         let mut x = 0_u32;
         let mut black = false;
         let mut initial = true;
         let mut mode_count = 0_u64;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(&bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+        }
 
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                row < height,
+                x <= width,
+                mode_count <= max_modes,
+                bitmap.width == width,
+                bitmap.height == height,
+                bitmap.stride as nat
+                    == crate::spec::bitmap::stride_for_width(bitmap.width as nat),
+                mmr_spec::bitmap_storage_valid(&bitmap),
+                mmr_spec::reference_line_valid(transitions@, width),
+                transitions@.len() <= width as nat + 2,
+                mmr_spec::reader_valid(&reader),
+                reader.bytes@ == data@,
+            decreases max_modes + 1 - mode_count,
+        ))]
         while x < width {
             mode_count = mode_count.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
             work = work.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
@@ -582,10 +662,15 @@ fn decode_bitmap<'a>(
                     x = end;
                 }
                 Mode::Vertical(displacement) => {
-                    let target = if displacement < 0 {
-                        b1.checked_sub(u32::from(displacement.unsigned_abs()))
-                    } else {
-                        b1.checked_add(u32::from(displacement.unsigned_abs()))
+                    let target = match displacement {
+                        -3 => b1.checked_sub(3),
+                        -2 => b1.checked_sub(2),
+                        -1 => b1.checked_sub(1),
+                        0 => Some(b1),
+                        1 => b1.checked_add(1),
+                        2 => b1.checked_add(2),
+                        3 => b1.checked_add(3),
+                        _ => None,
                     }
                     .ok_or(MmrError::InvalidTransition)?;
                     if target < x || target > width {
@@ -598,7 +683,18 @@ fn decode_bitmap<'a>(
                     black = !black;
                 }
             }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(&bitmap);
+                reveal(crate::spec::bitmap::storage_valid);
+            }
             initial = false;
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(&bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+            reveal(mmr_spec::bitmap_storage_valid);
         }
 
         collect_transitions(&bitmap, row, width, &mut transitions)?;
@@ -649,7 +745,12 @@ fn enforce_work(actual: u64, limits: &Limits) -> Result<(), MmrError> {
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(transitions) => transitions@.len() == 0,
+        Err(_) => true,
+    },
+))]
 fn allocate_transition_storage(
     width: u32,
     bitmap: &Bitmap,

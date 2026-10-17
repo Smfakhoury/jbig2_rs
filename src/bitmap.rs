@@ -5,7 +5,7 @@ use vstd::prelude::*;
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
 #[path = "../proofs/shared/bitmap.rs"]
-mod bitmap_shared;
+pub(crate) mod bitmap_shared;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
