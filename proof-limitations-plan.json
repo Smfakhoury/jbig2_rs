@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "production_source_revision": "db7d780d320666644ce9820d03f2838a091a5444",
+  "production_source_revision": "957c324266cdb67731e90775346540b764b305c2",
   "tracked_functions": 146,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
