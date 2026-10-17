@@ -225,18 +225,21 @@ impl Decoder {
     ) -> Result<DocumentInfo, DecodeError> {
         parse_embedded_document(input, &self.limits, globals).map(|(info, _segments)| info)
     }
-}
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
-impl Default for Decoder {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures document_spec::default_limits(
             document_spec::decoder_limits(&out),
         ),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn project_default() -> Self {
+        Self::new(Limits::project_default())
+    }
+}
+
+impl Default for Decoder {
     fn default() -> Self {
-        Self::new(Limits::default())
+        Self::project_default()
     }
 }
 

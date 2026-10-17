@@ -41,8 +41,7 @@ pub struct Limits {
     pub max_retained_state_bytes: u64,
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
-impl Default for Limits {
+impl Limits {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures
             out.max_width == 1_000_000,
@@ -62,7 +61,7 @@ impl Default for Limits {
             out.max_retained_state_bytes == 536_870_912,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
-    fn default() -> Self {
+    pub(crate) fn project_default() -> Self {
         Self {
             max_width: 1_000_000,
             max_height: 1_000_000,
@@ -80,5 +79,11 @@ impl Default for Limits {
             max_cumulative_decoded_bitmap_bytes: 4_294_967_296,
             max_retained_state_bytes: 536_870_912,
         }
+    }
+}
+
+impl Default for Limits {
+    fn default() -> Self {
+        Self::project_default()
     }
 }

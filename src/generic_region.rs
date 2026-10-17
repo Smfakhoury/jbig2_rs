@@ -536,6 +536,7 @@ impl<'a> GenericArithmeticSession<'a> {
 /// For extended template 0 this deliberately consumes 24 bytes: twelve signed
 /// X/Y pairs.  T.88's isolated phrase "32-byte field" conflicts with both the
 /// enumerated byte range 0..=23 and the twelve defined adaptive pixels.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) fn parse_generic_region_header(
     payload: &[u8],
     limits: &Limits,
@@ -557,7 +558,7 @@ pub(crate) fn parse_generic_region_header(
         return Err(GenericRegionError::InvalidFlags(flags));
     }
 
-    let mut adaptive = [TemplateOffset::ZERO; 12];
+    let mut adaptive = [TemplateOffset { x: 0, y: 0 }; 12];
     if !mmr {
         let count = if template == GenericTemplate::Template0 {
             if extended_template {
@@ -568,12 +569,21 @@ pub(crate) fn parse_generic_region_header(
         } else {
             1
         };
-        for (index, offset) in adaptive.iter_mut().take(count).enumerate() {
-            *offset = read_offset(&mut reader)?;
-            validate_target_adaptive(
-                u8::try_from(index + 1).map_err(|_| MalformedError::IntegerOverflow)?,
-                *offset,
-            )?;
+        let mut index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                index <= count,
+                count <= 12,
+                reader.position <= reader.bytes@.len(),
+            decreases count - index,
+        ))]
+        while index < count {
+            adaptive[index] = read_offset(&mut reader)?;
+            let Ok(number) = u8::try_from(index + 1) else {
+                return Err(MalformedError::IntegerOverflow.into());
+            };
+            validate_target_adaptive(number, adaptive[index])?;
+            index += 1;
         }
     }
 
@@ -1232,6 +1242,7 @@ pub(crate) struct RefinementParameters {
 }
 
 /// Parse a generic-refinement region data header and return its byte length.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) fn parse_refinement_region_header(
     payload: &[u8],
     limits: &Limits,
@@ -1245,7 +1256,7 @@ pub(crate) fn parse_refinement_region_header(
     }
     let template = RefinementTemplate::from_flags(flags);
     let typical_prediction = flags & 0x02 != 0;
-    let mut adaptive = [TemplateOffset::ZERO; 2];
+    let mut adaptive = [TemplateOffset { x: 0, y: 0 }; 2];
     if template == RefinementTemplate::Template0 {
         adaptive[0] = read_offset(&mut reader)?;
         adaptive[1] = read_offset(&mut reader)?;
@@ -1602,6 +1613,9 @@ fn sample_signed(bitmap: &Bitmap, x: Option<i64>, y: Option<i64>) -> bool {
 
 #[cfg_attr(verus_keep_ghost, verus_spec(
     requires old(reader).position <= old(reader).bytes@.len(),
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
 ))]
 fn read_offset(reader: &mut ByteReader<'_>) -> Result<TemplateOffset, GenericRegionError> {
     let x = signed_offset_byte(reader.read_u8()?);
