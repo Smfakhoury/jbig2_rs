@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "status": "internal_candidate_validated_publication_blocked",
-  "candidate_revision": "75745a2e828507339675264fe480a2384df43b25",
-  "production_source_revision": "d408be6146f961bc1207426e0fb2e523531e43b1",
+  "candidate_revision": "576a8cf23612034d14f2d16c9f17aba8e25894cc",
+  "production_source_revision": "6990959657fb47b4dcf8848c4a4a710a2934ee72",
   "crate_version": "0.0.1",
   "publication_enabled": false,
   "evidence": {
-    "support_matrix_sha256": "b788326119597a4d240733dbc50715034e696d7492a05b24e847ee8f6983dd8c",
+    "support_matrix_sha256": "b8dcee84ae9c77de40d2248f82f6c30c30bd88a4e2ee52735ce487d27aa2f43d",
     "source_provenance_sha256": "1bd2898d4e345a854c718dcfc3062aa4c4a0d5f65f6fd8b3c3b6387bcf9d4e30",
-    "proof_attestation_sha256": "303951af4e5ff381d5e7f1e60d062ae595154cc7c27a3ce4b6e4cb2cd7dee27b",
-    "conformance_attestation_sha256": "c979e7e1644dcd852449ae98206adcee9c19bdc3af6578d2ccbc606c5645694d",
-    "fuzz_attestation_sha256": "3964c9873229765fa96454c144e638b3e5e2d70d48352d1de0cbf0f0baab7a62",
+    "proof_attestation_sha256": "0e45aee14e83b34236835bfe2ff4829c9080347c010c84f60cae10d6bc1df886",
+    "conformance_attestation_sha256": "09b95ed0923a685eedade954169e9b424013bc0fd9277f3848ddb66ac0d1eeda",
+    "fuzz_attestation_sha256": "3639dd3d4ca80b369e6575f64f277241f13637acb4ed20a192493dbf40b96773",
     "toolchain_sha256": "2b70822b1d375655fac4c8adab7f9697243e7d41666020265a8b0db619949f51",
-    "performance_results_sha256": "f4a12186705cb47538385bc0c8876f5f54a077e3082418701b461226aac3cb62"
+    "performance_results_sha256": "889de0d186f6b91fa87e2d73671c23ee667c3cb2029d1b8d69ff314f4d26fb46"
   },
   "validation": {
     "implementation_tests": {
@@ -20,13 +20,13 @@
       "failed": 0
     },
     "verus": {
-      "verified_obligations": 707,
+      "verified_obligations": 797,
       "errors": 0,
       "native_assumptions": 0
     },
     "production_functions": {
-      "verified": 373,
-      "reviewed_verifier_limitations": 146,
+      "verified": 418,
+      "reviewed_verifier_limitations": 101,
       "audited_forwarders": 19,
       "incomplete": 0
     },
