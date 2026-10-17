@@ -824,13 +824,19 @@ fn finalize_pages(
 }
 
 fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> {
-    let Some((first_index, first_segment)) = segments
-        .iter()
-        .enumerate()
-        .find(|(_, segment)| segment.header.segment_type == SegmentType::Profiles)
-    else {
+    let mut first_index = 0_usize;
+    while first_index < segments.len()
+        && !matches!(
+            segments[first_index].header.segment_type,
+            SegmentType::Profiles
+        )
+    {
+        first_index += 1;
+    }
+    if first_index == segments.len() {
         return Ok(());
-    };
+    }
+    let first_segment = &segments[first_index];
     if first_index != 0 || first_segment.header.page_association != 0 {
         return Err(MalformedError::InvalidProfilesSegment(first_segment.header.number).into());
     }
@@ -844,25 +850,71 @@ fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> 
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: profile_allocation,
         })?;
-    for segment in &segments[first_index + 1..] {
-        if segment.header.segment_type != SegmentType::Profiles {
+    validate_page_profiles(
+        segments,
+        first_index + 1,
+        global_profiles,
+        &mut page_profiles,
+    )
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires start <= segments@.len(),
+))]
+fn validate_page_profiles(
+    segments: &[ParsedSegment<'_>],
+    start: usize,
+    global_profiles: &[u32],
+    page_profiles: &mut Vec<(u32, u32)>,
+) -> Result<(), DecodeError> {
+    let mut segment_index = start;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant start <= segment_index <= segments@.len(),
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let segment = &segments[segment_index];
+        if !matches!(segment.header.segment_type, SegmentType::Profiles) {
+            segment_index += 1;
             continue;
         }
         let page = segment.header.page_association;
-        if page == 0 || !keyed_insert(&mut page_profiles, page, segment.header.number) {
+        if page == 0 || !keyed_insert(page_profiles, page, segment.header.number) {
             return Err(MalformedError::InvalidProfilesSegment(segment.header.number).into());
         }
         let ParsedData::Profiles(profiles) = &segment.data else {
             return Err(MalformedError::InvalidProfilesSegment(segment.header.number).into());
         };
-        if !global_profiles
-            .iter()
-            .all(|profile| profiles.contains(profile))
-        {
-            return Err(MalformedError::InvalidProfilesSegment(segment.header.number).into());
+        let mut profile_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant profile_index <= global_profiles@.len(),
+            decreases global_profiles@.len() - profile_index,
+        ))]
+        while profile_index < global_profiles.len() {
+            if !contains_profile(profiles, global_profiles[profile_index]) {
+                return Err(MalformedError::InvalidProfilesSegment(segment.header.number).into());
+            }
+            profile_index += 1;
         }
+        segment_index += 1;
     }
     Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn contains_profile(profiles: &[u32], wanted: u32) -> bool {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= profiles@.len(),
+        decreases profiles@.len() - index,
+    ))]
+    while index < profiles.len() {
+        if profiles[index] == wanted {
+            return true;
+        }
+        index += 1;
+    }
+    false
 }
 
 #[derive(Debug)]
