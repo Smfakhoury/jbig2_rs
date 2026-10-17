@@ -951,96 +951,136 @@ const fn generic_at(x: i32, y: i32, number: u8) -> GenericSlot {
     }
 }
 
+macro_rules! generic_slot_const {
+    ($x:expr, $y:expr) => {
+        GenericSlot {
+            nominal: TemplateOffset { x: $x, y: $y },
+            adaptive: None,
+        }
+    };
+}
+
+macro_rules! generic_at_const {
+    ($x:expr, $y:expr, $number:expr) => {
+        GenericSlot {
+            nominal: TemplateOffset { x: $x, y: $y },
+            adaptive: Some($number),
+        }
+    };
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const GENERIC_TEMPLATE_0: [GenericSlot; 16] = [
-    generic_at(-2, -2, 4),
-    generic_slot(-1, -2),
-    generic_slot(0, -2),
-    generic_slot(1, -2),
-    generic_at(2, -2, 3),
-    generic_at(-3, -1, 2),
-    generic_slot(-2, -1),
-    generic_slot(-1, -1),
-    generic_slot(0, -1),
-    generic_slot(1, -1),
-    generic_slot(2, -1),
-    generic_at(3, -1, 1),
-    generic_slot(-4, 0),
-    generic_slot(-3, 0),
-    generic_slot(-2, 0),
-    generic_slot(-1, 0),
+    generic_at_const!(-2, -2, 4),
+    generic_slot_const!(-1, -2),
+    generic_slot_const!(0, -2),
+    generic_slot_const!(1, -2),
+    generic_at_const!(2, -2, 3),
+    generic_at_const!(-3, -1, 2),
+    generic_slot_const!(-2, -1),
+    generic_slot_const!(-1, -1),
+    generic_slot_const!(0, -1),
+    generic_slot_const!(1, -1),
+    generic_slot_const!(2, -1),
+    generic_at_const!(3, -1, 1),
+    generic_slot_const!(-4, 0),
+    generic_slot_const!(-3, 0),
+    generic_slot_const!(-2, 0),
+    generic_slot_const!(-1, 0),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const GENERIC_TEMPLATE_0_EXTENDED: [GenericSlot; 16] = [
-    generic_at(-2, -2, 11),
-    generic_at(-1, -2, 4),
-    generic_at(0, -2, 2),
-    generic_at(1, -2, 5),
-    generic_at(2, -2, 9),
-    generic_at(-3, -1, 12),
-    generic_at(-2, -1, 3),
-    generic_slot(-1, -1),
-    generic_slot(0, -1),
-    generic_slot(1, -1),
-    generic_at(2, -1, 6),
-    generic_at(3, -1, 10),
-    generic_at(-4, 0, 8),
-    generic_at(-3, 0, 7),
-    generic_at(-2, 0, 1),
-    generic_slot(-1, 0),
+    generic_at_const!(-2, -2, 11),
+    generic_at_const!(-1, -2, 4),
+    generic_at_const!(0, -2, 2),
+    generic_at_const!(1, -2, 5),
+    generic_at_const!(2, -2, 9),
+    generic_at_const!(-3, -1, 12),
+    generic_at_const!(-2, -1, 3),
+    generic_slot_const!(-1, -1),
+    generic_slot_const!(0, -1),
+    generic_slot_const!(1, -1),
+    generic_at_const!(2, -1, 6),
+    generic_at_const!(3, -1, 10),
+    generic_at_const!(-4, 0, 8),
+    generic_at_const!(-3, 0, 7),
+    generic_at_const!(-2, 0, 1),
+    generic_slot_const!(-1, 0),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const GENERIC_TEMPLATE_1: [GenericSlot; 13] = [
-    generic_slot(-1, -2),
-    generic_slot(0, -2),
-    generic_slot(1, -2),
-    generic_slot(2, -2),
-    generic_slot(-2, -1),
-    generic_slot(-1, -1),
-    generic_slot(0, -1),
-    generic_slot(1, -1),
-    generic_slot(2, -1),
-    generic_at(3, -1, 1),
-    generic_slot(-3, 0),
-    generic_slot(-2, 0),
-    generic_slot(-1, 0),
+    generic_slot_const!(-1, -2),
+    generic_slot_const!(0, -2),
+    generic_slot_const!(1, -2),
+    generic_slot_const!(2, -2),
+    generic_slot_const!(-2, -1),
+    generic_slot_const!(-1, -1),
+    generic_slot_const!(0, -1),
+    generic_slot_const!(1, -1),
+    generic_slot_const!(2, -1),
+    generic_at_const!(3, -1, 1),
+    generic_slot_const!(-3, 0),
+    generic_slot_const!(-2, 0),
+    generic_slot_const!(-1, 0),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const GENERIC_TEMPLATE_2: [GenericSlot; 10] = [
-    generic_slot(-1, -2),
-    generic_slot(0, -2),
-    generic_slot(1, -2),
-    generic_slot(-2, -1),
-    generic_slot(-1, -1),
-    generic_slot(0, -1),
-    generic_slot(1, -1),
-    generic_at(2, -1, 1),
-    generic_slot(-2, 0),
-    generic_slot(-1, 0),
+    generic_slot_const!(-1, -2),
+    generic_slot_const!(0, -2),
+    generic_slot_const!(1, -2),
+    generic_slot_const!(-2, -1),
+    generic_slot_const!(-1, -1),
+    generic_slot_const!(0, -1),
+    generic_slot_const!(1, -1),
+    generic_at_const!(2, -1, 1),
+    generic_slot_const!(-2, 0),
+    generic_slot_const!(-1, 0),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const GENERIC_TEMPLATE_3: [GenericSlot; 10] = [
-    generic_slot(-3, -1),
-    generic_slot(-2, -1),
-    generic_slot(-1, -1),
-    generic_slot(0, -1),
-    generic_slot(1, -1),
-    generic_at(2, -1, 1),
-    generic_slot(-4, 0),
-    generic_slot(-3, 0),
-    generic_slot(-2, 0),
-    generic_slot(-1, 0),
+    generic_slot_const!(-3, -1),
+    generic_slot_const!(-2, -1),
+    generic_slot_const!(-1, -1),
+    generic_slot_const!(0, -1),
+    generic_slot_const!(1, -1),
+    generic_at_const!(2, -1, 1),
+    generic_slot_const!(-4, 0),
+    generic_slot_const!(-3, 0),
+    generic_slot_const!(-2, 0),
+    generic_slot_const!(-1, 0),
 ];
 
-fn generic_slots(template: GenericTemplate, extended: bool) -> &'static [GenericSlot] {
-    match (template, extended) {
-        (GenericTemplate::Template0, true) => &GENERIC_TEMPLATE_0_EXTENDED,
-        (GenericTemplate::Template0, false) => &GENERIC_TEMPLATE_0,
-        (GenericTemplate::Template1, _) => &GENERIC_TEMPLATE_1,
-        (GenericTemplate::Template2, _) => &GENERIC_TEMPLATE_2,
-        (GenericTemplate::Template3, _) => &GENERIC_TEMPLATE_3,
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn generic_adaptive_offset(
+    adaptive: &[TemplateOffset; 12],
+    number: u8,
+    nominal: TemplateOffset,
+) -> TemplateOffset {
+    match number {
+        1 => adaptive[0],
+        2 => adaptive[1],
+        3 => adaptive[2],
+        4 => adaptive[3],
+        5 => adaptive[4],
+        6 => adaptive[5],
+        7 => adaptive[6],
+        8 => adaptive[7],
+        9 => adaptive[8],
+        10 => adaptive[9],
+        11 => adaptive[10],
+        12 => adaptive[11],
+        _ => nominal,
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires crate::spec::bitmap::storage_valid(bitmap),
+))]
+#[allow(clippy::bool_to_int_with_if)]
 fn generic_context(
     bitmap: &Bitmap,
     x: u32,
@@ -1049,13 +1089,44 @@ fn generic_context(
     extended: bool,
     adaptive: &[TemplateOffset; 12],
 ) -> usize {
+    let count = match template {
+        GenericTemplate::Template0 => 16usize,
+        GenericTemplate::Template1 => 13usize,
+        GenericTemplate::Template2 | GenericTemplate::Template3 => 10usize,
+    };
     let mut context = 0_usize;
-    for slot in generic_slots(template, extended) {
-        let offset = slot
-            .adaptive
-            .and_then(|number| adaptive.get(usize::from(number - 1)).copied())
-            .unwrap_or(slot.nominal);
-        context = (context << 1) | usize::from(sample_bitmap(bitmap, x, y, offset));
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= count,
+            count <= 16,
+            count == match template {
+                GenericTemplate::Template0 => 16usize,
+                GenericTemplate::Template1 => 13usize,
+                GenericTemplate::Template2 | GenericTemplate::Template3 => 10usize,
+            },
+            crate::spec::bitmap::storage_valid(bitmap),
+        decreases count - index,
+    ))]
+    while index < count {
+        let slot = match (template, extended) {
+            (GenericTemplate::Template0, true) => GENERIC_TEMPLATE_0_EXTENDED[index],
+            (GenericTemplate::Template0, false) => GENERIC_TEMPLATE_0[index],
+            (GenericTemplate::Template1, _) => GENERIC_TEMPLATE_1[index],
+            (GenericTemplate::Template2, _) => GENERIC_TEMPLATE_2[index],
+            (GenericTemplate::Template3, _) => GENERIC_TEMPLATE_3[index],
+        };
+        let offset = match slot.adaptive {
+            Some(number) => generic_adaptive_offset(adaptive, number, slot.nominal),
+            None => slot.nominal,
+        };
+        let bit = if sample_bitmap(bitmap, x, y, offset) {
+            1
+        } else {
+            0
+        };
+        context = (context << 1) | bit;
+        index += 1;
     }
     context
 }
@@ -1479,42 +1550,96 @@ const fn reference_at(x: i32, y: i32, number: u8) -> RefinementSlot {
     }
 }
 
+macro_rules! target_slot_const {
+    ($x:expr, $y:expr) => {
+        RefinementSlot {
+            plane: RefinementPlane::Target,
+            nominal: TemplateOffset { x: $x, y: $y },
+            adaptive: None,
+        }
+    };
+}
+
+macro_rules! target_at_const {
+    ($x:expr, $y:expr, $number:expr) => {
+        RefinementSlot {
+            plane: RefinementPlane::Target,
+            nominal: TemplateOffset { x: $x, y: $y },
+            adaptive: Some($number),
+        }
+    };
+}
+
+macro_rules! reference_slot_const {
+    ($x:expr, $y:expr) => {
+        RefinementSlot {
+            plane: RefinementPlane::Reference,
+            nominal: TemplateOffset { x: $x, y: $y },
+            adaptive: None,
+        }
+    };
+}
+
+macro_rules! reference_at_const {
+    ($x:expr, $y:expr, $number:expr) => {
+        RefinementSlot {
+            plane: RefinementPlane::Reference,
+            nominal: TemplateOffset { x: $x, y: $y },
+            adaptive: Some($number),
+        }
+    };
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const REFINEMENT_TEMPLATE_0: [RefinementSlot; 13] = [
-    target_at(-1, -1, 1),
-    target_slot(0, -1),
-    target_slot(1, -1),
-    target_slot(-1, 0),
-    reference_at(-1, -1, 2),
-    reference_slot(0, -1),
-    reference_slot(1, -1),
-    reference_slot(-1, 0),
-    reference_slot(0, 0),
-    reference_slot(1, 0),
-    reference_slot(-1, 1),
-    reference_slot(0, 1),
-    reference_slot(1, 1),
+    target_at_const!(-1, -1, 1),
+    target_slot_const!(0, -1),
+    target_slot_const!(1, -1),
+    target_slot_const!(-1, 0),
+    reference_at_const!(-1, -1, 2),
+    reference_slot_const!(0, -1),
+    reference_slot_const!(1, -1),
+    reference_slot_const!(-1, 0),
+    reference_slot_const!(0, 0),
+    reference_slot_const!(1, 0),
+    reference_slot_const!(-1, 1),
+    reference_slot_const!(0, 1),
+    reference_slot_const!(1, 1),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const REFINEMENT_TEMPLATE_1: [RefinementSlot; 10] = [
-    target_slot(-1, -1),
-    target_slot(0, -1),
-    target_slot(1, -1),
-    target_slot(-1, 0),
-    reference_slot(0, -1),
-    reference_slot(-1, 0),
-    reference_slot(0, 0),
-    reference_slot(1, 0),
-    reference_slot(0, 1),
-    reference_slot(1, 1),
+    target_slot_const!(-1, -1),
+    target_slot_const!(0, -1),
+    target_slot_const!(1, -1),
+    target_slot_const!(-1, 0),
+    reference_slot_const!(0, -1),
+    reference_slot_const!(-1, 0),
+    reference_slot_const!(0, 0),
+    reference_slot_const!(1, 0),
+    reference_slot_const!(0, 1),
+    reference_slot_const!(1, 1),
 ];
 
-fn refinement_slots(template: RefinementTemplate) -> &'static [RefinementSlot] {
-    match template {
-        RefinementTemplate::Template0 => &REFINEMENT_TEMPLATE_0,
-        RefinementTemplate::Template1 => &REFINEMENT_TEMPLATE_1,
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn refinement_adaptive_offset(
+    adaptive: [TemplateOffset; 2],
+    number: u8,
+    nominal: TemplateOffset,
+) -> TemplateOffset {
+    match number {
+        1 => adaptive[0],
+        2 => adaptive[1],
+        _ => nominal,
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires
+        crate::spec::bitmap::storage_valid(target),
+        crate::spec::bitmap::storage_valid(reference),
+))]
+#[allow(clippy::bool_to_int_with_if)]
 fn refinement_context(
     target: &Bitmap,
     reference: &Bitmap,
@@ -1524,17 +1649,39 @@ fn refinement_context(
     adaptive: [TemplateOffset; 2],
     parameters: RefinementParameters,
 ) -> usize {
+    let count = match template {
+        RefinementTemplate::Template0 => 13usize,
+        RefinementTemplate::Template1 => 10usize,
+    };
     let mut context = 0_usize;
-    for slot in refinement_slots(template) {
-        let offset = slot
-            .adaptive
-            .and_then(|number| adaptive.get(usize::from(number - 1)).copied())
-            .unwrap_or(slot.nominal);
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= count,
+            count <= 13,
+            count == match template {
+                RefinementTemplate::Template0 => 13usize,
+                RefinementTemplate::Template1 => 10usize,
+            },
+            crate::spec::bitmap::storage_valid(target),
+            crate::spec::bitmap::storage_valid(reference),
+        decreases count - index,
+    ))]
+    while index < count {
+        let slot = match template {
+            RefinementTemplate::Template0 => REFINEMENT_TEMPLATE_0[index],
+            RefinementTemplate::Template1 => REFINEMENT_TEMPLATE_1[index],
+        };
+        let offset = match slot.adaptive {
+            Some(number) => refinement_adaptive_offset(adaptive, number, slot.nominal),
+            None => slot.nominal,
+        };
         let value = match slot.plane {
             RefinementPlane::Target => sample_bitmap(target, x, y, offset),
             RefinementPlane::Reference => sample_reference(reference, x, y, offset, parameters),
         };
-        context = (context << 1) | usize::from(value);
+        context = (context << 1) | if value { 1 } else { 0 };
+        index += 1;
     }
     context
 }
