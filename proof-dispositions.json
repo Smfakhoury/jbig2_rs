@@ -5,357 +5,224 @@
     {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "aab9b40c2d34ff21fd5ae7fbf19a5031a20dd3f92548f5614dfe56df0170c9d6",
+      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
     },
     {
       "id": "arithmetic::ArithmeticError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "aab9b40c2d34ff21fd5ae7fbf19a5031a20dd3f92548f5614dfe56df0170c9d6",
+      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
-      "id": "bitmap::Bitmap::blank",
-      "file": "src/bitmap.rs",
-      "file_sha256": "9020cb6a44da5c5de2c2907e324ad3ae97304b380fde2af80e74cbcf23317a4a",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned vstd has no specification for fallible Vec reservation used by bitmap allocation."
-    },
-    {
-      "id": "bitmap::Bitmap::filled",
-      "file": "src/bitmap.rs",
-      "file_sha256": "9020cb6a44da5c5de2c2907e324ad3ae97304b380fde2af80e74cbcf23317a4a",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned vstd has no specification for fallible Vec reservation used by bitmap allocation."
-    },
-    {
       "id": "decode::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::F::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_embedded",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_embedded_with_globals",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_embedded_internal",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::PageCollector::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "decode::decode_global_resources",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_segments",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_generic_segment",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_refinement_segment",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_pattern_segment",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_halftone_segment",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_symbol_dictionary_segment",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_text_segment",
       "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::collect_referred_symbols",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::collect_referred_tables",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::copy_bitmap",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::insert_buffer",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::release_referred_buffers",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::release_referred_patterns",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::release_referred_symbols",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::release_referred_tables",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
-    },
-    {
-      "id": "decode::snapshot_region",
-      "file": "src/decode.rs",
-      "file_sha256": "09c16f6def2013a99550af9a310da54cdf6541a306a29dd7fe4500566aa3ae50",
+      "file_sha256": "ab9855657714334e190be5bff4e98d76bd8414932cf8ad08088eb5cc90c01b7e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "document::Decoder::inspect",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::inspect_embedded",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::inspect_embedded_with_globals",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::parse_globals",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::inspect_embedded_internal",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::parse_standalone_document",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::parse_embedded_document",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::parse_sequential",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::parse_random_access",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::parse_known_segment_data",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::build_document_info",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::collect_page_states",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::finalize_pages",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::validate_profiles",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::validate_references",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::validate_retention",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::validate_reference_depth",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::read_bounded_input",
       "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
-    },
-    {
-      "id": "document::allocation_size",
-      "file": "src/document.rs",
-      "file_sha256": "5baaff5d84b50469474029c11459eb21cbb8895212e76774afdea2737faf2375",
+      "file_sha256": "d4f81061a628b4793ca834121ccb0ba1884a8e46f4263ad0b8056757f47db96c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
@@ -404,756 +271,574 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::GenericRegionError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#2",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#3",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
-      "id": "generic_region::GenericContexts::try_snapshot",
-      "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
-    },
-    {
       "id": "generic_region::GenericArithmeticSession::decode_bitmap",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::GenericArithmeticSession::decode_bitmap_rows",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::parse_generic_region_header",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_generic_region_segment",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_known_length_arithmetic_generic",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::split_unknown_length_data",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_arithmetic_generic",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_generic_on",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_generic_with",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::generic_slots",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::generic_context",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
-    },
-    {
-      "id": "generic_region::RefinementContexts::try_snapshot",
-      "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::parse_refinement_region_header",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_arithmetic_refinement",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_refinement_on",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::decode_refinement_with",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::refinement_slots",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::refinement_context",
       "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
-    },
-    {
-      "id": "generic_region::try_copy_contexts",
-      "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
-    },
-    {
-      "id": "generic_region::allocate_contexts",
-      "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
-    },
-    {
-      "id": "generic_region::context_storage_bytes",
-      "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
-    },
-    {
-      "id": "generic_region::pad_bitmap_height",
-      "file": "src/generic_region.rs",
-      "file_sha256": "907ffbd50f49686ffdd8639859bf09e6728d8d6a5a80f67799435eb01fc7fc23",
+      "file_sha256": "5d1576154043df8ef52c0f73d409e21969d6ca5a73926fcaa39007fdef770c53",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "halftone::HalftoneError::from",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::HalftoneError::from#2",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::decode_generic_region",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::F::decode_generic_region",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::HalftoneError::from#3",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::decode_pattern_dictionary",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
-    },
-    {
-      "id": "halftone::slice_collective_bitmap",
-      "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::decode_gray_planes",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
-    },
-    {
-      "id": "halftone::generate_skip_mask",
-      "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "halftone::decode_halftone_region",
       "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
-    },
-    {
-      "id": "halftone::render_clipped_pattern",
-      "file": "src/halftone.rs",
-      "file_sha256": "d3046ef69ea6300cb6c973274a1b9fc0914e3e85657688ae366e68f12fbbd7ad",
+      "file_sha256": "fc0097b4fe41e9d5c570b01fddd7c8f60e1e1f29384aace069529d6a572c47f0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks allocation, bitmap mutation, and generic decoder callback specifications for end-to-end halftone paths."
     },
     {
       "id": "huffman::HuffmanError::from",
       "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
+      "file_sha256": "4bc5450f21f0cf02ab45277a1efe32392882fcfeb57f907ebc01f4c08ebfc75f",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#2",
       "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
+      "file_sha256": "4bc5450f21f0cf02ab45277a1efe32392882fcfeb57f907ebc01f4c08ebfc75f",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#3",
       "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
+      "file_sha256": "4bc5450f21f0cf02ab45277a1efe32392882fcfeb57f907ebc01f4c08ebfc75f",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanTable::new",
       "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
+      "file_sha256": "4bc5450f21f0cf02ab45277a1efe32392882fcfeb57f907ebc01f4c08ebfc75f",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
     },
     {
       "id": "huffman::HuffmanTable::from_encoded",
       "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
+      "file_sha256": "4bc5450f21f0cf02ab45277a1efe32392882fcfeb57f907ebc01f4c08ebfc75f",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
     },
     {
       "id": "huffman::HuffmanTable::standard",
       "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
+      "file_sha256": "4bc5450f21f0cf02ab45277a1efe32392882fcfeb57f907ebc01f4c08ebfc75f",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
     },
     {
       "id": "huffman::standard_lines",
       "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
-    },
-    {
-      "id": "huffman::push_parsed_line",
-      "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
-    },
-    {
-      "id": "huffman::try_reserve_exact",
-      "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
-    },
-    {
-      "id": "huffman::allocation_size",
-      "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
-    },
-    {
-      "id": "huffman::table_memory",
-      "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
-    },
-    {
-      "id": "huffman::check_table_memory",
-      "file": "src/huffman.rs",
-      "file_sha256": "135c47738594f9497fa0a0bd405500af87e47393a4f811eb2274c0f87a99161b",
+      "file_sha256": "4bc5450f21f0cf02ab45277a1efe32392882fcfeb57f907ebc01f4c08ebfc75f",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation, size_of reasoning, and array-to-slice coercion specifications."
     },
     {
       "id": "mmr::MmrError::from",
       "file": "src/mmr.rs",
-      "file_sha256": "02e31c0648939f95c79f9bbbb3fab1e14990ed714b2936023778fbbd26620968",
+      "file_sha256": "0a11429b7a6d67caf1460e10d350ccf39d23b1400a1f374b579513ecf7c913ae",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
-      "id": "mmr::decode_mmr",
-      "file": "src/mmr.rs",
-      "file_sha256": "02e31c0648939f95c79f9bbbb3fab1e14990ed714b2936023778fbbd26620968",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible transition allocation and complete Bitmap allocation contracts."
-    },
-    {
-      "id": "mmr::decode_mmr_prefix",
-      "file": "src/mmr.rs",
-      "file_sha256": "02e31c0648939f95c79f9bbbb3fab1e14990ed714b2936023778fbbd26620968",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible transition allocation and complete Bitmap allocation contracts."
-    },
-    {
-      "id": "mmr::decode_bitmap",
-      "file": "src/mmr.rs",
-      "file_sha256": "02e31c0648939f95c79f9bbbb3fab1e14990ed714b2936023778fbbd26620968",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible transition allocation and complete Bitmap allocation contracts."
-    },
-    {
-      "id": "mmr::allocate_transition_storage",
-      "file": "src/mmr.rs",
-      "file_sha256": "02e31c0648939f95c79f9bbbb3fab1e14990ed714b2936023778fbbd26620968",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible transition allocation and complete Bitmap allocation contracts."
-    },
-    {
-      "id": "segment_data::parse_profiles",
-      "file": "src/segment_data.rs",
-      "file_sha256": "e939191a2d294ba7d12a365d292fbf5f4ab21c7670c9c7f2bab702745d68ac0c",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation required by profile-list materialization."
-    },
-    {
-      "id": "segment_header::RetentionFlags::from_bytes",
-      "file": "src/segment_header.rs",
-      "file_sha256": "227ff5de68870d65838b70b1985e7aa7db41e7fc7cb7ab6a57f71efd58035325",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation required by retained-reference materialization."
-    },
-    {
-      "id": "segment_header::parse_segment_header",
-      "file": "src/segment_header.rs",
-      "file_sha256": "227ff5de68870d65838b70b1985e7aa7db41e7fc7cb7ab6a57f71efd58035325",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation required by retained-reference materialization."
-    },
-    {
-      "id": "segment_header::parse_referred_segments",
-      "file": "src/segment_header.rs",
-      "file_sha256": "227ff5de68870d65838b70b1985e7aa7db41e7fc7cb7ab6a57f71efd58035325",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec allocation required by retained-reference materialization."
-    },
-    {
       "id": "symbol_text::SymbolTextError::from",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#2",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#3",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#4",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#5",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#6",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#7",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "audited-forwarder",
       "reason": "One-line standard From trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::decode_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::prepare_symbol_ids",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::associate_dictionary_tables",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::associate_text_tables",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::bind_tables",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_export_runs",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::expand_symbol_code_lengths",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::build_symbol_id_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_checked_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_refined_bitmap",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::required_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::compose_placement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::owned_standard_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::resolve_bound_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanFieldTables::for_dictionary",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanFieldTables::for_nested_aggregate",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanFieldTables::for_text_region",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::ArithmeticEntropy::decode_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::ArithmeticEntropy::decode_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::ArithmeticRefinement::decode_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::normalized_bounded_arithmetic",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::build_symbol_id_runcode_table",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::read_raw_bits",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::decode_integer",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::decode_symbol_id",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanEntropy::prepare_symbol_ids",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::HuffmanRefinement::decode_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::bitmap_from_packed_bytes",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::crop_bitmap_columns",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::clone_bitmap",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
-      "status": "reviewed-verifier-limitation",
-      "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
-    },
-    {
-      "id": "symbol_text::wrap_custom_tables",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_dictionary_single_instance_refinement",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_text_region_body",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_one_new_symbol",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_dictionary_arithmetic",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_dictionary_huffman",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::assemble_exported_symbols",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_symbol_dictionary",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     },
     {
       "id": "symbol_text::decode_text_region",
       "file": "src/symbol_text.rs",
-      "file_sha256": "86697687ef5df15010a20ca3bb24ea71c03a8e8553f91ea57795f76b78758eae",
+      "file_sha256": "161793fbe85e7e1f3faf91f023e990621cf33c4337162e67697f37ce24720ed0",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec, RefCell, dynamic callback, and upstream bitmap allocation specifications for complete dictionary/text orchestration."
     }

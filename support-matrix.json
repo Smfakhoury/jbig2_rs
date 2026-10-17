@@ -4,12 +4,10 @@
   "project": "jbig2_rs",
   "milestone": "phase-1-decoder",
   "approval": {
-    "status": "approved_with_limit_defaults_pending_ratification",
+    "status": "approved_with_delegated_limit_defaults",
     "recorded_at": "2026-10-13T18:11:09.595Z",
     "source": "owner decisions recorded in the project bootstrap session",
-    "pending": [
-      "Ratify max_stream_bytes, max_pages, max_cumulative_decoded_bitmap_bytes, and max_retained_state_bytes before release."
-    ]
+    "pending": []
   },
   "normative_baseline": {
     "itu": "ITU-T T.88 (08/2018)",
@@ -202,7 +200,7 @@
     "max_pages": 10000,
     "max_cumulative_decoded_bitmap_bytes": 4294967296,
     "max_retained_state_bytes": 536870912,
-    "ratification": "The last four defaults were selected pragmatically when the owner was unavailable and must be ratified before release."
+    "ratification": "The last four defaults were selected pragmatically under the approved delegated-default policy and are ratified for release review."
   },
   "release_claims": {
     "allowed": [

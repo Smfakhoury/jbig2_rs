@@ -2,7 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
-pub(super) proof fn stride_covers_width(width: u32)
+pub(crate) proof fn stride_covers_width(width: u32)
     ensures
         crate::spec::bitmap::stride_for_width(width as nat) * 8
             >= width as nat,

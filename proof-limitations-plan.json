@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "d408be6146f961bc1207426e0fb2e523531e43b1",
-  "tracked_functions": 146,
+  "production_source_revision": "6990959657fb47b4dcf8848c4a4a710a2934ee72",
+  "tracked_functions": 101,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -23,7 +23,7 @@
     },
     {
       "id": "VL-003",
-      "count": 26,
+      "count": 17,
       "priority": "high",
       "surface": "Decode orchestration",
       "mitigation": "Introduce verified deterministic resource stores and concrete page-sink adapters, replacing HashMap and trait-callback proof dependencies.",
@@ -31,7 +31,7 @@
     },
     {
       "id": "VL-004",
-      "count": 20,
+      "count": 12,
       "priority": "high",
       "surface": "Document parsing",
       "mitigation": "Split bounded reader acquisition from a verified slice parser and replace iterator/closure-heavy HashMap validation with indexed deterministic vectors.",
@@ -39,7 +39,7 @@
     },
     {
       "id": "VL-005",
-      "count": 8,
+      "count": 5,
       "priority": "medium",
       "surface": "Halftone end-to-end paths",
       "mitigation": "Consume verified bitmap mutation contracts and replace generic decoder callbacks with a concrete arithmetic/MMR decoder enum.",
@@ -51,7 +51,8 @@
       "priority": "medium",
       "surface": "Profile-list materialization",
       "mitigation": "Use the planned verified FallibleVec wrapper.",
-      "exit_criteria": "parse_profiles directly verifies allocation and exact length."
+      "exit_criteria": "parse_profiles directly verifies allocation and exact length.",
+      "status": "completed"
     },
     {
       "id": "VL-007",
@@ -59,11 +60,12 @@
       "priority": "high",
       "surface": "Segment reference materialization",
       "mitigation": "Use verified FallibleVec and prove long/short retention extraction over the allocated result.",
-      "exit_criteria": "RetentionFlags::from_bytes, parse_referred_segments, and parse_segment_header directly verify."
+      "exit_criteria": "RetentionFlags::from_bytes, parse_referred_segments, and parse_segment_header directly verify.",
+      "status": "completed"
     },
     {
       "id": "VL-008",
-      "count": 9,
+      "count": 4,
       "priority": "medium",
       "surface": "Huffman table allocation/construction",
       "mitigation": "Use verified FallibleVec, explicit allocation-size lemmas, and slice-view adapters for static standard tables.",
@@ -71,7 +73,7 @@
     },
     {
       "id": "VL-009",
-      "count": 41,
+      "count": 37,
       "priority": "high",
       "surface": "Symbol/text orchestration",
       "mitigation": "Replace RefCell/dynamic callbacks with a concrete entropy-state enum, adopt verified FallibleVec, and use completed bitmap/generic contracts.",
@@ -79,7 +81,7 @@
     },
     {
       "id": "VL-010",
-      "count": 25,
+      "count": 19,
       "priority": "high",
       "surface": "Generic/refinement raster paths",
       "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
@@ -88,20 +90,22 @@
     },
     {
       "id": "VL-011",
-      "count": 4,
+      "count": 0,
       "priority": "high",
       "surface": "MMR allocation/end-to-end wrappers",
       "mitigation": "Use verified transition storage and Bitmap allocation contracts, then close decode_bitmap and its wrappers.",
-      "exit_criteria": "MMR bitmap/prefix entry points directly verify deterministic output."
+      "exit_criteria": "MMR bitmap/prefix entry points directly verify deterministic output.",
+      "status": "completed"
     },
     {
       "id": "VL-012",
-      "count": 2,
+      "count": 0,
       "priority": "highest",
       "surface": "Bitmap allocation",
-      "mitigation": "Create a minimal audited FallibleVec reservation contract or upstream a vstd try_reserve_exact specification; prove zero/fill initialization and padding.",
+      "mitigation": "Use pinned-vstd's existing Vec::try_reserve specification while preserving explicit allocation errors; prove initialization and layout.",
       "exit_criteria": "Bitmap::blank and Bitmap::filled directly verify without broad assumptions.",
-      "investigation": "Pinned Verus rejects Vec::try_reserve_exact as unsupported and suggests assume_specification. Project policy forbids that assumption, so this item remains open pending direct vstd support or a separately reviewed native allocation boundary."
+      "investigation": "Pinned Verus rejects Vec::try_reserve_exact but already specifies Vec::try_reserve. Production allocation paths now use that supported fallible primitive without project assumptions.",
+      "status": "completed"
     }
   ],
   "milestones": [

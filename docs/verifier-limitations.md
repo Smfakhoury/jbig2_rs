@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 707 obligations with zero errors and zero native
-assumptions. The production inventory contains 373 directly verified functions
-and 146 reviewed verifier limitations. Nineteen one-line standard trait
+Pinned Verus verifies 797 obligations with zero errors and zero native
+assumptions. The production inventory contains 418 directly verified functions
+and 101 reviewed verifier limitations. Nineteen one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
@@ -51,6 +51,13 @@ Retention-bit expansion and referred-segment reading are separated from vector
 reservation and directly verified as fail-closed bounded materialization loops.
 Profile-list entry decoding is separated from vector reservation and directly
 verified through the bounded byte reader.
+Fallible allocation now uses pinned-vstd's specified `Vec::try_reserve`
+primitive. Bitmap construction, profiles, segment references, context
+snapshots, MMR transition storage, document graph materialization, and several
+symbol/halftone raster materializers verify without project assumptions.
+The complete MMR bitmap, bounded-block, and concatenated-prefix entry points
+now verify through bitmap layout, reference-transition, work, and reader
+invariants.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
@@ -111,13 +118,10 @@ slice coercions, formatting, and `std::io`.
 ## Mitigation order
 
 1. **Fallible allocation foundation**
-   - Upstream or locally audit a minimal `try_reserve_exact` contract.
-   - Wrap allocation in one reusable verified abstraction.
-   - Close bitmap constructors first, then reference/profile/Huffman/MMR
-     allocations.
-   - Current pinned-Verus probing confirms `Vec::try_reserve_exact` is
-     unsupported and only offers `assume_specification`; that assumption is
-     not permitted by the project proof policy.
+   - Completed for bitmap, reference/profile, context, document, symbol-copy,
+     and MMR allocation paths with pinned-vstd's `Vec::try_reserve` contract.
+   - Remaining Huffman and orchestration items are blocked by construction,
+     callback, or slice-coercion semantics rather than raw reservation.
 2. **Deterministic verified stores**
    - Replace proof-facing `HashMap` operations with sorted/indexed vectors.
    - Separate `Read` acquisition from verified slice parsing.
