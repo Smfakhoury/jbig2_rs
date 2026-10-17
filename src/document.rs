@@ -10,6 +10,8 @@ use crate::segment_data::{
 use crate::segment_header::{parse_segment_header, SegmentHeader, SegmentType};
 use crate::{DecodeError, LimitExceeded, LimitKind, Limits, MalformedError, UnsupportedFeature};
 #[cfg(verus_keep_ghost)]
+use vstd::layout;
+#[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 
 #[cfg(verus_keep_ghost)]
@@ -72,7 +74,13 @@ fn keyed_get_mut<T>(entries: &mut [(u32, T)], number: u32) -> Option<&mut T> {
     Some(&mut entries[index].1)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures if out {
+        final(entries)@ == old(entries)@.push((number, value))
+    } else {
+        final(entries)@ == old(entries)@
+    },
+))]
 fn keyed_insert<T>(entries: &mut Vec<(u32, T)>, number: u32, value: T) -> bool {
     if keyed_index(entries, number).is_some() {
         return false;
@@ -689,6 +697,7 @@ fn parse_known_segment_data(
     Ok(data)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn build_document_info(
     organization: Organization,
     declared_page_count: Option<u32>,
@@ -699,8 +708,9 @@ fn build_document_info(
     validate_references(segments, globals, limits)?;
     validate_profiles(segments)?;
     let (page_states, page_order) = collect_page_states(segments, limits)?;
-    let actual_page_count =
-        u32::try_from(page_states.len()).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(actual_page_count) = u32::try_from(page_states.len()) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     if let Some(declared) = declared_page_count {
         if declared != actual_page_count {
             return Err(MalformedError::PageCountMismatch {
@@ -710,17 +720,20 @@ fn build_document_info(
             .into());
         }
     }
-    let pages = finalize_pages(page_states, page_order)?;
+    let pages = finalize_pages(page_states, &page_order)?;
 
+    let Ok(segment_count) = u32::try_from(segments.len()) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     Ok(DocumentInfo {
         organization,
         declared_page_count,
-        segment_count: u32::try_from(segments.len())
-            .map_err(|_| MalformedError::IntegerOverflow)?,
+        segment_count,
         pages,
     })
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn collect_page_states(
     segments: &[ParsedSegment<'_>],
     limits: &Limits,
@@ -728,19 +741,22 @@ fn collect_page_states(
     let mut page_states = Vec::new();
     let page_state_allocation =
         allocation_size::<PageState>(segments.len().min(limits.max_pages as usize))?;
-    page_states
+    if page_states
         .try_reserve(segments.len().min(limits.max_pages as usize))
-        .map_err(|_| DecodeError::Allocation {
+        .is_err()
+    {
+        return Err(DecodeError::Allocation {
             requested_bytes: page_state_allocation,
-        })?;
+        });
+    }
     let mut page_order = Vec::new();
     let page_order_capacity = segments.len().min(limits.max_pages as usize);
     let page_order_allocation = allocation_size::<u32>(page_order_capacity)?;
-    page_order
-        .try_reserve(page_order_capacity)
-        .map_err(|_| DecodeError::Allocation {
+    if page_order.try_reserve(page_order_capacity).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: page_order_allocation,
-        })?;
+        });
+    }
 
     collect_page_states_into(segments, limits, &mut page_states, &mut page_order)?;
     Ok((page_states, page_order))
@@ -815,27 +831,43 @@ fn collect_page_states_into(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn finalize_pages(
     mut page_states: PageStates,
-    page_order: Vec<u32>,
+    page_order: &[u32],
 ) -> Result<Vec<PageInfo>, DecodeError> {
-    let mut pages = Vec::new();
+    let mut pages: Vec<PageInfo> = Vec::new();
     let page_allocation = allocation_size::<PageInfo>(page_states.len())?;
-    pages
-        .try_reserve(page_states.len())
-        .map_err(|_| DecodeError::Allocation {
+    if pages.try_reserve(page_states.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: page_allocation,
-        })?;
-    for number in page_order {
+        });
+    }
+    let mut order_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant order_index <= page_order@.len(),
+        decreases page_order@.len() - order_index,
+    ))]
+    while order_index < page_order.len() {
+        let number = page_order[order_index];
         let state_index = keyed_index(&page_states, number)
             .ok_or(MalformedError::MissingPageInformation(number))?;
         let state = page_states.remove(state_index).1;
         if !state.ended {
             return Err(MalformedError::MissingEndOfPage(number).into());
         }
-        pages.push(state.into_public(number)?);
+        let page = state.into_public(number)?;
+        let mut position = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant position <= pages@.len(),
+            decreases pages@.len() - position,
+        ))]
+        while position < pages.len() && pages[position].number < number {
+            position += 1;
+        }
+        pages.insert(position, page);
+        order_index += 1;
     }
-    pages.sort_unstable_by_key(PageInfo::number);
     validate_public_page_numbers(&pages)?;
     Ok(pages)
 }
@@ -862,8 +894,13 @@ fn validate_public_page_numbers(pages: &[PageInfo]) -> Result<(), DecodeError> {
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> {
     let mut first_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant first_index <= segments@.len(),
+        decreases segments@.len() - first_index,
+    ))]
     while first_index < segments.len()
         && !matches!(
             segments[first_index].header.segment_type,
@@ -884,11 +921,11 @@ fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> 
     };
     let mut page_profiles = Vec::new();
     let profile_allocation = allocation_size::<(u32, u32)>(segments.len())?;
-    page_profiles
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
+    if page_profiles.try_reserve(segments.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: profile_allocation,
-        })?;
+        });
+    }
     validate_page_profiles(
         segments,
         first_index + 1,
@@ -1029,6 +1066,7 @@ impl PageState {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn validate_references(
     segments: &[ParsedSegment<'_>],
     globals: Option<&GlobalSegments>,
@@ -1044,39 +1082,61 @@ fn validate_references(
         .into());
     }
 
-    let mut indexes = Vec::new();
+    let mut indexes: SegmentIndexes = Vec::new();
     let index_allocation = allocation_size::<(u32, usize)>(segments.len())?;
-    indexes
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
+    if indexes.try_reserve(segments.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: index_allocation,
-        })?;
-    for (index, segment) in segments.iter().enumerate() {
-        if globals.is_some_and(|state| keyed_index(&state.types, segment.header.number).is_some()) {
+        });
+    }
+    let mut segment_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            segment_index <= segments@.len(),
+            forall|entry: int| 0 <= entry < indexes@.len() ==>
+                indexes@[entry].1 < segments@.len(),
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let segment = &segments[segment_index];
+        let global_duplicate = match globals {
+            Some(state) => keyed_index(&state.types, segment.header.number).is_some(),
+            None => false,
+        };
+        if global_duplicate {
             return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
         }
-        if !keyed_insert(&mut indexes, segment.header.number, index) {
+        if !keyed_insert(&mut indexes, segment.header.number, segment_index) {
             return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
         }
+        segment_index += 1;
     }
 
     validate_reference_links(segments, &indexes, globals)?;
     validate_retention(segments, &indexes)?;
     let depths = validate_reference_depth(segments, &indexes, globals, limits)?;
-    let mut types = Vec::new();
+    let mut types: SegmentTypes = Vec::new();
     let type_allocation = allocation_size::<(u32, SegmentType)>(segments.len())?;
-    types
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
+    if types.try_reserve(segments.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: type_allocation,
-        })?;
-    for segment in segments {
-        let inserted = keyed_insert(
+        });
+    }
+    let mut type_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant type_index <= segments@.len(),
+        decreases segments@.len() - type_index,
+    ))]
+    while type_index < segments.len() {
+        let segment = &segments[type_index];
+        if !keyed_insert(
             &mut types,
             segment.header.number,
             segment.header.segment_type,
-        );
-        debug_assert!(inserted);
+        ) {
+            return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
+        }
+        type_index += 1;
     }
     Ok((types, depths))
 }
@@ -1165,38 +1225,53 @@ fn validate_reference_links(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn validate_retention(
     segments: &[ParsedSegment<'_>],
     indexes: &SegmentIndexes,
 ) -> Result<(), DecodeError> {
     let mut last_references: Vec<(u32, u32)> = Vec::new();
     let retention_allocation = allocation_size::<(u32, u32)>(segments.len())?;
-    last_references
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
+    if last_references.try_reserve(segments.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: retention_allocation,
-        })?;
-    for segment in segments {
-        for referred in &segment.header.referred_segments {
-            if keyed_index(indexes, *referred).is_none() {
+        });
+    }
+    let mut segment_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant segment_index <= segments@.len(),
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let segment = &segments[segment_index];
+        let mut reference_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant reference_index <= segment.header.referred_segments@.len(),
+            decreases segment.header.referred_segments@.len() - reference_index,
+        ))]
+        while reference_index < segment.header.referred_segments.len() {
+            let referred = segment.header.referred_segments[reference_index];
+            if keyed_index(indexes, referred).is_none() {
+                reference_index += 1;
                 continue;
             }
-            if let Some(last) = keyed_get_mut(&mut last_references, *referred) {
+            if let Some(last) = keyed_get_mut(&mut last_references, referred) {
                 *last = (*last).max(segment.header.number);
             } else {
-                let inserted = keyed_insert(&mut last_references, *referred, segment.header.number);
-                debug_assert!(inserted);
+                let inserted = keyed_insert(&mut last_references, referred, segment.header.number);
+                if !inserted {
+                    return Err(MalformedError::DuplicateSegmentNumber(referred).into());
+                }
             }
+            reference_index += 1;
         }
+        segment_index += 1;
     }
 
     validate_retention_flags(segments, &last_references)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
-    requires forall|index: int| 0 <= index < segments@.len() ==>
-        segments@[index].header.retention_flags.values@.len() > 0,
-))]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn validate_retention_flags(
     segments: &[ParsedSegment<'_>],
     last_references: &[(u32, u32)],
@@ -1204,12 +1279,17 @@ fn validate_retention_flags(
     let mut segment_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant segment_index <= segments@.len(),
-        forall|index: int| 0 <= index < segments@.len() ==>
-            segments@[index].header.retention_flags.values@.len() > 0,
         decreases segments@.len() - segment_index,
     ))]
     while segment_index < segments.len() {
         let segment = &segments[segment_index];
+        if segment.header.retention_flags.values.is_empty() {
+            return Err(MalformedError::InvalidRetentionFlags {
+                segment: segment.header.number,
+                referred: segment.header.number,
+            }
+            .into());
+        }
         if let Some(last) = keyed_get(last_references, segment.header.number) {
             if !segment.header.retention_flags.retain_this_segment() {
                 return Err(MalformedError::InvalidRetentionFlags {
@@ -1257,6 +1337,10 @@ fn validate_retention_flags(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires forall|entry: int| 0 <= entry < indexes@.len() ==>
+        indexes@[entry].1 < segments@.len(),
+))]
 fn validate_reference_depth(
     segments: &[ParsedSegment<'_>],
     indexes: &SegmentIndexes,
@@ -1264,27 +1348,44 @@ fn validate_reference_depth(
     limits: &Limits,
 ) -> Result<SegmentDepths, DecodeError> {
     let ordered_allocation = allocation_size::<(u32, usize)>(segments.len())?;
-    let mut ordered = Vec::new();
-    ordered
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
+    let mut ordered: Vec<(u32, usize)> = Vec::new();
+    if ordered.try_reserve(segments.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: ordered_allocation,
-        })?;
-    ordered.extend(
-        segments
-            .iter()
-            .enumerate()
-            .map(|(index, segment)| (segment.header.number, index)),
-    );
-    ordered.sort_unstable_by_key(|entry| entry.0);
+        });
+    }
+    let mut segment_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            segment_index <= segments@.len(),
+            forall|entry: int| 0 <= entry < ordered@.len() ==>
+                ordered@[entry].1 < segments@.len(),
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let number = segments[segment_index].header.number;
+        let mut position = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                position <= ordered@.len(),
+                forall|entry: int| 0 <= entry < ordered@.len() ==>
+                    ordered@[entry].1 < segments@.len(),
+            decreases ordered@.len() - position,
+        ))]
+        while position < ordered.len() && ordered[position].0 < number {
+            position += 1;
+        }
+        ordered.insert(position, (number, segment_index));
+        segment_index += 1;
+    }
 
     let mut depths = Vec::new();
     let depth_allocation = allocation_size::<(u32, u32)>(segments.len())?;
-    depths
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
+    if depths.try_reserve(segments.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: depth_allocation,
-        })?;
+        });
+    }
     validate_reference_depth_ordered(&ordered, segments, indexes, globals, limits, &mut depths)?;
     Ok(depths)
 }
@@ -1730,11 +1831,23 @@ fn enforce_input_work(input_length: usize, limits: &Limits) -> Result<(), Decode
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bytes) =>
+            bytes as nat == count as nat * layout::size_of::<T>(),
+        Err(_) =>
+            count as nat * layout::size_of::<T>() > usize::MAX
+            || count as nat * layout::size_of::<T>() > u64::MAX,
+    },
+))]
 fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
-    count
-        .checked_mul(std::mem::size_of::<T>())
-        .and_then(|value| u64::try_from(value).ok())
-        .ok_or(MalformedError::IntegerOverflow)
+    let Some(bytes) = count.checked_mul(std::mem::size_of::<T>()) else {
+        return Err(MalformedError::IntegerOverflow);
+    };
+    let Ok(bytes) = u64::try_from(bytes) else {
+        return Err(MalformedError::IntegerOverflow);
+    };
+    Ok(bytes)
 }
 
 #[cfg(test)]

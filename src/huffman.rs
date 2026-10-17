@@ -8,6 +8,8 @@ use crate::{
     MalformedError,
 };
 #[cfg(verus_keep_ghost)]
+use vstd::layout;
+#[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 
 #[cfg(verus_keep_ghost)]
@@ -808,6 +810,7 @@ fn encoded_table_fields(flags: u8) -> (bool, u8, u8) {
     (flags & 1 != 0, prefix_bits, range_bits)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn push_parsed_line(
     lines: &mut Vec<HuffmanLine>,
     line: HuffmanLine,
@@ -819,31 +822,48 @@ fn push_parsed_line(
         .ok_or(MalformedError::IntegerOverflow)?;
     check_table_memory(new_len, limits)?;
     let requested_bytes = allocation_size::<HuffmanLine>(new_len)?;
-    lines
-        .try_reserve(1)
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    if lines.try_reserve(1).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes }.into());
+    }
     lines.push(line);
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures final(values)@ == old(values)@,
+))]
 fn try_reserve<T>(values: &mut Vec<T>, count: usize) -> Result<(), HuffmanError> {
     let requested_bytes = allocation_size::<T>(count)?;
-    values
-        .try_reserve(count)
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    if values.try_reserve(count).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes }.into());
+    }
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bytes) =>
+            bytes as nat == count as nat * layout::size_of::<T>(),
+        Err(_) =>
+            count as nat * layout::size_of::<T>() > usize::MAX
+            || count as nat * layout::size_of::<T>() > u64::MAX,
+    },
+))]
 fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
-    count
-        .checked_mul(size_of::<T>())
-        .and_then(|bytes| u64::try_from(bytes).ok())
-        .ok_or(MalformedError::IntegerOverflow)
+    let Some(bytes) = count.checked_mul(size_of::<T>()) else {
+        return Err(MalformedError::IntegerOverflow);
+    };
+    let Ok(bytes) = u64::try_from(bytes) else {
+        return Err(MalformedError::IntegerOverflow);
+    };
+    Ok(bytes)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn table_memory(line_count: usize) -> Result<u64, MalformedError> {
-    let fixed =
-        u64::try_from(size_of::<HuffmanTable>()).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(fixed) = u64::try_from(size_of::<HuffmanTable>()) else {
+        return Err(MalformedError::IntegerOverflow);
+    };
     let per_line = size_of::<HuffmanLine>()
         .checked_add(size_of::<u32>())
         .ok_or(MalformedError::IntegerOverflow)?;
@@ -856,6 +876,7 @@ fn table_memory(line_count: usize) -> Result<u64, MalformedError> {
 }
 
 #[allow(clippy::cast_lossless)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn check_table_memory(line_count: usize, limits: &Limits) -> Result<(), HuffmanError> {
     let line_count_u64 = line_count as u64;
     if line_count_exceeds_symbol_limit(line_count, limits.max_symbols) {

@@ -22,6 +22,8 @@ use crate::reader::{bit_reader, BitReader, ByteReader};
 use crate::segment_data::{parse_region_info, RegionInfo};
 use crate::{DecodeError, LimitExceeded, LimitKind, Limits, MalformedError, UnsupportedFeature};
 #[cfg(verus_keep_ghost)]
+use vstd::layout;
+#[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 
 #[cfg(verus_keep_ghost)]
@@ -3206,6 +3208,16 @@ fn refinement_template_from_u8(value: u8) -> RefinementTemplate {
 
 /// Constructs a bitmap directly from exactly `stride * height` packed bytes,
 /// as used by T.88 6.5.9's uncompressed collective bitmap.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && bitmap.width == width
+            && bitmap.height == height,
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::too_many_lines)]
 fn bitmap_from_packed_bytes(
     width: u32,
     height: u32,
@@ -3225,29 +3237,86 @@ fn bitmap_from_packed_bytes(
         limits.max_decoder_managed_memory_bytes,
         length,
     )?;
-    let length_usize = usize::try_from(length).map_err(|_| MalformedError::IntegerOverflow)?;
-    let source = bytes
-        .get(..length_usize)
-        .ok_or(MalformedError::UnexpectedEof {
+    let Ok(length_usize) = usize::try_from(length) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    if bytes.len() < length_usize {
+        let Ok(remaining) = u64::try_from(bytes.len()) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        return Err(MalformedError::UnexpectedEof {
             offset: 0,
             needed: length,
-            remaining: u64::try_from(bytes.len()).map_err(|_| MalformedError::IntegerOverflow)?,
-        })?;
+            remaining,
+        }
+        .into());
+    }
     if width % 8 != 0 {
         let unused = 8 - (width % 8);
-        let padding_mask =
-            u8::try_from((1_u16 << unused) - 1).map_err(|_| MalformedError::IntegerOverflow)?;
-        let stride_usize = usize::try_from(stride).map_err(|_| MalformedError::IntegerOverflow)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(1 <= unused <= 7);
+        }
+        let padding_mask = match unused {
+            1 => 0x01,
+            2 => 0x03,
+            3 => 0x07,
+            4 => 0x0f,
+            5 => 0x1f,
+            6 => 0x3f,
+            7 => 0x7f,
+            _ => return Err(MalformedError::IntegerOverflow.into()),
+        };
+        let Ok(stride_usize) = usize::try_from(stride) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                row <= height,
+                length_usize <= bytes@.len(),
+                length_usize as nat == stride_usize as nat * height as nat,
+                stride_usize > 0,
+            decreases height - row,
+        ))]
         for row in 0..height {
-            let final_byte = usize::try_from(row)
-                .map_err(|_| MalformedError::IntegerOverflow)?
+            let Ok(row) = usize::try_from(row) else {
+                return Err(MalformedError::IntegerOverflow.into());
+            };
+            let row_offset = row
                 .checked_mul(stride_usize)
-                .and_then(|offset| offset.checked_add(stride_usize.checked_sub(1)?))
                 .ok_or(MalformedError::IntegerOverflow)?;
-            if source
-                .get(final_byte)
-                .is_none_or(|byte| byte & padding_mask != 0)
-            {
+            let stride_minus_one = stride_usize
+                .checked_sub(1)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            let final_byte = row_offset
+                .checked_add(stride_minus_one)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(row < height as usize);
+                assert(row_offset as nat == row as nat * stride_usize as nat);
+                assert(stride_minus_one as nat + 1 == stride_usize as nat);
+                assert(final_byte as nat
+                    == row_offset as nat + stride_minus_one as nat);
+                vstd::arithmetic::mul::lemma_mul_inequality(
+                    row as int + 1,
+                    height as int,
+                    stride_usize as int,
+                );
+                vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
+                    stride_usize as int,
+                    row as int,
+                    1,
+                );
+                vstd::arithmetic::mul::lemma_mul_is_commutative(
+                    height as int,
+                    stride_usize as int,
+                );
+                assert(final_byte as nat + 1
+                    == (row as nat + 1) * stride_usize as nat);
+                assert(final_byte < bytes@.len());
+            }
+            if bytes[final_byte] & padding_mask != 0 {
                 return Err(SymbolTextError::InvalidState(
                     "raw collective bitmap has nonzero padding",
                 ));
@@ -3255,22 +3324,56 @@ fn bitmap_from_packed_bytes(
         }
     }
     let mut data = Vec::new();
-    data.try_reserve(length_usize)
-        .map_err(|_| DecodeError::Allocation {
+    if data.try_reserve(length_usize).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: length,
-        })?;
-    data.extend_from_slice(source);
-    Ok(Bitmap {
+        }
+        .into());
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= length_usize,
+            length_usize <= bytes@.len(),
+            data@ == bytes@.subrange(0, index as int),
+        decreases length_usize - index,
+    ))]
+    while index < length_usize {
+        data.push(bytes[index]);
+        index += 1;
+    }
+    let Ok(stride) = usize::try_from(stride) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let bitmap = Bitmap {
         width,
         height,
-        stride: usize::try_from(stride).map_err(|_| MalformedError::IntegerOverflow)?,
+        stride,
         data,
-    })
+    };
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&bitmap);
+        reveal(crate::spec::bitmap::storage_valid);
+        reveal(crate::spec::bitmap::stride_for_width);
+    }
+    Ok(bitmap)
 }
 
 /// Crops a fixed-height column range out of a wider collective bitmap, used
 /// to split T.88 6.5.9 height-class collective bitmaps into their individual
 /// symbols.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(source),
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && crate::views::bitmap_width(&bitmap) == width
+            && crate::views::bitmap_height(&bitmap)
+                == crate::views::bitmap_height(source),
+        Err(_) => true,
+    },
+))]
 fn crop_bitmap_columns(
     source: &Bitmap,
     x_start: u32,
@@ -3279,7 +3382,26 @@ fn crop_bitmap_columns(
 ) -> Result<Bitmap, SymbolTextError> {
     let height = source.height();
     let mut cropped = Bitmap::blank(width, height, limits)?;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            crate::spec::bitmap::storage_valid(source),
+            crate::spec::bitmap::storage_valid(&cropped),
+            crate::views::bitmap_width(&cropped) == width,
+            crate::views::bitmap_height(&cropped) == height,
+            y <= height,
+        decreases height - y,
+    ))]
     for y in 0..height {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(source),
+                crate::spec::bitmap::storage_valid(&cropped),
+                crate::views::bitmap_width(&cropped) == width,
+                crate::views::bitmap_height(&cropped) == height,
+                x <= width,
+                y < height,
+            decreases width - x,
+        ))]
         for x in 0..width {
             let column = x_start
                 .checked_add(x)
@@ -3298,24 +3420,55 @@ fn crop_bitmap_columns(
 /// [`Bitmap`] intentionally has no infallible [`Clone`]; exported symbols
 /// must still become independently owned bitmaps, so this performs the copy
 /// explicitly through its crate-visible fields.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(source),
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && bitmap.width == source.width
+            && bitmap.height == source.height
+            && bitmap.stride == source.stride
+            && bitmap.data@ == source.data@,
+        Err(_) => true,
+    },
+))]
 fn clone_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, SymbolTextError> {
-    let requested_bytes =
-        u64::try_from(source.data.len()).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(requested_bytes) = u64::try_from(source.data.len()) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     enforce_limit(
         LimitKind::Memory,
         limits.max_decoder_managed_memory_bytes,
         requested_bytes,
     )?;
     let mut data = Vec::new();
-    data.try_reserve(source.data.len())
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    data.extend_from_slice(&source.data);
-    Ok(Bitmap {
+    if data.try_reserve(source.data.len()).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes }.into());
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= source.data@.len(),
+            data@ == source.data@.subrange(0, index as int),
+        decreases source.data@.len() - index,
+    ))]
+    while index < source.data.len() {
+        data.push(source.data[index]);
+        index += 1;
+    }
+    let bitmap = Bitmap {
         width: source.width,
         height: source.height,
         stride: source.stride,
         data,
-    })
+    };
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&bitmap);
+        crate::views::bitmap_fields(source);
+        reveal(crate::spec::bitmap::storage_valid);
+    }
+    Ok(bitmap)
 }
 
 /// Looks up a symbol by ID across the imported and already-decoded-new
@@ -3352,23 +3505,42 @@ fn symbol_by_id<'a>(
 /// Wraps caller-supplied custom Huffman tables, deriving each table's
 /// out-of-band capability with [`HuffmanTable::has_oob`] rather than trusting
 /// a caller-supplied flag.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(wrapped) => wrapped@.len() == custom_tables@.len(),
+        Err(_) => true,
+    },
+))]
 fn wrap_custom_tables<'a>(
     custom_tables: &'a [&'a HuffmanTable],
 ) -> Result<Vec<CustomHuffmanTable<'a>>, SymbolTextError> {
     let mut wrapped = Vec::new();
-    let requested_bytes = custom_tables
+    let Some(requested_bytes) = custom_tables
         .len()
         .checked_mul(core::mem::size_of::<CustomHuffmanTable<'_>>())
-        .and_then(|bytes| u64::try_from(bytes).ok())
-        .ok_or(MalformedError::IntegerOverflow)?;
-    wrapped
-        .try_reserve(custom_tables.len())
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    for &table in custom_tables {
+    else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let Ok(requested_bytes) = u64::try_from(requested_bytes) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    if wrapped.try_reserve(custom_tables.len()).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes }.into());
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= custom_tables@.len(),
+            wrapped@.len() == index,
+        decreases custom_tables@.len() - index,
+    ))]
+    while index < custom_tables.len() {
+        let table = custom_tables[index];
         wrapped.push(CustomHuffmanTable {
             table,
             has_oob: table.has_oob(),
         });
+        index += 1;
     }
     Ok(wrapped)
 }
