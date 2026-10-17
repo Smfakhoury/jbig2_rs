@@ -208,10 +208,30 @@ pub(crate) fn parse_profiles(payload: &[u8]) -> Result<Vec<u32>, DecodeError> {
             requested_bytes: allocation_bytes,
         });
     }
-    for _ in 0..count {
-        profiles.push(reader.read_u32()?);
-    }
+    read_profiles_into(&mut reader, count, &mut profiles)?;
     Ok(profiles)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires old(reader).position <= old(reader).bytes@.len(),
+))]
+fn read_profiles_into(
+    reader: &mut ByteReader<'_>,
+    count: u32,
+    profiles: &mut Vec<u32>,
+) -> Result<(), DecodeError> {
+    let mut index = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= count,
+            reader.position <= reader.bytes@.len(),
+        decreases count - index,
+    ))]
+    while index < count {
+        profiles.push(reader.read_u32()?);
+        index += 1;
+    }
+    Ok(())
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
