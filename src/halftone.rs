@@ -4,6 +4,8 @@ use crate::{
     Bitmap, DecodeError, HalftoneErrorKind, LimitExceeded, LimitKind, Limits, MalformedError,
 };
 #[cfg(verus_keep_ghost)]
+use vstd::layout;
+#[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 
 #[cfg(verus_keep_ghost)]
@@ -519,6 +521,10 @@ pub(crate) fn decode_pattern_dictionary<D: GenericRegionDecoder>(
 }
 
 /// Slices a checked collective bitmap into owned fixed-size patterns.
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires crate::spec::bitmap::storage_valid(collective),
+))]
+#[allow(clippy::cast_lossless, clippy::too_many_lines)]
 pub(crate) fn slice_collective_bitmap(
     collective: &Bitmap,
     header: PatternDictionaryHeader,
@@ -526,6 +532,10 @@ pub(crate) fn slice_collective_bitmap(
     work: &mut WorkBudget,
 ) -> Result<Vec<Bitmap>, HalftoneError> {
     validate_pattern_header(header)?;
+    let raw_pattern_width = header.pattern_width;
+    let raw_pattern_height = header.pattern_height;
+    let pattern_width = raw_pattern_width as u32;
+    let pattern_height = raw_pattern_height as u32;
     let pattern_count = header.pattern_count();
     enforce_limit(
         LimitKind::Symbols,
@@ -536,21 +546,19 @@ pub(crate) fn slice_collective_bitmap(
         .ok_or(MalformedError::IntegerOverflow)?;
     require_bitmap_dimensions(collective, expected_width, u32::from(header.pattern_height))?;
 
-    let pattern_bytes = bitmap_bytes(
-        u32::from(header.pattern_width),
-        u32::from(header.pattern_height),
-    )?;
+    let pattern_bytes = bitmap_bytes(pattern_width, pattern_height)?;
     let retained_pattern_bytes = pattern_bytes
         .checked_mul(pattern_count)
         .ok_or(MalformedError::IntegerOverflow)?;
     let vector_bytes = pattern_count
-        .checked_mul(
-            u64::try_from(core::mem::size_of::<Bitmap>())
-                .map_err(|_| MalformedError::IntegerOverflow)?,
-        )
+        .checked_mul(match u64::try_from(core::mem::size_of::<Bitmap>()) {
+            Ok(bytes) => bytes,
+            Err(_) => return Err(MalformedError::IntegerOverflow.into()),
+        })
         .ok_or(MalformedError::IntegerOverflow)?;
-    let collective_bytes =
-        u64::try_from(collective.bytes().len()).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(collective_bytes) = u64::try_from(collective.bytes().len()) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     let total_memory =
         checked_memory_sum(collective_bytes, retained_pattern_bytes, vector_bytes, 0)
             .ok_or(MalformedError::IntegerOverflow)?;
@@ -561,30 +569,89 @@ pub(crate) fn slice_collective_bitmap(
     )?;
 
     let total_pixels = pattern_count
-        .checked_mul(u64::from(header.pattern_width))
-        .and_then(|value| value.checked_mul(u64::from(header.pattern_height)))
+        .checked_mul(u64::from(pattern_width))
+        .ok_or(MalformedError::IntegerOverflow)?
+        .checked_mul(u64::from(pattern_height))
         .ok_or(MalformedError::IntegerOverflow)?;
     work.charge(total_pixels)?;
 
-    let count = usize::try_from(pattern_count).map_err(|_| MalformedError::IntegerOverflow)?;
+    let Ok(count) = usize::try_from(pattern_count) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
     let mut patterns = Vec::new();
-    patterns
-        .try_reserve(count)
-        .map_err(|_| DecodeError::Allocation {
+    if patterns.try_reserve(count).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: vector_bytes,
-        })?;
+        }
+        .into());
+    }
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            crate::spec::bitmap::storage_valid(collective),
+            pattern_index <= pattern_count,
+            patterns@.len() == pattern_index,
+            raw_pattern_width == header.pattern_width,
+            raw_pattern_height == header.pattern_height,
+            pattern_width as nat == raw_pattern_width as nat,
+            pattern_height as nat == raw_pattern_height as nat,
+            expected_width as nat
+                == pattern_count as nat * header.pattern_width as nat,
+            pattern_count as nat * header.pattern_width as nat
+                <= u32::MAX as nat,
+        decreases pattern_count - pattern_index,
+    ))]
     for pattern_index in 0..pattern_count {
-        let mut pattern = Bitmap::blank(
-            u32::from(header.pattern_width),
-            u32::from(header.pattern_height),
-            limits,
-        )?;
+        let mut pattern = Bitmap::blank(pattern_width, pattern_height, limits)?;
         let source_x = pattern_index
-            .checked_mul(u64::from(header.pattern_width))
+            .checked_mul(u64::from(pattern_width))
             .ok_or(MalformedError::IntegerOverflow)?;
-        let source_x = u32::try_from(source_x).map_err(|_| MalformedError::IntegerOverflow)?;
-        for y in 0..u32::from(header.pattern_height) {
-            for x in 0..u32::from(header.pattern_width) {
+        let Ok(source_x) = u32::try_from(source_x) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(source_x as nat
+                == pattern_index as nat * header.pattern_width as nat);
+        }
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(collective),
+                crate::spec::bitmap::storage_valid(&pattern),
+                y <= pattern_height,
+                pattern_index < pattern_count,
+                raw_pattern_width == header.pattern_width,
+                pattern_width as nat == raw_pattern_width as nat,
+                expected_width as nat
+                    == pattern_count as nat * header.pattern_width as nat,
+                pattern_count as nat * header.pattern_width as nat
+                    <= u32::MAX as nat,
+                source_x as nat
+                    == pattern_index as nat * header.pattern_width as nat,
+            decreases pattern_height - y,
+        ))]
+        for y in 0..pattern_height {
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    crate::spec::bitmap::storage_valid(collective),
+                    crate::spec::bitmap::storage_valid(&pattern),
+                    x <= pattern_width,
+                    y < pattern_height,
+                    pattern_index < pattern_count,
+                    raw_pattern_width == header.pattern_width,
+                    pattern_width as nat == raw_pattern_width as nat,
+                    expected_width as nat
+                        == pattern_count as nat * header.pattern_width as nat,
+                    pattern_count as nat * header.pattern_width as nat
+                        <= u32::MAX as nat,
+                    source_x as nat
+                        == pattern_index as nat * header.pattern_width as nat,
+                decreases pattern_width - x,
+            ))]
+            for x in 0..pattern_width {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    assert(pattern_index < pattern_count);
+                }
                 #[cfg(verus_keep_ghost)]
                 production_slice_coordinate!(
                     pattern_index,

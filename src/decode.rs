@@ -1552,34 +1552,41 @@ fn decode_text_segment(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn collect_referred_symbols(
     segment: &ParsedSegment<'_>,
     symbols: &SymbolStore,
     active_retained_bytes: u64,
     limits: &Limits,
 ) -> Result<Vec<Bitmap>, DecodeError> {
-    let count = segment
-        .header
-        .referred_segments
-        .iter()
-        .filter_map(|number| get_symbol_resource(symbols, *number))
-        .try_fold(0_usize, |total, resource| {
-            total
-                .checked_add(resource.exported.len())
-                .ok_or(MalformedError::IntegerOverflow)
-        })?;
+    let mut count = 0_usize;
+    let mut bitmap_bytes = 0_u64;
+    let mut reference_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant reference_index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - reference_index,
+    ))]
+    while reference_index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[reference_index];
+        if let Some(resource) = get_symbol_resource(symbols, number) {
+            let mut bitmap_index = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant bitmap_index <= resource.exported@.len(),
+                decreases resource.exported@.len() - bitmap_index,
+            ))]
+            while bitmap_index < resource.exported.len() {
+                count = count
+                    .checked_add(1)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                bitmap_bytes = bitmap_bytes
+                    .checked_add(bitmap_byte_len(&resource.exported[bitmap_index])?)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                bitmap_index += 1;
+            }
+        }
+        reference_index += 1;
+    }
     let requested_bytes = allocation_size::<Bitmap>(count)?;
-    let bitmap_bytes = segment
-        .header
-        .referred_segments
-        .iter()
-        .filter_map(|number| get_symbol_resource(symbols, *number))
-        .try_fold(0_u64, |total, resource| {
-            resource.exported.iter().try_fold(total, |sum, bitmap| {
-                sum.checked_add(bitmap_byte_len(bitmap)?)
-                    .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))
-            })
-        })?;
     let peak = active_retained_bytes
         .checked_add(bitmap_bytes)
         .ok_or(MalformedError::IntegerOverflow)?;
@@ -1592,51 +1599,81 @@ fn collect_referred_symbols(
         .into());
     }
     let mut imported = Vec::new();
-    imported
-        .try_reserve(count)
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    for number in &segment.header.referred_segments {
-        if let Some(resource) = get_symbol_resource(symbols, *number) {
-            for bitmap in &resource.exported {
-                imported.push(copy_bitmap(bitmap, limits)?);
+    if imported.try_reserve(count).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes });
+    }
+    reference_index = 0;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant reference_index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - reference_index,
+    ))]
+    while reference_index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[reference_index];
+        if let Some(resource) = get_symbol_resource(symbols, number) {
+            let mut bitmap_index = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant bitmap_index <= resource.exported@.len(),
+                decreases resource.exported@.len() - bitmap_index,
+            ))]
+            while bitmap_index < resource.exported.len() {
+                imported.push(copy_bitmap(&resource.exported[bitmap_index], limits)?);
+                bitmap_index += 1;
             }
         }
+        reference_index += 1;
     }
     Ok(imported)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn collect_referred_tables<'a>(
     segment: &ParsedSegment<'_>,
     tables: &'a HuffmanTables,
 ) -> Result<Vec<&'a HuffmanTable>, DecodeError> {
-    let count = segment
-        .header
-        .referred_segments
-        .iter()
-        .filter(|number| huffman_table_index(tables, **number).is_some())
-        .count();
+    let mut count = 0_usize;
+    let mut reference_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant reference_index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - reference_index,
+    ))]
+    while reference_index < segment.header.referred_segments.len() {
+        if huffman_table_index(tables, segment.header.referred_segments[reference_index]).is_some()
+        {
+            count = count
+                .checked_add(1)
+                .ok_or(MalformedError::IntegerOverflow)?;
+        }
+        reference_index += 1;
+    }
     let requested_bytes = allocation_size::<&HuffmanTable>(count)?;
     let mut result = Vec::new();
-    result
-        .try_reserve(count)
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    for number in &segment.header.referred_segments {
-        if let Some(table) = get_huffman_table(tables, *number) {
+    if result.try_reserve(count).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes });
+    }
+    reference_index = 0;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant reference_index <= segment.header.referred_segments@.len(),
+        decreases segment.header.referred_segments@.len() - reference_index,
+    ))]
+    while reference_index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[reference_index];
+        if let Some(table) = get_huffman_table(tables, number) {
             result.push(table);
         }
+        reference_index += 1;
     }
     Ok(result)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires crate::spec::bitmap::storage_valid(source),
     ensures match out {
         Ok(bitmap) =>
-            crate::spec::bitmap::storage_valid(&bitmap)
-            && bitmap.width == source.width
+            bitmap.width == source.width
             && bitmap.height == source.height
             && bitmap.stride == source.stride
-            && bitmap.data@ == source.data@,
+            && bitmap.data@ == source.data@
+            && crate::spec::bitmap::storage_valid(&bitmap)
+                == crate::spec::bitmap::storage_valid(source),
         Err(_) => true,
     },
 ))]
@@ -1995,6 +2032,7 @@ fn require_auxiliary_page_state(page: &RuntimePage) -> Result<(), DecodeError> {
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn insert_buffer(
     buffers: &mut RegionBuffers,
     number: u32,
@@ -2006,11 +2044,10 @@ fn insert_buffer(
     if region_buffer_index(buffers, number).is_some() {
         return Err(MalformedError::DuplicateSegmentNumber(number).into());
     }
-    let requested_bytes = u64::try_from(std::mem::size_of::<(u32, RegionBuffer)>())
-        .map_err(|_| MalformedError::IntegerOverflow)?;
-    buffers
-        .try_reserve(1)
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    let requested_bytes = allocation_size::<(u32, RegionBuffer)>(1)?;
+    if buffers.try_reserve(1).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes });
+    }
     retain_bitmap(retained, &bitmap, limits)?;
     buffers.push((number, RegionBuffer { region, bitmap }));
     Ok(())
