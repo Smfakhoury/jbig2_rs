@@ -796,7 +796,7 @@
     {
       "id": "segment_data::parse_profiles",
       "file": "src/segment_data.rs",
-      "file_sha256": "0a7867de79fc3e8a0159eaaac7ad5bd265b31837ad5a5db4ec1adfada26f1fd2",
+      "file_sha256": "e939191a2d294ba7d12a365d292fbf5f4ab21c7670c9c7f2bab702745d68ac0c",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec allocation required by profile-list materialization."
     },
