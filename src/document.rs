@@ -742,14 +742,32 @@ fn collect_page_states(
             requested_bytes: page_order_allocation,
         })?;
 
-    for segment in segments {
+    collect_page_states_into(segments, limits, &mut page_states, &mut page_order)?;
+    Ok((page_states, page_order))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn collect_page_states_into(
+    segments: &[ParsedSegment<'_>],
+    limits: &Limits,
+    page_states: &mut PageStates,
+    page_order: &mut Vec<u32>,
+) -> Result<(), DecodeError> {
+    let mut segment_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant segment_index <= segments@.len(),
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let segment = &segments[segment_index];
         validate_page_association(&segment.header)?;
         let page = segment.header.page_association;
         if page == 0 {
+            segment_index += 1;
             continue;
         }
 
-        if keyed_index(&page_states, page).is_none() {
+        if keyed_index(page_states, page).is_none() {
             if segment.header.segment_type != SegmentType::PageInformation {
                 return Err(MalformedError::MissingPageInformation(page).into());
             }
@@ -757,14 +775,20 @@ fn collect_page_states(
             let ParsedData::Page(info) = segment.data else {
                 return Err(MalformedError::MissingPageInformation(page).into());
             };
-            let inserted = keyed_insert(&mut page_states, page, PageState::new(info));
-            debug_assert!(inserted);
+            if !keyed_insert(page_states, page, PageState::new(info)) {
+                return Err(MalformedError::DuplicatePageBoundary {
+                    page,
+                    segment_type: 48,
+                }
+                .into());
+            }
             page_order.push(page);
+            segment_index += 1;
             continue;
         }
 
-        let state = keyed_get_mut(&mut page_states, page)
-            .ok_or(MalformedError::MissingPageInformation(page))?;
+        let state =
+            keyed_get_mut(page_states, page).ok_or(MalformedError::MissingPageInformation(page))?;
         if state.ended {
             return Err(MalformedError::SegmentAfterEndOfPage {
                 segment: segment.header.number,
@@ -786,8 +810,9 @@ fn collect_page_states(
             (SegmentType::EndOfPage, _) => state.finish()?,
             _ => {}
         }
+        segment_index += 1;
     }
-    Ok((page_states, page_order))
+    Ok(())
 }
 
 fn finalize_pages(
@@ -926,6 +951,7 @@ struct PageState {
 }
 
 impl PageState {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     const fn new(info: PageInformation) -> Self {
         Self {
             info,
