@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 680,
+  "verus_verified_obligations": 683,
   "native_assumptions": [],
   "counts": {
-    "verified": 362,
+    "verified": 363,
     "reviewed-verifier-limitation": 146,
     "audited-forwarder": 19,
     "native-assumption": 0,
@@ -1187,7 +1187,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::keyed_index"
       ]
@@ -1198,7 +1198,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::keyed_get"
       ]
@@ -1209,7 +1209,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::keyed_get_mut"
       ]
@@ -1220,7 +1220,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::keyed_insert"
       ]
@@ -1231,7 +1231,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::Decoder::new"
       ]
@@ -1242,7 +1242,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::Decoder::limits"
       ]
@@ -1253,7 +1253,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1262,7 +1262,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1271,7 +1271,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1280,7 +1280,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1289,7 +1289,7 @@
       "visibility": "pub",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1298,7 +1298,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1307,7 +1307,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::Decoder::default"
       ]
@@ -1318,7 +1318,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::GlobalSegments::segment_count"
       ]
@@ -1329,7 +1329,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::GlobalSegments::bytes"
       ]
@@ -1340,7 +1340,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::DocumentInfo::organization"
       ]
@@ -1351,7 +1351,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::DocumentInfo::declared_page_count"
       ]
@@ -1362,7 +1362,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::DocumentInfo::segment_count"
       ]
@@ -1373,7 +1373,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::DocumentInfo::pages"
       ]
@@ -1384,7 +1384,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageInfo::number"
       ]
@@ -1395,7 +1395,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageInfo::width"
       ]
@@ -1406,7 +1406,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageInfo::height"
       ]
@@ -1417,7 +1417,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageInfo::x_resolution"
       ]
@@ -1428,7 +1428,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageInfo::y_resolution"
       ]
@@ -1439,7 +1439,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageInfo::is_striped"
       ]
@@ -1450,7 +1450,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1459,7 +1459,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1468,7 +1468,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1477,7 +1477,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1486,7 +1486,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::read_payload"
       ]
@@ -1497,7 +1497,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::find_unknown_generic_length"
       ]
@@ -1508,7 +1508,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::read_be_u32_at"
       ]
@@ -1519,7 +1519,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1528,7 +1528,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1537,7 +1537,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1546,7 +1546,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1555,7 +1555,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1564,7 +1564,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::Decoder::new"
       ]
@@ -1575,7 +1575,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageState::add_stripe"
       ]
@@ -1586,7 +1586,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageState::finish"
       ]
@@ -1597,7 +1597,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::PageState::into_public"
       ]
@@ -1608,7 +1608,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1617,8 +1617,19 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
+    },
+    {
+      "id": "document::validate_retention_flags",
+      "file": "src/document.rs",
+      "visibility": "private",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
+      "verus_functions": [
+        "jbig2_rs_production::document::validate_retention_flags"
+      ]
     },
     {
       "id": "document::validate_reference_depth",
@@ -1626,7 +1637,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1635,7 +1646,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::validate_reference_types"
       ]
@@ -1646,7 +1657,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::known_reference_type"
       ]
@@ -1657,7 +1668,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::known_reference_is_intermediate"
       ]
@@ -1668,7 +1679,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::references_are_symbol_resources"
       ]
@@ -1679,7 +1690,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::is_intermediate_region"
       ]
@@ -1690,7 +1701,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::validate_page_association"
       ]
@@ -1701,7 +1712,7 @@
       "visibility": "pub(crate)",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
@@ -1710,7 +1721,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::enforce_stream_limit"
       ]
@@ -1721,7 +1732,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::enforce_segment_limit"
       ]
@@ -1732,7 +1743,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::enforce_page_limit"
       ]
@@ -1743,7 +1754,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::enforce_work_limit"
       ]
@@ -1754,7 +1765,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": [
         "jbig2_rs_production::document::enforce_input_work"
       ]
@@ -1765,7 +1776,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths.",
-      "file_sha256": "e669af0813131c639f529304fbdda7f04a71b2b9bfd79266a0fd4405c8036895",
+      "file_sha256": "e1854201460018e401756150f0051bd2683b106515daad4b0578f3b5a48f43b5",
       "verus_functions": []
     },
     {
