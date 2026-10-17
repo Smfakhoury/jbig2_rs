@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "6990959657fb47b4dcf8848c4a4a710a2934ee72",
-  "tracked_functions": 101,
+  "production_source_revision": "4d1011736eec14af3ceb6aa1cf252341fd8d7397",
+  "tracked_functions": 95,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -23,7 +23,7 @@
     },
     {
       "id": "VL-003",
-      "count": 17,
+      "count": 13,
       "priority": "high",
       "surface": "Decode orchestration",
       "mitigation": "Introduce verified deterministic resource stores and concrete page-sink adapters, replacing HashMap and trait-callback proof dependencies.",
@@ -81,12 +81,12 @@
     },
     {
       "id": "VL-010",
-      "count": 19,
+      "count": 17,
       "priority": "high",
       "surface": "Generic/refinement raster paths",
       "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
       "exit_criteria": "Generic/refinement headers, sessions, snapshots, marker handling, and raster loops directly verify.",
-      "investigation": "GenericRegionHeader and RefinementRegionHeader types verify directly. Applying direct verification to either composed header parser reproducibly panics pinned Verus/rustc in generic_args.rs, so parser bodies remain tracked pending a toolchain fix or a smaller parser-state decomposition."
+      "investigation": "Resolved: Verus 0.2026.10.04.426d8b0 plus indexed parser-state loops directly verifies both composed header parsers without the former rustc generic_args panic."
     },
     {
       "id": "VL-011",

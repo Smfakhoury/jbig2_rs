@@ -4,12 +4,12 @@
   "fuzz_rust_toolchain": "nightly-2026-10-12",
   "cargo_fuzz_version": "0.13.2",
   "verus": {
-    "version": "0.2026.05.24.ecee80a",
-    "commit": "ecee80a2139923d503338e6989f79fb690ec7847",
-    "rust_toolchain": "1.95.0",
-    "linux_archive_url": "https://github.com/verus-lang/verus/releases/download/release/0.2026.05.24.ecee80a/verus-0.2026.05.24.ecee80a-x86-linux.zip",
-    "linux_archive_sha256": "323a44c0d787ce9a788665e1c6922360c44a72d1b9696359ec4f7bf5fbbc63e6"
+    "version": "0.2026.10.04.426d8b0",
+    "commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
+    "rust_toolchain": "1.98.1",
+    "linux_archive_url": "https://github.com/verus-lang/verus/releases/download/release/0.2026.10.04.426d8b0/verus-0.2026.10.04.426d8b0-x86-linux.zip",
+    "linux_archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "source_revision": "e198d95503d03c484bdbbf1cacadb5f459f56794",
+  "source_revision": "4d1011736eec14af3ceb6aa1cf252341fd8d7397",
   "note": "source_revision must be an immutable commit before any release attestation is signed."
 }

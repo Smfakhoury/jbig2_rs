@@ -15,14 +15,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - uses: dtolnay/rust-toolchain@1.95.0
+      - uses: dtolnay/rust-toolchain@1.98.1
       - run: python tools/verify_provenance.py
       - run: python tools/audit_runtime.py
       - name: Download pinned Verus
         run: |
           curl --fail --location --output verus.zip \
-            https://github.com/verus-lang/verus/releases/download/release/0.2026.05.24.ecee80a/verus-0.2026.05.24.ecee80a-x86-linux.zip
-          echo "323a44c0d787ce9a788665e1c6922360c44a72d1b9696359ec4f7bf5fbbc63e6  verus.zip" |
+            https://github.com/verus-lang/verus/releases/download/release/0.2026.10.04.426d8b0/verus-0.2026.10.04.426d8b0-x86-linux.zip
+          echo "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0  verus.zip" |
             sha256sum --check
           unzip -q verus.zip
       - name: Compile exact production source with Verus

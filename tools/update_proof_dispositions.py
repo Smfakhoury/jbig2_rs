@@ -10,6 +10,7 @@ OUTPUT = ROOT / "proof-dispositions.json"
 AUDITED_FORWARDERS = {
     "arithmetic::ArithmeticError::from",
     "decode::PageCollector::write_page",
+    "document::Decoder::default",
     "generic_region::GenericRegionError::from",
     "generic_region::GenericRegionError::from#2",
     "generic_region::GenericRegionError::from#3",
@@ -20,6 +21,7 @@ AUDITED_FORWARDERS = {
     "huffman::HuffmanError::from#2",
     "huffman::HuffmanError::from#3",
     "mmr::MmrError::from",
+    "limits::Limits::default",
     "symbol_text::SymbolTextError::from",
     "symbol_text::SymbolTextError::from#2",
     "symbol_text::SymbolTextError::from#3",
@@ -53,7 +55,7 @@ for entry in coverage["functions"]:
     if entry["id"] in AUDITED_FORWARDERS:
         status = "audited-forwarder"
         reason = (
-            "One-line standard From trait wrapper around an already verified "
+            "One-line standard trait wrapper around an already verified "
             "typed constructor or conversion; body hash changes invalidate this audit."
         )
     else:

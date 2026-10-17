@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 797 obligations with zero errors and zero native
-assumptions. The production inventory contains 418 directly verified functions
-and 101 reviewed verifier limitations. Nineteen one-line standard trait
+Pinned Verus verifies 813 obligations with zero errors and zero native
+assumptions. The production inventory contains 424 directly verified functions
+and 95 reviewed verifier limitations. Twenty-one one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
@@ -58,6 +58,11 @@ symbol/halftone raster materializers verify without project assumptions.
 The complete MMR bitmap, bounded-block, and concatenated-prefix entry points
 now verify through bitmap layout, reference-transition, work, and reader
 invariants.
+Verus `0.2026.10.04.426d8b0` removes the former composed-parser compiler
+panic. Indexed adaptive-template parsing now directly verifies both generic
+and refinement region headers.
+Generic and refinement arithmetic context assembly now uses verifier-visible
+constant tables and bounded indexed selection instead of slice coercions.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
@@ -94,12 +99,11 @@ Intermediate-region classification and segment page-association rules are
 directly verified.
 Unknown-length generic framing discovery, explicit big-endian row-count reads,
 and runtime page-write stripe tracking are directly verified.
-Generic and refinement header data types are verified. Directly annotating
-either composed header parser reproducibly crashes the pinned verifier in
-`rustc_middle::ty::generic_args`; the parser bodies remain tracked rather than
-using a workaround or assumption.
+Generic and refinement header data types and their composed header parsers are
+directly verified. The former `rustc_middle::ty::generic_args` crash is resolved
+by the updated pinned toolchain and indexed parser-state loops.
 
-Audited forwarders are limited to exact allowlisted standard conversion
+Audited forwarders are limited to exact allowlisted standard conversion/default
 wrappers around verified typed constructors/conversions and the concrete
 `PageCollector` sink wrapper around its verified collection method. Generic
 callback wrappers are excluded. Forwarders are not native assumptions, and any
