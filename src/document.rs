@@ -1020,14 +1020,7 @@ fn validate_references(
     globals: Option<&GlobalSegments>,
     limits: &Limits,
 ) -> Result<(SegmentTypes, SegmentDepths), DecodeError> {
-    let total_references = segments.iter().try_fold(0_u64, |total, segment| {
-        total
-            .checked_add(
-                u64::try_from(segment.header.referred_segments.len())
-                    .map_err(|_| MalformedError::IntegerOverflow)?,
-            )
-            .ok_or(MalformedError::IntegerOverflow)
-    })?;
+    let total_references = count_total_references(segments)?;
     if total_references > limits.max_total_references {
         return Err(LimitExceeded {
             kind: LimitKind::TotalReferences,
@@ -1053,31 +1046,7 @@ fn validate_references(
         }
     }
 
-    for segment in segments {
-        for referred in &segment.header.referred_segments {
-            let Some(index) = keyed_get(&indexes, *referred) else {
-                if globals.is_none_or(|state| keyed_index(&state.types, *referred).is_none()) {
-                    return Err(MalformedError::MissingReferredSegment {
-                        segment: segment.header.number,
-                        referred: *referred,
-                    }
-                    .into());
-                }
-                continue;
-            };
-            let target = &segments[*index].header;
-            if target.page_association != 0
-                && target.page_association != segment.header.page_association
-            {
-                return Err(MalformedError::InvalidPageAssociation {
-                    segment: segment.header.number,
-                    page: segment.header.page_association,
-                }
-                .into());
-            }
-        }
-        validate_reference_types(&segment.header, segments, &indexes, globals)?;
-    }
+    validate_reference_links(segments, &indexes, globals)?;
     validate_retention(segments, &indexes)?;
     let depths = validate_reference_depth(segments, &indexes, globals, limits)?;
     let mut types = Vec::new();
@@ -1096,6 +1065,90 @@ fn validate_references(
         debug_assert!(inserted);
     }
     Ok((types, depths))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn count_total_references(segments: &[ParsedSegment<'_>]) -> Result<u64, DecodeError> {
+    let mut total = 0_u64;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= segments@.len(),
+        decreases segments@.len() - index,
+    ))]
+    while index < segments.len() {
+        let Ok(count) = u64::try_from(segments[index].header.referred_segments.len()) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        let Some(next) = total.checked_add(count) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        total = next;
+        index += 1;
+    }
+    Ok(total)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires forall|entry: int| 0 <= entry < indexes@.len() ==>
+        indexes@[entry].1 < segments@.len(),
+))]
+fn validate_reference_links(
+    segments: &[ParsedSegment<'_>],
+    indexes: &SegmentIndexes,
+    globals: Option<&GlobalSegments>,
+) -> Result<(), DecodeError> {
+    let mut segment_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            segment_index <= segments@.len(),
+            forall|entry: int| 0 <= entry < indexes@.len() ==>
+                indexes@[entry].1 < segments@.len(),
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let segment = &segments[segment_index];
+        let mut reference_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                reference_index <= segment.header.referred_segments@.len(),
+                forall|entry: int| 0 <= entry < indexes@.len() ==>
+                    indexes@[entry].1 < segments@.len(),
+            decreases segment.header.referred_segments@.len() - reference_index,
+        ))]
+        while reference_index < segment.header.referred_segments.len() {
+            let referred = segment.header.referred_segments[reference_index];
+            let Some(entry) = keyed_index(indexes, referred) else {
+                let global_exists = match globals {
+                    Some(state) => keyed_index(&state.types, referred).is_some(),
+                    None => false,
+                };
+                if !global_exists {
+                    return Err(MalformedError::MissingReferredSegment {
+                        segment: segment.header.number,
+                        referred,
+                    }
+                    .into());
+                }
+                reference_index += 1;
+                continue;
+            };
+            let target_index = indexes[entry].1;
+            let target = &segments[target_index].header;
+            if target.page_association != 0
+                && target.page_association != segment.header.page_association
+            {
+                return Err(MalformedError::InvalidPageAssociation {
+                    segment: segment.header.number,
+                    page: segment.header.page_association,
+                }
+                .into());
+            }
+            reference_index += 1;
+        }
+        validate_reference_types(&segment.header, segments, indexes, globals)?;
+        segment_index += 1;
+    }
+    Ok(())
 }
 
 fn validate_retention(
