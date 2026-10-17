@@ -113,9 +113,7 @@ impl RetentionFlags {
                 requested_bytes: u64::from(value_count),
             })?;
 
-        for index in 0..value_count {
-            values.push(retention_value(bytes, index)?);
-        }
+        fill_retention_values(&mut values, value_count, bytes)?;
         Ok(Self { values })
     }
 
@@ -234,7 +232,34 @@ fn parse_referred_segments(
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: allocation_bytes,
         })?;
-    for _ in 0..count {
+    read_referred_segments_into(
+        reader,
+        segment_number,
+        count,
+        reference_bytes,
+        &mut referred_segments,
+    )?;
+    Ok((referred_segments, retention_flags))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires old(reader).position <= old(reader).bytes@.len(),
+))]
+fn read_referred_segments_into(
+    reader: &mut ByteReader<'_>,
+    segment_number: u32,
+    count: u32,
+    reference_bytes: u8,
+    referred_segments: &mut Vec<u32>,
+) -> Result<(), DecodeError> {
+    let mut index = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= count,
+            reader.position <= reader.bytes@.len(),
+        decreases count - index,
+    ))]
+    while index < count {
         let referred = match reference_bytes {
             1 => u32::from(reader.read_u8()?),
             2 => u32::from(reader.read_u16()?),
@@ -243,8 +268,28 @@ fn parse_referred_segments(
         };
         require_lower_reference(segment_number, referred)?;
         referred_segments.push(referred);
+        index += 1;
     }
-    Ok((referred_segments, retention_flags))
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec())]
+fn fill_retention_values(
+    values: &mut Vec<u8>,
+    value_count: u32,
+    bytes: &[u8],
+) -> Result<(), MalformedError> {
+    let mut index = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= value_count,
+        decreases value_count - index,
+    ))]
+    while index < value_count {
+        values.push(retention_value(bytes, index)?);
+        index += 1;
+    }
+    Ok(())
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -367,11 +412,11 @@ fn require_lower_reference(segment: u32, referred: u32) -> Result<(), MalformedE
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        requires ((index / 8) as nat) < bytes@.len(),
         ensures match out {
             Ok(value) =>
-                value == crate::spec::segments::retention_bit(bytes@, index as nat),
-            Err(_) => false,
+                ((index / 8) as nat) < bytes@.len()
+                && value == crate::spec::segments::retention_bit(bytes@, index as nat),
+            Err(_) => true,
         },
 ))]
 fn retention_value(bytes: &[u8], index: u32) -> Result<u8, MalformedError> {
