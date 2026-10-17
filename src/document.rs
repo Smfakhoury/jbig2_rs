@@ -836,16 +836,30 @@ fn finalize_pages(
         pages.push(state.into_public(number)?);
     }
     pages.sort_unstable_by_key(PageInfo::number);
-    for (index, page) in pages.iter().enumerate() {
-        let expected = u32::try_from(index)
-            .map_err(|_| MalformedError::IntegerOverflow)?
-            .checked_add(1)
-            .ok_or(MalformedError::IntegerOverflow)?;
-        if page.number != expected {
+    validate_public_page_numbers(&pages)?;
+    Ok(pages)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn validate_public_page_numbers(pages: &[PageInfo]) -> Result<(), DecodeError> {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant index <= pages@.len(),
+        decreases pages@.len() - index,
+    ))]
+    while index < pages.len() {
+        let Ok(index_u32) = u32::try_from(index) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        let Some(expected) = index_u32.checked_add(1) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        if pages[index].number != expected {
             return Err(MalformedError::MissingPageInformation(expected).into());
         }
+        index += 1;
     }
-    Ok(pages)
+    Ok(())
 }
 
 fn validate_profiles(segments: &[ParsedSegment<'_>]) -> Result<(), DecodeError> {
