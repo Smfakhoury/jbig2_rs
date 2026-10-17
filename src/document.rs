@@ -1045,8 +1045,27 @@ fn validate_retention(
         }
     }
 
-    for segment in segments {
-        if let Some(last) = keyed_get(&last_references, segment.header.number) {
+    validate_retention_flags(segments, &last_references)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires forall|index: int| 0 <= index < segments@.len() ==>
+        segments@[index].header.retention_flags.values@.len() > 0,
+))]
+fn validate_retention_flags(
+    segments: &[ParsedSegment<'_>],
+    last_references: &[(u32, u32)],
+) -> Result<(), DecodeError> {
+    let mut segment_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant segment_index <= segments@.len(),
+        forall|index: int| 0 <= index < segments@.len() ==>
+            segments@[index].header.retention_flags.values@.len() > 0,
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let segment = &segments[segment_index];
+        if let Some(last) = keyed_get(last_references, segment.header.number) {
             if !segment.header.retention_flags.retain_this_segment() {
                 return Err(MalformedError::InvalidRetentionFlags {
                     segment: segment.header.number,
@@ -1062,24 +1081,33 @@ fn validate_retention(
                 .into());
             }
         }
-        for (index, referred) in segment.header.referred_segments.iter().enumerate() {
-            let Some(last) = keyed_get(&last_references, *referred) else {
+        let mut reference_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant reference_index <= segment.header.referred_segments@.len(),
+            decreases segment.header.referred_segments@.len() - reference_index,
+        ))]
+        while reference_index < segment.header.referred_segments.len() {
+            let referred = segment.header.referred_segments[reference_index];
+            let Some(last) = keyed_get(last_references, referred) else {
+                reference_index += 1;
                 continue;
             };
             if segment
                 .header
                 .retention_flags
-                .retain_referred_segment(index)
+                .retain_referred_segment(reference_index)
                 == Some(false)
                 && *last != segment.header.number
             {
                 return Err(MalformedError::InvalidRetentionFlags {
                     segment: segment.header.number,
-                    referred: *referred,
+                    referred,
                 }
                 .into());
             }
+            reference_index += 1;
         }
+        segment_index += 1;
     }
     Ok(())
 }
