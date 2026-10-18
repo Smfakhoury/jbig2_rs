@@ -161,9 +161,12 @@ pub(crate) struct SegmentHeader {
     pub(crate) byte_length: usize,
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires old(reader).position <= old(reader).bytes@.len(),
-    ensures final(reader).position <= final(reader).bytes@.len(),
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
+        out.is_ok() ==> final(reader).position > old(reader).position,
 ))]
 pub(crate) fn parse_segment_header(
     reader: &mut ByteReader<'_>,
@@ -196,7 +199,10 @@ pub(crate) fn parse_segment_header(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(
     requires old(reader).position <= old(reader).bytes@.len(),
-    ensures final(reader).position <= final(reader).bytes@.len(),
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
+        final(reader).position >= old(reader).position,
 ))]
 fn parse_referred_segments(
     reader: &mut ByteReader<'_>,
@@ -258,6 +264,7 @@ fn parse_referred_segments(
     ensures
         final(reader).bytes@ == old(reader).bytes@,
         final(reader).position <= final(reader).bytes@.len(),
+        final(reader).position >= old(reader).position,
 ))]
 fn read_referred_segments_into(
     reader: &mut ByteReader<'_>,
@@ -272,6 +279,7 @@ fn read_referred_segments_into(
             index <= count,
             reader.position <= reader.bytes@.len(),
             reader.bytes@ == old(reader).bytes@,
+            reader.position >= old(reader).position,
         decreases count - index,
     ))]
     while index < count {

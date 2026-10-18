@@ -1,7 +1,7 @@
 use std::io::Read;
 
 use crate::file_header::{inspect_file_header, Organization};
-use crate::huffman::HuffmanTable;
+use crate::huffman::{HuffmanError, HuffmanTable};
 use crate::reader::ByteReader;
 use crate::segment_data::{
     parse_end_of_stripe, parse_extension, parse_page_information, parse_profiles, require_empty,
@@ -133,8 +133,10 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unsupported, over-limit, or
     /// allocation-failing input.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn inspect(&self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
-        parse_standalone_document(input, &self.limits).map(|(info, _segments)| info)
+        let (info, _segments) = parse_standalone_document(input, &self.limits)?;
+        Ok(info)
     }
 
     /// Reads a bounded standalone stream and validates its document envelope.
@@ -154,6 +156,7 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unsupported, over-limit, or
     /// allocation-failing input.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn inspect_embedded(&self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         self.inspect_embedded_internal(input, None)
     }
@@ -164,6 +167,7 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unsupported, over-limit,
     /// allocation-failing, or unresolved input.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn inspect_embedded_with_globals(
         &self,
         input: &[u8],
@@ -178,11 +182,18 @@ impl Decoder {
     ///
     /// Returns a typed error if a global segment is malformed, associated with
     /// a page, unresolved, unsupported, over-limit, or cannot be allocated.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn parse_globals(&self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
         enforce_stream_limit(input.len(), &self.limits)?;
         enforce_input_work(input.len(), &self.limits)?;
         let segments = parse_sequential(input, &self.limits, false)?;
-        for segment in &segments {
+        let mut segment_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant segment_index <= segments@.len(),
+            decreases segments@.len() - segment_index,
+        ))]
+        while segment_index < segments.len() {
+            let segment = &segments[segment_index];
             if segment.header.page_association != 0 {
                 return Err(MalformedError::InvalidPageAssociation {
                     segment: segment.header.number,
@@ -190,12 +201,14 @@ impl Decoder {
                 }
                 .into());
             }
+            segment_index += 1;
         }
         validate_profiles(&segments)?;
         enforce_work_limit(input.len(), &segments, &self.limits)?;
         let (types, depths) = validate_references(&segments, None, &self.limits)?;
-        let input_bytes =
-            u64::try_from(input.len()).map_err(|_| MalformedError::IntegerOverflow)?;
+        let Ok(input_bytes) = u64::try_from(input.len()) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
         if input_bytes > self.limits.max_retained_state_bytes {
             return Err(LimitExceeded {
                 kind: LimitKind::RetainedState,
@@ -205,12 +218,22 @@ impl Decoder {
             .into());
         }
         let mut bytes = Vec::new();
-        bytes
-            .try_reserve(input.len())
-            .map_err(|_| DecodeError::Allocation {
+        if bytes.try_reserve(input.len()).is_err() {
+            return Err(DecodeError::Allocation {
                 requested_bytes: input_bytes,
-            })?;
-        bytes.extend_from_slice(input);
+            });
+        }
+        let mut byte_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                byte_index <= input@.len(),
+                bytes@ == input@.subrange(0, byte_index as int),
+            decreases input@.len() - byte_index,
+        ))]
+        while byte_index < input.len() {
+            bytes.push(input[byte_index]);
+            byte_index += 1;
+        }
         Ok(GlobalSegments {
             types,
             depths,
@@ -218,12 +241,14 @@ impl Decoder {
         })
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn inspect_embedded_internal(
         &self,
         input: &[u8],
         globals: Option<&GlobalSegments>,
     ) -> Result<DocumentInfo, DecodeError> {
-        parse_embedded_document(input, &self.limits, globals).map(|(info, _segments)| info)
+        let (info, _segments) = parse_embedded_document(input, &self.limits, globals)?;
+        Ok(info)
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -441,6 +466,7 @@ pub(crate) enum ParsedData {
     Other,
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) fn parse_standalone_document<'a>(
     input: &'a [u8],
     limits: &Limits,
@@ -451,9 +477,11 @@ pub(crate) fn parse_standalone_document<'a>(
     if file_header.uses_colour_regions() {
         return Err(DecodeError::Unsupported(UnsupportedFeature::Colour));
     }
-    let body = input
-        .get(file_header.byte_length()..)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    let header_length = file_header.byte_length();
+    if header_length > input.len() {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    let body = &input[header_length..];
     let segments = match file_header.organization() {
         Organization::Sequential => parse_sequential(body, limits, true)?,
         Organization::RandomAccess => parse_random_access(body, limits)?,
@@ -469,6 +497,7 @@ pub(crate) fn parse_standalone_document<'a>(
     Ok((info, segments))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) fn parse_embedded_document<'a>(
     input: &'a [u8],
     limits: &Limits,
@@ -482,6 +511,7 @@ pub(crate) fn parse_embedded_document<'a>(
     Ok((info, segments))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn parse_sequential<'a>(
     input: &'a [u8],
     limits: &Limits,
@@ -490,6 +520,12 @@ fn parse_sequential<'a>(
     let mut reader = ByteReader::new(input);
     let mut segments = Vec::new();
     let mut previous_number = None;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            reader.position <= reader.bytes@.len(),
+            reader.bytes@ == input@,
+        decreases reader.bytes@.len() - reader.position,
+    ))]
     while reader.remaining() != 0 {
         enforce_segment_limit(segments.len(), limits)?;
         let header = parse_segment_header(&mut reader, limits)?;
@@ -511,11 +547,11 @@ fn parse_sequential<'a>(
             .checked_add(1)
             .ok_or(MalformedError::IntegerOverflow)?;
         let segment_allocation = allocation_size::<ParsedSegment<'_>>(new_len)?;
-        segments
-            .try_reserve(1)
-            .map_err(|_| DecodeError::Allocation {
+        if segments.try_reserve(1).is_err() {
+            return Err(DecodeError::Allocation {
                 requested_bytes: segment_allocation,
-            })?;
+            });
+        }
         segments.push(ParsedSegment {
             header,
             payload,
@@ -531,6 +567,7 @@ fn parse_sequential<'a>(
     Ok(segments)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn parse_random_access<'a>(
     input: &'a [u8],
     limits: &Limits,
@@ -538,6 +575,12 @@ fn parse_random_access<'a>(
     let mut reader = ByteReader::new(input);
     let mut headers = Vec::new();
     let mut previous_number = None;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            reader.position <= reader.bytes@.len(),
+            reader.bytes@ == input@,
+        decreases reader.bytes@.len() - reader.position,
+    ))]
     loop {
         if reader.remaining() == 0 {
             return Err(MalformedError::MissingEndOfFile.into());
@@ -555,12 +598,10 @@ fn parse_random_access<'a>(
         }
         previous_number = Some(header.number);
         let is_end = header.segment_type == SegmentType::EndOfFile;
-        headers
-            .try_reserve(1)
-            .map_err(|_| DecodeError::Allocation {
-                requested_bytes: u64::try_from(std::mem::size_of::<SegmentHeader>())
-                    .unwrap_or(u64::MAX),
-            })?;
+        let requested_bytes = allocation_size::<SegmentHeader>(1)?;
+        if headers.try_reserve(1).is_err() {
+            return Err(DecodeError::Allocation { requested_bytes });
+        }
         headers.push(header);
         if is_end {
             break;
@@ -569,11 +610,16 @@ fn parse_random_access<'a>(
 
     let mut segments = Vec::new();
     let segment_allocation = allocation_size::<ParsedSegment<'_>>(headers.len())?;
-    segments
-        .try_reserve(headers.len())
-        .map_err(|_| DecodeError::Allocation {
+    if segments.try_reserve(headers.len()).is_err() {
+        return Err(DecodeError::Allocation {
             requested_bytes: segment_allocation,
-        })?;
+        });
+    }
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            reader.position <= reader.bytes@.len(),
+            reader.bytes@ == input@,
+    ))]
     for header in headers {
         let payload = read_payload(&mut reader, &header)?;
         let data = parse_known_segment_data(&header, payload, limits)?;
@@ -591,6 +637,10 @@ fn parse_random_access<'a>(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(
     requires old(reader).position <= old(reader).bytes@.len(),
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
+        final(reader).position >= old(reader).position,
 ))]
 fn read_payload<'a>(
     reader: &mut ByteReader<'a>,
@@ -667,6 +717,7 @@ fn read_be_u32_at(bytes: &[u8], offset: usize) -> u32 {
         | u32::from(bytes[offset + 3])
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn parse_known_segment_data(
     header: &SegmentHeader,
     payload: &[u8],
@@ -685,7 +736,15 @@ fn parse_known_segment_data(
         }
         SegmentType::Profiles => ParsedData::Profiles(parse_profiles(payload)?),
         SegmentType::Tables => {
-            HuffmanTable::from_encoded(payload, limits).map_err(DecodeError::from)?;
+            if let Err(error) = HuffmanTable::from_encoded(payload, limits) {
+                let error = match error {
+                    HuffmanError::Decode(error) => error,
+                    HuffmanError::InvalidTable(kind) => {
+                        DecodeError::Malformed(MalformedError::InvalidHuffman(kind))
+                    }
+                };
+                return Err(error);
+            }
             ParsedData::Other
         }
         SegmentType::Extension => {
