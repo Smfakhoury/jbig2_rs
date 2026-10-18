@@ -99,10 +99,16 @@ pub(super) proof fn mode_budget_decreases(count: u64, maximum: u64)
 pub(super) proof fn managed_memory_components_bounded(
     bitmap_bytes: u64,
     transition_bytes: u64,
+    all_transition_bytes: u64,
     limit: u64,
 )
-    requires bitmap_bytes + transition_bytes <= limit,
-    ensures bitmap_bytes <= limit, transition_bytes <= limit,
+    requires
+        all_transition_bytes == transition_bytes * 2,
+        bitmap_bytes + all_transition_bytes <= limit,
+    ensures
+        bitmap_bytes <= limit,
+        transition_bytes <= limit,
+        all_transition_bytes <= limit,
 {}
 
 pub(super) proof fn transition_result_is_deterministic(

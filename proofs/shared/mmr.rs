@@ -156,6 +156,56 @@ pub(super) proof fn transition_prefix_push(
     }
 }
 
+pub(super) proof fn transition_prefix_span(
+    transitions: Seq<u32>,
+    start: u32,
+    end: u32,
+    width: u32,
+    pushed: bool,
+)
+    requires
+        super::mmr_spec::transition_prefix_valid(transitions, start, width),
+        start < end <= width,
+    ensures
+        super::mmr_spec::transition_prefix_valid(
+            if pushed { transitions.push(start) } else { transitions },
+            end,
+            width,
+        ),
+        (if pushed { transitions.push(start) } else { transitions }).len()
+            <= transitions.len() + 1,
+{
+    reveal(super::mmr_spec::transition_prefix_valid);
+    if pushed {
+        assert forall|index: int|
+            0 <= index < transitions.push(start).len()
+        implies #[trigger] transitions.push(start)[index] < end by {
+            if index < transitions.len() {
+                assert(transitions.push(start)[index] == transitions[index]);
+                assert(transitions[index] < start);
+            } else {
+                assert(index == transitions.len());
+                assert(transitions.push(start)[index] == start);
+            }
+        }
+        assert forall|left: int, right: int|
+            0 <= left < right < transitions.push(start).len()
+        implies
+            #[trigger] transitions.push(start)[left]
+                <= #[trigger] transitions.push(start)[right] by {
+            if right < transitions.len() {
+                assert(transitions.push(start)[left] == transitions[left]);
+                assert(transitions.push(start)[right] == transitions[right]);
+            } else {
+                assert(right == transitions.len());
+                assert(transitions.push(start)[right] == start);
+                assert(transitions.push(start)[left] == transitions[left]);
+                assert(transitions[left] < start);
+            }
+        }
+    }
+}
+
 pub(super) proof fn transition_prefix_finish(
     transitions: Seq<u32>,
     width: u32,

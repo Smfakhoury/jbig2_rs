@@ -101,32 +101,26 @@ macro_rules! production_mmr_transition_empty {
     };
 }
 
-macro_rules! production_mmr_transition_advance {
-    ($before:ident, $x:ident, $width:ident, $pushed:expr) => {
-        proof! {
-            if $pushed {
-                crate::mmr::mmr_shared::transition_prefix_push(
-                    $before,
-                    $x,
-                    $width,
-                );
-            } else {
-                crate::mmr::mmr_shared::transition_prefix_advance(
-                    $before,
-                    $x,
-                    $width,
-                );
-            }
-        }
-    };
-}
-
 macro_rules! production_mmr_transition_finish {
     ($before:ident, $width:ident) => {
         proof! {
             crate::mmr::mmr_shared::transition_prefix_finish(
                 $before,
                 $width,
+            );
+        }
+    };
+}
+
+macro_rules! production_mmr_transition_span {
+    ($before:ident, $start:ident, $end:ident, $width:ident, $pushed:ident) => {
+        proof! {
+            crate::mmr::mmr_shared::transition_prefix_span(
+                $before,
+                $start,
+                $end,
+                $width,
+                $pushed,
             );
         }
     };
@@ -193,11 +187,12 @@ macro_rules! production_mmr_row_termination {
 }
 
 macro_rules! production_mmr_memory_bound {
-    ($bitmap_bytes:ident, $transition_bytes:ident, $limits:ident) => {
+    ($bitmap_bytes:ident, $transition_bytes:ident, $all_transition_bytes:ident, $limits:ident) => {
         proof! {
             crate::mmr::mmr_properties::managed_memory_components_bounded(
                 $bitmap_bytes,
                 $transition_bytes,
+                $all_transition_bytes,
                 $limits.max_decoder_managed_memory_bytes,
             );
         }

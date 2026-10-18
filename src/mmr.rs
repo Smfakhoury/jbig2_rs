@@ -552,7 +552,8 @@ fn decode_bitmap<'a>(
         reveal(mmr_spec::bitmap_storage_valid);
         crate::bitmap::bitmap_shared::stride_covers_width(width);
     }
-    let mut transitions = allocate_transition_storage(width, &bitmap, limits)?;
+    let (mut transitions, mut row_transitions) =
+        allocate_transition_storage(width, &bitmap, limits)?;
     transitions.push(width);
     transitions.push(width);
     #[cfg(verus_keep_ghost)]
@@ -587,8 +588,12 @@ fn decode_bitmap<'a>(
     for row in 0..height {
         let mut x = 0_u32;
         let mut black = false;
+        let mut emitted_black = false;
         let mut initial = true;
         let mut mode_count = 0_u64;
+        row_transitions.clear();
+        #[cfg(verus_keep_ghost)]
+        production_mmr_transition_empty!(width);
         #[cfg(verus_keep_ghost)]
         proof! {
             crate::views::bitmap_fields(&bitmap);
@@ -607,6 +612,8 @@ fn decode_bitmap<'a>(
                 mmr_spec::bitmap_storage_valid(&bitmap),
                 mmr_spec::reference_line_valid(transitions@, width),
                 transitions@.len() <= width as nat + 2,
+                mmr_spec::transition_prefix_valid(row_transitions@, x, width),
+                row_transitions@.len() <= x as nat,
                 mmr_spec::reader_valid(&reader),
                 reader.bytes@ == data@,
             decreases max_modes + 1 - mode_count,
@@ -635,7 +642,16 @@ fn decode_bitmap<'a>(
                     }
                     #[cfg(verus_keep_ghost)]
                     production_mmr_pass_progress!(x, b2, width);
-                    fill_span(&mut bitmap, row, x, b2, black)?;
+                    fill_recorded_span(
+                        &mut bitmap,
+                        row,
+                        x,
+                        b2,
+                        black,
+                        width,
+                        &mut row_transitions,
+                        &mut emitted_black,
+                    )?;
                     x = b2;
                 }
                 Mode::Horizontal => {
@@ -657,8 +673,26 @@ fn decode_bitmap<'a>(
                     }
                     #[cfg(verus_keep_ghost)]
                     production_mmr_horizontal_progress!(x, width, first, second);
-                    fill_span(&mut bitmap, row, x, after_first, black)?;
-                    fill_span(&mut bitmap, row, after_first, end, !black)?;
+                    fill_recorded_span(
+                        &mut bitmap,
+                        row,
+                        x,
+                        after_first,
+                        black,
+                        width,
+                        &mut row_transitions,
+                        &mut emitted_black,
+                    )?;
+                    fill_recorded_span(
+                        &mut bitmap,
+                        row,
+                        after_first,
+                        end,
+                        !black,
+                        width,
+                        &mut row_transitions,
+                        &mut emitted_black,
+                    )?;
                     x = end;
                 }
                 Mode::Vertical(displacement) => {
@@ -678,7 +712,16 @@ fn decode_bitmap<'a>(
                     }
                     #[cfg(verus_keep_ghost)]
                     production_mmr_vertical_progress!(x, target, width, black);
-                    fill_span(&mut bitmap, row, x, target, black)?;
+                    fill_recorded_span(
+                        &mut bitmap,
+                        row,
+                        x,
+                        target,
+                        black,
+                        width,
+                        &mut row_transitions,
+                        &mut emitted_black,
+                    )?;
                     x = target;
                     black = !black;
                 }
@@ -697,7 +740,8 @@ fn decode_bitmap<'a>(
             reveal(mmr_spec::bitmap_storage_valid);
         }
 
-        collect_transitions(&bitmap, row, width, &mut transitions)?;
+        finish_transition_row(&mut row_transitions, width);
+        core::mem::swap(&mut transitions, &mut row_transitions);
         #[cfg(verus_keep_ghost)]
         production_mmr_row_termination!(row, height);
     }
@@ -747,7 +791,8 @@ fn enforce_work(actual: u64, limits: &Limits) -> Result<(), MmrError> {
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(transitions) => transitions@.len() == 0,
+        Ok((transitions, row_transitions)) =>
+            transitions@.len() == 0 && row_transitions@.len() == 0,
         Err(_) => true,
     },
 ))]
@@ -755,18 +800,21 @@ fn allocate_transition_storage(
     width: u32,
     bitmap: &Bitmap,
     limits: &Limits,
-) -> Result<Vec<u32>, MmrError> {
+) -> Result<(Vec<u32>, Vec<u32>), MmrError> {
     let capacity_u64 = u64::from(width)
         .checked_add(2)
         .ok_or(MmrError::IntegerOverflow)?;
     let transition_bytes = capacity_u64
         .checked_mul(4)
         .ok_or(MmrError::IntegerOverflow)?;
+    let all_transition_bytes = transition_bytes
+        .checked_mul(2)
+        .ok_or(MmrError::IntegerOverflow)?;
     let Ok(bitmap_bytes) = u64::try_from(bitmap.bytes().len()) else {
         return Err(MmrError::IntegerOverflow);
     };
     let total = bitmap_bytes
-        .checked_add(transition_bytes)
+        .checked_add(all_transition_bytes)
         .ok_or(MmrError::IntegerOverflow)?;
     if total > limits.max_decoder_managed_memory_bytes {
         return Err(MmrError::Bitmap(DecodeError::LimitExceeded(
@@ -778,7 +826,7 @@ fn allocate_transition_storage(
         )));
     }
     #[cfg(verus_keep_ghost)]
-    production_mmr_memory_bound!(bitmap_bytes, transition_bytes, limits);
+    production_mmr_memory_bound!(bitmap_bytes, transition_bytes, all_transition_bytes, limits);
 
     let Ok(capacity) = usize::try_from(capacity_u64) else {
         return Err(MmrError::IntegerOverflow);
@@ -789,7 +837,13 @@ fn allocate_transition_storage(
             requested_bytes: transition_bytes,
         });
     }
-    Ok(transitions)
+    let mut row_transitions = Vec::new();
+    if row_transitions.try_reserve(capacity).is_err() {
+        return Err(MmrError::Allocation {
+            requested_bytes: transition_bytes,
+        });
+    }
+    Ok((transitions, row_transitions))
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1186,6 +1240,93 @@ fn fill_span(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires
+        mmr_spec::transition_prefix_valid(old(transitions)@, start, _width),
+        start <= end <= _width,
+    ensures
+        mmr_spec::transition_prefix_valid(final(transitions)@, end, _width),
+        final(transitions)@.len() <= old(transitions)@.len() + 1,
+        start == end ==> final(transitions)@.len() == old(transitions)@.len(),
+))]
+fn record_transition_span(
+    transitions: &mut Vec<u32>,
+    emitted_black: &mut bool,
+    start: u32,
+    end: u32,
+    _width: u32,
+    black: bool,
+) {
+    if start == end {
+        return;
+    }
+    let changed = *emitted_black != black;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost before = transitions@;
+    }
+    if changed {
+        transitions.push(start);
+    }
+    *emitted_black = black;
+    #[cfg(verus_keep_ghost)]
+    production_mmr_transition_span!(before, start, end, _width, changed);
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        mmr_spec::bitmap_storage_valid(bitmap),
+        row < bitmap.height,
+        end <= bitmap.width,
+        mmr_spec::transition_prefix_valid(old(transitions)@, start, width),
+        start <= end <= width,
+    ensures match out {
+        Ok(()) =>
+            final(bitmap).width == old(bitmap).width
+            && final(bitmap).height == old(bitmap).height
+            && final(bitmap).stride == old(bitmap).stride
+            && final(bitmap).data@.len() == old(bitmap).data@.len()
+            && mmr_spec::bitmap_storage_valid(final(bitmap))
+            && mmr_spec::transition_prefix_valid(final(transitions)@, end, width)
+            && final(transitions)@.len() <= old(transitions)@.len() + 1
+            && (start == end ==>
+                final(transitions)@.len() == old(transitions)@.len()),
+        Err(_) => true,
+    },
+))]
+#[allow(clippy::too_many_arguments)]
+fn fill_recorded_span(
+    bitmap: &mut Bitmap,
+    row: u32,
+    start: u32,
+    end: u32,
+    black: bool,
+    width: u32,
+    transitions: &mut Vec<u32>,
+    emitted_black: &mut bool,
+) -> Result<(), MmrError> {
+    fill_span(bitmap, row, start, end, black)?;
+    record_transition_span(transitions, emitted_black, start, end, width, black);
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires mmr_spec::transition_prefix_valid(old(transitions)@, width, width),
+    ensures
+        mmr_spec::reference_line_valid(final(transitions)@, width),
+        final(transitions)@.len() == old(transitions)@.len() + 2,
+))]
+fn finish_transition_row(transitions: &mut Vec<u32>, width: u32) {
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost before = transitions@;
+    }
+    transitions.push(width);
+    transitions.push(width);
+    #[cfg(verus_keep_ghost)]
+    production_mmr_transition_finish!(before, width);
+}
+
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         mmr_spec::bitmap_storage_valid(bitmap),
@@ -1198,6 +1339,7 @@ fn fill_span(
         Err(_) => true,
     },
 ))]
+#[cfg(test)]
 fn collect_transitions(
     bitmap: &Bitmap,
     row: u32,
@@ -1378,6 +1520,33 @@ fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
 mod tests {
     use super::*;
 
+    fn assert_incremental_transitions_match_scan(bitmap: &Bitmap) {
+        for row in 0..bitmap.height() {
+            let mut scanned = Vec::new();
+            collect_transitions(bitmap, row, bitmap.width(), &mut scanned)
+                .expect("oracle scan must cover a valid bitmap row");
+
+            let mut incremental = Vec::new();
+            incremental
+                .try_reserve(usize::try_from(bitmap.width()).expect("test width fits usize") + 2)
+                .expect("test transition storage must allocate");
+            let mut emitted_black = false;
+            for x in 0..bitmap.width() {
+                let black = bitmap.pixel(x, row).expect("test pixel is in bounds");
+                record_transition_span(
+                    &mut incremental,
+                    &mut emitted_black,
+                    x,
+                    x + 1,
+                    bitmap.width(),
+                    black,
+                );
+            }
+            finish_transition_row(&mut incremental, bitmap.width());
+            assert_eq!(incremental, scanned, "transition mismatch on row {row}");
+        }
+    }
+
     fn decode(data: &[u8], width: u32, height: u32) -> Bitmap {
         decode_mmr(
             data,
@@ -1484,6 +1653,68 @@ mod tests {
     }
 
     #[test]
+    fn incremental_transitions_match_scan_for_normative_modes() {
+        for (data, width, height) in [
+            (&[0x80][..], 8, 1),
+            (&[0x26, 0xA2, 0x80][..], 8, 1),
+            (&[0x2F, 0xF8][..], 8, 2),
+            (&[0x2F, 0xDB, 0x80][..], 8, 2),
+            (&[0x2F, 0xD2, 0x80][..], 8, 2),
+            (&[0x2F, 0xC6][..], 8, 2),
+        ] {
+            assert_incremental_transitions_match_scan(&decode(data, width, height));
+        }
+    }
+
+    #[test]
+    fn zero_length_spans_and_same_x_transitions_match_scan() {
+        let mut bitmap =
+            Bitmap::blank(5, 1, &Limits::default()).expect("test bitmap must allocate");
+        for x in 0..3 {
+            bitmap
+                .set_pixel(x, 0, true)
+                .expect("test pixel is in bounds");
+        }
+
+        let mut incremental = Vec::with_capacity(7);
+        let mut emitted_black = false;
+        record_transition_span(&mut incremental, &mut emitted_black, 0, 0, 5, true);
+        record_transition_span(&mut incremental, &mut emitted_black, 0, 0, 5, false);
+        record_transition_span(&mut incremental, &mut emitted_black, 0, 3, 5, true);
+        record_transition_span(&mut incremental, &mut emitted_black, 3, 3, 5, false);
+        record_transition_span(&mut incremental, &mut emitted_black, 3, 3, 5, true);
+        record_transition_span(&mut incremental, &mut emitted_black, 3, 5, 5, false);
+        finish_transition_row(&mut incremental, 5);
+
+        let mut scanned = Vec::new();
+        collect_transitions(&bitmap, 0, 5, &mut scanned).expect("oracle scan must succeed");
+        assert_eq!(incremental, scanned);
+        assert_eq!(incremental, [0, 3, 5, 5]);
+    }
+
+    #[test]
+    fn incremental_transitions_match_scan_for_random_small_bitmaps() {
+        let mut state = 0xD1B5_4A32_u32;
+        for width in 1..=17 {
+            for height in 1..=7 {
+                let mut bitmap = Bitmap::blank(width, height, &Limits::default())
+                    .expect("small test bitmap must allocate");
+                for row in 0..height {
+                    for x in 0..width {
+                        state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                        if state & 0x8000_0000 != 0 {
+                            bitmap
+                                .set_pixel(x, row, true)
+                                .expect("test pixel is in bounds");
+                        }
+                    }
+                }
+                assert_incremental_transitions_match_scan(&bitmap);
+            }
+        }
+    }
+
+    #[test]
     fn required_eofb_can_start_off_byte_boundary() {
         let bitmap = decode_mmr(
             &[0x80, 0x08, 0x00, 0x80],
@@ -1583,6 +1814,24 @@ mod tests {
                 kind: LimitKind::Work,
                 limit: 15,
                 actual: 16
+            }))
+        ));
+    }
+
+    #[test]
+    fn both_transition_vectors_are_counted_as_managed_memory() {
+        let limits = Limits {
+            max_decoder_managed_memory_bytes: 80,
+            ..Limits::default()
+        };
+        let error = decode_mmr(&[0x80], 8, 1, &limits, EofbPolicy::Optional)
+            .expect_err("bitmap plus two width+2 transition vectors need 81 bytes");
+        assert!(matches!(
+            error,
+            MmrError::Bitmap(DecodeError::LimitExceeded(LimitExceeded {
+                kind: LimitKind::Memory,
+                limit: 80,
+                actual: 81
             }))
         ));
     }
