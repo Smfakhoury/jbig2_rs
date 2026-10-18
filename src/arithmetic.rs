@@ -37,6 +37,7 @@ pub(crate) const INTEGER_CONTEXT_COUNT: usize = 512;
 pub(crate) const MAX_IAID_CODE_LENGTH: u8 = 31;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(C, align(8))]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 struct QeState {
     qe: u16,
@@ -598,6 +599,7 @@ impl<'a> ArithmeticDecoder<'a> {
             },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[inline]
     pub(crate) fn decode(
         &mut self,
         context: &mut ArithmeticContext,
@@ -612,6 +614,116 @@ impl<'a> ArithmeticDecoder<'a> {
 
         #[cfg(verus_keep_ghost)]
         production_decode_interval_subtraction!(self, qe);
+        self.interval -= qe;
+
+        if self.code >> 16 < qe {
+            return self.decode_lower(context, state, qe, old_mps);
+        }
+
+        self.code = self
+            .code
+            .checked_sub(qe << 16)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        if self.interval >= MIN_INTERVAL {
+            return Ok(old_mps);
+        }
+
+        self.decode_upper_renormalized(context, state, qe, old_mps)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            arithmetic_spec::decoder_state_valid(old(self)),
+            arithmetic_spec::context_valid(*old(context)),
+            state.next_mps < 47,
+            state.next_lps < 47,
+            0 < qe <= 0x5601,
+            old_mps <= 1,
+        ensures
+            arithmetic_spec::decoder_state_valid(final(self)),
+            arithmetic_spec::context_valid(*final(context)),
+            match out {
+                Ok(decision) =>
+                    decision <= 1
+                    && arithmetic_spec::decoder_valid(final(self)),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[inline(never)]
+    fn decode_lower(
+        &mut self,
+        context: &mut ArithmeticContext,
+        state: QeState,
+        qe: u32,
+        old_mps: u8,
+    ) -> Result<u8, ArithmeticError> {
+        let decision;
+        if self.interval < qe {
+            decision = old_mps;
+            context.state_index = state.next_mps;
+        } else {
+            decision = 1 - old_mps;
+            context.state_index = state.next_lps;
+            if state.switch_mps {
+                context.mps = decision;
+            }
+        }
+        self.interval = qe;
+        self.renormalize()?;
+        Ok(decision)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            arithmetic_spec::decoder_state_valid(old(self)),
+            arithmetic_spec::context_valid(*old(context)),
+            state.next_mps < 47,
+            state.next_lps < 47,
+            0 < qe <= 0x5601,
+            old_mps <= 1,
+        ensures
+            arithmetic_spec::decoder_state_valid(final(self)),
+            arithmetic_spec::context_valid(*final(context)),
+            match out {
+                Ok(decision) =>
+                    decision <= 1
+                    && arithmetic_spec::decoder_valid(final(self)),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[inline(never)]
+    fn decode_upper_renormalized(
+        &mut self,
+        context: &mut ArithmeticContext,
+        state: QeState,
+        qe: u32,
+        old_mps: u8,
+    ) -> Result<u8, ArithmeticError> {
+        let decision;
+        if self.interval < qe {
+            decision = 1 - old_mps;
+            context.state_index = state.next_lps;
+            if state.switch_mps {
+                context.mps = decision;
+            }
+        } else {
+            decision = old_mps;
+            context.state_index = state.next_mps;
+        }
+        self.renormalize()?;
+        Ok(decision)
+    }
+
+    #[cfg(test)]
+    fn decode_checked_oracle(
+        &mut self,
+        context: &mut ArithmeticContext,
+    ) -> Result<u8, ArithmeticError> {
+        let state = QE_STATES[usize::from(context.state_index)];
+        let qe = u32::from(state.qe);
+        let old_mps = context.mps;
         self.interval = self
             .interval
             .checked_sub(qe)
@@ -630,7 +742,7 @@ impl<'a> ArithmeticDecoder<'a> {
                 }
             }
             self.interval = qe;
-            self.renormalize()?;
+            self.renormalize_checked_oracle()?;
             return Ok(decision);
         }
 
@@ -653,7 +765,7 @@ impl<'a> ArithmeticDecoder<'a> {
             decision = old_mps;
             context.state_index = state.next_mps;
         }
-        self.renormalize()?;
+        self.renormalize_checked_oracle()?;
         Ok(decision)
     }
 
@@ -906,6 +1018,7 @@ impl<'a> ArithmeticDecoder<'a> {
             },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[inline]
     fn renormalize(&mut self) -> Result<(), ArithmeticError> {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
@@ -932,21 +1045,15 @@ impl<'a> ArithmeticDecoder<'a> {
                 assert(self.bit_count <= 8);
                 assert(
                     MIN_INTERVAL - self.interval * 2
-                        < MIN_INTERVAL - self.interval
+                        <                         MIN_INTERVAL - self.interval
                 );
             }
-            self.interval = self
-                .interval
-                .checked_mul(2)
-                .ok_or(MalformedError::IntegerOverflow)?;
+            self.interval *= 2;
             self.code = self
                 .code
                 .checked_mul(2)
                 .ok_or(MalformedError::IntegerOverflow)?;
-            self.bit_count = self
-                .bit_count
-                .checked_sub(1)
-                .ok_or(MalformedError::IntegerOverflow)?;
+            self.bit_count -= 1;
             #[cfg(verus_keep_ghost)]
             proof! {
                 assert(self.interval == previous_interval * 2);
@@ -985,9 +1092,74 @@ impl<'a> ArithmeticDecoder<'a> {
             },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[inline]
     fn byte_in(&mut self) -> Result<(), ArithmeticError> {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
+        let next_position = self.byte_position + 1;
+        if next_position >= self.bytes.len() {
+            return Err(unexpected_eof(next_position, 1, 0));
+        }
+        let next_byte = self.bytes[next_position];
+
+        if self.current_byte == 0xff {
+            if next_byte > 0x8f {
+                self.code = self
+                    .code
+                    .checked_add(0xff00)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                self.bit_count = 8;
+                self.marker = Some(ArithmeticMarker {
+                    offset: self.byte_position,
+                    code: next_byte,
+                });
+                return Ok(());
+            }
+
+            self.byte_position = next_position;
+            self.current_byte = next_byte;
+            self.code = self
+                .code
+                .checked_add(u32::from(next_byte) << 9)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            self.bit_count = 7;
+            return Ok(());
+        }
+
+        self.byte_position = next_position;
+        self.current_byte = next_byte;
+        self.code = self
+            .code
+            .checked_add(u32::from(next_byte) << 8)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        self.bit_count = 8;
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn renormalize_checked_oracle(&mut self) -> Result<(), ArithmeticError> {
+        while self.interval < MIN_INTERVAL {
+            if self.bit_count == 0 {
+                self.byte_in_checked_oracle()?;
+            }
+            self.interval = self
+                .interval
+                .checked_mul(2)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            self.code = self
+                .code
+                .checked_mul(2)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            self.bit_count = self
+                .bit_count
+                .checked_sub(1)
+                .ok_or(MalformedError::IntegerOverflow)?;
+        }
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn byte_in_checked_oracle(&mut self) -> Result<(), ArithmeticError> {
         let next_position = self
             .byte_position
             .checked_add(1)
@@ -1063,6 +1235,63 @@ mod tests {
         0x84, 0xc7, 0x3b, 0xfc, 0xe1, 0xa1, 0x43, 0x04, 0x02, 0x20, 0x00, 0x00, 0x41, 0x0d, 0xbb,
         0x86, 0xf4, 0x31, 0x7f, 0xff, 0x88, 0xff, 0x37, 0x47, 0x1a, 0xdb, 0x6a, 0xdf, 0xff, 0xac,
     ];
+
+    fn next_random(state: &mut u64) -> u32 {
+        *state = state
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1_442_695_040_888_963_407);
+        (*state >> 32) as u32
+    }
+
+    fn assert_decoder_state_eq(left: &ArithmeticDecoder<'_>, right: &ArithmeticDecoder<'_>) {
+        assert_eq!(left.byte_position, right.byte_position);
+        assert_eq!(left.current_byte, right.current_byte);
+        assert_eq!(left.code, right.code);
+        assert_eq!(left.interval, right.interval);
+        assert_eq!(left.bit_count, right.bit_count);
+        assert_eq!(left.marker, right.marker);
+    }
+
+    #[test]
+    fn unchecked_hot_decoder_matches_checked_oracle_randomized() {
+        let mut state = 0x45ea_30c7_98b1_f26d;
+        for case in 0..256 {
+            let length = 2 + usize::try_from(next_random(&mut state) % 127).expect("bounded");
+            let mut bytes = Vec::with_capacity(length);
+            for _ in 0..length {
+                bytes.push(u8::try_from(next_random(&mut state) & 0xff).expect("bounded byte"));
+            }
+            if case % 3 == 0 {
+                bytes[length - 2] = 0xff;
+                bytes[length - 1] = 0xac;
+            }
+            let mut optimized = ArithmeticDecoder::new(&bytes).expect("decoder");
+            let mut oracle = ArithmeticDecoder::new(&bytes).expect("decoder");
+            let mut optimized_contexts = Vec::new();
+            let mut oracle_contexts = Vec::new();
+            for _ in 0..64 {
+                let context = ArithmeticContext::from_state(
+                    (next_random(&mut state) % 47) as u8,
+                    (next_random(&mut state) % 2) as u8,
+                )
+                .expect("valid state");
+                optimized_contexts.push(context);
+                oracle_contexts.push(context);
+            }
+
+            for _ in 0..512 {
+                let index = usize::try_from(next_random(&mut state) % 64).expect("bounded context");
+                let optimized_result = optimized.decode(&mut optimized_contexts[index]);
+                let oracle_result = oracle.decode_checked_oracle(&mut oracle_contexts[index]);
+                assert_eq!(optimized_result, oracle_result, "case {case}");
+                assert_eq!(optimized_contexts, oracle_contexts, "case {case}");
+                assert_decoder_state_eq(&optimized, &oracle);
+                if optimized_result.is_err() {
+                    break;
+                }
+            }
+        }
+    }
 
     fn decode_integer_with<F>(mut decode: F) -> Result<ArithmeticInteger, ArithmeticError>
     where

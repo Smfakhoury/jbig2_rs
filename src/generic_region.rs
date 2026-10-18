@@ -1094,7 +1094,7 @@ fn decode_probability_fixed(
         generic_region_spec::contexts_valid(final(contexts)@),
         out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
 ))]
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn decode_generic_with(
     bitmap: &mut Bitmap,
     rows: u32,
@@ -1163,6 +1163,7 @@ fn decode_generic_with(
         }
 
         let mut history = 0_usize;
+        let mut row_context = GenericRowContext::new(descriptor, bitmap, y);
         let mut x = 0_u32;
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
@@ -1187,10 +1188,11 @@ fn decode_generic_with(
             };
             if skipped {
                 history = (history << 1) & 0x0f;
+                row_context.advance(bitmap, x);
                 x += 1;
                 continue;
             }
-            let context = descriptor.context(bitmap, x, y, history);
+            let context = row_context.context_and_advance(bitmap, x, y, history);
             let value = decode_probability_fixed(decoder, contexts, context)? != 0;
             history = ((history << 1) | usize::from(value)) & 0x0f;
             if value {
@@ -1737,6 +1739,262 @@ impl GenericContextDescriptor {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum GenericRowContext {
+    Template0 {
+        top: usize,
+        previous: usize,
+        top_row: Option<usize>,
+        previous_row: Option<usize>,
+        top_queue: u8,
+        previous_queue: u8,
+        remaining: u8,
+    },
+    Template1 {
+        top: usize,
+        previous: usize,
+        top_row: Option<usize>,
+        previous_row: Option<usize>,
+        top_queue: u8,
+        previous_queue: u8,
+        remaining: u8,
+    },
+    Template2 {
+        top: usize,
+        previous: usize,
+        top_row: Option<usize>,
+        previous_row: Option<usize>,
+        top_queue: u8,
+        previous_queue: u8,
+        remaining: u8,
+    },
+    Template3 {
+        previous: usize,
+        previous_row: Option<usize>,
+        previous_queue: u8,
+        remaining: u8,
+    },
+    Adaptive(GenericContextDescriptor),
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[inline]
+fn queue_exhausted(remaining: &mut u8) -> bool {
+    if *remaining == 0 {
+        return true;
+    }
+    *remaining -= 1;
+    *remaining == 0
+}
+
+impl GenericRowContext {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn new(descriptor: GenericContextDescriptor, bitmap: &Bitmap, y: u32) -> Self {
+        let y = i64::from(y);
+        match descriptor {
+            GenericContextDescriptor::NominalTemplate0 => Self::Template0 {
+                top: packed_row_bits(bitmap, 0, y - 2, -2, 5),
+                previous: packed_row_bits(bitmap, 0, y - 1, -3, 7),
+                top_row: packed_row_start(bitmap, y - 2),
+                previous_row: packed_row_start(bitmap, y - 1),
+                top_queue: packed_row_byte(bitmap, packed_row_start(bitmap, y - 2), 3),
+                previous_queue: packed_row_byte(bitmap, packed_row_start(bitmap, y - 1), 4),
+                remaining: 8,
+            },
+            GenericContextDescriptor::NominalTemplate1 => Self::Template1 {
+                top: packed_row_bits(bitmap, 0, y - 2, -1, 4),
+                previous: packed_row_bits(bitmap, 0, y - 1, -2, 6),
+                top_row: packed_row_start(bitmap, y - 2),
+                previous_row: packed_row_start(bitmap, y - 1),
+                top_queue: packed_row_byte(bitmap, packed_row_start(bitmap, y - 2), 3),
+                previous_queue: packed_row_byte(bitmap, packed_row_start(bitmap, y - 1), 4),
+                remaining: 8,
+            },
+            GenericContextDescriptor::NominalTemplate2 => Self::Template2 {
+                top: packed_row_bits(bitmap, 0, y - 2, -1, 3),
+                previous: packed_row_bits(bitmap, 0, y - 1, -2, 5),
+                top_row: packed_row_start(bitmap, y - 2),
+                previous_row: packed_row_start(bitmap, y - 1),
+                top_queue: packed_row_byte(bitmap, packed_row_start(bitmap, y - 2), 2),
+                previous_queue: packed_row_byte(bitmap, packed_row_start(bitmap, y - 1), 3),
+                remaining: 8,
+            },
+            GenericContextDescriptor::NominalTemplate3 => Self::Template3 {
+                previous: packed_row_bits(bitmap, 0, y - 1, -3, 6),
+                previous_row: packed_row_start(bitmap, y - 1),
+                previous_queue: packed_row_byte(bitmap, packed_row_start(bitmap, y - 1), 3),
+                remaining: 8,
+            },
+            _ => Self::Adaptive(descriptor),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn context_and_advance(&mut self, bitmap: &Bitmap, x: u32, y: u32, history: usize) -> usize {
+        let sample_x = i64::from(x);
+        match self {
+            Self::Template0 {
+                top,
+                previous,
+                top_row,
+                previous_row,
+                top_queue,
+                previous_queue,
+                remaining,
+            } => {
+                let context = (*top << 11) | (*previous << 4) | history & 0x0f;
+                *top = ((*top << 1) | usize::from(*top_queue & 0x80 != 0)) & 0x1f;
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x7f;
+                *top_queue <<= 1;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *top_queue = packed_row_byte(bitmap, *top_row, sample_x + 4);
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, sample_x + 5);
+                    *remaining = 8;
+                }
+                context
+            }
+            Self::Template1 {
+                top,
+                previous,
+                top_row,
+                previous_row,
+                top_queue,
+                previous_queue,
+                remaining,
+            } => {
+                let context = (*top << 9) | (*previous << 3) | history & 0x07;
+                *top = ((*top << 1) | usize::from(*top_queue & 0x80 != 0)) & 0x0f;
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x3f;
+                *top_queue <<= 1;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *top_queue = packed_row_byte(bitmap, *top_row, sample_x + 4);
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, sample_x + 5);
+                    *remaining = 8;
+                }
+                context
+            }
+            Self::Template2 {
+                top,
+                previous,
+                top_row,
+                previous_row,
+                top_queue,
+                previous_queue,
+                remaining,
+            } => {
+                let context = (*top << 7) | (*previous << 2) | history & 0x03;
+                *top = ((*top << 1) | usize::from(*top_queue & 0x80 != 0)) & 0x07;
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x1f;
+                *top_queue <<= 1;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *top_queue = packed_row_byte(bitmap, *top_row, sample_x + 3);
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, sample_x + 4);
+                    *remaining = 8;
+                }
+                context
+            }
+            Self::Template3 {
+                previous,
+                previous_row,
+                previous_queue,
+                remaining,
+            } => {
+                let context = (*previous << 4) | history & 0x0f;
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x3f;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, sample_x + 4);
+                    *remaining = 8;
+                }
+                context
+            }
+            Self::Adaptive(descriptor) => descriptor.context(bitmap, x, y, history),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn advance(&mut self, bitmap: &Bitmap, x: u32) {
+        let x = i64::from(x);
+        match self {
+            Self::Template0 {
+                top,
+                previous,
+                top_row,
+                previous_row,
+                top_queue,
+                previous_queue,
+                remaining,
+            } => {
+                *top = ((*top << 1) | usize::from(*top_queue & 0x80 != 0)) & 0x1f;
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x7f;
+                *top_queue <<= 1;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *top_queue = packed_row_byte(bitmap, *top_row, x + 4);
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, x + 5);
+                    *remaining = 8;
+                }
+            }
+            Self::Template1 {
+                top,
+                previous,
+                top_row,
+                previous_row,
+                top_queue,
+                previous_queue,
+                remaining,
+            } => {
+                *top = ((*top << 1) | usize::from(*top_queue & 0x80 != 0)) & 0x0f;
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x3f;
+                *top_queue <<= 1;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *top_queue = packed_row_byte(bitmap, *top_row, x + 4);
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, x + 5);
+                    *remaining = 8;
+                }
+            }
+            Self::Template2 {
+                top,
+                previous,
+                top_row,
+                previous_row,
+                top_queue,
+                previous_queue,
+                remaining,
+            } => {
+                *top = ((*top << 1) | usize::from(*top_queue & 0x80 != 0)) & 0x07;
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x1f;
+                *top_queue <<= 1;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *top_queue = packed_row_byte(bitmap, *top_row, x + 3);
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, x + 4);
+                    *remaining = 8;
+                }
+            }
+            Self::Template3 {
+                previous,
+                previous_row,
+                previous_queue,
+                remaining,
+            } => {
+                *previous = ((*previous << 1) | usize::from(*previous_queue & 0x80 != 0)) & 0x3f;
+                *previous_queue <<= 1;
+                if queue_exhausted(remaining) {
+                    *previous_queue = packed_row_byte(bitmap, *previous_row, x + 4);
+                    *remaining = 8;
+                }
+            }
+            Self::Adaptive(_) => {}
+        }
+    }
+}
+
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 fn sample_cached(bitmap: &Bitmap, x: u32, y: u32, offset: TemplateOffset) -> bool {
     packed_pixel(
@@ -1774,6 +2032,71 @@ fn packed_pixel(bitmap: &Bitmap, x: i64, y: i64) -> bool {
         Some(byte) => *byte & mask != 0,
         None => false,
     }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+fn packed_row_start(bitmap: &Bitmap, row: i64) -> Option<usize> {
+    if row < 0 || row >= i64::from(bitmap.height) {
+        return None;
+    }
+    (row as usize).checked_mul(bitmap.stride)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+fn packed_row_byte(bitmap: &Bitmap, row_start: Option<usize>, x: i64) -> u8 {
+    let Some(row_start) = row_start else {
+        return 0;
+    };
+    if x < 0 || x >= i64::from(bitmap.width) {
+        return 0;
+    }
+    let x = x as usize;
+    let Some(index) = row_start.checked_add(x / 8) else {
+        return 0;
+    };
+    let Some(first) = bitmap.data.get(index) else {
+        return 0;
+    };
+    let second = match index.checked_add(1) {
+        Some(next) => match bitmap.data.get(next) {
+            Some(byte) => *byte,
+            None => 0,
+        },
+        None => 0,
+    };
+    let combined = (u16::from(*first) << 8) | u16::from(second);
+    let shift = match x & 7 {
+        0 => 8,
+        1 => 7,
+        2 => 6,
+        3 => 5,
+        4 => 4,
+        5 => 3,
+        6 => 2,
+        _ => 1,
+    };
+    let shifted = (combined >> shift) & 0xff;
+    let Ok(value) = u8::try_from(shifted) else {
+        return 0;
+    };
+    let remaining = usize::try_from(bitmap.width)
+        .ok()
+        .and_then(|width| width.checked_sub(x))
+        .unwrap_or(0);
+    let mask = match remaining {
+        0 => 0x00,
+        1 => 0x80,
+        2 => 0xc0,
+        3 => 0xe0,
+        4 => 0xf0,
+        5 => 0xf8,
+        6 => 0xfc,
+        7 => 0xfe,
+        _ => 0xff,
+    };
+    value & mask
 }
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
@@ -4094,6 +4417,7 @@ mod tests {
                             &mut decoder,
                             &mut contexts,
                         )
+                        .expect("optimized decode");
                     } else {
                         decode_generic_with_oracle(
                             &mut bitmap,
@@ -4106,8 +4430,8 @@ mod tests {
                             &mut decoder,
                             &mut contexts,
                         )
+                        .expect("oracle decode");
                     }
-                    .expect("decode");
                     let elapsed = start.elapsed();
                     black_box((bitmap, contexts, decoder));
                     elapsed
@@ -4170,6 +4494,7 @@ mod tests {
                             &mut decoder,
                             &mut contexts,
                         )
+                        .expect("optimized decode");
                     } else {
                         decode_refinement_with_oracle(
                             &mut bitmap,
@@ -4181,8 +4506,8 @@ mod tests {
                             &mut decoder,
                             &mut contexts,
                         )
+                        .expect("oracle decode");
                     }
-                    .expect("decode");
                     let elapsed = start.elapsed();
                     black_box((bitmap, contexts, decoder));
                     elapsed
