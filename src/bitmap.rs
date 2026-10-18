@@ -43,6 +43,7 @@ impl CombinationOperator {
         ensures out == crate::spec::bitmap::combine(self, destination, source),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[allow(dead_code)]
     pub(crate) const fn apply(self, destination: bool, source: bool) -> bool {
         match self {
             Self::Or => destination || source,
@@ -916,6 +917,142 @@ impl Bitmap {
         Ok(())
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(self)),
+            crate::spec::bitmap::storage_valid(source),
+        ensures
+            crate::spec::bitmap::storage_valid(final(self)),
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+            match out {
+                Ok(()) => byte_count <= old(self).data@.len()
+                    && byte_count <= source.data@.len(),
+                Err(_) => true,
+            },
+    ))]
+    pub(crate) fn copy_prefix_from(
+        &mut self,
+        source: &Self,
+        byte_count: usize,
+    ) -> Result<(), MalformedError> {
+        if byte_count > self.data.len() || byte_count > source.data.len() {
+            return Err(MalformedError::IntegerOverflow);
+        }
+        #[cfg(verus_keep_ghost)]
+        {
+            return self.copy_prefix_scalar_verified(source, byte_count);
+        }
+        #[cfg(not(verus_keep_ghost))]
+        self.copy_prefix_chunked(source, byte_count)
+    }
+
+    #[cfg(verus_keep_ghost)]
+    #[verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(self)),
+            crate::spec::bitmap::storage_valid(source),
+            byte_count <= old(self).data@.len(),
+            byte_count <= source.data@.len(),
+        ensures
+            out.is_ok(),
+            crate::spec::bitmap::storage_valid(final(self)),
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+    )]
+    fn copy_prefix_scalar_verified(
+        &mut self,
+        source: &Self,
+        byte_count: usize,
+    ) -> Result<(), MalformedError> {
+        let width = self.width;
+        let height = self.height;
+        let stride = self.stride;
+        let data_len = self.data.len();
+        proof! {
+            crate::views::bitmap_fields(self);
+            reveal(crate::spec::bitmap::storage_valid);
+        }
+        let mut index = 0_usize;
+        #[verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(source),
+                self.width == width,
+                self.height == height,
+                self.stride == stride,
+                self.data@.len() == data_len,
+                data_len == stride as nat * height as nat,
+                stride as nat
+                    == crate::spec::bitmap::stride_for_width(width as nat),
+                index <= byte_count,
+                byte_count <= self.data@.len(),
+                byte_count <= source.data@.len(),
+            decreases byte_count - index,
+        )]
+        while index < byte_count {
+            self.data[index] = source.data[index];
+            index += 1;
+        }
+        proof! {
+            crate::views::bitmap_fields(self);
+            reveal(crate::spec::bitmap::storage_valid);
+        }
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            byte_count <= old(self).data@.len(),
+            byte_count <= source.data@.len(),
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+    ))]
+    fn copy_prefix_chunked(
+        &mut self,
+        source: &Self,
+        byte_count: usize,
+    ) -> Result<(), MalformedError> {
+        let mut index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant index <= byte_count,
+            decreases byte_count - index,
+        ))]
+        while byte_count - index >= 8 {
+            let value = read_chunk(&source.data, index).ok_or(MalformedError::IntegerOverflow)?;
+            if !write_chunk(&mut self.data, index, value) {
+                return Err(MalformedError::IntegerOverflow);
+            }
+            index = index
+                .checked_add(8)
+                .ok_or(MalformedError::IntegerOverflow)?;
+        }
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant index <= byte_count,
+            decreases byte_count - index,
+        ))]
+        while index < byte_count {
+            let value = *source
+                .data
+                .get(index)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            let destination = self
+                .data
+                .get_mut(index)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            *destination = value;
+            index = index
+                .checked_add(1)
+                .ok_or(MalformedError::IntegerOverflow)?;
+        }
+        Ok(())
+    }
+
     #[cfg(verus_keep_ghost)]
     #[verus_spec(out =>
         requires
@@ -1356,6 +1493,397 @@ impl Bitmap {
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(self)),
+            crate::spec::bitmap::storage_valid(source),
+        ensures
+            crate::spec::bitmap::storage_valid(final(self)),
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+    ))]
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn compose_region(
+        &mut self,
+        source: &Self,
+        source_x: u32,
+        source_y: u32,
+        destination_x: u32,
+        destination_y: u32,
+        width: u32,
+        height: u32,
+        operator: CombinationOperator,
+    ) -> Result<(), MalformedError> {
+        let Some(source_end_x) = source_x.checked_add(width) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        let Some(source_end_y) = source_y.checked_add(height) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        let Some(destination_end_x) = destination_x.checked_add(width) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        let Some(destination_end_y) = destination_y.checked_add(height) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        if source_end_x > source.width
+            || source_end_y > source.height
+            || destination_end_x > self.width
+            || destination_end_y > self.height
+        {
+            return Err(MalformedError::IntegerOverflow);
+        }
+        #[cfg(verus_keep_ghost)]
+        {
+            return self.compose_region_scalar_verified(
+                source,
+                source_x,
+                source_y,
+                destination_x,
+                destination_y,
+                width,
+                height,
+                operator,
+            );
+        }
+        #[cfg(not(verus_keep_ghost))]
+        self.compose_region_chunked(
+            source,
+            source_x,
+            source_y,
+            destination_x,
+            destination_y,
+            width,
+            height,
+            operator,
+        )
+    }
+
+    #[cfg(verus_keep_ghost)]
+    #[verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(self)),
+            crate::spec::bitmap::storage_valid(source),
+            source_x as nat + width as nat <= source.width as nat,
+            source_y as nat + height as nat <= source.height as nat,
+            destination_x as nat + width as nat <= old(self).width as nat,
+            destination_y as nat + height as nat <= old(self).height as nat,
+        ensures
+            out.is_ok(),
+            crate::spec::bitmap::storage_valid(final(self)),
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+    )]
+    #[allow(clippy::too_many_arguments)]
+    fn compose_region_scalar_verified(
+        &mut self,
+        source: &Self,
+        source_x: u32,
+        source_y: u32,
+        destination_x: u32,
+        destination_y: u32,
+        width: u32,
+        height: u32,
+        operator: CombinationOperator,
+    ) -> Result<(), MalformedError> {
+        proof! {
+            crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(source);
+        }
+        #[verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(self),
+                crate::spec::bitmap::storage_valid(source),
+                self.width == old(self).width,
+                self.height == old(self).height,
+                self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
+                row <= height,
+                source_x as nat + width as nat <= source.width as nat,
+                source_y as nat + height as nat <= source.height as nat,
+                destination_x as nat + width as nat <= self.width as nat,
+                destination_y as nat + height as nat <= self.height as nat,
+            decreases height - row,
+        )]
+        for row in 0..height {
+            #[verus_spec(
+                invariant
+                    crate::spec::bitmap::storage_valid(self),
+                    crate::spec::bitmap::storage_valid(source),
+                    self.width == old(self).width,
+                    self.height == old(self).height,
+                    self.stride == old(self).stride,
+                    self.data@.len() == old(self).data@.len(),
+                    column <= width,
+                    row < height,
+                    source_x as nat + width as nat <= source.width as nat,
+                    source_y as nat + height as nat <= source.height as nat,
+                    destination_x as nat + width as nat <= self.width as nat,
+                    destination_y as nat + height as nat <= self.height as nat,
+                decreases width - column,
+            )]
+            for column in 0..width {
+                let sx = source_x
+                    .checked_add(column)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let sy = source_y
+                    .checked_add(row)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let dx = destination_x
+                    .checked_add(column)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let dy = destination_y
+                    .checked_add(row)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                proof! {
+                    crate::views::bitmap_fields(source);
+                    crate::views::bitmap_fields(self);
+                    assert(sx < source.width);
+                    assert(sy < source.height);
+                    assert(dx < self.width);
+                    assert(dy < self.height);
+                    reveal(crate::spec::bitmap::coordinates_in_bounds);
+                }
+                let incoming = source.pixel(sx, sy);
+                let current = self.pixel(dx, dy);
+                proof! {
+                    reveal(crate::spec::bitmap::pixel_result);
+                    assert(incoming.is_some());
+                    assert(current.is_some());
+                }
+                let incoming = incoming.ok_or(MalformedError::IntegerOverflow)?;
+                let current = current.ok_or(MalformedError::IntegerOverflow)?;
+                self.set_pixel(dx, dy, operator.apply(current, incoming))?;
+                proof! {
+                    crate::views::bitmap_fields(self);
+                    crate::views::bitmap_fields(old(self));
+                    crate::views::bitmap_fields(source);
+                }
+            }
+        }
+        proof! {
+            crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(old(self));
+        }
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(self)),
+            crate::spec::bitmap::storage_valid(source),
+            source_x as nat + width as nat <= source.width as nat,
+            source_y as nat + height as nat <= source.height as nat,
+            destination_x as nat + width as nat <= old(self).width as nat,
+            destination_y as nat + height as nat <= old(self).height as nat,
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+    ))]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn compose_region_chunked(
+        &mut self,
+        source: &Self,
+        source_x: u32,
+        source_y: u32,
+        destination_x: u32,
+        destination_y: u32,
+        width: u32,
+        height: u32,
+        operator: CombinationOperator,
+    ) -> Result<(), MalformedError> {
+        let Some(source_end_x) = source_x.checked_add(width) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        let Some(source_end_y) = source_y.checked_add(height) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        let Some(destination_end_x) = destination_x.checked_add(width) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        let Some(destination_end_y) = destination_y.checked_add(height) else {
+            return Err(MalformedError::IntegerOverflow);
+        };
+        if source_end_x > source.width
+            || source_end_y > source.height
+            || destination_end_x > self.width
+            || destination_end_y > self.height
+        {
+            return Err(MalformedError::IntegerOverflow);
+        }
+        if width == 0 || height == 0 {
+            return Ok(());
+        }
+        let destination_column =
+            usize::try_from(destination_x / 8).map_err(|_error| MalformedError::IntegerOverflow)?;
+        let destination_shift = destination_x % 8;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            vstd::arithmetic::div_mod::lemma_mod_bound(destination_x as int, 8);
+            assert(destination_shift < 8);
+        }
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                crate::spec::bitmap::storage_valid(source),
+                self.width == old(self).width,
+                self.height == old(self).height,
+                self.stride == old(self).stride,
+                row <= height,
+                destination_shift < 8,
+                source_x as nat + width as nat <= source.width as nat,
+                source_y as nat + height as nat <= source.height as nat,
+                destination_x as nat + width as nat <= self.width as nat,
+                destination_y as nat + height as nat <= self.height as nat,
+            decreases height - row,
+        ))]
+        for row in 0..height {
+            let source_row = usize::try_from(
+                source_y
+                    .checked_add(row)
+                    .ok_or(MalformedError::IntegerOverflow)?,
+            )
+            .map_err(|_error| MalformedError::IntegerOverflow)?
+            .checked_mul(source.stride)
+            .ok_or(MalformedError::IntegerOverflow)?;
+            let destination_row = usize::try_from(
+                destination_y
+                    .checked_add(row)
+                    .ok_or(MalformedError::IntegerOverflow)?,
+            )
+            .map_err(|_error| MalformedError::IntegerOverflow)?
+            .checked_mul(self.stride)
+            .and_then(|offset| offset.checked_add(destination_column))
+            .ok_or(MalformedError::IntegerOverflow)?;
+
+            let mut source_bit = source_x;
+            let mut remaining = width;
+            let mut destination_index = destination_row;
+            if destination_shift != 0 {
+                let head_bits = remaining.min(8 - destination_shift);
+                let source_byte = source_row
+                    .checked_add(
+                        usize::try_from(source_bit / 8)
+                            .map_err(|_error| MalformedError::IntegerOverflow)?,
+                    )
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let source_value =
+                    read_shifted_tail(&source.data, source_byte, source_bit % 8, head_bits)
+                        .ok_or(MalformedError::IntegerOverflow)?
+                        >> destination_shift;
+                let destination_value = *self
+                    .data
+                    .get(destination_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let mask = (0xFF_u8 >> destination_shift)
+                    & (0xFF_u8 << (8 - destination_shift - head_bits));
+                let combined = operator.apply_byte(destination_value, source_value);
+                let destination_byte = self
+                    .data
+                    .get_mut(destination_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                *destination_byte = (destination_value & !mask) | (combined & mask);
+                source_bit = source_bit
+                    .checked_add(head_bits)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                remaining = remaining
+                    .checked_sub(head_bits)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                destination_index = destination_index
+                    .checked_add(1)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+            }
+
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant remaining <= width,
+                decreases remaining,
+            ))]
+            while remaining >= 64 {
+                let source_byte = source_row
+                    .checked_add(
+                        usize::try_from(source_bit / 8)
+                            .map_err(|_error| MalformedError::IntegerOverflow)?,
+                    )
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let source_chunk = read_shifted_chunk(&source.data, source_byte, source_bit % 8)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let destination_chunk = read_chunk(&self.data, destination_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                if !write_chunk(
+                    &mut self.data,
+                    destination_index,
+                    operator.apply_chunk(destination_chunk, source_chunk),
+                ) {
+                    return Err(MalformedError::IntegerOverflow);
+                }
+                source_bit = source_bit
+                    .checked_add(64)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                remaining -= 64;
+                destination_index = destination_index
+                    .checked_add(8)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+            }
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant remaining <= width,
+                decreases remaining,
+            ))]
+            while remaining >= 8 {
+                let source_byte = source_row
+                    .checked_add(
+                        usize::try_from(source_bit / 8)
+                            .map_err(|_error| MalformedError::IntegerOverflow)?,
+                    )
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let source_value = read_shifted_byte(&source.data, source_byte, source_bit % 8)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let destination_value = *self
+                    .data
+                    .get(destination_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let destination_byte = self
+                    .data
+                    .get_mut(destination_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                *destination_byte = operator.apply_byte(destination_value, source_value);
+                source_bit = source_bit
+                    .checked_add(8)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                remaining -= 8;
+                destination_index = destination_index
+                    .checked_add(1)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+            }
+            if remaining != 0 {
+                let source_byte = source_row
+                    .checked_add(
+                        usize::try_from(source_bit / 8)
+                            .map_err(|_error| MalformedError::IntegerOverflow)?,
+                    )
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let source_value =
+                    read_shifted_tail(&source.data, source_byte, source_bit % 8, remaining)
+                        .ok_or(MalformedError::IntegerOverflow)?;
+                let destination_value = *self
+                    .data
+                    .get(destination_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let mask = 0xFF_u8 << (8 - remaining);
+                let combined = operator.apply_byte(destination_value, source_value);
+                let destination_byte = self
+                    .data
+                    .get_mut(destination_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                *destination_byte = (destination_value & !mask) | (combined & mask);
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires crate::spec::bitmap::storage_valid(old(self)),
         ensures
             crate::views::bitmap_width(final(self))
@@ -1527,6 +2055,51 @@ mod tests {
                     destination_y,
                     operator.apply(destination_value, source_value),
                 )?;
+            }
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn scalar_compose_region(
+        destination: &mut Bitmap,
+        source: &Bitmap,
+        source_x: u32,
+        source_y: u32,
+        destination_x: u32,
+        destination_y: u32,
+        width: u32,
+        height: u32,
+        operator: CombinationOperator,
+    ) -> Result<(), MalformedError> {
+        if source_x
+            .checked_add(width)
+            .is_none_or(|end| end > source.width)
+            || source_y
+                .checked_add(height)
+                .is_none_or(|end| end > source.height)
+            || destination_x
+                .checked_add(width)
+                .is_none_or(|end| end > destination.width)
+            || destination_y
+                .checked_add(height)
+                .is_none_or(|end| end > destination.height)
+        {
+            return Err(MalformedError::IntegerOverflow);
+        }
+        for row in 0..height {
+            for column in 0..width {
+                let sx = source_x + column;
+                let sy = source_y + row;
+                let dx = destination_x + column;
+                let dy = destination_y + row;
+                let incoming = source
+                    .pixel(sx, sy)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let current = destination
+                    .pixel(dx, dy)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                destination.set_pixel(dx, dy, operator.apply(current, incoming))?;
             }
         }
         Ok(())
@@ -1836,6 +2409,150 @@ mod tests {
     }
 
     #[test]
+    fn source_offset_region_composition_exhaustively_matches_scalar_oracle() {
+        let operators = [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ];
+        for source_width in 0_u32..=18 {
+            for destination_width in 0_u32..=18 {
+                let source = patterned_bitmap(source_width, 3, u64::from(source_width));
+                let original =
+                    patterned_bitmap(destination_width, 4, !u64::from(destination_width));
+                for source_x in 0..=source_width {
+                    for destination_x in 0..=destination_width {
+                        let max_width =
+                            (source_width - source_x).min(destination_width - destination_x);
+                        for width in 0..=max_width {
+                            for operator in operators {
+                                let mut expected = original.clone();
+                                let mut actual = original.clone();
+                                scalar_compose_region(
+                                    &mut expected,
+                                    &source,
+                                    source_x,
+                                    1,
+                                    destination_x,
+                                    1,
+                                    width,
+                                    2,
+                                    operator,
+                                )
+                                .expect("scalar region composition succeeds");
+                                actual
+                                    .compose_region(
+                                        &source,
+                                        source_x,
+                                        1,
+                                        destination_x,
+                                        1,
+                                        width,
+                                        2,
+                                        operator,
+                                    )
+                                    .expect("chunk region composition succeeds");
+                                assert_eq!(
+                                    actual, expected,
+                                    "source width {source_width}, destination width \
+                                     {destination_width}, source x {source_x}, destination x \
+                                     {destination_x}, width {width}, operator {operator:?}"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn source_offset_region_composition_randomized_matches_scalar_oracle() {
+        let operators = [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ];
+        let mut state = 0xd1b5_4a32_d192_ed03_u64;
+        for case in 0..2_000_u64 {
+            state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            let source_width =
+                u32::try_from(state & u64::from(u16::MAX)).expect("masked value fits") % 521;
+            let destination_width = u32::try_from((state >> 16) & u64::from(u16::MAX))
+                .expect("masked value fits")
+                % 521;
+            let source_height = u32::try_from((state >> 32) & 15).expect("masked value fits");
+            let destination_height = u32::try_from((state >> 40) & 15).expect("masked value fits");
+            let source_x = if source_width == 0 {
+                0
+            } else {
+                u32::try_from((state >> 8) & u64::from(u32::MAX)).expect("masked value fits")
+                    % (source_width + 1)
+            };
+            let destination_x = if destination_width == 0 {
+                0
+            } else {
+                u32::try_from((state >> 24) & u64::from(u32::MAX)).expect("masked value fits")
+                    % (destination_width + 1)
+            };
+            let source_y = if source_height == 0 {
+                0
+            } else {
+                u32::try_from((state >> 36) & u64::from(u32::MAX)).expect("masked value fits")
+                    % (source_height + 1)
+            };
+            let destination_y = if destination_height == 0 {
+                0
+            } else {
+                u32::try_from((state >> 44) & u64::from(u32::MAX)).expect("masked value fits")
+                    % (destination_height + 1)
+            };
+            let width = u32::try_from((state >> 12) & u64::from(u32::MAX))
+                .expect("masked value fits")
+                % ((source_width - source_x).min(destination_width - destination_x) + 1);
+            let height = u32::try_from((state >> 20) & u64::from(u32::MAX))
+                .expect("masked value fits")
+                % ((source_height - source_y).min(destination_height - destination_y) + 1);
+            let operator = operators
+                [usize::try_from(case % operators.len() as u64).expect("operator index fits")];
+            let source = patterned_bitmap(source_width, source_height, state);
+            let mut expected = patterned_bitmap(destination_width, destination_height, !state);
+            let mut actual = expected.clone();
+            scalar_compose_region(
+                &mut expected,
+                &source,
+                source_x,
+                source_y,
+                destination_x,
+                destination_y,
+                width,
+                height,
+                operator,
+            )
+            .expect("scalar region composition succeeds");
+            actual
+                .compose_region(
+                    &source,
+                    source_x,
+                    source_y,
+                    destination_x,
+                    destination_y,
+                    width,
+                    height,
+                    operator,
+                )
+                .expect("chunk region composition succeeds");
+            assert_eq!(actual, expected, "case {case}");
+        }
+    }
+
+    #[test]
     fn chunk_span_fill_and_row_copy_match_scalar_oracles() {
         for width in 0_u32..=130 {
             let original = patterned_bitmap(width, 4, u64::from(width));
@@ -1863,6 +2580,16 @@ mod tests {
                         actual, expected,
                         "width {width}, source {row}, destination {destination}"
                     );
+                }
+                let source = patterned_bitmap(width, 4, !u64::from(width));
+                for byte_count in 0..=original.data.len() {
+                    let mut expected = original.clone();
+                    let mut actual = original.clone();
+                    expected.data[..byte_count].copy_from_slice(&source.data[..byte_count]);
+                    actual
+                        .copy_prefix_from(&source, byte_count)
+                        .expect("chunk prefix copy succeeds");
+                    assert_eq!(actual, expected, "width {width}, byte count {byte_count}");
                 }
             }
         }
@@ -1939,6 +2666,71 @@ mod tests {
         let scalar = median_duration(scalar_times);
         println!(
             "composition scalar_fa117f0_median_ns={} chunk_median_ns={} speedup={:.3}",
+            scalar.as_nanos(),
+            chunk.as_nanos(),
+            scalar.as_secs_f64() / chunk.as_secs_f64(),
+        );
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_source_offset_composition_against_6333205_scalar_oracle() {
+        let operators = [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ];
+        let source = patterned_bitmap(1032, 512, 0x0ddc_0ffe_e15e_beef);
+        let original = patterned_bitmap(1040, 512, 0x5ca1_ab1e_0123_4567);
+        let mut chunk_times = Vec::new();
+        let mut scalar_times = Vec::new();
+        for sample in 0..11 {
+            let mut chunk = original.clone();
+            let mut scalar = original.clone();
+            if sample % 2 == 0 {
+                let start = Instant::now();
+                for operator in operators {
+                    chunk
+                        .compose_region(&source, 3, 0, 5, 0, 1024, 512, operator)
+                        .expect("chunk region composition succeeds");
+                }
+                chunk_times.push(start.elapsed());
+                black_box(chunk.bytes());
+
+                let start = Instant::now();
+                for operator in operators {
+                    scalar_compose_region(&mut scalar, &source, 3, 0, 5, 0, 1024, 512, operator)
+                        .expect("scalar region composition succeeds");
+                }
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+            } else {
+                let start = Instant::now();
+                for operator in operators {
+                    scalar_compose_region(&mut scalar, &source, 3, 0, 5, 0, 1024, 512, operator)
+                        .expect("scalar region composition succeeds");
+                }
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+
+                let start = Instant::now();
+                for operator in operators {
+                    chunk
+                        .compose_region(&source, 3, 0, 5, 0, 1024, 512, operator)
+                        .expect("chunk region composition succeeds");
+                }
+                chunk_times.push(start.elapsed());
+                black_box(chunk.bytes());
+            }
+            assert_eq!(chunk, scalar);
+        }
+        let chunk = median_duration(chunk_times);
+        let scalar = median_duration(scalar_times);
+        println!(
+            "source-offset-composition scalar_6333205_median_ns={} chunk_median_ns={} \
+             speedup={:.3}",
             scalar.as_nanos(),
             chunk.as_nanos(),
             scalar.as_secs_f64() / chunk.as_secs_f64(),

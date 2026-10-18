@@ -2103,142 +2103,32 @@ pub(crate) fn compose_placement(
     if overlap_width == 0 || overlap_height == 0 {
         return Ok(());
     }
-    if placement.x >= 0 && placement.y >= 0 {
-        let x = u32::try_from(placement.x).map_err(|_| MalformedError::IntegerOverflow)?;
-        let y = u32::try_from(placement.y).map_err(|_| MalformedError::IntegerOverflow)?;
-        destination.compose(source, x, y, operator)?;
-        return Ok(());
+    let source_x = u32::try_from(source_x).map_err(|_| MalformedError::IntegerOverflow)?;
+    let source_y = u32::try_from(source_y).map_err(|_| MalformedError::IntegerOverflow)?;
+    let destination_x =
+        u32::try_from(destination_x).map_err(|_| MalformedError::IntegerOverflow)?;
+    let destination_y =
+        u32::try_from(destination_y).map_err(|_| MalformedError::IntegerOverflow)?;
+    let overlap_width =
+        u32::try_from(overlap_width).map_err(|_| MalformedError::IntegerOverflow)?;
+    let overlap_height =
+        u32::try_from(overlap_height).map_err(|_| MalformedError::IntegerOverflow)?;
+    destination.compose_region(
+        source,
+        source_x,
+        source_y,
+        destination_x,
+        destination_y,
+        overlap_width,
+        overlap_height,
+        operator,
+    )?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(destination);
+        crate::views::bitmap_fields(old(destination));
+        reveal(crate::spec::bitmap::storage_valid);
     }
-
-    let mut row = 0_i64;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            0 <= row <= overlap_height,
-            0 <= overlap_width,
-            0 < overlap_height,
-            crate::spec::bitmap::storage_valid(destination),
-            crate::spec::bitmap::storage_valid(source),
-            crate::views::bitmap_width(destination)
-                == crate::views::bitmap_width(old(destination)),
-            crate::views::bitmap_height(destination)
-                == crate::views::bitmap_height(old(destination)),
-            crate::views::bitmap_stride(destination)
-                == crate::views::bitmap_stride(old(destination)),
-            crate::views::bitmap_data(destination).len()
-                == crate::views::bitmap_data(old(destination)).len(),
-            symbol_text_spec::work_units(resources) <= limits.max_work_units,
-            symbol_text_spec::bitmap_bytes(resources)
-                == symbol_text_spec::bitmap_bytes(old(resources)),
-        decreases overlap_height - row,
-    ))]
-    while row < overlap_height {
-        let mut column = 0_i64;
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                0 <= column <= overlap_width,
-                0 <= row < overlap_height,
-                crate::spec::bitmap::storage_valid(destination),
-                crate::spec::bitmap::storage_valid(source),
-                crate::views::bitmap_width(destination)
-                    == crate::views::bitmap_width(old(destination)),
-                crate::views::bitmap_height(destination)
-                    == crate::views::bitmap_height(old(destination)),
-                crate::views::bitmap_stride(destination)
-                    == crate::views::bitmap_stride(old(destination)),
-                crate::views::bitmap_data(destination).len()
-                    == crate::views::bitmap_data(old(destination)).len(),
-            decreases overlap_width - column,
-        ))]
-        while column < overlap_width {
-            let sx = u32::try_from(
-                source_x
-                    .checked_add(column)
-                    .ok_or(MalformedError::IntegerOverflow)?,
-            )
-            .map_err(|_| MalformedError::IntegerOverflow)?;
-            let sy = u32::try_from(
-                source_y
-                    .checked_add(row)
-                    .ok_or(MalformedError::IntegerOverflow)?,
-            )
-            .map_err(|_| MalformedError::IntegerOverflow)?;
-            let dx = u32::try_from(
-                destination_x
-                    .checked_add(column)
-                    .ok_or(MalformedError::IntegerOverflow)?,
-            )
-            .map_err(|_| MalformedError::IntegerOverflow)?;
-            let dy = u32::try_from(
-                destination_y
-                    .checked_add(row)
-                    .ok_or(MalformedError::IntegerOverflow)?,
-            )
-            .map_err(|_| MalformedError::IntegerOverflow)?;
-            if sx >= source.width()
-                || sy >= source.height()
-                || dx >= destination.width()
-                || dy >= destination.height()
-            {
-                return Err(MalformedError::IntegerOverflow.into());
-            }
-            let incoming = source
-                .pixel(sx, sy)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let current = destination
-                .pixel(dx, dy)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            set_pixel_checked(
-                destination,
-                dx,
-                dy,
-                apply_operator(operator, current, incoming),
-            )?;
-            column = column
-                .checked_add(1)
-                .ok_or(MalformedError::IntegerOverflow)?;
-        }
-        row = row.checked_add(1).ok_or(MalformedError::IntegerOverflow)?;
-    }
-    Ok(())
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out == crate::spec::bitmap::combine(operator, destination, source),
-))]
-fn apply_operator(operator: CombinationOperator, destination: bool, source: bool) -> bool {
-    match operator {
-        CombinationOperator::Or => destination || source,
-        CombinationOperator::And => destination && source,
-        CombinationOperator::Xor => destination != source,
-        CombinationOperator::Xnor => destination == source,
-        CombinationOperator::Replace => source,
-    }
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires
-        crate::spec::bitmap::storage_valid(old(bitmap)),
-    ensures match out {
-        Ok(()) =>
-            crate::spec::bitmap::storage_valid(final(bitmap))
-                && crate::views::bitmap_width(final(bitmap))
-                    == crate::views::bitmap_width(old(bitmap))
-                && crate::views::bitmap_height(final(bitmap))
-                    == crate::views::bitmap_height(old(bitmap))
-                && crate::views::bitmap_stride(final(bitmap))
-                    == crate::views::bitmap_stride(old(bitmap))
-                && crate::views::bitmap_data(final(bitmap)).len()
-                    == crate::views::bitmap_data(old(bitmap)).len(),
-        Err(_) => true,
-    },
-))]
-fn set_pixel_checked(
-    bitmap: &mut Bitmap,
-    x: u32,
-    y: u32,
-    value: bool,
-) -> Result<(), SymbolTextError> {
-    bitmap.set_pixel(x, y, value)?;
     Ok(())
 }
 
@@ -3951,35 +3841,35 @@ fn crop_bitmap_columns(
 ) -> Result<Bitmap, SymbolTextError> {
     let height = source.height();
     let mut cropped = Bitmap::blank(width, height, limits)?;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            crate::spec::bitmap::storage_valid(source),
-            crate::spec::bitmap::storage_valid(&cropped),
-            crate::views::bitmap_width(&cropped) == width,
-            crate::views::bitmap_height(&cropped) == height,
-            y <= height,
-        decreases height - y,
-    ))]
-    for y in 0..height {
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                crate::spec::bitmap::storage_valid(source),
-                crate::spec::bitmap::storage_valid(&cropped),
-                crate::views::bitmap_width(&cropped) == width,
-                crate::views::bitmap_height(&cropped) == height,
-                x <= width,
-                y < height,
-            decreases width - x,
-        ))]
-        for x in 0..width {
-            let column = x_start
-                .checked_add(x)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let value = source
-                .pixel(column, y)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            cropped.set_pixel(x, y, value)?;
-        }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&cropped);
+        assert(cropped.width == width);
+        assert(cropped.height == height);
+    }
+    let source_end = x_start
+        .checked_add(width)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    if source_end > source.width() {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    cropped.compose_region(
+        source,
+        x_start,
+        0,
+        0,
+        0,
+        width,
+        height,
+        CombinationOperator::Replace,
+    )?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&cropped);
+        reveal(crate::spec::bitmap::storage_valid);
+        assert(crate::spec::bitmap::storage_valid(&cropped));
+        assert(crate::views::bitmap_width(&cropped) == width);
+        assert(crate::views::bitmap_height(&cropped) == height);
     }
     Ok(cropped)
 }
@@ -5557,6 +5447,70 @@ pub(crate) fn decode_text_region(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::hint::black_box;
+    use std::time::{Duration, Instant};
+
+    fn scalar_compose_placement_oracle(
+        destination: &mut Bitmap,
+        source: &Bitmap,
+        placement: Placement,
+        operator: CombinationOperator,
+        limits: &Limits,
+        resources: &mut ResourceTracker,
+    ) -> Result<(), SymbolTextError> {
+        let source_x = if placement.x < 0 {
+            negative_magnitude(placement.x)?
+        } else {
+            0
+        };
+        let source_y = if placement.y < 0 {
+            negative_magnitude(placement.y)?
+        } else {
+            0
+        };
+        let destination_x = placement.x.max(0);
+        let destination_y = placement.y.max(0);
+        let overlap_width = (i64::from(source.width()) - source_x)
+            .min(i64::from(destination.width()) - destination_x)
+            .max(0);
+        let overlap_height = (i64::from(source.height()) - source_y)
+            .min(i64::from(destination.height()) - destination_y)
+            .max(0);
+        resources.charge_work(
+            u64::try_from(overlap_width)
+                .map_err(|_| MalformedError::IntegerOverflow)?
+                .checked_mul(
+                    u64::try_from(overlap_height).map_err(|_| MalformedError::IntegerOverflow)?,
+                )
+                .ok_or(MalformedError::IntegerOverflow)?,
+            limits,
+        )?;
+        for row in 0..overlap_height {
+            for column in 0..overlap_width {
+                let sx = u32::try_from(source_x + column)
+                    .map_err(|_| MalformedError::IntegerOverflow)?;
+                let sy =
+                    u32::try_from(source_y + row).map_err(|_| MalformedError::IntegerOverflow)?;
+                let dx = u32::try_from(destination_x + column)
+                    .map_err(|_| MalformedError::IntegerOverflow)?;
+                let dy = u32::try_from(destination_y + row)
+                    .map_err(|_| MalformedError::IntegerOverflow)?;
+                let incoming = source
+                    .pixel(sx, sy)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let current = destination
+                    .pixel(dx, dy)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                destination.set_pixel(dx, dy, operator.apply(current, incoming))?;
+            }
+        }
+        Ok(())
+    }
+
+    fn median_duration(mut values: Vec<Duration>) -> Duration {
+        values.sort_unstable();
+        values[values.len() / 2]
+    }
 
     fn text_config(corner: ReferenceCorner, transposed: bool, strip_size: u8) -> TextRegionConfig {
         TextRegionConfig {
@@ -5835,6 +5789,134 @@ mod tests {
         assert_eq!(destination.pixel(1, 0), Some(true));
         assert_eq!(destination.pixel(2, 0), Some(false));
         assert_eq!(destination.pixel(0, 1), Some(false));
+    }
+
+    #[test]
+    fn clipped_symbol_placement_matches_scalar_oracle() {
+        let limits = Limits::default();
+        let operators = [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ];
+        for source_width in 0..=17 {
+            for destination_width in 0..=17 {
+                let source = Bitmap::filled(source_width, 3, true, &limits).expect("source");
+                for x in -20..=20 {
+                    for y in -4..=4 {
+                        for operator in operators {
+                            let mut expected = Bitmap::filled(destination_width, 4, false, &limits)
+                                .expect("destination");
+                            let mut actual = expected.clone();
+                            let mut expected_resources = ResourceTracker::default();
+                            let mut actual_resources = ResourceTracker::default();
+                            scalar_compose_placement_oracle(
+                                &mut expected,
+                                &source,
+                                Placement { x, y },
+                                operator,
+                                &limits,
+                                &mut expected_resources,
+                            )
+                            .expect("scalar placement");
+                            compose_placement(
+                                &mut actual,
+                                &source,
+                                Placement { x, y },
+                                operator,
+                                &limits,
+                                &mut actual_resources,
+                            )
+                            .expect("chunk placement");
+                            assert_eq!(actual, expected);
+                            assert_eq!(actual_resources, expected_resources);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_clipped_text_route_against_6333205_scalar_oracle() {
+        let limits = Limits::default();
+        let source = Bitmap::filled(1024, 512, true, &limits).expect("source");
+        let original = Bitmap::blank(1024, 512, &limits).expect("destination");
+        let placement = Placement { x: -3, y: -2 };
+        let mut chunk_times = Vec::new();
+        let mut scalar_times = Vec::new();
+        for sample in 0..11 {
+            let mut chunk = original.clone();
+            let mut scalar = original.clone();
+            let mut chunk_resources = ResourceTracker::default();
+            let mut scalar_resources = ResourceTracker::default();
+            if sample % 2 == 0 {
+                let start = Instant::now();
+                compose_placement(
+                    &mut chunk,
+                    &source,
+                    placement,
+                    CombinationOperator::Or,
+                    &limits,
+                    &mut chunk_resources,
+                )
+                .expect("chunk placement");
+                chunk_times.push(start.elapsed());
+                black_box(chunk.bytes());
+
+                let start = Instant::now();
+                scalar_compose_placement_oracle(
+                    &mut scalar,
+                    &source,
+                    placement,
+                    CombinationOperator::Or,
+                    &limits,
+                    &mut scalar_resources,
+                )
+                .expect("scalar placement");
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+            } else {
+                let start = Instant::now();
+                scalar_compose_placement_oracle(
+                    &mut scalar,
+                    &source,
+                    placement,
+                    CombinationOperator::Or,
+                    &limits,
+                    &mut scalar_resources,
+                )
+                .expect("scalar placement");
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+
+                let start = Instant::now();
+                compose_placement(
+                    &mut chunk,
+                    &source,
+                    placement,
+                    CombinationOperator::Or,
+                    &limits,
+                    &mut chunk_resources,
+                )
+                .expect("chunk placement");
+                chunk_times.push(start.elapsed());
+                black_box(chunk.bytes());
+            }
+            assert_eq!(chunk, scalar);
+            assert_eq!(chunk_resources, scalar_resources);
+        }
+        let chunk = median_duration(chunk_times);
+        let scalar = median_duration(scalar_times);
+        println!(
+            "text scalar_6333205_median_ns={} chunk_median_ns={} speedup={:.3}",
+            scalar.as_nanos(),
+            chunk.as_nanos(),
+            scalar.as_secs_f64() / chunk.as_secs_f64(),
+        );
     }
 
     #[test]

@@ -2810,29 +2810,7 @@ fn pad_bitmap_height(
     if byte_count > padded.data.len() {
         return Err(MalformedError::IntegerOverflow.into());
     }
-    #[cfg(verus_keep_ghost)]
-    proof_decl! {
-        let ghost padded_data_len = padded.data@.len();
-    }
-    let mut index = 0_usize;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            crate::spec::bitmap::storage_valid(&decoded),
-            byte_count == decoded.data@.len(),
-            index <= byte_count,
-            byte_count <= padded.data@.len(),
-            padded.width == decoded.width,
-            padded.height == nominal_height,
-            padded.stride as nat
-                == crate::spec::bitmap::stride_for_width(padded.width as nat),
-            padded.data@.len() == padded_data_len,
-            padded_data_len == padded.stride as nat * padded.height as nat,
-        decreases byte_count - index,
-    ))]
-    while index < byte_count {
-        padded.data[index] = decoded.data[index];
-        index += 1;
-    }
+    padded.copy_prefix_from(&decoded, byte_count)?;
     #[cfg(verus_keep_ghost)]
     proof! {
         crate::views::bitmap_fields(&padded);

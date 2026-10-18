@@ -1,5 +1,6 @@
 use std::io::Read;
 
+use crate::bitmap::CombinationOperator;
 use crate::document::{
     parse_embedded_document, parse_standalone_document, read_bounded_input, Decoder, DocumentInfo,
     GlobalSegments, PageInfo, ParsedData, ParsedSegment,
@@ -2591,49 +2592,38 @@ fn snapshot_region(
     limits: &Limits,
 ) -> Result<Bitmap, DecodeError> {
     let mut snapshot = Bitmap::blank(region.width, region.height, limits)?;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            crate::spec::bitmap::storage_valid(page),
-            crate::spec::bitmap::storage_valid(&snapshot),
-            crate::views::bitmap_width(&snapshot) == region.width,
-            crate::views::bitmap_height(&snapshot) == region.height,
-            y <= region.height,
-        decreases region.height - y,
-    ))]
-    for y in 0..region.height {
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                crate::spec::bitmap::storage_valid(page),
-                crate::spec::bitmap::storage_valid(&snapshot),
-                crate::views::bitmap_width(&snapshot) == region.width,
-                crate::views::bitmap_height(&snapshot) == region.height,
-                x <= region.width,
-                y < region.height,
-            decreases region.width - x,
-        ))]
-        for x in 0..region.width {
-            let page_x = clipped_coordinate(region.x, x, page.width());
-            let page_y = clipped_coordinate(region.y, y, page.height());
-            let value = match (page_x, page_y) {
-                (Some(page_x), Some(page_y)) => page.pixel(page_x, page_y).unwrap_or(false),
-                _ => false,
-            };
-            snapshot.set_pixel(x, y, value)?;
-        }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&snapshot);
+        assert(snapshot.width == region.width);
+        assert(snapshot.height == region.height);
+    }
+    let width = region.width.min(page.width().saturating_sub(region.x));
+    let height = region.height.min(page.height().saturating_sub(region.y));
+    if width != 0 && height != 0 {
+        snapshot.compose_region(
+            page,
+            region.x,
+            region.y,
+            0,
+            0,
+            width,
+            height,
+            CombinationOperator::Replace,
+        )?;
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&snapshot);
+        reveal(crate::spec::bitmap::storage_valid);
+        assert(crate::spec::bitmap::storage_valid(&snapshot));
+        assert(crate::views::bitmap_width(&snapshot) == region.width);
+        assert(crate::views::bitmap_height(&snapshot) == region.height);
     }
     Ok(snapshot)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures match out {
-        Some(coordinate) =>
-            coordinate as nat == origin as nat + offset as nat
-                && coordinate < bound,
-        None =>
-            origin as nat + offset as nat > u32::MAX as nat
-                || origin as nat + offset as nat >= bound as nat,
-    },
-))]
+#[cfg(test)]
 fn clipped_coordinate(origin: u32, offset: u32, bound: u32) -> Option<u32> {
     let coordinate = origin.checked_add(offset)?;
     if coordinate < bound {

@@ -959,6 +959,10 @@ pub(crate) fn slice_collective_bitmap(
             halftone_spec::bitmaps_valid(patterns@),
             raw_pattern_width == header.pattern_width,
             raw_pattern_height == header.pattern_height,
+            raw_pattern_width > 0,
+            raw_pattern_height > 0,
+            pattern_width > 0,
+            pattern_height > 0,
             pattern_width as nat == raw_pattern_width as nat,
             pattern_height as nat == raw_pattern_height as nat,
             expected_width as nat
@@ -980,65 +984,28 @@ pub(crate) fn slice_collective_bitmap(
             assert(source_x as nat
                 == pattern_index as nat * header.pattern_width as nat);
         }
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                crate::spec::bitmap::storage_valid(collective),
-                crate::spec::bitmap::storage_valid(&pattern),
-                y <= pattern_height,
-                pattern_index < pattern_count,
-                raw_pattern_width == header.pattern_width,
-                pattern_width as nat == raw_pattern_width as nat,
-                expected_width as nat
-                    == pattern_count as nat * header.pattern_width as nat,
-                pattern_count as nat * header.pattern_width as nat
-                    <= u32::MAX as nat,
-                source_x as nat
-                    == pattern_index as nat * header.pattern_width as nat,
-            decreases pattern_height - y,
-        ))]
-        for y in 0..pattern_height {
-            #[cfg_attr(verus_keep_ghost, verus_spec(
-                invariant
-                    crate::spec::bitmap::storage_valid(collective),
-                    crate::spec::bitmap::storage_valid(&pattern),
-                    x <= pattern_width,
-                    y < pattern_height,
-                    pattern_index < pattern_count,
-                    raw_pattern_width == header.pattern_width,
-                    pattern_width as nat == raw_pattern_width as nat,
-                    expected_width as nat
-                        == pattern_count as nat * header.pattern_width as nat,
-                    pattern_count as nat * header.pattern_width as nat
-                        <= u32::MAX as nat,
-                    source_x as nat
-                        == pattern_index as nat * header.pattern_width as nat,
-                decreases pattern_width - x,
-            ))]
-            for x in 0..pattern_width {
-                #[cfg(verus_keep_ghost)]
-                proof! {
-                    assert(pattern_index < pattern_count);
-                }
-                #[cfg(verus_keep_ghost)]
-                production_slice_coordinate!(
-                    pattern_index,
-                    pattern_count,
-                    x,
-                    header,
-                    source_x,
-                    expected_width
-                );
-                let value = collective
-                    .pixel(
-                        source_x
-                            .checked_add(x)
-                            .ok_or(MalformedError::IntegerOverflow)?,
-                        y,
-                    )
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                pattern.set_pixel(x, y, value)?;
-            }
+        #[cfg(verus_keep_ghost)]
+        {
+            let last_pattern_x = pattern_width - 1;
+            production_slice_coordinate!(
+                pattern_index,
+                pattern_count,
+                last_pattern_x,
+                header,
+                source_x,
+                expected_width
+            );
         }
+        pattern.compose_region(
+            collective,
+            source_x,
+            0,
+            0,
+            0,
+            pattern_width,
+            pattern_height,
+            CombinationOperator::Replace,
+        )?;
         patterns.push(pattern);
     }
     Ok(patterns)
@@ -1743,89 +1710,40 @@ fn render_clipped_pattern(
         assert(bottom == y + pattern_height_i64);
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            crate::spec::bitmap::storage_valid(destination),
-            crate::spec::bitmap::storage_valid(pattern),
-            destination_y_start <= destination_y,
-            destination_y <= destination_y_end,
-            0 <= destination_y_start,
-            destination_y_end <= destination_height,
-            y <= destination_y_start,
-            destination_y_end <= bottom,
-            0 <= destination_x_start,
-            destination_x_start < destination_x_end,
-            destination_x_end <= destination_width,
-            x <= destination_x_start,
-            destination_x_end <= right,
-            right == x + pattern_width_i64,
-            bottom == y + pattern_height_i64,
-        decreases destination_y_end - destination_y,
-    ))]
-    for destination_y in destination_y_start..destination_y_end {
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                crate::spec::bitmap::storage_valid(destination),
-                crate::spec::bitmap::storage_valid(pattern),
-                destination_x_start <= destination_x,
-                destination_x <= destination_x_end,
-                0 <= destination_x_start,
-                destination_x_end <= destination_width,
-                x <= destination_x_start,
-                destination_x_end <= right,
-                y <= destination_y,
-                destination_y < bottom,
-                0 <= destination_y,
-                destination_y < destination_height,
-                right == x + pattern_width_i64,
-                bottom == y + pattern_height_i64,
-            decreases destination_x_end - destination_x,
-        ))]
-        for destination_x in destination_x_start..destination_x_end {
-            let Ok(source_x) = u32::try_from(
-                destination_x
-                    .checked_sub(x)
-                    .ok_or(MalformedError::IntegerOverflow)?,
-            ) else {
-                return Err(MalformedError::IntegerOverflow.into());
-            };
-            let Ok(source_y) = u32::try_from(
-                destination_y
-                    .checked_sub(y)
-                    .ok_or(MalformedError::IntegerOverflow)?,
-            ) else {
-                return Err(MalformedError::IntegerOverflow.into());
-            };
-            let Ok(destination_x) = u32::try_from(destination_x) else {
-                return Err(MalformedError::IntegerOverflow.into());
-            };
-            let Ok(destination_y) = u32::try_from(destination_y) else {
-                return Err(MalformedError::IntegerOverflow.into());
-            };
-            if source_x >= pattern_width || source_y >= pattern_height {
-                return Err(MalformedError::IntegerOverflow.into());
-            }
-            #[cfg(verus_keep_ghost)]
-            proof! {
-                assert(source_x as int == destination_x as int - x);
-                assert(source_y as int == destination_y as int - y);
-                assert((destination_x as int) < right);
-                assert((destination_y as int) < bottom);
-                assert(destination_x < destination_width);
-                assert(destination_y < destination_height);
-            }
-            let source = pattern
-                .pixel(source_x, source_y)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let current = destination
-                .pixel(destination_x, destination_y)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            destination.set_pixel(
-                destination_x,
-                destination_y,
-                operator.apply(current, source),
-            )?;
-        }
+    let source_x = u32::try_from(
+        destination_x_start
+            .checked_sub(x)
+            .ok_or(MalformedError::IntegerOverflow)?,
+    )
+    .map_err(|_| MalformedError::IntegerOverflow)?;
+    let source_y = u32::try_from(
+        destination_y_start
+            .checked_sub(y)
+            .ok_or(MalformedError::IntegerOverflow)?,
+    )
+    .map_err(|_| MalformedError::IntegerOverflow)?;
+    let destination_x =
+        u32::try_from(destination_x_start).map_err(|_| MalformedError::IntegerOverflow)?;
+    let destination_y =
+        u32::try_from(destination_y_start).map_err(|_| MalformedError::IntegerOverflow)?;
+    let width = u32::try_from(destination_x_end - destination_x_start)
+        .map_err(|_| MalformedError::IntegerOverflow)?;
+    let height = u32::try_from(destination_y_end - destination_y_start)
+        .map_err(|_| MalformedError::IntegerOverflow)?;
+    destination.compose_region(
+        pattern,
+        source_x,
+        source_y,
+        destination_x,
+        destination_y,
+        width,
+        height,
+        operator,
+    )?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(destination);
+        reveal(crate::spec::bitmap::storage_valid);
     }
     Ok(())
 }
@@ -2121,6 +2039,8 @@ fn pixel_offset(width: u32, x: u32, y: u32) -> Result<usize, HalftoneError> {
 mod tests {
     use super::*;
     use std::collections::VecDeque;
+    use std::hint::black_box;
+    use std::time::{Duration, Instant};
 
     fn generous_limits() -> Limits {
         Limits {
@@ -2153,6 +2073,52 @@ mod tests {
             }
         }
         output
+    }
+
+    fn scalar_render_clipped_pattern_oracle(
+        destination: &mut Bitmap,
+        pattern: &Bitmap,
+        x: i64,
+        y: i64,
+        operator: CombinationOperator,
+    ) -> Result<(), HalftoneError> {
+        let right = x
+            .checked_add(i64::from(pattern.width()))
+            .ok_or(MalformedError::IntegerOverflow)?;
+        let bottom = y
+            .checked_add(i64::from(pattern.height()))
+            .ok_or(MalformedError::IntegerOverflow)?;
+        let (x_start, x_end) = clipped_axis(x, right, destination.width());
+        let (y_start, y_end) = clipped_axis(y, bottom, destination.height());
+        for destination_y in y_start..y_end {
+            for destination_x in x_start..x_end {
+                let source_x = u32::try_from(destination_x - x)
+                    .map_err(|_| MalformedError::IntegerOverflow)?;
+                let source_y = u32::try_from(destination_y - y)
+                    .map_err(|_| MalformedError::IntegerOverflow)?;
+                let destination_x =
+                    u32::try_from(destination_x).map_err(|_| MalformedError::IntegerOverflow)?;
+                let destination_y =
+                    u32::try_from(destination_y).map_err(|_| MalformedError::IntegerOverflow)?;
+                let source = pattern
+                    .pixel(source_x, source_y)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let current = destination
+                    .pixel(destination_x, destination_y)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                destination.set_pixel(
+                    destination_x,
+                    destination_y,
+                    operator.apply(current, source),
+                )?;
+            }
+        }
+        Ok(())
+    }
+
+    fn median_duration(mut values: Vec<Duration>) -> Duration {
+        values.sort_unstable();
+        values[values.len() / 2]
     }
 
     #[test]
@@ -2455,6 +2421,105 @@ mod tests {
             decode_halftone_region(&header, 4, 2, &patterns, &mut decoder, &limits, &mut work)
                 .expect("halftone should render");
         assert_eq!(output, bitmap(&["0010", "1110"]));
+    }
+
+    #[test]
+    fn clipped_pattern_rendering_exhaustively_matches_scalar_oracle() {
+        let limits = generous_limits();
+        let operators = [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ];
+        for pattern_width in 1..=10 {
+            for destination_width in 1..=10 {
+                let pattern =
+                    Bitmap::filled(pattern_width, 3, true, &limits).expect("pattern bitmap");
+                let original =
+                    Bitmap::filled(destination_width, 4, false, &limits).expect("destination");
+                for x in -12..=12 {
+                    for y in -4..=4 {
+                        for operator in operators {
+                            let mut expected = original.clone();
+                            let mut actual = original.clone();
+                            scalar_render_clipped_pattern_oracle(
+                                &mut expected,
+                                &pattern,
+                                x,
+                                y,
+                                operator,
+                            )
+                            .expect("scalar render");
+                            render_clipped_pattern(&mut actual, &pattern, x, y, operator)
+                                .expect("chunk render");
+                            assert_eq!(actual, expected);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_halftone_render_route_against_6333205_scalar_oracle() {
+        let limits = generous_limits();
+        let pattern = Bitmap::filled(1024, 512, true, &limits).expect("pattern");
+        let original = Bitmap::blank(1024, 512, &limits).expect("destination");
+        let mut chunk_times = Vec::new();
+        let mut scalar_times = Vec::new();
+        for sample in 0..11 {
+            let mut chunk = original.clone();
+            let mut scalar = original.clone();
+            if sample % 2 == 0 {
+                let start = Instant::now();
+                render_clipped_pattern(&mut chunk, &pattern, -3, -2, CombinationOperator::Xor)
+                    .expect("chunk render");
+                chunk_times.push(start.elapsed());
+                black_box(chunk.bytes());
+
+                let start = Instant::now();
+                scalar_render_clipped_pattern_oracle(
+                    &mut scalar,
+                    &pattern,
+                    -3,
+                    -2,
+                    CombinationOperator::Xor,
+                )
+                .expect("scalar render");
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+            } else {
+                let start = Instant::now();
+                scalar_render_clipped_pattern_oracle(
+                    &mut scalar,
+                    &pattern,
+                    -3,
+                    -2,
+                    CombinationOperator::Xor,
+                )
+                .expect("scalar render");
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+
+                let start = Instant::now();
+                render_clipped_pattern(&mut chunk, &pattern, -3, -2, CombinationOperator::Xor)
+                    .expect("chunk render");
+                chunk_times.push(start.elapsed());
+                black_box(chunk.bytes());
+            }
+            assert_eq!(chunk, scalar);
+        }
+        let chunk = median_duration(chunk_times);
+        let scalar = median_duration(scalar_times);
+        println!(
+            "halftone scalar_6333205_median_ns={} chunk_median_ns={} speedup={:.3}",
+            scalar.as_nanos(),
+            chunk.as_nanos(),
+            scalar.as_secs_f64() / chunk.as_secs_f64(),
+        );
     }
 
     #[test]
