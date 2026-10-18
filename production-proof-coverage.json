@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 813,
+  "verus_verified_obligations": 838,
   "native_assumptions": [],
   "counts": {
-    "verified": 424,
-    "reviewed-verifier-limitation": 95,
+    "verified": 437,
+    "reviewed-verifier-limitation": 84,
     "audited-forwarder": 21,
     "native-assumption": 0,
     "incomplete": 0
@@ -17,7 +17,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::new"
       ]
@@ -28,7 +28,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::from_state"
       ]
@@ -39,7 +39,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::reset"
       ]
@@ -50,7 +50,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::state_index"
       ]
@@ -61,7 +61,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::mps"
       ]
@@ -72,7 +72,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticContext::default"
       ]
@@ -83,7 +83,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::reset_contexts"
       ]
@@ -94,7 +94,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified.",
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": []
     },
     {
@@ -103,8 +103,19 @@
       "visibility": "private",
       "status": "audited-forwarder",
       "disposition_reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit.",
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": []
+    },
+    {
+      "id": "arithmetic::ArithmeticError::into_decode",
+      "file": "src/arithmetic.rs",
+      "visibility": "pub(crate)",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
+      "verus_functions": [
+        "jbig2_rs_production::arithmetic::ArithmeticError::into_decode"
+      ]
     },
     {
       "id": "arithmetic::DecodeError::from",
@@ -112,7 +123,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::error::DecodeError::from"
       ]
@@ -123,7 +134,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::new"
       ]
@@ -134,7 +145,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode"
       ]
@@ -145,7 +156,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer"
       ]
@@ -156,7 +167,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_iaid"
       ]
@@ -167,7 +178,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer_bit"
       ]
@@ -178,7 +189,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer_bits"
       ]
@@ -189,7 +200,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::marker"
       ]
@@ -200,7 +211,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::byte_position"
       ]
@@ -211,7 +222,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::renormalize"
       ]
@@ -222,7 +233,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::byte_in"
       ]
@@ -233,7 +244,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "80ff038e77fec8f03ed70fede5ab78ced4114af4d50146fe8849123e1da0cf71",
+      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::unexpected_eof"
       ]
@@ -2095,7 +2106,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": []
     },
     {
@@ -2104,7 +2115,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": []
     },
     {
@@ -2113,7 +2124,7 @@
       "visibility": "private",
       "status": "audited-forwarder",
       "disposition_reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": []
     },
     {
@@ -2122,7 +2133,7 @@
       "visibility": "private",
       "status": "audited-forwarder",
       "disposition_reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": []
     },
     {
@@ -2131,7 +2142,7 @@
       "visibility": "private",
       "status": "audited-forwarder",
       "disposition_reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": []
     },
     {
@@ -2140,7 +2151,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::error::DecodeError::from"
       ]
@@ -2151,7 +2162,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::TemplateOffset::new"
       ]
@@ -2162,7 +2173,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericTemplate::from_flags"
       ]
@@ -2173,7 +2184,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericTemplate::context_bits"
       ]
@@ -2184,7 +2195,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericTemplate::sltp_context"
       ]
@@ -2195,7 +2206,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_mmr_flag"
       ]
@@ -2206,7 +2217,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_typical_prediction_flag"
       ]
@@ -2217,7 +2228,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_extended_template_flag"
       ]
@@ -2228,7 +2239,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_reserved_flags"
       ]
@@ -2239,9 +2250,9 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
-        "jbig2_rs_production::generic_region::TemplateOffset::new"
+        "jbig2_rs_production::generic_region::GenericContexts::new"
       ]
     },
     {
@@ -2250,7 +2261,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericContexts::reset"
       ]
@@ -2261,7 +2272,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericContexts::try_snapshot"
       ]
@@ -2272,7 +2283,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericContexts::restore"
       ]
@@ -2283,28 +2294,32 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
-        "jbig2_rs_production::generic_region::TemplateOffset::new"
+        "jbig2_rs_production::generic_region::GenericArithmeticSession::new"
       ]
     },
     {
       "id": "generic_region::GenericArithmeticSession::decode_bitmap",
       "file": "src/generic_region.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::GenericArithmeticSession::decode_bitmap"
+      ]
     },
     {
       "id": "generic_region::GenericArithmeticSession::decode_bitmap_rows",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::GenericArithmeticSession::decode_bitmap_rows"
+      ]
     },
     {
       "id": "generic_region::GenericArithmeticSession::consumed_byte_offset",
@@ -2312,7 +2327,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericArithmeticSession::consumed_byte_offset"
       ]
@@ -2323,7 +2338,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericArithmeticSession::observed_marker_offset"
       ]
@@ -2334,7 +2349,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::GenericArithmeticSession::validate_final_marker"
       ]
@@ -2345,7 +2360,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::parse_generic_region_header"
       ]
@@ -2354,55 +2369,78 @@
       "id": "generic_region::decode_generic_region_segment",
       "file": "src/generic_region.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_generic_region_segment"
+      ]
     },
     {
       "id": "generic_region::decode_known_length_arithmetic_generic",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_known_length_arithmetic_generic"
+      ]
     },
     {
       "id": "generic_region::split_unknown_length_data",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::split_unknown_length_data"
+      ]
     },
     {
       "id": "generic_region::decode_arithmetic_generic",
       "file": "src/generic_region.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_arithmetic_generic"
+      ]
     },
     {
       "id": "generic_region::decode_generic_on",
       "file": "src/generic_region.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_generic_on"
+      ]
+    },
+    {
+      "id": "generic_region::decode_probability",
+      "file": "src/generic_region.rs",
+      "visibility": "private",
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_probability"
+      ]
     },
     {
       "id": "generic_region::decode_generic_with",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_generic_with"
+      ]
     },
     {
       "id": "generic_region::generic_slot",
@@ -2410,7 +2448,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_slot"
       ]
@@ -2421,7 +2459,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_at"
       ]
@@ -2432,7 +2470,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_adaptive_offset"
       ]
@@ -2443,7 +2481,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_context"
       ]
@@ -2454,7 +2492,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementTemplate::from_flags"
       ]
@@ -2465,7 +2503,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementTemplate::context_bits"
       ]
@@ -2476,7 +2514,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementTemplate::sltp_context"
       ]
@@ -2487,9 +2525,9 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
-        "jbig2_rs_production::generic_region::TemplateOffset::new"
+        "jbig2_rs_production::generic_region::RefinementContexts::new"
       ]
     },
     {
@@ -2498,7 +2536,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementContexts::reset"
       ]
@@ -2509,7 +2547,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementContexts::try_snapshot"
       ]
@@ -2520,7 +2558,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::RefinementContexts::restore"
       ]
@@ -2531,7 +2569,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::parse_refinement_region_header"
       ]
@@ -2540,28 +2578,34 @@
       "id": "generic_region::decode_arithmetic_refinement",
       "file": "src/generic_region.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_arithmetic_refinement"
+      ]
     },
     {
       "id": "generic_region::decode_refinement_on",
       "file": "src/generic_region.rs",
       "visibility": "pub(crate)",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_refinement_on"
+      ]
     },
     {
       "id": "generic_region::decode_refinement_with",
       "file": "src/generic_region.rs",
       "visibility": "private",
-      "status": "reviewed-verifier-limitation",
-      "disposition_reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths.",
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "verus_functions": [
+        "jbig2_rs_production::generic_region::decode_refinement_with"
+      ]
     },
     {
       "id": "generic_region::target_slot",
@@ -2569,7 +2613,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::target_slot"
       ]
@@ -2580,7 +2624,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::target_at"
       ]
@@ -2591,7 +2635,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::reference_slot"
       ]
@@ -2602,7 +2646,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::reference_at"
       ]
@@ -2613,7 +2657,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::refinement_adaptive_offset"
       ]
@@ -2624,7 +2668,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::refinement_context"
       ]
@@ -2635,7 +2679,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::refinement_prediction"
       ]
@@ -2646,7 +2690,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::sample_reference"
       ]
@@ -2657,7 +2701,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::sample_bitmap"
       ]
@@ -2668,7 +2712,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::sample_signed"
       ]
@@ -2679,7 +2723,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::read_offset"
       ]
@@ -2690,7 +2734,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::signed_offset_byte"
       ]
@@ -2701,7 +2745,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_target_adaptive"
       ]
@@ -2712,7 +2756,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_generic_adaptive_values"
       ]
@@ -2723,7 +2767,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_arithmetic_terminator"
       ]
@@ -2734,7 +2778,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_observed_marker"
       ]
@@ -2745,7 +2789,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_context_count"
       ]
@@ -2756,7 +2800,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::refinement_context_count"
       ]
@@ -2767,7 +2811,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_generic_context_layout"
       ]
@@ -2778,7 +2822,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_refinement_context_layout"
       ]
@@ -2789,7 +2833,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_probability_states"
       ]
@@ -2800,7 +2844,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_region_spec::generic_template_code",
         "jbig2_rs_production::generic_region::generic_template_code"
@@ -2812,7 +2856,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::refinement_template_code"
       ]
@@ -2823,7 +2867,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::validate_snapshot_limits"
       ]
@@ -2834,7 +2878,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::try_copy_contexts"
       ]
@@ -2845,7 +2889,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::allocate_contexts"
       ]
@@ -2856,7 +2900,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::context_storage_bytes"
       ]
@@ -2867,7 +2911,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::enforce_managed_memory"
       ]
@@ -2878,7 +2922,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::bitmap_storage_bytes"
       ]
@@ -2889,7 +2933,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::enforce_generic_work"
       ]
@@ -2900,7 +2944,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::generic_work"
       ]
@@ -2911,7 +2955,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::enforce_refinement_work"
       ]
@@ -2922,7 +2966,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::refinement_work"
       ]
@@ -2933,7 +2977,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::enforce_work"
       ]
@@ -2944,7 +2988,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::enforce_input_limit"
       ]
@@ -2955,7 +2999,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::integer_overflow"
       ]
@@ -2966,7 +3010,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::unexpected_eof"
       ]
@@ -2977,7 +3021,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::copy_bitmap_row"
       ]
@@ -2988,7 +3032,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "eedb2efbf6c7d2fea26ada2f622a7abf9ab7c98328d7d0af140926d7a6b70b3f",
+      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
       "verus_functions": [
         "jbig2_rs_production::generic_region::pad_bitmap_height"
       ]

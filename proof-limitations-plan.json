@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "4d1011736eec14af3ceb6aa1cf252341fd8d7397",
-  "tracked_functions": 95,
+  "production_source_revision": "392e05321f31b0d25a7cfd549e19264ee1a00d8f",
+  "tracked_functions": 84,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -23,7 +23,7 @@
     },
     {
       "id": "VL-003",
-      "count": 13,
+      "count": 2,
       "priority": "high",
       "surface": "Decode orchestration",
       "mitigation": "Introduce verified deterministic resource stores and concrete page-sink adapters, replacing HashMap and trait-callback proof dependencies.",
