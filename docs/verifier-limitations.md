@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 838 obligations with zero errors and zero native
-assumptions. The production inventory contains 437 directly verified functions
-and 84 reviewed verifier limitations. Twenty-one one-line standard trait
+Pinned Verus verifies 998 obligations with zero errors and zero native
+assumptions. The production inventory contains 521 directly verified functions
+and 18 reviewed verifier limitations. Twenty-one one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
 source-file hash in `proof-dispositions.json`.
@@ -66,6 +66,11 @@ constant tables and bounded indexed selection instead of slice coercions.
 Generic and refinement probability decoding now uses concrete decoder/context
 state, and their raster loops, reusable sessions, known/unknown framing, and
 complete segment dispatch paths verify end-to-end.
+Huffman construction, symbol dictionaries, text regions, patterns, halftones,
+resource retention, page lifecycle, and the concrete high-level decode
+orchestration now verify end-to-end. Remaining reviewed items are limited to
+formatting/error traits, `std::io::Read`, and generic caller-provided page-sink
+callbacks; codec algorithms have no reviewed proof limitations.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and

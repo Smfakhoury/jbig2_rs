@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "production_source_revision": "392e05321f31b0d25a7cfd549e19264ee1a00d8f",
-  "tracked_functions": 84,
+  "production_source_revision": "cb73e895935ccac9ef821105071e98d720737bec",
+  "tracked_functions": 18,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
   "workstreams": [
     {
@@ -15,7 +15,7 @@
     },
     {
       "id": "VL-002",
-      "count": 7,
+      "count": 9,
       "priority": "low",
       "surface": "Standard trait, formatting, and std::io boundaries",
       "mitigation": "Keep formatting outside algorithm proofs; directly verify Default and From implementations when pinned Verus supports these standard traits, and model stable IoErrorKind conversion only through a separately reviewed boundary contract.",
@@ -23,7 +23,7 @@
     },
     {
       "id": "VL-003",
-      "count": 2,
+      "count": 7,
       "priority": "high",
       "surface": "Decode orchestration",
       "mitigation": "Introduce verified deterministic resource stores and concrete page-sink adapters, replacing HashMap and trait-callback proof dependencies.",
@@ -31,7 +31,7 @@
     },
     {
       "id": "VL-004",
-      "count": 12,
+      "count": 2,
       "priority": "high",
       "surface": "Document parsing",
       "mitigation": "Split bounded reader acquisition from a verified slice parser and replace iterator/closure-heavy HashMap validation with indexed deterministic vectors.",
@@ -39,7 +39,7 @@
     },
     {
       "id": "VL-005",
-      "count": 5,
+      "count": 0,
       "priority": "medium",
       "surface": "Halftone end-to-end paths",
       "mitigation": "Consume verified bitmap mutation contracts and replace generic decoder callbacks with a concrete arithmetic/MMR decoder enum.",
@@ -47,7 +47,7 @@
     },
     {
       "id": "VL-006",
-      "count": 1,
+      "count": 0,
       "priority": "medium",
       "surface": "Profile-list materialization",
       "mitigation": "Use the planned verified FallibleVec wrapper.",
@@ -56,7 +56,7 @@
     },
     {
       "id": "VL-007",
-      "count": 3,
+      "count": 0,
       "priority": "high",
       "surface": "Segment reference materialization",
       "mitigation": "Use verified FallibleVec and prove long/short retention extraction over the allocated result.",
@@ -65,7 +65,7 @@
     },
     {
       "id": "VL-008",
-      "count": 4,
+      "count": 0,
       "priority": "medium",
       "surface": "Huffman table allocation/construction",
       "mitigation": "Use verified FallibleVec, explicit allocation-size lemmas, and slice-view adapters for static standard tables.",
@@ -73,7 +73,7 @@
     },
     {
       "id": "VL-009",
-      "count": 37,
+      "count": 0,
       "priority": "high",
       "surface": "Symbol/text orchestration",
       "mitigation": "Replace RefCell/dynamic callbacks with a concrete entropy-state enum, adopt verified FallibleVec, and use completed bitmap/generic contracts.",
@@ -81,7 +81,7 @@
     },
     {
       "id": "VL-010",
-      "count": 17,
+      "count": 0,
       "priority": "high",
       "surface": "Generic/refinement raster paths",
       "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
