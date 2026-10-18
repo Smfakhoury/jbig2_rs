@@ -204,6 +204,40 @@ pub(crate) open spec fn placement_within_extents(
         && placement.y <= placement.y + height as int - 1
 }
 
+pub(crate) open spec fn prepared_placement_valid(
+    prepared: super::PreparedPlacement,
+    destination: &crate::bitmap::Bitmap,
+) -> bool {
+    crate::spec::bitmap::storage_valid(prepared.blit.source)
+        && prepared.blit.source_x as nat + prepared.blit.width as nat
+            <= prepared.blit.source.width as nat
+        && prepared.source_y as nat + prepared.height as nat
+            <= prepared.blit.source.height as nat
+        && prepared.blit.destination_x as nat + prepared.blit.width as nat
+            <= destination.width as nat
+        && prepared.destination_y as nat + prepared.height as nat
+            <= destination.height as nat
+}
+
+pub(crate) open spec fn placement_batch_valid(
+    batch: &super::PlacementBatch,
+    destination: &crate::bitmap::Bitmap,
+) -> bool {
+    batch.blits@.len() <= super::MAX_PLACEMENT_BATCH
+        && forall|index: int| 0 <= index < batch.blits@.len() ==> {
+            let blit = #[trigger] batch.blits@[index];
+            crate::spec::bitmap::storage_valid(blit.source)
+                && blit.source_x as nat + blit.width as nat
+                    <= blit.source.width as nat
+                && batch.source_y as nat + batch.height as nat
+                    <= blit.source.height as nat
+                && blit.destination_x as nat + blit.width as nat
+                    <= destination.width as nat
+                && batch.destination_y as nat + batch.height as nat
+                    <= destination.height as nat
+        }
+}
+
 pub(crate) open spec fn placement_for_current(
     state: &super::TextRegionState,
     within_strip_t: u8,
