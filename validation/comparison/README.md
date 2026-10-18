@@ -34,6 +34,16 @@ median exceeds 3%. Override only for investigation with
 `MAX_RELATIVE_SPREAD`. Runs are pinned to CPU 0 by default; set `BENCH_CPU` to
 another isolated core when needed.
 
+Capture peak RSS and Linux hardware counters on a host with `perf` access:
+
+```sh
+benchmarks/hayro-comparison/capture-counters.sh jbig2_rs
+benchmarks/hayro-comparison/capture-counters.sh hayro_jbig2
+```
+
+The script fails explicitly when `perf_event_paranoid` prevents access rather
+than returning success-shaped empty counter data.
+
 Private ITU vectors can be compared without copying them into the repository:
 
 ```sh
