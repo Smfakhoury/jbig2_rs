@@ -10,6 +10,27 @@ pub(crate) closed spec fn work_used(work: &super::WorkBudget) -> u64 {
     work.used
 }
 
+pub(crate) open spec fn work_valid(work: &super::WorkBudget) -> bool {
+    work_used(work) <= work_limit(work)
+}
+
+pub(crate) open spec fn bitmaps_valid(bitmaps: Seq<crate::bitmap::Bitmap>) -> bool {
+    forall|index: int| 0 <= index < bitmaps.len()
+        ==> crate::spec::bitmap::storage_valid(#[trigger] &bitmaps[index])
+}
+
+pub(crate) open spec fn decoder_state_valid(
+    state: &super::GenericRegionState,
+) -> bool {
+    match state {
+        super::GenericRegionState::Arithmetic { session, .. } =>
+            crate::arithmetic::arithmetic_spec::decoder_valid(&session.decoder),
+        super::GenericRegionState::PatternMmr { .. } => true,
+        super::GenericRegionState::GrayMmr { coded, offset, .. } =>
+            *offset <= coded@.len(),
+    }
+}
+
 pub(super) proof fn work_fields(work: &super::WorkBudget)
     ensures
         work_limit(work) == work.limit,

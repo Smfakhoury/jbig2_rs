@@ -1,7 +1,13 @@
 use crate::bitmap::CombinationOperator;
+use crate::generic_region::{
+    decode_generic_on, GenericArithmeticCall, GenericArithmeticSession, GenericRegionError,
+    GenericTemplate, TemplateOffset,
+};
+use crate::mmr::{decode_mmr, decode_mmr_prefix, EofbPolicy, MmrError};
 use crate::reader::ByteReader;
 use crate::{
-    Bitmap, DecodeError, HalftoneErrorKind, LimitExceeded, LimitKind, Limits, MalformedError,
+    Bitmap, DecodeError, GenericRegionErrorKind, HalftoneErrorKind, LimitExceeded, LimitKind,
+    Limits, MalformedError, MmrErrorKind,
 };
 #[cfg(verus_keep_ghost)]
 use vstd::layout;
@@ -11,7 +17,7 @@ use vstd::prelude::*;
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
 #[path = "../specs/halftone.rs"]
-mod halftone_spec;
+pub(crate) mod halftone_spec;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -87,6 +93,7 @@ pub(crate) enum GenericRegionCoding {
 
 /// A generic-region decode requested by the pattern or halftone procedures.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericRegionRequest<'a> {
     pub(crate) width: u32,
     pub(crate) height: u32,
@@ -96,20 +103,16 @@ pub(crate) struct GenericRegionRequest<'a> {
     pub(crate) skip: Option<&'a Bitmap>,
 }
 
-/// Callback boundary for the generic arithmetic and MMR bitmap decoders.
-///
-/// Implementations must return exactly the requested dimensions. Arithmetic
-/// implementations must preserve their generic-region probability state
-/// across successive gray-plane calls; the segment dispatcher is responsible
-/// for the single segment-level reset before entering this module.
-pub(crate) trait GenericRegionDecoder {
+#[cfg(test)]
+pub(crate) trait GenericRegionTestDecoder {
     fn decode_generic_region(
         &mut self,
         request: GenericRegionRequest<'_>,
     ) -> Result<Bitmap, DecodeError>;
 }
 
-impl<F> GenericRegionDecoder for F
+#[cfg(test)]
+impl<F> GenericRegionTestDecoder for F
 where
     F: for<'a> FnMut(GenericRegionRequest<'a>) -> Result<Bitmap, DecodeError>,
 {
@@ -118,6 +121,339 @@ where
         request: GenericRegionRequest<'_>,
     ) -> Result<Bitmap, DecodeError> {
         self(request)
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn generic_error_into_decode(error: GenericRegionError) -> DecodeError {
+    let kind = match error {
+        GenericRegionError::Decode(error) => return error,
+        GenericRegionError::ReservedFlags(flags) => GenericRegionErrorKind::ReservedFlags(flags),
+        GenericRegionError::InvalidFlags(flags) => GenericRegionErrorKind::InvalidFlags(flags),
+        GenericRegionError::InvalidAdaptivePixel { number, x, y } => {
+            GenericRegionErrorKind::InvalidAdaptivePixel { number, x, y }
+        }
+        GenericRegionError::InvalidSkipDimensions => GenericRegionErrorKind::InvalidSkipDimensions,
+        GenericRegionError::InvalidArithmeticTerminator => {
+            GenericRegionErrorKind::InvalidArithmeticTerminator
+        }
+        GenericRegionError::UnexpectedArithmeticMarker { offset, code } => {
+            GenericRegionErrorKind::UnexpectedArithmeticMarker { offset, code }
+        }
+        GenericRegionError::RowCountMismatch { expected, actual } => {
+            GenericRegionErrorKind::RowCountMismatch { expected, actual }
+        }
+        GenericRegionError::ContextIndex { index, count } => {
+            GenericRegionErrorKind::ContextIndex { index, count }
+        }
+    };
+    DecodeError::Malformed(MalformedError::InvalidGenericRegion(kind))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn mmr_error_into_decode(error: MmrError) -> DecodeError {
+    let kind = match error {
+        MmrError::Reader(error) => return DecodeError::Malformed(error),
+        MmrError::Bitmap(error) => return error,
+        MmrError::Allocation { requested_bytes } => {
+            return DecodeError::Allocation { requested_bytes };
+        }
+        MmrError::IntegerOverflow => {
+            return DecodeError::Malformed(MalformedError::IntegerOverflow);
+        }
+        MmrError::InvalidMode { bit_offset } => MmrErrorKind::InvalidMode { bit_offset },
+        MmrError::ExtensionMode { bit_offset } => MmrErrorKind::ExtensionMode { bit_offset },
+        MmrError::InvalidRunCode { bit_offset, black } => {
+            MmrErrorKind::InvalidRunCode { bit_offset, black }
+        }
+        MmrError::RunExceedsRow => MmrErrorKind::RunExceedsRow,
+        MmrError::InvalidTransition => MmrErrorKind::InvalidTransition,
+        MmrError::NonProgress => MmrErrorKind::NonProgress,
+        MmrError::TooManyModes => MmrErrorKind::TooManyModes,
+        MmrError::MissingEofb => MmrErrorKind::MissingEofb,
+        MmrError::InvalidEofb => MmrErrorKind::InvalidEofb,
+        MmrError::TrailingData => MmrErrorKind::TrailingData,
+        MmrError::NonZeroEofbPadding => MmrErrorKind::NonZeroPadding,
+    };
+    DecodeError::Malformed(MalformedError::InvalidMmr(kind))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum ArithmeticPurpose {
+    Pattern,
+    Halftone,
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum GenericRegionState<'a> {
+    Arithmetic {
+        session: GenericArithmeticSession<'a>,
+        template: u8,
+        purpose: ArithmeticPurpose,
+    },
+    PatternMmr {
+        coded: &'a [u8],
+        limits: Limits,
+        used: bool,
+    },
+    GrayMmr {
+        coded: &'a [u8],
+        limits: Limits,
+        offset: usize,
+    },
+    #[cfg(test)]
+    Scripted(&'a mut dyn GenericRegionTestDecoder),
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(state) => halftone_spec::decoder_state_valid(&state),
+        Err(_) => true,
+    },
+))]
+fn new_arithmetic_state<'a>(
+    coded: &'a [u8],
+    template: GenericTemplate,
+    template_code: u8,
+    purpose: ArithmeticPurpose,
+    limits: &Limits,
+) -> Result<GenericRegionState<'a>, DecodeError> {
+    let session = match GenericArithmeticSession::new(coded, template, false, limits) {
+        Ok(session) => session,
+        Err(error) => return Err(generic_error_into_decode(error)),
+    };
+    Ok(GenericRegionState::Arithmetic {
+        session,
+        template: template_code,
+        purpose,
+    })
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(state) => halftone_spec::decoder_state_valid(&state),
+        Err(_) => true,
+    },
+))]
+pub(crate) fn new_pattern_arithmetic_state<'a>(
+    coded: &'a [u8],
+    template: GenericTemplate,
+    template_code: u8,
+    limits: &Limits,
+) -> Result<GenericRegionState<'a>, DecodeError> {
+    new_arithmetic_state(
+        coded,
+        template,
+        template_code,
+        ArithmeticPurpose::Pattern,
+        limits,
+    )
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(state) => halftone_spec::decoder_state_valid(&state),
+        Err(_) => true,
+    },
+))]
+pub(crate) fn new_halftone_arithmetic_state<'a>(
+    coded: &'a [u8],
+    template: GenericTemplate,
+    template_code: u8,
+    limits: &Limits,
+) -> Result<GenericRegionState<'a>, DecodeError> {
+    new_arithmetic_state(
+        coded,
+        template,
+        template_code,
+        ArithmeticPurpose::Halftone,
+        limits,
+    )
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures halftone_spec::decoder_state_valid(&out),
+))]
+pub(crate) fn new_pattern_mmr_state<'a>(
+    coded: &'a [u8],
+    limits: &Limits,
+) -> GenericRegionState<'a> {
+    GenericRegionState::PatternMmr {
+        coded,
+        limits: *limits,
+        used: false,
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures halftone_spec::decoder_state_valid(&out),
+))]
+pub(crate) fn new_gray_mmr_state<'a>(coded: &'a [u8], limits: &Limits) -> GenericRegionState<'a> {
+    GenericRegionState::GrayMmr {
+        coded,
+        limits: *limits,
+        offset: 0,
+    }
+}
+
+#[allow(clippy::elidable_lifetime_names)]
+impl<'a> GenericRegionState<'a> {
+    #[cfg(test)]
+    pub(crate) fn scripted(decoder: &'a mut dyn GenericRegionTestDecoder) -> Self {
+        Self::Scripted(decoder)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            halftone_spec::decoder_state_valid(old(self)),
+            match request.skip {
+                Some(skip) => crate::spec::bitmap::storage_valid(skip),
+                None => true,
+            },
+        ensures match out {
+            Ok(bitmap) =>
+                halftone_spec::decoder_state_valid(final(self))
+                    && crate::spec::bitmap::storage_valid(&bitmap),
+            Err(_) => true,
+        },
+    ))]
+    #[allow(clippy::too_many_lines)]
+    fn decode_generic_region(
+        &mut self,
+        request: GenericRegionRequest<'_>,
+    ) -> Result<Bitmap, DecodeError> {
+        match self {
+            Self::Arithmetic {
+                session,
+                template,
+                purpose,
+            } => {
+                let GenericRegionCoding::Arithmetic {
+                    template: requested_template,
+                    adaptive_pixels,
+                } = request.coding
+                else {
+                    let reason = match purpose {
+                        ArithmeticPurpose::Pattern => "pattern dictionary coding mode changed",
+                        ArithmeticPurpose::Halftone => "halftone coding mode changed",
+                    };
+                    return Err(MalformedError::InvalidPageState(reason).into());
+                };
+                if requested_template != *template {
+                    let reason = match purpose {
+                        ArithmeticPurpose::Pattern => "pattern dictionary template changed",
+                        ArithmeticPurpose::Halftone => "halftone template changed",
+                    };
+                    return Err(MalformedError::InvalidPageState(reason).into());
+                }
+                let mut adaptive = [TemplateOffset::new(0, 0); 12];
+                adaptive[0] = TemplateOffset::new(adaptive_pixels[0].0, adaptive_pixels[0].1);
+                adaptive[1] = TemplateOffset::new(adaptive_pixels[1].0, adaptive_pixels[1].1);
+                adaptive[2] = TemplateOffset::new(adaptive_pixels[2].0, adaptive_pixels[2].1);
+                adaptive[3] = TemplateOffset::new(adaptive_pixels[3].0, adaptive_pixels[3].1);
+                match decode_generic_on(
+                    &mut session.decoder,
+                    &mut session.contexts,
+                    GenericArithmeticCall {
+                        width: request.width,
+                        height: request.height,
+                        adaptive,
+                        typical_prediction: request.typical_prediction,
+                        skip: request.skip,
+                    },
+                    request.height,
+                    &session.limits,
+                    &mut session.work_used,
+                ) {
+                    Ok(bitmap) => Ok(bitmap),
+                    Err(error) => Err(generic_error_into_decode(error)),
+                }
+            }
+            Self::PatternMmr {
+                coded,
+                limits,
+                used,
+            } => {
+                if *used {
+                    return Err(MalformedError::InvalidPageState(
+                        "pattern dictionary requested multiple MMR bitmaps",
+                    )
+                    .into());
+                }
+                if request.coding
+                    != (GenericRegionCoding::Mmr {
+                        require_eofb: false,
+                    })
+                {
+                    return Err(MalformedError::InvalidPageState(
+                        "pattern dictionary coding mode changed",
+                    )
+                    .into());
+                }
+                *used = true;
+                match decode_mmr(
+                    coded,
+                    request.width,
+                    request.height,
+                    limits,
+                    EofbPolicy::Optional,
+                ) {
+                    Ok(bitmap) => Ok(bitmap),
+                    Err(error) => Err(mmr_error_into_decode(error)),
+                }
+            }
+            Self::GrayMmr {
+                coded,
+                limits,
+                offset,
+            } => {
+                if request.coding != (GenericRegionCoding::Mmr { require_eofb: true }) {
+                    return Err(
+                        MalformedError::InvalidPageState("halftone coding mode changed").into(),
+                    );
+                }
+                let remaining = coded
+                    .get(*offset..)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let (bitmap, consumed) =
+                    match decode_mmr_prefix(remaining, request.width, request.height, limits) {
+                        Ok(decoded) => decoded,
+                        Err(error) => return Err(mmr_error_into_decode(error)),
+                    };
+                *offset = offset
+                    .checked_add(consumed)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                Ok(bitmap)
+            }
+            #[cfg(test)]
+            Self::Scripted(decoder) => decoder.decode_generic_region(request),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub(crate) fn finish(&self) -> Result<(), DecodeError> {
+        match self {
+            Self::Arithmetic { session, .. } => {
+                if let Err(error) = session.validate_final_marker() {
+                    return Err(generic_error_into_decode(error));
+                }
+            }
+            Self::PatternMmr { .. } => {}
+            Self::GrayMmr { coded, offset, .. } => {
+                if *offset != coded.len() {
+                    let trailing = coded
+                        .len()
+                        .checked_sub(*offset)
+                        .and_then(|bytes| u64::try_from(bytes).ok())
+                        .ok_or(MalformedError::IntegerOverflow)?;
+                    return Err(MalformedError::TrailingData(trailing).into());
+                }
+            }
+            #[cfg(test)]
+            Self::Scripted(_) => {}
+        }
+        Ok(())
     }
 }
 
@@ -134,6 +470,7 @@ impl WorkBudget {
         ensures
             halftone_spec::work_limit(&out) == limits.max_work_units,
             halftone_spec::work_used(&out) == 0,
+            halftone_spec::work_valid(&out),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) const fn new(limits: &Limits) -> Self {
@@ -212,47 +549,50 @@ impl From<LimitExceeded> for HalftoneError {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) fn halftone_error_into_decode(error: HalftoneError) -> DecodeError {
+    let kind = match error {
+        HalftoneError::Decode(error) => return error,
+        HalftoneError::InvalidPatternDictionaryFlags(flags) => {
+            HalftoneErrorKind::InvalidPatternDictionaryFlags(flags)
+        }
+        HalftoneError::InvalidPatternDimensions { width, height } => {
+            HalftoneErrorKind::InvalidPatternDimensions { width, height }
+        }
+        HalftoneError::InvalidHalftoneFlags(flags) => {
+            HalftoneErrorKind::InvalidHalftoneFlags(flags)
+        }
+        HalftoneError::InvalidHalftoneConfiguration => HalftoneErrorKind::InvalidConfiguration,
+        HalftoneError::InvalidBitmapDimensions {
+            expected_width,
+            expected_height,
+            actual_width,
+            actual_height,
+        } => HalftoneErrorKind::InvalidBitmapDimensions {
+            expected_width,
+            expected_height,
+            actual_width,
+            actual_height,
+        },
+        HalftoneError::InvalidGrayBitDepth(depth) => HalftoneErrorKind::InvalidGrayBitDepth(depth),
+        HalftoneError::EmptyPatternDictionary => HalftoneErrorKind::EmptyPatternDictionary,
+        HalftoneError::InconsistentPatternDimensions => {
+            HalftoneErrorKind::InconsistentPatternDimensions
+        }
+        HalftoneError::InvalidPatternIndex {
+            index,
+            pattern_count,
+        } => HalftoneErrorKind::InvalidPatternIndex {
+            index,
+            pattern_count,
+        },
+    };
+    DecodeError::Malformed(MalformedError::InvalidHalftone(kind))
+}
+
 impl From<HalftoneError> for DecodeError {
     fn from(error: HalftoneError) -> Self {
-        let kind = match error {
-            HalftoneError::Decode(error) => return error,
-            HalftoneError::InvalidPatternDictionaryFlags(flags) => {
-                HalftoneErrorKind::InvalidPatternDictionaryFlags(flags)
-            }
-            HalftoneError::InvalidPatternDimensions { width, height } => {
-                HalftoneErrorKind::InvalidPatternDimensions { width, height }
-            }
-            HalftoneError::InvalidHalftoneFlags(flags) => {
-                HalftoneErrorKind::InvalidHalftoneFlags(flags)
-            }
-            HalftoneError::InvalidHalftoneConfiguration => HalftoneErrorKind::InvalidConfiguration,
-            HalftoneError::InvalidBitmapDimensions {
-                expected_width,
-                expected_height,
-                actual_width,
-                actual_height,
-            } => HalftoneErrorKind::InvalidBitmapDimensions {
-                expected_width,
-                expected_height,
-                actual_width,
-                actual_height,
-            },
-            HalftoneError::InvalidGrayBitDepth(depth) => {
-                HalftoneErrorKind::InvalidGrayBitDepth(depth)
-            }
-            HalftoneError::EmptyPatternDictionary => HalftoneErrorKind::EmptyPatternDictionary,
-            HalftoneError::InconsistentPatternDimensions => {
-                HalftoneErrorKind::InconsistentPatternDimensions
-            }
-            HalftoneError::InvalidPatternIndex {
-                index,
-                pattern_count,
-            } => HalftoneErrorKind::InvalidPatternIndex {
-                index,
-                pattern_count,
-            },
-        };
-        Self::Malformed(MalformedError::InvalidHalftone(kind))
+        halftone_error_into_decode(error)
     }
 }
 
@@ -297,14 +637,17 @@ fn template_from_flags(flags: u8) -> u8 {
 /// Parses and validates the fixed pattern-dictionary data header.
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires old(reader).position <= old(reader).bytes@.len(),
-    ensures match out {
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
+        match out {
         Ok(header) =>
             header.pattern_width > 0
             && header.pattern_height > 0
             && header.template <= 3
             && (!header.mmr || header.template == 0),
         Err(_) => true,
-    },
+        },
 ))]
 pub(crate) fn parse_pattern_dictionary_header(
     reader: &mut ByteReader<'_>,
@@ -406,13 +749,16 @@ fn signed_grid_origin(value: u32) -> i32 {
 /// Parses and validates the halftone-specific header.
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires old(reader).position <= old(reader).bytes@.len(),
-    ensures match out {
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        final(reader).position <= final(reader).bytes@.len(),
+        match out {
         Ok(header) =>
             header.template <= 3
             && (!header.mmr
                 || (header.template == 0 && !header.enable_skip)),
         Err(_) => true,
-    },
+        },
 ))]
 pub(crate) fn parse_halftone_header(
     reader: &mut ByteReader<'_>,
@@ -473,9 +819,21 @@ fn checked_collective_width(pattern_count: u64, pattern_width: u8) -> Option<u32
 }
 
 /// Decodes and slices a pattern dictionary's collective bitmap.
-pub(crate) fn decode_pattern_dictionary<D: GenericRegionDecoder>(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        halftone_spec::decoder_state_valid(old(decoder)),
+        halftone_spec::work_valid(old(work)),
+    ensures match out {
+        Ok(patterns) =>
+            halftone_spec::decoder_state_valid(final(decoder))
+                && halftone_spec::work_valid(final(work))
+                && halftone_spec::bitmaps_valid(patterns@),
+        Err(_) => true,
+    },
+))]
+pub(crate) fn decode_pattern_dictionary(
     header: PatternDictionaryHeader,
-    decoder: &mut D,
+    decoder: &mut GenericRegionState<'_>,
     limits: &Limits,
     work: &mut WorkBudget,
 ) -> Result<Vec<Bitmap>, HalftoneError> {
@@ -521,8 +879,16 @@ pub(crate) fn decode_pattern_dictionary<D: GenericRegionDecoder>(
 }
 
 /// Slices a checked collective bitmap into owned fixed-size patterns.
-#[cfg_attr(verus_keep_ghost, verus_spec(
-    requires crate::spec::bitmap::storage_valid(collective),
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(collective),
+        halftone_spec::work_valid(old(work)),
+    ensures match out {
+        Ok(patterns) =>
+            halftone_spec::bitmaps_valid(patterns@)
+                && halftone_spec::work_valid(final(work)),
+        Err(_) => true,
+    },
 ))]
 #[allow(clippy::cast_lossless, clippy::too_many_lines)]
 pub(crate) fn slice_collective_bitmap(
@@ -590,6 +956,7 @@ pub(crate) fn slice_collective_bitmap(
             crate::spec::bitmap::storage_valid(collective),
             pattern_index <= pattern_count,
             patterns@.len() == pattern_index,
+            halftone_spec::bitmaps_valid(patterns@),
             raw_pattern_width == header.pattern_width,
             raw_pattern_height == header.pattern_height,
             pattern_width as nat == raw_pattern_width as nat,
@@ -782,15 +1149,34 @@ const fn gray_to_binary_bit(coded: bool, previous: Option<bool>) -> bool {
 }
 
 /// Decodes Gray-coded planes and reconstructs unsigned pattern indexes.
-#[allow(clippy::cast_lossless, clippy::too_many_arguments)]
-pub(crate) fn decode_gray_planes<D: GenericRegionDecoder>(
+#[allow(
+    clippy::cast_lossless,
+    clippy::too_many_arguments,
+    clippy::too_many_lines
+)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        halftone_spec::decoder_state_valid(old(decoder)),
+        halftone_spec::work_valid(old(work)),
+        match skip {
+            Some(bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+            None => true,
+        },
+    ensures match out {
+        Ok(indexes) =>
+            halftone_spec::decoder_state_valid(final(decoder))
+                && halftone_spec::work_valid(final(work)),
+        Err(_) => true,
+    },
+))]
+pub(crate) fn decode_gray_planes(
     width: u32,
     height: u32,
     bit_depth: u8,
     mmr: bool,
     template: u8,
     skip: Option<&Bitmap>,
-    decoder: &mut D,
+    decoder: &mut GenericRegionState<'_>,
     limits: &Limits,
     work: &mut WorkBudget,
 ) -> Result<Vec<u32>, HalftoneError> {
@@ -812,7 +1198,13 @@ pub(crate) fn decode_gray_planes<D: GenericRegionDecoder>(
         .checked_mul(4)
         .ok_or(MalformedError::IntegerOverflow)?;
     let plane_bytes = bitmap_bytes(width, height)?;
-    let concurrent_plane_count = u64::from(bit_depth != 0) + u64::from(bit_depth > 1);
+    let concurrent_plane_count = if bit_depth == 0 {
+        0
+    } else if bit_depth == 1 {
+        1
+    } else {
+        2
+    };
     let skip_bytes = if skip.is_some() { plane_bytes } else { 0 };
     let concurrent_plane_bytes = plane_bytes
         .checked_mul(concurrent_plane_count)
@@ -852,6 +1244,20 @@ pub(crate) fn decode_gray_planes<D: GenericRegionDecoder>(
         }
     };
     let mut more_significant: Option<Bitmap> = None;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            halftone_spec::decoder_state_valid(decoder),
+            halftone_spec::work_valid(work),
+            values@.len() == pixel_count,
+            match skip {
+                Some(bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+                None => true,
+            },
+            match more_significant {
+                Some(ref bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+                None => true,
+            },
+    ))]
     for plane_index in (0..bit_depth).rev() {
         let mut plane = decoder.decode_generic_region(GenericRegionRequest {
             width,
@@ -862,7 +1268,30 @@ pub(crate) fn decode_gray_planes<D: GenericRegionDecoder>(
             skip,
         })?;
         require_bitmap_dimensions(&plane, width, height)?;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                y <= height,
+                crate::spec::bitmap::storage_valid(&plane),
+                values@.len() == pixel_count,
+                match more_significant {
+                    Some(ref bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+                    None => true,
+                },
+            decreases height - y,
+        ))]
         for y in 0..height {
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    x <= width,
+                    y < height,
+                    crate::spec::bitmap::storage_valid(&plane),
+                    values@.len() == pixel_count,
+                    match more_significant {
+                        Some(ref bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+                        None => true,
+                    },
+                decreases width - x,
+            ))]
             for x in 0..width {
                 let coded = plane.pixel(x, y).ok_or(MalformedError::IntegerOverflow)?;
                 let previous = if let Some(previous) = more_significant.as_ref() {
@@ -879,13 +1308,14 @@ pub(crate) fn decode_gray_planes<D: GenericRegionDecoder>(
                 let true_value = gray_to_binary_bit(coded, previous);
                 plane.set_pixel(x, y, true_value)?;
                 if true_value {
+                    if plane_index >= 32 {
+                        return Err(HalftoneError::InvalidGrayBitDepth(bit_depth));
+                    }
                     let offset = pixel_offset(width, x, y)?;
                     let value = values
                         .get_mut(offset)
                         .ok_or(MalformedError::IntegerOverflow)?;
-                    *value |= 1_u32
-                        .checked_shl(u32::from(plane_index))
-                        .ok_or(MalformedError::IntegerOverflow)?;
+                    *value |= 1_u32 << plane_index;
                 }
             }
         }
@@ -1016,11 +1446,13 @@ fn half_open_outside(
 
 /// Builds the normative skip mask for wholly out-of-bounds patterns.
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires halftone_spec::work_valid(old(work)),
     ensures match out {
         Ok(bitmap) =>
             crate::spec::bitmap::storage_valid(&bitmap)
             && crate::views::bitmap_width(&bitmap) == header.grid_width
-            && crate::views::bitmap_height(&bitmap) == header.grid_height,
+            && crate::views::bitmap_height(&bitmap) == header.grid_height
+            && halftone_spec::work_valid(final(work)),
         Err(_) => true,
     },
 ))]
@@ -1123,13 +1555,26 @@ pub(crate) fn validate_pattern_indices(
 }
 
 /// Decodes and renders a complete halftone region.
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn decode_halftone_region<D: GenericRegionDecoder>(
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        halftone_spec::decoder_state_valid(old(decoder)),
+        halftone_spec::work_valid(old(work)),
+        halftone_spec::bitmaps_valid(patterns@),
+    ensures match out {
+        Ok(bitmap) =>
+            halftone_spec::decoder_state_valid(final(decoder))
+                && halftone_spec::work_valid(final(work))
+                && crate::spec::bitmap::storage_valid(&bitmap),
+        Err(_) => true,
+    },
+))]
+pub(crate) fn decode_halftone_region(
     header: &HalftoneHeader,
     region_width: u32,
     region_height: u32,
     patterns: &[Bitmap],
-    decoder: &mut D,
+    decoder: &mut GenericRegionState<'_>,
     limits: &Limits,
     work: &mut WorkBudget,
 ) -> Result<Bitmap, HalftoneError> {
@@ -1142,13 +1587,22 @@ pub(crate) fn decode_halftone_region<D: GenericRegionDecoder>(
         .ok_or(HalftoneError::EmptyPatternDictionary)?;
     let pattern_width = first.width();
     let pattern_height = first.height();
-    if pattern_width == 0
-        || pattern_height == 0
-        || patterns
-            .iter()
-            .any(|pattern| pattern.width() != pattern_width || pattern.height() != pattern_height)
-    {
+    if pattern_width == 0 || pattern_height == 0 {
         return Err(HalftoneError::InconsistentPatternDimensions);
+    }
+    let mut pattern_position = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            pattern_position <= patterns@.len(),
+            halftone_spec::bitmaps_valid(patterns@),
+        decreases patterns@.len() - pattern_position,
+    ))]
+    while pattern_position < patterns.len() {
+        let pattern = &patterns[pattern_position];
+        if pattern.width() != pattern_width || pattern.height() != pattern_height {
+            return Err(HalftoneError::InconsistentPatternDimensions);
+        }
+        pattern_position += 1;
     }
     let pattern_count =
         u64::try_from(patterns.len()).map_err(|_| MalformedError::IntegerOverflow)?;
@@ -1209,7 +1663,24 @@ pub(crate) fn decode_halftone_region<D: GenericRegionDecoder>(
     validate_pattern_indices(&indexes, pattern_count)?;
 
     let mut output = Bitmap::filled(region_width, region_height, header.default_pixel, limits)?;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mg <= header.grid_height,
+            crate::spec::bitmap::storage_valid(&output),
+            halftone_spec::bitmaps_valid(patterns@),
+            halftone_spec::indexes_valid(indexes@, pattern_count),
+        decreases header.grid_height - mg,
+    ))]
     for mg in 0..header.grid_height {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                ng <= header.grid_width,
+                mg < header.grid_height,
+                crate::spec::bitmap::storage_valid(&output),
+                halftone_spec::bitmaps_valid(patterns@),
+                halftone_spec::indexes_valid(indexes@, pattern_count),
+            decreases header.grid_width - ng,
+        ))]
         for ng in 0..header.grid_width {
             let offset = pixel_offset(header.grid_width, ng, mg)?;
             let pattern_index = *indexes.get(offset).ok_or(MalformedError::IntegerOverflow)?;
@@ -1760,7 +2231,7 @@ mod tests {
             gray_max: 1,
         };
         let mut calls = 0;
-        let mut decoder = |request: GenericRegionRequest<'_>| {
+        let mut adapter = |request: GenericRegionRequest<'_>| {
             calls += 1;
             assert_eq!((request.width, request.height), (6, 2));
             assert!(!request.typical_prediction);
@@ -1775,6 +2246,7 @@ mod tests {
             );
             Ok(bitmap(&["101011", "010110"]))
         };
+        let mut decoder = GenericRegionState::scripted(&mut adapter);
         let limits = generous_limits();
         let mut work = WorkBudget::new(&limits);
         let patterns = decode_pattern_dictionary(header, &mut decoder, &limits, &mut work)
@@ -1786,7 +2258,7 @@ mod tests {
     #[test]
     fn reconstructs_gray_planes_most_significant_first() {
         let mut planes = VecDeque::from([bitmap(&["1110"]), bitmap(&["0111"]), bitmap(&["0010"])]);
-        let mut decoder = |request: GenericRegionRequest<'_>| {
+        let mut adapter = |request: GenericRegionRequest<'_>| {
             assert!(matches!(
                 request.coding,
                 GenericRegionCoding::Arithmetic { template: 0, .. }
@@ -1795,6 +2267,7 @@ mod tests {
             assert!(!request.extended_template);
             Ok(planes.pop_front().expect("three planes are supplied"))
         };
+        let mut decoder = GenericRegionState::scripted(&mut adapter);
         let mut work = WorkBudget::new(&generous_limits());
         let values = decode_gray_planes(
             4,
@@ -1815,7 +2288,7 @@ mod tests {
     #[test]
     fn mmr_gray_plane_requires_eofb() {
         let mut calls = 0;
-        let mut decoder = |request: GenericRegionRequest<'_>| {
+        let mut adapter = |request: GenericRegionRequest<'_>| {
             calls += 1;
             assert_eq!(
                 request.coding,
@@ -1823,6 +2296,7 @@ mod tests {
             );
             Ok(bitmap(&["0"]))
         };
+        let mut decoder = GenericRegionState::scripted(&mut adapter);
         let limits = generous_limits();
         let mut work = WorkBudget::new(&limits);
         let values = decode_gray_planes(1, 1, 1, true, 0, None, &mut decoder, &limits, &mut work)
@@ -1834,10 +2308,11 @@ mod tests {
     #[test]
     fn one_pattern_uses_no_gray_plane() {
         let mut calls = 0;
-        let mut decoder = |_request: GenericRegionRequest<'_>| {
+        let mut adapter = |_request: GenericRegionRequest<'_>| {
             calls += 1;
             Bitmap::blank(1, 1, &generous_limits())
         };
+        let mut decoder = GenericRegionState::scripted(&mut adapter);
         let mut work = WorkBudget::new(&generous_limits());
         let values = decode_gray_planes(
             2,
@@ -1971,9 +2446,10 @@ mod tests {
             grid_vector_y: 0,
         };
         let mut planes = VecDeque::from([bitmap(&["01"])]);
-        let mut decoder = |_request: GenericRegionRequest<'_>| {
+        let mut adapter = |_request: GenericRegionRequest<'_>| {
             Ok(planes.pop_front().expect("one plane is supplied"))
         };
+        let mut decoder = GenericRegionState::scripted(&mut adapter);
         let mut work = WorkBudget::new(&limits);
         let output =
             decode_halftone_region(&header, 4, 2, &patterns, &mut decoder, &limits, &mut work)

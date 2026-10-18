@@ -73,6 +73,40 @@ pub(super) open spec fn runtime_pages_valid(
         crate::spec::bitmap::storage_valid(&pages@[index].1.bitmap)
 }
 
+pub(super) open spec fn symbol_store_valid(
+    symbols: &crate::decode::SymbolStore,
+) -> bool {
+    forall|index: int| 0 <= index < symbols@.len()
+        ==> crate::halftone::halftone_spec::bitmaps_valid(
+            #[trigger] symbols@[index].1.exported@
+        )
+}
+
+pub(super) open spec fn pattern_store_valid(
+    patterns: &crate::decode::PatternStore,
+) -> bool {
+    forall|index: int| 0 <= index < patterns@.len()
+        ==> crate::halftone::halftone_spec::bitmaps_valid(
+            #[trigger] patterns@[index].1@
+        )
+}
+
+pub(super) open spec fn region_buffers_valid(
+    buffers: &crate::decode::RegionBuffers,
+) -> bool {
+    forall|index: int| 0 <= index < buffers@.len()
+        ==> crate::spec::bitmap::storage_valid(
+            #[trigger] &buffers@[index].1.bitmap
+        )
+}
+
+pub(super) open spec fn initial_resources_valid(
+    resources: &crate::decode::InitialResources,
+) -> bool {
+    pattern_store_valid(&resources.patterns)
+        && symbol_store_valid(&resources.symbols)
+}
+
 pub(super) proof fn page_fields(page: &crate::decode::Page)
     ensures
         page_number(page) == page.number,

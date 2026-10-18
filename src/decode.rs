@@ -6,23 +6,24 @@ use crate::document::{
 };
 use crate::generic_region::{
     decode_arithmetic_refinement, decode_generic_region_segment, parse_refinement_region_header,
-    GenericArithmeticCall, GenericArithmeticSession, GenericTemplate, RefinementParameters,
-    TemplateOffset,
+    GenericRegionError, GenericTemplate, RefinementParameters,
 };
 use crate::halftone::{
-    decode_halftone_region, decode_pattern_dictionary, parse_halftone_header,
-    parse_pattern_dictionary_header, GenericRegionCoding, GenericRegionRequest, WorkBudget,
+    decode_halftone_region, decode_pattern_dictionary, halftone_error_into_decode,
+    new_gray_mmr_state, new_halftone_arithmetic_state, new_pattern_arithmetic_state,
+    new_pattern_mmr_state, parse_halftone_header, parse_pattern_dictionary_header, WorkBudget,
 };
-use crate::huffman::HuffmanTable;
-use crate::mmr::{decode_mmr, decode_mmr_prefix, EofbPolicy};
+use crate::huffman::{HuffmanError, HuffmanTable};
 use crate::reader::ByteReader;
 use crate::segment_data::parse_region_info;
 use crate::segment_header::SegmentType;
 use crate::symbol_text::{
     decode_symbol_dictionary, decode_text_region, DictionaryContexts, SymbolDictionaryInput,
-    TextRegionInput,
+    SymbolTextError, TextRegionInput,
 };
-use crate::{Bitmap, DecodeError, Limits, MalformedError, UnsupportedFeature};
+use crate::{
+    Bitmap, DecodeError, GenericRegionErrorKind, Limits, MalformedError, UnsupportedFeature,
+};
 #[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 
@@ -40,6 +41,67 @@ mod decode_properties;
 #[rustfmt::skip]
 #[path = "../proofs/shared/decode.rs"]
 mod decode_shared;
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn generic_error_into_decode(error: GenericRegionError) -> DecodeError {
+    let kind = match error {
+        GenericRegionError::Decode(error) => return error,
+        GenericRegionError::ReservedFlags(flags) => GenericRegionErrorKind::ReservedFlags(flags),
+        GenericRegionError::InvalidFlags(flags) => GenericRegionErrorKind::InvalidFlags(flags),
+        GenericRegionError::InvalidAdaptivePixel { number, x, y } => {
+            GenericRegionErrorKind::InvalidAdaptivePixel { number, x, y }
+        }
+        GenericRegionError::InvalidSkipDimensions => GenericRegionErrorKind::InvalidSkipDimensions,
+        GenericRegionError::InvalidArithmeticTerminator => {
+            GenericRegionErrorKind::InvalidArithmeticTerminator
+        }
+        GenericRegionError::UnexpectedArithmeticMarker { offset, code } => {
+            GenericRegionErrorKind::UnexpectedArithmeticMarker { offset, code }
+        }
+        GenericRegionError::RowCountMismatch { expected, actual } => {
+            GenericRegionErrorKind::RowCountMismatch { expected, actual }
+        }
+        GenericRegionError::ContextIndex { index, count } => {
+            GenericRegionErrorKind::ContextIndex { index, count }
+        }
+    };
+    DecodeError::Malformed(MalformedError::InvalidGenericRegion(kind))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn symbol_text_error_into_decode(error: SymbolTextError) -> DecodeError {
+    match error {
+        SymbolTextError::Decode(error) => error,
+        SymbolTextError::InvalidFlags(reason)
+        | SymbolTextError::InvalidTableAssociation(reason)
+        | SymbolTextError::InvalidCount(reason)
+        | SymbolTextError::InvalidEntropyValue(reason)
+        | SymbolTextError::UnexpectedOutOfBand(reason)
+        | SymbolTextError::InvalidState(reason) => {
+            DecodeError::Malformed(MalformedError::InvalidSymbolText(reason))
+        }
+
+        SymbolTextError::InvalidDimensions => {
+            DecodeError::Malformed(MalformedError::InvalidSymbolDimensions)
+        }
+        SymbolTextError::SymbolIdOutOfRange { id, available } => {
+            DecodeError::Malformed(MalformedError::SymbolIdOutOfRange { id, available })
+        }
+        SymbolTextError::InvalidSymbolLengthRun => DecodeError::Malformed(
+            MalformedError::InvalidSymbolText("invalid symbol-code length run"),
+        ),
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn huffman_error_into_decode(error: HuffmanError) -> DecodeError {
+    match error {
+        HuffmanError::Decode(error) => error,
+        HuffmanError::InvalidTable(kind) => {
+            DecodeError::Malformed(MalformedError::InvalidHuffman(kind))
+        }
+    }
+}
 
 /// One fully decoded page.
 #[derive(Debug, PartialEq, Eq)]
@@ -160,9 +222,20 @@ impl Decoder {
     ///
     /// Returns a typed malformed, unsupported, resource, allocation, I/O, or
     /// sink error.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
+        let (info, segments) = parse_standalone_document(input, self.limits())?;
         let mut collector = PageCollector::new(self.limits());
-        let info = self.decode_with_sink(input, &mut collector)?;
+        let initial_work = structural_work(input.len(), &segments)?;
+        decode_segments_collected(
+            &segments,
+            &info,
+            initial_work,
+            0,
+            self.limits(),
+            None,
+            &mut collector,
+        )?;
         Ok(DecodedDocument {
             info,
             pages: collector.pages,
@@ -186,6 +259,7 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unresolved, unsupported, or
     /// over-limit input.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode_embedded(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
         self.decode_embedded_internal(input, None)
     }
@@ -196,6 +270,7 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unresolved, unsupported, or
     /// over-limit input.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode_embedded_with_globals(
         &self,
         input: &[u8],
@@ -236,6 +311,7 @@ impl Decoder {
         self.decode_with_sink(&bytes, sink)
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn decode_embedded_internal(
         &self,
         input: &[u8],
@@ -243,22 +319,24 @@ impl Decoder {
     ) -> Result<DecodedDocument, DecodeError> {
         let (info, segments) = parse_embedded_document(input, self.limits(), globals)?;
         let mut collector = PageCollector::new(self.limits());
+        let global_bytes = match globals {
+            Some(state) => {
+                u64::try_from(state.bytes().len()).map_err(|_| MalformedError::IntegerOverflow)?
+            }
+            None => 0,
+        };
         let input_work = structural_work(input.len(), &segments)?
-            .checked_add(
-                u64::try_from(globals.map_or(0, |state| state.bytes().len()))
-                    .map_err(|_| MalformedError::IntegerOverflow)?,
-            )
+            .checked_add(global_bytes)
             .ok_or(MalformedError::IntegerOverflow)?;
         let global_resources = match globals {
             Some(state) => Some(decode_global_resources(state.bytes(), self.limits())?),
             None => None,
         };
-        decode_segments(
+        decode_segments_collected(
             &segments,
             &info,
             input_work,
-            u64::try_from(globals.map_or(0, |state| state.bytes().len()))
-                .map_err(|_| MalformedError::IntegerOverflow)?,
+            global_bytes,
             self.limits(),
             global_resources,
             &mut collector,
@@ -365,12 +443,21 @@ impl PageCollector {
         production_collector_fields!(self);
         Ok(())
     }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn push_page(&mut self, page: Page) -> Result<(), DecodeError> {
+        self.collect_page(page)
+    }
 }
 
 impl PageSink for PageCollector {
     fn write_page(&mut self, page: Page) -> Result<(), DecodeError> {
-        self.collect_page(page)
+        self.push_page(page)
     }
+}
+
+fn write_page_to_sink<S: PageSink>(sink: &mut S, page: Page) -> Result<(), DecodeError> {
+    sink.write_page(page)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -398,7 +485,7 @@ type RuntimePages = Vec<(u32, RuntimePage)>;
 ))]
 fn runtime_page_index(pages: &[(u32, RuntimePage)], number: u32) -> Option<usize> {
     let mut index = 0_usize;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         invariant
             index <= pages@.len(),
             forall|completed: int| 0 <= completed < index ==>
@@ -414,29 +501,24 @@ fn runtime_page_index(pages: &[(u32, RuntimePage)], number: u32) -> Option<usize
     None
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::runtime_pages_valid(pages),
+    ensures match out {
+        Some(page) => crate::spec::bitmap::storage_valid(&page.bitmap),
+        None => true,
+    },
+))]
 fn get_runtime_page(pages: &RuntimePages, number: u32) -> Option<&RuntimePage> {
     let index = runtime_page_index(pages, number)?;
     Some(&pages[index].1)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires decode_spec::runtime_pages_valid(old(pages)),
-    ensures match out {
-        Some(page) => crate::spec::bitmap::storage_valid(&page.bitmap),
-        None => true,
-    },
+    requires
+        decode_spec::runtime_pages_valid(old(pages)),
+        crate::spec::bitmap::storage_valid(&page.bitmap),
+    ensures decode_spec::runtime_pages_valid(final(pages)),
 ))]
-fn get_runtime_page_mut(pages: &mut RuntimePages, number: u32) -> Option<&mut RuntimePage> {
-    let index = runtime_page_index(pages, number)?;
-    #[cfg(verus_keep_ghost)]
-    proof! {
-        reveal(decode_spec::runtime_pages_valid);
-    }
-    Some(&mut pages[index].1)
-}
-
-#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn insert_runtime_page(pages: &mut RuntimePages, number: u32, page: RuntimePage) {
     if let Some(index) = runtime_page_index(pages, number) {
         pages[index].1 = page;
@@ -465,7 +547,7 @@ type RegionBuffers = Vec<(u32, RegionBuffer)>;
 ))]
 fn region_buffer_index(buffers: &[(u32, RegionBuffer)], number: u32) -> Option<usize> {
     let mut index = 0_usize;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         invariant
             index <= buffers@.len(),
             forall|completed: int| 0 <= completed < index ==>
@@ -481,7 +563,13 @@ fn region_buffer_index(buffers: &[(u32, RegionBuffer)], number: u32) -> Option<u
     None
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::region_buffers_valid(buffers),
+    ensures match out {
+        Some(buffer) => crate::spec::bitmap::storage_valid(&buffer.bitmap),
+        None => true,
+    },
+))]
 fn get_region_buffer(buffers: &RegionBuffers, number: u32) -> Option<&RegionBuffer> {
     let index = region_buffer_index(buffers, number)?;
     Some(&buffers[index].1)
@@ -523,13 +611,25 @@ fn symbol_index(symbols: &[(u32, SymbolResource)], number: u32) -> Option<usize>
     None
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::symbol_store_valid(symbols),
+    ensures match out {
+        Some(resource) =>
+            crate::halftone::halftone_spec::bitmaps_valid(resource.exported@),
+        None => true,
+    },
+))]
 fn get_symbol_resource(symbols: &SymbolStore, number: u32) -> Option<&SymbolResource> {
     let index = symbol_index(symbols, number)?;
     Some(&symbols[index].1)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::symbol_store_valid(old(symbols)),
+        crate::halftone::halftone_spec::bitmaps_valid(resource.exported@),
+    ensures decode_spec::symbol_store_valid(final(symbols)),
+))]
 fn insert_symbol_resource(
     symbols: &mut SymbolStore,
     number: u32,
@@ -617,13 +717,25 @@ fn pattern_index(patterns: &[(u32, Vec<Bitmap>)], number: u32) -> Option<usize> 
     None
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::pattern_store_valid(patterns),
+    ensures match out {
+        Some(bitmaps) =>
+            crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
+        None => true,
+    },
+))]
 fn get_patterns(patterns: &PatternStore, number: u32) -> Option<&[Bitmap]> {
     let index = pattern_index(patterns, number)?;
     Some(&patterns[index].1)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::pattern_store_valid(old(patterns)),
+        crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
+    ensures decode_spec::pattern_store_valid(final(patterns)),
+))]
 fn insert_patterns(patterns: &mut PatternStore, number: u32, bitmaps: Vec<Bitmap>) -> bool {
     if pattern_index(patterns, number).is_some() {
         return false;
@@ -633,6 +745,7 @@ fn insert_patterns(patterns: &mut PatternStore, number: u32, bitmaps: Vec<Bitmap
 }
 
 #[derive(Default)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 struct InitialResources {
     patterns: PatternStore,
     symbols: SymbolStore,
@@ -771,9 +884,21 @@ impl RetainedBudget {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(resources) =>
+            decode_spec::pattern_store_valid(&resources.patterns)
+                && decode_spec::symbol_store_valid(&resources.symbols),
+        Err(_) => true,
+    },
+))]
 fn decode_global_resources(input: &[u8], limits: &Limits) -> Result<InitialResources, DecodeError> {
     let (_info, segments) = parse_embedded_document(input, limits, None)?;
-    let mut resources = InitialResources::default();
+    let mut resources = InitialResources {
+        patterns: Vec::new(),
+        symbols: Vec::new(),
+        tables: Vec::new(),
+    };
     let requested_bytes = allocation_size::<(u32, Vec<Bitmap>)>(segments.len())?;
     resources
         .patterns
@@ -795,11 +920,20 @@ fn decode_global_resources(input: &[u8], limits: &Limits) -> Result<InitialResou
         })?;
     let mut retained = RetainedBudget::new();
     let mut work = DecodeWork::new(structural_work(input.len(), &segments)?, limits)?;
-    for segment in &segments {
+    let mut segment_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            segment_index <= segments@.len(),
+            decode_spec::pattern_store_valid(&resources.patterns),
+            decode_spec::symbol_store_valid(&resources.symbols),
+        decreases segments@.len() - segment_index,
+    ))]
+    while segment_index < segments.len() {
+        let segment = &segments[segment_index];
         match segment.header.segment_type {
             SegmentType::Tables => {
                 let table = HuffmanTable::from_encoded(segment.payload, limits)
-                    .map_err(DecodeError::from)?;
+                    .map_err(huffman_error_into_decode)?;
                 let _ = insert_huffman_table(&mut resources.tables, segment.header.number, table);
             }
             SegmentType::PatternDictionary => {
@@ -826,11 +960,346 @@ fn decode_global_resources(input: &[u8], limits: &Limits) -> Result<InitialResou
         release_referred_patterns(segment, &mut resources.patterns, &mut retained)?;
         release_referred_symbols(segment, &mut resources.symbols, &mut retained)?;
         release_referred_tables(segment, &mut resources.tables);
+        segment_index += 1;
     }
     Ok(resources)
 }
 
-#[allow(clippy::too_many_lines)]
+macro_rules! decode_segments_body {
+    (
+        $segments:expr,
+        $info:expr,
+        $initial_work:expr,
+        $initial_retained_bytes:expr,
+        $limits:expr,
+        $initial_resources:expr,
+        $sink:expr,
+        $write_page:path
+    ) => {{
+        let segments = $segments;
+        let info = $info;
+        let initial_work = $initial_work;
+        let initial_retained_bytes = $initial_retained_bytes;
+        let limits = $limits;
+        let initial_resources = $initial_resources;
+        let sink = $sink;
+        let mut pages = Vec::new();
+        let page_allocation = allocation_size::<(u32, RuntimePage)>(info.pages().len())?;
+        pages
+            .try_reserve(info.pages().len())
+            .map_err(|_| DecodeError::Allocation {
+                requested_bytes: page_allocation,
+            })?;
+        let mut buffers = Vec::new();
+        let buffer_allocation = allocation_size::<(u32, RegionBuffer)>(segments.len())?;
+        buffers
+            .try_reserve(segments.len())
+            .map_err(|_| DecodeError::Allocation {
+                requested_bytes: buffer_allocation,
+            })?;
+        let initial_resources = match initial_resources {
+            Some(resources) => resources,
+            None => InitialResources {
+                patterns: Vec::new(),
+                symbols: Vec::new(),
+                tables: Vec::new(),
+            },
+        };
+        let InitialResources {
+            mut patterns,
+            mut symbols,
+            mut tables,
+        } = initial_resources;
+        let pattern_allocation = allocation_size::<(u32, Vec<Bitmap>)>(segments.len())?;
+        patterns
+            .try_reserve(segments.len())
+            .map_err(|_| DecodeError::Allocation {
+                requested_bytes: pattern_allocation,
+            })?;
+        let table_allocation = allocation_size::<(u32, HuffmanTable)>(segments.len())?;
+        tables
+            .try_reserve(segments.len())
+            .map_err(|_| DecodeError::Allocation {
+                requested_bytes: table_allocation,
+            })?;
+        let symbol_allocation = allocation_size::<(u32, SymbolResource)>(segments.len())?;
+        symbols
+            .try_reserve(segments.len())
+            .map_err(|_| DecodeError::Allocation {
+                requested_bytes: symbol_allocation,
+            })?;
+        let mut retained = RetainedBudget::new();
+        retained.retain(initial_retained_bytes, limits)?;
+        let mut cumulative_work = DecodeWork::new(initial_work, limits)?;
+        let mut pattern_position = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+                                    invariant
+                                        pattern_position <= patterns@.len(),
+                                        decode_spec::pattern_store_valid(&patterns),
+                                    decreases patterns@.len() - pattern_position,
+                                ))]
+        while pattern_position < patterns.len() {
+            let bitmaps = &patterns[pattern_position].1;
+            let mut bytes = 0_u64;
+            let mut bitmap_position = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                                        invariant
+                                            bitmap_position <= bitmaps@.len(),
+                                            crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
+                                        decreases bitmaps@.len() - bitmap_position,
+                                    ))]
+            while bitmap_position < bitmaps.len() {
+                bytes = bytes
+                    .checked_add(bitmap_byte_len(&bitmaps[bitmap_position])?)
+                    .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))?;
+                bitmap_position += 1;
+            }
+            retained.retain(bytes, limits)?;
+            pattern_position += 1;
+        }
+        let mut symbol_position = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+                                    invariant
+                                        symbol_position <= symbols@.len(),
+                                        decode_spec::symbol_store_valid(&symbols),
+                                    decreases symbols@.len() - symbol_position,
+                                ))]
+        while symbol_position < symbols.len() {
+            let resource = &symbols[symbol_position].1;
+            let mut bytes = 0_u64;
+            let mut bitmap_position = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                                        invariant
+                                            bitmap_position <= resource.exported@.len(),
+                                            crate::halftone::halftone_spec::bitmaps_valid(
+                                                resource.exported@
+                                            ),
+                                        decreases resource.exported@.len() - bitmap_position,
+                                    ))]
+            while bitmap_position < resource.exported.len() {
+                bytes = bytes
+                    .checked_add(bitmap_byte_len(&resource.exported[bitmap_position])?)
+                    .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))?;
+                bitmap_position += 1;
+            }
+            retained.retain(bytes, limits)?;
+            symbol_position += 1;
+        }
+
+        let mut segment_position = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+                                    invariant
+                                        segment_position <= segments@.len(),
+                                        decode_spec::runtime_pages_valid(&pages),
+                                        decode_spec::region_buffers_valid(&buffers),
+                                        decode_spec::pattern_store_valid(&patterns),
+                                        decode_spec::symbol_store_valid(&symbols),
+                                    decreases segments@.len() - segment_position,
+                                ))]
+        while segment_position < segments.len() {
+            let segment = &segments[segment_position];
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                decode_properties::dispatch_is_deterministic(segment.header.segment_type);
+            }
+            match segment.header.segment_type {
+                SegmentType::PageInformation => {
+                    let ParsedData::Page(page_data) = segment.data else {
+                        return Err(MalformedError::InvalidPageState(
+                            "page information payload was not parsed",
+                        )
+                        .into());
+                    };
+                    let public = find_page_info(info, segment.header.page_association)?;
+                    let bitmap = Bitmap::filled(
+                        public.width(),
+                        public.height(),
+                        page_data.default_pixel,
+                        limits,
+                    )?;
+                    retained.retain(bitmap_byte_len(&bitmap)?, limits)?;
+                    insert_runtime_page(
+                        &mut pages,
+                        public.number(),
+                        RuntimePage {
+                            default_operator: page_data.default_operator,
+                            combination_override: page_data.combination_operator_override,
+                            refinements_allowed: page_data.might_contain_refinements,
+                            auxiliary_allowed: page_data.requires_auxiliary_buffers,
+                            last_stripe_end: None,
+                            open_stripe_max_row: None,
+                            bitmap,
+                        },
+                    );
+                }
+                SegmentType::IntermediateGenericRegion
+                | SegmentType::ImmediateGenericRegion
+                | SegmentType::ImmediateLosslessGenericRegion => {
+                    decode_generic_segment(
+                        segment,
+                        &mut pages,
+                        &mut buffers,
+                        &mut retained,
+                        &mut cumulative_work,
+                        limits,
+                    )?;
+                }
+                SegmentType::IntermediateGenericRefinementRegion
+                | SegmentType::ImmediateGenericRefinementRegion
+                | SegmentType::ImmediateLosslessGenericRefinementRegion => {
+                    decode_refinement_segment(
+                        segment,
+                        &mut pages,
+                        &mut buffers,
+                        &mut retained,
+                        &mut cumulative_work,
+                        limits,
+                    )?;
+                }
+                SegmentType::PatternDictionary => {
+                    decode_pattern_segment(
+                        segment,
+                        &mut patterns,
+                        &mut retained,
+                        &mut cumulative_work,
+                        limits,
+                    )?;
+                }
+                SegmentType::SymbolDictionary => {
+                    decode_symbol_dictionary_segment(
+                        segment,
+                        &mut symbols,
+                        &tables,
+                        &mut retained,
+                        &mut cumulative_work,
+                        limits,
+                    )?;
+                }
+                SegmentType::IntermediateTextRegion
+                | SegmentType::ImmediateTextRegion
+                | SegmentType::ImmediateLosslessTextRegion => {
+                    decode_text_segment(
+                        segment,
+                        &mut pages,
+                        &mut buffers,
+                        &symbols,
+                        &tables,
+                        &mut retained,
+                        &mut cumulative_work,
+                        limits,
+                    )?;
+                }
+                SegmentType::IntermediateHalftoneRegion
+                | SegmentType::ImmediateHalftoneRegion
+                | SegmentType::ImmediateLosslessHalftoneRegion => {
+                    decode_halftone_segment(
+                        segment,
+                        &mut pages,
+                        &mut buffers,
+                        &patterns,
+                        &mut retained,
+                        &mut cumulative_work,
+                        limits,
+                    )?;
+                }
+                SegmentType::EndOfPage => {
+                    let number = segment.header.page_association;
+                    let index = runtime_page_index(&pages, number).ok_or(
+                        MalformedError::InvalidPageState("end-of-page without active page"),
+                    )?;
+                    #[cfg(verus_keep_ghost)]
+                    proof_decl! {
+                        let ghost original_pages = pages@;
+                    }
+                    let page = pages.remove(index).1;
+                    #[cfg(verus_keep_ghost)]
+                    proof! {
+                        reveal(decode_spec::runtime_pages_valid);
+                        assert forall|entry: int| 0 <= entry < pages@.len()
+                            implies crate::spec::bitmap::storage_valid(
+                                #[trigger] &pages@[entry].1.bitmap
+                            ) by {
+                            if entry < index {
+                                assert(pages@[entry] == original_pages[entry]);
+                            } else {
+                                assert(pages@[entry] == original_pages[entry + 1]);
+                            }
+                        }
+                    }
+                    retained.release(bitmap_byte_len(&page.bitmap)?)?;
+                    $write_page(
+                        sink,
+                        Page {
+                            number,
+                            bitmap: page.bitmap,
+                        },
+                    )?;
+                }
+                SegmentType::EndOfStripe => {
+                    let ParsedData::EndOfStripe(row) = segment.data else {
+                        return Err(MalformedError::InvalidPageState(
+                            "end-of-stripe payload was not parsed",
+                        )
+                        .into());
+                    };
+                    seal_stripe(&mut pages, segment.header.page_association, row)?;
+                }
+                SegmentType::EndOfFile | SegmentType::Profiles | SegmentType::Extension => {}
+                SegmentType::Tables => {
+                    let table = HuffmanTable::from_encoded(segment.payload, limits)
+                        .map_err(huffman_error_into_decode)?;
+                    if !insert_huffman_table(&mut tables, segment.header.number, table) {
+                        return Err(
+                            MalformedError::DuplicateSegmentNumber(segment.header.number).into(),
+                        );
+                    }
+                }
+                SegmentType::ColourPalette => {
+                    return Err(DecodeError::Unsupported(UnsupportedFeature::Colour));
+                }
+            }
+            release_referred_buffers(segment, &mut buffers, &mut retained)?;
+            release_referred_patterns(segment, &mut patterns, &mut retained)?;
+            release_referred_symbols(segment, &mut symbols, &mut retained)?;
+            release_referred_tables(segment, &mut tables);
+            segment_position += 1;
+        }
+        if !pages.is_empty() {
+            return Err(MalformedError::InvalidPageState("active page after final segment").into());
+        }
+        Ok(())
+    }};
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires match initial_resources {
+        Some(resources) => decode_spec::initial_resources_valid(&resources),
+        None => true,
+    },
+))]
+fn decode_segments_collected(
+    segments: &[ParsedSegment<'_>],
+    info: &DocumentInfo,
+    initial_work: u64,
+    initial_retained_bytes: u64,
+    limits: &Limits,
+    initial_resources: Option<InitialResources>,
+    sink: &mut PageCollector,
+) -> Result<(), DecodeError> {
+    decode_segments_body!(
+        segments,
+        info,
+        initial_work,
+        initial_retained_bytes,
+        limits,
+        initial_resources,
+        sink,
+        PageCollector::push_page
+    )
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn decode_segments<S: PageSink>(
     segments: &[ParsedSegment<'_>],
     info: &DocumentInfo,
@@ -840,214 +1309,29 @@ fn decode_segments<S: PageSink>(
     initial_resources: Option<InitialResources>,
     sink: &mut S,
 ) -> Result<(), DecodeError> {
-    let mut pages = Vec::new();
-    let page_allocation = allocation_size::<(u32, RuntimePage)>(info.pages().len())?;
-    pages
-        .try_reserve(info.pages().len())
-        .map_err(|_| DecodeError::Allocation {
-            requested_bytes: page_allocation,
-        })?;
-    let mut buffers = Vec::new();
-    let buffer_allocation = allocation_size::<(u32, RegionBuffer)>(segments.len())?;
-    buffers
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
-            requested_bytes: buffer_allocation,
-        })?;
-    let InitialResources {
-        mut patterns,
-        mut symbols,
-        mut tables,
-    } = initial_resources.unwrap_or_default();
-    let pattern_allocation = allocation_size::<(u32, Vec<Bitmap>)>(segments.len())?;
-    patterns
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
-            requested_bytes: pattern_allocation,
-        })?;
-    let table_allocation = allocation_size::<(u32, HuffmanTable)>(segments.len())?;
-    tables
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
-            requested_bytes: table_allocation,
-        })?;
-    let symbol_allocation = allocation_size::<(u32, SymbolResource)>(segments.len())?;
-    symbols
-        .try_reserve(segments.len())
-        .map_err(|_| DecodeError::Allocation {
-            requested_bytes: symbol_allocation,
-        })?;
-    let mut retained = RetainedBudget::new();
-    retained.retain(initial_retained_bytes, limits)?;
-    let mut cumulative_work = DecodeWork::new(initial_work, limits)?;
-    for (_, bitmaps) in &patterns {
-        let bytes = bitmaps.iter().try_fold(0_u64, |total, bitmap| {
-            total
-                .checked_add(bitmap_byte_len(bitmap)?)
-                .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))
-        })?;
-        retained.retain(bytes, limits)?;
-    }
-    for (_, resource) in &symbols {
-        let bytes = resource.exported.iter().try_fold(0_u64, |total, bitmap| {
-            total
-                .checked_add(bitmap_byte_len(bitmap)?)
-                .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))
-        })?;
-        retained.retain(bytes, limits)?;
-    }
-
-    for segment in segments {
-        #[cfg(verus_keep_ghost)]
-        proof! {
-            decode_properties::dispatch_is_deterministic(segment.header.segment_type);
-        }
-        match segment.header.segment_type {
-            SegmentType::PageInformation => {
-                let ParsedData::Page(page_data) = segment.data else {
-                    return Err(MalformedError::InvalidPageState(
-                        "page information payload was not parsed",
-                    )
-                    .into());
-                };
-                let public = find_page_info(info, segment.header.page_association)?;
-                let bitmap = Bitmap::filled(
-                    public.width(),
-                    public.height(),
-                    page_data.default_pixel,
-                    limits,
-                )?;
-                retained.retain(bitmap_byte_len(&bitmap)?, limits)?;
-                insert_runtime_page(
-                    &mut pages,
-                    public.number(),
-                    RuntimePage {
-                        default_operator: page_data.default_operator,
-                        combination_override: page_data.combination_operator_override,
-                        refinements_allowed: page_data.might_contain_refinements,
-                        auxiliary_allowed: page_data.requires_auxiliary_buffers,
-                        last_stripe_end: None,
-                        open_stripe_max_row: None,
-                        bitmap,
-                    },
-                );
-            }
-            SegmentType::IntermediateGenericRegion
-            | SegmentType::ImmediateGenericRegion
-            | SegmentType::ImmediateLosslessGenericRegion => {
-                decode_generic_segment(
-                    segment,
-                    &mut pages,
-                    &mut buffers,
-                    &mut retained,
-                    &mut cumulative_work,
-                    limits,
-                )?;
-            }
-            SegmentType::IntermediateGenericRefinementRegion
-            | SegmentType::ImmediateGenericRefinementRegion
-            | SegmentType::ImmediateLosslessGenericRefinementRegion => {
-                decode_refinement_segment(
-                    segment,
-                    &mut pages,
-                    &mut buffers,
-                    &mut retained,
-                    &mut cumulative_work,
-                    limits,
-                )?;
-            }
-            SegmentType::PatternDictionary => {
-                decode_pattern_segment(
-                    segment,
-                    &mut patterns,
-                    &mut retained,
-                    &mut cumulative_work,
-                    limits,
-                )?;
-            }
-            SegmentType::SymbolDictionary => {
-                decode_symbol_dictionary_segment(
-                    segment,
-                    &mut symbols,
-                    &tables,
-                    &mut retained,
-                    &mut cumulative_work,
-                    limits,
-                )?;
-            }
-            SegmentType::IntermediateTextRegion
-            | SegmentType::ImmediateTextRegion
-            | SegmentType::ImmediateLosslessTextRegion => {
-                decode_text_segment(
-                    segment,
-                    &mut pages,
-                    &mut buffers,
-                    &symbols,
-                    &tables,
-                    &mut retained,
-                    &mut cumulative_work,
-                    limits,
-                )?;
-            }
-            SegmentType::IntermediateHalftoneRegion
-            | SegmentType::ImmediateHalftoneRegion
-            | SegmentType::ImmediateLosslessHalftoneRegion => {
-                decode_halftone_segment(
-                    segment,
-                    &mut pages,
-                    &mut buffers,
-                    &patterns,
-                    &mut retained,
-                    &mut cumulative_work,
-                    limits,
-                )?;
-            }
-            SegmentType::EndOfPage => {
-                let number = segment.header.page_association;
-                let index = runtime_page_index(&pages, number).ok_or(
-                    MalformedError::InvalidPageState("end-of-page without active page"),
-                )?;
-                let page = pages.remove(index).1;
-                retained.release(bitmap_byte_len(&page.bitmap)?)?;
-                sink.write_page(Page {
-                    number,
-                    bitmap: page.bitmap,
-                })?;
-            }
-            SegmentType::EndOfStripe => {
-                let ParsedData::EndOfStripe(row) = segment.data else {
-                    return Err(MalformedError::InvalidPageState(
-                        "end-of-stripe payload was not parsed",
-                    )
-                    .into());
-                };
-                seal_stripe(&mut pages, segment.header.page_association, row)?;
-            }
-            SegmentType::EndOfFile | SegmentType::Profiles | SegmentType::Extension => {}
-            SegmentType::Tables => {
-                let table = HuffmanTable::from_encoded(segment.payload, limits)
-                    .map_err(DecodeError::from)?;
-                if !insert_huffman_table(&mut tables, segment.header.number, table) {
-                    return Err(
-                        MalformedError::DuplicateSegmentNumber(segment.header.number).into(),
-                    );
-                }
-            }
-            SegmentType::ColourPalette => {
-                return Err(DecodeError::Unsupported(UnsupportedFeature::Colour));
-            }
-        }
-        release_referred_buffers(segment, &mut buffers, &mut retained)?;
-        release_referred_patterns(segment, &mut patterns, &mut retained)?;
-        release_referred_symbols(segment, &mut symbols, &mut retained)?;
-        release_referred_tables(segment, &mut tables);
-    }
-    if !pages.is_empty() {
-        return Err(MalformedError::InvalidPageState("active page after final segment").into());
-    }
-    Ok(())
+    decode_segments_body!(
+        segments,
+        info,
+        initial_work,
+        initial_retained_bytes,
+        limits,
+        initial_resources,
+        sink,
+        write_page_to_sink::<S>
+    )
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::runtime_pages_valid(old(pages)),
+        decode_spec::region_buffers_valid(old(buffers)),
+    ensures match out {
+        Ok(()) =>
+            decode_spec::runtime_pages_valid(final(pages))
+                && decode_spec::region_buffers_valid(final(buffers)),
+        Err(_) => true,
+    },
+))]
 fn decode_generic_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
@@ -1061,7 +1345,7 @@ fn decode_generic_segment(
         segment.header.data_length.is_none(),
         limits,
     )
-    .map_err(DecodeError::from)?;
+    .map_err(generic_error_into_decode)?;
     if decoded.consumed_bytes != segment.payload.len() {
         let trailing = segment
             .payload
@@ -1100,6 +1384,17 @@ fn decode_generic_segment(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::runtime_pages_valid(old(pages)),
+        decode_spec::region_buffers_valid(old(buffers)),
+    ensures match out {
+        Ok(()) =>
+            decode_spec::runtime_pages_valid(final(pages))
+                && decode_spec::region_buffers_valid(final(buffers)),
+        Err(_) => true,
+    },
+))]
 fn decode_refinement_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
@@ -1108,8 +1403,8 @@ fn decode_refinement_segment(
     work: &mut DecodeWork,
     limits: &Limits,
 ) -> Result<(), DecodeError> {
-    let (header, header_length) =
-        parse_refinement_region_header(segment.payload, limits).map_err(DecodeError::from)?;
+    let (header, header_length) = parse_refinement_region_header(segment.payload, limits)
+        .map_err(generic_error_into_decode)?;
     let coded = segment
         .payload
         .get(header_length..)
@@ -1146,7 +1441,7 @@ fn decode_refinement_segment(
         reference,
         limits,
     )
-    .map_err(DecodeError::from)?;
+    .map_err(generic_error_into_decode)?;
     let refinement_work = u64::from(header.region.width)
         .checked_mul(u64::from(header.region.height))
         .and_then(|pixels| pixels.checked_mul(23))
@@ -1178,6 +1473,13 @@ fn decode_refinement_segment(
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::pattern_store_valid(old(patterns)),
+    ensures match out {
+        Ok(()) => decode_spec::pattern_store_valid(final(patterns)),
+        Err(_) => true,
+    },
+))]
 fn decode_pattern_segment(
     segment: &ParsedSegment<'_>,
     patterns: &mut PatternStore,
@@ -1189,98 +1491,58 @@ fn decode_pattern_segment(
         return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
     }
     let mut reader = ByteReader::new(segment.payload);
-    let header = parse_pattern_dictionary_header(&mut reader).map_err(DecodeError::from)?;
+    let header =
+        parse_pattern_dictionary_header(&mut reader).map_err(halftone_error_into_decode)?;
     let coded = reader.remaining_bytes();
     let mut work = WorkBudget::new(limits);
-    let decoded = if header.mmr {
-        let mut used = false;
-        let mut decoder = |request: GenericRegionRequest<'_>| {
-            if used {
-                return Err(MalformedError::InvalidPageState(
-                    "pattern dictionary requested multiple MMR bitmaps",
-                )
-                .into());
-            }
-            if request.coding
-                != (GenericRegionCoding::Mmr {
-                    require_eofb: false,
-                })
-            {
-                return Err(MalformedError::InvalidPageState(
-                    "pattern dictionary coding mode changed",
-                )
-                .into());
-            }
-            used = true;
-            decode_mmr(
-                coded,
-                request.width,
-                request.height,
-                limits,
-                EofbPolicy::Optional,
-            )
-            .map_err(DecodeError::from)
-        };
-        decode_pattern_dictionary(header, &mut decoder, limits, &mut work)
-            .map_err(DecodeError::from)?
+    let mut decoder = if header.mmr {
+        new_pattern_mmr_state(coded, limits)
     } else {
         let template = generic_template(header.template)?;
-        let mut session = GenericArithmeticSession::new(coded, template, false, limits)
-            .map_err(DecodeError::from)?;
-        let pattern_bitmaps = {
-            let mut decoder = |request: GenericRegionRequest<'_>| {
-                let GenericRegionCoding::Arithmetic {
-                    template: requested_template,
-                    adaptive_pixels,
-                } = request.coding
-                else {
-                    return Err(MalformedError::InvalidPageState(
-                        "pattern dictionary coding mode changed",
-                    )
-                    .into());
-                };
-                if requested_template != header.template {
-                    return Err(MalformedError::InvalidPageState(
-                        "pattern dictionary template changed",
-                    )
-                    .into());
-                }
-                session
-                    .decode_bitmap(GenericArithmeticCall {
-                        width: request.width,
-                        height: request.height,
-                        adaptive: generic_adaptive(adaptive_pixels),
-                        typical_prediction: request.typical_prediction,
-                        skip: request.skip,
-                    })
-                    .map_err(DecodeError::from)
-            };
-            decode_pattern_dictionary(header, &mut decoder, limits, &mut work)
-                .map_err(DecodeError::from)?
-        };
-        session.validate_final_marker().map_err(DecodeError::from)?;
-        pattern_bitmaps
+        new_pattern_arithmetic_state(coded, template, header.template, limits)?
     };
+    let pattern_bitmaps = decode_pattern_dictionary(header, &mut decoder, limits, &mut work)
+        .map_err(halftone_error_into_decode)?;
+    decoder.finish()?;
 
     let requested_bytes = u64::try_from(std::mem::size_of::<(u32, Vec<Bitmap>)>())
         .map_err(|_| MalformedError::IntegerOverflow)?;
     patterns
         .try_reserve(1)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    let retained_bytes = decoded.iter().try_fold(0_u64, |total, bitmap| {
-        total
-            .checked_add(bitmap_byte_len(bitmap)?)
-            .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))
-    })?;
+    let mut retained_bytes = 0_u64;
+    let mut decoded_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant decoded_index <= pattern_bitmaps@.len(),
+        decreases pattern_bitmaps@.len() - decoded_index,
+    ))]
+    while decoded_index < pattern_bitmaps.len() {
+        retained_bytes = retained_bytes
+            .checked_add(bitmap_byte_len(&pattern_bitmaps[decoded_index])?)
+            .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))?;
+        decoded_index += 1;
+    }
     cumulative_work.charge(work.used(), limits)?;
     retained.retain(retained_bytes, limits)?;
-    if !insert_patterns(patterns, segment.header.number, decoded) {
+    if !insert_patterns(patterns, segment.header.number, pattern_bitmaps) {
         return Err(MalformedError::DuplicateSegmentNumber(segment.header.number).into());
     }
     Ok(())
 }
 
 #[allow(clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::runtime_pages_valid(old(pages)),
+        decode_spec::pattern_store_valid(patterns),
+        decode_spec::region_buffers_valid(old(buffers)),
+    ensures match out {
+        Ok(()) =>
+            decode_spec::runtime_pages_valid(final(pages))
+                && decode_spec::region_buffers_valid(final(buffers)),
+        Err(_) => true,
+    },
+))]
 fn decode_halftone_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
@@ -1299,92 +1561,27 @@ fn decode_halftone_segment(
         })?;
     let mut reader = ByteReader::new(segment.payload);
     let region = parse_region_info(&mut reader, limits)?;
-    let header = parse_halftone_header(&mut reader).map_err(DecodeError::from)?;
+    let header = parse_halftone_header(&mut reader).map_err(halftone_error_into_decode)?;
     let coded = reader.remaining_bytes();
     let mut work = WorkBudget::new(limits);
 
-    let bitmap = if header.mmr {
-        let mut offset = 0_usize;
-        let bitmap = {
-            let mut decoder = |request: GenericRegionRequest<'_>| {
-                if request.coding != (GenericRegionCoding::Mmr { require_eofb: true }) {
-                    return Err(
-                        MalformedError::InvalidPageState("halftone coding mode changed").into(),
-                    );
-                }
-                let remaining = coded.get(offset..).ok_or(MalformedError::IntegerOverflow)?;
-                let (bitmap, consumed) =
-                    decode_mmr_prefix(remaining, request.width, request.height, limits)
-                        .map_err(DecodeError::from)?;
-                offset = offset
-                    .checked_add(consumed)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                Ok(bitmap)
-            };
-            decode_halftone_region(
-                &header,
-                region.width,
-                region.height,
-                dictionary,
-                &mut decoder,
-                limits,
-                &mut work,
-            )
-            .map_err(DecodeError::from)?
-        };
-        if offset != coded.len() {
-            let trailing = coded
-                .len()
-                .checked_sub(offset)
-                .and_then(|bytes| u64::try_from(bytes).ok())
-                .ok_or(MalformedError::IntegerOverflow)?;
-            return Err(MalformedError::TrailingData(trailing).into());
-        }
-        bitmap
+    let mut decoder = if header.mmr {
+        new_gray_mmr_state(coded, limits)
     } else {
         let template = generic_template(header.template)?;
-        let mut session = GenericArithmeticSession::new(coded, template, false, limits)
-            .map_err(DecodeError::from)?;
-        let bitmap = {
-            let mut decoder = |request: GenericRegionRequest<'_>| {
-                let GenericRegionCoding::Arithmetic {
-                    template: requested_template,
-                    adaptive_pixels,
-                } = request.coding
-                else {
-                    return Err(
-                        MalformedError::InvalidPageState("halftone coding mode changed").into(),
-                    );
-                };
-                if requested_template != header.template {
-                    return Err(
-                        MalformedError::InvalidPageState("halftone template changed").into(),
-                    );
-                }
-                session
-                    .decode_bitmap(GenericArithmeticCall {
-                        width: request.width,
-                        height: request.height,
-                        adaptive: generic_adaptive(adaptive_pixels),
-                        typical_prediction: request.typical_prediction,
-                        skip: request.skip,
-                    })
-                    .map_err(DecodeError::from)
-            };
-            decode_halftone_region(
-                &header,
-                region.width,
-                region.height,
-                dictionary,
-                &mut decoder,
-                limits,
-                &mut work,
-            )
-            .map_err(DecodeError::from)?
-        };
-        session.validate_final_marker().map_err(DecodeError::from)?;
-        bitmap
+        new_halftone_arithmetic_state(coded, template, header.template, limits)?
     };
+    let bitmap = decode_halftone_region(
+        &header,
+        region.width,
+        region.height,
+        dictionary,
+        &mut decoder,
+        limits,
+        &mut work,
+    )
+    .map_err(halftone_error_into_decode)?;
+    decoder.finish()?;
 
     cumulative_work.charge(work.used(), limits)?;
     if segment.header.segment_type == SegmentType::IntermediateHalftoneRegion {
@@ -1426,6 +1623,13 @@ fn first_referred_segment(referred: &[u32], owner: u32) -> Result<u32, DecodeErr
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::symbol_store_valid(old(symbols)),
+    ensures match out {
+        Ok(()) => decode_spec::symbol_store_valid(final(symbols)),
+        Err(_) => true,
+    },
+))]
 fn decode_symbol_dictionary_segment(
     segment: &ParsedSegment<'_>,
     symbols: &mut SymbolStore,
@@ -1439,13 +1643,23 @@ fn decode_symbol_dictionary_segment(
     }
     let imported = collect_referred_symbols(segment, symbols, retained.bytes, limits)?;
     let custom_tables = collect_referred_tables(segment, tables)?;
-    let used_contexts = segment
-        .header
-        .referred_segments
-        .iter()
-        .filter_map(|number| get_symbol_resource(symbols, *number))
-        .next_back()
-        .and_then(|resource| resource.contexts.as_ref());
+    let mut used_contexts = None;
+    let mut reference_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            reference_index <= segment.header.referred_segments@.len(),
+            decode_spec::symbol_store_valid(symbols),
+        decreases segment.header.referred_segments@.len() - reference_index,
+    ))]
+    while reference_index < segment.header.referred_segments.len() {
+        let number = segment.header.referred_segments[reference_index];
+        if let Some(resource) = get_symbol_resource(symbols, number) {
+            if resource.contexts.is_some() {
+                used_contexts = resource.contexts.as_ref();
+            }
+        }
+        reference_index += 1;
+    }
     let output = decode_symbol_dictionary(&SymbolDictionaryInput {
         payload: segment.payload,
         imported_symbols: &imported,
@@ -1453,7 +1667,7 @@ fn decode_symbol_dictionary_segment(
         used_contexts,
         limits,
     })
-    .map_err(DecodeError::from)?;
+    .map_err(symbol_text_error_into_decode)?;
     if output.consumed_bytes != segment.payload.len() {
         let trailing = segment
             .payload
@@ -1463,27 +1677,35 @@ fn decode_symbol_dictionary_segment(
             .ok_or(MalformedError::IntegerOverflow)?;
         return Err(MalformedError::TrailingData(trailing).into());
     }
-    let bitmap_bytes = output
-        .exported_symbols
-        .iter()
-        .try_fold(0_u64, |total, bitmap| {
-            total
-                .checked_add(bitmap_byte_len(bitmap)?)
-                .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))
-        })?;
+    let mut bitmap_bytes = 0_u64;
+    let mut bitmap_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant bitmap_index <= output.exported_symbols@.len(),
+        decreases output.exported_symbols@.len() - bitmap_index,
+    ))]
+    while bitmap_index < output.exported_symbols.len() {
+        bitmap_bytes = bitmap_bytes
+            .checked_add(bitmap_byte_len(&output.exported_symbols[bitmap_index])?)
+            .ok_or(DecodeError::Malformed(MalformedError::IntegerOverflow))?;
+        bitmap_index += 1;
+    }
     retained.retain(bitmap_bytes, limits)?;
-    let symbol_work = output
-        .exported_symbols
-        .iter()
-        .try_fold(0_u64, |total, bitmap| {
-            total
-                .checked_add(
-                    u64::from(bitmap.width())
-                        .checked_mul(u64::from(bitmap.height()))
-                        .ok_or(MalformedError::IntegerOverflow)?,
-                )
-                .ok_or(MalformedError::IntegerOverflow)
-        })?;
+    let mut symbol_work = 0_u64;
+    let mut work_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant work_index <= output.exported_symbols@.len(),
+        decreases output.exported_symbols@.len() - work_index,
+    ))]
+    while work_index < output.exported_symbols.len() {
+        let bitmap = &output.exported_symbols[work_index];
+        let pixels = u64::from(bitmap.width())
+            .checked_mul(u64::from(bitmap.height()))
+            .ok_or(MalformedError::IntegerOverflow)?;
+        symbol_work = symbol_work
+            .checked_add(pixels)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        work_index += 1;
+    }
     work.charge(symbol_work, limits)?;
     let resource = SymbolResource {
         exported: output.exported_symbols,
@@ -1496,6 +1718,18 @@ fn decode_symbol_dictionary_segment(
 }
 
 #[allow(clippy::too_many_arguments)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::runtime_pages_valid(old(pages)),
+        decode_spec::region_buffers_valid(old(buffers)),
+        decode_spec::symbol_store_valid(symbols),
+    ensures match out {
+        Ok(()) =>
+            decode_spec::runtime_pages_valid(final(pages))
+                && decode_spec::region_buffers_valid(final(buffers)),
+        Err(_) => true,
+    },
+))]
 fn decode_text_segment(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
@@ -1514,7 +1748,7 @@ fn decode_text_segment(
         custom_tables: &custom_tables,
         limits,
     })
-    .map_err(DecodeError::from)?;
+    .map_err(symbol_text_error_into_decode)?;
     if output.consumed_bytes != segment.payload.len() {
         let trailing = segment
             .payload
@@ -1552,7 +1786,14 @@ fn decode_text_segment(
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::symbol_store_valid(symbols),
+    ensures match out {
+        Ok(bitmaps) =>
+            crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
+        Err(_) => true,
+    },
+))]
 fn collect_referred_symbols(
     segment: &ParsedSegment<'_>,
     symbols: &SymbolStore,
@@ -1563,7 +1804,9 @@ fn collect_referred_symbols(
     let mut bitmap_bytes = 0_u64;
     let mut reference_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant reference_index <= segment.header.referred_segments@.len(),
+        invariant
+            reference_index <= segment.header.referred_segments@.len(),
+            decode_spec::symbol_store_valid(symbols),
         decreases segment.header.referred_segments@.len() - reference_index,
     ))]
     while reference_index < segment.header.referred_segments.len() {
@@ -1571,7 +1814,11 @@ fn collect_referred_symbols(
         if let Some(resource) = get_symbol_resource(symbols, number) {
             let mut bitmap_index = 0_usize;
             #[cfg_attr(verus_keep_ghost, verus_spec(
-                invariant bitmap_index <= resource.exported@.len(),
+                invariant
+                    bitmap_index <= resource.exported@.len(),
+                    crate::halftone::halftone_spec::bitmaps_valid(
+                        resource.exported@
+                    ),
                 decreases resource.exported@.len() - bitmap_index,
             ))]
             while bitmap_index < resource.exported.len() {
@@ -1598,13 +1845,16 @@ fn collect_referred_symbols(
         }
         .into());
     }
-    let mut imported = Vec::new();
+    let mut imported: Vec<Bitmap> = Vec::new();
     if imported.try_reserve(count).is_err() {
         return Err(DecodeError::Allocation { requested_bytes });
     }
     reference_index = 0;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant reference_index <= segment.header.referred_segments@.len(),
+        invariant
+            reference_index <= segment.header.referred_segments@.len(),
+            decode_spec::symbol_store_valid(symbols),
+            crate::halftone::halftone_spec::bitmaps_valid(imported@),
         decreases segment.header.referred_segments@.len() - reference_index,
     ))]
     while reference_index < segment.header.referred_segments.len() {
@@ -1612,7 +1862,12 @@ fn collect_referred_symbols(
         if let Some(resource) = get_symbol_resource(symbols, number) {
             let mut bitmap_index = 0_usize;
             #[cfg_attr(verus_keep_ghost, verus_spec(
-                invariant bitmap_index <= resource.exported@.len(),
+                invariant
+                    bitmap_index <= resource.exported@.len(),
+                    crate::halftone::halftone_spec::bitmaps_valid(
+                        resource.exported@
+                    ),
+                    crate::halftone::halftone_spec::bitmaps_valid(imported@),
                 decreases resource.exported@.len() - bitmap_index,
             ))]
             while bitmap_index < resource.exported.len() {
@@ -1735,23 +1990,6 @@ fn generic_template(template: u8) -> Result<GenericTemplate, DecodeError> {
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures
-        out@.len() == 12,
-        forall|i: int| 0 <= i < 4 ==>
-            out[i].x == values[i].0 && out[i].y == values[i].1,
-        forall|i: int| 4 <= i < 12 ==>
-            out[i].x == 0 && out[i].y == 0,
-))]
-fn generic_adaptive(values: [(i32, i32); 4]) -> [TemplateOffset; 12] {
-    let mut adaptive = [TemplateOffset::new(0, 0); 12];
-    adaptive[0] = TemplateOffset::new(values[0].0, values[0].1);
-    adaptive[1] = TemplateOffset::new(values[1].0, values[1].1);
-    adaptive[2] = TemplateOffset::new(values[2].0, values[2].1);
-    adaptive[3] = TemplateOffset::new(values[3].0, values[3].1);
-    adaptive
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures out == (left == right),
 ))]
 fn same_combination_operator(
@@ -1828,10 +2066,11 @@ fn require_matching_geometry(equal: bool) -> Result<(), DecodeError> {
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         decode_spec::runtime_pages_valid(old(pages)),
         crate::spec::bitmap::storage_valid(bitmap),
+    ensures decode_spec::runtime_pages_valid(final(pages)),
 ))]
 fn compose_immediate(
     segment: &ParsedSegment<'_>,
@@ -1842,10 +2081,35 @@ fn compose_immediate(
     work: &mut DecodeWork,
     limits: &Limits,
 ) -> Result<(), DecodeError> {
-    let page = get_runtime_page_mut(pages, segment.header.page_association).ok_or(
+    let index = runtime_page_index(pages, segment.header.page_association).ok_or(
         MalformedError::MissingPageInformation(segment.header.page_association),
     )?;
-    compose_immediate_on_page(page, region, bitmap, refinement, work, limits)
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost original_pages = pages@;
+    }
+    let result = compose_immediate_on_page(
+        &mut pages[index].1,
+        region,
+        bitmap,
+        refinement,
+        work,
+        limits,
+    );
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(decode_spec::runtime_pages_valid);
+        assert forall|entry: int| 0 <= entry < pages@.len()
+            implies crate::spec::bitmap::storage_valid(
+                #[trigger] &pages@[entry].1.bitmap
+            ) by {
+            if entry == index {
+            } else {
+                assert(pages@[entry] == original_pages[entry]);
+            }
+        }
+    }
+    result
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1993,16 +2257,38 @@ fn checked_seal_stripe_state(
     Ok(None)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires decode_spec::runtime_pages_valid(old(pages)),
+    ensures decode_spec::runtime_pages_valid(final(pages)),
 ))]
 fn seal_stripe(pages: &mut RuntimePages, page_number: u32, row: u32) -> Result<(), DecodeError> {
-    let page = get_runtime_page_mut(pages, page_number)
+    let index = runtime_page_index(pages, page_number)
         .ok_or(MalformedError::MissingPageInformation(page_number))?;
-    seal_stripe_on_page(page, row)
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost original_pages = pages@;
+    }
+    let result = seal_stripe_on_page(&mut pages[index].1, row);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(decode_spec::runtime_pages_valid);
+        assert forall|entry: int| 0 <= entry < pages@.len()
+            implies crate::spec::bitmap::storage_valid(
+                #[trigger] &pages@[entry].1.bitmap
+            ) by {
+            if entry == index {
+            } else {
+                assert(pages@[entry] == original_pages[entry]);
+            }
+        }
+    }
+    result
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(&old(page).bitmap),
+    ensures crate::spec::bitmap::storage_valid(&final(page).bitmap),
+))]
 fn seal_stripe_on_page(page: &mut RuntimePage, row: u32) -> Result<(), DecodeError> {
     let next_open = checked_seal_stripe_state(page.open_stripe_max_row, row)?;
     page.last_stripe_end = Some(row);
@@ -2010,7 +2296,9 @@ fn seal_stripe_on_page(page: &mut RuntimePage, row: u32) -> Result<(), DecodeErr
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::runtime_pages_valid(pages),
+))]
 fn require_auxiliary_page(
     segment: &ParsedSegment<'_>,
     pages: &RuntimePages,
@@ -2032,7 +2320,15 @@ fn require_auxiliary_page_state(page: &RuntimePage) -> Result<(), DecodeError> {
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::region_buffers_valid(old(buffers)),
+        crate::spec::bitmap::storage_valid(&bitmap),
+    ensures match out {
+        Ok(()) => decode_spec::region_buffers_valid(final(buffers)),
+        Err(_) => true,
+    },
+))]
 fn insert_buffer(
     buffers: &mut RegionBuffers,
     number: u32,
@@ -2053,7 +2349,10 @@ fn insert_buffer(
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::region_buffers_valid(old(buffers)),
+    ensures decode_spec::region_buffers_valid(final(buffers)),
+))]
 fn release_referred_buffers(
     segment: &ParsedSegment<'_>,
     buffers: &mut RegionBuffers,
@@ -2061,7 +2360,9 @@ fn release_referred_buffers(
 ) -> Result<(), DecodeError> {
     let mut index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant index <= segment.header.referred_segments@.len(),
+        invariant
+            index <= segment.header.referred_segments@.len(),
+            decode_spec::region_buffers_valid(buffers),
         decreases segment.header.referred_segments@.len() - index,
     ))]
     while index < segment.header.referred_segments.len() {
@@ -2118,7 +2419,10 @@ fn release_bitmap(retained: &mut RetainedBudget, bitmap: &Bitmap) -> Result<(), 
     retained.release(bitmap_byte_len(bitmap)?)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::pattern_store_valid(old(patterns)),
+    ensures decode_spec::pattern_store_valid(final(patterns)),
+))]
 fn release_referred_patterns(
     segment: &ParsedSegment<'_>,
     patterns: &mut PatternStore,
@@ -2126,7 +2430,9 @@ fn release_referred_patterns(
 ) -> Result<(), DecodeError> {
     let mut index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant index <= segment.header.referred_segments@.len(),
+        invariant
+            index <= segment.header.referred_segments@.len(),
+            decode_spec::pattern_store_valid(patterns),
         decreases segment.header.referred_segments@.len() - index,
     ))]
     while index < segment.header.referred_segments.len() {
@@ -2138,11 +2444,32 @@ fn release_referred_patterns(
             == Some(false)
         {
             if let Some(pattern_index) = pattern_index(patterns, number) {
+                #[cfg(verus_keep_ghost)]
+                proof_decl! {
+                    let ghost original_patterns = patterns@;
+                }
                 let bitmaps = patterns.remove(pattern_index).1;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    reveal(decode_spec::pattern_store_valid);
+                    assert forall|entry: int| 0 <= entry < patterns@.len()
+                        implies crate::halftone::halftone_spec::bitmaps_valid(
+                            #[trigger] patterns@[entry].1@
+                        ) by {
+                        if entry < pattern_index {
+                            assert(patterns@[entry] == original_patterns[entry]);
+                        } else {
+                            assert(patterns@[entry] == original_patterns[entry + 1]);
+                        }
+                    }
+                }
                 let mut bitmap_index = 0_usize;
                 let mut released = 0_u64;
                 #[cfg_attr(verus_keep_ghost, verus_spec(
-                    invariant bitmap_index <= bitmaps@.len(),
+                    invariant
+                        bitmap_index <= bitmaps@.len(),
+                        decode_spec::pattern_store_valid(patterns),
+                        crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
                     decreases bitmaps@.len() - bitmap_index,
                 ))]
                 while bitmap_index < bitmaps.len() {
@@ -2159,7 +2486,10 @@ fn release_referred_patterns(
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::symbol_store_valid(old(symbols)),
+    ensures decode_spec::symbol_store_valid(final(symbols)),
+))]
 fn release_referred_symbols(
     segment: &ParsedSegment<'_>,
     symbols: &mut SymbolStore,
@@ -2167,7 +2497,9 @@ fn release_referred_symbols(
 ) -> Result<(), DecodeError> {
     let mut index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant index <= segment.header.referred_segments@.len(),
+        invariant
+            index <= segment.header.referred_segments@.len(),
+            decode_spec::symbol_store_valid(symbols),
         decreases segment.header.referred_segments@.len() - index,
     ))]
     while index < segment.header.referred_segments.len() {
@@ -2179,11 +2511,31 @@ fn release_referred_symbols(
             == Some(false)
         {
             if let Some(symbol_index) = symbol_index(symbols, number) {
+                #[cfg(verus_keep_ghost)]
+                proof_decl! {
+                    let ghost original_symbols = symbols@;
+                }
                 let resource = symbols.remove(symbol_index).1;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    reveal(decode_spec::symbol_store_valid);
+                    assert forall|entry: int| 0 <= entry < symbols@.len()
+                        implies crate::halftone::halftone_spec::bitmaps_valid(
+                            #[trigger] symbols@[entry].1.exported@
+                        ) by {
+                        if entry < symbol_index {
+                            assert(symbols@[entry] == original_symbols[entry]);
+                        } else {
+                            assert(symbols@[entry] == original_symbols[entry + 1]);
+                        }
+                    }
+                }
                 let mut bitmap_index = 0_usize;
                 let mut released = 0_u64;
                 #[cfg_attr(verus_keep_ghost, verus_spec(
-                    invariant bitmap_index <= resource.exported@.len(),
+                    invariant
+                        bitmap_index <= resource.exported@.len(),
+                        decode_spec::symbol_store_valid(symbols),
                     decreases resource.exported@.len() - bitmap_index,
                 ))]
                 while bitmap_index < resource.exported.len() {
