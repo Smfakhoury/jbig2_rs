@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-18T17:40:20Z",
+  "competitor": {
+    "crate": "hayro-jbig2",
+    "version": "0.3.1",
+    "source_revision": "ea9c81dc70cde40c64205986fdcfcd481fe934d8",
+    "features": [
+      "std",
+      "image",
+      "simd"
+    ]
+  },
+  "candidate": {
+    "crate": "jbig2_rs",
+    "source_revision": "cb73e895935ccac9ef821105071e98d720737bec"
+  },
+  "toolchain": "rustc 1.98.1, release profile",
+  "generated_mmr": {
+    "measurement": "median parse, decode, and packed-output hash time over 50 iterations after three warmups",
+    "cases": [
+      {
+        "width": 64,
+        "height": 64,
+        "input_bytes": 102,
+        "output_bytes": 512,
+        "jbig2_rs_median_ns": 24807,
+        "hayro_jbig2_median_ns": 4659,
+        "jbig2_rs_over_hayro": 5.324
+      },
+      {
+        "width": 512,
+        "height": 512,
+        "input_bytes": 158,
+        "output_bytes": 32768,
+        "jbig2_rs_median_ns": 1466152,
+        "hayro_jbig2_median_ns": 165974,
+        "jbig2_rs_over_hayro": 8.833
+      },
+      {
+        "width": 2048,
+        "height": 2048,
+        "input_bytes": 350,
+        "output_bytes": 524288,
+        "jbig2_rs_median_ns": 23794173,
+        "hayro_jbig2_median_ns": 3075595,
+        "jbig2_rs_over_hayro": 7.737
+      }
+    ],
+    "peak_rss_2048x2048_100_iterations_kib": {
+      "jbig2_rs": 3436,
+      "hayro_jbig2": 3344
+    }
+  },
+  "official_positive_vectors": {
+    "measurement": "median parse, decode, and packed-output hash time over 20 iterations",
+    "cases": [
+      {
+        "name": "F01_200_TT9.jb2",
+        "input_bytes": 16699,
+        "width": 1728,
+        "height": 2339,
+        "exact_bitmap_match": true,
+        "jbig2_rs_median_ns": 27662796,
+        "hayro_jbig2_median_ns": 3882992,
+        "jbig2_rs_over_hayro": 7.124
+      },
+      {
+        "name": "F01_200_TT10.jb2",
+        "input_bytes": 12731,
+        "width": 1728,
+        "height": 2339,
+        "exact_bitmap_match": true,
+        "jbig2_rs_median_ns": 265008713,
+        "hayro_jbig2_median_ns": 16197854,
+        "jbig2_rs_over_hayro": 16.361
+      }
+    ]
+  },
+  "official_vector_classification": {
+    "total": 10,
+    "both_exact_bitmap": 2,
+    "both_rejected": 8,
+    "only_jbig2_rs_decoded": 0,
+    "only_hayro_jbig2_decoded": 0
+  },
+  "conclusion": {
+    "support": "jbig2_rs has broader document, page lifecycle, retention, limits, and verification coverage",
+    "performance": "hayro-jbig2 0.3.1 is substantially faster on every measured case",
+    "superiority_claim": "The candidate is stronger on verified correctness and defensive scope, but is not currently superior on throughput or peak RSS"
+  }
+}
