@@ -40,8 +40,15 @@ struct TimingResult {
     output_bytes: usize,
     iterations: usize,
     jbig2_rs_median_ns: u128,
+    jbig2_rs_p95_ns: u128,
     hayro_jbig2_median_ns: u128,
+    hayro_jbig2_p95_ns: u128,
     hayro_over_jbig2_rs: f64,
+}
+
+struct TimingStats {
+    median_ns: u128,
+    p95_ns: u128,
 }
 
 struct PackedCollector {
@@ -156,15 +163,33 @@ fn run_single_input(engine: &str, input: &[u8], iterations: usize) -> Result<Tim
         _ => return Err("engine must be jbig2_rs or hayro_jbig2".into()),
     };
     let output = operation(input)?;
-    let median = median_timings(iterations, || operation(input))?;
+    let timing = timing_stats(iterations, || operation(input))?;
     Ok(TimingResult {
         width: output.width,
         height: output.height,
         input_bytes: input.len(),
         output_bytes: output.bytes,
         iterations,
-        jbig2_rs_median_ns: if engine == "jbig2_rs" { median } else { 0 },
-        hayro_jbig2_median_ns: if engine == "hayro_jbig2" { median } else { 0 },
+        jbig2_rs_median_ns: if engine == "jbig2_rs" {
+            timing.median_ns
+        } else {
+            0
+        },
+        jbig2_rs_p95_ns: if engine == "jbig2_rs" {
+            timing.p95_ns
+        } else {
+            0
+        },
+        hayro_jbig2_median_ns: if engine == "hayro_jbig2" {
+            timing.median_ns
+        } else {
+            0
+        },
+        hayro_jbig2_p95_ns: if engine == "hayro_jbig2" {
+            timing.p95_ns
+        } else {
+            0
+        },
         hayro_over_jbig2_rs: 0.0,
     })
 }
@@ -185,23 +210,25 @@ fn run_generated_benchmarks(iterations: usize) -> Result<Vec<TimingResult>, Stri
             let _ = decode_ours(&input)?;
             let _ = decode_hayro(&input)?;
         }
-        let ours = median_timings(iterations, || decode_ours(&input))?;
-        let hayro = median_timings(iterations, || decode_hayro(&input))?;
+        let ours = timing_stats(iterations, || decode_ours(&input))?;
+        let hayro = timing_stats(iterations, || decode_hayro(&input))?;
         results.push(TimingResult {
             width,
             height,
             input_bytes: input.len(),
             output_bytes: expected.bytes,
             iterations,
-            jbig2_rs_median_ns: ours,
-            hayro_jbig2_median_ns: hayro,
-            hayro_over_jbig2_rs: hayro as f64 / ours as f64,
+            jbig2_rs_median_ns: ours.median_ns,
+            jbig2_rs_p95_ns: ours.p95_ns,
+            hayro_jbig2_median_ns: hayro.median_ns,
+            hayro_jbig2_p95_ns: hayro.p95_ns,
+            hayro_over_jbig2_rs: hayro.median_ns as f64 / ours.median_ns as f64,
         });
     }
     Ok(results)
 }
 
-fn median_timings<F>(iterations: usize, mut operation: F) -> Result<u128, String>
+fn timing_stats<F>(iterations: usize, mut operation: F) -> Result<TimingStats, String>
 where
     F: FnMut() -> Result<BitmapResult, String>,
 {
@@ -216,7 +243,11 @@ where
         timings.push(start.elapsed().as_nanos());
     }
     timings.sort_unstable();
-    Ok(timings[timings.len() / 2])
+    let p95_index = (timings.len() - 1) * 95 / 100;
+    Ok(TimingStats {
+        median_ns: timings[timings.len() / 2],
+        p95_ns: timings[p95_index],
+    })
 }
 
 fn run_vectors(directory: &Path) -> Result<Vec<VectorResult>, Box<dyn std::error::Error>> {

@@ -4,8 +4,12 @@ version = "0.0.0"
 edition = "2024"
 publish = false
 
+[features]
+default = ["hayro-simd"]
+hayro-simd = ["hayro-jbig2/simd"]
+
 [dependencies]
-hayro-jbig2 = "=0.3.1"
+hayro-jbig2 = { version = "=0.3.1", default-features = false, features = ["std"] }
 jbig2_rs = { path = "../.." }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

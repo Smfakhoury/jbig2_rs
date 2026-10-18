@@ -14,6 +14,15 @@ cargo +1.98.1 run --release \
   generated 50
 ```
 
+Run both the default-SIMD and scalar-to-scalar tracks:
+
+```sh
+benchmarks/hayro-comparison/run-comparison.sh 50
+```
+
+Generated timing records include both median and p95 latency. Set
+`JBIG2_VECTOR_DIR` to add the private vector outcome comparison to the run.
+
 Private ITU vectors can be compared without copying them into the repository:
 
 ```sh
