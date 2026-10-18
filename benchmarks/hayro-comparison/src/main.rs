@@ -17,6 +17,18 @@ struct BitmapResult {
     hash: u64,
 }
 
+fn parse_ours(input: &[u8]) -> Result<u64, String> {
+    let info = Decoder::default()
+        .inspect(input)
+        .map_err(|error| format!("error:{error}"))?;
+    Ok(u64::from(info.segment_count()) << 32 | info.pages().len() as u64)
+}
+
+fn parse_hayro(input: &[u8]) -> Result<u64, String> {
+    let image = Image::new(input).map_err(|error| format!("error:{error}"))?;
+    Ok(u64::from(image.width()) << 32 | u64::from(image.height()))
+}
+
 #[derive(Serialize)]
 struct DecoderResult {
     status: String,
@@ -39,8 +51,12 @@ struct TimingResult {
     input_bytes: usize,
     output_bytes: usize,
     iterations: usize,
+    jbig2_rs_parse_median_ns: u128,
+    jbig2_rs_parse_p95_ns: u128,
     jbig2_rs_median_ns: u128,
     jbig2_rs_p95_ns: u128,
+    hayro_jbig2_parse_median_ns: u128,
+    hayro_jbig2_parse_p95_ns: u128,
     hayro_jbig2_median_ns: u128,
     hayro_jbig2_p95_ns: u128,
     hayro_over_jbig2_rs: f64,
@@ -163,6 +179,12 @@ fn run_single_input(engine: &str, input: &[u8], iterations: usize) -> Result<Tim
         _ => return Err("engine must be jbig2_rs or hayro_jbig2".into()),
     };
     let output = operation(input)?;
+    let parse_operation: fn(&[u8]) -> Result<u64, String> = match engine {
+        "jbig2_rs" => parse_ours,
+        "hayro_jbig2" => parse_hayro,
+        _ => return Err("engine must be jbig2_rs or hayro_jbig2".into()),
+    };
+    let parse_timing = timing_stats(iterations, || parse_operation(input))?;
     let timing = timing_stats(iterations, || operation(input))?;
     Ok(TimingResult {
         width: output.width,
@@ -170,8 +192,28 @@ fn run_single_input(engine: &str, input: &[u8], iterations: usize) -> Result<Tim
         input_bytes: input.len(),
         output_bytes: output.bytes,
         iterations,
+        jbig2_rs_parse_median_ns: if engine == "jbig2_rs" {
+            parse_timing.median_ns
+        } else {
+            0
+        },
+        jbig2_rs_parse_p95_ns: if engine == "jbig2_rs" {
+            parse_timing.p95_ns
+        } else {
+            0
+        },
         jbig2_rs_median_ns: if engine == "jbig2_rs" {
             timing.median_ns
+        } else {
+            0
+        },
+        hayro_jbig2_parse_median_ns: if engine == "hayro_jbig2" {
+            parse_timing.median_ns
+        } else {
+            0
+        },
+        hayro_jbig2_parse_p95_ns: if engine == "hayro_jbig2" {
+            parse_timing.p95_ns
         } else {
             0
         },
@@ -207,9 +249,13 @@ fn run_generated_benchmarks(iterations: usize) -> Result<Vec<TimingResult>, Stri
             return Err(format!("generated {width}x{height} bitmap mismatch"));
         }
         for _ in 0..3 {
+            let _ = parse_ours(&input)?;
+            let _ = parse_hayro(&input)?;
             let _ = decode_ours(&input)?;
             let _ = decode_hayro(&input)?;
         }
+        let ours_parse = timing_stats(iterations, || parse_ours(&input))?;
+        let hayro_parse = timing_stats(iterations, || parse_hayro(&input))?;
         let ours = timing_stats(iterations, || decode_ours(&input))?;
         let hayro = timing_stats(iterations, || decode_hayro(&input))?;
         results.push(TimingResult {
@@ -218,8 +264,12 @@ fn run_generated_benchmarks(iterations: usize) -> Result<Vec<TimingResult>, Stri
             input_bytes: input.len(),
             output_bytes: expected.bytes,
             iterations,
+            jbig2_rs_parse_median_ns: ours_parse.median_ns,
+            jbig2_rs_parse_p95_ns: ours_parse.p95_ns,
             jbig2_rs_median_ns: ours.median_ns,
             jbig2_rs_p95_ns: ours.p95_ns,
+            hayro_jbig2_parse_median_ns: hayro_parse.median_ns,
+            hayro_jbig2_parse_p95_ns: hayro_parse.p95_ns,
             hayro_jbig2_median_ns: hayro.median_ns,
             hayro_jbig2_p95_ns: hayro.p95_ns,
             hayro_over_jbig2_rs: hayro.median_ns as f64 / ours.median_ns as f64,
@@ -228,9 +278,9 @@ fn run_generated_benchmarks(iterations: usize) -> Result<Vec<TimingResult>, Stri
     Ok(results)
 }
 
-fn timing_stats<F>(iterations: usize, mut operation: F) -> Result<TimingStats, String>
+fn timing_stats<F, T>(iterations: usize, mut operation: F) -> Result<TimingStats, String>
 where
-    F: FnMut() -> Result<BitmapResult, String>,
+    F: FnMut() -> Result<T, String>,
 {
     if iterations == 0 {
         return Err("iterations must be nonzero".into());
@@ -239,7 +289,7 @@ where
     for _ in 0..iterations {
         let start = Instant::now();
         let result = operation()?;
-        std::hint::black_box(result.hash);
+        std::hint::black_box(result);
         timings.push(start.elapsed().as_nanos());
     }
     timings.sort_unstable();
