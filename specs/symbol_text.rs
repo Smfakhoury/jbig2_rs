@@ -10,6 +10,70 @@ pub(crate) open spec fn bitmap_bytes(tracker: &super::ResourceTracker) -> u64 {
     tracker.decoded_bitmap_bytes
 }
 
+pub(super) open spec fn integer_contexts_valid(
+    contexts: &super::IntegerContexts,
+) -> bool {
+    forall|slot: int, index: int|
+        0 <= slot < super::INTEGER_FIELD_COUNT
+            && 0 <= index < 512
+            ==> crate::arithmetic::arithmetic_spec::context_valid(
+                contexts.slots[slot][index]
+            )
+}
+
+pub(super) open spec fn arithmetic_contexts_valid(
+    contexts: Seq<crate::arithmetic::ArithmeticContext>,
+) -> bool {
+    forall|index: int| 0 <= index < contexts.len()
+        ==> crate::arithmetic::arithmetic_spec::context_valid(contexts[index])
+}
+
+pub(super) open spec fn arithmetic_codec_valid(
+    arithmetic: &super::ArithmeticCodec,
+) -> bool {
+    crate::arithmetic::arithmetic_spec::decoder_valid(&arithmetic.decoder)
+        && integer_contexts_valid(&arithmetic.integers)
+        && arithmetic_contexts_valid(arithmetic.iaid@)
+}
+
+pub(super) open spec fn codec_valid(codec: &super::SymbolCodec) -> bool {
+    match codec {
+        super::SymbolCodec::Arithmetic(arithmetic) =>
+            arithmetic_codec_valid(&arithmetic),
+        super::SymbolCodec::Huffman(huffman) => {
+            crate::huffman::huffman_spec::reader_valid(&huffman.reader)
+        },
+    }
+}
+
+pub(super) open spec fn table_bindings_valid(
+    bindings: &super::TableBindings,
+) -> bool {
+    bindings.len <= super::MAX_TABLE_BINDINGS
+        && forall|index: int| 0 <= index < super::MAX_TABLE_BINDINGS ==>
+            bindings.entries[index].is_some() == (index < bindings.len)
+}
+
+pub(super) open spec fn export_indices_valid(
+    exported: Seq<u32>,
+    total_candidates: u32,
+) -> bool {
+    forall|index: int| 0 <= index < exported.len()
+        ==> #[trigger] exported[index] < total_candidates
+}
+
+pub(crate) open spec fn bitmaps_valid(bitmaps: Seq<crate::bitmap::Bitmap>) -> bool {
+    forall|index: int| 0 <= index < bitmaps.len()
+        ==> crate::spec::bitmap::storage_valid(#[trigger] &bitmaps[index])
+}
+
+pub(super) open spec fn bitmap_refs_valid(
+    bitmaps: Seq<&crate::bitmap::Bitmap>,
+) -> bool {
+    forall|index: int| 0 <= index < bitmaps.len()
+        ==> crate::spec::bitmap::storage_valid(#[trigger] bitmaps[index])
+}
+
 pub(crate) open spec fn two_bit_choice_result(
     encoded: u8,
     first: crate::huffman::StandardHuffmanTable,
@@ -59,6 +123,7 @@ pub(crate) open spec fn text_config_safe(
         && config.refinement == (flags & 2 != 0)
         && (config.huffman ==> huffman_flags.is_some())
         && (!config.huffman ==> huffman_flags.is_none())
+        && valid_strip_size(config.strip_size)
 }
 
 pub(crate) open spec fn text_huffman_choices_safe(

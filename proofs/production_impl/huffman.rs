@@ -40,11 +40,3 @@ macro_rules! production_huffman_u8_bits {
         }
     };
 }
-
-macro_rules! production_huffman_line_lengths {
-    () => {
-        proof! {
-            reveal(crate::huffman::huffman_spec::line_lengths_valid);
-        }
-    };
-}

@@ -15,7 +15,7 @@ use vstd::prelude::*;
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
 #[path = "../specs/huffman.rs"]
-mod huffman_spec;
+pub(crate) mod huffman_spec;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -33,6 +33,7 @@ mod huffman_properties;
 #[path = "../proofs/production_impl/huffman.rs"]
 mod huffman_proofs;
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const MAX_PREFIX_LEN: usize = 255;
 
 /// Error from Huffman table parsing, construction, or value decoding.
@@ -100,14 +101,7 @@ pub(crate) struct HuffmanLine {
 }
 
 impl HuffmanLine {
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures
-            out.prefix_len == prefix_len,
-            out.range_len == range_len,
-            out.range_low == range_low as i64,
-            out.kind == LineKind::Normal,
-    ))]
-    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) const fn normal(range_low: i32, prefix_len: u8, range_len: u8) -> Self {
         Self {
             prefix_len,
@@ -117,14 +111,7 @@ impl HuffmanLine {
         }
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures
-            out.prefix_len == prefix_len,
-            out.range_len == 32,
-            out.range_low == range_low,
-            out.kind == LineKind::Lower,
-    ))]
-    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) const fn lower(range_low: i64, prefix_len: u8) -> Self {
         Self {
             prefix_len,
@@ -134,14 +121,7 @@ impl HuffmanLine {
         }
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures
-            out.prefix_len == prefix_len,
-            out.range_len == 32,
-            out.range_low == range_low as i64,
-            out.kind == LineKind::Upper,
-    ))]
-    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) const fn upper(range_low: i32, prefix_len: u8) -> Self {
         Self {
             prefix_len,
@@ -151,14 +131,7 @@ impl HuffmanLine {
         }
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures
-            out.prefix_len == prefix_len,
-            out.range_len == 0,
-            out.range_low == 0,
-            out.kind == LineKind::OutOfBand,
-    ))]
-    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) const fn out_of_band(prefix_len: u8) -> Self {
         Self {
             prefix_len,
@@ -328,6 +301,37 @@ fn subtract_limb(left: u64, right: u64, borrow: bool) -> (u64, bool) {
     (value, first_borrow || second_borrow)
 }
 
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum HuffmanLines<'a> {
+    Borrowed(&'a [HuffmanLine]),
+    Standard(StandardLines),
+}
+
+impl HuffmanLines<'_> {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn len(self) -> usize {
+        match self {
+            Self::Borrowed(lines) => lines.len(),
+            Self::Standard(lines) => lines.len(),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn line(self, index: usize) -> Option<HuffmanLine> {
+        match self {
+            Self::Borrowed(lines) => {
+                if index < lines.len() {
+                    Some(lines[index])
+                } else {
+                    None
+                }
+            }
+            Self::Standard(lines) => lines.line(index),
+        }
+    }
+}
+
 /// A validated table with canonical prefix codes assigned as in T.88 B.3.
 #[derive(Debug)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -342,47 +346,88 @@ pub(crate) struct HuffmanTable {
 
 impl HuffmanTable {
     /// Validates table lines and assigns their canonical prefix codes.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn new(lines: &[HuffmanLine], limits: &Limits) -> Result<Self, HuffmanError> {
-        validate_lines(lines)?;
-        check_table_memory(lines.len(), limits)?;
+        Self::from_line_source(HuffmanLines::Borrowed(lines), limits)
+    }
 
-        let mut owned_lines = Vec::new();
-        try_reserve::<HuffmanLine>(&mut owned_lines, lines.len())?;
-        for &line in lines {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[allow(clippy::redundant_closure, clippy::too_many_lines)]
+    fn from_line_source(lines: HuffmanLines<'_>, limits: &Limits) -> Result<Self, HuffmanError> {
+        let line_count = lines.len();
+        validate_lines(lines)?;
+        check_table_memory(line_count, limits)?;
+
+        let mut owned_lines: Vec<HuffmanLine> = Vec::new();
+        try_reserve::<HuffmanLine>(&mut owned_lines, line_count)?;
+        let mut source_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                source_index <= line_count,
+                owned_lines@.len() == source_index,
+            decreases line_count - source_index,
+        ))]
+        while source_index < line_count {
+            let line = lines.line(source_index).ok_or(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidLineOrder,
+            ))?;
             owned_lines.push(line);
+            source_index += 1;
         }
 
         let mut length_count = [0_u32; MAX_PREFIX_LEN + 1];
-        for line in lines {
+        let mut count_index = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant count_index <= line_count,
+            decreases line_count - count_index,
+        ))]
+        while count_index < line_count {
+            let line = lines.line(count_index).ok_or(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidLineOrder,
+            ))?;
             if line.prefix_len != 0 {
                 let count = length_count
                     .get_mut(usize::from(line.prefix_len))
                     .ok_or(HuffmanTableError::Oversubscribed)
-                    .map_err(HuffmanError::InvalidTable)?;
+                    .map_err(|error| HuffmanError::InvalidTable(error))?;
                 *count = count
                     .checked_add(1)
                     .ok_or(HuffmanTableError::Oversubscribed)
-                    .map_err(HuffmanError::InvalidTable)?;
+                    .map_err(|error| HuffmanError::InvalidTable(error))?;
             }
+            count_index += 1;
         }
 
-        let max_prefix_len = length_count
-            .iter()
-            .rposition(|&count| count != 0)
-            .and_then(|length| u8::try_from(length).ok())
-            .ok_or(HuffmanTableError::NoCodes)
-            .map_err(HuffmanError::InvalidTable)?;
+        let mut max_length = MAX_PREFIX_LEN;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant max_length <= MAX_PREFIX_LEN,
+            decreases max_length,
+        ))]
+        while max_length > 0 && length_count[max_length] == 0 {
+            max_length -= 1;
+        }
+        if length_count[max_length] == 0 {
+            return Err(HuffmanError::InvalidTable(HuffmanTableError::NoCodes));
+        }
+        let max_prefix_len = u8::try_from(max_length)
+            .map_err(|_| HuffmanError::InvalidTable(HuffmanTableError::Oversubscribed))?;
 
         let mut first_code = [WideCode::default(); MAX_PREFIX_LEN + 1];
         let mut first_line = [0_u32; MAX_PREFIX_LEN + 1];
         let mut ordered_lines = Vec::new();
-        try_reserve::<u32>(&mut ordered_lines, lines.len())?;
+        try_reserve::<u32>(&mut ordered_lines, line_count)?;
 
         let mut length = 1_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                1 <= length,
+                length <= max_prefix_len as usize + 1,
+            decreases max_prefix_len as usize + 1 - length,
+        ))]
         while length <= usize::from(max_prefix_len) {
             let previous = canonical_first_code(first_code[length - 1], length_count[length - 1])
                 .ok_or(HuffmanTableError::Oversubscribed)
-                .map_err(HuffmanError::InvalidTable)?;
+                .map_err(|error| HuffmanError::InvalidTable(error))?;
             first_code[length] = previous;
 
             let count = length_count[length];
@@ -394,13 +439,22 @@ impl HuffmanTable {
                 }
                 first_line[length] = u32::try_from(ordered_lines.len())
                     .map_err(|_| HuffmanError::InvalidTable(HuffmanTableError::Oversubscribed))?;
-                for (index, line) in lines.iter().enumerate() {
+                let mut index = 0_usize;
+                #[cfg_attr(verus_keep_ghost, verus_spec(
+                    invariant index <= line_count,
+                    decreases line_count - index,
+                ))]
+                while index < line_count {
+                    let line = lines.line(index).ok_or(HuffmanError::InvalidTable(
+                        HuffmanTableError::InvalidLineOrder,
+                    ))?;
                     if usize::from(line.prefix_len) == length {
                         let index = u32::try_from(index).map_err(|_| {
                             HuffmanError::InvalidTable(HuffmanTableError::Oversubscribed)
                         })?;
                         ordered_lines.push(index);
                     }
+                    index += 1;
                 }
             }
             length += 1;
@@ -420,6 +474,8 @@ impl HuffmanTable {
     ///
     /// `bytes` is exactly one code table segment payload, including at most
     /// seven zero padding bits after the final table line.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[allow(clippy::cast_possible_wrap, clippy::too_many_lines)]
     pub(crate) fn from_encoded(bytes: &[u8], limits: &Limits) -> Result<Self, HuffmanError> {
         let byte_count = u64::try_from(bytes.len()).map_err(|_| MalformedError::IntegerOverflow)?;
         if byte_count > limits.max_stream_bytes {
@@ -438,8 +494,8 @@ impl HuffmanTable {
                 HuffmanTableError::ReservedFlags(flags),
             ));
         }
-        let low = i32::from_be_bytes(header.read_u32()?.to_be_bytes());
-        let high = i32::from_be_bytes(header.read_u32()?.to_be_bytes());
+        let low = header.read_u32()? as i32;
+        let high = header.read_u32()? as i32;
         if low >= high {
             return Err(HuffmanError::InvalidTable(
                 HuffmanTableError::InvalidBounds { low, high },
@@ -447,11 +503,33 @@ impl HuffmanTable {
         }
 
         let (has_oob, prefix_bits, range_bits) = encoded_table_fields(flags);
-        let mut encoded_lines = bit_reader(header.remaining_bytes());
+        if prefix_bits > 8 || range_bits > 8 {
+            return Err(HuffmanError::InvalidTable(
+                HuffmanTableError::InvalidRangePartition,
+            ));
+        }
+        let encoded_bytes = header.remaining_bytes();
+        if encoded_bytes.len() > usize::MAX / 8 {
+            return Err(MalformedError::IntegerOverflow.into());
+        }
+        let mut encoded_lines = bit_reader(encoded_bytes);
         let mut lines = Vec::new();
         let mut current = i64::from(low);
         let high_i64 = i64::from(high);
 
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                low as int <= current,
+                current <= high_i64,
+                high_i64 == high as int,
+                high_i64 <= i32::MAX,
+                i32::MIN <= current,
+                current <= i32::MAX,
+                prefix_bits <= 8,
+                range_bits <= 8,
+                huffman_spec::reader_valid(&encoded_lines),
+            decreases high_i64 - current,
+        ))]
         while current < high_i64 {
             let prefix_len = read_u8_bits(&mut encoded_lines, prefix_bits)?;
             let range_len = read_u8_bits(&mut encoded_lines, range_bits)?;
@@ -459,6 +537,10 @@ impl HuffmanTable {
                 return Err(HuffmanError::InvalidTable(
                     HuffmanTableError::InvalidRangeLength(range_len),
                 ));
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(range_len <= 32);
             }
             let range_low = i32::try_from(current).map_err(|_| {
                 HuffmanError::InvalidTable(HuffmanTableError::InvalidRangePartition)
@@ -468,12 +550,24 @@ impl HuffmanTable {
                 HuffmanLine::normal(range_low, prefix_len, range_len),
                 limits,
             )?;
-            let width = 1_i64
-                .checked_shl(u32::from(range_len))
+            let width = 1_i64 << range_len;
+            let remaining = high_i64
+                .checked_sub(current)
                 .ok_or(MalformedError::IntegerOverflow)?;
-            current = current
+            if width > remaining {
+                return Err(HuffmanError::InvalidTable(
+                    HuffmanTableError::InvalidRangePartition,
+                ));
+            }
+            let next = current
                 .checked_add(width)
                 .ok_or(MalformedError::IntegerOverflow)?;
+            if next <= current || next > high_i64 {
+                return Err(HuffmanError::InvalidTable(
+                    HuffmanTableError::InvalidRangePartition,
+                ));
+            }
+            current = next;
         }
         if current != high_i64 {
             return Err(HuffmanError::InvalidTable(
@@ -519,11 +613,12 @@ impl HuffmanTable {
     }
 
     /// Constructs one of the standard tables in T.88 B.5.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn standard(
         table: StandardHuffmanTable,
         limits: &Limits,
     ) -> Result<Self, HuffmanError> {
-        Self::new(standard_lines(table), limits)
+        Self::from_line_source(HuffmanLines::Standard(standard_lines(table)), limits)
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -654,23 +749,93 @@ fn canonical_range_fits(first: WideCode, count: u32, length: usize) -> bool {
     }
 }
 
-fn standard_lines(table: StandardHuffmanTable) -> &'static [HuffmanLine] {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum StandardLines {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+}
+
+impl StandardLines {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    const fn len(self) -> usize {
+        match self {
+            Self::A => 4,
+            Self::B => 7,
+            Self::C => 9,
+            Self::D => 6,
+            Self::E => 8,
+            Self::F => 14,
+            Self::G => 15,
+            Self::H | Self::J => 21,
+            Self::I => 22,
+            Self::K | Self::L | Self::M | Self::O => 13,
+            Self::N => 5,
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn line(self, index: usize) -> Option<HuffmanLine> {
+        macro_rules! get {
+            ($table:expr) => {
+                if index < $table.len() {
+                    Some($table[index])
+                } else {
+                    None
+                }
+            };
+        }
+        match self {
+            Self::A => get!(TABLE_A),
+            Self::B => get!(TABLE_B),
+            Self::C => get!(TABLE_C),
+            Self::D => get!(TABLE_D),
+            Self::E => get!(TABLE_E),
+            Self::F => get!(TABLE_F),
+            Self::G => get!(TABLE_G),
+            Self::H => get!(TABLE_H),
+            Self::I => get!(TABLE_I),
+            Self::J => get!(TABLE_J),
+            Self::K => get!(TABLE_K),
+            Self::L => get!(TABLE_L),
+            Self::M => get!(TABLE_M),
+            Self::N => get!(TABLE_N),
+            Self::O => get!(TABLE_O),
+        }
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn standard_lines(table: StandardHuffmanTable) -> StandardLines {
     match table {
-        StandardHuffmanTable::A => &TABLE_A,
-        StandardHuffmanTable::B => &TABLE_B,
-        StandardHuffmanTable::C => &TABLE_C,
-        StandardHuffmanTable::D => &TABLE_D,
-        StandardHuffmanTable::E => &TABLE_E,
-        StandardHuffmanTable::F => &TABLE_F,
-        StandardHuffmanTable::G => &TABLE_G,
-        StandardHuffmanTable::H => &TABLE_H,
-        StandardHuffmanTable::I => &TABLE_I,
-        StandardHuffmanTable::J => &TABLE_J,
-        StandardHuffmanTable::K => &TABLE_K,
-        StandardHuffmanTable::L => &TABLE_L,
-        StandardHuffmanTable::M => &TABLE_M,
-        StandardHuffmanTable::N => &TABLE_N,
-        StandardHuffmanTable::O => &TABLE_O,
+        StandardHuffmanTable::A => StandardLines::A,
+        StandardHuffmanTable::B => StandardLines::B,
+        StandardHuffmanTable::C => StandardLines::C,
+        StandardHuffmanTable::D => StandardLines::D,
+        StandardHuffmanTable::E => StandardLines::E,
+        StandardHuffmanTable::F => StandardLines::F,
+        StandardHuffmanTable::G => StandardLines::G,
+        StandardHuffmanTable::H => StandardLines::H,
+        StandardHuffmanTable::I => StandardLines::I,
+        StandardHuffmanTable::J => StandardLines::J,
+        StandardHuffmanTable::K => StandardLines::K,
+        StandardHuffmanTable::L => StandardLines::L,
+        StandardHuffmanTable::M => StandardLines::M,
+        StandardHuffmanTable::N => StandardLines::N,
+        StandardHuffmanTable::O => StandardLines::O,
     }
 }
 
@@ -747,6 +912,7 @@ fn decode_line(
         count <= 8,
     ensures
         final(reader).bytes@ == old(reader).bytes@,
+        huffman_spec::reader_valid(final(reader)),
         match out {
             Ok(value) =>
                 final(reader).bit_position == old(reader).bit_position + count as usize
@@ -921,17 +1087,11 @@ fn line_count_fits_u32(line_count: usize) -> bool {
 }
 
 #[allow(clippy::too_many_lines)]
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures match out {
-        Ok(()) =>
-            lines@.len() > 0
-            && huffman_spec::line_lengths_valid(lines@),
-        Err(_) => true,
-    },
-))]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 #[allow(clippy::cast_lossless, clippy::manual_let_else)]
-fn validate_lines(lines: &[HuffmanLine]) -> Result<(), HuffmanError> {
-    if lines.is_empty() {
+fn validate_lines(lines: HuffmanLines<'_>) -> Result<(), HuffmanError> {
+    let line_count = lines.len();
+    if line_count == 0 {
         return Err(HuffmanError::InvalidTable(HuffmanTableError::NoCodes));
     }
 
@@ -946,13 +1106,13 @@ fn validate_lines(lines: &[HuffmanLine]) -> Result<(), HuffmanError> {
     let mut index = 0;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
-            index <= lines@.len(),
-            forall|checked: int| 0 <= checked < index ==>
-                lines@[checked].range_len <= 32,
-        decreases lines@.len() - index,
+            index <= line_count,
+        decreases line_count - index,
     ))]
-    while index < lines.len() {
-        let line = lines[index];
+    while index < line_count {
+        let line = lines.line(index).ok_or(HuffmanError::InvalidTable(
+            HuffmanTableError::InvalidLineOrder,
+        ))?;
         if line.range_len > 32 {
             return Err(HuffmanError::InvalidTable(
                 HuffmanTableError::InvalidRangeLength(line.range_len),
@@ -1083,238 +1243,295 @@ fn validate_lines(lines: &[HuffmanLine]) -> Result<(), HuffmanError> {
             ));
         }
     }
-    #[cfg(verus_keep_ghost)]
-    production_huffman_line_lengths!();
     Ok(())
 }
 
+macro_rules! normal_line {
+    ($low:expr, $prefix:expr, $range:expr) => {
+        HuffmanLine {
+            prefix_len: $prefix,
+            range_len: $range,
+            range_low: $low,
+            kind: LineKind::Normal,
+        }
+    };
+}
+
+macro_rules! lower_line {
+    ($low:expr, $prefix:expr) => {
+        HuffmanLine {
+            prefix_len: $prefix,
+            range_len: 32,
+            range_low: $low,
+            kind: LineKind::Lower,
+        }
+    };
+}
+
+macro_rules! upper_line {
+    ($low:expr, $prefix:expr) => {
+        HuffmanLine {
+            prefix_len: $prefix,
+            range_len: 32,
+            range_low: $low,
+            kind: LineKind::Upper,
+        }
+    };
+}
+
+macro_rules! oob_line {
+    ($prefix:expr) => {
+        HuffmanLine {
+            prefix_len: $prefix,
+            range_len: 0,
+            range_low: 0,
+            kind: LineKind::OutOfBand,
+        }
+    };
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_A: [HuffmanLine; 4] = [
-    HuffmanLine::normal(0, 1, 4),
-    HuffmanLine::normal(16, 2, 8),
-    HuffmanLine::normal(272, 3, 16),
-    HuffmanLine::upper(65_808, 3),
+    normal_line!(0, 1, 4),
+    normal_line!(16, 2, 8),
+    normal_line!(272, 3, 16),
+    upper_line!(65_808, 3),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_B: [HuffmanLine; 7] = [
-    HuffmanLine::normal(0, 1, 0),
-    HuffmanLine::normal(1, 2, 0),
-    HuffmanLine::normal(2, 3, 0),
-    HuffmanLine::normal(3, 4, 3),
-    HuffmanLine::normal(11, 5, 6),
-    HuffmanLine::upper(75, 6),
-    HuffmanLine::out_of_band(6),
+    normal_line!(0, 1, 0),
+    normal_line!(1, 2, 0),
+    normal_line!(2, 3, 0),
+    normal_line!(3, 4, 3),
+    normal_line!(11, 5, 6),
+    upper_line!(75, 6),
+    oob_line!(6),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_C: [HuffmanLine; 9] = [
-    HuffmanLine::normal(-256, 8, 8),
-    HuffmanLine::normal(0, 1, 0),
-    HuffmanLine::normal(1, 2, 0),
-    HuffmanLine::normal(2, 3, 0),
-    HuffmanLine::normal(3, 4, 3),
-    HuffmanLine::normal(11, 5, 6),
-    HuffmanLine::lower(-257, 8),
-    HuffmanLine::upper(75, 7),
-    HuffmanLine::out_of_band(6),
+    normal_line!(-256, 8, 8),
+    normal_line!(0, 1, 0),
+    normal_line!(1, 2, 0),
+    normal_line!(2, 3, 0),
+    normal_line!(3, 4, 3),
+    normal_line!(11, 5, 6),
+    lower_line!(-257, 8),
+    upper_line!(75, 7),
+    oob_line!(6),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_D: [HuffmanLine; 6] = [
-    HuffmanLine::normal(1, 1, 0),
-    HuffmanLine::normal(2, 2, 0),
-    HuffmanLine::normal(3, 3, 0),
-    HuffmanLine::normal(4, 4, 3),
-    HuffmanLine::normal(12, 5, 6),
-    HuffmanLine::upper(76, 5),
+    normal_line!(1, 1, 0),
+    normal_line!(2, 2, 0),
+    normal_line!(3, 3, 0),
+    normal_line!(4, 4, 3),
+    normal_line!(12, 5, 6),
+    upper_line!(76, 5),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_E: [HuffmanLine; 8] = [
-    HuffmanLine::normal(-255, 7, 8),
-    HuffmanLine::normal(1, 1, 0),
-    HuffmanLine::normal(2, 2, 0),
-    HuffmanLine::normal(3, 3, 0),
-    HuffmanLine::normal(4, 4, 3),
-    HuffmanLine::normal(12, 5, 6),
-    HuffmanLine::lower(-256, 7),
-    HuffmanLine::upper(76, 6),
+    normal_line!(-255, 7, 8),
+    normal_line!(1, 1, 0),
+    normal_line!(2, 2, 0),
+    normal_line!(3, 3, 0),
+    normal_line!(4, 4, 3),
+    normal_line!(12, 5, 6),
+    lower_line!(-256, 7),
+    upper_line!(76, 6),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_F: [HuffmanLine; 14] = [
-    HuffmanLine::normal(-2048, 5, 10),
-    HuffmanLine::normal(-1024, 4, 9),
-    HuffmanLine::normal(-512, 4, 8),
-    HuffmanLine::normal(-256, 4, 7),
-    HuffmanLine::normal(-128, 5, 6),
-    HuffmanLine::normal(-64, 5, 5),
-    HuffmanLine::normal(-32, 4, 5),
-    HuffmanLine::normal(0, 2, 7),
-    HuffmanLine::normal(128, 3, 7),
-    HuffmanLine::normal(256, 3, 8),
-    HuffmanLine::normal(512, 4, 9),
-    HuffmanLine::normal(1024, 4, 10),
-    HuffmanLine::lower(-2049, 6),
-    HuffmanLine::upper(2048, 6),
+    normal_line!(-2048, 5, 10),
+    normal_line!(-1024, 4, 9),
+    normal_line!(-512, 4, 8),
+    normal_line!(-256, 4, 7),
+    normal_line!(-128, 5, 6),
+    normal_line!(-64, 5, 5),
+    normal_line!(-32, 4, 5),
+    normal_line!(0, 2, 7),
+    normal_line!(128, 3, 7),
+    normal_line!(256, 3, 8),
+    normal_line!(512, 4, 9),
+    normal_line!(1024, 4, 10),
+    lower_line!(-2049, 6),
+    upper_line!(2048, 6),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_G: [HuffmanLine; 15] = [
-    HuffmanLine::normal(-1024, 4, 9),
-    HuffmanLine::normal(-512, 3, 8),
-    HuffmanLine::normal(-256, 4, 7),
-    HuffmanLine::normal(-128, 5, 6),
-    HuffmanLine::normal(-64, 5, 5),
-    HuffmanLine::normal(-32, 4, 5),
-    HuffmanLine::normal(0, 4, 5),
-    HuffmanLine::normal(32, 5, 5),
-    HuffmanLine::normal(64, 5, 6),
-    HuffmanLine::normal(128, 4, 7),
-    HuffmanLine::normal(256, 3, 8),
-    HuffmanLine::normal(512, 3, 9),
-    HuffmanLine::normal(1024, 3, 10),
-    HuffmanLine::lower(-1025, 5),
-    HuffmanLine::upper(2048, 5),
+    normal_line!(-1024, 4, 9),
+    normal_line!(-512, 3, 8),
+    normal_line!(-256, 4, 7),
+    normal_line!(-128, 5, 6),
+    normal_line!(-64, 5, 5),
+    normal_line!(-32, 4, 5),
+    normal_line!(0, 4, 5),
+    normal_line!(32, 5, 5),
+    normal_line!(64, 5, 6),
+    normal_line!(128, 4, 7),
+    normal_line!(256, 3, 8),
+    normal_line!(512, 3, 9),
+    normal_line!(1024, 3, 10),
+    lower_line!(-1025, 5),
+    upper_line!(2048, 5),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_H: [HuffmanLine; 21] = [
-    HuffmanLine::normal(-15, 8, 3),
-    HuffmanLine::normal(-7, 9, 1),
-    HuffmanLine::normal(-5, 8, 1),
-    HuffmanLine::normal(-3, 9, 0),
-    HuffmanLine::normal(-2, 7, 0),
-    HuffmanLine::normal(-1, 4, 0),
-    HuffmanLine::normal(0, 2, 1),
-    HuffmanLine::normal(2, 5, 0),
-    HuffmanLine::normal(3, 6, 0),
-    HuffmanLine::normal(4, 3, 4),
-    HuffmanLine::normal(20, 6, 1),
-    HuffmanLine::normal(22, 4, 4),
-    HuffmanLine::normal(38, 4, 5),
-    HuffmanLine::normal(70, 5, 6),
-    HuffmanLine::normal(134, 5, 7),
-    HuffmanLine::normal(262, 6, 7),
-    HuffmanLine::normal(390, 7, 8),
-    HuffmanLine::normal(646, 6, 10),
-    HuffmanLine::lower(-16, 9),
-    HuffmanLine::upper(1670, 9),
-    HuffmanLine::out_of_band(2),
+    normal_line!(-15, 8, 3),
+    normal_line!(-7, 9, 1),
+    normal_line!(-5, 8, 1),
+    normal_line!(-3, 9, 0),
+    normal_line!(-2, 7, 0),
+    normal_line!(-1, 4, 0),
+    normal_line!(0, 2, 1),
+    normal_line!(2, 5, 0),
+    normal_line!(3, 6, 0),
+    normal_line!(4, 3, 4),
+    normal_line!(20, 6, 1),
+    normal_line!(22, 4, 4),
+    normal_line!(38, 4, 5),
+    normal_line!(70, 5, 6),
+    normal_line!(134, 5, 7),
+    normal_line!(262, 6, 7),
+    normal_line!(390, 7, 8),
+    normal_line!(646, 6, 10),
+    lower_line!(-16, 9),
+    upper_line!(1670, 9),
+    oob_line!(2),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_I: [HuffmanLine; 22] = [
-    HuffmanLine::normal(-31, 8, 4),
-    HuffmanLine::normal(-15, 9, 2),
-    HuffmanLine::normal(-11, 8, 2),
-    HuffmanLine::normal(-7, 9, 1),
-    HuffmanLine::normal(-5, 7, 1),
-    HuffmanLine::normal(-3, 4, 1),
-    HuffmanLine::normal(-1, 3, 1),
-    HuffmanLine::normal(1, 3, 1),
-    HuffmanLine::normal(3, 5, 1),
-    HuffmanLine::normal(5, 6, 1),
-    HuffmanLine::normal(7, 3, 5),
-    HuffmanLine::normal(39, 6, 2),
-    HuffmanLine::normal(43, 4, 5),
-    HuffmanLine::normal(75, 4, 6),
-    HuffmanLine::normal(139, 5, 7),
-    HuffmanLine::normal(267, 5, 8),
-    HuffmanLine::normal(523, 6, 8),
-    HuffmanLine::normal(779, 7, 9),
-    HuffmanLine::normal(1291, 6, 11),
-    HuffmanLine::lower(-32, 9),
-    HuffmanLine::upper(3339, 9),
-    HuffmanLine::out_of_band(2),
+    normal_line!(-31, 8, 4),
+    normal_line!(-15, 9, 2),
+    normal_line!(-11, 8, 2),
+    normal_line!(-7, 9, 1),
+    normal_line!(-5, 7, 1),
+    normal_line!(-3, 4, 1),
+    normal_line!(-1, 3, 1),
+    normal_line!(1, 3, 1),
+    normal_line!(3, 5, 1),
+    normal_line!(5, 6, 1),
+    normal_line!(7, 3, 5),
+    normal_line!(39, 6, 2),
+    normal_line!(43, 4, 5),
+    normal_line!(75, 4, 6),
+    normal_line!(139, 5, 7),
+    normal_line!(267, 5, 8),
+    normal_line!(523, 6, 8),
+    normal_line!(779, 7, 9),
+    normal_line!(1291, 6, 11),
+    lower_line!(-32, 9),
+    upper_line!(3339, 9),
+    oob_line!(2),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_J: [HuffmanLine; 21] = [
-    HuffmanLine::normal(-21, 7, 4),
-    HuffmanLine::normal(-5, 8, 0),
-    HuffmanLine::normal(-4, 7, 0),
-    HuffmanLine::normal(-3, 5, 0),
-    HuffmanLine::normal(-2, 2, 2),
-    HuffmanLine::normal(2, 5, 0),
-    HuffmanLine::normal(3, 6, 0),
-    HuffmanLine::normal(4, 7, 0),
-    HuffmanLine::normal(5, 8, 0),
-    HuffmanLine::normal(6, 2, 6),
-    HuffmanLine::normal(70, 5, 5),
-    HuffmanLine::normal(102, 6, 5),
-    HuffmanLine::normal(134, 6, 6),
-    HuffmanLine::normal(198, 6, 7),
-    HuffmanLine::normal(326, 6, 8),
-    HuffmanLine::normal(582, 6, 9),
-    HuffmanLine::normal(1094, 6, 10),
-    HuffmanLine::normal(2118, 7, 11),
-    HuffmanLine::lower(-22, 8),
-    HuffmanLine::upper(4166, 8),
-    HuffmanLine::out_of_band(2),
+    normal_line!(-21, 7, 4),
+    normal_line!(-5, 8, 0),
+    normal_line!(-4, 7, 0),
+    normal_line!(-3, 5, 0),
+    normal_line!(-2, 2, 2),
+    normal_line!(2, 5, 0),
+    normal_line!(3, 6, 0),
+    normal_line!(4, 7, 0),
+    normal_line!(5, 8, 0),
+    normal_line!(6, 2, 6),
+    normal_line!(70, 5, 5),
+    normal_line!(102, 6, 5),
+    normal_line!(134, 6, 6),
+    normal_line!(198, 6, 7),
+    normal_line!(326, 6, 8),
+    normal_line!(582, 6, 9),
+    normal_line!(1094, 6, 10),
+    normal_line!(2118, 7, 11),
+    lower_line!(-22, 8),
+    upper_line!(4166, 8),
+    oob_line!(2),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_K: [HuffmanLine; 13] = [
-    HuffmanLine::normal(1, 1, 0),
-    HuffmanLine::normal(2, 2, 1),
-    HuffmanLine::normal(4, 4, 0),
-    HuffmanLine::normal(5, 4, 1),
-    HuffmanLine::normal(7, 5, 1),
-    HuffmanLine::normal(9, 5, 2),
-    HuffmanLine::normal(13, 6, 2),
-    HuffmanLine::normal(17, 7, 2),
-    HuffmanLine::normal(21, 7, 3),
-    HuffmanLine::normal(29, 7, 4),
-    HuffmanLine::normal(45, 7, 5),
-    HuffmanLine::normal(77, 7, 6),
-    HuffmanLine::upper(141, 7),
+    normal_line!(1, 1, 0),
+    normal_line!(2, 2, 1),
+    normal_line!(4, 4, 0),
+    normal_line!(5, 4, 1),
+    normal_line!(7, 5, 1),
+    normal_line!(9, 5, 2),
+    normal_line!(13, 6, 2),
+    normal_line!(17, 7, 2),
+    normal_line!(21, 7, 3),
+    normal_line!(29, 7, 4),
+    normal_line!(45, 7, 5),
+    normal_line!(77, 7, 6),
+    upper_line!(141, 7),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_L: [HuffmanLine; 13] = [
-    HuffmanLine::normal(1, 1, 0),
-    HuffmanLine::normal(2, 2, 0),
-    HuffmanLine::normal(3, 3, 1),
-    HuffmanLine::normal(5, 5, 0),
-    HuffmanLine::normal(6, 5, 1),
-    HuffmanLine::normal(8, 6, 1),
-    HuffmanLine::normal(10, 7, 0),
-    HuffmanLine::normal(11, 7, 1),
-    HuffmanLine::normal(13, 7, 2),
-    HuffmanLine::normal(17, 7, 3),
-    HuffmanLine::normal(25, 7, 4),
-    HuffmanLine::normal(41, 8, 5),
-    HuffmanLine::upper(73, 8),
+    normal_line!(1, 1, 0),
+    normal_line!(2, 2, 0),
+    normal_line!(3, 3, 1),
+    normal_line!(5, 5, 0),
+    normal_line!(6, 5, 1),
+    normal_line!(8, 6, 1),
+    normal_line!(10, 7, 0),
+    normal_line!(11, 7, 1),
+    normal_line!(13, 7, 2),
+    normal_line!(17, 7, 3),
+    normal_line!(25, 7, 4),
+    normal_line!(41, 8, 5),
+    upper_line!(73, 8),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_M: [HuffmanLine; 13] = [
-    HuffmanLine::normal(1, 1, 0),
-    HuffmanLine::normal(2, 3, 0),
-    HuffmanLine::normal(3, 4, 0),
-    HuffmanLine::normal(4, 5, 0),
-    HuffmanLine::normal(5, 4, 1),
-    HuffmanLine::normal(7, 3, 3),
-    HuffmanLine::normal(15, 6, 1),
-    HuffmanLine::normal(17, 6, 2),
-    HuffmanLine::normal(21, 6, 3),
-    HuffmanLine::normal(29, 6, 4),
-    HuffmanLine::normal(45, 6, 5),
-    HuffmanLine::normal(77, 7, 6),
-    HuffmanLine::upper(141, 7),
+    normal_line!(1, 1, 0),
+    normal_line!(2, 3, 0),
+    normal_line!(3, 4, 0),
+    normal_line!(4, 5, 0),
+    normal_line!(5, 4, 1),
+    normal_line!(7, 3, 3),
+    normal_line!(15, 6, 1),
+    normal_line!(17, 6, 2),
+    normal_line!(21, 6, 3),
+    normal_line!(29, 6, 4),
+    normal_line!(45, 6, 5),
+    normal_line!(77, 7, 6),
+    upper_line!(141, 7),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_N: [HuffmanLine; 5] = [
-    HuffmanLine::normal(-2, 3, 0),
-    HuffmanLine::normal(-1, 3, 0),
-    HuffmanLine::normal(0, 1, 0),
-    HuffmanLine::normal(1, 3, 0),
-    HuffmanLine::normal(2, 3, 0),
+    normal_line!(-2, 3, 0),
+    normal_line!(-1, 3, 0),
+    normal_line!(0, 1, 0),
+    normal_line!(1, 3, 0),
+    normal_line!(2, 3, 0),
 ];
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const TABLE_O: [HuffmanLine; 13] = [
-    HuffmanLine::normal(-24, 7, 4),
-    HuffmanLine::normal(-8, 6, 2),
-    HuffmanLine::normal(-4, 5, 1),
-    HuffmanLine::normal(-2, 4, 0),
-    HuffmanLine::normal(-1, 3, 0),
-    HuffmanLine::normal(0, 1, 0),
-    HuffmanLine::normal(1, 3, 0),
-    HuffmanLine::normal(2, 4, 0),
-    HuffmanLine::normal(3, 5, 1),
-    HuffmanLine::normal(5, 6, 2),
-    HuffmanLine::normal(9, 7, 4),
-    HuffmanLine::lower(-25, 7),
-    HuffmanLine::upper(25, 7),
+    normal_line!(-24, 7, 4),
+    normal_line!(-8, 6, 2),
+    normal_line!(-4, 5, 1),
+    normal_line!(-2, 4, 0),
+    normal_line!(-1, 3, 0),
+    normal_line!(0, 1, 0),
+    normal_line!(1, 3, 0),
+    normal_line!(2, 4, 0),
+    normal_line!(3, 5, 1),
+    normal_line!(5, 6, 2),
+    normal_line!(9, 7, 4),
+    lower_line!(-25, 7),
+    upper_line!(25, 7),
 ];
 
 #[cfg(test)]

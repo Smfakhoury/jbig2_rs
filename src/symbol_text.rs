@@ -5,8 +5,8 @@
 //! either arithmetic or Huffman integer decoders without duplicating the
 //! bounds, placement, and progress checks implemented here.
 
-use core::cell::RefCell;
-use std::borrow::Cow;
+#[cfg(test)]
+use std::collections::VecDeque;
 
 use crate::arithmetic::{ArithmeticContext, ArithmeticDecoder, ArithmeticError, ArithmeticInteger};
 use crate::bitmap::{Bitmap, CombinationOperator};
@@ -248,29 +248,6 @@ pub(crate) struct SymbolIdRequest {
     pub(crate) huffman: bool,
 }
 
-/// Entropy operations needed by the symbol and text state machines.
-pub(crate) trait EntropyDecoder {
-    fn decode_integer(&mut self, field: IntegerField) -> Result<EntropyInteger, SymbolTextError>;
-
-    fn decode_symbol_id(&mut self, request: SymbolIdRequest) -> Result<u32, SymbolTextError>;
-
-    /// Prepares symbol-ID decoding for `symbol_count` available symbols.
-    ///
-    /// Huffman implementations must build the T.88 7.4.3.1.7 run-length coded
-    /// symbol-ID table from the current bit position (and byte-align
-    /// afterwards) before any [`Self::decode_symbol_id`] call. Arithmetic
-    /// implementations have no equivalent per-call setup, so the default
-    /// implementation is a no-op.
-    fn prepare_symbol_ids(
-        &mut self,
-        symbol_count: u32,
-        limits: &Limits,
-    ) -> Result<(), SymbolTextError> {
-        let _ = (symbol_count, limits);
-        Ok(())
-    }
-}
-
 /// Geometry passed to the generic refinement decoder.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -282,25 +259,14 @@ pub(crate) struct RefinementGeometry {
 }
 
 /// Complete generic-refinement request, excluding entropy-engine-private state.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementRequest<'a> {
     pub(crate) reference: &'a Bitmap,
     pub(crate) geometry: RefinementGeometry,
     pub(crate) template: u8,
     pub(crate) adaptive_pixels: [(i8, i8); 2],
     pub(crate) declared_data_size: Option<u32>,
-}
-
-/// Callback boundary for the arithmetic generic-refinement decoder.
-///
-/// When `declared_data_size` is present, the implementation must constrain its
-/// input to exactly that many bytes and reject under- or over-consumption.
-pub(crate) trait GenericRefinementDecoder {
-    fn decode_refinement(
-        &mut self,
-        request: RefinementRequest<'_>,
-        limits: &Limits,
-    ) -> Result<Bitmap, SymbolTextError>;
 }
 
 /// Tracks abstract work and cumulative bitmap bytes across nested operations.
@@ -843,13 +809,32 @@ pub(crate) struct TableBinding<'a> {
     pub(crate) table: BoundHuffmanTable<'a>,
 }
 
-pub(crate) fn associate_dictionary_tables<'a>(
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const MAX_TABLE_BINDINGS: usize = 8;
+
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct TableBindings<'a> {
+    entries: [Option<TableBinding<'a>>; MAX_TABLE_BINDINGS],
+    len: usize,
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bindings) => symbol_text_spec::table_bindings_valid(&bindings),
+        Err(_) => true,
+    },
+))]
+fn associate_dictionary_tables<'a>(
     config: &SymbolDictionaryConfig,
     custom: &'a [CustomHuffmanTable<'a>],
-) -> Result<Vec<TableBinding<'a>>, SymbolTextError> {
+) -> Result<TableBindings<'a>, SymbolTextError> {
     if !config.huffman {
         if custom.is_empty() {
-            return Ok(Vec::new());
+            return Ok(TableBindings {
+                entries: [None; MAX_TABLE_BINDINGS],
+                len: 0,
+            });
         }
         return Err(SymbolTextError::InvalidTableAssociation(
             "custom tables on arithmetic dictionary",
@@ -872,13 +857,22 @@ pub(crate) fn associate_dictionary_tables<'a>(
     bind_tables(&specifications, custom)
 }
 
-pub(crate) fn associate_text_tables<'a>(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bindings) => symbol_text_spec::table_bindings_valid(&bindings),
+        Err(_) => true,
+    },
+))]
+fn associate_text_tables<'a>(
     config: &TextRegionConfig,
     custom: &'a [CustomHuffmanTable<'a>],
-) -> Result<Vec<TableBinding<'a>>, SymbolTextError> {
+) -> Result<TableBindings<'a>, SymbolTextError> {
     let Some(choices) = config.huffman_choices else {
         if custom.is_empty() {
-            return Ok(Vec::new());
+            return Ok(TableBindings {
+                entries: [None; MAX_TABLE_BINDINGS],
+                len: 0,
+            });
         }
         return Err(SymbolTextError::InvalidTableAssociation(
             "custom tables on arithmetic text region",
@@ -909,10 +903,23 @@ pub(crate) fn associate_text_tables<'a>(
     bind_tables(&specifications, custom)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bindings) =>
+            symbol_text_spec::table_bindings_valid(&bindings)
+                && bindings.len == specifications@.len(),
+        Err(_) => true,
+    },
+))]
 fn bind_tables<'a>(
     specifications: &[(TableParameter, TableChoice, bool)],
     custom: &'a [CustomHuffmanTable<'a>],
-) -> Result<Vec<TableBinding<'a>>, SymbolTextError> {
+) -> Result<TableBindings<'a>, SymbolTextError> {
+    if specifications.len() > MAX_TABLE_BINDINGS {
+        return Err(SymbolTextError::InvalidTableAssociation(
+            "too many table selectors",
+        ));
+    }
     let mut custom_count = 0_usize;
     let mut specification_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
@@ -932,21 +939,18 @@ fn bind_tables<'a>(
             "custom table count does not match selectors",
         ));
     }
-    let requested_bytes = specifications
-        .len()
-        .checked_mul(core::mem::size_of::<TableBinding<'_>>())
-        .and_then(|bytes| u64::try_from(bytes).ok())
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let mut bindings = Vec::new();
-    bindings
-        .try_reserve(specifications.len())
-        .map_err(|_error| DecodeError::Allocation { requested_bytes })?;
+    let mut bindings = TableBindings {
+        entries: [None; MAX_TABLE_BINDINGS],
+        len: 0,
+    };
     let mut custom_index = 0_usize;
     let mut specification_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             specification_index <= specifications@.len(),
-            bindings@.len() == specification_index,
+            specifications@.len() <= MAX_TABLE_BINDINGS,
+            bindings.len == specification_index,
+            symbol_text_spec::table_bindings_valid(&bindings),
             custom_index <= custom@.len(),
         decreases specifications@.len() - specification_index,
     ))]
@@ -972,7 +976,8 @@ fn bind_tables<'a>(
                     BoundHuffmanTable::Custom(supplied.table)
                 }
             };
-        bindings.push(TableBinding { parameter, table });
+        bindings.entries[specification_index] = Some(TableBinding { parameter, table });
+        bindings.len = specification_index + 1;
         specification_index += 1;
     }
     Ok(bindings)
@@ -1054,7 +1059,12 @@ impl DictionaryClassState {
         ensures match out {
             Ok(height) =>
                 symbol_text_spec::dictionary_state_valid(final(self))
+                && symbol_text_spec::work_units(final(resources))
+                    == symbol_text_spec::work_units(old(resources)) + 1
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
                 && final(self).class_open
+                && final(self).declared_new_symbols == old(self).declared_new_symbols
                 && final(self).height == height
                 && final(self).decoded_symbols == old(self).decoded_symbols
                 && final(self).width == 0
@@ -1090,8 +1100,14 @@ impl DictionaryClassState {
         ensures match out {
             Ok((width, height)) =>
                 symbol_text_spec::dictionary_state_valid(final(self))
+                && symbol_text_spec::work_units(final(resources))
+                    == symbol_text_spec::work_units(old(resources)) + 1
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
                 && final(self).class_open
+                && final(self).declared_new_symbols == old(self).declared_new_symbols
                 && final(self).decoded_symbols == old(self).decoded_symbols + 1
+                && final(self).decoded_symbols <= final(self).declared_new_symbols
                 && width == final(self).width
                 && height == final(self).height
                 && final(self).total_width <= limits.max_width,
@@ -1139,6 +1155,8 @@ impl DictionaryClassState {
             Ok(total_width) =>
                 symbol_text_spec::dictionary_state_valid(final(self))
                 && !final(self).class_open
+                && final(self).declared_new_symbols == old(self).declared_new_symbols
+                && final(self).decoded_symbols == old(self).decoded_symbols
                 && total_width == final(self).total_width,
             Err(_) => true,
         },
@@ -1193,16 +1211,29 @@ fn checked_unsigned_delta(current: u32, delta: i64, maximum: u32) -> Result<u32,
 }
 
 /// Decodes alternating export-flag runs, beginning with a zero run.
-pub(crate) fn decode_export_runs<F>(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::codec_valid(old(codec)),
+        symbol_text_spec::work_units(old(resources)) <= limits.max_work_units,
+    ensures match out {
+        Ok(exported) =>
+            symbol_text_spec::codec_valid(final(codec))
+                && exported@.len() == expected_exports
+                && symbol_text_spec::export_indices_valid(
+                    exported@, total_candidates
+                )
+                && symbol_text_spec::bitmap_bytes(final(resources))
+                    == symbol_text_spec::bitmap_bytes(old(resources)),
+        Err(_) => true,
+    },
+))]
+fn decode_export_runs(
+    codec: &mut SymbolCodec<'_>,
     total_candidates: u32,
     expected_exports: u32,
     limits: &Limits,
     resources: &mut ResourceTracker,
-    mut next_run: F,
-) -> Result<Vec<u32>, SymbolTextError>
-where
-    F: FnMut() -> Result<EntropyInteger, SymbolTextError>,
-{
+) -> Result<Vec<u32>, SymbolTextError> {
     if expected_exports > total_candidates {
         return Err(SymbolTextError::InvalidCount(
             "export count exceeds candidate count",
@@ -1213,15 +1244,30 @@ where
     let requested_bytes = u64::from(expected_exports)
         .checked_mul(4)
         .ok_or(MalformedError::IntegerOverflow)?;
-    let mut exported = Vec::new();
+    let mut exported: Vec<u32> = Vec::new();
     exported
         .try_reserve(capacity)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
     let mut index = 0_u32;
     let mut export_flag = false;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            symbol_text_spec::codec_valid(codec),
+            symbol_text_spec::work_units(resources) <= limits.max_work_units,
+            symbol_text_spec::work_units(resources)
+                >= symbol_text_spec::work_units(old(resources)),
+            symbol_text_spec::bitmap_bytes(resources)
+                == symbol_text_spec::bitmap_bytes(old(resources)),
+            index <= total_candidates,
+            capacity == expected_exports,
+            exported@.len() <= capacity,
+            forall|offset: int| 0 <= offset < exported@.len()
+                ==> #[trigger] exported@[offset] < index,
+        decreases limits.max_work_units - symbol_text_spec::work_units(resources),
+    ))]
     while index < total_candidates {
         resources.charge_work(1, limits)?;
-        let run = match next_run()? {
+        let run = match codec.decode_integer(IntegerField::ExportRun)? {
             EntropyInteger::Value(value) => u32::try_from(value)
                 .map_err(|_| SymbolTextError::InvalidEntropyValue("negative export run"))?,
             EntropyInteger::OutOfBand => {
@@ -1238,6 +1284,15 @@ where
         }
         if export_flag {
             let mut candidate = index;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    index <= candidate <= end,
+                    end <= total_candidates,
+                    exported@.len() <= capacity,
+                    forall|offset: int| 0 <= offset < exported@.len()
+                        ==> #[trigger] exported@[offset] < candidate,
+                decreases end - candidate,
+            ))]
             while candidate < end {
                 if exported.len() >= capacity {
                     return Err(SymbolTextError::InvalidCount("too many exported symbols"));
@@ -1268,28 +1323,52 @@ pub(crate) enum SymbolLengthRun {
     Zeros(u16),
 }
 
-pub(crate) fn expand_symbol_code_lengths<I>(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::work_units(old(resources)) <= limits.max_work_units,
+    ensures match out {
+        Ok(lengths) =>
+            lengths@.len() == symbol_count
+                && forall|index: int| 0 <= index < lengths@.len()
+                    ==> #[trigger] lengths@[index] <= 31
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
+                && symbol_text_spec::bitmap_bytes(final(resources))
+                    == symbol_text_spec::bitmap_bytes(old(resources)),
+        Err(_) => true,
+    },
+))]
+fn expand_symbol_code_lengths(
     symbol_count: u32,
-    runs: I,
+    runs: &[SymbolLengthRun],
     limits: &Limits,
     resources: &mut ResourceTracker,
-) -> Result<Vec<u8>, SymbolTextError>
-where
-    I: IntoIterator<Item = SymbolLengthRun>,
-{
+) -> Result<Vec<u8>, SymbolTextError> {
     enforce_limit(
         LimitKind::Symbols,
         u64::from(limits.max_symbols),
         u64::from(symbol_count),
     )?;
     let capacity = usize::try_from(symbol_count).map_err(|_| MalformedError::IntegerOverflow)?;
-    let mut lengths = Vec::new();
+    let mut lengths: Vec<u8> = Vec::new();
     lengths
         .try_reserve(capacity)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: u64::from(symbol_count),
         })?;
-    for run in runs {
+    let mut run_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            run_index <= runs@.len(),
+            lengths@.len() <= capacity,
+            symbol_text_spec::work_units(resources) <= limits.max_work_units,
+            symbol_text_spec::bitmap_bytes(resources)
+                == symbol_text_spec::bitmap_bytes(old(resources)),
+            forall|index: int| 0 <= index < lengths@.len()
+                ==> #[trigger] lengths@[index] <= 31,
+        decreases runs@.len() - run_index,
+    ))]
+    while run_index < runs.len() {
+        let run = runs[run_index];
         if lengths.len() == capacity {
             return Err(SymbolTextError::InvalidSymbolLengthRun);
         }
@@ -1312,6 +1391,7 @@ where
                 return Err(SymbolTextError::InvalidSymbolLengthRun)
             }
         }
+        run_index += 1;
     }
     if lengths.len() != capacity {
         return Err(SymbolTextError::InvalidCount(
@@ -1323,15 +1403,21 @@ where
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires old(lengths)@.len() <= capacity,
+    requires
+        old(lengths)@.len() <= capacity,
+        value <= 31,
+        forall|i: int| 0 <= i < old(lengths)@.len()
+            ==> #[trigger] old(lengths)@[i] <= 31,
     ensures match out {
         Ok(()) =>
             final(lengths)@.len() == old(lengths)@.len() + count
             && final(lengths)@.len() <= capacity
             && final(lengths)@.subrange(0, old(lengths)@.len() as int)
                 == old(lengths)@
-            && forall|i: int| old(lengths)@.len() <= i < final(lengths)@.len()
-                ==> final(lengths)@[i] == value,
+            && (forall|i: int| old(lengths)@.len() <= i < final(lengths)@.len()
+                ==> final(lengths)@[i] == value)
+            && (forall|i: int| 0 <= i < final(lengths)@.len()
+                ==> #[trigger] final(lengths)@[i] <= 31),
         Err(_) => true,
     },
 ))]
@@ -1341,6 +1427,10 @@ fn extend_lengths(
     value: u8,
     count: usize,
 ) -> Result<(), SymbolTextError> {
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost original = lengths@;
+    }
     let end = lengths
         .len()
         .checked_add(count)
@@ -1349,13 +1439,30 @@ fn extend_lengths(
         return Err(SymbolTextError::InvalidSymbolLengthRun);
     }
     lengths.resize(end, value);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert forall|i: int| 0 <= i < lengths@.len()
+            implies #[trigger] lengths@[i] <= 31 by {
+            if i < original.len() {
+                assert(lengths@[i] == original[i]);
+            } else {
+                assert(lengths@[i] == value);
+            }
+        }
+    }
     Ok(())
 }
 
-pub(crate) fn build_symbol_id_table(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(_) => lengths@.len() <= limits.max_symbols,
+        Err(_) => true,
+    },
+))]
+fn build_symbol_id_lines(
     lengths: &[u8],
     limits: &Limits,
-) -> Result<HuffmanTable, SymbolTextError> {
+) -> Result<Vec<HuffmanLine>, SymbolTextError> {
     let count = u32::try_from(lengths.len()).map_err(|_error| MalformedError::IntegerOverflow)?;
     enforce_limit(
         LimitKind::Symbols,
@@ -1367,15 +1474,24 @@ pub(crate) fn build_symbol_id_table(
         .checked_mul(core::mem::size_of::<HuffmanLine>())
         .and_then(|bytes| u64::try_from(bytes).ok())
         .ok_or(MalformedError::IntegerOverflow)?;
-    let mut lines = Vec::new();
+    let mut lines: Vec<HuffmanLine> = Vec::new();
     lines
         .try_reserve(lengths.len())
         .map_err(|_error| DecodeError::Allocation { requested_bytes })?;
-    for (index, &length) in lengths.iter().enumerate() {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= lengths@.len(),
+            lines@.len() == index,
+        decreases lengths@.len() - index,
+    ))]
+    while index < lengths.len() {
+        let length = lengths[index];
         let value = i32::try_from(index).map_err(|_error| MalformedError::IntegerOverflow)?;
         lines.push(HuffmanLine::normal(value, length, 0));
+        index += 1;
     }
-    Ok(HuffmanTable::new(&lines, limits)?)
+    Ok(lines)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1394,8 +1510,17 @@ pub(crate) fn checked_symbol_id(id: u32, available_symbols: u32) -> Result<u32, 
     Ok(id)
 }
 
-pub(crate) fn decode_checked_symbol_id<E: EntropyDecoder>(
-    entropy: &mut E,
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::codec_valid(old(codec)),
+    ensures match out {
+        Ok(id) =>
+            symbol_text_spec::codec_valid(final(codec))
+                && id < request.available_symbols,
+        Err(_) => true,
+    },
+))]
+fn decode_checked_symbol_id(
+    codec: &mut SymbolCodec<'_>,
     request: SymbolIdRequest,
 ) -> Result<u32, SymbolTextError> {
     if request.available_symbols == 0 {
@@ -1403,7 +1528,7 @@ pub(crate) fn decode_checked_symbol_id<E: EntropyDecoder>(
             "symbol ID with no available symbols",
         ));
     }
-    let id = entropy.decode_symbol_id(request)?;
+    let id = codec.decode_symbol_id(request)?;
     checked_symbol_id(id, request.available_symbols)
 }
 
@@ -1456,27 +1581,35 @@ fn floor_divide_by_two(value: i64) -> i64 {
     value / 2 - widen_bool_i64(value < 0 && value % 2 != 0)
 }
 
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn decode_refined_bitmap<E, R>(
-    entropy: &mut E,
-    refinement: &mut R,
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::codec_valid(old(codec)),
+        crate::spec::bitmap::storage_valid(reference),
+    ensures match out {
+        Ok(bitmap) =>
+            symbol_text_spec::codec_valid(final(codec))
+                && crate::spec::bitmap::storage_valid(&bitmap)
+                && symbol_text_spec::work_units(final(resources))
+                    == symbol_text_spec::work_units(old(resources)),
+        Err(_) => true,
+    },
+))]
+fn decode_refined_bitmap(
+    codec: &mut SymbolCodec<'_>,
     reference: &Bitmap,
     template: u8,
     adaptive_pixels: [(i8, i8); 2],
     huffman: bool,
     limits: &Limits,
     resources: &mut ResourceTracker,
-) -> Result<Bitmap, SymbolTextError>
-where
-    E: EntropyDecoder,
-    R: GenericRefinementDecoder,
-{
-    let delta_width = required_integer(entropy, IntegerField::RefinementWidth)?;
-    let delta_height = required_integer(entropy, IntegerField::RefinementHeight)?;
-    let delta_x = required_integer(entropy, IntegerField::RefinementX)?;
-    let delta_y = required_integer(entropy, IntegerField::RefinementY)?;
+) -> Result<Bitmap, SymbolTextError> {
+    let delta_width = required_integer(codec, IntegerField::RefinementWidth)?;
+    let delta_height = required_integer(codec, IntegerField::RefinementHeight)?;
+    let delta_x = required_integer(codec, IntegerField::RefinementX)?;
+    let delta_y = required_integer(codec, IntegerField::RefinementY)?;
     let declared_data_size = if huffman {
-        let size = required_integer(entropy, IntegerField::RefinementSize)?;
+        let size = required_integer(codec, IntegerField::RefinementSize)?;
         Some(
             u32::try_from(size)
                 .map_err(|_| SymbolTextError::InvalidEntropyValue("refinement size"))?,
@@ -1494,27 +1627,32 @@ where
         limits,
     )?;
     resources.charge_bitmap(geometry.width, geometry.height, limits)?;
-    let bitmap = refinement.decode_refinement(
-        RefinementRequest {
-            reference,
-            geometry,
-            template,
-            adaptive_pixels,
-            declared_data_size,
-        },
-        limits,
-    )?;
+    let request = RefinementRequest {
+        reference,
+        geometry,
+        template,
+        adaptive_pixels,
+        declared_data_size,
+    };
+    let bitmap = codec.decode_refinement(request, limits)?;
     if bitmap.width() != geometry.width || bitmap.height() != geometry.height {
         return Err(SymbolTextError::InvalidDimensions);
     }
     Ok(bitmap)
 }
 
-fn required_integer<E: EntropyDecoder>(
-    entropy: &mut E,
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::codec_valid(old(codec)),
+    ensures match out {
+        Ok(_) => symbol_text_spec::codec_valid(final(codec)),
+        Err(_) => true,
+    },
+))]
+fn required_integer(
+    codec: &mut SymbolCodec<'_>,
     field: IntegerField,
 ) -> Result<i64, SymbolTextError> {
-    match entropy.decode_integer(field)? {
+    match codec.decode_integer(field)? {
         EntropyInteger::Value(value) => Ok(value),
         EntropyInteger::OutOfBand => Err(SymbolTextError::UnexpectedOutOfBand("required integer")),
     }
@@ -1633,6 +1771,11 @@ impl TextRegionState {
             Ok(placement) =>
                 symbol_text_spec::text_state_valid(final(self))
                 && final(self).decoded_instances == old(self).decoded_instances + 1
+                && final(self).strip.is_some()
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
+                && symbol_text_spec::work_units(final(resources))
+                    == symbol_text_spec::work_units(old(resources)) + 1
                 && symbol_text_spec::placement_within_extents(placement, width, height),
             Err(_) => true,
         },
@@ -1664,6 +1807,11 @@ impl TextRegionState {
             Ok(placement) =>
                 symbol_text_spec::text_state_valid(final(self))
                 && final(self).decoded_instances == old(self).decoded_instances + 1
+                && final(self).strip.is_some()
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
+                && symbol_text_spec::work_units(final(resources))
+                    == symbol_text_spec::work_units(old(resources)) + 1
                 && symbol_text_spec::placement_within_extents(placement, width, height),
             Err(_) => true,
         },
@@ -1701,6 +1849,11 @@ impl TextRegionState {
             Ok(placement) =>
                 symbol_text_spec::text_state_valid(final(self))
                 && final(self).decoded_instances == old(self).decoded_instances + 1
+                && final(self).strip.is_some()
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
+                && symbol_text_spec::work_units(final(resources))
+                    == symbol_text_spec::work_units(old(resources)) + 1
                 && symbol_text_spec::placement_within_extents(placement, width, height)
                 && symbol_text_spec::placement_for_current(
                     old(self), within_strip_t, width, height, placement
@@ -1855,7 +2008,43 @@ impl TextRegionState {
 /// Combines a symbol bitmap at a signed top-left location with normative
 /// clipping. Nonnegative origins use the existing checked bitmap composition
 /// API; negative origins use an explicitly checked cropped loop.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires value < 0,
+    ensures match out {
+        Ok(magnitude) =>
+            value < 0
+                && magnitude >= 0
+                && magnitude as int == -(value as int),
+        Err(_) => value == i64::MIN,
+    },
+))]
+fn negative_magnitude(value: i64) -> Result<i64, SymbolTextError> {
+    if value == i64::MIN {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    Ok(-value)
+}
+
 #[allow(clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(old(destination)),
+        crate::spec::bitmap::storage_valid(source),
+        symbol_text_spec::work_units(old(resources)) <= limits.max_work_units,
+    ensures match out {
+        Ok(()) =>
+            crate::spec::bitmap::storage_valid(final(destination))
+                && crate::views::bitmap_width(final(destination))
+                    == crate::views::bitmap_width(old(destination))
+                && crate::views::bitmap_height(final(destination))
+                    == crate::views::bitmap_height(old(destination))
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
+                && symbol_text_spec::bitmap_bytes(final(resources))
+                    == symbol_text_spec::bitmap_bytes(old(resources)),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn compose_placement(
     destination: &mut Bitmap,
     source: &Bitmap,
@@ -1869,41 +2058,43 @@ pub(crate) fn compose_placement(
     let destination_width = i64::from(destination.width());
     let destination_height = i64::from(destination.height());
     let source_x = if placement.x < 0 {
-        placement
-            .x
-            .checked_neg()
-            .ok_or(MalformedError::IntegerOverflow)?
+        negative_magnitude(placement.x)?
     } else {
         0
     };
     let source_y = if placement.y < 0 {
-        placement
-            .y
-            .checked_neg()
-            .ok_or(MalformedError::IntegerOverflow)?
+        negative_magnitude(placement.y)?
     } else {
         0
     };
     let destination_x = placement.x.max(0);
     let destination_y = placement.y.max(0);
-    let overlap_width = source_width
+    let raw_overlap_width = source_width
         .checked_sub(source_x)
         .ok_or(MalformedError::IntegerOverflow)?
         .min(
             destination_width
                 .checked_sub(destination_x)
                 .ok_or(MalformedError::IntegerOverflow)?,
-        )
-        .max(0);
-    let overlap_height = source_height
+        );
+    let overlap_width = if raw_overlap_width < 0 {
+        0
+    } else {
+        raw_overlap_width
+    };
+    let raw_overlap_height = source_height
         .checked_sub(source_y)
         .ok_or(MalformedError::IntegerOverflow)?
         .min(
             destination_height
                 .checked_sub(destination_y)
                 .ok_or(MalformedError::IntegerOverflow)?,
-        )
-        .max(0);
+        );
+    let overlap_height = if raw_overlap_height < 0 {
+        0
+    } else {
+        raw_overlap_height
+    };
     let work = u64::try_from(overlap_width)
         .map_err(|_| MalformedError::IntegerOverflow)?
         .checked_mul(u64::try_from(overlap_height).map_err(|_| MalformedError::IntegerOverflow)?)
@@ -1920,8 +2111,44 @@ pub(crate) fn compose_placement(
     }
 
     let mut row = 0_i64;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            0 <= row <= overlap_height,
+            0 <= overlap_width,
+            0 < overlap_height,
+            crate::spec::bitmap::storage_valid(destination),
+            crate::spec::bitmap::storage_valid(source),
+            crate::views::bitmap_width(destination)
+                == crate::views::bitmap_width(old(destination)),
+            crate::views::bitmap_height(destination)
+                == crate::views::bitmap_height(old(destination)),
+            crate::views::bitmap_stride(destination)
+                == crate::views::bitmap_stride(old(destination)),
+            crate::views::bitmap_data(destination).len()
+                == crate::views::bitmap_data(old(destination)).len(),
+            symbol_text_spec::work_units(resources) <= limits.max_work_units,
+            symbol_text_spec::bitmap_bytes(resources)
+                == symbol_text_spec::bitmap_bytes(old(resources)),
+        decreases overlap_height - row,
+    ))]
     while row < overlap_height {
         let mut column = 0_i64;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                0 <= column <= overlap_width,
+                0 <= row < overlap_height,
+                crate::spec::bitmap::storage_valid(destination),
+                crate::spec::bitmap::storage_valid(source),
+                crate::views::bitmap_width(destination)
+                    == crate::views::bitmap_width(old(destination)),
+                crate::views::bitmap_height(destination)
+                    == crate::views::bitmap_height(old(destination)),
+                crate::views::bitmap_stride(destination)
+                    == crate::views::bitmap_stride(old(destination)),
+                crate::views::bitmap_data(destination).len()
+                    == crate::views::bitmap_data(old(destination)).len(),
+            decreases overlap_width - column,
+        ))]
         while column < overlap_width {
             let sx = u32::try_from(
                 source_x
@@ -1947,6 +2174,13 @@ pub(crate) fn compose_placement(
                     .ok_or(MalformedError::IntegerOverflow)?,
             )
             .map_err(|_| MalformedError::IntegerOverflow)?;
+            if sx >= source.width()
+                || sy >= source.height()
+                || dx >= destination.width()
+                || dy >= destination.height()
+            {
+                return Err(MalformedError::IntegerOverflow.into());
+            }
             let incoming = source
                 .pixel(sx, sy)
                 .ok_or(MalformedError::IntegerOverflow)?;
@@ -1981,32 +2215,30 @@ fn apply_operator(operator: CombinationOperator, destination: bool, source: bool
     }
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(old(bitmap)),
+    ensures match out {
+        Ok(()) =>
+            crate::spec::bitmap::storage_valid(final(bitmap))
+                && crate::views::bitmap_width(final(bitmap))
+                    == crate::views::bitmap_width(old(bitmap))
+                && crate::views::bitmap_height(final(bitmap))
+                    == crate::views::bitmap_height(old(bitmap))
+                && crate::views::bitmap_stride(final(bitmap))
+                    == crate::views::bitmap_stride(old(bitmap))
+                && crate::views::bitmap_data(final(bitmap)).len()
+                    == crate::views::bitmap_data(old(bitmap)).len(),
+        Err(_) => true,
+    },
+))]
 fn set_pixel_checked(
     bitmap: &mut Bitmap,
     x: u32,
     y: u32,
     value: bool,
 ) -> Result<(), SymbolTextError> {
-    if x >= bitmap.width || y >= bitmap.height {
-        return Err(MalformedError::IntegerOverflow.into());
-    }
-    let byte_index = usize::try_from(y)
-        .map_err(|_error| MalformedError::IntegerOverflow)?
-        .checked_mul(bitmap.stride)
-        .and_then(|offset| offset.checked_add(usize::try_from(x / 8).ok()?))
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let bit = 7 - (x % 8);
-    if byte_index >= bitmap.data.len() {
-        return Err(MalformedError::IntegerOverflow.into());
-    }
-    let byte = &mut bitmap.data[byte_index];
-    let mask = 1_u8 << bit;
-    if value {
-        *byte |= mask;
-    } else {
-        *byte &= !mask;
-    }
+    bitmap.set_pixel(x, y, value)?;
     Ok(())
 }
 
@@ -2190,7 +2422,13 @@ pub(crate) struct TextRegionHeader {
 }
 
 /// Parses a text-region segment data header and returns its byte length.
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok((header, _)) =>
+            symbol_text_spec::valid_strip_size(header.config.strip_size),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn parse_text_region_header(
     payload: &[u8],
     limits: &Limits,
@@ -2205,6 +2443,10 @@ pub(crate) fn parse_text_region_header(
         None
     };
     let config = parse_text_region_flags(flags, huffman_flags, false)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(symbol_text_spec::text_config_safe);
+    }
 
     let mut refinement_adaptive = [TemplateOffset::new(0, 0); 2];
     if config.refinement && config.refinement_template == 0 {
@@ -2340,52 +2582,286 @@ impl ResolvedTable<'_> {
     }
 }
 
-/// Builds a standard table and wraps it as an owned, boxed resolved table.
-fn owned_standard_table<'a>(
-    table: StandardHuffmanTable,
-    limits: &Limits,
-) -> Result<ResolvedTable<'a>, SymbolTextError> {
-    Ok(ResolvedTable::Owned(Box::new(HuffmanTable::standard(
-        table, limits,
-    )?)))
-}
-
-fn resolve_bound_table<'a>(
-    bound: BoundHuffmanTable<'a>,
-    limits: &Limits,
-) -> Result<ResolvedTable<'a>, SymbolTextError> {
-    match bound {
-        BoundHuffmanTable::Standard(table) => owned_standard_table(table, limits),
-        BoundHuffmanTable::Custom(table) => Ok(ResolvedTable::Borrowed(table)),
-    }
-}
-
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::table_bindings_valid(bindings),
     ensures
         out.is_some() == exists|i: int|
-            0 <= i < bindings@.len()
-            && bindings@[i].parameter == parameter,
+            0 <= i < bindings.len
+            && match #[trigger] bindings.entries[i] {
+                Some(binding) => binding.parameter == parameter,
+                None => false,
+            },
 ))]
 fn find_table_binding<'a>(
-    bindings: &[TableBinding<'a>],
+    bindings: &TableBindings<'a>,
     parameter: TableParameter,
 ) -> Option<BoundHuffmanTable<'a>> {
     let mut index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
-            index <= bindings@.len(),
+            index <= bindings.len,
+            bindings.len <= MAX_TABLE_BINDINGS,
+            symbol_text_spec::table_bindings_valid(bindings),
             forall|i: int| 0 <= i < index
-                ==> bindings@[i].parameter != parameter,
-        decreases bindings@.len() - index,
+                ==> match #[trigger] bindings.entries[i] {
+                    Some(binding) => binding.parameter != parameter,
+                    None => true,
+                },
+        decreases bindings.len - index,
     ))]
-    while index < bindings.len() {
-        let binding = bindings[index];
+    while index < bindings.len {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(symbol_text_spec::table_bindings_valid(bindings));
+            reveal(symbol_text_spec::table_bindings_valid);
+            assert(index < MAX_TABLE_BINDINGS);
+            assert(bindings.entries[index as int].is_some() == (index < bindings.len));
+            assert(bindings.entries[index as int].is_some());
+        }
+        let binding = bindings.entries[index]?;
         if same_table_parameter(binding.parameter, parameter) {
             return Some(binding.table);
         }
         index += 1;
     }
     None
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct HuffmanFieldChoices<'a> {
+    aggregation_instances: Option<BoundHuffmanTable<'a>>,
+    height_delta: Option<BoundHuffmanTable<'a>>,
+    width_delta: Option<BoundHuffmanTable<'a>>,
+    export_run: Option<BoundHuffmanTable<'a>>,
+    strip_delta: Option<BoundHuffmanTable<'a>>,
+    first_s: Option<BoundHuffmanTable<'a>>,
+    subsequent_s: Option<BoundHuffmanTable<'a>>,
+    refinement_width: Option<BoundHuffmanTable<'a>>,
+    refinement_height: Option<BoundHuffmanTable<'a>>,
+    refinement_x: Option<BoundHuffmanTable<'a>>,
+    refinement_y: Option<BoundHuffmanTable<'a>>,
+    refinement_size: Option<BoundHuffmanTable<'a>>,
+    dictionary_bitmap_size: Option<BoundHuffmanTable<'a>>,
+}
+
+impl HuffmanFieldChoices<'_> {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    const fn empty() -> Self {
+        Self {
+            aggregation_instances: None,
+            height_delta: None,
+            width_delta: None,
+            export_run: None,
+            strip_delta: None,
+            first_s: None,
+            subsequent_s: None,
+            refinement_width: None,
+            refinement_height: None,
+            refinement_x: None,
+            refinement_y: None,
+            refinement_size: None,
+            dictionary_bitmap_size: None,
+        }
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::table_bindings_valid(bindings),
+    ensures match out {
+        Ok(choices) =>
+            config.huffman
+                && choices.height_delta.is_some()
+                && choices.width_delta.is_some()
+                && choices.export_run.is_some()
+                && choices.dictionary_bitmap_size.is_some()
+                && (config.refinement_aggregation ==> (
+                    choices.aggregation_instances.is_some()
+                        && choices.refinement_x.is_some()
+                        && choices.refinement_y.is_some()
+                        && choices.refinement_size.is_some()
+                )),
+        Err(_) => true,
+    },
+))]
+fn select_dictionary_tables<'a>(
+    config: &SymbolDictionaryConfig,
+    bindings: &TableBindings<'a>,
+) -> Result<HuffmanFieldChoices<'a>, SymbolTextError> {
+    if !config.huffman {
+        return Err(SymbolTextError::InvalidTableAssociation(
+            "dictionary choices require Huffman mode",
+        ));
+    }
+    let mut choices = HuffmanFieldChoices::empty();
+    choices.height_delta = Some(
+        find_table_binding(bindings, TableParameter::DictionaryHeight).ok_or(
+            SymbolTextError::InvalidTableAssociation("missing height table"),
+        )?,
+    );
+    choices.width_delta = Some(
+        find_table_binding(bindings, TableParameter::DictionaryWidth).ok_or(
+            SymbolTextError::InvalidTableAssociation("missing width table"),
+        )?,
+    );
+    choices.dictionary_bitmap_size = Some(
+        find_table_binding(bindings, TableParameter::DictionaryBitmapSize).ok_or(
+            SymbolTextError::InvalidTableAssociation("missing bitmap-size table"),
+        )?,
+    );
+    choices.export_run = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::A));
+    if config.refinement_aggregation {
+        choices.aggregation_instances = Some(
+            find_table_binding(bindings, TableParameter::DictionaryAggregationInstances).ok_or(
+                SymbolTextError::InvalidTableAssociation("missing aggregation-instances table"),
+            )?,
+        );
+        choices.refinement_x = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::O));
+        choices.refinement_y = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::O));
+        choices.refinement_size = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::A));
+    }
+    Ok(choices)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::table_bindings_valid(bindings),
+    ensures match out {
+        Ok(choices) =>
+            choices.first_s.is_some()
+                && choices.subsequent_s.is_some()
+                && choices.strip_delta.is_some()
+                && (refinement ==> (
+                    choices.refinement_width.is_some()
+                        && choices.refinement_height.is_some()
+                        && choices.refinement_x.is_some()
+                        && choices.refinement_y.is_some()
+                        && choices.refinement_size.is_some()
+                )),
+        Err(_) => true,
+    },
+))]
+fn select_text_tables<'a>(
+    bindings: &TableBindings<'a>,
+    refinement: bool,
+) -> Result<HuffmanFieldChoices<'a>, SymbolTextError> {
+    let mut choices = HuffmanFieldChoices::empty();
+    choices.first_s = Some(
+        find_table_binding(bindings, TableParameter::TextFirstS)
+            .ok_or(SymbolTextError::InvalidTableAssociation("missing FS table"))?,
+    );
+    choices.subsequent_s = Some(
+        find_table_binding(bindings, TableParameter::TextSubsequentS)
+            .ok_or(SymbolTextError::InvalidTableAssociation("missing DS table"))?,
+    );
+    choices.strip_delta = Some(
+        find_table_binding(bindings, TableParameter::TextStripDelta)
+            .ok_or(SymbolTextError::InvalidTableAssociation("missing DT table"))?,
+    );
+    if refinement {
+        choices.refinement_width = Some(
+            find_table_binding(bindings, TableParameter::TextRefinementWidth).ok_or(
+                SymbolTextError::InvalidTableAssociation("missing RDW table"),
+            )?,
+        );
+        choices.refinement_height = Some(
+            find_table_binding(bindings, TableParameter::TextRefinementHeight).ok_or(
+                SymbolTextError::InvalidTableAssociation("missing RDH table"),
+            )?,
+        );
+        choices.refinement_x = Some(
+            find_table_binding(bindings, TableParameter::TextRefinementX).ok_or(
+                SymbolTextError::InvalidTableAssociation("missing RDX table"),
+            )?,
+        );
+        choices.refinement_y = Some(
+            find_table_binding(bindings, TableParameter::TextRefinementY).ok_or(
+                SymbolTextError::InvalidTableAssociation("missing RDY table"),
+            )?,
+        );
+        choices.refinement_size = Some(
+            find_table_binding(bindings, TableParameter::TextRefinementSize).ok_or(
+                SymbolTextError::InvalidTableAssociation("missing RSIZE table"),
+            )?,
+        );
+    }
+    Ok(choices)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum HuffmanChoiceSet<'a> {
+    Dictionary(HuffmanFieldChoices<'a>),
+    TextRegion(HuffmanFieldChoices<'a>),
+}
+
+macro_rules! materialize_huffman_tables {
+    ($choice_set:expr, $limits:expr) => {{
+        let choice_set = $choice_set;
+        let limits = $limits;
+        macro_rules! resolve {
+            ($choice:expr) => {
+                match $choice {
+                    None => None,
+                    Some(BoundHuffmanTable::Standard(table)) => Some(ResolvedTable::Owned(
+                        Box::new(HuffmanTable::standard(table, limits)?),
+                    )),
+                    Some(BoundHuffmanTable::Custom(table)) => Some(ResolvedTable::Borrowed(table)),
+                }
+            };
+        }
+
+        let tables = match choice_set {
+            HuffmanChoiceSet::Dictionary(choices) => {
+                let height_delta = resolve!(choices.height_delta);
+                let width_delta = resolve!(choices.width_delta);
+                let export_run = resolve!(choices.export_run);
+                let dictionary_bitmap_size = resolve!(choices.dictionary_bitmap_size);
+                let aggregation_instances = resolve!(choices.aggregation_instances);
+                let refinement_x = resolve!(choices.refinement_x);
+                let refinement_y = resolve!(choices.refinement_y);
+                let refinement_size = resolve!(choices.refinement_size);
+                HuffmanFieldTables {
+                    aggregation_instances,
+                    height_delta,
+                    width_delta,
+                    export_run,
+                    strip_delta: None,
+                    first_s: None,
+                    subsequent_s: None,
+                    refinement_width: None,
+                    refinement_height: None,
+                    refinement_x,
+                    refinement_y,
+                    refinement_size,
+                    dictionary_bitmap_size,
+                }
+            }
+            HuffmanChoiceSet::TextRegion(choices) => {
+                let first_s = resolve!(choices.first_s);
+                let subsequent_s = resolve!(choices.subsequent_s);
+                let strip_delta = resolve!(choices.strip_delta);
+                let refinement_width = resolve!(choices.refinement_width);
+                let refinement_height = resolve!(choices.refinement_height);
+                let refinement_x = resolve!(choices.refinement_x);
+                let refinement_y = resolve!(choices.refinement_y);
+                let refinement_size = resolve!(choices.refinement_size);
+                HuffmanFieldTables {
+                    aggregation_instances: None,
+                    height_delta: None,
+                    width_delta: None,
+                    export_run: None,
+                    strip_delta,
+                    first_s,
+                    subsequent_s,
+                    refinement_width,
+                    refinement_height,
+                    refinement_x,
+                    refinement_y,
+                    refinement_size,
+                    dictionary_bitmap_size: None,
+                }
+            }
+        };
+        Ok::<HuffmanFieldTables<'_>, SymbolTextError>(tables)
+    }};
 }
 
 /// Resolved Huffman tables for every table-backed [`IntegerField`].
@@ -2410,151 +2886,7 @@ struct HuffmanFieldTables<'a> {
     dictionary_bitmap_size: Option<ResolvedTable<'a>>,
 }
 
-impl<'a> HuffmanFieldTables<'a> {
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
-    const fn empty() -> Self {
-        Self {
-            aggregation_instances: None,
-            height_delta: None,
-            width_delta: None,
-            export_run: None,
-            strip_delta: None,
-            first_s: None,
-            subsequent_s: None,
-            refinement_width: None,
-            refinement_height: None,
-            refinement_x: None,
-            refinement_y: None,
-            refinement_size: None,
-            dictionary_bitmap_size: None,
-        }
-    }
-
-    /// Builds the table set for a Huffman symbol dictionary's own fields
-    /// (height/width/bitmap-size/aggregation-instances/export-run).
-    /// Refinement fields, when relevant, use T.88's hardcoded standard tables
-    /// (O for X/Y, A for the declared bitmap size) because the symbol
-    /// dictionary header has no selector bits for them.
-    fn for_dictionary(
-        config: &SymbolDictionaryConfig,
-        bindings: &[TableBinding<'a>],
-        limits: &Limits,
-    ) -> Result<Self, SymbolTextError> {
-        let mut tables = Self::empty();
-        tables.height_delta = Some(resolve_bound_table(
-            find_table_binding(bindings, TableParameter::DictionaryHeight).ok_or(
-                SymbolTextError::InvalidTableAssociation("missing height table"),
-            )?,
-            limits,
-        )?);
-        tables.width_delta = Some(resolve_bound_table(
-            find_table_binding(bindings, TableParameter::DictionaryWidth).ok_or(
-                SymbolTextError::InvalidTableAssociation("missing width table"),
-            )?,
-            limits,
-        )?);
-        tables.export_run = Some(owned_standard_table(StandardHuffmanTable::A, limits)?);
-        tables.dictionary_bitmap_size = Some(resolve_bound_table(
-            find_table_binding(bindings, TableParameter::DictionaryBitmapSize).ok_or(
-                SymbolTextError::InvalidTableAssociation("missing bitmap-size table"),
-            )?,
-            limits,
-        )?);
-        if config.refinement_aggregation {
-            tables.aggregation_instances = Some(resolve_bound_table(
-                find_table_binding(bindings, TableParameter::DictionaryAggregationInstances)
-                    .ok_or(SymbolTextError::InvalidTableAssociation(
-                        "missing aggregation-instances table",
-                    ))?,
-                limits,
-            )?);
-            tables.refinement_x = Some(owned_standard_table(StandardHuffmanTable::O, limits)?);
-            tables.refinement_y = Some(owned_standard_table(StandardHuffmanTable::O, limits)?);
-            tables.refinement_size = Some(owned_standard_table(StandardHuffmanTable::A, limits)?);
-        }
-        Ok(tables)
-    }
-
-    /// Builds the hardcoded table set used while decoding a nested aggregate
-    /// text region from within a Huffman symbol dictionary (T.88 6.5.8.2,
-    /// Table 17): FS/DS/DT/RDW/RDH use the first of their normal selector
-    /// choices because the symbol dictionary header carries no selector bits
-    /// for them, and RDX/RDY/RSIZE match [`Self::for_dictionary`].
-    fn for_nested_aggregate(limits: &Limits) -> Result<Self, SymbolTextError> {
-        Ok(Self {
-            aggregation_instances: None,
-            height_delta: None,
-            width_delta: None,
-            export_run: None,
-            strip_delta: Some(owned_standard_table(StandardHuffmanTable::K, limits)?),
-            first_s: Some(owned_standard_table(StandardHuffmanTable::F, limits)?),
-            subsequent_s: Some(owned_standard_table(StandardHuffmanTable::H, limits)?),
-            refinement_width: Some(owned_standard_table(StandardHuffmanTable::O, limits)?),
-            refinement_height: Some(owned_standard_table(StandardHuffmanTable::O, limits)?),
-            refinement_x: Some(owned_standard_table(StandardHuffmanTable::O, limits)?),
-            refinement_y: Some(owned_standard_table(StandardHuffmanTable::O, limits)?),
-            refinement_size: Some(owned_standard_table(StandardHuffmanTable::A, limits)?),
-            dictionary_bitmap_size: None,
-        })
-    }
-
-    /// Builds the table set for a top-level Huffman text-region segment.
-    fn for_text_region(
-        bindings: &[TableBinding<'a>],
-        refinement: bool,
-        limits: &Limits,
-    ) -> Result<Self, SymbolTextError> {
-        let mut tables = Self::empty();
-        tables.first_s = Some(resolve_bound_table(
-            find_table_binding(bindings, TableParameter::TextFirstS)
-                .ok_or(SymbolTextError::InvalidTableAssociation("missing FS table"))?,
-            limits,
-        )?);
-        tables.subsequent_s = Some(resolve_bound_table(
-            find_table_binding(bindings, TableParameter::TextSubsequentS)
-                .ok_or(SymbolTextError::InvalidTableAssociation("missing DS table"))?,
-            limits,
-        )?);
-        tables.strip_delta = Some(resolve_bound_table(
-            find_table_binding(bindings, TableParameter::TextStripDelta)
-                .ok_or(SymbolTextError::InvalidTableAssociation("missing DT table"))?,
-            limits,
-        )?);
-        if refinement {
-            tables.refinement_width = Some(resolve_bound_table(
-                find_table_binding(bindings, TableParameter::TextRefinementWidth).ok_or(
-                    SymbolTextError::InvalidTableAssociation("missing RDW table"),
-                )?,
-                limits,
-            )?);
-            tables.refinement_height = Some(resolve_bound_table(
-                find_table_binding(bindings, TableParameter::TextRefinementHeight).ok_or(
-                    SymbolTextError::InvalidTableAssociation("missing RDH table"),
-                )?,
-                limits,
-            )?);
-            tables.refinement_x = Some(resolve_bound_table(
-                find_table_binding(bindings, TableParameter::TextRefinementX).ok_or(
-                    SymbolTextError::InvalidTableAssociation("missing RDX table"),
-                )?,
-                limits,
-            )?);
-            tables.refinement_y = Some(resolve_bound_table(
-                find_table_binding(bindings, TableParameter::TextRefinementY).ok_or(
-                    SymbolTextError::InvalidTableAssociation("missing RDY table"),
-                )?,
-                limits,
-            )?);
-            tables.refinement_size = Some(resolve_bound_table(
-                find_table_binding(bindings, TableParameter::TextRefinementSize).ok_or(
-                    SymbolTextError::InvalidTableAssociation("missing RSIZE table"),
-                )?,
-                limits,
-            )?);
-        }
-        Ok(tables)
-    }
-
+impl HuffmanFieldTables<'_> {
     #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn table_for(&self, field: IntegerField) -> Option<&HuffmanTable> {
         let resolved = match field {
@@ -2578,15 +2910,11 @@ impl<'a> HuffmanFieldTables<'a> {
 }
 
 // ---------------------------------------------------------------------------
-// Arithmetic entropy adapter.
+// Concrete entropy/refinement state.
 //
-// `ArithmeticEntropy` and `ArithmeticRefinement` each borrow the same
-// continuous `ArithmeticDecoder` through a shared `RefCell`. The borrows are
-// always scoped to a single decode call and never overlap in time, so the
-// interior mutability never panics; it exists only so the two independent
-// roles (integer/IAID decoding and generic-refinement decoding) can be two
-// distinct Rust values while still driving one caller-owned bitstream
-// cursor, exactly as `decode_refined_bitmap`'s two type parameters require.
+// Each variant owns exactly one cursor. Integer, symbol-ID, generic-region,
+// and refinement operations therefore advance the same cursor continuously
+// without interior mutability or callback dispatch.
 // ---------------------------------------------------------------------------
 
 /// Per-[`IntegerField`] arithmetic probability contexts.
@@ -2601,90 +2929,139 @@ impl IntegerContexts {
             slots: [[ArithmeticContext::new(); 512]; INTEGER_FIELD_COUNT],
         }
     }
-
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
-    fn slot_mut(&mut self, field: IntegerField) -> &mut [ArithmeticContext; 512] {
-        &mut self.slots[field.slot()]
-    }
 }
 
-/// Decodes Annex A integers and IAID symbol IDs from one shared, caller-owned
-/// [`ArithmeticDecoder`].
-struct ArithmeticEntropy<'a, 'b> {
-    decoder: &'b RefCell<ArithmeticDecoder<'a>>,
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct ArithmeticCodec<'a> {
+    decoder: ArithmeticDecoder<'a>,
     integers: IntegerContexts,
     iaid: Vec<ArithmeticContext>,
+    refinement: Option<RefinementContexts>,
+    refinement_work: u64,
 }
 
-impl<'a, 'b> ArithmeticEntropy<'a, 'b> {
-    fn new(
-        decoder: &'b RefCell<ArithmeticDecoder<'a>>,
-        iaid_code_length: u8,
-        limits: &Limits,
-    ) -> Result<Self, SymbolTextError> {
-        let count = 1_usize
-            .checked_shl(u32::from(iaid_code_length))
-            .ok_or(MalformedError::IntegerOverflow)?;
-        let requested_bytes = count
-            .checked_mul(core::mem::size_of::<ArithmeticContext>())
-            .and_then(|bytes| u64::try_from(bytes).ok())
-            .ok_or(MalformedError::IntegerOverflow)?;
-        enforce_limit(
-            LimitKind::Memory,
-            limits.max_decoder_managed_memory_bytes,
-            requested_bytes,
-        )?;
-        let mut iaid = Vec::new();
-        iaid.try_reserve(count)
-            .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-        iaid.resize(count, ArithmeticContext::new());
-        Ok(Self {
-            decoder,
-            integers: IntegerContexts::new(),
-            iaid,
-        })
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(codec) => symbol_text_spec::arithmetic_codec_valid(&codec),
+        Err(_) => true,
+    },
+))]
+fn new_arithmetic_codec<'a>(
+    bytes: &'a [u8],
+    iaid_code_length: u8,
+    refinement_template: Option<RefinementTemplate>,
+    limits: &Limits,
+) -> Result<ArithmeticCodec<'a>, SymbolTextError> {
+    if u32::from(iaid_code_length) >= usize::BITS {
+        return Err(MalformedError::IntegerOverflow.into());
     }
+    let count = 1_usize << iaid_code_length;
+    let requested_bytes = count
+        .checked_mul(core::mem::size_of::<ArithmeticContext>())
+        .and_then(|bytes| u64::try_from(bytes).ok())
+        .ok_or(MalformedError::IntegerOverflow)?;
+    enforce_limit(
+        LimitKind::Memory,
+        limits.max_decoder_managed_memory_bytes,
+        requested_bytes,
+    )?;
+    let mut iaid = Vec::new();
+    iaid.try_reserve(count)
+        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    iaid.resize(count, ArithmeticContext::new());
+    Ok(ArithmeticCodec {
+        decoder: ArithmeticDecoder::new(bytes)?,
+        integers: IntegerContexts {
+            slots: [[ArithmeticContext::new(); 512]; INTEGER_FIELD_COUNT],
+        },
+        iaid,
+        refinement: match refinement_template {
+            Some(template) => Some(RefinementContexts::new(template, limits)?),
+            None => None,
+        },
+        refinement_work: 0,
+    })
 }
 
-impl EntropyDecoder for ArithmeticEntropy<'_, '_> {
+/// Concrete state for every symbol/text entropy mode.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+// Boxing either large variant would introduce an unaccounted infallible allocation.
+#[allow(clippy::large_enum_variant)]
+enum SymbolCodec<'a> {
+    Arithmetic(ArithmeticCodec<'a>),
+    Huffman(HuffmanCodec<'a>),
+    #[cfg(test)]
+    Scripted(ScriptedCodec),
+}
+
+#[cfg(test)]
+struct ScriptedCodec {
+    integers: VecDeque<EntropyInteger>,
+    symbol_id: u32,
+}
+
+impl ArithmeticCodec<'_> {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires crate::arithmetic::arithmetic_spec::decoder_valid(&old(self).decoder),
+            symbol_text_spec::integer_contexts_valid(&old(self).integers),
+        ensures
+            crate::arithmetic::arithmetic_spec::decoder_state_valid(&final(self).decoder),
+            symbol_text_spec::integer_contexts_valid(&final(self).integers),
+            final(self).iaid@ == old(self).iaid@,
+            match out {
+                Ok(_) => crate::arithmetic::arithmetic_spec::decoder_valid(
+                    &final(self).decoder
+                ),
+                Err(_) => true,
+            },
+    ))]
     fn decode_integer(&mut self, field: IntegerField) -> Result<EntropyInteger, SymbolTextError> {
-        let mut decoder = self.decoder.borrow_mut();
-        let slot = self.integers.slot_mut(field);
-        match decoder.decode_integer(slot)? {
+        let slot = field.slot();
+        match self
+            .decoder
+            .decode_integer(&mut self.integers.slots[slot])?
+        {
             ArithmeticInteger::Value(value) => Ok(EntropyInteger::Value(value)),
             ArithmeticInteger::OutOfBand => Ok(EntropyInteger::OutOfBand),
         }
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::arithmetic::arithmetic_spec::decoder_valid(&old(self).decoder),
+            symbol_text_spec::arithmetic_contexts_valid(old(self).iaid@),
+        ensures
+            crate::arithmetic::arithmetic_spec::decoder_state_valid(&final(self).decoder),
+            symbol_text_spec::arithmetic_contexts_valid(final(self).iaid@),
+            final(self).integers.slots@ == old(self).integers.slots@,
+            match out {
+                Ok(_) => crate::arithmetic::arithmetic_spec::decoder_valid(
+                    &final(self).decoder
+                ),
+                Err(_) => true,
+            },
+    ))]
     fn decode_symbol_id(&mut self, request: SymbolIdRequest) -> Result<u32, SymbolTextError> {
-        let mut decoder = self.decoder.borrow_mut();
-        Ok(decoder.decode_iaid(request.code_length, &mut self.iaid)?)
+        Ok(self
+            .decoder
+            .decode_iaid(request.code_length, &mut self.iaid)?)
     }
-}
 
-/// Decodes generic-refinement bitmaps from the same shared, caller-owned
-/// [`ArithmeticDecoder`] used by a sibling [`ArithmeticEntropy`].
-struct ArithmeticRefinement<'a, 'b> {
-    decoder: &'b RefCell<ArithmeticDecoder<'a>>,
-    contexts: RefinementContexts,
-    cumulative_work: u64,
-}
-
-impl<'a, 'b> ArithmeticRefinement<'a, 'b> {
-    fn new(
-        decoder: &'b RefCell<ArithmeticDecoder<'a>>,
-        template: RefinementTemplate,
-        limits: &Limits,
-    ) -> Result<Self, SymbolTextError> {
-        Ok(Self {
-            decoder,
-            contexts: RefinementContexts::new(template, limits)?,
-            cumulative_work: 0,
-        })
-    }
-}
-
-impl GenericRefinementDecoder for ArithmeticRefinement<'_, '_> {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::arithmetic::arithmetic_spec::decoder_valid(&old(self).decoder),
+            crate::spec::bitmap::storage_valid(request.reference),
+        ensures match out {
+            Ok(bitmap) =>
+                crate::spec::bitmap::storage_valid(&bitmap)
+                    && crate::arithmetic::arithmetic_spec::decoder_valid(
+                        &final(self).decoder
+                    )
+                    && final(self).integers.slots@ == old(self).integers.slots@
+                    && final(self).iaid@ == old(self).iaid@,
+            Err(_) => true,
+        },
+    ))]
     fn decode_refinement(
         &mut self,
         request: RefinementRequest<'_>,
@@ -2710,15 +3087,56 @@ impl GenericRefinementDecoder for ArithmeticRefinement<'_, '_> {
             reference_dx: request.geometry.reference_dx,
             reference_dy: request.geometry.reference_dy,
         };
-        let mut decoder = self.decoder.borrow_mut();
+        let contexts = self
+            .refinement
+            .as_mut()
+            .ok_or(SymbolTextError::InvalidState(
+                "missing arithmetic refinement contexts",
+            ))?;
         Ok(decode_refinement_on(
-            &mut decoder,
-            &mut self.contexts,
+            &mut self.decoder,
+            contexts,
             call,
             request.reference,
             parameters,
             limits,
-            &mut self.cumulative_work,
+            &mut self.refinement_work,
+        )?)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::arithmetic::arithmetic_spec::decoder_valid(&old(self).decoder),
+            match call.skip {
+                Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                None => true,
+            },
+        ensures match out {
+            Ok(bitmap) =>
+                crate::spec::bitmap::storage_valid(&bitmap)
+                    && crate::arithmetic::arithmetic_spec::decoder_valid(
+                        &final(self).decoder
+                    )
+                    && final(self).integers.slots@ == old(self).integers.slots@
+                    && final(self).iaid@ == old(self).iaid@,
+            Err(_) => true,
+        },
+    ))]
+    fn decode_generic(
+        &mut self,
+        contexts: &mut GenericContexts,
+        call: GenericArithmeticCall<'_>,
+        height: u32,
+        limits: &Limits,
+        cumulative_work: &mut u64,
+    ) -> Result<Bitmap, SymbolTextError> {
+        Ok(decode_generic_on(
+            &mut self.decoder,
+            contexts,
+            call,
+            height,
+            limits,
+            cumulative_work,
         )?)
     }
 }
@@ -2783,13 +3201,35 @@ fn validate_bounded_arithmetic_terminator(data: &[u8]) -> Result<(), SymbolTextE
     Ok(())
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum NormalizedArithmetic<'a> {
+    Borrowed(&'a [u8]),
+    Owned(Vec<u8>),
+}
+
+impl NormalizedArithmetic<'_> {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn bytes(&self) -> &[u8] {
+        match self {
+            Self::Borrowed(bytes) => bytes,
+            Self::Owned(bytes) => bytes,
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn len(&self) -> usize {
+        self.bytes().len()
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn normalized_bounded_arithmetic<'a>(
     data: &'a [u8],
     limits: &Limits,
-) -> Result<Cow<'a, [u8]>, SymbolTextError> {
+) -> Result<NormalizedArithmetic<'a>, SymbolTextError> {
     if data.ends_with(&BOUNDED_ARITHMETIC_TERMINATOR) {
         validate_bounded_arithmetic_terminator(data)?;
-        return Ok(Cow::Borrowed(data));
+        return Ok(NormalizedArithmetic::Borrowed(data));
     }
     if data.last() != Some(&BOUNDED_ARITHMETIC_TERMINATOR[0]) {
         return Err(SymbolTextError::InvalidState(
@@ -2816,7 +3256,7 @@ fn normalized_bounded_arithmetic<'a>(
     normalized.extend_from_slice(data);
     normalized.push(BOUNDED_ARITHMETIC_TERMINATOR[1]);
     validate_bounded_arithmetic_terminator(&normalized)?;
-    Ok(Cow::Owned(normalized))
+    Ok(NormalizedArithmetic::Owned(normalized))
 }
 
 /// Validates that any marker the decoder actually observed is the declared
@@ -2886,20 +3326,15 @@ fn byte_align(reader: &mut BitReader<'_>) -> Result<(), SymbolTextError> {
     Ok(())
 }
 
-/// Builds the T.88 7.4.3.1.7 symbol-ID Huffman table from the current bit
-/// position and leaves the reader byte-aligned immediately afterward.
-///
-/// This reuses the crate's existing run-length expansion
-/// ([`expand_symbol_code_lengths`]) and canonical-table construction
-/// ([`build_symbol_id_table`]) helpers; only the normative run-code
-/// bitstream syntax is decoded here.
-fn build_symbol_id_runcode_table(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::huffman::huffman_spec::reader_valid(old(reader)),
+    ensures crate::huffman::huffman_spec::reader_valid(final(reader)),
+))]
+fn read_symbol_id_runcode_lines(
     reader: &mut BitReader<'_>,
-    symbol_count: u32,
-    limits: &Limits,
-) -> Result<HuffmanTable, SymbolTextError> {
+) -> Result<Vec<HuffmanLine>, SymbolTextError> {
     const RUNCODE_COUNT: usize = 35;
-    let mut runcode_lines = Vec::new();
+    let mut runcode_lines: Vec<HuffmanLine> = Vec::new();
     let requested_bytes = RUNCODE_COUNT
         .checked_mul(core::mem::size_of::<HuffmanLine>())
         .and_then(|bytes| u64::try_from(bytes).ok())
@@ -2907,14 +3342,34 @@ fn build_symbol_id_runcode_table(
     runcode_lines
         .try_reserve(RUNCODE_COUNT)
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    for index in 0..RUNCODE_COUNT {
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= RUNCODE_COUNT,
+            runcode_lines@.len() == index,
+            crate::huffman::huffman_spec::reader_valid(reader),
+        decreases RUNCODE_COUNT - index,
+    ))]
+    while index < RUNCODE_COUNT {
         let prefix_len =
             u8::try_from(reader.read_bits(4)?).map_err(|_| MalformedError::IntegerOverflow)?;
         let value = i32::try_from(index).map_err(|_| MalformedError::IntegerOverflow)?;
         runcode_lines.push(HuffmanLine::normal(value, prefix_len, 0));
+        index += 1;
     }
-    let runcode_table = HuffmanTable::new(&runcode_lines, limits)?;
+    Ok(runcode_lines)
+}
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::huffman::huffman_spec::reader_valid(old(reader)),
+    ensures crate::huffman::huffman_spec::reader_valid(final(reader)),
+))]
+fn decode_symbol_id_code_lengths(
+    reader: &mut BitReader<'_>,
+    runcode_table: &HuffmanTable,
+    symbol_count: u32,
+    limits: &Limits,
+) -> Result<Vec<u8>, SymbolTextError> {
     let capacity = usize::try_from(symbol_count).map_err(|_| MalformedError::IntegerOverflow)?;
     let mut runs = Vec::new();
     runs.try_reserve(capacity)
@@ -2922,6 +3377,13 @@ fn build_symbol_id_runcode_table(
             requested_bytes: u64::from(symbol_count),
         })?;
     let mut decoded_estimate = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            decoded_estimate <= symbol_count,
+            runs@.len() <= capacity,
+            crate::huffman::huffman_spec::reader_valid(reader),
+        decreases symbol_count - decoded_estimate,
+    ))]
     while decoded_estimate < symbol_count {
         let code = match runcode_table.decode(reader)? {
             HuffmanValue::Integer(value) => value,
@@ -2978,49 +3440,93 @@ fn build_symbol_id_runcode_table(
             }
             _ => return Err(SymbolTextError::InvalidSymbolLengthRun),
         };
+        if decoded_estimate > symbol_count {
+            return Err(SymbolTextError::InvalidSymbolLengthRun);
+        }
         if runs.len() >= capacity {
             return Err(SymbolTextError::InvalidSymbolLengthRun);
         }
         runs.push(run);
     }
 
-    let mut resources = ResourceTracker::default();
-    let lengths = expand_symbol_code_lengths(symbol_count, runs, limits, &mut resources)?;
-    let table = build_symbol_id_table(&lengths, limits)?;
-    byte_align(reader)?;
-    Ok(table)
+    let mut resources = ResourceTracker {
+        work_units: 0,
+        decoded_bitmap_bytes: 0,
+    };
+    let lengths = expand_symbol_code_lengths(symbol_count, &runs, limits, &mut resources)?;
+    Ok(lengths)
 }
 
-/// Decodes Annex B integers and the text-region symbol-ID table from a
-/// shared, caller-owned bit reader.
-struct HuffmanEntropy<'a, 'b> {
-    reader: &'b RefCell<BitReader<'a>>,
+/// Owns the single Annex B cursor and any arithmetic-refinement state embedded
+/// in that same Huffman-coded segment.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct HuffmanCodec<'a> {
+    reader: BitReader<'a>,
     tables: HuffmanFieldTables<'a>,
     log_strip_size: u8,
     symbol_id_table: Option<HuffmanTable>,
+    refinement: Option<RefinementContexts>,
+    refinement_work: u64,
 }
 
-impl<'a, 'b> HuffmanEntropy<'a, 'b> {
-    fn new(
-        reader: &'b RefCell<BitReader<'a>>,
-        tables: HuffmanFieldTables<'a>,
-        log_strip_size: u8,
-    ) -> Self {
-        Self {
-            reader,
-            tables,
-            log_strip_size,
-            symbol_id_table: None,
-        }
-    }
-
-    fn read_raw_bits(&self, count: u8) -> Result<u32, SymbolTextError> {
-        let mut reader = self.reader.borrow_mut();
-        Ok(reader.read_bits(count)?)
-    }
+macro_rules! prepare_symbol_ids {
+    ($codec:expr, $symbol_count:expr, $limits:expr) => {{
+        let codec = $codec;
+        let symbol_count = $symbol_count;
+        let limits = $limits;
+        let runcode_lines = read_symbol_id_runcode_lines(&mut codec.reader)?;
+        let runcode_table = HuffmanTable::new(&runcode_lines, limits)?;
+        let lengths =
+            decode_symbol_id_code_lengths(&mut codec.reader, &runcode_table, symbol_count, limits)?;
+        let symbol_lines = build_symbol_id_lines(&lengths, limits)?;
+        codec.symbol_id_table = Some(HuffmanTable::new(&symbol_lines, limits)?);
+        byte_align(&mut codec.reader)?;
+        Ok::<(), SymbolTextError>(())
+    }};
 }
 
-impl EntropyDecoder for HuffmanEntropy<'_, '_> {
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(codec) => crate::huffman::huffman_spec::reader_valid(&codec.reader),
+        Err(_) => true,
+    },
+))]
+fn new_huffman_codec<'a>(
+    bytes: &'a [u8],
+    tables: HuffmanFieldTables<'a>,
+    log_strip_size: u8,
+    refinement_template: Option<RefinementTemplate>,
+    limits: &Limits,
+) -> Result<HuffmanCodec<'a>, SymbolTextError> {
+    if bytes.len() > usize::MAX / 8 {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    Ok(HuffmanCodec {
+        reader: bit_reader(bytes),
+        tables,
+        log_strip_size,
+        symbol_id_table: None,
+        refinement: match refinement_template {
+            Some(template) => Some(RefinementContexts::new(template, limits)?),
+            None => None,
+        },
+        refinement_work: 0,
+    })
+}
+
+impl HuffmanCodec<'_> {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
+        ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+    ))]
+    fn read_raw_bits(&mut self, count: u8) -> Result<u32, SymbolTextError> {
+        Ok(self.reader.read_bits(count)?)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
+        ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+    ))]
     fn decode_integer(&mut self, field: IntegerField) -> Result<EntropyInteger, SymbolTextError> {
         match field {
             IntegerField::WithinStripT => Ok(EntropyInteger::Value(i64::from(
@@ -3033,8 +3539,7 @@ impl EntropyDecoder for HuffmanEntropy<'_, '_> {
                 let table = self.tables.table_for(field).ok_or(
                     SymbolTextError::InvalidTableAssociation("no Huffman table bound for field"),
                 )?;
-                let mut reader = self.reader.borrow_mut();
-                match table.decode(&mut reader)? {
+                match table.decode(&mut self.reader)? {
                     HuffmanValue::Integer(value) => Ok(EntropyInteger::Value(i64::from(value))),
                     HuffmanValue::OutOfBand => Ok(EntropyInteger::OutOfBand),
                 }
@@ -3042,6 +3547,10 @@ impl EntropyDecoder for HuffmanEntropy<'_, '_> {
         }
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
+        ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+    ))]
     fn decode_symbol_id(&mut self, request: SymbolIdRequest) -> Result<u32, SymbolTextError> {
         // When a symbol-ID Huffman table has been prepared (T.88 7.4.3.1.7,
         // normal text-region decoding), decode through it. Otherwise this is
@@ -3049,8 +3558,7 @@ impl EntropyDecoder for HuffmanEntropy<'_, '_> {
         // (T.88 6.5.8.2.2), which T.88 specifies as a literal fixed-width
         // field of `code_length` bits, not a Huffman code.
         if let Some(table) = self.symbol_id_table.as_ref() {
-            let mut reader = self.reader.borrow_mut();
-            match table.decode(&mut reader)? {
+            match table.decode(&mut self.reader)? {
                 HuffmanValue::Integer(value) => u32::try_from(value)
                     .map_err(|_| SymbolTextError::InvalidEntropyValue("symbol ID")),
                 HuffmanValue::OutOfBand => Err(SymbolTextError::UnexpectedOutOfBand("symbol ID")),
@@ -3060,51 +3568,17 @@ impl EntropyDecoder for HuffmanEntropy<'_, '_> {
         }
     }
 
-    fn prepare_symbol_ids(
-        &mut self,
-        symbol_count: u32,
-        limits: &Limits,
-    ) -> Result<(), SymbolTextError> {
-        let mut reader = self.reader.borrow_mut();
-        self.symbol_id_table = Some(build_symbol_id_runcode_table(
-            &mut reader,
-            symbol_count,
-            limits,
-        )?);
-        Ok(())
-    }
-}
-
-/// Decodes generic-refinement bitmaps embedded in a Huffman-coded bitstream.
-///
-/// Per T.88 6.5.8.2.2 and 6.4.11, a Huffman-declared refinement bitmap is
-/// always arithmetically coded using a *fresh* arithmetic decoder bounded to
-/// exactly the declared byte count, located at the next byte boundary after
-/// the preceding Huffman-coded fields. The persistent `GR` probability
-/// contexts, however, are shared across every refinement bitmap decoded in
-/// one segment, matching the generic-refinement statistics lifetime used by
-/// the fully arithmetic path.
-struct HuffmanRefinement<'a, 'b> {
-    reader: &'b RefCell<BitReader<'a>>,
-    contexts: RefinementContexts,
-    cumulative_work: u64,
-}
-
-impl<'a, 'b> HuffmanRefinement<'a, 'b> {
-    fn new(
-        reader: &'b RefCell<BitReader<'a>>,
-        template: RefinementTemplate,
-        limits: &Limits,
-    ) -> Result<Self, SymbolTextError> {
-        Ok(Self {
-            reader,
-            contexts: RefinementContexts::new(template, limits)?,
-            cumulative_work: 0,
-        })
-    }
-}
-
-impl GenericRefinementDecoder for HuffmanRefinement<'_, '_> {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::huffman::huffman_spec::reader_valid(&old(self).reader),
+            crate::spec::bitmap::storage_valid(request.reference),
+        ensures
+            crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+            match out {
+                Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+                Err(_) => true,
+            },
+    ))]
     fn decode_refinement(
         &mut self,
         request: RefinementRequest<'_>,
@@ -3115,9 +3589,9 @@ impl GenericRefinementDecoder for HuffmanRefinement<'_, '_> {
             .ok_or(SymbolTextError::InvalidState(
                 "Huffman refinement bitmap is missing its declared byte size",
             ))?;
-        let mut reader = self.reader.borrow_mut();
-        byte_align(&mut reader)?;
-        let byte_offset = reader
+        byte_align(&mut self.reader)?;
+        let byte_offset = self
+            .reader
             .bit_position
             .checked_div(8)
             .ok_or(MalformedError::IntegerOverflow)?;
@@ -3125,19 +3599,22 @@ impl GenericRefinementDecoder for HuffmanRefinement<'_, '_> {
         let end = byte_offset
             .checked_add(size)
             .ok_or(MalformedError::IntegerOverflow)?;
-        let remaining = if byte_offset <= reader.bytes.len() {
-            reader.bytes.len() - byte_offset
+        let remaining = if byte_offset <= self.reader.bytes.len() {
+            self.reader.bytes.len() - byte_offset
         } else {
             0
         };
-        let slice = reader
-            .bytes
-            .get(byte_offset..end)
-            .ok_or(MalformedError::UnexpectedEof {
-                offset: u64::try_from(byte_offset).map_err(|_| MalformedError::IntegerOverflow)?,
-                needed: declared_size.into(),
-                remaining: u64::try_from(remaining).map_err(|_| MalformedError::IntegerOverflow)?,
-            })?;
+        let slice =
+            self.reader
+                .bytes
+                .get(byte_offset..end)
+                .ok_or(MalformedError::UnexpectedEof {
+                    offset: u64::try_from(byte_offset)
+                        .map_err(|_| MalformedError::IntegerOverflow)?,
+                    needed: declared_size.into(),
+                    remaining: u64::try_from(remaining)
+                        .map_err(|_| MalformedError::IntegerOverflow)?,
+                })?;
         let normalized = normalized_bounded_arithmetic(slice, limits)?;
 
         let adaptive = [
@@ -3160,21 +3637,113 @@ impl GenericRefinementDecoder for HuffmanRefinement<'_, '_> {
             reference_dx: request.geometry.reference_dx,
             reference_dy: request.geometry.reference_dy,
         };
-        let mut decoder = ArithmeticDecoder::new(normalized.as_ref())?;
+        let contexts = self
+            .refinement
+            .as_mut()
+            .ok_or(SymbolTextError::InvalidState(
+                "missing Huffman refinement contexts",
+            ))?;
+        let mut decoder = ArithmeticDecoder::new(normalized.bytes())?;
         let bitmap = decode_refinement_on(
             &mut decoder,
-            &mut self.contexts,
+            contexts,
             call,
             request.reference,
             parameters,
             limits,
-            &mut self.cumulative_work,
+            &mut self.refinement_work,
         )?;
         validate_bounded_arithmetic_marker(&decoder, normalized.len())?;
 
         let advanced_bits = end.checked_mul(8).ok_or(MalformedError::IntegerOverflow)?;
-        reader.bit_position = advanced_bits;
+        self.reader.bit_position = advanced_bits;
         Ok(bitmap)
+    }
+}
+
+impl<'a> SymbolCodec<'a> {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires symbol_text_spec::codec_valid(old(self)),
+        ensures match out {
+            Ok(_) => symbol_text_spec::codec_valid(final(self)),
+            Err(_) => true,
+        },
+    ))]
+    fn decode_integer(&mut self, field: IntegerField) -> Result<EntropyInteger, SymbolTextError> {
+        match self {
+            Self::Arithmetic(codec) => codec.decode_integer(field),
+            Self::Huffman(codec) => codec.decode_integer(field),
+            #[cfg(test)]
+            Self::Scripted(codec) => codec
+                .integers
+                .pop_front()
+                .ok_or(SymbolTextError::InvalidState("missing scripted integer")),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires symbol_text_spec::codec_valid(old(self)),
+        ensures match out {
+            Ok(_) => symbol_text_spec::codec_valid(final(self)),
+            Err(_) => true,
+        },
+    ))]
+    fn decode_symbol_id(&mut self, request: SymbolIdRequest) -> Result<u32, SymbolTextError> {
+        match self {
+            Self::Arithmetic(codec) => codec.decode_symbol_id(request),
+            Self::Huffman(codec) => codec.decode_symbol_id(request),
+            #[cfg(test)]
+            Self::Scripted(codec) => Ok(codec.symbol_id),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            symbol_text_spec::codec_valid(old(self)),
+            crate::spec::bitmap::storage_valid(request.reference),
+        ensures match out {
+            Ok(bitmap) =>
+                symbol_text_spec::codec_valid(final(self))
+                    && crate::spec::bitmap::storage_valid(&bitmap),
+            Err(_) => true,
+        },
+    ))]
+    fn decode_refinement(
+        &mut self,
+        request: RefinementRequest<'_>,
+        limits: &Limits,
+    ) -> Result<Bitmap, SymbolTextError> {
+        match self {
+            Self::Arithmetic(codec) => codec.decode_refinement(request, limits),
+            Self::Huffman(codec) => codec.decode_refinement(request, limits),
+            #[cfg(test)]
+            Self::Scripted(_) => Ok(Bitmap::blank(
+                request.geometry.width,
+                request.geometry.height,
+                limits,
+            )?),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires symbol_text_spec::codec_valid(old(self)),
+        ensures match out {
+            Ok(codec) =>
+                crate::huffman::huffman_spec::reader_valid(&codec.reader),
+            Err(_) => true,
+        },
+    ))]
+    fn huffman_mut(&mut self) -> Result<&mut HuffmanCodec<'a>, SymbolTextError> {
+        match self {
+            Self::Huffman(codec) => Ok(codec),
+            Self::Arithmetic(_) => Err(SymbolTextError::InvalidState(
+                "Huffman cursor requested from arithmetic state",
+            )),
+            #[cfg(test)]
+            Self::Scripted(_) => Err(SymbolTextError::InvalidState(
+                "Huffman cursor requested from scripted state",
+            )),
+        }
     }
 }
 
@@ -3474,7 +4043,15 @@ fn clone_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, SymbolTextEr
 /// Looks up a symbol by ID across the imported and already-decoded-new
 /// symbol collections, as used by T.88 6.5.8.2.2's single-instance
 /// refinement/aggregate procedure.
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::bitmaps_valid(new_symbols@),
+    ensures match out {
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+        Err(_) => true,
+    },
+))]
 fn symbol_by_id<'a>(
     imported: &'a [Bitmap],
     new_symbols: &'a [Bitmap],
@@ -3579,10 +4156,25 @@ fn log2_strip_size(strip_size: u8) -> u8 {
 /// width or height delta: the symbol's dimensions were already fixed by the
 /// enclosing height-class loop, so only the symbol ID and reference offset
 /// are decoded before invoking the shared generic-refinement callback.
-#[allow(clippy::too_many_arguments)]
-fn decode_dictionary_single_instance_refinement<E, R>(
-    entropy: &mut E,
-    refinement: &mut R,
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::codec_valid(old(codec)),
+        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::bitmaps_valid(new_symbols@),
+    ensures match out {
+        Ok(bitmap) =>
+            symbol_text_spec::codec_valid(final(codec))
+                && crate::spec::bitmap::storage_valid(&bitmap)
+                && crate::views::bitmap_width(&bitmap) == width
+                && crate::views::bitmap_height(&bitmap) == height
+                && symbol_text_spec::work_units(final(resources))
+                    == symbol_text_spec::work_units(old(resources)),
+        Err(_) => true,
+    },
+))]
+fn decode_dictionary_single_instance_refinement(
+    codec: &mut SymbolCodec<'_>,
     imported: &[Bitmap],
     new_symbols: &[Bitmap],
     code_length: u8,
@@ -3593,28 +4185,24 @@ fn decode_dictionary_single_instance_refinement<E, R>(
     huffman: bool,
     limits: &Limits,
     resources: &mut ResourceTracker,
-) -> Result<Bitmap, SymbolTextError>
-where
-    E: EntropyDecoder,
-    R: GenericRefinementDecoder,
-{
+) -> Result<Bitmap, SymbolTextError> {
     let available = imported
         .len()
         .checked_add(new_symbols.len())
         .and_then(|count| u32::try_from(count).ok())
         .ok_or(MalformedError::IntegerOverflow)?;
     let id = decode_checked_symbol_id(
-        entropy,
+        codec,
         SymbolIdRequest {
             available_symbols: available,
             code_length,
             huffman,
         },
     )?;
-    let reference_x = required_integer(entropy, IntegerField::RefinementX)?;
-    let reference_y = required_integer(entropy, IntegerField::RefinementY)?;
+    let reference_x = required_integer(codec, IntegerField::RefinementX)?;
+    let reference_y = required_integer(codec, IntegerField::RefinementY)?;
     let declared_size = if huffman {
-        let size = required_integer(entropy, IntegerField::RefinementSize)?;
+        let size = required_integer(codec, IntegerField::RefinementSize)?;
         Some(
             u32::try_from(size)
                 .map_err(|_| SymbolTextError::InvalidEntropyValue("refinement size"))?,
@@ -3631,16 +4219,14 @@ where
         reference_dx: i32::try_from(reference_x).map_err(|_| MalformedError::IntegerOverflow)?,
         reference_dy: i32::try_from(reference_y).map_err(|_| MalformedError::IntegerOverflow)?,
     };
-    let bitmap = refinement.decode_refinement(
-        RefinementRequest {
-            reference,
-            geometry,
-            template: refinement_template,
-            adaptive_pixels: refinement_adaptive,
-            declared_data_size: declared_size,
-        },
-        limits,
-    )?;
+    let request = RefinementRequest {
+        reference,
+        geometry,
+        template: refinement_template,
+        adaptive_pixels: refinement_adaptive,
+        declared_data_size: declared_size,
+    };
+    let bitmap = codec.decode_refinement(request, limits)?;
     if bitmap.width() != width || bitmap.height() != height {
         return Err(SymbolTextError::InvalidDimensions);
     }
@@ -3651,18 +4237,31 @@ where
 /// text-region segments and the nested multiple-instance aggregate
 /// procedure invoked from a symbol dictionary (T.88 6.5.8.2.1).
 ///
-/// `code_length` and `table_symbol_count` are the *fixed* IAID bit width and
-/// Huffman symbol-ID table size for the whole enclosing segment (the
-/// declared total symbol count); `available_symbols` is the (possibly
+/// `code_length` is the fixed IAID bit width for the whole enclosing segment;
+/// `available_symbols` is the (possibly
 /// smaller, for a nested aggregate call still in progress) slice used both
 /// to validate decoded IDs and to look up referenced bitmaps.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-fn decode_text_region_body<E, R>(
-    entropy: &mut E,
-    refinement: &mut R,
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::codec_valid(old(codec)),
+        symbol_text_spec::bitmap_refs_valid(available_symbols@),
+        symbol_text_spec::work_units(old(resources)) <= limits.max_work_units,
+    ensures match out {
+        Ok(bitmap) =>
+            symbol_text_spec::codec_valid(final(codec))
+                && crate::spec::bitmap::storage_valid(&bitmap)
+                && crate::views::bitmap_width(&bitmap) == width
+                && crate::views::bitmap_height(&bitmap) == height
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units,
+        Err(_) => true,
+    },
+))]
+fn decode_text_region_body(
+    codec: &mut SymbolCodec<'_>,
     available_symbols: &[&Bitmap],
     code_length: u8,
-    table_symbol_count: u32,
     width: u32,
     height: u32,
     number_of_instances: u32,
@@ -3670,41 +4269,79 @@ fn decode_text_region_body<E, R>(
     refinement_adaptive: [(i8, i8); 2],
     limits: &Limits,
     resources: &mut ResourceTracker,
-) -> Result<Bitmap, SymbolTextError>
-where
-    E: EntropyDecoder,
-    R: GenericRefinementDecoder,
-{
-    entropy.prepare_symbol_ids(table_symbol_count, limits)?;
+) -> Result<Bitmap, SymbolTextError> {
     resources.charge_bitmap(width, height, limits)?;
     let mut bitmap = Bitmap::filled(width, height, config.default_pixel, limits)?;
 
-    let initial_strip = required_integer(entropy, IntegerField::StripDelta)?;
+    let initial_strip = required_integer(codec, IntegerField::StripDelta)?;
     let mut state = TextRegionState::new(*config, number_of_instances, initial_strip, limits)?;
 
     let available_count =
         u32::try_from(available_symbols.len()).map_err(|_| MalformedError::IntegerOverflow)?;
 
     let mut decoded = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            decoded <= number_of_instances,
+            state.decoded_instances == decoded,
+            state.strip.is_none(),
+            symbol_text_spec::text_state_valid(&state),
+            symbol_text_spec::codec_valid(codec),
+            symbol_text_spec::bitmap_refs_valid(available_symbols@),
+            crate::spec::bitmap::storage_valid(&bitmap),
+            crate::views::bitmap_width(&bitmap) == width,
+            crate::views::bitmap_height(&bitmap) == height,
+            symbol_text_spec::work_units(resources) <= limits.max_work_units,
+        decreases number_of_instances - decoded,
+    ))]
     while decoded < number_of_instances {
-        let strip_delta = required_integer(entropy, IntegerField::StripDelta)?;
-        let first_s_delta = required_integer(entropy, IntegerField::FirstS)?;
+        let strip_start = decoded;
+        let strip_delta = required_integer(codec, IntegerField::StripDelta)?;
+        let first_s_delta = required_integer(codec, IntegerField::FirstS)?;
         state.begin_strip(strip_delta, first_s_delta)?;
         let mut first = true;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                decoded <= number_of_instances,
+                strip_start <= decoded,
+                strip_start < number_of_instances,
+                first ==> decoded == strip_start,
+                !first ==> decoded > strip_start,
+                state.decoded_instances == decoded,
+                state.strip.is_some(),
+                symbol_text_spec::text_state_valid(&state),
+                symbol_text_spec::codec_valid(codec),
+                symbol_text_spec::bitmap_refs_valid(available_symbols@),
+                crate::spec::bitmap::storage_valid(&bitmap),
+                crate::views::bitmap_width(&bitmap) == width,
+                crate::views::bitmap_height(&bitmap) == height,
+                symbol_text_spec::work_units(resources) <= limits.max_work_units,
+            decreases number_of_instances - decoded,
+        ))]
         loop {
             if decoded >= number_of_instances {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    assert(decoded > strip_start);
+                }
                 break;
             }
             let delta_s = if first {
                 None
             } else {
-                match entropy.decode_integer(IntegerField::SubsequentS)? {
+                match codec.decode_integer(IntegerField::SubsequentS)? {
                     EntropyInteger::Value(value) => Some(value),
-                    EntropyInteger::OutOfBand => break,
+                    EntropyInteger::OutOfBand => {
+                        #[cfg(verus_keep_ghost)]
+                        proof! {
+                            assert(decoded > strip_start);
+                        }
+                        break;
+                    }
                 }
             };
             let within_strip_t = if config.strip_size > 1 {
-                match entropy.decode_integer(IntegerField::WithinStripT)? {
+                match codec.decode_integer(IntegerField::WithinStripT)? {
                     EntropyInteger::Value(value) => u8::try_from(value).map_err(|_| {
                         SymbolTextError::InvalidEntropyValue("within-strip T coordinate")
                     })?,
@@ -3718,7 +4355,7 @@ where
                 0
             };
             let symbol_id = decode_checked_symbol_id(
-                entropy,
+                codec,
                 SymbolIdRequest {
                     available_symbols: available_count,
                     code_length,
@@ -3734,7 +4371,7 @@ where
 
             let refined_storage;
             let placed_bitmap: &Bitmap = if config.refinement {
-                let indicator = match entropy.decode_integer(IntegerField::RefinementIndicator)? {
+                let indicator = match codec.decode_integer(IntegerField::RefinementIndicator)? {
                     EntropyInteger::Value(value) => value,
                     EntropyInteger::OutOfBand => {
                         return Err(SymbolTextError::UnexpectedOutOfBand("refinement indicator"))
@@ -3742,8 +4379,7 @@ where
                 };
                 if indicator != 0 {
                     refined_storage = Some(decode_refined_bitmap(
-                        entropy,
-                        refinement,
+                        codec,
                         base_symbol,
                         config.refinement_template,
                         refinement_adaptive,
@@ -3792,6 +4428,9 @@ where
                 .ok_or(MalformedError::IntegerOverflow)?;
             first = false;
         }
+        if decoded == strip_start {
+            return Err(SymbolTextError::InvalidState("empty text strip"));
+        }
         state.end_strip()?;
     }
     state.finish()?;
@@ -3812,6 +4451,7 @@ pub(crate) struct DictionaryContexts {
 }
 
 /// Complete input to one symbol-dictionary segment payload decode.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct SymbolDictionaryInput<'a> {
     pub(crate) payload: &'a [u8],
     pub(crate) imported_symbols: &'a [Bitmap],
@@ -3821,42 +4461,54 @@ pub(crate) struct SymbolDictionaryInput<'a> {
 }
 
 /// Complete output of one symbol-dictionary segment payload decode.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct SymbolDictionaryOutput {
     pub(crate) exported_symbols: Vec<Bitmap>,
     pub(crate) retained_contexts: Option<DictionaryContexts>,
     pub(crate) consumed_bytes: usize,
 }
 
-#[allow(clippy::too_many_arguments)]
-fn decode_one_new_symbol<E, R>(
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::codec_valid(old(codec)),
+        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::bitmaps_valid(new_symbols@),
+        symbol_text_spec::work_units(old(resources)) <= limits.max_work_units,
+        header.adaptive_count <= 4,
+    ensures match out {
+        Ok(bitmap) =>
+            symbol_text_spec::codec_valid(final(codec))
+                && crate::spec::bitmap::storage_valid(&bitmap)
+                && crate::views::bitmap_width(&bitmap) == width
+                && crate::views::bitmap_height(&bitmap) == height
+                && symbol_text_spec::work_units(final(resources))
+                    <= limits.max_work_units
+                && symbol_text_spec::work_units(final(resources))
+                    >= symbol_text_spec::work_units(old(resources)),
+        Err(_) => true,
+    },
+))]
+fn decode_one_new_symbol(
     header: &SymbolDictionaryHeader,
-    entropy: &mut E,
-    refinement: Option<&mut R>,
+    codec: &mut SymbolCodec<'_>,
     imported: &[Bitmap],
     new_symbols: &[Bitmap],
     generic_contexts: Option<&mut GenericContexts>,
-    generic_decoder: Option<&RefCell<ArithmeticDecoder<'_>>>,
     generic_work: &mut u64,
+    aggregation_instances: Option<u32>,
     width: u32,
     height: u32,
     code_length: u8,
-    total_symbols: u32,
     refinement_adaptive: [(i8, i8); 2],
     limits: &Limits,
     resources: &mut ResourceTracker,
-) -> Result<Bitmap, SymbolTextError>
-where
-    E: EntropyDecoder,
-    R: GenericRefinementDecoder,
-{
+) -> Result<Bitmap, SymbolTextError> {
     let config = header.config;
     if config.refinement_aggregation {
-        let refinement = refinement.ok_or(SymbolTextError::InvalidState(
-            "missing refinement adapter for an aggregate dictionary",
+        let instances = aggregation_instances.ok_or(SymbolTextError::InvalidState(
+            "missing aggregation-instance count",
         ))?;
-        let instances = required_integer(entropy, IntegerField::AggregationInstances)?;
-        let instances = u32::try_from(instances)
-            .map_err(|_| SymbolTextError::InvalidEntropyValue("aggregation instances"))?;
         if instances == 0 {
             return Err(SymbolTextError::InvalidCount(
                 "zero-instance aggregate symbol",
@@ -3875,8 +4527,32 @@ where
             symbol_refs
                 .try_reserve(capacity)
                 .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-            symbol_refs.extend(imported.iter());
-            symbol_refs.extend(new_symbols.iter());
+            let mut imported_index = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    imported_index <= imported@.len(),
+                    symbol_refs@.len() == imported_index,
+                    symbol_text_spec::bitmaps_valid(imported@),
+                    symbol_text_spec::bitmap_refs_valid(symbol_refs@),
+                decreases imported@.len() - imported_index,
+            ))]
+            while imported_index < imported.len() {
+                symbol_refs.push(&imported[imported_index]);
+                imported_index += 1;
+            }
+            let mut new_index = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    new_index <= new_symbols@.len(),
+                    symbol_refs@.len() == imported@.len() + new_index,
+                    symbol_text_spec::bitmaps_valid(new_symbols@),
+                    symbol_text_spec::bitmap_refs_valid(symbol_refs@),
+                decreases new_symbols@.len() - new_index,
+            ))]
+            while new_index < new_symbols.len() {
+                symbol_refs.push(&new_symbols[new_index]);
+                new_index += 1;
+            }
             let nested_config = TextRegionConfig {
                 huffman: config.huffman,
                 refinement: true,
@@ -3889,12 +4565,11 @@ where
                 refinement_template: config.refinement_template,
                 huffman_choices: None,
             };
-            decode_text_region_body(
-                entropy,
-                refinement,
+            let work_before = resources.work_units;
+            let bitmap = decode_text_region_body(
+                codec,
                 &symbol_refs,
                 code_length,
-                total_symbols,
                 width,
                 height,
                 instances,
@@ -3902,11 +4577,21 @@ where
                 refinement_adaptive,
                 limits,
                 resources,
-            )
+            )?;
+            if resources.work_units < work_before {
+                return Err(SymbolTextError::InvalidState(
+                    "resource work counter decreased",
+                ));
+            }
+            Ok(bitmap)
         } else {
+            if aggregation_instances.is_some() {
+                return Err(SymbolTextError::InvalidState(
+                    "aggregation count on direct-coded symbol",
+                ));
+            }
             decode_dictionary_single_instance_refinement(
-                entropy,
-                refinement,
+                codec,
                 imported,
                 new_symbols,
                 code_length,
@@ -3924,9 +4609,6 @@ where
         let contexts = generic_contexts.ok_or(SymbolTextError::InvalidState(
             "missing generic contexts for a direct-coded dictionary",
         ))?;
-        let decoder_cell = generic_decoder.ok_or(SymbolTextError::InvalidState(
-            "missing arithmetic decoder for a direct-coded dictionary",
-        ))?;
         let mut full_adaptive = [TemplateOffset::new(0, 0); 12];
         full_adaptive[..usize::from(header.adaptive_count)]
             .copy_from_slice(&header.adaptive[..usize::from(header.adaptive_count)]);
@@ -3937,16 +4619,80 @@ where
             typical_prediction: false,
             skip: None,
         };
-        let mut decoder = decoder_cell.borrow_mut();
-        Ok(decode_generic_on(
-            &mut decoder,
-            contexts,
-            call,
-            height,
-            limits,
-            generic_work,
-        )?)
+        let bitmap = match codec {
+            SymbolCodec::Arithmetic(codec) => {
+                codec.decode_generic(contexts, call, height, limits, generic_work)
+            }
+            SymbolCodec::Huffman(_) => Err(SymbolTextError::InvalidState(
+                "direct dictionary bitmap requires arithmetic state",
+            )),
+            #[cfg(test)]
+            SymbolCodec::Scripted(_) => Err(SymbolTextError::InvalidState(
+                "direct dictionary bitmap requires arithmetic state",
+            )),
+        }?;
+        if bitmap.width() != width || bitmap.height() != height {
+            return Err(SymbolTextError::InvalidDimensions);
+        }
+        Ok(bitmap)
     }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::huffman::huffman_spec::reader_valid(old(reader)),
+    ensures
+        crate::huffman::huffman_spec::reader_valid(final(reader)),
+        match out {
+            Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+            Err(_) => true,
+        },
+))]
+fn decode_collective_bitmap(
+    reader: &mut BitReader<'_>,
+    bitmap_size: u32,
+    width: u32,
+    height: u32,
+    limits: &Limits,
+) -> Result<Bitmap, SymbolTextError> {
+    byte_align(reader)?;
+    let byte_offset = reader
+        .bit_position
+        .checked_div(8)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    let length = if bitmap_size == 0 {
+        (u64::from(width)
+            .checked_add(7)
+            .ok_or(MalformedError::IntegerOverflow)?
+            / 8)
+        .checked_mul(u64::from(height))
+        .ok_or(MalformedError::IntegerOverflow)?
+    } else {
+        u64::from(bitmap_size)
+    };
+    let length_usize = usize::try_from(length).map_err(|_| MalformedError::IntegerOverflow)?;
+    let end = byte_offset
+        .checked_add(length_usize)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    let remaining = if byte_offset <= reader.bytes.len() {
+        reader.bytes.len() - byte_offset
+    } else {
+        0
+    };
+    let source = reader
+        .bytes
+        .get(byte_offset..end)
+        .ok_or(MalformedError::UnexpectedEof {
+            offset: u64::try_from(byte_offset).map_err(|_| MalformedError::IntegerOverflow)?,
+            needed: length,
+            remaining: u64::try_from(remaining).map_err(|_| MalformedError::IntegerOverflow)?,
+        })?;
+    let bitmap = if bitmap_size == 0 {
+        bitmap_from_packed_bytes(width, height, source, limits)?
+    } else {
+        decode_mmr(source, width, height, limits, EofbPolicy::Optional)?
+    };
+    reader.bit_position = end.checked_mul(8).ok_or(MalformedError::IntegerOverflow)?;
+    Ok(bitmap)
 }
 
 /// `(new/exported symbols, retained generic contexts, retained refinement
@@ -3962,6 +4708,19 @@ type ArithmeticDictionaryResult = Result<
 >;
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::bitmaps_valid(imported@),
+        header.adaptive_count <= 4,
+        total_symbols as nat
+            == imported@.len() + header.new_symbols as nat,
+    ensures match out {
+        Ok((exported, _, _, consumed)) =>
+            symbol_text_spec::bitmaps_valid(exported@)
+                && consumed == body@.len(),
+        Err(_) => true,
+    },
+))]
 fn decode_symbol_dictionary_arithmetic(
     header: &SymbolDictionaryHeader,
     imported: &[Bitmap],
@@ -3974,9 +4733,19 @@ fn decode_symbol_dictionary_arithmetic(
 ) -> ArithmeticDictionaryResult {
     let config = header.config;
     let normalized = normalized_bounded_arithmetic(body, limits)?;
-    let decoder_cell = RefCell::new(ArithmeticDecoder::new(normalized.as_ref())?);
-    let mut entropy = ArithmeticEntropy::new(&decoder_cell, code_length, limits)?;
-    let mut resources = ResourceTracker::default();
+    let refinement_template = config
+        .refinement_aggregation
+        .then(|| refinement_template_from_u8(config.refinement_template));
+    let mut codec = SymbolCodec::Arithmetic(new_arithmetic_codec(
+        normalized.bytes(),
+        code_length,
+        refinement_template,
+        limits,
+    )?);
+    let mut resources = ResourceTracker {
+        work_units: 0,
+        decoded_bitmap_bytes: 0,
+    };
 
     let mut generic_contexts = if config.refinement_aggregation {
         None
@@ -3990,19 +4759,22 @@ fn decode_symbol_dictionary_arithmetic(
     };
     let mut generic_work = 0_u64;
 
-    let mut refinement = if config.refinement_aggregation {
-        let mut refine = ArithmeticRefinement::new(
-            &decoder_cell,
-            refinement_template_from_u8(config.refinement_template),
-            limits,
-        )?;
+    if config.refinement_aggregation {
         if let Some(used) = used_contexts.and_then(|used| used.refinement.as_ref()) {
-            refine.contexts.restore(used, limits)?;
+            let SymbolCodec::Arithmetic(arithmetic) = &mut codec else {
+                return Err(SymbolTextError::InvalidState(
+                    "arithmetic dictionary has non-arithmetic state",
+                ));
+            };
+            let contexts = arithmetic
+                .refinement
+                .as_mut()
+                .ok_or(SymbolTextError::InvalidState(
+                    "missing arithmetic refinement contexts",
+                ))?;
+            contexts.restore(used, limits)?;
         }
-        Some(refine)
-    } else {
-        None
-    };
+    }
 
     let new_symbol_capacity =
         usize::try_from(header.new_symbols).map_err(|_| MalformedError::IntegerOverflow)?;
@@ -4014,32 +4786,78 @@ fn decode_symbol_dictionary_arithmetic(
         })?;
 
     let mut class_state = DictionaryClassState::new(header.new_symbols, limits)?;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            new_symbols@.len() <= header.new_symbols as nat,
+            new_symbol_capacity == header.new_symbols as nat,
+            class_state.decoded_symbols as nat == new_symbols@.len(),
+            class_state.declared_new_symbols == header.new_symbols,
+            !class_state.class_open,
+            header.adaptive_count <= 4,
+            symbol_text_spec::dictionary_state_valid(&class_state),
+            symbol_text_spec::bitmaps_valid(imported@),
+            symbol_text_spec::bitmaps_valid(new_symbols@),
+            symbol_text_spec::codec_valid(&codec),
+            symbol_text_spec::work_units(&resources) <= limits.max_work_units,
+        decreases limits.max_work_units - symbol_text_spec::work_units(&resources),
+    ))]
     while u32::try_from(new_symbols.len()).map_err(|_| MalformedError::IntegerOverflow)?
         < header.new_symbols
     {
-        let height_delta = required_integer(&mut entropy, IntegerField::HeightDelta)?;
+        #[cfg_attr(not(verus_keep_ghost), allow(unused_variables))]
+        let class_start_work = resources.work_units;
+        let height_delta = required_integer(&mut codec, IntegerField::HeightDelta)?;
         class_state.begin_height_class(height_delta, limits, &mut resources)?;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                new_symbols@.len() <= header.new_symbols as nat,
+                new_symbol_capacity == header.new_symbols as nat,
+                class_state.decoded_symbols as nat == new_symbols@.len(),
+                class_state.declared_new_symbols == header.new_symbols,
+                class_state.class_open,
+                header.adaptive_count <= 4,
+                symbol_text_spec::dictionary_state_valid(&class_state),
+                symbol_text_spec::bitmaps_valid(imported@),
+                symbol_text_spec::bitmaps_valid(new_symbols@),
+                symbol_text_spec::codec_valid(&codec),
+                symbol_text_spec::work_units(&resources)
+                    <= limits.max_work_units,
+                resources.work_units > class_start_work,
+            decreases limits.max_work_units
+                - symbol_text_spec::work_units(&resources),
+        ))]
         while let EntropyInteger::Value(width_delta) =
-            entropy.decode_integer(IntegerField::WidthDelta)?
+            codec.decode_integer(IntegerField::WidthDelta)?
         {
             let (width, height) = class_state.add_symbol(width_delta, limits, &mut resources)?;
+            let aggregation_instances = if config.refinement_aggregation {
+                let instances = required_integer(&mut codec, IntegerField::AggregationInstances)?;
+                Some(
+                    u32::try_from(instances).map_err(|_| {
+                        SymbolTextError::InvalidEntropyValue("aggregation instances")
+                    })?,
+                )
+            } else {
+                None
+            };
             let bitmap = decode_one_new_symbol(
                 header,
-                &mut entropy,
-                refinement.as_mut(),
+                &mut codec,
                 imported,
                 &new_symbols,
                 generic_contexts.as_mut(),
-                Some(&decoder_cell),
                 &mut generic_work,
+                aggregation_instances,
                 width,
                 height,
                 code_length,
-                total_symbols,
                 refinement_adaptive,
                 limits,
                 &mut resources,
             )?;
+            if new_symbols.len() >= new_symbol_capacity {
+                return Err(SymbolTextError::InvalidCount("too many new symbols"));
+            }
             new_symbols.push(bitmap);
         }
         class_state.finish_height_class()?;
@@ -4047,26 +4865,28 @@ fn decode_symbol_dictionary_arithmetic(
     class_state.finish()?;
 
     let exported = decode_export_runs(
+        &mut codec,
         total_symbols,
         header.exported_symbols,
         limits,
         &mut resources,
-        || entropy.decode_integer(IntegerField::ExportRun),
     )?;
 
-    {
-        let decoder = decoder_cell.borrow();
-        validate_bounded_arithmetic_marker(&decoder, normalized.len())?;
-    }
+    let SymbolCodec::Arithmetic(arithmetic) = &codec else {
+        return Err(SymbolTextError::InvalidState(
+            "arithmetic dictionary has non-arithmetic state",
+        ));
+    };
+    validate_bounded_arithmetic_marker(&arithmetic.decoder, normalized.len())?;
 
-    let retained_generic = generic_contexts
-        .as_ref()
-        .map(|contexts| contexts.try_snapshot(limits))
-        .transpose()?;
-    let retained_refinement = refinement
-        .as_ref()
-        .map(|refine| refine.contexts.try_snapshot(limits))
-        .transpose()?;
+    let retained_generic = match generic_contexts.as_ref() {
+        Some(contexts) => Some(contexts.try_snapshot(limits)?),
+        None => None,
+    };
+    let retained_refinement = match arithmetic.refinement.as_ref() {
+        Some(contexts) => Some(contexts.try_snapshot(limits)?),
+        None => None,
+    };
 
     let exported_symbols = assemble_exported_symbols(imported, &new_symbols, &exported, limits)?;
     Ok((
@@ -4078,6 +4898,19 @@ fn decode_symbol_dictionary_arithmetic(
 }
 
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::bitmaps_valid(imported@),
+        header.adaptive_count <= 4,
+        total_symbols as nat
+            == imported@.len() + header.new_symbols as nat,
+    ensures match out {
+        Ok((exported, _, consumed)) =>
+            symbol_text_spec::bitmaps_valid(exported@)
+                && consumed == body@.len(),
+        Err(_) => true,
+    },
+))]
 fn decode_symbol_dictionary_huffman(
     header: &SymbolDictionaryHeader,
     imported: &[Bitmap],
@@ -4091,19 +4924,21 @@ fn decode_symbol_dictionary_huffman(
     let config = header.config;
     let custom_wrapped = wrap_custom_tables(custom_tables)?;
     let bindings = associate_dictionary_tables(&config, &custom_wrapped)?;
-    let tables = HuffmanFieldTables::for_dictionary(&config, &bindings, limits)?;
-    let reader_cell = RefCell::new(bit_reader(body));
-    let mut entropy = HuffmanEntropy::new(&reader_cell, tables, 0);
-    let mut resources = ResourceTracker::default();
-
-    let mut refinement = if config.refinement_aggregation {
-        Some(HuffmanRefinement::new(
-            &reader_cell,
-            refinement_template_from_u8(config.refinement_template),
-            limits,
-        )?)
-    } else {
-        None
+    let choices = select_dictionary_tables(&config, &bindings)?;
+    let tables = materialize_huffman_tables!(HuffmanChoiceSet::Dictionary(choices), limits)?;
+    let refinement_template = config
+        .refinement_aggregation
+        .then(|| refinement_template_from_u8(config.refinement_template));
+    let mut codec = SymbolCodec::Huffman(new_huffman_codec(
+        body,
+        tables,
+        0,
+        refinement_template,
+        limits,
+    )?);
+    let mut resources = ResourceTracker {
+        work_units: 0,
+        decoded_bitmap_bytes: 0,
     };
 
     let new_symbol_capacity =
@@ -4116,35 +4951,86 @@ fn decode_symbol_dictionary_huffman(
         })?;
 
     let mut class_state = DictionaryClassState::new(header.new_symbols, limits)?;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            new_symbols@.len() <= header.new_symbols as nat,
+            new_symbol_capacity == header.new_symbols as nat,
+            class_state.decoded_symbols as nat == new_symbols@.len(),
+            class_state.declared_new_symbols == header.new_symbols,
+            !class_state.class_open,
+            header.adaptive_count <= 4,
+            symbol_text_spec::dictionary_state_valid(&class_state),
+            symbol_text_spec::bitmaps_valid(imported@),
+            symbol_text_spec::bitmaps_valid(new_symbols@),
+            symbol_text_spec::codec_valid(&codec),
+            symbol_text_spec::work_units(&resources) <= limits.max_work_units,
+        decreases limits.max_work_units - symbol_text_spec::work_units(&resources),
+    ))]
     while u32::try_from(new_symbols.len()).map_err(|_| MalformedError::IntegerOverflow)?
         < header.new_symbols
     {
-        let height_delta = required_integer(&mut entropy, IntegerField::HeightDelta)?;
+        #[cfg_attr(not(verus_keep_ghost), allow(unused_variables))]
+        let class_start_work = resources.work_units;
+        let height_delta = required_integer(&mut codec, IntegerField::HeightDelta)?;
         let height = class_state.begin_height_class(height_delta, limits, &mut resources)?;
 
         if config.refinement_aggregation {
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    new_symbols@.len() <= header.new_symbols as nat,
+                    new_symbol_capacity == header.new_symbols as nat,
+                    class_state.decoded_symbols as nat == new_symbols@.len(),
+                    class_state.declared_new_symbols == header.new_symbols,
+                    class_state.class_open,
+                    header.adaptive_count <= 4,
+                    symbol_text_spec::dictionary_state_valid(&class_state),
+                    symbol_text_spec::bitmaps_valid(imported@),
+                    symbol_text_spec::bitmaps_valid(new_symbols@),
+                    symbol_text_spec::codec_valid(&codec),
+                    symbol_text_spec::work_units(&resources)
+                        <= limits.max_work_units,
+                    resources.work_units > class_start_work,
+                decreases limits.max_work_units
+                    - symbol_text_spec::work_units(&resources),
+            ))]
             while let EntropyInteger::Value(width_delta) =
-                entropy.decode_integer(IntegerField::WidthDelta)?
+                codec.decode_integer(IntegerField::WidthDelta)?
             {
                 let (width, height) =
                     class_state.add_symbol(width_delta, limits, &mut resources)?;
+                let instances = required_integer(&mut codec, IntegerField::AggregationInstances)?;
+                let instances = u32::try_from(instances)
+                    .map_err(|_| SymbolTextError::InvalidEntropyValue("aggregation instances"))?;
+                if instances > 1 {
+                    let SymbolCodec::Huffman(huffman) = &mut codec else {
+                        return Err(SymbolTextError::InvalidState(
+                            "Huffman dictionary has non-Huffman state",
+                        ));
+                    };
+                    prepare_symbol_ids!(huffman, total_symbols, limits)?;
+                    #[cfg(verus_keep_ghost)]
+                    proof! {
+                        reveal(symbol_text_spec::codec_valid);
+                    }
+                }
                 let bitmap = decode_one_new_symbol(
                     header,
-                    &mut entropy,
-                    refinement.as_mut(),
+                    &mut codec,
                     imported,
                     &new_symbols,
                     None,
-                    None,
                     &mut 0,
+                    Some(instances),
                     width,
                     height,
                     code_length,
-                    total_symbols,
                     refinement_adaptive,
                     limits,
                     &mut resources,
                 )?;
+                if new_symbols.len() >= new_symbol_capacity {
+                    return Err(SymbolTextError::InvalidCount("too many new symbols"));
+                }
                 new_symbols.push(bitmap);
             }
         } else {
@@ -4167,18 +5053,44 @@ fn decode_symbol_dictionary_huffman(
                 .map_err(|_| DecodeError::Allocation {
                     requested_bytes: requested_width_bytes,
                 })?;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    widths@.len() <= remaining,
+                    new_symbols@.len() + widths@.len()
+                        == class_state.decoded_symbols as nat,
+                    class_state.declared_new_symbols == header.new_symbols,
+                    class_state.decoded_symbols <= class_state.declared_new_symbols,
+                    class_state.class_open,
+                    symbol_text_spec::dictionary_state_valid(&class_state),
+                    symbol_text_spec::work_units(&resources)
+                        <= limits.max_work_units,
+                    resources.work_units > class_start_work,
+                    symbol_text_spec::codec_valid(&codec),
+                decreases limits.max_work_units
+                    - symbol_text_spec::work_units(&resources),
+            ))]
             while let EntropyInteger::Value(width_delta) =
-                entropy.decode_integer(IntegerField::WidthDelta)?
+                codec.decode_integer(IntegerField::WidthDelta)?
             {
                 let (width, _) = class_state.add_symbol(width_delta, limits, &mut resources)?;
+                if widths.len() >= remaining {
+                    return Err(SymbolTextError::InvalidCount("too many new symbols"));
+                }
                 widths.push(width);
             }
-            let total_width: u32 = widths
-                .iter()
-                .copied()
-                .try_fold(0_u32, u32::checked_add)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let bitmap_size = match entropy.decode_integer(IntegerField::DictionaryBitmapSize)? {
+            let mut total_width = 0_u32;
+            let mut width_index = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant width_index <= widths@.len(),
+                decreases widths@.len() - width_index,
+            ))]
+            while width_index < widths.len() {
+                total_width = total_width
+                    .checked_add(widths[width_index])
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                width_index += 1;
+            }
+            let bitmap_size = match codec.decode_integer(IntegerField::DictionaryBitmapSize)? {
                 EntropyInteger::Value(value) => u32::try_from(value)
                     .map_err(|_| SymbolTextError::InvalidEntropyValue("bitmap size"))?,
                 EntropyInteger::OutOfBand => {
@@ -4187,90 +5099,53 @@ fn decode_symbol_dictionary_huffman(
                     ))
                 }
             };
-            {
-                let mut reader = reader_cell.borrow_mut();
-                byte_align(&mut reader)?;
-            }
-            let collective = if bitmap_size == 0 {
-                let mut reader = reader_cell.borrow_mut();
-                let byte_offset = reader
-                    .bit_position
-                    .checked_div(8)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let stride = u64::from(total_width)
-                    .checked_add(7)
-                    .ok_or(MalformedError::IntegerOverflow)?
-                    / 8;
-                let length = stride
-                    .checked_mul(u64::from(height))
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let length_usize =
-                    usize::try_from(length).map_err(|_| MalformedError::IntegerOverflow)?;
-                let end = byte_offset
-                    .checked_add(length_usize)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let remaining = if byte_offset <= reader.bytes.len() {
-                    reader.bytes.len() - byte_offset
-                } else {
-                    0
-                };
-                let source =
-                    reader
-                        .bytes
-                        .get(byte_offset..end)
-                        .ok_or(MalformedError::UnexpectedEof {
-                            offset: u64::try_from(byte_offset)
-                                .map_err(|_| MalformedError::IntegerOverflow)?,
-                            needed: length,
-                            remaining: u64::try_from(remaining)
-                                .map_err(|_| MalformedError::IntegerOverflow)?,
-                        })?;
-                let bitmap = bitmap_from_packed_bytes(total_width, height, source, limits)?;
-                reader.bit_position = end.checked_mul(8).ok_or(MalformedError::IntegerOverflow)?;
-                bitmap
-            } else {
-                let mut reader = reader_cell.borrow_mut();
-                let byte_offset = reader
-                    .bit_position
-                    .checked_div(8)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let size =
-                    usize::try_from(bitmap_size).map_err(|_| MalformedError::IntegerOverflow)?;
-                let end = byte_offset
-                    .checked_add(size)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let remaining = if byte_offset <= reader.bytes.len() {
-                    reader.bytes.len() - byte_offset
-                } else {
-                    0
-                };
-                let source =
-                    reader
-                        .bytes
-                        .get(byte_offset..end)
-                        .ok_or(MalformedError::UnexpectedEof {
-                            offset: u64::try_from(byte_offset)
-                                .map_err(|_| MalformedError::IntegerOverflow)?,
-                            needed: bitmap_size.into(),
-                            remaining: u64::try_from(remaining)
-                                .map_err(|_| MalformedError::IntegerOverflow)?,
-                        })?;
-                let bitmap = decode_mmr(source, total_width, height, limits, EofbPolicy::Optional)?;
-                reader.bit_position = end.checked_mul(8).ok_or(MalformedError::IntegerOverflow)?;
-                bitmap
+            let SymbolCodec::Huffman(huffman) = &mut codec else {
+                return Err(SymbolTextError::InvalidState(
+                    "Huffman dictionary has non-Huffman state",
+                ));
             };
+            let collective = decode_collective_bitmap(
+                &mut huffman.reader,
+                bitmap_size,
+                total_width,
+                height,
+                limits,
+            )?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                reveal(symbol_text_spec::codec_valid);
+            }
             resources.charge_bitmap(total_width, height, limits)?;
 
             if widths.len() == 1 {
+                if new_symbols.len() >= new_symbol_capacity {
+                    return Err(SymbolTextError::InvalidCount("too many new symbols"));
+                }
                 new_symbols.push(collective);
             } else {
                 let mut x_start = 0_u32;
-                for width in widths {
+                #[cfg_attr(not(verus_keep_ghost), allow(unused_variables))]
+                let symbols_before = new_symbols.len();
+                let mut crop_index = 0_usize;
+                #[cfg_attr(verus_keep_ghost, verus_spec(
+                    invariant
+                        crop_index <= widths@.len(),
+                        new_symbols@.len() == symbols_before + crop_index,
+                        symbol_text_spec::bitmaps_valid(new_symbols@),
+                        crate::spec::bitmap::storage_valid(&collective),
+                    decreases widths@.len() - crop_index,
+                ))]
+                while crop_index < widths.len() {
+                    let width = widths[crop_index];
                     let cropped = crop_bitmap_columns(&collective, x_start, width, limits)?;
+                    if new_symbols.len() >= new_symbol_capacity {
+                        return Err(SymbolTextError::InvalidCount("too many new symbols"));
+                    }
                     new_symbols.push(cropped);
                     x_start = x_start
                         .checked_add(width)
                         .ok_or(MalformedError::IntegerOverflow)?;
+                    crop_index += 1;
                 }
             }
         }
@@ -4279,42 +5154,60 @@ fn decode_symbol_dictionary_huffman(
     class_state.finish()?;
 
     let exported = decode_export_runs(
+        &mut codec,
         total_symbols,
         header.exported_symbols,
         limits,
         &mut resources,
-        || entropy.decode_integer(IntegerField::ExportRun),
     )?;
 
-    let consumed_within_body = {
-        let reader = reader_cell.borrow();
-        reader
-            .bit_position
-            .checked_add(7)
-            .ok_or(MalformedError::IntegerOverflow)?
-            / 8
-    };
+    let consumed_within_body = codec
+        .huffman_mut()?
+        .reader
+        .bit_position
+        .checked_add(7)
+        .ok_or(MalformedError::IntegerOverflow)?
+        / 8;
     if consumed_within_body != body.len() {
         return Err(SymbolTextError::InvalidState(
             "Huffman symbol dictionary did not exactly consume its segment data",
         ));
     }
 
-    let retained_refinement = refinement
-        .as_ref()
-        .map(|refine| refine.contexts.try_snapshot(limits))
-        .transpose()?;
+    let SymbolCodec::Huffman(huffman) = &codec else {
+        return Err(SymbolTextError::InvalidState(
+            "Huffman dictionary has non-Huffman state",
+        ));
+    };
+    let retained_refinement = match huffman.refinement.as_ref() {
+        Some(contexts) => Some(contexts.try_snapshot(limits)?),
+        None => None,
+    };
     let exported_symbols = assemble_exported_symbols(imported, &new_symbols, &exported, limits)?;
     Ok((exported_symbols, retained_refinement, consumed_within_body))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::bitmaps_valid(new_symbols@),
+        forall|index: int| 0 <= index < exported_indices@.len()
+            ==> (#[trigger] exported_indices@[index] as nat)
+                < (imported@).len() + (new_symbols@).len(),
+    ensures match out {
+        Ok(exported) =>
+            exported@.len() == exported_indices@.len()
+                && symbol_text_spec::bitmaps_valid(exported@),
+        Err(_) => true,
+    },
+))]
 fn assemble_exported_symbols(
     imported: &[Bitmap],
     new_symbols: &[Bitmap],
     exported_indices: &[u32],
     limits: &Limits,
 ) -> Result<Vec<Bitmap>, SymbolTextError> {
-    let mut exported_symbols = Vec::new();
+    let mut exported_symbols: Vec<Bitmap> = Vec::new();
     let requested_bytes = exported_indices
         .len()
         .checked_mul(core::mem::size_of::<Bitmap>())
@@ -4323,14 +5216,38 @@ fn assemble_exported_symbols(
     exported_symbols
         .try_reserve(exported_indices.len())
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    for &index in exported_indices {
-        let source = symbol_by_id(imported, new_symbols, index)?;
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= exported_indices@.len(),
+            exported_symbols@.len() == index,
+            symbol_text_spec::bitmaps_valid(imported@),
+            symbol_text_spec::bitmaps_valid(new_symbols@),
+            symbol_text_spec::bitmaps_valid(exported_symbols@),
+            forall|offset: int| 0 <= offset < exported_indices@.len()
+                ==> (#[trigger] exported_indices@[offset] as nat)
+                    < (imported@).len() + (new_symbols@).len(),
+        decreases exported_indices@.len() - index,
+    ))]
+    while index < exported_indices.len() {
+        let symbol_id = exported_indices[index];
+        let source = symbol_by_id(imported, new_symbols, symbol_id)?;
         exported_symbols.push(clone_bitmap(source, limits)?);
+        index += 1;
     }
     Ok(exported_symbols)
 }
 
 /// Decodes one complete symbol-dictionary segment payload (T.88 6.5, 7.4.3).
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::bitmaps_valid(input.imported_symbols@),
+    ensures match out {
+        Ok(output) =>
+            symbol_text_spec::bitmaps_valid(output.exported_symbols@)
+                && output.consumed_bytes <= input.payload@.len(),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_symbol_dictionary(
     input: &SymbolDictionaryInput<'_>,
 ) -> Result<SymbolDictionaryOutput, SymbolTextError> {
@@ -4447,6 +5364,7 @@ pub(crate) fn decode_symbol_dictionary(
 // ---------------------------------------------------------------------------
 
 /// Complete input to one text-region segment payload decode.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct TextRegionInput<'a> {
     pub(crate) payload: &'a [u8],
     pub(crate) symbols: &'a [Bitmap],
@@ -4455,6 +5373,7 @@ pub(crate) struct TextRegionInput<'a> {
 }
 
 /// Complete output of one text-region segment payload decode.
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct TextRegionOutput {
     pub(crate) region: RegionInfo,
     pub(crate) bitmap: Bitmap,
@@ -4463,6 +5382,15 @@ pub(crate) struct TextRegionOutput {
 
 /// Decodes one complete text-region segment payload (T.88 6.4, 7.4.3).
 #[allow(clippy::too_many_lines)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires symbol_text_spec::bitmaps_valid(input.symbols@),
+    ensures match out {
+        Ok(output) =>
+            crate::spec::bitmap::storage_valid(&output.bitmap)
+                && output.consumed_bytes <= input.payload@.len(),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_text_region(
     input: &TextRegionInput<'_>,
 ) -> Result<TextRegionOutput, SymbolTextError> {
@@ -4488,7 +5416,19 @@ pub(crate) fn decode_text_region(
     symbol_refs
         .try_reserve(input.symbols.len())
         .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    symbol_refs.extend(input.symbols.iter());
+    let mut symbol_index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            symbol_index <= input.symbols@.len(),
+            symbol_refs@.len() == symbol_index,
+            symbol_text_spec::bitmaps_valid(input.symbols@),
+            symbol_text_spec::bitmap_refs_valid(symbol_refs@),
+        decreases input.symbols@.len() - symbol_index,
+    ))]
+    while symbol_index < input.symbols.len() {
+        symbol_refs.push(&input.symbols[symbol_index]);
+        symbol_index += 1;
+    }
 
     let refinement_adaptive: [(i8, i8); 2] = [
         (
@@ -4504,24 +5444,44 @@ pub(crate) fn decode_text_region(
                 .map_err(|_| MalformedError::IntegerOverflow)?,
         ),
     ];
-    let mut resources = ResourceTracker::default();
+    let mut resources = ResourceTracker {
+        work_units: 0,
+        decoded_bitmap_bytes: 0,
+    };
     let refinement_template = refinement_template_from_u8(config.refinement_template);
 
     let (bitmap, consumed_within_body) = if config.huffman {
         let custom_wrapped = wrap_custom_tables(input.custom_tables)?;
         let bindings = associate_text_tables(&config, &custom_wrapped)?;
-        let tables = HuffmanFieldTables::for_text_region(&bindings, config.refinement, limits)?;
-        let reader_cell = RefCell::new(bit_reader(body));
+        let choices = select_text_tables(&bindings, config.refinement)?;
+        let tables = materialize_huffman_tables!(HuffmanChoiceSet::TextRegion(choices), limits)?;
         let log_strip_size = log2_strip_size(config.strip_size);
-        let mut entropy = HuffmanEntropy::new(&reader_cell, tables, log_strip_size);
-        let mut refine = HuffmanRefinement::new(&reader_cell, refinement_template, limits)?;
+        let mut codec = SymbolCodec::Huffman(new_huffman_codec(
+            body,
+            tables,
+            log_strip_size,
+            if config.refinement {
+                Some(refinement_template)
+            } else {
+                None
+            },
+            limits,
+        )?);
+        let SymbolCodec::Huffman(huffman) = &mut codec else {
+            return Err(SymbolTextError::InvalidState(
+                "Huffman text region has non-Huffman state",
+            ));
+        };
+        prepare_symbol_ids!(huffman, symbol_count, limits)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(symbol_text_spec::codec_valid);
+        }
 
         let bitmap = decode_text_region_body(
-            &mut entropy,
-            &mut refine,
+            &mut codec,
             &symbol_refs,
             code_length,
-            symbol_count,
             header.region.width,
             header.region.height,
             header.number_of_instances,
@@ -4531,14 +5491,13 @@ pub(crate) fn decode_text_region(
             &mut resources,
         )?;
 
-        let consumed_within_body = {
-            let reader = reader_cell.borrow();
-            reader
-                .bit_position
-                .checked_add(7)
-                .ok_or(MalformedError::IntegerOverflow)?
-                / 8
-        };
+        let consumed_within_body = codec
+            .huffman_mut()?
+            .reader
+            .bit_position
+            .checked_add(7)
+            .ok_or(MalformedError::IntegerOverflow)?
+            / 8;
         if consumed_within_body != body.len() {
             return Err(SymbolTextError::InvalidState(
                 "Huffman text region did not exactly consume its segment data",
@@ -4552,16 +5511,21 @@ pub(crate) fn decode_text_region(
             ));
         }
         let normalized = normalized_bounded_arithmetic(body, limits)?;
-        let decoder_cell = RefCell::new(ArithmeticDecoder::new(normalized.as_ref())?);
-        let mut entropy = ArithmeticEntropy::new(&decoder_cell, code_length, limits)?;
-        let mut refine = ArithmeticRefinement::new(&decoder_cell, refinement_template, limits)?;
+        let mut codec = SymbolCodec::Arithmetic(new_arithmetic_codec(
+            normalized.bytes(),
+            code_length,
+            if config.refinement {
+                Some(refinement_template)
+            } else {
+                None
+            },
+            limits,
+        )?);
 
         let bitmap = decode_text_region_body(
-            &mut entropy,
-            &mut refine,
+            &mut codec,
             &symbol_refs,
             code_length,
-            symbol_count,
             header.region.width,
             header.region.height,
             header.number_of_instances,
@@ -4571,10 +5535,12 @@ pub(crate) fn decode_text_region(
             &mut resources,
         )?;
 
-        {
-            let decoder = decoder_cell.borrow();
-            validate_bounded_arithmetic_marker(&decoder, normalized.len())?;
-        }
+        let SymbolCodec::Arithmetic(arithmetic) = &codec else {
+            return Err(SymbolTextError::InvalidState(
+                "arithmetic text region has non-arithmetic state",
+            ));
+        };
+        validate_bounded_arithmetic_marker(&arithmetic.decoder, normalized.len())?;
         (bitmap, body.len())
     };
 
@@ -4591,7 +5557,6 @@ pub(crate) fn decode_text_region(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::collections::VecDeque;
 
     fn text_config(corner: ReferenceCorner, transposed: bool, strip_size: u8) -> TextRegionConfig {
         TextRegionConfig {
@@ -4656,8 +5621,14 @@ mod tests {
             },
         ];
         let bindings = associate_dictionary_tables(&config, &supplied).expect("valid associations");
-        assert_eq!(bindings[0].parameter, TableParameter::DictionaryHeight);
-        assert_eq!(bindings[1].parameter, TableParameter::DictionaryWidth);
+        assert_eq!(
+            bindings.entries[0].expect("height").parameter,
+            TableParameter::DictionaryHeight
+        );
+        assert_eq!(
+            bindings.entries[1].expect("width").parameter,
+            TableParameter::DictionaryWidth
+        );
 
         let invalid = [
             CustomHuffmanTable {
@@ -4713,29 +5684,29 @@ mod tests {
     fn decodes_export_runs_including_zero_length_toggles() {
         let limits = Limits::default();
         let mut resources = ResourceTracker::default();
-        let mut runs = VecDeque::from([
-            EntropyInteger::Value(2),
-            EntropyInteger::Value(1),
-            EntropyInteger::Value(2),
-        ]);
-        let exported = decode_export_runs(5, 1, &limits, &mut resources, || {
-            runs.pop_front()
-                .ok_or(SymbolTextError::InvalidState("missing scripted run"))
-        })
-        .expect("valid export runs");
+        let mut codec = SymbolCodec::Scripted(ScriptedCodec {
+            integers: VecDeque::from([
+                EntropyInteger::Value(2),
+                EntropyInteger::Value(1),
+                EntropyInteger::Value(2),
+            ]),
+            symbol_id: 0,
+        });
+        let exported = decode_export_runs(&mut codec, 5, 1, &limits, &mut resources)
+            .expect("valid export runs");
         assert_eq!(exported, vec![2]);
 
         let mut resources = ResourceTracker::default();
-        let mut runs = VecDeque::from([
-            EntropyInteger::Value(0),
-            EntropyInteger::Value(0),
-            EntropyInteger::Value(5),
-        ]);
-        let exported = decode_export_runs(5, 0, &limits, &mut resources, || {
-            runs.pop_front()
-                .ok_or(SymbolTextError::InvalidState("missing scripted run"))
-        })
-        .expect("zero runs make input progress");
+        let mut codec = SymbolCodec::Scripted(ScriptedCodec {
+            integers: VecDeque::from([
+                EntropyInteger::Value(0),
+                EntropyInteger::Value(0),
+                EntropyInteger::Value(5),
+            ]),
+            symbol_id: 0,
+        });
+        let exported = decode_export_runs(&mut codec, 5, 0, &limits, &mut resources)
+            .expect("zero runs make input progress");
         assert!(exported.is_empty());
     }
 
@@ -4746,9 +5717,15 @@ mod tests {
             ..Limits::default()
         };
         let mut resources = ResourceTracker::default();
-        let result = decode_export_runs(1, 0, &limits, &mut resources, || {
-            Ok(EntropyInteger::Value(0))
+        let mut codec = SymbolCodec::Scripted(ScriptedCodec {
+            integers: VecDeque::from([
+                EntropyInteger::Value(0),
+                EntropyInteger::Value(0),
+                EntropyInteger::Value(0),
+            ]),
+            symbol_id: 0,
         });
+        let result = decode_export_runs(&mut codec, 1, 0, &limits, &mut resources);
         assert!(matches!(
             result,
             Err(SymbolTextError::Decode(DecodeError::LimitExceeded(
@@ -4766,7 +5743,7 @@ mod tests {
         let mut resources = ResourceTracker::default();
         let lengths = expand_symbol_code_lengths(
             8,
-            [
+            &[
                 SymbolLengthRun::Literal(3),
                 SymbolLengthRun::RepeatPrevious(3),
                 SymbolLengthRun::Zeros(4),
@@ -4781,7 +5758,7 @@ mod tests {
         assert!(matches!(
             expand_symbol_code_lengths(
                 4,
-                [SymbolLengthRun::RepeatPrevious(3)],
+                &[SymbolLengthRun::RepeatPrevious(3)],
                 &limits,
                 &mut resources
             ),
@@ -4789,7 +5766,7 @@ mod tests {
         ));
         let mut resources = ResourceTracker::default();
         assert!(matches!(
-            expand_symbol_code_lengths(4, [SymbolLengthRun::Zeros(5)], &limits, &mut resources),
+            expand_symbol_code_lengths(4, &[SymbolLengthRun::Zeros(5)], &limits, &mut resources),
             Err(SymbolTextError::InvalidSymbolLengthRun)
         ));
     }
@@ -4797,9 +5774,12 @@ mod tests {
     #[test]
     fn builds_symbol_id_huffman_table_from_lengths() {
         let limits = Limits::default();
-        let table = build_symbol_id_table(&[1, 3, 3], &limits);
+        let table = build_symbol_id_lines(&[1, 3, 3], &limits)
+            .and_then(|lines| Ok(HuffmanTable::new(&lines, &limits)?));
         assert!(table.is_ok());
-        assert!(build_symbol_id_table(&[1, 1, 1], &limits).is_err());
+        let invalid = build_symbol_id_lines(&[1, 1, 1], &limits)
+            .and_then(|lines| Ok(HuffmanTable::new(&lines, &limits)?));
+        assert!(invalid.is_err());
     }
 
     #[test]
@@ -4872,47 +5852,11 @@ mod tests {
         );
     }
 
-    struct ScriptedEntropy {
-        integers: VecDeque<EntropyInteger>,
-        symbol_id: u32,
-    }
-
-    impl EntropyDecoder for ScriptedEntropy {
-        fn decode_integer(
-            &mut self,
-            _field: IntegerField,
-        ) -> Result<EntropyInteger, SymbolTextError> {
-            self.integers
-                .pop_front()
-                .ok_or(SymbolTextError::InvalidState("missing integer"))
-        }
-
-        fn decode_symbol_id(&mut self, _request: SymbolIdRequest) -> Result<u32, SymbolTextError> {
-            Ok(self.symbol_id)
-        }
-    }
-
-    struct BlankRefinement;
-
-    impl GenericRefinementDecoder for BlankRefinement {
-        fn decode_refinement(
-            &mut self,
-            request: RefinementRequest<'_>,
-            limits: &Limits,
-        ) -> Result<Bitmap, SymbolTextError> {
-            Ok(Bitmap::blank(
-                request.geometry.width,
-                request.geometry.height,
-                limits,
-            )?)
-        }
-    }
-
     #[test]
-    fn refinement_callback_receives_checked_geometry() {
+    fn refinement_state_receives_checked_geometry() {
         let limits = Limits::default();
         let reference = Bitmap::blank(5, 7, &limits).expect("reference");
-        let mut entropy = ScriptedEntropy {
+        let mut codec = SymbolCodec::Scripted(ScriptedCodec {
             integers: VecDeque::from([
                 EntropyInteger::Value(-3),
                 EntropyInteger::Value(1),
@@ -4921,12 +5865,10 @@ mod tests {
                 EntropyInteger::Value(4),
             ]),
             symbol_id: 0,
-        };
-        let mut decoder = BlankRefinement;
+        });
         let mut resources = ResourceTracker::default();
         let bitmap = decode_refined_bitmap(
-            &mut entropy,
-            &mut decoder,
+            &mut codec,
             &reference,
             0,
             [(0, 0); 2],
@@ -4940,19 +5882,7 @@ mod tests {
 
     #[test]
     fn rejects_unused_fixed_length_symbol_ids() {
-        let mut entropy = ScriptedEntropy {
-            integers: VecDeque::new(),
-            symbol_id: 7,
-        };
-        let error = decode_checked_symbol_id(
-            &mut entropy,
-            SymbolIdRequest {
-                available_symbols: 5,
-                code_length: 3,
-                huffman: false,
-            },
-        )
-        .expect_err("ID 7 is outside five symbols");
+        let error = checked_symbol_id(7, 5).expect_err("ID 7 is outside five symbols");
         assert!(matches!(
             error,
             SymbolTextError::SymbolIdOutOfRange {
