@@ -2764,80 +2764,10 @@ fn copy_bitmap_row(
     source: u32,
     destination: u32,
 ) -> Result<(), GenericRegionError> {
-    if source >= bitmap.height || destination >= bitmap.height {
-        return Err(MalformedError::IntegerOverflow.into());
-    }
-    if source == destination {
-        return Ok(());
-    }
     #[cfg(verus_keep_ghost)]
-    let width = bitmap.width;
-    #[cfg(verus_keep_ghost)]
-    let height = bitmap.height;
-    let stride = bitmap.stride;
-    #[cfg(verus_keep_ghost)]
-    let data_len = bitmap.data.len();
-    #[cfg(verus_keep_ghost)]
-    proof! {
-        crate::views::bitmap_fields(bitmap);
-        reveal(crate::spec::bitmap::storage_valid);
-        assert(data_len == stride as nat * height as nat);
-        vstd::arithmetic::mul::lemma_mul_is_commutative(
-            stride as int,
-            height as int,
-        );
-        assert(data_len == height as nat * stride as nat);
-        assert(source as nat + 1 <= height as nat);
-        assert(destination as nat + 1 <= height as nat);
-        vstd::arithmetic::mul::lemma_mul_inequality(
-            source as int + 1,
-            height as int,
-            stride as int,
-        );
-        vstd::arithmetic::mul::lemma_mul_inequality(
-            destination as int + 1,
-            height as int,
-            stride as int,
-        );
-        vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
-            stride as int,
-            source as int,
-            1,
-        );
-        vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
-            stride as int,
-            destination as int,
-            1,
-        );
-        assert(source as nat * stride as nat + stride as nat <= data_len);
-        assert(destination as nat * stride as nat + stride as nat <= data_len);
-        assert(source as nat * stride as nat <= usize::MAX);
-        assert(destination as nat * stride as nat <= usize::MAX);
-    }
-    let source_start = (source as usize) * stride;
-    let destination_start = (destination as usize) * stride;
-    let mut index = 0_usize;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            bitmap.width == width,
-            bitmap.height == height,
-            bitmap.stride == stride,
-            bitmap.data@.len() == data_len,
-            index <= stride,
-            source_start + stride <= data_len,
-            destination_start + stride <= data_len,
-        decreases stride - index,
-    ))]
-    while index < stride {
-        #[cfg(verus_keep_ghost)]
-        proof! {
-            assert(source_start + index < data_len);
-            assert(destination_start + index < data_len);
-        }
-        let value = bitmap.data[source_start + index];
-        bitmap.data[destination_start + index] = value;
-        index += 1;
-    }
+    bitmap.copy_row_scalar_verified(source, destination)?;
+    #[cfg(not(verus_keep_ghost))]
+    bitmap.copy_row(source, destination)?;
     #[cfg(verus_keep_ghost)]
     proof! {
         crate::views::bitmap_fields(bitmap);

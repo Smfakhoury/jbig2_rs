@@ -1200,42 +1200,46 @@ fn fill_span(
     if !black {
         return Ok(());
     }
-
-    let row_index = usize::try_from(row).map_err(|_error| MmrError::IntegerOverflow)?;
-    let row_base = row_index
-        .checked_mul(bitmap.stride)
-        .ok_or(MmrError::IntegerOverflow)?;
+    #[cfg(not(verus_keep_ghost))]
+    bitmap
+        .fill_black_span(row, start, end)
+        .map_err(|_error| MmrError::InvalidTransition)?;
     #[cfg(verus_keep_ghost)]
-    proof! {
-        reveal(mmr_spec::bitmap_storage_valid);
-    }
-    let mut x = start;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            start <= x <= end,
-            end <= bitmap.width,
-            row < bitmap.height,
-            bitmap.width == old(bitmap).width,
-            bitmap.height == old(bitmap).height,
-            bitmap.stride == old(bitmap).stride,
-            bitmap.data@.len() == old(bitmap).data@.len(),
-            mmr_spec::bitmap_storage_valid(bitmap),
-        decreases end - x,
-    ))]
-    while x < end {
-        #[cfg(verus_keep_ghost)]
-        production_mmr_span_byte!(bitmap, row, x);
-        let byte_in_row = usize::try_from(x / 8).map_err(|_error| MmrError::IntegerOverflow)?;
-        let byte_index = row_base
-            .checked_add(byte_in_row)
+    {
+        let row_index = usize::try_from(row).map_err(|_error| MmrError::IntegerOverflow)?;
+        let row_base = row_index
+            .checked_mul(bitmap.stride)
             .ok_or(MmrError::IntegerOverflow)?;
-        if byte_index >= bitmap.data.len() {
-            return Err(MmrError::InvalidTransition);
+        proof! {
+            reveal(mmr_spec::bitmap_storage_valid);
         }
-        let byte = &mut bitmap.data[byte_index];
-        let shift = 7_u32.checked_sub(x % 8).ok_or(MmrError::IntegerOverflow)?;
-        *byte |= 1_u8 << shift;
-        x = x.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+        let mut x = start;
+        #[verus_spec(
+            invariant
+                start <= x <= end,
+                end <= bitmap.width,
+                row < bitmap.height,
+                bitmap.width == old(bitmap).width,
+                bitmap.height == old(bitmap).height,
+                bitmap.stride == old(bitmap).stride,
+                bitmap.data@.len() == old(bitmap).data@.len(),
+                mmr_spec::bitmap_storage_valid(bitmap),
+            decreases end - x,
+        )]
+        while x < end {
+            production_mmr_span_byte!(bitmap, row, x);
+            let byte_in_row = usize::try_from(x / 8).map_err(|_error| MmrError::IntegerOverflow)?;
+            let byte_index = row_base
+                .checked_add(byte_in_row)
+                .ok_or(MmrError::IntegerOverflow)?;
+            if byte_index >= bitmap.data.len() {
+                return Err(MmrError::InvalidTransition);
+            }
+            let byte = &mut bitmap.data[byte_index];
+            let shift = 7_u32.checked_sub(x % 8).ok_or(MmrError::IntegerOverflow)?;
+            *byte |= 1_u8 << shift;
+            x = x.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+        }
     }
     Ok(())
 }
