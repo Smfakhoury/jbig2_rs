@@ -1051,6 +1051,36 @@ fn decode_probability(
 #[allow(clippy::ptr_arg)]
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        generic_region_spec::contexts_valid(old(contexts)@),
+    ensures
+        generic_region_spec::contexts_valid(final(contexts)@),
+        match out {
+            Ok(bit) =>
+                bit <= 1
+                && crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
+            Err(_) => true,
+        },
+))]
+fn decode_probability_fixed(
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+    index: usize,
+) -> Result<u8, GenericRegionError> {
+    let Some(context) = contexts.get_mut(index) else {
+        return Err(GenericRegionError::ContextIndex {
+            index,
+            count: contexts.len(),
+        });
+    };
+    decoder
+        .decode(context)
+        .map_err(|error| GenericRegionError::Decode(error.into_decode()))
+}
+
+#[allow(clippy::ptr_arg)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
         crate::spec::bitmap::storage_valid(old(bitmap)),
         rows <= old(bitmap).height,
         crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
@@ -1066,6 +1096,116 @@ fn decode_probability(
 ))]
 #[allow(clippy::too_many_arguments)]
 fn decode_generic_with(
+    bitmap: &mut Bitmap,
+    rows: u32,
+    template: GenericTemplate,
+    extended: bool,
+    adaptive: &[TemplateOffset; 12],
+    typical_prediction: bool,
+    skip: Option<&Bitmap>,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    let bitmap_width = bitmap.width;
+    let bitmap_height = bitmap.height;
+    if rows > bitmap_height {
+        return Err(GenericRegionError::RowCountMismatch {
+            expected: bitmap_height,
+            actual: rows,
+        });
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(bitmap);
+    }
+    let descriptor = GenericContextDescriptor::new(template, extended, adaptive);
+    let mut ltp = false;
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= rows,
+            rows <= bitmap_height,
+            crate::views::bitmap_width(bitmap) == bitmap_width,
+            crate::views::bitmap_height(bitmap) == bitmap_height,
+            crate::spec::bitmap::storage_valid(bitmap),
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+            match skip {
+                Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                None => true,
+            },
+        decreases rows - y,
+    ))]
+    while y < rows {
+        if typical_prediction {
+            let sltp = decode_probability_fixed(decoder, contexts, template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+        if ltp {
+            if y != 0 {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(bitmap.height == bitmap_height);
+                    assert(y - 1 < bitmap_height);
+                    assert(y < bitmap_height);
+                }
+                copy_bitmap_row(bitmap, y - 1, y)?;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(bitmap.width == bitmap_width);
+                    assert(bitmap.height == bitmap_height);
+                }
+            }
+            y += 1;
+            continue;
+        }
+
+        let mut history = 0_usize;
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= bitmap_width,
+                y < rows,
+                rows <= bitmap_height,
+                crate::views::bitmap_width(bitmap) == bitmap_width,
+                crate::views::bitmap_height(bitmap) == bitmap_height,
+                crate::spec::bitmap::storage_valid(bitmap),
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+                match skip {
+                    Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                    None => true,
+                },
+            decreases bitmap_width - x,
+        ))]
+        while x < bitmap_width {
+            let skipped = match skip {
+                Some(mask) => packed_pixel(mask, i64::from(x), i64::from(y)),
+                None => false,
+            };
+            if skipped {
+                history = (history << 1) & 0x0f;
+                x += 1;
+                continue;
+            }
+            let context = descriptor.context(bitmap, x, y, history);
+            let value = decode_probability_fixed(decoder, contexts, context)? != 0;
+            history = ((history << 1) | usize::from(value)) & 0x0f;
+            if value {
+                bitmap.set_pixel(x, y, true)?;
+            }
+            x += 1;
+        }
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments, clippy::ptr_arg)]
+fn decode_generic_with_oracle(
     bitmap: &mut Bitmap,
     rows: u32,
     template: GenericTemplate,
@@ -1433,6 +1573,285 @@ fn generic_context(
     context
 }
 
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum GenericContextDescriptor {
+    NominalTemplate0,
+    Template0([TemplateOffset; 4]),
+    Template0Extended([TemplateOffset; 16]),
+    NominalTemplate1,
+    Template1(TemplateOffset),
+    NominalTemplate2,
+    Template2(TemplateOffset),
+    NominalTemplate3,
+    Template3(TemplateOffset),
+}
+
+impl GenericContextDescriptor {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn new(template: GenericTemplate, extended: bool, adaptive: &[TemplateOffset; 12]) -> Self {
+        match (template, extended) {
+            (GenericTemplate::Template0, true) => {
+                if *adaptive
+                    == [
+                        TemplateOffset::new(-2, 0),
+                        TemplateOffset::new(0, -2),
+                        TemplateOffset::new(-2, -1),
+                        TemplateOffset::new(-1, -2),
+                        TemplateOffset::new(1, -2),
+                        TemplateOffset::new(2, -1),
+                        TemplateOffset::new(-3, 0),
+                        TemplateOffset::new(-4, 0),
+                        TemplateOffset::new(2, -2),
+                        TemplateOffset::new(3, -1),
+                        TemplateOffset::new(-2, -2),
+                        TemplateOffset::new(-3, -1),
+                    ]
+                {
+                    return Self::NominalTemplate0;
+                }
+                let mut offsets = [TemplateOffset { x: 0, y: 0 }; 16];
+                let mut index = 0_usize;
+                #[cfg_attr(verus_keep_ghost, verus_spec(
+                    invariant index <= offsets@.len(),
+                    decreases offsets@.len() - index,
+                ))]
+                while index < offsets.len() {
+                    let slot = GENERIC_TEMPLATE_0_EXTENDED[index];
+                    offsets[index] = match slot.adaptive {
+                        Some(number) => generic_adaptive_offset(adaptive, number, slot.nominal),
+                        None => slot.nominal,
+                    };
+                    index += 1;
+                }
+                Self::Template0Extended(offsets)
+            }
+            (GenericTemplate::Template0, false) => {
+                let values = [adaptive[0], adaptive[1], adaptive[2], adaptive[3]];
+                if values
+                    == [
+                        TemplateOffset::new(3, -1),
+                        TemplateOffset::new(-3, -1),
+                        TemplateOffset::new(2, -2),
+                        TemplateOffset::new(-2, -2),
+                    ]
+                {
+                    Self::NominalTemplate0
+                } else {
+                    Self::Template0(values)
+                }
+            }
+            (GenericTemplate::Template1, _) => {
+                if adaptive[0] == TemplateOffset::new(3, -1) {
+                    Self::NominalTemplate1
+                } else {
+                    Self::Template1(adaptive[0])
+                }
+            }
+            (GenericTemplate::Template2, _) => {
+                if adaptive[0] == TemplateOffset::new(2, -1) {
+                    Self::NominalTemplate2
+                } else {
+                    Self::Template2(adaptive[0])
+                }
+            }
+            (GenericTemplate::Template3, _) => {
+                if adaptive[0] == TemplateOffset::new(2, -1) {
+                    Self::NominalTemplate3
+                } else {
+                    Self::Template3(adaptive[0])
+                }
+            }
+        }
+    }
+
+    #[allow(clippy::similar_names)]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn context(self, bitmap: &Bitmap, x: u32, y: u32, history: usize) -> usize {
+        match self {
+            Self::NominalTemplate0 => {
+                let top = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 2, -2, 5);
+                let previous = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -3, 7);
+                (top << 11) | (previous << 4) | history & 0x0f
+            }
+            Self::Template0(adaptive) => {
+                let top_fixed = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 2, -1, 3);
+                let previous_fixed = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -2, 5);
+                let a4 = usize::from(sample_cached(bitmap, x, y, adaptive[3]));
+                let a3 = usize::from(sample_cached(bitmap, x, y, adaptive[2]));
+                let a2 = usize::from(sample_cached(bitmap, x, y, adaptive[1]));
+                let a1 = usize::from(sample_cached(bitmap, x, y, adaptive[0]));
+                let mut context = (a4 << 3) | top_fixed;
+                context = (context << 1) | a3;
+                context = (context << 1) | a2;
+                context = (context << 5) | previous_fixed;
+                context = (context << 1) | a1;
+                (context << 4) | history & 0x0f
+            }
+            Self::Template0Extended(offsets) => {
+                let mut context = 0_usize;
+                let mut index = 0_usize;
+                #[cfg_attr(verus_keep_ghost, verus_spec(
+                    invariant index <= offsets@.len(),
+                    decreases offsets@.len() - index,
+                ))]
+                while index < offsets.len() {
+                    context =
+                        (context << 1) | usize::from(sample_cached(bitmap, x, y, offsets[index]));
+                    index += 1;
+                }
+                context
+            }
+            Self::NominalTemplate1 => {
+                let top = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 2, -1, 4);
+                let previous = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -2, 6);
+                (top << 9) | (previous << 3) | history & 0x07
+            }
+            Self::Template1(adaptive) => {
+                let top = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 2, -1, 4);
+                let previous = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -2, 5);
+                let adaptive = usize::from(sample_cached(bitmap, x, y, adaptive));
+                (((top << 5) | previous) << 4) | (adaptive << 3) | history & 0x07
+            }
+            Self::NominalTemplate2 => {
+                let top = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 2, -1, 3);
+                let previous = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -2, 5);
+                (top << 7) | (previous << 2) | history & 0x03
+            }
+            Self::Template2(adaptive) => {
+                let top = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 2, -1, 3);
+                let previous = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -2, 4);
+                let adaptive = usize::from(sample_cached(bitmap, x, y, adaptive));
+                (((top << 4) | previous) << 3) | (adaptive << 2) | history & 0x03
+            }
+            Self::NominalTemplate3 => {
+                let previous = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -3, 6);
+                (previous << 4) | history & 0x0f
+            }
+            Self::Template3(adaptive) => {
+                let previous = packed_row_bits(bitmap, i64::from(x), i64::from(y) - 1, -3, 5);
+                let adaptive = usize::from(sample_cached(bitmap, x, y, adaptive));
+                (previous << 5) | (adaptive << 4) | history & 0x0f
+            }
+        }
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn sample_cached(bitmap: &Bitmap, x: u32, y: u32, offset: TemplateOffset) -> bool {
+    packed_pixel(
+        bitmap,
+        i64::from(x) + i64::from(offset.x),
+        i64::from(y) + i64::from(offset.y),
+    )
+}
+
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn packed_pixel(bitmap: &Bitmap, x: i64, y: i64) -> bool {
+    if x < 0 || y < 0 || x >= i64::from(bitmap.width) || y >= i64::from(bitmap.height) {
+        return false;
+    }
+    let row = y as usize;
+    let column = x as usize / 8;
+    let Some(index) = row
+        .checked_mul(bitmap.stride)
+        .and_then(|start| start.checked_add(column))
+    else {
+        return false;
+    };
+    let mask = match x as u32 % 8 {
+        0 => 0x80,
+        1 => 0x40,
+        2 => 0x20,
+        3 => 0x10,
+        4 => 0x08,
+        5 => 0x04,
+        6 => 0x02,
+        _ => 0x01,
+    };
+    match bitmap.data.get(index) {
+        Some(byte) => *byte & mask != 0,
+        None => false,
+    }
+}
+
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn packed_row_bits(bitmap: &Bitmap, center_x: i64, row: i64, left: i32, count: u8) -> usize {
+    if count == 0 || count > 8 || row < 0 || row >= i64::from(bitmap.height) {
+        return 0;
+    }
+    let Some(start) = center_x.checked_add(i64::from(left)) else {
+        return 0;
+    };
+    let Some(end) = start.checked_add(i64::from(count)) else {
+        return 0;
+    };
+    if start < 0 || end > i64::from(bitmap.width) {
+        let mut bits = 0_usize;
+        let mut offset = 0_u8;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant offset <= count,
+            decreases count - offset,
+        ))]
+        while offset < count {
+            let Some(sample_x) = start.checked_add(i64::from(offset)) else {
+                return 0;
+            };
+            let Some(shifted) = bits.checked_mul(2) else {
+                return 0;
+            };
+            bits = shifted | usize::from(packed_pixel(bitmap, sample_x, row));
+            offset += 1;
+        }
+        return bits;
+    }
+
+    let row = row as usize;
+    let start = start as usize;
+    let Some(index) = row
+        .checked_mul(bitmap.stride)
+        .and_then(|base| base.checked_add(start / 8))
+    else {
+        return 0;
+    };
+    let Some(first) = bitmap.data.get(index) else {
+        return 0;
+    };
+    let first = *first;
+    let bit_offset = start & 7;
+    let count = usize::from(count);
+    let mask = match count {
+        1 => 0x01,
+        2 => 0x03,
+        3 => 0x07,
+        4 => 0x0f,
+        5 => 0x1f,
+        6 => 0x3f,
+        7 => 0x7f,
+        _ => 0xff,
+    };
+    let Some(total_bits) = bit_offset.checked_add(count) else {
+        return 0;
+    };
+    if total_bits <= 8 {
+        return (usize::from(first) >> (8 - total_bits)) & mask;
+    }
+    let second = match index.checked_add(1) {
+        Some(next) => match bitmap.data.get(next) {
+            Some(byte) => *byte,
+            None => 0,
+        },
+        None => 0,
+    };
+    let combined = (usize::from(first) << 8) | usize::from(second);
+    let Some(shift) = 16_usize.checked_sub(total_bits) else {
+        return 0;
+    };
+    (combined >> shift) & mask
+}
+
 /// One of the two generic-refinement templates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -1794,6 +2213,82 @@ fn decode_refinement_with(
     decoder: &mut ArithmeticDecoder<'_>,
     contexts: &mut Vec<ArithmeticContext>,
 ) -> Result<(), GenericRegionError> {
+    let descriptor = RefinementContextDescriptor::new(template, adaptive);
+    let bitmap_width = bitmap.width;
+    let bitmap_height = bitmap.height;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(bitmap);
+    }
+    let mut ltp = false;
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= bitmap_height,
+            crate::views::bitmap_width(bitmap) == bitmap_width,
+            crate::views::bitmap_height(bitmap) == bitmap_height,
+            crate::spec::bitmap::storage_valid(bitmap),
+            crate::spec::bitmap::storage_valid(reference),
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+        decreases bitmap_height - y,
+    ))]
+    while y < bitmap_height {
+        if typical_prediction {
+            let sltp = decode_probability_fixed(decoder, contexts, template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+        let mut history = 0_usize;
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= bitmap_width,
+                y < bitmap_height,
+                crate::views::bitmap_width(bitmap) == bitmap_width,
+                crate::views::bitmap_height(bitmap) == bitmap_height,
+                crate::spec::bitmap::storage_valid(bitmap),
+                crate::spec::bitmap::storage_valid(reference),
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+            decreases bitmap_width - x,
+        ))]
+        while x < bitmap_width {
+            if ltp {
+                if let Some(prediction) = refinement_prediction_cached(reference, x, y, parameters)
+                {
+                    history = ((history << 1) | usize::from(prediction)) & 1;
+                    if prediction {
+                        bitmap.set_pixel(x, y, true)?;
+                    }
+                    x += 1;
+                    continue;
+                }
+            }
+            let context = descriptor.context(bitmap, reference, x, y, history, parameters);
+            let value = decode_probability_fixed(decoder, contexts, context)? != 0;
+            history = ((history << 1) | usize::from(value)) & 1;
+            if value {
+                bitmap.set_pixel(x, y, true)?;
+            }
+            x += 1;
+        }
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::ptr_arg, clippy::too_many_arguments)]
+fn decode_refinement_with_oracle(
+    bitmap: &mut Bitmap,
+    reference: &Bitmap,
+    template: RefinementTemplate,
+    adaptive: [TemplateOffset; 2],
+    typical_prediction: bool,
+    parameters: RefinementParameters,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
     let mut ltp = false;
     let bitmap_width = bitmap.width;
     let bitmap_height = bitmap.height;
@@ -2102,6 +2597,123 @@ fn refinement_context(
         index += 1;
     }
     context
+}
+
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum RefinementContextDescriptor {
+    NominalTemplate0,
+    Template0 {
+        target: TemplateOffset,
+        reference: TemplateOffset,
+    },
+    Template1,
+}
+
+impl RefinementContextDescriptor {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    const fn new(template: RefinementTemplate, adaptive: [TemplateOffset; 2]) -> Self {
+        match template {
+            RefinementTemplate::Template0 => {
+                if adaptive[0].x == -1
+                    && adaptive[0].y == -1
+                    && adaptive[1].x == -1
+                    && adaptive[1].y == -1
+                {
+                    Self::NominalTemplate0
+                } else {
+                    Self::Template0 {
+                        target: adaptive[0],
+                        reference: adaptive[1],
+                    }
+                }
+            }
+            RefinementTemplate::Template1 => Self::Template1,
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn context(
+        self,
+        target: &Bitmap,
+        reference: &Bitmap,
+        x: u32,
+        y: u32,
+        history: usize,
+        parameters: RefinementParameters,
+    ) -> usize {
+        let reference_x = i64::from(x) - i64::from(parameters.reference_dx);
+        let reference_y = i64::from(y) - i64::from(parameters.reference_dy);
+        match self {
+            Self::NominalTemplate0 => {
+                let target_previous =
+                    packed_row_bits(target, i64::from(x), i64::from(y) - 1, -1, 3);
+                let reference_previous =
+                    packed_row_bits(reference, reference_x, reference_y - 1, -1, 3);
+                let reference_current = packed_row_bits(reference, reference_x, reference_y, -1, 3);
+                let reference_next =
+                    packed_row_bits(reference, reference_x, reference_y + 1, -1, 3);
+                let mut context = (target_previous << 1) | history & 1;
+                context = (context << 3) | reference_previous;
+                context = (context << 3) | reference_current;
+                (context << 3) | reference_next
+            }
+            Self::Template0 {
+                target: target_adaptive,
+                reference: reference_adaptive,
+            } => {
+                let target_a = usize::from(sample_cached(target, x, y, target_adaptive));
+                let target_previous = packed_row_bits(target, i64::from(x), i64::from(y) - 1, 0, 2);
+                let reference_a = usize::from(packed_pixel(
+                    reference,
+                    reference_x + i64::from(reference_adaptive.x),
+                    reference_y + i64::from(reference_adaptive.y),
+                ));
+                let reference_previous =
+                    packed_row_bits(reference, reference_x, reference_y - 1, 0, 2);
+                let reference_current = packed_row_bits(reference, reference_x, reference_y, -1, 3);
+                let reference_next =
+                    packed_row_bits(reference, reference_x, reference_y + 1, -1, 3);
+                let mut context = (target_a << 2) | target_previous;
+                context = (context << 1) | history & 1;
+                context = (context << 1) | reference_a;
+                context = (context << 2) | reference_previous;
+                context = (context << 3) | reference_current;
+                (context << 3) | reference_next
+            }
+            Self::Template1 => {
+                let target_previous =
+                    packed_row_bits(target, i64::from(x), i64::from(y) - 1, -1, 3);
+                let reference_previous =
+                    usize::from(packed_pixel(reference, reference_x, reference_y - 1));
+                let reference_current = packed_row_bits(reference, reference_x, reference_y, -1, 3);
+                let reference_next = packed_row_bits(reference, reference_x, reference_y + 1, 0, 2);
+                let mut context = (target_previous << 1) | history & 1;
+                context = (context << 1) | reference_previous;
+                context = (context << 3) | reference_current;
+                (context << 2) | reference_next
+            }
+        }
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn refinement_prediction_cached(
+    reference: &Bitmap,
+    x: u32,
+    y: u32,
+    parameters: RefinementParameters,
+) -> Option<bool> {
+    let reference_x = i64::from(x) - i64::from(parameters.reference_dx);
+    let reference_y = i64::from(y) - i64::from(parameters.reference_dy);
+    let neighbourhood = (packed_row_bits(reference, reference_x, reference_y - 1, -1, 3) << 6)
+        | (packed_row_bits(reference, reference_x, reference_y, -1, 3) << 3)
+        | packed_row_bits(reference, reference_x, reference_y + 1, -1, 3);
+    match neighbourhood {
+        0 => Some(false),
+        0x01ff => Some(true),
+        _ => None,
+    }
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(
@@ -2847,6 +3459,8 @@ mod tests {
     use super::*;
     use crate::bitmap::CombinationOperator;
     use std::collections::VecDeque;
+    use std::hint::black_box;
+    use std::time::{Duration, Instant};
 
     fn region_prefix(width: u32, height: u32) -> Vec<u8> {
         let mut bytes = Vec::new();
@@ -2945,6 +3559,49 @@ mod tests {
             },
         )?;
         Ok(contexts)
+    }
+
+    fn next_random(state: &mut u64) -> u32 {
+        *state = state
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1_442_695_040_888_963_407);
+        (*state >> 32) as u32
+    }
+
+    fn random_bitmap(width: u32, height: u32, state: &mut u64) -> Bitmap {
+        let limits = Limits::default();
+        let mut bitmap = Bitmap::blank(width, height, &limits).expect("random bitmap");
+        for y in 0..height {
+            for x in 0..width {
+                if next_random(state).is_multiple_of(4) {
+                    bitmap.set_pixel(x, y, true).expect("in bounds");
+                }
+            }
+        }
+        bitmap
+    }
+
+    fn arithmetic_bytes(state: &mut u64) -> Vec<u8> {
+        let mut bytes = Vec::with_capacity(1_026);
+        for _ in 0..1_024 {
+            bytes.push((next_random(state) & 0x7f) as u8);
+        }
+        bytes.extend_from_slice(&ARITHMETIC_TERMINATOR);
+        bytes
+    }
+
+    fn assert_decoder_state_eq(left: &ArithmeticDecoder<'_>, right: &ArithmeticDecoder<'_>) {
+        assert_eq!(left.byte_position, right.byte_position);
+        assert_eq!(left.current_byte, right.current_byte);
+        assert_eq!(left.code, right.code);
+        assert_eq!(left.interval, right.interval);
+        assert_eq!(left.bit_count, right.bit_count);
+        assert_eq!(left.marker, right.marker);
+    }
+
+    fn median_duration(mut values: Vec<Duration>) -> Duration {
+        values.sort_unstable();
+        values[values.len() / 2]
     }
 
     #[test]
@@ -3241,6 +3898,312 @@ mod tests {
             validate_arithmetic_terminator(&[0x12, 0xff]),
             Err(GenericRegionError::InvalidArithmeticTerminator)
         ));
+    }
+
+    #[test]
+    fn specialized_generic_kernels_match_scalar_oracle_randomized() {
+        let limits = Limits::default();
+        let templates = [
+            GenericTemplate::Template0,
+            GenericTemplate::Template1,
+            GenericTemplate::Template2,
+            GenericTemplate::Template3,
+        ];
+        let prior_offsets = [
+            TemplateOffset::new(-1, 0),
+            TemplateOffset::new(-4, 0),
+            TemplateOffset::new(-7, -1),
+            TemplateOffset::new(3, -1),
+            TemplateOffset::new(7, -2),
+        ];
+        let mut state = 0x8d26_4f31_ba90_75ce;
+        for case in 0..96_u32 {
+            let template = templates[case as usize % templates.len()];
+            let variant = case / u32::try_from(templates.len()).expect("four templates");
+            let extended = template == GenericTemplate::Template0 && variant & 1 != 0;
+            let width = 1 + next_random(&mut state) % 41;
+            let height = 1 + next_random(&mut state) % 23;
+            let rows = next_random(&mut state) % (height + 1);
+            let typical = variant & 2 != 0;
+            let mut adaptive = generic_header(width, height, template, extended, typical).adaptive;
+            let adaptive_count = match (template, extended) {
+                (GenericTemplate::Template0, true) => 12,
+                (GenericTemplate::Template0, false) => 4,
+                _ => 1,
+            };
+            if variant & 8 != 0 {
+                for offset in adaptive.iter_mut().take(adaptive_count) {
+                    *offset = prior_offsets[next_random(&mut state) as usize % prior_offsets.len()];
+                }
+            }
+            let skip = (variant & 4 != 0).then(|| random_bitmap(width, height, &mut state));
+            let coded = arithmetic_bytes(&mut state);
+            let mut optimized_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+            let mut oracle_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+            let mut optimized_contexts =
+                vec![ArithmeticContext::new(); generic_context_count(template)];
+            let mut oracle_contexts = optimized_contexts.clone();
+            let mut optimized = Bitmap::blank(width, height, &limits).expect("bitmap");
+            let mut oracle = Bitmap::blank(width, height, &limits).expect("bitmap");
+
+            decode_generic_with(
+                &mut optimized,
+                rows,
+                template,
+                extended,
+                &adaptive,
+                typical,
+                skip.as_ref(),
+                &mut optimized_decoder,
+                &mut optimized_contexts,
+            )
+            .expect("optimized decode");
+            decode_generic_with_oracle(
+                &mut oracle,
+                rows,
+                template,
+                extended,
+                &adaptive,
+                typical,
+                skip.as_ref(),
+                &mut oracle_decoder,
+                &mut oracle_contexts,
+            )
+            .expect("oracle decode");
+
+            assert_eq!(optimized, oracle, "bitmap mismatch in case {case}");
+            assert_eq!(
+                optimized_contexts, oracle_contexts,
+                "context mismatch in case {case}"
+            );
+            assert_decoder_state_eq(&optimized_decoder, &oracle_decoder);
+        }
+    }
+
+    #[test]
+    fn specialized_refinement_kernels_match_scalar_oracle_randomized() {
+        let limits = Limits::default();
+        let mut state = 0x71e4_c09b_325d_a86f;
+        for case in 0..96_u32 {
+            let template = if case & 1 == 0 {
+                RefinementTemplate::Template0
+            } else {
+                RefinementTemplate::Template1
+            };
+            let width = 1 + next_random(&mut state) % 37;
+            let height = 1 + next_random(&mut state) % 21;
+            let reference_width = 1 + next_random(&mut state) % 43;
+            let reference_height = 1 + next_random(&mut state) % 25;
+            let reference = random_bitmap(reference_width, reference_height, &mut state);
+            let adaptive = if case & 8 == 0 {
+                [TemplateOffset::new(-1, -1); 2]
+            } else {
+                let target = [
+                    TemplateOffset::new(-1, 0),
+                    TemplateOffset::new(-5, -1),
+                    TemplateOffset::new(4, -2),
+                ][next_random(&mut state) as usize % 3];
+                let reference = TemplateOffset::new(
+                    i32::try_from(next_random(&mut state) % 11).expect("bounded") - 5,
+                    i32::try_from(next_random(&mut state) % 7).expect("bounded") - 3,
+                );
+                [target, reference]
+            };
+            let parameters = RefinementParameters {
+                reference_dx: i32::try_from(next_random(&mut state) % 9).expect("bounded") - 4,
+                reference_dy: i32::try_from(next_random(&mut state) % 7).expect("bounded") - 3,
+            };
+            let typical = case & 2 != 0;
+            let coded = arithmetic_bytes(&mut state);
+            let mut optimized_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+            let mut oracle_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+            let mut optimized_contexts =
+                vec![ArithmeticContext::new(); refinement_context_count(template)];
+            let mut oracle_contexts = optimized_contexts.clone();
+            let mut optimized = Bitmap::blank(width, height, &limits).expect("bitmap");
+            let mut oracle = Bitmap::blank(width, height, &limits).expect("bitmap");
+
+            decode_refinement_with(
+                &mut optimized,
+                &reference,
+                template,
+                adaptive,
+                typical,
+                parameters,
+                &mut optimized_decoder,
+                &mut optimized_contexts,
+            )
+            .expect("optimized decode");
+            decode_refinement_with_oracle(
+                &mut oracle,
+                &reference,
+                template,
+                adaptive,
+                typical,
+                parameters,
+                &mut oracle_decoder,
+                &mut oracle_contexts,
+            )
+            .expect("oracle decode");
+
+            assert_eq!(optimized, oracle, "bitmap mismatch in case {case}");
+            assert_eq!(
+                optimized_contexts, oracle_contexts,
+                "context mismatch in case {case}"
+            );
+            assert_decoder_state_eq(&optimized_decoder, &oracle_decoder);
+        }
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_specialized_generic_kernels_against_44a2b6e_oracle() {
+        let limits = Limits::default();
+        let width = 768;
+        let height = 384;
+        let coded = {
+            let mut bytes = vec![0x55; 48_000];
+            bytes.extend_from_slice(&ARITHMETIC_TERMINATOR);
+            bytes
+        };
+        for template in [
+            GenericTemplate::Template0,
+            GenericTemplate::Template1,
+            GenericTemplate::Template2,
+            GenericTemplate::Template3,
+        ] {
+            let header = generic_header(width, height, template, false, true);
+            let mut optimized_times = Vec::new();
+            let mut oracle_times = Vec::new();
+            for sample in 0..11 {
+                let run = |optimized: bool| {
+                    let mut bitmap = Bitmap::blank(width, height, &limits).expect("bitmap");
+                    let mut decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+                    let mut contexts =
+                        vec![ArithmeticContext::new(); generic_context_count(template)];
+                    let start = Instant::now();
+                    if optimized {
+                        decode_generic_with(
+                            &mut bitmap,
+                            height,
+                            template,
+                            false,
+                            &header.adaptive,
+                            true,
+                            None,
+                            &mut decoder,
+                            &mut contexts,
+                        )
+                    } else {
+                        decode_generic_with_oracle(
+                            &mut bitmap,
+                            height,
+                            template,
+                            false,
+                            &header.adaptive,
+                            true,
+                            None,
+                            &mut decoder,
+                            &mut contexts,
+                        )
+                    }
+                    .expect("decode");
+                    let elapsed = start.elapsed();
+                    black_box((bitmap, contexts, decoder));
+                    elapsed
+                };
+                if sample & 1 == 0 {
+                    optimized_times.push(run(true));
+                    oracle_times.push(run(false));
+                } else {
+                    oracle_times.push(run(false));
+                    optimized_times.push(run(true));
+                }
+            }
+            let optimized = median_duration(optimized_times);
+            let oracle = median_duration(oracle_times);
+            println!(
+                "generic_{template:?} scalar_44a2b6e_median_ns={} specialized_median_ns={} speedup={:.3}",
+                oracle.as_nanos(),
+                optimized.as_nanos(),
+                oracle.as_secs_f64() / optimized.as_secs_f64(),
+            );
+        }
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_specialized_refinement_kernels_against_44a2b6e_oracle() {
+        let limits = Limits::default();
+        let width = 512;
+        let height = 384;
+        let mut state = 0x914a_d27c_650e_b83f;
+        let reference = random_bitmap(width + 5, height + 3, &mut state);
+        let coded = {
+            let mut bytes = vec![0x35; 32_000];
+            bytes.extend_from_slice(&ARITHMETIC_TERMINATOR);
+            bytes
+        };
+        for template in [RefinementTemplate::Template0, RefinementTemplate::Template1] {
+            let adaptive = [TemplateOffset::new(-1, -1), TemplateOffset::new(-1, -1)];
+            let parameters = RefinementParameters {
+                reference_dx: -2,
+                reference_dy: 1,
+            };
+            let mut optimized_times = Vec::new();
+            let mut oracle_times = Vec::new();
+            for sample in 0..11 {
+                let run = |optimized: bool| {
+                    let mut bitmap = Bitmap::blank(width, height, &limits).expect("bitmap");
+                    let mut decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+                    let mut contexts =
+                        vec![ArithmeticContext::new(); refinement_context_count(template)];
+                    let start = Instant::now();
+                    if optimized {
+                        decode_refinement_with(
+                            &mut bitmap,
+                            &reference,
+                            template,
+                            adaptive,
+                            true,
+                            parameters,
+                            &mut decoder,
+                            &mut contexts,
+                        )
+                    } else {
+                        decode_refinement_with_oracle(
+                            &mut bitmap,
+                            &reference,
+                            template,
+                            adaptive,
+                            true,
+                            parameters,
+                            &mut decoder,
+                            &mut contexts,
+                        )
+                    }
+                    .expect("decode");
+                    let elapsed = start.elapsed();
+                    black_box((bitmap, contexts, decoder));
+                    elapsed
+                };
+                if sample & 1 == 0 {
+                    optimized_times.push(run(true));
+                    oracle_times.push(run(false));
+                } else {
+                    oracle_times.push(run(false));
+                    optimized_times.push(run(true));
+                }
+            }
+            let optimized = median_duration(optimized_times);
+            let oracle = median_duration(oracle_times);
+            println!(
+                "refinement_{template:?} scalar_44a2b6e_median_ns={} specialized_median_ns={} speedup={:.3}",
+                oracle.as_nanos(),
+                optimized.as_nanos(),
+                oracle.as_secs_f64() / optimized.as_secs_f64(),
+            );
+        }
     }
 
     #[test]
