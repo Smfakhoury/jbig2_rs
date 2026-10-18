@@ -9,7 +9,7 @@
 use core::fmt;
 
 use crate::arithmetic::{reset_contexts, ArithmeticContext, ArithmeticDecoder, ArithmeticError};
-use crate::mmr::{decode_mmr, EofbPolicy, MmrError};
+use crate::mmr::{decode_mmr_reused, EofbPolicy, MmrError, MmrScratch};
 use crate::reader::ByteReader;
 use crate::segment_data::{parse_region_info, RegionInfo};
 use crate::{
@@ -666,6 +666,22 @@ pub(crate) fn decode_generic_region_segment(
     unknown_length: bool,
     limits: &Limits,
 ) -> Result<DecodedGenericRegion, GenericRegionError> {
+    let mut scratch = MmrScratch::default();
+    decode_generic_region_segment_reused(payload, unknown_length, limits, &mut scratch)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(decoded) => crate::spec::bitmap::storage_valid(&decoded.bitmap),
+        Err(_) => true,
+    },
+))]
+pub(crate) fn decode_generic_region_segment_reused(
+    payload: &[u8],
+    unknown_length: bool,
+    limits: &Limits,
+    scratch: &mut MmrScratch,
+) -> Result<DecodedGenericRegion, GenericRegionError> {
     let (header, header_length) = parse_generic_region_header(payload, limits)?;
     if header_length > payload.len() {
         return Err(MalformedError::IntegerOverflow.into());
@@ -695,7 +711,14 @@ pub(crate) fn decode_generic_region_segment(
     };
 
     let bitmap = if header.mmr {
-        let decoded = decode_mmr(coded, header.region.width, rows, limits, eofb_policy)?;
+        let decoded = decode_mmr_reused(
+            coded,
+            header.region.width,
+            rows,
+            limits,
+            eofb_policy,
+            scratch,
+        )?;
         pad_bitmap_height(decoded, header.region.height, limits)?
     } else if unknown_length {
         decode_arithmetic_generic(coded, &header, rows, None, limits)?

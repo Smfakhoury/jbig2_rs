@@ -53,6 +53,51 @@ pub(crate) enum EofbPolicy {
     Optional,
 }
 
+#[derive(Debug, Default)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) struct MmrScratch {
+    pub(crate) transitions: Vec<u32>,
+    pub(crate) row_transitions: Vec<u32>,
+    pub(crate) retained_bytes: u64,
+    #[cfg(test)]
+    pub(crate) reserve_events: u64,
+}
+
+impl MmrScratch {
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        ensures
+            final(self).transitions@.len() == 0,
+            final(self).row_transitions@.len() == 0,
+    ))]
+    pub(crate) fn clear(&mut self) {
+        self.transitions.clear();
+        self.row_transitions.clear();
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        ensures
+            final(self).transitions@.len() == 0,
+            final(self).row_transitions@.len() == 0,
+            final(self).retained_bytes == 0,
+    ))]
+    pub(crate) fn release(&mut self) {
+        self.transitions = Vec::new();
+        self.row_transitions = Vec::new();
+        self.retained_bytes = 0;
+        #[cfg(test)]
+        {
+            self.reserve_events = 0;
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == self.retained_bytes,
+    ))]
+    pub(crate) fn retained_bytes(&self) -> u64 {
+        self.retained_bytes
+    }
+}
+
 /// A fail-closed MMR decoding failure.
 ///
 /// Wiring this module into the public decoder should add equivalent cases to
@@ -481,8 +526,35 @@ pub(crate) fn decode_mmr(
     limits: &Limits,
     eofb_policy: EofbPolicy,
 ) -> Result<Bitmap, MmrError> {
-    let (bitmap, mut reader) = decode_bitmap(data, width, height, limits)?;
-    finish_block(&mut reader, eofb_policy)?;
+    let mut scratch = MmrScratch::default();
+    decode_mmr_reused(data, width, height, limits, eofb_policy, &mut scratch)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+        Err(_) => true,
+    },
+))]
+pub(crate) fn decode_mmr_reused(
+    data: &[u8],
+    width: u32,
+    height: u32,
+    limits: &Limits,
+    eofb_policy: EofbPolicy,
+    scratch: &mut MmrScratch,
+) -> Result<Bitmap, MmrError> {
+    let result = decode_bitmap(data, width, height, limits, scratch);
+    let (bitmap, mut reader) = match result {
+        Ok(value) => value,
+        Err(error) => {
+            scratch.clear();
+            return Err(error);
+        }
+    };
+    let finish = finish_block(&mut reader, eofb_policy);
+    scratch.clear();
+    finish?;
     Ok(bitmap)
 }
 
@@ -507,8 +579,11 @@ pub(crate) fn decode_mmr_prefix(
     height: u32,
     limits: &Limits,
 ) -> Result<(Bitmap, usize), MmrError> {
-    let (bitmap, mut reader) = decode_bitmap(data, width, height, limits)?;
-    finish_required_prefix(&mut reader)?;
+    let mut scratch = MmrScratch::default();
+    let (bitmap, mut reader) = decode_bitmap(data, width, height, limits, &mut scratch)?;
+    let finish = finish_required_prefix(&mut reader);
+    scratch.clear();
+    finish?;
     let consumed_bytes = reader
         .bit_position
         .checked_div(8)
@@ -531,6 +606,7 @@ fn decode_bitmap<'a>(
     width: u32,
     height: u32,
     limits: &Limits,
+    scratch: &mut MmrScratch,
 ) -> Result<(Bitmap, BitReader<'a>), MmrError> {
     enforce_input_limit(data, limits)?;
     if data.len() > usize::MAX / 8 {
@@ -552,8 +628,9 @@ fn decode_bitmap<'a>(
         reveal(mmr_spec::bitmap_storage_valid);
         crate::bitmap::bitmap_shared::stride_covers_width(width);
     }
-    let (mut transitions, mut row_transitions) =
-        allocate_transition_storage(width, &bitmap, limits)?;
+    prepare_transition_storage(width, &bitmap, limits, scratch)?;
+    let mut transitions = &mut scratch.transitions;
+    let mut row_transitions = &mut scratch.row_transitions;
     transitions.push(width);
     transitions.push(width);
     #[cfg(verus_keep_ghost)]
@@ -628,7 +705,7 @@ fn decode_bitmap<'a>(
             #[cfg(verus_keep_ghost)]
             production_mmr_mode_budget!(mode_count, max_modes);
 
-            let (b1, b2) = reference_elements(&transitions, x, black, width, initial)?;
+            let (b1, b2) = reference_elements(transitions, x, black, width, initial)?;
             let mode_offset = reader.bit_position;
             match decode_mode(&mut reader)? {
                 Mode::Extension => {
@@ -649,7 +726,7 @@ fn decode_bitmap<'a>(
                         b2,
                         black,
                         width,
-                        &mut row_transitions,
+                        row_transitions,
                         &mut emitted_black,
                     )?;
                     x = b2;
@@ -680,7 +757,7 @@ fn decode_bitmap<'a>(
                         after_first,
                         black,
                         width,
-                        &mut row_transitions,
+                        row_transitions,
                         &mut emitted_black,
                     )?;
                     fill_recorded_span(
@@ -690,7 +767,7 @@ fn decode_bitmap<'a>(
                         end,
                         !black,
                         width,
-                        &mut row_transitions,
+                        row_transitions,
                         &mut emitted_black,
                     )?;
                     x = end;
@@ -719,7 +796,7 @@ fn decode_bitmap<'a>(
                         target,
                         black,
                         width,
-                        &mut row_transitions,
+                        row_transitions,
                         &mut emitted_black,
                     )?;
                     x = target;
@@ -740,7 +817,7 @@ fn decode_bitmap<'a>(
             reveal(mmr_spec::bitmap_storage_valid);
         }
 
-        finish_transition_row(&mut row_transitions, width);
+        finish_transition_row(row_transitions, width);
         core::mem::swap(&mut transitions, &mut row_transitions);
         #[cfg(verus_keep_ghost)]
         production_mmr_row_termination!(row, height);
@@ -791,16 +868,18 @@ fn enforce_work(actual: u64, limits: &Limits) -> Result<(), MmrError> {
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok((transitions, row_transitions)) =>
-            transitions@.len() == 0 && row_transitions@.len() == 0,
+        Ok(()) =>
+            final(scratch).transitions@.len() == 0
+            && final(scratch).row_transitions@.len() == 0,
         Err(_) => true,
     },
 ))]
-fn allocate_transition_storage(
+fn prepare_transition_storage(
     width: u32,
     bitmap: &Bitmap,
     limits: &Limits,
-) -> Result<(Vec<u32>, Vec<u32>), MmrError> {
+    scratch: &mut MmrScratch,
+) -> Result<(), MmrError> {
     let capacity_u64 = u64::from(width)
         .checked_add(2)
         .ok_or(MmrError::IntegerOverflow)?;
@@ -825,25 +904,71 @@ fn allocate_transition_storage(
             },
         )));
     }
+    #[cfg(not(verus_keep_ghost))]
+    {
+        let retained_total = bitmap_bytes
+            .checked_add(scratch.retained_bytes())
+            .ok_or(MmrError::IntegerOverflow)?;
+        if retained_total > limits.max_decoder_managed_memory_bytes {
+            scratch.release();
+        }
+    }
     #[cfg(verus_keep_ghost)]
     production_mmr_memory_bound!(bitmap_bytes, transition_bytes, all_transition_bytes, limits);
 
     let Ok(capacity) = usize::try_from(capacity_u64) else {
         return Err(MmrError::IntegerOverflow);
     };
-    let mut transitions = Vec::new();
-    if transitions.try_reserve(capacity).is_err() {
+    scratch.clear();
+    #[cfg(test)]
+    {
+        if scratch.transitions.capacity() < capacity {
+            scratch.reserve_events += 1;
+        }
+        if scratch.row_transitions.capacity() < capacity {
+            scratch.reserve_events += 1;
+        }
+    }
+    if scratch.transitions.try_reserve(capacity).is_err() {
         return Err(MmrError::Allocation {
             requested_bytes: transition_bytes,
         });
     }
-    let mut row_transitions = Vec::new();
-    if row_transitions.try_reserve(capacity).is_err() {
+    if scratch.row_transitions.try_reserve(capacity).is_err() {
+        #[cfg(not(verus_keep_ghost))]
+        {
+            scratch.retained_bytes = u64::try_from(scratch.transitions.capacity())
+                .unwrap_or(u64::MAX)
+                .saturating_add(
+                    u64::try_from(scratch.row_transitions.capacity()).unwrap_or(u64::MAX),
+                )
+                .saturating_mul(core::mem::size_of::<u32>() as u64);
+        }
         return Err(MmrError::Allocation {
             requested_bytes: transition_bytes,
         });
     }
-    Ok((transitions, row_transitions))
+    #[cfg(not(verus_keep_ghost))]
+    {
+        scratch.retained_bytes = u64::try_from(scratch.transitions.capacity())
+            .unwrap_or(u64::MAX)
+            .saturating_add(u64::try_from(scratch.row_transitions.capacity()).unwrap_or(u64::MAX))
+            .saturating_mul(core::mem::size_of::<u32>() as u64);
+        let actual_total = bitmap_bytes
+            .checked_add(scratch.retained_bytes())
+            .ok_or(MmrError::IntegerOverflow)?;
+        if actual_total > limits.max_decoder_managed_memory_bytes {
+            scratch.release();
+            return Err(MmrError::Bitmap(DecodeError::LimitExceeded(
+                LimitExceeded {
+                    kind: LimitKind::Memory,
+                    limit: limits.max_decoder_managed_memory_bytes,
+                    actual: actual_total,
+                },
+            )));
+        }
+    }
+    Ok(())
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>

@@ -2,12 +2,12 @@ use std::io::Read;
 
 use crate::bitmap::CombinationOperator;
 use crate::document::{
-    parse_embedded_document, parse_standalone_document, read_bounded_input, Decoder, DocumentInfo,
-    GlobalSegments, PageInfo, ParsedData, ParsedSegment,
+    parse_embedded_document, parse_standalone_document, read_bounded_input, Decoder,
+    DecoderContext, DocumentInfo, GlobalSegments, PageInfo, ParsedData, ParsedSegment,
 };
 use crate::generic_region::{
-    decode_arithmetic_refinement, decode_generic_region_segment, parse_refinement_region_header,
-    GenericRegionError, GenericTemplate, RefinementParameters,
+    decode_arithmetic_refinement, decode_generic_region_segment_reused,
+    parse_refinement_region_header, GenericRegionError, GenericTemplate, RefinementParameters,
 };
 use crate::halftone::{
     decode_halftone_region, decode_pattern_dictionary, halftone_error_into_decode,
@@ -15,6 +15,7 @@ use crate::halftone::{
     new_pattern_mmr_state, parse_halftone_header, parse_pattern_dictionary_header, WorkBudget,
 };
 use crate::huffman::{HuffmanError, HuffmanTable};
+use crate::mmr::MmrScratch;
 use crate::reader::ByteReader;
 use crate::segment_data::parse_region_info;
 use crate::segment_header::SegmentType;
@@ -225,22 +226,29 @@ impl Decoder {
     /// sink error.
     #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
-        let (info, segments) = parse_standalone_document(input, self.limits())?;
-        let mut collector = PageCollector::new(self.limits());
-        let initial_work = structural_work(input.len(), &segments)?;
-        decode_segments_collected(
-            &segments,
-            &info,
-            initial_work,
-            0,
-            self.limits(),
-            None,
-            &mut collector,
-        )?;
-        Ok(DecodedDocument {
-            info,
-            pages: collector.pages,
-        })
+        #[cfg(verus_keep_ghost)]
+        {
+            let (info, segments) = parse_standalone_document(input, self.limits())?;
+            let mut collector = PageCollector::new(self.limits());
+            let initial_work = structural_work(input.len(), &segments)?;
+            let mut scratch = MmrScratch::default();
+            decode_segments_collected(
+                &segments,
+                &info,
+                initial_work,
+                0,
+                self.limits(),
+                &mut scratch,
+                None,
+                &mut collector,
+            )?;
+            return Ok(DecodedDocument {
+                info,
+                pages: collector.pages,
+            });
+        }
+        #[cfg(not(verus_keep_ghost))]
+        self.context().decode(input)
     }
 
     /// Reads a bounded standalone document and decodes it into owned pages.
@@ -251,7 +259,7 @@ impl Decoder {
     /// error.
     pub fn decode_reader<R: Read>(&self, reader: &mut R) -> Result<DecodedDocument, DecodeError> {
         let bytes = read_bounded_input(reader, self.limits())?;
-        self.decode(&bytes)
+        self.context().decode(&bytes)
     }
 
     /// Decodes a contiguous embedded page stream without external globals.
@@ -262,7 +270,13 @@ impl Decoder {
     /// over-limit input.
     #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode_embedded(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
-        self.decode_embedded_internal(input, None)
+        #[cfg(verus_keep_ghost)]
+        {
+            let mut scratch = MmrScratch::default();
+            return self.decode_embedded_internal(input, None, &mut scratch);
+        }
+        #[cfg(not(verus_keep_ghost))]
+        self.context().decode_embedded(input)
     }
 
     /// Decodes a contiguous embedded page stream with validated globals.
@@ -277,7 +291,13 @@ impl Decoder {
         input: &[u8],
         globals: &GlobalSegments,
     ) -> Result<DecodedDocument, DecodeError> {
-        self.decode_embedded_internal(input, Some(globals))
+        #[cfg(verus_keep_ghost)]
+        {
+            let mut scratch = MmrScratch::default();
+            return self.decode_embedded_internal(input, Some(globals), &mut scratch);
+        }
+        #[cfg(not(verus_keep_ghost))]
+        self.context().decode_embedded_with_globals(input, globals)
     }
 
     /// Decodes a standalone document and emits each completed page.
@@ -293,7 +313,17 @@ impl Decoder {
     ) -> Result<DocumentInfo, DecodeError> {
         let (info, segments) = parse_standalone_document(input, self.limits())?;
         let initial_work = structural_work(input.len(), &segments)?;
-        decode_segments(&segments, &info, initial_work, 0, self.limits(), None, sink)?;
+        let mut scratch = MmrScratch::default();
+        decode_segments(
+            &segments,
+            &info,
+            initial_work,
+            0,
+            self.limits(),
+            &mut scratch,
+            None,
+            sink,
+        )?;
         Ok(info)
     }
 
@@ -317,6 +347,7 @@ impl Decoder {
         &self,
         input: &[u8],
         globals: Option<&GlobalSegments>,
+        mmr_scratch: &mut MmrScratch,
     ) -> Result<DecodedDocument, DecodeError> {
         let (info, segments) = parse_embedded_document(input, self.limits(), globals)?;
         let mut collector = PageCollector::new(self.limits());
@@ -339,6 +370,7 @@ impl Decoder {
             input_work,
             global_bytes,
             self.limits(),
+            mmr_scratch,
             global_resources,
             &mut collector,
         )?;
@@ -346,6 +378,67 @@ impl Decoder {
             info,
             pages: collector.pages,
         })
+    }
+}
+
+impl DecoderContext<'_> {
+    /// Decodes one standalone document using retained scratch capacity.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed errors as [`Decoder::decode`].
+    pub fn decode(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
+        let result = (|| {
+            let (info, segments) = parse_standalone_document(input, self.decoder.limits())?;
+            let mut collector = PageCollector::new(self.decoder.limits());
+            let initial_work = structural_work(input.len(), &segments)?;
+            decode_segments_collected(
+                &segments,
+                &info,
+                initial_work,
+                0,
+                self.decoder.limits(),
+                &mut self.mmr,
+                None,
+                &mut collector,
+            )?;
+            Ok(DecodedDocument {
+                info,
+                pages: collector.pages,
+            })
+        })();
+        self.finish_call();
+        result
+    }
+
+    /// Decodes one embedded page stream using retained scratch capacity.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed errors as [`Decoder::decode_embedded`].
+    pub fn decode_embedded(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
+        let result = self
+            .decoder
+            .decode_embedded_internal(input, None, &mut self.mmr);
+        self.finish_call();
+        result
+    }
+
+    /// Decodes one embedded page stream with validated globals.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed errors as [`Decoder::decode_embedded_with_globals`].
+    pub fn decode_embedded_with_globals(
+        &mut self,
+        input: &[u8],
+        globals: &GlobalSegments,
+    ) -> Result<DecodedDocument, DecodeError> {
+        let result = self
+            .decoder
+            .decode_embedded_internal(input, Some(globals), &mut self.mmr);
+        self.finish_call();
+        result
     }
 }
 
@@ -973,6 +1066,7 @@ macro_rules! decode_segments_body {
         $initial_work:expr,
         $initial_retained_bytes:expr,
         $limits:expr,
+        $mmr_scratch:expr,
         $initial_resources:expr,
         $sink:expr,
         $write_page:path
@@ -982,6 +1076,7 @@ macro_rules! decode_segments_body {
         let initial_work = $initial_work;
         let initial_retained_bytes = $initial_retained_bytes;
         let limits = $limits;
+        let mmr_scratch = $mmr_scratch;
         let initial_resources = $initial_resources;
         let sink = $sink;
         let mut pages = Vec::new();
@@ -1143,6 +1238,7 @@ macro_rules! decode_segments_body {
                         &mut retained,
                         &mut cumulative_work,
                         limits,
+                        mmr_scratch,
                     )?;
                 }
                 SegmentType::IntermediateGenericRefinementRegion
@@ -1285,6 +1381,7 @@ fn decode_segments_collected(
     initial_work: u64,
     initial_retained_bytes: u64,
     limits: &Limits,
+    mmr_scratch: &mut MmrScratch,
     initial_resources: Option<InitialResources>,
     sink: &mut PageCollector,
 ) -> Result<(), DecodeError> {
@@ -1294,6 +1391,7 @@ fn decode_segments_collected(
         initial_work,
         initial_retained_bytes,
         limits,
+        mmr_scratch,
         initial_resources,
         sink,
         PageCollector::push_page
@@ -1307,6 +1405,7 @@ fn decode_segments<S: PageSink>(
     initial_work: u64,
     initial_retained_bytes: u64,
     limits: &Limits,
+    mmr_scratch: &mut MmrScratch,
     initial_resources: Option<InitialResources>,
     sink: &mut S,
 ) -> Result<(), DecodeError> {
@@ -1316,6 +1415,7 @@ fn decode_segments<S: PageSink>(
         initial_work,
         initial_retained_bytes,
         limits,
+        mmr_scratch,
         initial_resources,
         sink,
         write_page_to_sink::<S>
@@ -1340,11 +1440,13 @@ fn decode_generic_segment(
     retained: &mut RetainedBudget,
     work: &mut DecodeWork,
     limits: &Limits,
+    mmr_scratch: &mut MmrScratch,
 ) -> Result<(), DecodeError> {
-    let decoded = decode_generic_region_segment(
+    let decoded = decode_generic_region_segment_reused(
         segment.payload,
         segment.header.data_length.is_none(),
         limits,
+        mmr_scratch,
     )
     .map_err(generic_error_into_decode)?;
     if decoded.consumed_bytes != segment.payload.len() {
@@ -2820,6 +2922,40 @@ mod tests {
         bytes
     }
 
+    fn all_white_mmr_document(width: u32, height: u32) -> Vec<u8> {
+        let mut page = [0_u8; 19];
+        page[0..4].copy_from_slice(&width.to_be_bytes());
+        page[4..8].copy_from_slice(&height.to_be_bytes());
+        page[16] = 0x40;
+        let mut generic = Vec::new();
+        generic.extend_from_slice(&width.to_be_bytes());
+        generic.extend_from_slice(&height.to_be_bytes());
+        generic.extend_from_slice(&0_u32.to_be_bytes());
+        generic.extend_from_slice(&0_u32.to_be_bytes());
+        generic.push(0);
+        generic.push(1);
+        let coded_len = usize::try_from(height.div_ceil(8)).expect("test height fits");
+        generic.extend(std::iter::repeat_n(0xFF, coded_len));
+        if height % 8 != 0 {
+            *generic.last_mut().expect("coded byte") = 0xFF << (8 - height % 8);
+        }
+        let mut bytes = SIGNATURE.to_vec();
+        bytes.push(0x01);
+        bytes.extend_from_slice(&1_u32.to_be_bytes());
+        bytes.extend_from_slice(&segment_header(0, 48, 1, 19));
+        bytes.extend_from_slice(&page);
+        bytes.extend_from_slice(&segment_header(
+            1,
+            38,
+            1,
+            u32::try_from(generic.len()).expect("payload fits"),
+        ));
+        bytes.extend_from_slice(&generic);
+        bytes.extend_from_slice(&segment_header(2, 49, 1, 0));
+        bytes.extend_from_slice(&segment_header(3, 51, 0, 0));
+        bytes
+    }
+
     #[test]
     fn decodes_generic_page_and_collects_document() {
         let decoded = Decoder::default()
@@ -2828,6 +2964,185 @@ mod tests {
         assert_eq!(decoded.pages().len(), 1);
         assert_eq!(decoded.pages()[0].number(), 1);
         assert_eq!(decoded.pages()[0].bitmap().bytes(), &[0xFF]);
+    }
+
+    #[test]
+    fn reusable_context_matches_stateless_and_reuses_capacity() {
+        let input = document_with_generic(&[0x80]);
+        let decoder = Decoder::default();
+        let expected = decoder.decode(&input).expect("stateless decode");
+        let mut context = decoder.context();
+        let first = context.decode(&input).expect("context decode");
+        assert_eq!(first, expected);
+        let retained = context.retained_scratch_bytes();
+        let reserve_events = context.mmr.reserve_events;
+        assert!(retained > 0);
+        assert_eq!(reserve_events, 2);
+        let second = context.decode(&input).expect("reused context decode");
+        assert_eq!(second, expected);
+        assert_eq!(context.retained_scratch_bytes(), retained);
+        assert_eq!(context.mmr.reserve_events, reserve_events);
+        context.release_scratch();
+        assert_eq!(context.retained_scratch_bytes(), 0);
+        assert_eq!(context.mmr.reserve_events, 0);
+    }
+
+    #[test]
+    fn reusable_context_recovers_after_error_without_state_leakage() {
+        let decoder = Decoder::default();
+        let valid = document_with_generic(&[0x80]);
+        let expected = decoder.decode(&valid).expect("stateless decode");
+        let mut context = decoder.context();
+        assert!(context.decode(&[0]).is_err());
+        let recovered = context.decode(&valid).expect("decode after error");
+        assert_eq!(recovered, expected);
+        context.reset();
+        assert_eq!(
+            context.decode(&valid).expect("decode after reset"),
+            expected
+        );
+    }
+
+    #[test]
+    fn reusable_context_obeys_retained_state_limit() {
+        let limits = Limits {
+            max_retained_state_bytes: 1,
+            ..Limits::default()
+        };
+        let decoder = Decoder::new(limits);
+        let mut context = decoder.context();
+        context
+            .decode(&document_with_generic(&[0x80]))
+            .expect("scratch retention is optional");
+        assert!(context.retained_scratch_bytes() <= 1);
+    }
+
+    #[test]
+    fn reusable_context_handles_mixed_sizes_deterministically() {
+        let decoder = Decoder::default();
+        let small = all_white_mmr_document(64, 64);
+        let large = all_white_mmr_document(512, 512);
+        let mut context = decoder.context();
+        let small_expected = decoder.decode(&small).expect("small stateless");
+        let large_expected = decoder.decode(&large).expect("large stateless");
+        assert_eq!(
+            context.decode(&small).expect("small context"),
+            small_expected
+        );
+        let small_capacity = context.retained_scratch_bytes();
+        let small_events = context.mmr.reserve_events;
+        assert_eq!(
+            context.decode(&large).expect("large context"),
+            large_expected
+        );
+        let large_capacity = context.retained_scratch_bytes();
+        assert!(large_capacity >= small_capacity);
+        assert!(context.mmr.reserve_events > small_events);
+        let large_events = context.mmr.reserve_events;
+        assert_eq!(
+            context.decode(&small).expect("small reused"),
+            small_expected
+        );
+        assert_eq!(context.retained_scratch_bytes(), large_capacity);
+        assert_eq!(context.mmr.reserve_events, large_events);
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_reusable_context_against_d669954_stateless() {
+        let decoder = Decoder::default();
+        let same = all_white_mmr_document(64, 64);
+        let mixed = [
+            all_white_mmr_document(64, 64),
+            same.clone(),
+            all_white_mmr_document(2048, 2048),
+            same.clone(),
+        ];
+        let mut stateless_times = Vec::new();
+        let mut reused_times = Vec::new();
+        for sample in 0..9 {
+            if sample % 2 == 0 {
+                let start = std::time::Instant::now();
+                for _ in 0..50 {
+                    std::hint::black_box(decoder.decode(&same).expect("stateless"));
+                }
+                stateless_times.push(start.elapsed());
+                let mut context = decoder.context();
+                let start = std::time::Instant::now();
+                for _ in 0..50 {
+                    std::hint::black_box(context.decode(&same).expect("reused"));
+                }
+                reused_times.push(start.elapsed());
+            } else {
+                let mut context = decoder.context();
+                let start = std::time::Instant::now();
+                for _ in 0..50 {
+                    std::hint::black_box(context.decode(&same).expect("reused"));
+                }
+                reused_times.push(start.elapsed());
+                let start = std::time::Instant::now();
+                for _ in 0..50 {
+                    std::hint::black_box(decoder.decode(&same).expect("stateless"));
+                }
+                stateless_times.push(start.elapsed());
+            }
+        }
+        stateless_times.sort_unstable();
+        reused_times.sort_unstable();
+        let stateless = stateless_times[stateless_times.len() / 2];
+        let reused = reused_times[reused_times.len() / 2];
+
+        let mut stateless_mixed = Vec::new();
+        let mut reused_mixed = Vec::new();
+        for sample in 0..7 {
+            if sample % 2 == 0 {
+                let start = std::time::Instant::now();
+                for _ in 0..20 {
+                    for input in &mixed {
+                        std::hint::black_box(decoder.decode(input).expect("stateless mixed"));
+                    }
+                }
+                stateless_mixed.push(start.elapsed());
+                let mut context = decoder.context();
+                let start = std::time::Instant::now();
+                for _ in 0..20 {
+                    for input in &mixed {
+                        std::hint::black_box(context.decode(input).expect("reused mixed"));
+                    }
+                }
+                reused_mixed.push(start.elapsed());
+            } else {
+                let mut context = decoder.context();
+                let start = std::time::Instant::now();
+                for _ in 0..20 {
+                    for input in &mixed {
+                        std::hint::black_box(context.decode(input).expect("reused mixed"));
+                    }
+                }
+                reused_mixed.push(start.elapsed());
+                let start = std::time::Instant::now();
+                for _ in 0..20 {
+                    for input in &mixed {
+                        std::hint::black_box(decoder.decode(input).expect("stateless mixed"));
+                    }
+                }
+                stateless_mixed.push(start.elapsed());
+            }
+        }
+        stateless_mixed.sort_unstable();
+        reused_mixed.sort_unstable();
+        let stateless_mixed = stateless_mixed[stateless_mixed.len() / 2];
+        let reused_mixed = reused_mixed[reused_mixed.len() / 2];
+        println!(
+            "context same_stateless_ns={} same_reused_ns={} same_speedup={:.3} \
+             mixed_stateless_ns={} mixed_reused_ns={} mixed_speedup={:.3}",
+            stateless.as_nanos(),
+            reused.as_nanos(),
+            stateless.as_secs_f64() / reused.as_secs_f64(),
+            stateless_mixed.as_nanos(),
+            reused_mixed.as_nanos(),
+            stateless_mixed.as_secs_f64() / reused_mixed.as_secs_f64(),
+        );
     }
 
     #[test]

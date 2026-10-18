@@ -69,7 +69,7 @@ mod symbol_text;
 
 pub use bitmap::Bitmap;
 pub use decode::{DecodedDocument, Page, PageSink};
-pub use document::{Decoder, DocumentInfo, GlobalSegments, PageInfo};
+pub use document::{Decoder, DecoderContext, DocumentInfo, GlobalSegments, PageInfo};
 pub use error::{
     DecodeError, GenericRegionErrorKind, HalftoneErrorKind, HuffmanErrorKind, IoErrorKind,
     LimitExceeded, LimitKind, MalformedError, MmrErrorKind, UnsupportedFeature,

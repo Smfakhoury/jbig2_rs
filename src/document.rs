@@ -2,6 +2,7 @@ use std::io::Read;
 
 use crate::file_header::{inspect_file_header, Organization};
 use crate::huffman::{HuffmanError, HuffmanTable};
+use crate::mmr::MmrScratch;
 use crate::reader::ByteReader;
 use crate::segment_data::{
     parse_end_of_stripe, parse_extension, parse_page_information, parse_profiles, require_empty,
@@ -96,7 +97,30 @@ pub struct Decoder {
     limits: Limits,
 }
 
+/// Reusable decoding state for repeated documents with one [`Decoder`].
+///
+/// The context retains only allocation capacity, never document semantics.
+/// Every operation clears scratch lengths after success or error. Call
+/// [`Self::reset`] to clear scratch while retaining capacity, or
+/// [`Self::release_scratch`] to return all retained allocations.
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub struct DecoderContext<'a> {
+    pub(crate) decoder: &'a Decoder,
+    pub(crate) mmr: MmrScratch,
+}
+
 impl Decoder {
+    /// Creates reusable scratch state tied to this decoder's limits.
+    #[must_use]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub fn context(&self) -> DecoderContext<'_> {
+        DecoderContext {
+            decoder: self,
+            mmr: MmrScratch::default(),
+        }
+    }
+
     /// Creates a decoder using the supplied resource limits.
     #[must_use]
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -111,7 +135,93 @@ impl Decoder {
         production_decoder_fields!(&out);
         out
     }
+}
 
+impl DecoderContext<'_> {
+    /// Returns the limits governing this context.
+    #[must_use]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub const fn limits(&self) -> &Limits {
+        self.decoder.limits()
+    }
+
+    /// Exact bytes currently retained by reusable allocation capacities.
+    #[must_use]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub fn retained_scratch_bytes(&self) -> u64 {
+        self.mmr.retained_bytes()
+    }
+
+    /// Clears all per-document scratch contents while retaining capacity.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub fn reset(&mut self) {
+        self.mmr.clear();
+    }
+
+    /// Clears per-document state and releases every retained allocation.
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub fn release_scratch(&mut self) {
+        self.mmr.release();
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub(crate) fn finish_call(&mut self) {
+        self.reset();
+        if self.retained_scratch_bytes() > self.limits().max_retained_state_bytes {
+            self.release_scratch();
+        }
+    }
+
+    /// Parses and validates one standalone document.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed errors as [`Decoder::inspect`].
+    pub fn inspect(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
+        let result = self.decoder.inspect(input);
+        self.finish_call();
+        result
+    }
+
+    /// Parses one embedded page stream.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed errors as [`Decoder::inspect_embedded`].
+    pub fn inspect_embedded(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
+        let result = self.decoder.inspect_embedded(input);
+        self.finish_call();
+        result
+    }
+
+    /// Parses one embedded page stream with validated globals.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed errors as [`Decoder::inspect_embedded_with_globals`].
+    pub fn inspect_embedded_with_globals(
+        &mut self,
+        input: &[u8],
+        globals: &GlobalSegments,
+    ) -> Result<DocumentInfo, DecodeError> {
+        let result = self.decoder.inspect_embedded_with_globals(input, globals);
+        self.finish_call();
+        result
+    }
+
+    /// Parses and validates immutable embedded global segments.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same typed errors as [`Decoder::parse_globals`].
+    pub fn parse_globals(&mut self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
+        let result = self.decoder.parse_globals(input);
+        self.finish_call();
+        result
+    }
+}
+
+impl Decoder {
     /// Returns the active resource limits.
     #[must_use]
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
