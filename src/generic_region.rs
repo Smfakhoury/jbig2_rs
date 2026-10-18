@@ -41,6 +41,7 @@ mod generic_region_proofs;
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 const ARITHMETIC_TERMINATOR: [u8; 2] = [0xff, 0xac];
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 const MMR_UNKNOWN_LENGTH_SEPARATOR: [u8; 2] = [0x00, 0x00];
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 const MAX_GENERIC_CONTEXTS: usize = 1 << 16;
@@ -307,6 +308,7 @@ pub(crate) struct GenericRegionHeader {
 
 /// The decoded bitmap and number of data bytes consumed.
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct DecodedGenericRegion {
     pub(crate) header: GenericRegionHeader,
     pub(crate) bitmap: Bitmap,
@@ -322,10 +324,10 @@ pub(crate) struct DecodedGenericRegion {
 #[derive(Debug)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericContexts {
-    template: GenericTemplate,
-    extended_template: bool,
-    contexts: Vec<ArithmeticContext>,
-    storage_bytes: u64,
+    pub(crate) template: GenericTemplate,
+    pub(crate) extended_template: bool,
+    pub(crate) contexts: Vec<ArithmeticContext>,
+    pub(crate) storage_bytes: u64,
 }
 
 /// A fallibly allocated retained copy of generic arithmetic statistics.
@@ -340,6 +342,16 @@ pub(crate) struct GenericContextSnapshot {
 
 impl GenericContexts {
     /// Allocate a default statistics set compatible with `template`.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(contexts) =>
+                contexts.template == template
+                && contexts.extended_template == extended_template
+                && generic_region_spec::generic_contexts_valid(&contexts),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn new(
         template: GenericTemplate,
         extended_template: bool,
@@ -430,6 +442,7 @@ impl GenericContexts {
 /// dimensions, adaptive locations, typical prediction, and skip data belong
 /// to each individual generic-region procedure invocation.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericArithmeticCall<'a> {
     pub(crate) width: u32,
     pub(crate) height: u32,
@@ -447,16 +460,23 @@ pub(crate) struct GenericArithmeticCall<'a> {
 #[derive(Debug)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericArithmeticSession<'a> {
-    decoder: ArithmeticDecoder<'a>,
-    contexts: GenericContexts,
-    coded_length: usize,
-    work_used: u64,
-    limits: Limits,
+    pub(crate) decoder: ArithmeticDecoder<'a>,
+    pub(crate) contexts: GenericContexts,
+    pub(crate) coded_length: usize,
+    pub(crate) work_used: u64,
+    pub(crate) limits: Limits,
 }
 
 impl<'a> GenericArithmeticSession<'a> {
     /// Start a reusable session at the beginning of one bounded arithmetic
     /// stream.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(session) => generic_region_spec::generic_session_valid(&session),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn new(
         coded: &'a [u8],
         template: GenericTemplate,
@@ -466,9 +486,10 @@ impl<'a> GenericArithmeticSession<'a> {
         enforce_input_limit(coded, limits)?;
         validate_arithmetic_terminator(coded)?;
         let contexts = GenericContexts::new(template, extended_template, limits)?;
-        let decoder = ArithmeticDecoder::new(coded)
-            .map_err(DecodeError::from)
-            .map_err(GenericRegionError::from)?;
+        let decoder = match ArithmeticDecoder::new(coded) {
+            Ok(decoder) => decoder,
+            Err(error) => return Err(GenericRegionError::Decode(error.into_decode())),
+        };
         Ok(Self {
             decoder,
             contexts,
@@ -480,6 +501,21 @@ impl<'a> GenericArithmeticSession<'a> {
 
     /// Decode another bitmap while preserving this session's decoder position
     /// and adaptive probability statistics.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            generic_region_spec::generic_session_valid(old(self)),
+            match call.skip {
+                Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                None => true,
+            },
+        ensures
+            out.is_ok() ==> generic_region_spec::generic_session_valid(final(self)),
+            match out {
+                Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn decode_bitmap(
         &mut self,
         call: GenericArithmeticCall<'_>,
@@ -487,6 +523,21 @@ impl<'a> GenericArithmeticSession<'a> {
         self.decode_bitmap_rows(call, call.height)
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            generic_region_spec::generic_session_valid(old(self)),
+            match call.skip {
+                Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                None => true,
+            },
+        ensures
+            out.is_ok() ==> generic_region_spec::generic_session_valid(final(self)),
+            match out {
+                Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn decode_bitmap_rows(
         &mut self,
         call: GenericArithmeticCall<'_>,
@@ -604,15 +655,22 @@ pub(crate) fn parse_generic_region_header(
 ///
 /// If `unknown_length` is true, `payload` may include following input.  The
 /// returned `consumed_bytes` stops immediately after the terminal row count.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(decoded) => crate::spec::bitmap::storage_valid(&decoded.bitmap),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_generic_region_segment(
     payload: &[u8],
     unknown_length: bool,
     limits: &Limits,
 ) -> Result<DecodedGenericRegion, GenericRegionError> {
     let (header, header_length) = parse_generic_region_header(payload, limits)?;
-    let coded_and_following = payload
-        .get(header_length..)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    if header_length > payload.len() {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    let coded_and_following = &payload[header_length..];
 
     let (coded, rows, coded_consumed, eofb_policy) = if unknown_length {
         let terminal = split_unknown_length_data(
@@ -656,20 +714,31 @@ pub(crate) fn decode_generic_region_segment(
     })
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+        Err(_) => true,
+    },
+))]
 fn decode_known_length_arithmetic_generic(
     coded: &[u8],
     header: &GenericRegionHeader,
     rows: u32,
     limits: &Limits,
 ) -> Result<Bitmap, GenericRegionError> {
-    if coded.ends_with(&ARITHMETIC_TERMINATOR) {
+    let has_terminator = coded.len() >= 2
+        && coded[coded.len() - 2] == ARITHMETIC_TERMINATOR[0]
+        && coded[coded.len() - 1] == ARITHMETIC_TERMINATOR[1];
+    if has_terminator {
         return decode_arithmetic_generic(coded, header, rows, None, limits);
     }
     if coded.last() != Some(&0xff) {
         return Err(GenericRegionError::InvalidArithmeticTerminator);
     }
-    let requested_bytes = u64::try_from(coded.len())
-        .map_err(|_| MalformedError::IntegerOverflow)?
+    let Ok(requested_bytes) = u64::try_from(coded.len()) else {
+        return Err(MalformedError::IntegerOverflow.into());
+    };
+    let requested_bytes = requested_bytes
         .checked_add(1)
         .ok_or(MalformedError::IntegerOverflow)?;
     if requested_bytes > limits.max_decoder_managed_memory_bytes {
@@ -681,26 +750,37 @@ fn decode_known_length_arithmetic_generic(
         .into());
     }
     let mut normalized = Vec::new();
-    normalized
-        .try_reserve(
-            coded
-                .len()
-                .checked_add(1)
-                .ok_or(MalformedError::IntegerOverflow)?,
-        )
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    normalized.extend_from_slice(coded);
+    let capacity = coded
+        .len()
+        .checked_add(1)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    if normalized.try_reserve(capacity).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes }.into());
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= coded@.len(),
+            normalized@ == coded@.subrange(0, index as int),
+        decreases coded@.len() - index,
+    ))]
+    while index < coded.len() {
+        normalized.push(coded[index]);
+        index += 1;
+    }
     normalized.push(ARITHMETIC_TERMINATOR[1]);
     decode_arithmetic_generic(&normalized, header, rows, None, limits)
 }
 
 #[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 struct UnknownLengthData<'a> {
     coded: &'a [u8],
     rows: u32,
     consumed: usize,
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 fn split_unknown_length_data<'a>(
     data: &'a [u8],
     mmr: bool,
@@ -714,12 +794,26 @@ fn split_unknown_length_data<'a>(
         ARITHMETIC_TERMINATOR
     };
 
-    let marker_offset = data
-        .windows(2)
-        .position(|window| window == marker)
-        .ok_or_else(|| {
-            GenericRegionError::Decode(MalformedError::MissingGenericRegionTerminator.into())
-        })?;
+    let mut marker_offset = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant marker_offset <= data@.len(),
+        decreases data@.len() - marker_offset,
+    ))]
+    while marker_offset < data.len() {
+        let Some(next) = marker_offset.checked_add(1) else {
+            return Err(MalformedError::IntegerOverflow.into());
+        };
+        if next >= data.len() {
+            return Err(MalformedError::MissingGenericRegionTerminator.into());
+        }
+        if data[marker_offset] == marker[0] && data[next] == marker[1] {
+            break;
+        }
+        marker_offset = next;
+    }
+    if marker_offset == data.len() {
+        return Err(MalformedError::MissingGenericRegionTerminator.into());
+    }
     let count_start = marker_offset
         .checked_add(2)
         .ok_or(MalformedError::IntegerOverflow)?;
@@ -731,15 +825,13 @@ fn split_unknown_length_data<'a>(
     } else {
         0
     };
-    let count_bytes = data
-        .get(count_start..count_end)
-        .ok_or_else(|| unexpected_eof(count_start, 4, remaining))?;
-    let rows = u32::from_be_bytes([
-        count_bytes[0],
-        count_bytes[1],
-        count_bytes[2],
-        count_bytes[3],
-    ]);
+    if count_end > data.len() {
+        return Err(unexpected_eof(count_start, 4, remaining));
+    }
+    let rows = (u32::from(data[count_start]) << 24)
+        | (u32::from(data[count_start + 1]) << 16)
+        | (u32::from(data[count_start + 2]) << 8)
+        | u32::from(data[count_start + 3]);
     if rows > declared_height {
         return Err(MalformedError::GenericRegionRowCount {
             declared: declared_height,
@@ -749,9 +841,10 @@ fn split_unknown_length_data<'a>(
     }
 
     let coded_end = if mmr { marker_offset } else { count_start };
-    let coded = data
-        .get(..coded_end)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    if coded_end > data.len() {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    let coded = &data[..coded_end];
     if !mmr {
         validate_arithmetic_terminator(coded)?;
     }
@@ -766,6 +859,16 @@ fn split_unknown_length_data<'a>(
 ///
 /// `rows` may be less than the declared height only for unknown-length
 /// immediate generic regions.  Undecoded nominal rows remain zero.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires match skip {
+        Some(mask) => crate::spec::bitmap::storage_valid(mask),
+        None => true,
+    },
+    ensures match out {
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_arithmetic_generic(
     coded: &[u8],
     header: &GenericRegionHeader,
@@ -810,6 +913,21 @@ pub(crate) fn decode_arithmetic_generic(
 /// does not require or validate an end marker. `cumulative_work` is charged
 /// before the first arithmetic decision and is preserved across interleaved
 /// decoding procedures.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        match call.skip {
+            Some(mask) => crate::spec::bitmap::storage_valid(mask),
+            None => true,
+        },
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder))
+            && generic_region_spec::generic_contexts_valid(final(contexts)),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_generic_on(
     decoder: &mut ArithmeticDecoder<'_>,
     contexts: &mut GenericContexts,
@@ -830,6 +948,7 @@ pub(crate) fn decode_generic_on(
         contexts.extended_template,
         &contexts.contexts,
     )?;
+    validate_probability_states(&contexts.contexts)?;
     validate_generic_adaptive_values(
         contexts.template,
         contexts.extended_template,
@@ -849,6 +968,11 @@ pub(crate) fn decode_generic_on(
     let bitmap_bytes = bitmap_storage_bytes(call.width, call.height)?;
     enforce_managed_memory(contexts.storage_bytes, bitmap_bytes, limits)?;
     let mut bitmap = Bitmap::blank(call.width, call.height, limits)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&bitmap);
+        reveal(generic_region_spec::generic_contexts_valid);
+    }
     *cumulative_work = next_work;
 
     decode_generic_with(
@@ -859,25 +983,182 @@ pub(crate) fn decode_generic_on(
         &call.adaptive,
         call.typical_prediction,
         call.skip,
-        |context_index| {
-            let count = contexts.contexts.len();
-            let context = contexts.contexts.get_mut(context_index).ok_or(
-                GenericRegionError::ContextIndex {
-                    index: context_index,
-                    count,
-                },
-            )?;
-            decoder
-                .decode(context)
-                .map_err(DecodeError::from)
-                .map_err(GenericRegionError::from)
-        },
+        decoder,
+        &mut contexts.contexts,
     )?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(generic_region_spec::generic_contexts_valid);
+    }
     Ok(bitmap)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        generic_region_spec::contexts_valid(old(contexts)@),
+    ensures
+        generic_region_spec::contexts_valid(final(contexts)@),
+        match out {
+            Ok(bit) =>
+                bit <= 1
+                && crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
+            Err(_) => true,
+        },
+))]
+#[allow(clippy::ptr_arg)]
+fn decode_probability(
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+    index: usize,
+) -> Result<u8, GenericRegionError> {
+    if index >= contexts.len() {
+        return Err(GenericRegionError::ContextIndex {
+            index,
+            count: contexts.len(),
+        });
+    }
+    let result = decoder.decode(&mut contexts[index]);
+    match result {
+        Ok(bit) => Ok(bit),
+        Err(error) => Err(GenericRegionError::Decode(error.into_decode())),
+    }
+}
+
+#[allow(clippy::ptr_arg)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(old(bitmap)),
+        rows <= old(bitmap).height,
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        generic_region_spec::contexts_valid(old(contexts)@),
+        match skip {
+            Some(mask) => crate::spec::bitmap::storage_valid(mask),
+            None => true,
+        },
+    ensures
+        crate::spec::bitmap::storage_valid(final(bitmap)),
+        generic_region_spec::contexts_valid(final(contexts)@),
+        out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
+))]
 #[allow(clippy::too_many_arguments)]
-fn decode_generic_with<F>(
+fn decode_generic_with(
+    bitmap: &mut Bitmap,
+    rows: u32,
+    template: GenericTemplate,
+    extended: bool,
+    adaptive: &[TemplateOffset; 12],
+    typical_prediction: bool,
+    skip: Option<&Bitmap>,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    let mut ltp = false;
+    let bitmap_width = bitmap.width;
+    let bitmap_height = bitmap.height;
+    if rows > bitmap_height {
+        return Err(GenericRegionError::RowCountMismatch {
+            expected: bitmap_height,
+            actual: rows,
+        });
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(bitmap);
+    }
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= rows,
+            rows <= bitmap_height,
+            crate::views::bitmap_width(bitmap) == bitmap_width,
+            crate::views::bitmap_height(bitmap) == bitmap_height,
+            crate::spec::bitmap::storage_valid(bitmap),
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+            match skip {
+                Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                None => true,
+            },
+        decreases rows - y,
+    ))]
+    while y < rows {
+        if typical_prediction {
+            let sltp = decode_probability(decoder, contexts, template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+
+        if ltp {
+            if y != 0 {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(bitmap.height == bitmap_height);
+                    assert(y - 1 < bitmap_height);
+                    assert(y < bitmap_height);
+                }
+                copy_bitmap_row(bitmap, y - 1, y)?;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(bitmap.width == bitmap_width);
+                    assert(bitmap.height == bitmap_height);
+                }
+            }
+            y += 1;
+            continue;
+        }
+
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= bitmap_width,
+                y < rows,
+                rows <= bitmap_height,
+                crate::views::bitmap_width(bitmap) == bitmap_width,
+                crate::views::bitmap_height(bitmap) == bitmap_height,
+                crate::spec::bitmap::storage_valid(bitmap),
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+                match skip {
+                    Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                    None => true,
+                },
+            decreases bitmap_width - x,
+        ))]
+        while x < bitmap_width {
+            let skipped = match skip {
+                Some(mask) => mask.pixel(x, y).unwrap_or(false),
+                None => false,
+            };
+            if skipped {
+                bitmap.set_pixel(x, y, false)?;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(x < bitmap_width);
+                }
+                x += 1;
+                continue;
+            }
+            let context = generic_context(bitmap, x, y, template, extended, adaptive);
+            let value = decode_probability(decoder, contexts, context)? != 0;
+            bitmap.set_pixel(x, y, value)?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(bitmap);
+                assert(x < bitmap_width);
+            }
+            x += 1;
+        }
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments)]
+fn decode_generic_with_callback<F>(
     bitmap: &mut Bitmap,
     rows: u32,
     template: GenericTemplate,
@@ -896,14 +1177,12 @@ where
             let sltp = decode(template.sltp_context())?;
             ltp ^= sltp != 0;
         }
-
         if ltp {
             if y != 0 {
                 copy_bitmap_row(bitmap, y - 1, y)?;
             }
             continue;
         }
-
         for x in 0..bitmap.width() {
             let skipped = skip.and_then(|mask| mask.pixel(x, y)).unwrap_or(false);
             if skipped {
@@ -1196,9 +1475,9 @@ impl RefinementTemplate {
 #[derive(Debug)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementContexts {
-    template: RefinementTemplate,
-    contexts: Vec<ArithmeticContext>,
-    storage_bytes: u64,
+    pub(crate) template: RefinementTemplate,
+    pub(crate) contexts: Vec<ArithmeticContext>,
+    pub(crate) storage_bytes: u64,
 }
 
 /// A fallibly allocated retained copy of refinement arithmetic statistics.
@@ -1212,6 +1491,15 @@ pub(crate) struct RefinementContextSnapshot {
 
 impl RefinementContexts {
     /// Allocate a default statistics set compatible with `template`.
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(contexts) =>
+                contexts.template == template
+                && generic_region_spec::refinement_contexts_valid(&contexts),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn new(
         template: RefinementTemplate,
         limits: &Limits,
@@ -1287,6 +1575,7 @@ impl RefinementContexts {
 
 /// Per-bitmap parameters for decoding on retained refinement statistics.
 #[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementArithmeticCall {
     pub(crate) width: u32,
     pub(crate) height: u32,
@@ -1345,6 +1634,13 @@ pub(crate) fn parse_refinement_region_header(
 }
 
 /// Decode one bounded arithmetic generic-refinement bitmap.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(reference),
+    ensures match out {
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn decode_arithmetic_refinement(
     coded: &[u8],
     header: &RefinementRegionHeader,
@@ -1364,9 +1660,10 @@ pub(crate) fn decode_arithmetic_refinement(
     )?;
 
     let mut contexts = RefinementContexts::new(header.template, limits)?;
-    let mut decoder = ArithmeticDecoder::new(coded)
-        .map_err(DecodeError::from)
-        .map_err(GenericRegionError::from)?;
+    let mut decoder = match ArithmeticDecoder::new(coded) {
+        Ok(decoder) => decoder,
+        Err(error) => return Err(GenericRegionError::Decode(error.into_decode())),
+    };
     let mut cumulative_work = 0;
     let bitmap = decode_refinement_on(
         &mut decoder,
@@ -1392,6 +1689,18 @@ pub(crate) fn decode_arithmetic_refinement(
 /// This kernel does not create or reset the decoder, does not reset `GR`
 /// statistics, and does not validate an end marker. It is therefore safe to
 /// interleave with arithmetic integers and generic-region decisions.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        crate::spec::bitmap::storage_valid(reference),
+    ensures match out {
+        Ok(bitmap) =>
+            crate::spec::bitmap::storage_valid(&bitmap)
+            && crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder))
+            && generic_region_spec::refinement_contexts_valid(final(contexts)),
+        Err(_) => true,
+    },
+))]
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn decode_refinement_on(
     decoder: &mut ArithmeticDecoder<'_>,
@@ -1403,6 +1712,7 @@ pub(crate) fn decode_refinement_on(
     cumulative_work: &mut u64,
 ) -> Result<Bitmap, GenericRegionError> {
     validate_refinement_context_layout(contexts.template, &contexts.contexts)?;
+    validate_probability_states(&contexts.contexts)?;
     if contexts.template == RefinementTemplate::Template0 {
         validate_target_adaptive(1, call.adaptive[0])?;
     }
@@ -1415,6 +1725,11 @@ pub(crate) fn decode_refinement_on(
     let bitmap_bytes = bitmap_storage_bytes(call.width, call.height)?;
     enforce_managed_memory(contexts.storage_bytes, bitmap_bytes, limits)?;
     let mut bitmap = Bitmap::blank(call.width, call.height, limits)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(&bitmap);
+        reveal(generic_region_spec::refinement_contexts_valid);
+    }
     *cumulative_work = next_work;
 
     decode_refinement_with(
@@ -1424,24 +1739,104 @@ pub(crate) fn decode_refinement_on(
         call.adaptive,
         call.typical_prediction,
         parameters,
-        |context_index| {
-            let count = contexts.contexts.len();
-            let context = contexts.contexts.get_mut(context_index).ok_or(
-                GenericRegionError::ContextIndex {
-                    index: context_index,
-                    count,
-                },
-            )?;
-            decoder
-                .decode(context)
-                .map_err(DecodeError::from)
-                .map_err(GenericRegionError::from)
-        },
+        decoder,
+        &mut contexts.contexts,
     )?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(generic_region_spec::refinement_contexts_valid);
+    }
     Ok(bitmap)
 }
 
-fn decode_refinement_with<F>(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(old(bitmap)),
+        crate::spec::bitmap::storage_valid(reference),
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        generic_region_spec::contexts_valid(old(contexts)@),
+    ensures
+        crate::spec::bitmap::storage_valid(final(bitmap)),
+        generic_region_spec::contexts_valid(final(contexts)@),
+        out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
+))]
+#[allow(clippy::ptr_arg, clippy::too_many_arguments)]
+fn decode_refinement_with(
+    bitmap: &mut Bitmap,
+    reference: &Bitmap,
+    template: RefinementTemplate,
+    adaptive: [TemplateOffset; 2],
+    typical_prediction: bool,
+    parameters: RefinementParameters,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    let mut ltp = false;
+    let bitmap_width = bitmap.width;
+    let bitmap_height = bitmap.height;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(bitmap);
+    }
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= bitmap_height,
+            crate::views::bitmap_width(bitmap) == bitmap_width,
+            crate::views::bitmap_height(bitmap) == bitmap_height,
+            crate::spec::bitmap::storage_valid(bitmap),
+            crate::spec::bitmap::storage_valid(reference),
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+        decreases bitmap_height - y,
+    ))]
+    while y < bitmap_height {
+        if typical_prediction {
+            let sltp = decode_probability(decoder, contexts, template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= bitmap_width,
+                y < bitmap_height,
+                crate::views::bitmap_width(bitmap) == bitmap_width,
+                crate::views::bitmap_height(bitmap) == bitmap_height,
+                crate::spec::bitmap::storage_valid(bitmap),
+                crate::spec::bitmap::storage_valid(reference),
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+            decreases bitmap_width - x,
+        ))]
+        while x < bitmap_width {
+            if ltp {
+                if let Some(prediction) = refinement_prediction(reference, x, y, parameters) {
+                    bitmap.set_pixel(x, y, prediction)?;
+                    #[cfg(verus_keep_ghost)]
+                    proof! {
+                        crate::views::bitmap_fields(bitmap);
+                    }
+                    x += 1;
+                    continue;
+                }
+            }
+            let context =
+                refinement_context(bitmap, reference, x, y, template, adaptive, parameters);
+            let value = decode_probability(decoder, contexts, context)? != 0;
+            bitmap.set_pixel(x, y, value)?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(bitmap);
+            }
+            x += 1;
+        }
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+fn decode_refinement_with_callback<F>(
     bitmap: &mut Bitmap,
     reference: &Bitmap,
     template: RefinementTemplate,
@@ -2601,7 +2996,7 @@ mod tests {
     ) -> Result<Vec<usize>, GenericRegionError> {
         let mut bits = VecDeque::from(bits.to_vec());
         let mut contexts = Vec::new();
-        decode_generic_with(
+        decode_generic_with_callback(
             bitmap,
             rows,
             header.template,
@@ -2879,7 +3274,7 @@ mod tests {
         let mut target = Bitmap::blank(3, 1, &limits).expect("target");
         let mut decisions = VecDeque::from(vec![1]);
         let mut contexts = Vec::new();
-        decode_refinement_with(
+        decode_refinement_with_callback(
             &mut target,
             &reference,
             RefinementTemplate::Template1,

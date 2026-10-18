@@ -14,7 +14,7 @@ use vstd::prelude::*;
 
 #[cfg(verus_keep_ghost)]
 #[path = "../specs/arithmetic.rs"]
-mod arithmetic_spec;
+pub(crate) mod arithmetic_spec;
 
 #[cfg(verus_keep_ghost)]
 #[macro_use]
@@ -486,20 +486,33 @@ impl From<MalformedError> for ArithmeticError {
     }
 }
 
-impl From<ArithmeticError> for DecodeError {
-    fn from(error: ArithmeticError) -> Self {
-        match error {
-            ArithmeticError::Malformed(error) => Self::Malformed(error),
-            ArithmeticError::InvalidContextState { state_index, mps } => {
-                Self::Malformed(MalformedError::InvalidArithmeticContextState { state_index, mps })
+impl ArithmeticError {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub(crate) fn into_decode(self) -> DecodeError {
+        match self {
+            Self::Malformed(error) => DecodeError::Malformed(error),
+            Self::InvalidContextState { state_index, mps } => {
+                DecodeError::Malformed(MalformedError::InvalidArithmeticContextState {
+                    state_index,
+                    mps,
+                })
             }
-            ArithmeticError::InsufficientContexts { required, actual } => {
-                Self::Malformed(MalformedError::InsufficientArithmeticContexts { required, actual })
+            Self::InsufficientContexts { required, actual } => {
+                DecodeError::Malformed(MalformedError::InsufficientArithmeticContexts {
+                    required,
+                    actual,
+                })
             }
-            ArithmeticError::InvalidIaidCodeLength(length) => {
-                Self::Malformed(MalformedError::InvalidIaidCodeLength(length))
+            Self::InvalidIaidCodeLength(length) => {
+                DecodeError::Malformed(MalformedError::InvalidIaidCodeLength(length))
             }
         }
+    }
+}
+
+impl From<ArithmeticError> for DecodeError {
+    fn from(error: ArithmeticError) -> Self {
+        error.into_decode()
     }
 }
 

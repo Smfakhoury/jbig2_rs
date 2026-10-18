@@ -2,6 +2,32 @@ use vstd::prelude::*;
 
 verus! {
 
+pub(crate) open spec fn contexts_valid(
+    contexts: Seq<crate::arithmetic::ArithmeticContext>,
+) -> bool {
+    forall|index: int| 0 <= index < contexts.len() ==>
+        crate::arithmetic::arithmetic_spec::context_valid(contexts[index])
+}
+
+pub(crate) open spec fn generic_contexts_valid(
+    contexts: &crate::generic_region::GenericContexts,
+) -> bool {
+    contexts_valid(contexts.contexts@)
+}
+
+pub(crate) open spec fn refinement_contexts_valid(
+    contexts: &crate::generic_region::RefinementContexts,
+) -> bool {
+    contexts_valid(contexts.contexts@)
+}
+
+pub(crate) open spec fn generic_session_valid(
+    session: &crate::generic_region::GenericArithmeticSession,
+) -> bool {
+    crate::arithmetic::arithmetic_spec::decoder_valid(&session.decoder)
+        && generic_contexts_valid(&session.contexts)
+}
+
 pub(super) open spec fn generic_template_code(
     template: super::GenericTemplate,
 ) -> nat {
