@@ -35,6 +35,12 @@ mod huffman_proofs;
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 const MAX_PREFIX_LEN: usize = 255;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const PREFIX_LOOKUP_BITS: u8 = 8;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const PREFIX_LOOKUP_SIZE: usize = 1 << PREFIX_LOOKUP_BITS;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const MIN_FAST_PREFIX_LEN: usize = 8;
 
 /// Error from Huffman table parsing, construction, or value decoding.
 #[derive(Debug)]
@@ -341,6 +347,8 @@ pub(crate) struct HuffmanTable {
     length_count: [u32; MAX_PREFIX_LEN + 1],
     first_code: [WideCode; MAX_PREFIX_LEN + 1],
     first_line: [u32; MAX_PREFIX_LEN + 1],
+    prefix_lookup: Vec<u16>,
+    prefer_prefix_lookup: bool,
     max_prefix_len: u8,
 }
 
@@ -356,7 +364,7 @@ impl HuffmanTable {
     fn from_line_source(lines: HuffmanLines<'_>, limits: &Limits) -> Result<Self, HuffmanError> {
         let line_count = lines.len();
         validate_lines(lines)?;
-        check_table_memory(line_count, limits)?;
+        check_table_memory(line_count, false, limits)?;
 
         let mut owned_lines: Vec<HuffmanLine> = Vec::new();
         try_reserve::<HuffmanLine>(&mut owned_lines, line_count)?;
@@ -406,8 +414,19 @@ impl HuffmanTable {
         while max_length > 0 && length_count[max_length] == 0 {
             max_length -= 1;
         }
-        if length_count[max_length] == 0 {
+        if max_length == 0 || length_count[max_length] == 0 {
             return Err(HuffmanError::InvalidTable(HuffmanTableError::NoCodes));
+        }
+        let mut min_length = 1_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                1 <= min_length,
+                min_length <= max_length,
+                max_length <= MAX_PREFIX_LEN,
+            decreases max_length - min_length,
+        ))]
+        while min_length < max_length && length_count[min_length] == 0 {
+            min_length += 1;
         }
         let max_prefix_len = u8::try_from(max_length)
             .map_err(|_| HuffmanError::InvalidTable(HuffmanTableError::Oversubscribed))?;
@@ -459,6 +478,22 @@ impl HuffmanTable {
             }
             length += 1;
         }
+        // Short canonical codes already beat lookahead setup. Restrict the
+        // fast path to tables whose shortest code consumes the full prefix;
+        // longer codes still use the exact canonical fallback.
+        let prefer_prefix_lookup = min_length >= MIN_FAST_PREFIX_LEN;
+        let prefix_lookup = if prefer_prefix_lookup {
+            check_table_memory(line_count, true, limits)?;
+            build_prefix_lookup(
+                &length_count,
+                &first_code,
+                &first_line,
+                &ordered_lines,
+                usize::from(max_prefix_len),
+            )?
+        } else {
+            Vec::new()
+        };
 
         Ok(Self {
             lines: owned_lines,
@@ -466,6 +501,8 @@ impl HuffmanTable {
             length_count,
             first_code,
             first_line,
+            prefix_lookup,
+            prefer_prefix_lookup,
             max_prefix_len,
         })
     }
@@ -655,6 +692,41 @@ impl HuffmanTable {
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn decode(&self, reader: &mut BitReader<'_>) -> Result<HuffmanValue, HuffmanError> {
+        if self.prefer_prefix_lookup {
+            if let Some(prefix) = peek_prefix(reader) {
+                let entry = match self.prefix_lookup.get(usize::from(prefix)) {
+                    Some(entry) => *entry,
+                    None => 0,
+                };
+                if entry != 0 {
+                    let line_index = u32::from(entry)
+                        .checked_sub(1)
+                        .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
+                    let line = self
+                        .lines
+                        .get(line_index as usize)
+                        .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
+                    let length = line.prefix_len;
+                    if length > PREFIX_LOOKUP_BITS {
+                        return Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode));
+                    }
+                    reader.bit_position = reader
+                        .bit_position
+                        .checked_add(usize::from(length))
+                        .ok_or(MalformedError::IntegerOverflow)?;
+                    return decode_line(*line, reader);
+                }
+            }
+        }
+        self.decode_fallback(reader)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires huffman_spec::reader_valid(old(reader)),
+        ensures huffman_spec::reader_valid(final(reader)),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn decode_fallback(&self, reader: &mut BitReader<'_>) -> Result<HuffmanValue, HuffmanError> {
         let mut code = WideCode { limbs: [0; 4] };
         let mut length = 1_usize;
         #[cfg_attr(verus_keep_ghost, verus_spec(
@@ -700,12 +772,41 @@ impl HuffmanTable {
     }
 
     #[cfg(test)]
+    fn decode_canonical(&self, reader: &mut BitReader<'_>) -> Result<HuffmanValue, HuffmanError> {
+        let mut code = WideCode { limbs: [0; 4] };
+        for length in 1..=usize::from(self.max_prefix_len) {
+            let bit = reader.read_bits(1)?;
+            code = code
+                .append_bit(bit)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            let count = self.length_count[length];
+            if let Some(distance) = code.small_distance_from(self.first_code[length], count) {
+                let ordered_index = self.first_line[length]
+                    .checked_add(distance)
+                    .ok_or(MalformedError::IntegerOverflow)?
+                    as usize;
+                let line_index = *self
+                    .ordered_lines
+                    .get(ordered_index)
+                    .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
+                let line = self
+                    .lines
+                    .get(line_index as usize)
+                    .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
+                return decode_line(*line, reader);
+            }
+        }
+        Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))
+    }
+
+    #[cfg(test)]
     fn code_for_line(&self, line_index: usize) -> Option<(WideCode, u8)> {
         let line = self.lines.get(line_index)?;
         let length = usize::from(line.prefix_len);
         if length == 0 {
             return None;
         }
+
         let first = usize::try_from(self.first_line[length]).ok()?;
         let count = usize::try_from(self.length_count[length]).ok()?;
         let within_length = self
@@ -716,6 +817,134 @@ impl HuffmanTable {
         let code = self.first_code[length].checked_add_small(u32::try_from(within_length).ok()?)?;
         Some((code, line.prefix_len))
     }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[allow(clippy::redundant_closure)]
+fn build_prefix_lookup(
+    length_count: &[u32; MAX_PREFIX_LEN + 1],
+    first_code: &[WideCode; MAX_PREFIX_LEN + 1],
+    first_line: &[u32; MAX_PREFIX_LEN + 1],
+    ordered_lines: &[u32],
+    maximum_length: usize,
+) -> Result<Vec<u16>, HuffmanError> {
+    let mut lookup = Vec::new();
+    try_reserve::<u16>(&mut lookup, PREFIX_LOOKUP_SIZE)?;
+    lookup.resize(PREFIX_LOOKUP_SIZE, 0);
+    let lookup_length = maximum_length.min(usize::from(PREFIX_LOOKUP_BITS));
+    let mut length = 1_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            lookup@.len() == PREFIX_LOOKUP_SIZE,
+            lookup_length <= PREFIX_LOOKUP_BITS as usize,
+            1 <= length,
+            length <= lookup_length + 1,
+        decreases lookup_length + 1 - length,
+    ))]
+    while length <= lookup_length {
+        let count = length_count[length];
+        let mut distance = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                lookup@.len() == PREFIX_LOOKUP_SIZE,
+                lookup_length <= PREFIX_LOOKUP_BITS as usize,
+                1 <= length,
+                length <= lookup_length,
+                distance <= count,
+            decreases count - distance,
+        ))]
+        while distance < count {
+            let code = first_code[length]
+                .checked_add_small(distance)
+                .ok_or(HuffmanTableError::Oversubscribed)
+                .map_err(|error| HuffmanError::InvalidTable(error))?;
+            if code.limbs[1] != 0
+                || code.limbs[2] != 0
+                || code.limbs[3] != 0
+                || code.limbs[0] > u64::from(u8::MAX)
+                || distance > u32::from(u8::MAX)
+            {
+                return Err(HuffmanError::InvalidTable(
+                    HuffmanTableError::Oversubscribed,
+                ));
+            }
+            let suffix_bits = usize::from(PREFIX_LOOKUP_BITS) - length;
+            let repeats = 1_usize << suffix_bits;
+            let code = usize::try_from(code.limbs[0])
+                .map_err(|_| HuffmanError::InvalidTable(HuffmanTableError::Oversubscribed))?;
+            let first_prefix = code << suffix_bits;
+            let ordered_index = first_line[length]
+                .checked_add(distance)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            let line_index = *ordered_lines
+                .get(ordered_index as usize)
+                .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
+            let Some(encoded_line) = line_index
+                .checked_add(1)
+                .and_then(|encoded| u16::try_from(encoded).ok())
+            else {
+                distance += 1;
+                continue;
+            };
+            let mut suffix = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    lookup@.len() == PREFIX_LOOKUP_SIZE,
+                    lookup_length <= PREFIX_LOOKUP_BITS as usize,
+                    1 <= length,
+                    length <= lookup_length,
+                    suffix <= repeats,
+                decreases repeats - suffix,
+            ))]
+            while suffix < repeats {
+                let index = first_prefix
+                    .checked_add(suffix)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let slot = lookup.get_mut(index).ok_or(HuffmanError::InvalidTable(
+                    HuffmanTableError::Oversubscribed,
+                ))?;
+                if *slot != 0 {
+                    return Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::Oversubscribed,
+                    ));
+                }
+                *slot = encoded_line;
+                suffix += 1;
+            }
+            distance += 1;
+        }
+        length += 1;
+    }
+    Ok(lookup)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires huffman_spec::reader_valid(reader),
+    ensures match out {
+        Some(_) =>
+            reader.bit_position + PREFIX_LOOKUP_BITS as usize
+                <= reader.bytes@.len() * 8,
+        None => true,
+    },
+))]
+#[allow(clippy::cast_possible_truncation)]
+fn peek_prefix(reader: &BitReader<'_>) -> Option<u8> {
+    let total_bits = reader.bytes.len().checked_mul(8)?;
+    let remaining = total_bits.checked_sub(reader.bit_position)?;
+    if remaining < usize::from(PREFIX_LOOKUP_BITS) {
+        return None;
+    }
+    let byte_index = reader.bit_position / 8;
+    let bit_offset = reader.bit_position % 8;
+    let first = u16::from(*reader.bytes.get(byte_index)?);
+    if bit_offset == 0 {
+        return Some(first as u8);
+    }
+    let second_index = byte_index.checked_add(1)?;
+    let second = u16::from(*reader.bytes.get(second_index)?);
+    let combined = (first << 8) | second;
+    let shift = 8_usize.checked_sub(bit_offset)?;
+    Some(((combined >> shift) & 0xff) as u8)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -986,7 +1215,7 @@ fn push_parsed_line(
         .len()
         .checked_add(1)
         .ok_or(MalformedError::IntegerOverflow)?;
-    check_table_memory(new_len, limits)?;
+    check_table_memory(new_len, false, limits)?;
     let requested_bytes = allocation_size::<HuffmanLine>(new_len)?;
     if lines.try_reserve(1).is_err() {
         return Err(DecodeError::Allocation { requested_bytes }.into());
@@ -1026,7 +1255,7 @@ fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
-fn table_memory(line_count: usize) -> Result<u64, MalformedError> {
+fn table_memory(line_count: usize, prefix_lookup: bool) -> Result<u64, MalformedError> {
     let Ok(fixed) = u64::try_from(size_of::<HuffmanTable>()) else {
         return Err(MalformedError::IntegerOverflow);
     };
@@ -1036,6 +1265,13 @@ fn table_memory(line_count: usize) -> Result<u64, MalformedError> {
     let variable_count = line_count
         .checked_mul(per_line)
         .ok_or(MalformedError::IntegerOverflow)?;
+    let fixed = if prefix_lookup {
+        fixed
+            .checked_add(allocation_size::<u16>(PREFIX_LOOKUP_SIZE)?)
+            .ok_or(MalformedError::IntegerOverflow)?
+    } else {
+        fixed
+    };
     fixed
         .checked_add(allocation_size::<u8>(variable_count)?)
         .ok_or(MalformedError::IntegerOverflow)
@@ -1043,7 +1279,11 @@ fn table_memory(line_count: usize) -> Result<u64, MalformedError> {
 
 #[allow(clippy::cast_lossless)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
-fn check_table_memory(line_count: usize, limits: &Limits) -> Result<(), HuffmanError> {
+fn check_table_memory(
+    line_count: usize,
+    prefix_lookup: bool,
+    limits: &Limits,
+) -> Result<(), HuffmanError> {
     let line_count_u64 = line_count as u64;
     if line_count_exceeds_symbol_limit(line_count, limits.max_symbols) {
         return Err(LimitExceeded {
@@ -1053,7 +1293,7 @@ fn check_table_memory(line_count: usize, limits: &Limits) -> Result<(), HuffmanE
         }
         .into());
     }
-    let actual = table_memory(line_count)?;
+    let actual = table_memory(line_count, prefix_lookup)?;
     if actual > limits.max_decoder_managed_memory_bytes {
         return Err(LimitExceeded {
             kind: LimitKind::Memory,
@@ -1572,6 +1812,35 @@ mod tests {
         table.decode(&mut reader).expect("valid encoded value")
     }
 
+    fn assert_decoders_equal(table: &HuffmanTable, bytes: &[u8], bit_position: usize) {
+        let mut optimized = bit_reader(bytes);
+        optimized.bit_position = bit_position;
+        let mut canonical = optimized;
+        let optimized_result = table.decode(&mut optimized);
+        let canonical_result = table.decode_canonical(&mut canonical);
+        assert_eq!(
+            format!("{optimized_result:?}"),
+            format!("{canonical_result:?}"),
+            "bytes={bytes:02x?}, bit_position={bit_position}"
+        );
+        assert_eq!(
+            optimized.bit_position, canonical.bit_position,
+            "bytes={bytes:02x?}, bit_position={bit_position}"
+        );
+    }
+
+    fn force_prefix_lookup(table: &mut HuffmanTable) {
+        table.prefix_lookup = build_prefix_lookup(
+            &table.length_count,
+            &table.first_code,
+            &table.first_line,
+            &table.ordered_lines,
+            usize::from(table.max_prefix_len),
+        )
+        .expect("prefix lookup");
+        table.prefer_prefix_lookup = true;
+    }
+
     fn append_code(output: &mut String, code: WideCode, length: u8) {
         for position in (0..usize::from(length)).rev() {
             let limb = position / 64;
@@ -1641,8 +1910,9 @@ mod tests {
     #[test]
     fn every_line_of_every_standard_table_decodes() {
         for standard in ALL_STANDARD_TABLES {
-            let table =
+            let mut table =
                 HuffmanTable::standard(standard, &Limits::default()).expect("standard table");
+            force_prefix_lookup(&mut table);
             for (index, line) in table.lines.iter().copied().enumerate() {
                 if line.prefix_len == 0 {
                     continue;
@@ -1689,6 +1959,117 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn prefix_lookup_matches_canonical_for_all_standard_prefixes() {
+        for standard in ALL_STANDARD_TABLES {
+            let table =
+                HuffmanTable::standard(standard, &Limits::default()).expect("standard table");
+            for prefix in 0_u32..=u32::from(u16::MAX) {
+                let prefix = u16::try_from(prefix).expect("bounded prefix");
+                let bytes = [
+                    u8::try_from(prefix >> 8).expect("high byte"),
+                    u8::try_from(prefix & 0xff).expect("low byte"),
+                    0x5a,
+                    0xa5,
+                    0x3c,
+                    0xc3,
+                ];
+                assert_decoders_equal(&table, &bytes, 0);
+            }
+            for byte_count in 0..=1 {
+                let bytes = [0xa5];
+                for bit_position in 0..=byte_count * 8 {
+                    assert_decoders_equal(&table, &bytes[..byte_count], bit_position);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn randomized_custom_prefix_lookup_matches_canonical() {
+        let mut random = 0x9e37_79b9_u32;
+        for _ in 0..128 {
+            random = random.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            let leaf_count = usize::try_from(random % 63 + 2).expect("small leaf count");
+            let mut lengths = vec![1_u8, 1_u8];
+            while lengths.len() < leaf_count {
+                random = random.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                let index = usize::try_from(random).expect("u32 fits usize") % lengths.len();
+                let child_length = lengths[index].checked_add(1).expect("bounded depth");
+                lengths[index] = child_length;
+                lengths.push(child_length);
+            }
+
+            let mut lines = Vec::with_capacity(lengths.len());
+            let mut range_low = -10_000_i32;
+            for length in lengths {
+                random = random.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                let range_len = u8::try_from(random & 3).expect("two-bit range length");
+                lines.push(HuffmanLine::normal(range_low, length, range_len));
+                range_low = range_low
+                    .checked_add(1_i32 << range_len)
+                    .expect("small generated ranges");
+            }
+            let mut table = HuffmanTable::new(&lines, &Limits::default()).expect("custom table");
+            force_prefix_lookup(&mut table);
+
+            for _ in 0..512 {
+                let mut bytes = [0_u8; 8];
+                for byte in &mut bytes {
+                    random = random.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+                    *byte = u8::try_from(random >> 24).expect("high byte");
+                }
+                let bit_position = usize::try_from(random & 7).expect("three-bit position");
+                assert_decoders_equal(&table, &bytes, bit_position);
+            }
+        }
+    }
+
+    #[test]
+    #[ignore = "performance microbenchmark"]
+    #[allow(clippy::cast_precision_loss)]
+    fn benchmark_fixed_width_prefix_lookup_against_canonical() {
+        use std::hint::black_box;
+        use std::time::Instant;
+
+        let lines = (0..=u8::MAX)
+            .map(|value| HuffmanLine::normal(i32::from(value), 8, 0))
+            .collect::<Vec<_>>();
+        let table = HuffmanTable::new(&lines, &Limits::default()).expect("fixed-width table");
+        let bytes = (0..=u8::MAX).cycle().take(65_536).collect::<Vec<_>>();
+        let mut optimized_samples = Vec::new();
+        let mut canonical_samples = Vec::new();
+        for round in 0..9 {
+            for canonical in [round % 2 != 0, round % 2 == 0] {
+                let start = Instant::now();
+                let mut reader = bit_reader(&bytes);
+                for _ in 0..bytes.len() {
+                    let value = if canonical {
+                        table.decode_canonical(&mut reader)
+                    } else {
+                        table.decode(&mut reader)
+                    }
+                    .expect("complete fixed-width value");
+                    black_box(value);
+                }
+                let elapsed = start.elapsed().as_nanos();
+                if canonical {
+                    canonical_samples.push(elapsed);
+                } else {
+                    optimized_samples.push(elapsed);
+                }
+            }
+        }
+        optimized_samples.sort_unstable();
+        canonical_samples.sort_unstable();
+        let optimized = optimized_samples[optimized_samples.len() / 2];
+        let canonical = canonical_samples[canonical_samples.len() / 2];
+        let gain = (canonical - optimized) as f64 * 100.0 / canonical as f64;
+        eprintln!(
+            "huffman-prefix: canonical={canonical}ns optimized={optimized}ns gain={gain:.2}%"
+        );
     }
 
     #[test]

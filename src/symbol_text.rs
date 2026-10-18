@@ -2449,26 +2449,126 @@ pub(crate) fn symbol_id_code_length(symbol_count: u32) -> Result<u8, SymbolTextE
 // Huffman table resolution.
 // ---------------------------------------------------------------------------
 
-/// A Huffman table resolved from either a freshly built standard table or a
-/// caller-supplied custom table.
-///
-/// The owned standard-table variant is boxed: standard tables are several
-/// kilobytes of fixed-size canonical-code arrays, and boxing avoids forcing
-/// every `ResolvedTable` (most of which are small borrows of caller-owned
-/// custom tables) to reserve that much inline space.
+#[derive(Debug, Clone, Copy)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
-enum ResolvedTable<'a> {
-    Owned(Box<HuffmanTable>),
-    Borrowed(&'a HuffmanTable),
+enum MaterializedHuffmanTable<'a> {
+    Standard(StandardHuffmanTable),
+    Custom(&'a HuffmanTable),
 }
 
-impl ResolvedTable<'_> {
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct StandardHuffmanTables {
+    a: Option<Box<HuffmanTable>>,
+    b: Option<Box<HuffmanTable>>,
+    c: Option<Box<HuffmanTable>>,
+    d: Option<Box<HuffmanTable>>,
+    e: Option<Box<HuffmanTable>>,
+    f: Option<Box<HuffmanTable>>,
+    g: Option<Box<HuffmanTable>>,
+    h: Option<Box<HuffmanTable>>,
+    i: Option<Box<HuffmanTable>>,
+    j: Option<Box<HuffmanTable>>,
+    k: Option<Box<HuffmanTable>>,
+    l: Option<Box<HuffmanTable>>,
+    m: Option<Box<HuffmanTable>>,
+    n: Option<Box<HuffmanTable>>,
+    o: Option<Box<HuffmanTable>>,
+}
+
+impl StandardHuffmanTables {
     #[cfg_attr(verus_keep_ghost, verus_verify)]
-    fn table(&self) -> &HuffmanTable {
-        match self {
-            Self::Owned(table) => table,
-            Self::Borrowed(table) => table,
+    const fn empty() -> Self {
+        Self {
+            a: None,
+            b: None,
+            c: None,
+            d: None,
+            e: None,
+            f: None,
+            g: None,
+            h: None,
+            i: None,
+            j: None,
+            k: None,
+            l: None,
+            m: None,
+            n: None,
+            o: None,
         }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn materialize(
+        &mut self,
+        table: StandardHuffmanTable,
+        limits: &Limits,
+    ) -> Result<(), HuffmanError> {
+        if self.table(table).is_none() {
+            let materialized = Some(Box::new(HuffmanTable::standard(table, limits)?));
+            match table {
+                StandardHuffmanTable::A => self.a = materialized,
+                StandardHuffmanTable::B => self.b = materialized,
+                StandardHuffmanTable::C => self.c = materialized,
+                StandardHuffmanTable::D => self.d = materialized,
+                StandardHuffmanTable::E => self.e = materialized,
+                StandardHuffmanTable::F => self.f = materialized,
+                StandardHuffmanTable::G => self.g = materialized,
+                StandardHuffmanTable::H => self.h = materialized,
+                StandardHuffmanTable::I => self.i = materialized,
+                StandardHuffmanTable::J => self.j = materialized,
+                StandardHuffmanTable::K => self.k = materialized,
+                StandardHuffmanTable::L => self.l = materialized,
+                StandardHuffmanTable::M => self.m = materialized,
+                StandardHuffmanTable::N => self.n = materialized,
+                StandardHuffmanTable::O => self.o = materialized,
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn table(&self, table: StandardHuffmanTable) -> Option<&HuffmanTable> {
+        macro_rules! get {
+            ($field:expr) => {
+                match $field {
+                    Some(table) => Some(table),
+                    None => None,
+                }
+            };
+        }
+        match table {
+            StandardHuffmanTable::A => get!(&self.a),
+            StandardHuffmanTable::B => get!(&self.b),
+            StandardHuffmanTable::C => get!(&self.c),
+            StandardHuffmanTable::D => get!(&self.d),
+            StandardHuffmanTable::E => get!(&self.e),
+            StandardHuffmanTable::F => get!(&self.f),
+            StandardHuffmanTable::G => get!(&self.g),
+            StandardHuffmanTable::H => get!(&self.h),
+            StandardHuffmanTable::I => get!(&self.i),
+            StandardHuffmanTable::J => get!(&self.j),
+            StandardHuffmanTable::K => get!(&self.k),
+            StandardHuffmanTable::L => get!(&self.l),
+            StandardHuffmanTable::M => get!(&self.m),
+            StandardHuffmanTable::N => get!(&self.n),
+            StandardHuffmanTable::O => get!(&self.o),
+        }
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn materialize_huffman_table<'a>(
+    choice: Option<BoundHuffmanTable<'a>>,
+    standard: &mut StandardHuffmanTables,
+    limits: &Limits,
+) -> Result<Option<MaterializedHuffmanTable<'a>>, SymbolTextError> {
+    match choice {
+        None => Ok(None),
+        Some(BoundHuffmanTable::Standard(table)) => {
+            standard.materialize(table, limits)?;
+            Ok(Some(MaterializedHuffmanTable::Standard(table)))
+        }
+        Some(BoundHuffmanTable::Custom(table)) => Ok(Some(MaterializedHuffmanTable::Custom(table))),
     }
 }
 
@@ -2686,15 +2786,10 @@ macro_rules! materialize_huffman_tables {
     ($choice_set:expr, $limits:expr) => {{
         let choice_set = $choice_set;
         let limits = $limits;
+        let mut standard_tables = StandardHuffmanTables::empty();
         macro_rules! resolve {
             ($choice:expr) => {
-                match $choice {
-                    None => None,
-                    Some(BoundHuffmanTable::Standard(table)) => Some(ResolvedTable::Owned(
-                        Box::new(HuffmanTable::standard(table, limits)?),
-                    )),
-                    Some(BoundHuffmanTable::Custom(table)) => Some(ResolvedTable::Borrowed(table)),
-                }
+                materialize_huffman_table($choice, &mut standard_tables, limits)?
             };
         }
 
@@ -2709,6 +2804,7 @@ macro_rules! materialize_huffman_tables {
                 let refinement_y = resolve!(choices.refinement_y);
                 let refinement_size = resolve!(choices.refinement_size);
                 HuffmanFieldTables {
+                    standard_tables,
                     aggregation_instances,
                     height_delta,
                     width_delta,
@@ -2734,6 +2830,7 @@ macro_rules! materialize_huffman_tables {
                 let refinement_y = resolve!(choices.refinement_y);
                 let refinement_size = resolve!(choices.refinement_size);
                 HuffmanFieldTables {
+                    standard_tables,
                     aggregation_instances: None,
                     height_delta: None,
                     width_delta: None,
@@ -2761,19 +2858,20 @@ macro_rules! materialize_huffman_tables {
 /// through a Huffman table.
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 struct HuffmanFieldTables<'a> {
-    aggregation_instances: Option<ResolvedTable<'a>>,
-    height_delta: Option<ResolvedTable<'a>>,
-    width_delta: Option<ResolvedTable<'a>>,
-    export_run: Option<ResolvedTable<'a>>,
-    strip_delta: Option<ResolvedTable<'a>>,
-    first_s: Option<ResolvedTable<'a>>,
-    subsequent_s: Option<ResolvedTable<'a>>,
-    refinement_width: Option<ResolvedTable<'a>>,
-    refinement_height: Option<ResolvedTable<'a>>,
-    refinement_x: Option<ResolvedTable<'a>>,
-    refinement_y: Option<ResolvedTable<'a>>,
-    refinement_size: Option<ResolvedTable<'a>>,
-    dictionary_bitmap_size: Option<ResolvedTable<'a>>,
+    standard_tables: StandardHuffmanTables,
+    aggregation_instances: Option<MaterializedHuffmanTable<'a>>,
+    height_delta: Option<MaterializedHuffmanTable<'a>>,
+    width_delta: Option<MaterializedHuffmanTable<'a>>,
+    export_run: Option<MaterializedHuffmanTable<'a>>,
+    strip_delta: Option<MaterializedHuffmanTable<'a>>,
+    first_s: Option<MaterializedHuffmanTable<'a>>,
+    subsequent_s: Option<MaterializedHuffmanTable<'a>>,
+    refinement_width: Option<MaterializedHuffmanTable<'a>>,
+    refinement_height: Option<MaterializedHuffmanTable<'a>>,
+    refinement_x: Option<MaterializedHuffmanTable<'a>>,
+    refinement_y: Option<MaterializedHuffmanTable<'a>>,
+    refinement_size: Option<MaterializedHuffmanTable<'a>>,
+    dictionary_bitmap_size: Option<MaterializedHuffmanTable<'a>>,
 }
 
 impl HuffmanFieldTables<'_> {
@@ -2795,7 +2893,11 @@ impl HuffmanFieldTables<'_> {
             IntegerField::DictionaryBitmapSize => self.dictionary_bitmap_size.as_ref(),
             IntegerField::WithinStripT | IntegerField::RefinementIndicator => None,
         };
-        resolved.map(ResolvedTable::table)
+        match resolved {
+            Some(MaterializedHuffmanTable::Standard(table)) => self.standard_tables.table(*table),
+            Some(MaterializedHuffmanTable::Custom(table)) => Some(table),
+            None => None,
+        }
     }
 }
 
@@ -5975,6 +6077,24 @@ mod tests {
     }
 
     #[test]
+    fn repeated_standard_table_materialization_is_reused() {
+        let limits = Limits::default();
+        let mut tables = StandardHuffmanTables::empty();
+        tables
+            .materialize(StandardHuffmanTable::A, &limits)
+            .expect("first table A");
+        let first = tables
+            .table(StandardHuffmanTable::A)
+            .expect("materialized table") as *const HuffmanTable;
+        tables
+            .materialize(StandardHuffmanTable::A, &limits)
+            .expect("second table A");
+        let second =
+            tables.table(StandardHuffmanTable::A).expect("reused table") as *const HuffmanTable;
+        assert_eq!(first, second);
+    }
+
+    #[test]
     fn concrete_empty_dictionary_and_arithmetic_text_segments_decode() {
         const ANNEX_H_ENCODED: [u8; 30] = [
             0x84, 0xc7, 0x3b, 0xfc, 0xe1, 0xa1, 0x43, 0x04, 0x02, 0x20, 0x00, 0x00, 0x41, 0x0d,
@@ -6031,5 +6151,97 @@ mod tests {
         })
         .expect("empty arithmetic text region decodes");
         assert_eq!(arithmetic_text_output.bitmap.bytes(), &[0]);
+    }
+
+    #[test]
+    #[ignore = "performance microbenchmark"]
+    #[allow(clippy::cast_precision_loss)]
+    fn benchmark_reused_standard_huffman_materialization() {
+        use std::hint::black_box;
+        use std::time::Instant;
+
+        fn choices() -> HuffmanFieldChoices<'static> {
+            let mut choices = HuffmanFieldChoices::empty();
+            choices.first_s = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::A));
+            choices.subsequent_s = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::A));
+            choices.strip_delta = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::A));
+            choices.refinement_width = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::O));
+            choices.refinement_height = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::O));
+            choices.refinement_x = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::O));
+            choices.refinement_y = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::O));
+            choices.refinement_size = Some(BoundHuffmanTable::Standard(StandardHuffmanTable::A));
+            choices
+        }
+
+        let limits = Limits::default();
+        let mut reused_samples = Vec::new();
+        let mut repeated_samples = Vec::new();
+        for round in 0..9 {
+            for repeated in [round % 2 != 0, round % 2 == 0] {
+                let start = Instant::now();
+                for _ in 0..64 {
+                    if repeated {
+                        let tables = vec![
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::A, &limits)
+                                    .expect("table A"),
+                            ),
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::A, &limits)
+                                    .expect("table A"),
+                            ),
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::A, &limits)
+                                    .expect("table A"),
+                            ),
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::O, &limits)
+                                    .expect("table O"),
+                            ),
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::O, &limits)
+                                    .expect("table O"),
+                            ),
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::O, &limits)
+                                    .expect("table O"),
+                            ),
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::O, &limits)
+                                    .expect("table O"),
+                            ),
+                            Box::new(
+                                HuffmanTable::standard(StandardHuffmanTable::A, &limits)
+                                    .expect("table A"),
+                            ),
+                        ];
+                        black_box(tables);
+                    } else {
+                        let tables = (|| -> Result<_, SymbolTextError> {
+                            materialize_huffman_tables!(
+                                HuffmanChoiceSet::TextRegion(choices()),
+                                &limits
+                            )
+                        })()
+                        .expect("materialized tables");
+                        black_box(tables);
+                    }
+                }
+                let elapsed = start.elapsed().as_nanos();
+                if repeated {
+                    repeated_samples.push(elapsed);
+                } else {
+                    reused_samples.push(elapsed);
+                }
+            }
+        }
+        reused_samples.sort_unstable();
+        repeated_samples.sort_unstable();
+        let reused = reused_samples[reused_samples.len() / 2];
+        let repeated = repeated_samples[repeated_samples.len() / 2];
+        let gain = (repeated - reused) as f64 * 100.0 / repeated as f64;
+        eprintln!(
+            "huffman-materialization: repeated={repeated}ns reused={reused}ns gain={gain:.2}%"
+        );
     }
 }
