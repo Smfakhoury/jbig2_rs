@@ -8,6 +8,7 @@ use jbig2_rs::Decoder;
 use serde::Serialize;
 
 const SIGNATURE: [u8; 8] = [0x97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A];
+const PARSE_BATCH_SIZE: usize = 1000;
 
 #[derive(Serialize)]
 struct BitmapResult {
@@ -184,7 +185,8 @@ fn run_single_input(engine: &str, input: &[u8], iterations: usize) -> Result<Tim
         "hayro_jbig2" => parse_hayro,
         _ => return Err("engine must be jbig2_rs or hayro_jbig2".into()),
     };
-    let parse_timing = timing_stats(iterations, || parse_operation(input))?;
+    let parse_timing =
+        timing_stats_batched(iterations, PARSE_BATCH_SIZE, || parse_operation(input))?;
     let timing = timing_stats(iterations, || operation(input))?;
     Ok(TimingResult {
         width: output.width,
@@ -254,8 +256,9 @@ fn run_generated_benchmarks(iterations: usize) -> Result<Vec<TimingResult>, Stri
             let _ = decode_ours(&input)?;
             let _ = decode_hayro(&input)?;
         }
-        let ours_parse = timing_stats(iterations, || parse_ours(&input))?;
-        let hayro_parse = timing_stats(iterations, || parse_hayro(&input))?;
+        let ours_parse = timing_stats_batched(iterations, PARSE_BATCH_SIZE, || parse_ours(&input))?;
+        let hayro_parse =
+            timing_stats_batched(iterations, PARSE_BATCH_SIZE, || parse_hayro(&input))?;
         let ours = timing_stats(iterations, || decode_ours(&input))?;
         let hayro = timing_stats(iterations, || decode_hayro(&input))?;
         results.push(TimingResult {
@@ -282,15 +285,30 @@ fn timing_stats<F, T>(iterations: usize, mut operation: F) -> Result<TimingStats
 where
     F: FnMut() -> Result<T, String>,
 {
+    timing_stats_batched(iterations, 1, &mut operation)
+}
+
+fn timing_stats_batched<F, T>(
+    iterations: usize,
+    batch_size: usize,
+    mut operation: F,
+) -> Result<TimingStats, String>
+where
+    F: FnMut() -> Result<T, String>,
+{
     if iterations == 0 {
         return Err("iterations must be nonzero".into());
+    }
+    if batch_size == 0 {
+        return Err("batch size must be nonzero".into());
     }
     let mut timings = Vec::with_capacity(iterations);
     for _ in 0..iterations {
         let start = Instant::now();
-        let result = operation()?;
-        std::hint::black_box(result);
-        timings.push(start.elapsed().as_nanos());
+        for _ in 0..batch_size {
+            std::hint::black_box(operation()?);
+        }
+        timings.push(start.elapsed().as_nanos() / batch_size as u128);
     }
     timings.sort_unstable();
     let p95_index = (timings.len() - 1) * 95 / 100;

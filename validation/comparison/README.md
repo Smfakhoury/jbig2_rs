@@ -23,6 +23,17 @@ benchmarks/hayro-comparison/run-comparison.sh 50
 Generated timing records include both median and p95 latency. Set
 `JBIG2_VECTOR_DIR` to add the private vector outcome comparison to the run.
 
+Run the required three-run stability gate:
+
+```sh
+benchmarks/hayro-comparison/run-stability.sh 50
+```
+
+The gate fails if the cross-run spread of any generated parse or end-to-end
+median exceeds 3%. Override only for investigation with
+`MAX_RELATIVE_SPREAD`. Runs are pinned to CPU 0 by default; set `BENCH_CPU` to
+another isolated core when needed.
+
 Private ITU vectors can be compared without copying them into the repository:
 
 ```sh
