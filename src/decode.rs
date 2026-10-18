@@ -20,8 +20,8 @@ use crate::reader::ByteReader;
 use crate::segment_data::parse_region_info;
 use crate::segment_header::SegmentType;
 use crate::symbol_text::{
-    decode_symbol_dictionary, decode_text_region, DictionaryContexts, SymbolDictionaryInput,
-    SymbolTextError, TextRegionInput,
+    decode_symbol_dictionary, decode_text_region, DictionaryContexts, SymbolCodebook,
+    SymbolDictionaryInput, SymbolTextError, TextRegionInput,
 };
 use crate::{
     Bitmap, DecodeError, GenericRegionErrorKind, Limits, MalformedError, UnsupportedFeature,
@@ -676,6 +676,25 @@ struct SymbolResource {
 }
 
 type SymbolStore = Vec<(u32, SymbolResource)>;
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+enum CollectedSymbols<'a> {
+    Contiguous(&'a [Bitmap]),
+    Borrowed(Vec<&'a Bitmap>),
+}
+
+impl<'a> CollectedSymbols<'a> {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires decode_spec::collected_symbols_valid(self),
+        ensures crate::symbol_text::symbol_text_spec::codebook_valid(out),
+    ))]
+    fn codebook(&'a self) -> SymbolCodebook<'a> {
+        match self {
+            Self::Contiguous(symbols) => SymbolCodebook::Contiguous(symbols),
+            Self::Borrowed(symbols) => SymbolCodebook::Borrowed(symbols),
+        }
+    }
+}
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
@@ -1765,7 +1784,7 @@ fn decode_symbol_dictionary_segment(
     }
     let output = decode_symbol_dictionary(&SymbolDictionaryInput {
         payload: segment.payload,
-        imported_symbols: &imported,
+        imported_symbols: imported.codebook(),
         custom_tables: &custom_tables,
         used_contexts,
         limits,
@@ -1847,7 +1866,7 @@ fn decode_text_segment(
     let custom_tables = collect_referred_tables(segment, tables)?;
     let output = decode_text_region(&TextRegionInput {
         payload: segment.payload,
-        symbols: &available_symbols,
+        symbols: available_symbols.codebook(),
         custom_tables: &custom_tables,
         limits,
     })
@@ -1892,29 +1911,40 @@ fn decode_text_segment(
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires decode_spec::symbol_store_valid(symbols),
     ensures match out {
-        Ok(bitmaps) =>
-            crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
+        Ok(bitmaps) => decode_spec::collected_symbols_valid(&bitmaps),
         Err(_) => true,
     },
 ))]
-fn collect_referred_symbols(
+fn collect_referred_symbols<'a>(
     segment: &ParsedSegment<'_>,
-    symbols: &SymbolStore,
+    symbols: &'a SymbolStore,
     active_retained_bytes: u64,
     limits: &Limits,
-) -> Result<Vec<Bitmap>, DecodeError> {
+) -> Result<CollectedSymbols<'a>, DecodeError> {
     let mut count = 0_usize;
-    let mut bitmap_bytes = 0_u64;
+    let mut nonempty_groups = 0_usize;
+    let mut contiguous: Option<&[Bitmap]> = None;
     let mut reference_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             reference_index <= segment.header.referred_segments@.len(),
             decode_spec::symbol_store_valid(symbols),
+            match contiguous {
+                Some(bitmaps) =>
+                    crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
+                None => true,
+            },
         decreases segment.header.referred_segments@.len() - reference_index,
     ))]
     while reference_index < segment.header.referred_segments.len() {
         let number = segment.header.referred_segments[reference_index];
         if let Some(resource) = get_symbol_resource(symbols, number) {
+            if !resource.exported.is_empty() {
+                nonempty_groups = nonempty_groups
+                    .checked_add(1)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                contiguous = Some(&resource.exported);
+            }
             let mut bitmap_index = 0_usize;
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
@@ -1928,18 +1958,23 @@ fn collect_referred_symbols(
                 count = count
                     .checked_add(1)
                     .ok_or(MalformedError::IntegerOverflow)?;
-                bitmap_bytes = bitmap_bytes
-                    .checked_add(bitmap_byte_len(&resource.exported[bitmap_index])?)
-                    .ok_or(MalformedError::IntegerOverflow)?;
                 bitmap_index += 1;
             }
         }
         reference_index += 1;
     }
-    let requested_bytes = allocation_size::<Bitmap>(count)?;
-    let peak = active_retained_bytes
-        .checked_add(bitmap_bytes)
-        .ok_or(MalformedError::IntegerOverflow)?;
+    if nonempty_groups <= 1 {
+        let direct = match contiguous {
+            Some(bitmaps) => bitmaps,
+            None => &[],
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(decode_spec::collected_symbols_valid);
+        }
+        return Ok(CollectedSymbols::Contiguous(direct));
+    }
+    let (requested_bytes, peak) = borrowed_symbol_memory(count, active_retained_bytes)?;
     if peak > limits.max_decoder_managed_memory_bytes {
         return Err(crate::LimitExceeded {
             kind: crate::LimitKind::Memory,
@@ -1948,7 +1983,7 @@ fn collect_referred_symbols(
         }
         .into());
     }
-    let mut imported: Vec<Bitmap> = Vec::new();
+    let mut imported: Vec<&Bitmap> = Vec::new();
     if imported.try_reserve(count).is_err() {
         return Err(DecodeError::Allocation { requested_bytes });
     }
@@ -1957,7 +1992,7 @@ fn collect_referred_symbols(
         invariant
             reference_index <= segment.header.referred_segments@.len(),
             decode_spec::symbol_store_valid(symbols),
-            crate::halftone::halftone_spec::bitmaps_valid(imported@),
+            decode_spec::bitmap_refs_valid(imported@),
         decreases segment.header.referred_segments@.len() - reference_index,
     ))]
     while reference_index < segment.header.referred_segments.len() {
@@ -1970,17 +2005,33 @@ fn collect_referred_symbols(
                     crate::halftone::halftone_spec::bitmaps_valid(
                         resource.exported@
                     ),
-                    crate::halftone::halftone_spec::bitmaps_valid(imported@),
+                    decode_spec::bitmap_refs_valid(imported@),
                 decreases resource.exported@.len() - bitmap_index,
             ))]
             while bitmap_index < resource.exported.len() {
-                imported.push(copy_bitmap(&resource.exported[bitmap_index], limits)?);
+                imported.push(&resource.exported[bitmap_index]);
                 bitmap_index += 1;
             }
         }
         reference_index += 1;
     }
-    Ok(imported)
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        reveal(decode_spec::collected_symbols_valid);
+    }
+    Ok(CollectedSymbols::Borrowed(imported))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn borrowed_symbol_memory(
+    count: usize,
+    active_retained_bytes: u64,
+) -> Result<(u64, u64), DecodeError> {
+    let requested_bytes = allocation_size::<&Bitmap>(count)?;
+    let peak = active_retained_bytes
+        .checked_add(requested_bytes)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    Ok((requested_bytes, peak))
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -2021,58 +2072,6 @@ fn collect_referred_tables<'a>(
         reference_index += 1;
     }
     Ok(result)
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures match out {
-        Ok(bitmap) =>
-            bitmap.width == source.width
-            && bitmap.height == source.height
-            && bitmap.stride == source.stride
-            && bitmap.data@ == source.data@
-            && crate::spec::bitmap::storage_valid(&bitmap)
-                == crate::spec::bitmap::storage_valid(source),
-        Err(_) => true,
-    },
-))]
-fn copy_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, DecodeError> {
-    let requested_bytes = bitmap_byte_len(source)?;
-    if requested_bytes > limits.max_decoder_managed_memory_bytes {
-        return Err(crate::LimitExceeded {
-            kind: crate::LimitKind::Memory,
-            limit: limits.max_decoder_managed_memory_bytes,
-            actual: requested_bytes,
-        }
-        .into());
-    }
-    let mut data = Vec::new();
-    if data.try_reserve(source.data.len()).is_err() {
-        return Err(DecodeError::Allocation { requested_bytes });
-    }
-    let mut index = 0_usize;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            index <= source.data@.len(),
-            data@ == source.data@.subrange(0, index as int),
-        decreases source.data@.len() - index,
-    ))]
-    while index < source.data.len() {
-        data.push(source.data[index]);
-        index += 1;
-    }
-    let bitmap = Bitmap {
-        width: source.width,
-        height: source.height,
-        stride: source.stride,
-        data,
-    };
-    #[cfg(verus_keep_ghost)]
-    proof! {
-        crate::views::bitmap_fields(&bitmap);
-        crate::views::bitmap_fields(source);
-        reveal(crate::spec::bitmap::storage_valid);
-    }
-    Ok(bitmap)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -2889,6 +2888,19 @@ mod tests {
         data[4..8].copy_from_slice(&1_u32.to_be_bytes());
         data[16] = 0x40;
         data
+    }
+
+    #[test]
+    fn borrowed_symbol_memory_counts_only_pointer_capacity() {
+        let retained = 4_096_u64;
+        let count = 37_usize;
+        let (allocation, peak) =
+            borrowed_symbol_memory(count, retained).expect("representable pointer storage");
+        assert_eq!(
+            allocation,
+            u64::try_from(count * core::mem::size_of::<&Bitmap>()).expect("allocation")
+        );
+        assert_eq!(peak, retained + allocation);
     }
 
     fn generic_data(coded: &[u8]) -> Vec<u8> {

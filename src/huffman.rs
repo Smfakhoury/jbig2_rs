@@ -311,6 +311,7 @@ fn subtract_limb(left: u64, right: u64, borrow: bool) -> (u64, bool) {
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 enum HuffmanLines<'a> {
     Borrowed(&'a [HuffmanLine]),
+    SymbolLengths(&'a [u8]),
     Standard(StandardLines),
 }
 
@@ -319,6 +320,7 @@ impl HuffmanLines<'_> {
     fn len(self) -> usize {
         match self {
             Self::Borrowed(lines) => lines.len(),
+            Self::SymbolLengths(lengths) => lengths.len(),
             Self::Standard(lines) => lines.len(),
         }
     }
@@ -329,6 +331,15 @@ impl HuffmanLines<'_> {
             Self::Borrowed(lines) => {
                 if index < lines.len() {
                     Some(lines[index])
+                } else {
+                    None
+                }
+            }
+            Self::SymbolLengths(lengths) => {
+                if index < lengths.len() {
+                    i32::try_from(index)
+                        .ok()
+                        .map(|value| HuffmanLine::normal(value, lengths[index], 0))
                 } else {
                     None
                 }
@@ -357,6 +368,14 @@ impl HuffmanTable {
     #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub(crate) fn new(lines: &[HuffmanLine], limits: &Limits) -> Result<Self, HuffmanError> {
         Self::from_line_source(HuffmanLines::Borrowed(lines), limits)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub(crate) fn new_symbol_ids(lengths: &[u8], limits: &Limits) -> Result<Self, HuffmanError> {
+        if let Some(maximum) = lengths.len().checked_sub(1) {
+            i32::try_from(maximum).map_err(|_| MalformedError::IntegerOverflow)?;
+        }
+        Self::from_line_source(HuffmanLines::SymbolLengths(lengths), limits)
     }
 
     #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -2073,6 +2092,58 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "performance microbenchmark"]
+    #[allow(clippy::cast_precision_loss)]
+    fn benchmark_symbol_id_source_without_line_staging() {
+        use std::hint::black_box;
+        use std::time::Instant;
+
+        let lengths = vec![12_u8; 4_096];
+        let limits = Limits::default();
+        let mut specialized_samples = Vec::new();
+        let mut staged_samples = Vec::new();
+        for round in 0..9 {
+            for staged in [round % 2 != 0, round % 2 == 0] {
+                let start = Instant::now();
+                for _ in 0..32 {
+                    if staged {
+                        let lines = lengths
+                            .iter()
+                            .copied()
+                            .enumerate()
+                            .map(|(index, length)| {
+                                HuffmanLine::normal(
+                                    i32::try_from(index).expect("small index"),
+                                    length,
+                                    0,
+                                )
+                            })
+                            .collect::<Vec<_>>();
+                        black_box(HuffmanTable::new(&lines, &limits).expect("staged table"));
+                    } else {
+                        black_box(
+                            HuffmanTable::new_symbol_ids(&lengths, &limits)
+                                .expect("specialized table"),
+                        );
+                    }
+                }
+                let elapsed = start.elapsed().as_nanos();
+                if staged {
+                    staged_samples.push(elapsed);
+                } else {
+                    specialized_samples.push(elapsed);
+                }
+            }
+        }
+        specialized_samples.sort_unstable();
+        staged_samples.sort_unstable();
+        let specialized = specialized_samples[specialized_samples.len() / 2];
+        let staged = staged_samples[staged_samples.len() / 2];
+        let gain = (staged - specialized) as f64 * 100.0 / staged as f64;
+        eprintln!("symbol-id-table: staged={staged}ns specialized={specialized}ns gain={gain:.2}%");
+    }
+
+    #[test]
     fn standard_prefixes_match_every_annex_b_table() {
         let expected: [&[&str]; 15] = [
             &["0", "10", "110", "111"],
@@ -2187,6 +2258,37 @@ mod tests {
         assert_eq!(decode_bits(&table, "10"), HuffmanValue::Integer(0));
         assert_eq!(decode_bits(&table, "110"), HuffmanValue::Integer(2));
         assert_eq!(decode_bits(&table, "111"), HuffmanValue::Integer(3));
+    }
+
+    #[test]
+    fn symbol_length_source_matches_materialized_line_oracle() {
+        let lengths = [2_u8, 2, 3, 3, 3, 3];
+        let lines = lengths
+            .iter()
+            .copied()
+            .enumerate()
+            .map(|(index, length)| {
+                HuffmanLine::normal(i32::try_from(index).expect("small index"), length, 0)
+            })
+            .collect::<Vec<_>>();
+        let specialized =
+            HuffmanTable::new_symbol_ids(&lengths, &Limits::default()).expect("specialized table");
+        let materialized =
+            HuffmanTable::new(&lines, &Limits::default()).expect("materialized table");
+        assert_eq!(specialized.lines.capacity(), materialized.lines.capacity());
+        for prefix in 0_u16..=u16::MAX {
+            let bytes = prefix.to_be_bytes();
+            let mut specialized_reader = bit_reader(&bytes);
+            let mut materialized_reader = bit_reader(&bytes);
+            assert_eq!(
+                format!("{:?}", specialized.decode(&mut specialized_reader)),
+                format!("{:?}", materialized.decode(&mut materialized_reader))
+            );
+            assert_eq!(
+                specialized_reader.bit_position,
+                materialized_reader.bit_position
+            );
+        }
     }
 
     #[test]

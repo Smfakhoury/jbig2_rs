@@ -29,7 +29,7 @@ use vstd::prelude::*;
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
 #[path = "../specs/symbol_text.rs"]
-mod symbol_text_spec;
+pub(crate) mod symbol_text_spec;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -1451,47 +1451,6 @@ fn extend_lengths(
         }
     }
     Ok(())
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures match out {
-        Ok(_) => lengths@.len() <= limits.max_symbols,
-        Err(_) => true,
-    },
-))]
-fn build_symbol_id_lines(
-    lengths: &[u8],
-    limits: &Limits,
-) -> Result<Vec<HuffmanLine>, SymbolTextError> {
-    let count = u32::try_from(lengths.len()).map_err(|_error| MalformedError::IntegerOverflow)?;
-    enforce_limit(
-        LimitKind::Symbols,
-        u64::from(limits.max_symbols),
-        u64::from(count),
-    )?;
-    let requested_bytes = lengths
-        .len()
-        .checked_mul(core::mem::size_of::<HuffmanLine>())
-        .and_then(|bytes| u64::try_from(bytes).ok())
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let mut lines: Vec<HuffmanLine> = Vec::new();
-    lines
-        .try_reserve(lengths.len())
-        .map_err(|_error| DecodeError::Allocation { requested_bytes })?;
-    let mut index = 0_usize;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            index <= lengths@.len(),
-            lines@.len() == index,
-        decreases lengths@.len() - index,
-    ))]
-    while index < lengths.len() {
-        let length = lengths[index];
-        let value = i32::try_from(index).map_err(|_error| MalformedError::IntegerOverflow)?;
-        lines.push(HuffmanLine::normal(value, length, 0));
-        index += 1;
-    }
-    Ok(lines)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -3324,21 +3283,13 @@ fn byte_align(reader: &mut BitReader<'_>) -> Result<(), SymbolTextError> {
 ))]
 fn read_symbol_id_runcode_lines(
     reader: &mut BitReader<'_>,
-) -> Result<Vec<HuffmanLine>, SymbolTextError> {
+) -> Result<[HuffmanLine; 35], SymbolTextError> {
     const RUNCODE_COUNT: usize = 35;
-    let mut runcode_lines: Vec<HuffmanLine> = Vec::new();
-    let requested_bytes = RUNCODE_COUNT
-        .checked_mul(core::mem::size_of::<HuffmanLine>())
-        .and_then(|bytes| u64::try_from(bytes).ok())
-        .ok_or(MalformedError::IntegerOverflow)?;
-    runcode_lines
-        .try_reserve(RUNCODE_COUNT)
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
+    let mut runcode_lines = [HuffmanLine::normal(0, 0, 0); RUNCODE_COUNT];
     let mut index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             index <= RUNCODE_COUNT,
-            runcode_lines@.len() == index,
             crate::huffman::huffman_spec::reader_valid(reader),
         decreases RUNCODE_COUNT - index,
     ))]
@@ -3346,7 +3297,7 @@ fn read_symbol_id_runcode_lines(
         let prefix_len =
             u8::try_from(reader.read_bits(4)?).map_err(|_| MalformedError::IntegerOverflow)?;
         let value = i32::try_from(index).map_err(|_| MalformedError::IntegerOverflow)?;
-        runcode_lines.push(HuffmanLine::normal(value, prefix_len, 0));
+        runcode_lines[index] = HuffmanLine::normal(value, prefix_len, 0);
         index += 1;
     }
     Ok(runcode_lines)
@@ -3363,33 +3314,37 @@ fn decode_symbol_id_code_lengths(
     limits: &Limits,
 ) -> Result<Vec<u8>, SymbolTextError> {
     let capacity = usize::try_from(symbol_count).map_err(|_| MalformedError::IntegerOverflow)?;
-    let mut runs = Vec::new();
-    runs.try_reserve(capacity)
+    let mut lengths: Vec<u8> = Vec::new();
+    lengths
+        .try_reserve(capacity)
         .map_err(|_| DecodeError::Allocation {
             requested_bytes: u64::from(symbol_count),
         })?;
-    let mut decoded_estimate = 0_u32;
+    let mut resources = ResourceTracker {
+        work_units: 0,
+        decoded_bitmap_bytes: 0,
+    };
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
-            decoded_estimate <= symbol_count,
-            runs@.len() <= capacity,
+            lengths@.len() <= capacity,
+            forall|index: int| 0 <= index < lengths@.len()
+                ==> #[trigger] lengths@[index] <= 31,
+            symbol_text_spec::work_units(&resources) <= limits.max_work_units,
             crate::huffman::huffman_spec::reader_valid(reader),
-        decreases symbol_count - decoded_estimate,
+        decreases capacity - lengths@.len(),
     ))]
-    while decoded_estimate < symbol_count {
+    while lengths.len() < capacity {
+        resources.charge_work(1, limits)?;
         let code = match runcode_table.decode(reader)? {
             HuffmanValue::Integer(value) => value,
             HuffmanValue::OutOfBand => {
                 return Err(SymbolTextError::UnexpectedOutOfBand("symbol ID run code"))
             }
         };
-        let run = match code {
+        match code {
             0..=31 => {
                 let length = u8::try_from(code).map_err(|_| MalformedError::IntegerOverflow)?;
-                decoded_estimate = decoded_estimate
-                    .checked_add(1)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                SymbolLengthRun::Literal(length)
+                lengths.push(length);
             }
             32 => {
                 let count = u8::try_from(
@@ -3399,10 +3354,10 @@ fn decode_symbol_id_code_lengths(
                         .ok_or(MalformedError::IntegerOverflow)?,
                 )
                 .map_err(|_| MalformedError::IntegerOverflow)?;
-                decoded_estimate = decoded_estimate
-                    .checked_add(u32::from(count))
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                SymbolLengthRun::RepeatPrevious(count)
+                let previous = *lengths
+                    .last()
+                    .ok_or(SymbolTextError::InvalidSymbolLengthRun)?;
+                extend_lengths(&mut lengths, capacity, previous, usize::from(count))?;
             }
             33 => {
                 let count = u16::try_from(
@@ -3412,10 +3367,7 @@ fn decode_symbol_id_code_lengths(
                         .ok_or(MalformedError::IntegerOverflow)?,
                 )
                 .map_err(|_| MalformedError::IntegerOverflow)?;
-                decoded_estimate = decoded_estimate
-                    .checked_add(u32::from(count))
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                SymbolLengthRun::Zeros(count)
+                extend_lengths(&mut lengths, capacity, 0, usize::from(count))?;
             }
             34 => {
                 let count = u16::try_from(
@@ -3425,27 +3377,12 @@ fn decode_symbol_id_code_lengths(
                         .ok_or(MalformedError::IntegerOverflow)?,
                 )
                 .map_err(|_| MalformedError::IntegerOverflow)?;
-                decoded_estimate = decoded_estimate
-                    .checked_add(u32::from(count))
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                SymbolLengthRun::Zeros(count)
+                extend_lengths(&mut lengths, capacity, 0, usize::from(count))?;
             }
             _ => return Err(SymbolTextError::InvalidSymbolLengthRun),
-        };
-        if decoded_estimate > symbol_count {
-            return Err(SymbolTextError::InvalidSymbolLengthRun);
         }
-        if runs.len() >= capacity {
-            return Err(SymbolTextError::InvalidSymbolLengthRun);
-        }
-        runs.push(run);
     }
-
-    let mut resources = ResourceTracker {
-        work_units: 0,
-        decoded_bitmap_bytes: 0,
-    };
-    let lengths = expand_symbol_code_lengths(symbol_count, &runs, limits, &mut resources)?;
+    resources.charge_work(u64::from(symbol_count), limits)?;
     Ok(lengths)
 }
 
@@ -3470,8 +3407,7 @@ macro_rules! prepare_symbol_ids {
         let runcode_table = HuffmanTable::new(&runcode_lines, limits)?;
         let lengths =
             decode_symbol_id_code_lengths(&mut codec.reader, &runcode_table, symbol_count, limits)?;
-        let symbol_lines = build_symbol_id_lines(&lengths, limits)?;
-        codec.symbol_id_table = Some(HuffmanTable::new(&symbol_lines, limits)?);
+        codec.symbol_id_table = Some(HuffmanTable::new_symbol_ids(&lengths, limits)?);
         byte_align(&mut codec.reader)?;
         Ok::<(), SymbolTextError>(())
     }};
@@ -4032,12 +3968,48 @@ fn clone_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, SymbolTextEr
     Ok(bitmap)
 }
 
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) enum SymbolCodebook<'a> {
+    Contiguous(&'a [Bitmap]),
+    Borrowed(&'a [&'a Bitmap]),
+}
+
+impl<'a> SymbolCodebook<'a> {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out as nat == symbol_text_spec::codebook_len(self),
+    ))]
+    pub(crate) fn len(self) -> usize {
+        match self {
+            Self::Contiguous(symbols) => symbols.len(),
+            Self::Borrowed(symbols) => symbols.len(),
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires symbol_text_spec::codebook_valid(self),
+        ensures match out {
+            Some(bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+            None => index as nat >= symbol_text_spec::codebook_len(self),
+        },
+    ))]
+    pub(crate) fn get(self, index: usize) -> Option<&'a Bitmap> {
+        match self {
+            Self::Contiguous(symbols) => symbols.get(index),
+            Self::Borrowed(symbols) => match symbols.get(index) {
+                Some(bitmap) => Some(*bitmap),
+                None => None,
+            },
+        }
+    }
+}
+
 /// Looks up a symbol by ID across the imported and already-decoded-new
 /// symbol collections, as used by T.88 6.5.8.2.2's single-instance
 /// refinement/aggregate procedure.
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
-        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::codebook_valid(imported),
         symbol_text_spec::bitmaps_valid(new_symbols@),
     ensures match out {
         Ok(bitmap) => crate::spec::bitmap::storage_valid(bitmap),
@@ -4045,7 +4017,7 @@ fn clone_bitmap(source: &Bitmap, limits: &Limits) -> Result<Bitmap, SymbolTextEr
     },
 ))]
 fn symbol_by_id<'a>(
-    imported: &'a [Bitmap],
+    imported: SymbolCodebook<'a>,
     new_symbols: &'a [Bitmap],
     id: u32,
 ) -> Result<&'a Bitmap, SymbolTextError> {
@@ -4057,7 +4029,12 @@ fn symbol_by_id<'a>(
     let available_u32 =
         u32::try_from(available).map_err(|_error| MalformedError::IntegerOverflow)?;
     if id_usize < imported.len() {
-        Ok(&imported[id_usize])
+        imported
+            .get(id_usize)
+            .ok_or(SymbolTextError::SymbolIdOutOfRange {
+                id,
+                available: available_u32,
+            })
     } else {
         let new_index = id_usize - imported.len();
         if new_index < new_symbols.len() {
@@ -4152,7 +4129,7 @@ fn log2_strip_size(strip_size: u8) -> u8 {
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         symbol_text_spec::codec_valid(old(codec)),
-        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::codebook_valid(imported),
         symbol_text_spec::bitmaps_valid(new_symbols@),
     ensures match out {
         Ok(bitmap) =>
@@ -4167,7 +4144,7 @@ fn log2_strip_size(strip_size: u8) -> u8 {
 ))]
 fn decode_dictionary_single_instance_refinement(
     codec: &mut SymbolCodec<'_>,
-    imported: &[Bitmap],
+    imported: SymbolCodebook<'_>,
     new_symbols: &[Bitmap],
     code_length: u8,
     width: u32,
@@ -4237,7 +4214,7 @@ fn decode_dictionary_single_instance_refinement(
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         symbol_text_spec::codec_valid(old(codec)),
-        symbol_text_spec::bitmap_refs_valid(available_symbols@),
+        symbol_text_spec::codebook_valid(available_symbols),
         symbol_text_spec::work_units(old(resources)) <= limits.max_work_units,
     ensures match out {
         Ok(bitmap) =>
@@ -4252,7 +4229,7 @@ fn decode_dictionary_single_instance_refinement(
 ))]
 fn decode_text_region_body(
     codec: &mut SymbolCodec<'_>,
-    available_symbols: &[&Bitmap],
+    available_symbols: SymbolCodebook<'_>,
     code_length: u8,
     width: u32,
     height: u32,
@@ -4279,7 +4256,7 @@ fn decode_text_region_body(
             state.strip.is_none(),
             symbol_text_spec::text_state_valid(&state),
             symbol_text_spec::codec_valid(codec),
-            symbol_text_spec::bitmap_refs_valid(available_symbols@),
+            symbol_text_spec::codebook_valid(available_symbols),
             crate::spec::bitmap::storage_valid(&bitmap),
             crate::views::bitmap_width(&bitmap) == width,
             crate::views::bitmap_height(&bitmap) == height,
@@ -4303,7 +4280,7 @@ fn decode_text_region_body(
                 state.strip.is_some(),
                 symbol_text_spec::text_state_valid(&state),
                 symbol_text_spec::codec_valid(codec),
-                symbol_text_spec::bitmap_refs_valid(available_symbols@),
+                symbol_text_spec::codebook_valid(available_symbols),
                 crate::spec::bitmap::storage_valid(&bitmap),
                 crate::views::bitmap_width(&bitmap) == width,
                 crate::views::bitmap_height(&bitmap) == height,
@@ -4354,7 +4331,7 @@ fn decode_text_region_body(
                     huffman: config.huffman,
                 },
             )?;
-            let base_symbol = *available_symbols
+            let base_symbol = available_symbols
                 .get(usize::try_from(symbol_id).map_err(|_| MalformedError::IntegerOverflow)?)
                 .ok_or(SymbolTextError::SymbolIdOutOfRange {
                     id: symbol_id,
@@ -4446,7 +4423,7 @@ pub(crate) struct DictionaryContexts {
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct SymbolDictionaryInput<'a> {
     pub(crate) payload: &'a [u8],
-    pub(crate) imported_symbols: &'a [Bitmap],
+    pub(crate) imported_symbols: SymbolCodebook<'a>,
     pub(crate) custom_tables: &'a [&'a HuffmanTable],
     pub(crate) used_contexts: Option<&'a DictionaryContexts>,
     pub(crate) limits: &'a Limits,
@@ -4464,7 +4441,7 @@ pub(crate) struct SymbolDictionaryOutput {
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         symbol_text_spec::codec_valid(old(codec)),
-        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::codebook_valid(imported),
         symbol_text_spec::bitmaps_valid(new_symbols@),
         symbol_text_spec::work_units(old(resources)) <= limits.max_work_units,
         header.adaptive_count <= 4,
@@ -4484,7 +4461,7 @@ pub(crate) struct SymbolDictionaryOutput {
 fn decode_one_new_symbol(
     header: &SymbolDictionaryHeader,
     codec: &mut SymbolCodec<'_>,
-    imported: &[Bitmap],
+    imported: SymbolCodebook<'_>,
     new_symbols: &[Bitmap],
     generic_contexts: Option<&mut GenericContexts>,
     generic_work: &mut u64,
@@ -4522,21 +4499,24 @@ fn decode_one_new_symbol(
             let mut imported_index = 0_usize;
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
-                    imported_index <= imported@.len(),
+                    imported_index <= symbol_text_spec::codebook_len(imported),
                     symbol_refs@.len() == imported_index,
-                    symbol_text_spec::bitmaps_valid(imported@),
+                    symbol_text_spec::codebook_valid(imported),
                     symbol_text_spec::bitmap_refs_valid(symbol_refs@),
-                decreases imported@.len() - imported_index,
+                decreases symbol_text_spec::codebook_len(imported) - imported_index,
             ))]
             while imported_index < imported.len() {
-                symbol_refs.push(&imported[imported_index]);
+                symbol_refs.push(imported.get(imported_index).ok_or(
+                    SymbolTextError::InvalidState("missing imported aggregate symbol"),
+                )?);
                 imported_index += 1;
             }
             let mut new_index = 0_usize;
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
                     new_index <= new_symbols@.len(),
-                    symbol_refs@.len() == imported@.len() + new_index,
+                    symbol_refs@.len()
+                        == symbol_text_spec::codebook_len(imported) + new_index,
                     symbol_text_spec::bitmaps_valid(new_symbols@),
                     symbol_text_spec::bitmap_refs_valid(symbol_refs@),
                 decreases new_symbols@.len() - new_index,
@@ -4560,7 +4540,7 @@ fn decode_one_new_symbol(
             let work_before = resources.work_units;
             let bitmap = decode_text_region_body(
                 codec,
-                &symbol_refs,
+                SymbolCodebook::Borrowed(&symbol_refs),
                 code_length,
                 width,
                 height,
@@ -4702,10 +4682,10 @@ type ArithmeticDictionaryResult = Result<
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
-        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::codebook_valid(imported),
         header.adaptive_count <= 4,
         total_symbols as nat
-            == imported@.len() + header.new_symbols as nat,
+            == symbol_text_spec::codebook_len(imported) + header.new_symbols as nat,
     ensures match out {
         Ok((exported, _, _, consumed)) =>
             symbol_text_spec::bitmaps_valid(exported@)
@@ -4715,7 +4695,7 @@ type ArithmeticDictionaryResult = Result<
 ))]
 fn decode_symbol_dictionary_arithmetic(
     header: &SymbolDictionaryHeader,
-    imported: &[Bitmap],
+    imported: SymbolCodebook<'_>,
     body: &[u8],
     code_length: u8,
     total_symbols: u32,
@@ -4787,7 +4767,7 @@ fn decode_symbol_dictionary_arithmetic(
             !class_state.class_open,
             header.adaptive_count <= 4,
             symbol_text_spec::dictionary_state_valid(&class_state),
-            symbol_text_spec::bitmaps_valid(imported@),
+            symbol_text_spec::codebook_valid(imported),
             symbol_text_spec::bitmaps_valid(new_symbols@),
             symbol_text_spec::codec_valid(&codec),
             symbol_text_spec::work_units(&resources) <= limits.max_work_units,
@@ -4809,7 +4789,7 @@ fn decode_symbol_dictionary_arithmetic(
                 class_state.class_open,
                 header.adaptive_count <= 4,
                 symbol_text_spec::dictionary_state_valid(&class_state),
-                symbol_text_spec::bitmaps_valid(imported@),
+                symbol_text_spec::codebook_valid(imported),
                 symbol_text_spec::bitmaps_valid(new_symbols@),
                 symbol_text_spec::codec_valid(&codec),
                 symbol_text_spec::work_units(&resources)
@@ -4892,10 +4872,10 @@ fn decode_symbol_dictionary_arithmetic(
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
-        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::codebook_valid(imported),
         header.adaptive_count <= 4,
         total_symbols as nat
-            == imported@.len() + header.new_symbols as nat,
+            == symbol_text_spec::codebook_len(imported) + header.new_symbols as nat,
     ensures match out {
         Ok((exported, _, consumed)) =>
             symbol_text_spec::bitmaps_valid(exported@)
@@ -4905,7 +4885,7 @@ fn decode_symbol_dictionary_arithmetic(
 ))]
 fn decode_symbol_dictionary_huffman(
     header: &SymbolDictionaryHeader,
-    imported: &[Bitmap],
+    imported: SymbolCodebook<'_>,
     body: &[u8],
     code_length: u8,
     total_symbols: u32,
@@ -4952,7 +4932,7 @@ fn decode_symbol_dictionary_huffman(
             !class_state.class_open,
             header.adaptive_count <= 4,
             symbol_text_spec::dictionary_state_valid(&class_state),
-            symbol_text_spec::bitmaps_valid(imported@),
+            symbol_text_spec::codebook_valid(imported),
             symbol_text_spec::bitmaps_valid(new_symbols@),
             symbol_text_spec::codec_valid(&codec),
             symbol_text_spec::work_units(&resources) <= limits.max_work_units,
@@ -4976,7 +4956,7 @@ fn decode_symbol_dictionary_huffman(
                     class_state.class_open,
                     header.adaptive_count <= 4,
                     symbol_text_spec::dictionary_state_valid(&class_state),
-                    symbol_text_spec::bitmaps_valid(imported@),
+                    symbol_text_spec::codebook_valid(imported),
                     symbol_text_spec::bitmaps_valid(new_symbols@),
                     symbol_text_spec::codec_valid(&codec),
                     symbol_text_spec::work_units(&resources)
@@ -5181,11 +5161,11 @@ fn decode_symbol_dictionary_huffman(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
-        symbol_text_spec::bitmaps_valid(imported@),
+        symbol_text_spec::codebook_valid(imported),
         symbol_text_spec::bitmaps_valid(new_symbols@),
         forall|index: int| 0 <= index < exported_indices@.len()
             ==> (#[trigger] exported_indices@[index] as nat)
-                < (imported@).len() + (new_symbols@).len(),
+                < symbol_text_spec::codebook_len(imported) + (new_symbols@).len(),
     ensures match out {
         Ok(exported) =>
             exported@.len() == exported_indices@.len()
@@ -5194,7 +5174,7 @@ fn decode_symbol_dictionary_huffman(
     },
 ))]
 fn assemble_exported_symbols(
-    imported: &[Bitmap],
+    imported: SymbolCodebook<'_>,
     new_symbols: &[Bitmap],
     exported_indices: &[u32],
     limits: &Limits,
@@ -5213,12 +5193,12 @@ fn assemble_exported_symbols(
         invariant
             index <= exported_indices@.len(),
             exported_symbols@.len() == index,
-            symbol_text_spec::bitmaps_valid(imported@),
+            symbol_text_spec::codebook_valid(imported),
             symbol_text_spec::bitmaps_valid(new_symbols@),
             symbol_text_spec::bitmaps_valid(exported_symbols@),
             forall|offset: int| 0 <= offset < exported_indices@.len()
                 ==> (#[trigger] exported_indices@[offset] as nat)
-                    < (imported@).len() + (new_symbols@).len(),
+                    < symbol_text_spec::codebook_len(imported) + (new_symbols@).len(),
         decreases exported_indices@.len() - index,
     ))]
     while index < exported_indices.len() {
@@ -5232,7 +5212,7 @@ fn assemble_exported_symbols(
 
 /// Decodes one complete symbol-dictionary segment payload (T.88 6.5, 7.4.3).
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires symbol_text_spec::bitmaps_valid(input.imported_symbols@),
+    requires symbol_text_spec::codebook_valid(input.imported_symbols),
     ensures match out {
         Ok(output) =>
             symbol_text_spec::bitmaps_valid(output.exported_symbols@)
@@ -5359,7 +5339,7 @@ pub(crate) fn decode_symbol_dictionary(
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct TextRegionInput<'a> {
     pub(crate) payload: &'a [u8],
-    pub(crate) symbols: &'a [Bitmap],
+    pub(crate) symbols: SymbolCodebook<'a>,
     pub(crate) custom_tables: &'a [&'a HuffmanTable],
     pub(crate) limits: &'a Limits,
 }
@@ -5375,7 +5355,7 @@ pub(crate) struct TextRegionOutput {
 /// Decodes one complete text-region segment payload (T.88 6.4, 7.4.3).
 #[allow(clippy::too_many_lines)]
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires symbol_text_spec::bitmaps_valid(input.symbols@),
+    requires symbol_text_spec::codebook_valid(input.symbols),
     ensures match out {
         Ok(output) =>
             crate::spec::bitmap::storage_valid(&output.bitmap)
@@ -5397,30 +5377,6 @@ pub(crate) fn decode_text_region(
     let symbol_count =
         u32::try_from(input.symbols.len()).map_err(|_| MalformedError::IntegerOverflow)?;
     let code_length = symbol_id_code_length(symbol_count)?;
-
-    let mut symbol_refs: Vec<&Bitmap> = Vec::new();
-    let requested_bytes = input
-        .symbols
-        .len()
-        .checked_mul(core::mem::size_of::<&Bitmap>())
-        .and_then(|bytes| u64::try_from(bytes).ok())
-        .ok_or(MalformedError::IntegerOverflow)?;
-    symbol_refs
-        .try_reserve(input.symbols.len())
-        .map_err(|_| DecodeError::Allocation { requested_bytes })?;
-    let mut symbol_index = 0_usize;
-    #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant
-            symbol_index <= input.symbols@.len(),
-            symbol_refs@.len() == symbol_index,
-            symbol_text_spec::bitmaps_valid(input.symbols@),
-            symbol_text_spec::bitmap_refs_valid(symbol_refs@),
-        decreases input.symbols@.len() - symbol_index,
-    ))]
-    while symbol_index < input.symbols.len() {
-        symbol_refs.push(&input.symbols[symbol_index]);
-        symbol_index += 1;
-    }
 
     let refinement_adaptive: [(i8, i8); 2] = [
         (
@@ -5472,7 +5428,7 @@ pub(crate) fn decode_text_region(
 
         let bitmap = decode_text_region_body(
             &mut codec,
-            &symbol_refs,
+            input.symbols,
             code_length,
             header.region.width,
             header.region.height,
@@ -5516,7 +5472,7 @@ pub(crate) fn decode_text_region(
 
         let bitmap = decode_text_region_body(
             &mut codec,
-            &symbol_refs,
+            input.symbols,
             code_length,
             header.region.width,
             header.region.height,
@@ -5830,12 +5786,103 @@ mod tests {
     #[test]
     fn builds_symbol_id_huffman_table_from_lengths() {
         let limits = Limits::default();
-        let table = build_symbol_id_lines(&[1, 3, 3], &limits)
-            .and_then(|lines| Ok(HuffmanTable::new(&lines, &limits)?));
+        let table = HuffmanTable::new_symbol_ids(&[1, 3, 3], &limits);
         assert!(table.is_ok());
-        let invalid = build_symbol_id_lines(&[1, 1, 1], &limits)
-            .and_then(|lines| Ok(HuffmanTable::new(&lines, &limits)?));
+        let invalid = HuffmanTable::new_symbol_ids(&[1, 1, 1], &limits);
         assert!(invalid.is_err());
+    }
+
+    #[test]
+    fn exported_symbols_match_exact_clone_oracle() {
+        let limits = Limits::default();
+        let imported = Bitmap {
+            width: 8,
+            height: 1,
+            stride: 1,
+            data: vec![0x11],
+        };
+        let new0 = Bitmap {
+            width: 8,
+            height: 1,
+            stride: 1,
+            data: vec![0x22],
+        };
+        let new1 = Bitmap {
+            width: 8,
+            height: 1,
+            stride: 1,
+            data: vec![0x33],
+        };
+        let imported_pointer = imported.data.as_ptr();
+        let new0_pointer = new0.data.as_ptr();
+        let expected = vec![
+            clone_bitmap(&imported, &limits).expect("imported clone"),
+            clone_bitmap(&new0, &limits).expect("new clone oracle"),
+        ];
+        let new_symbols = vec![new0, new1];
+        let output = assemble_exported_symbols(
+            SymbolCodebook::Borrowed(&[&imported]),
+            &new_symbols,
+            &[0, 1],
+            &limits,
+        )
+        .expect("assembled symbols");
+        assert_eq!(output, expected);
+        assert_ne!(output[0].data.as_ptr(), imported_pointer);
+        assert_ne!(output[1].data.as_ptr(), new0_pointer);
+        assert!(output.capacity() >= 2);
+    }
+
+    #[test]
+    fn sparse_new_exports_preserve_scalar_order() {
+        let limits = Limits::default();
+        let mut symbols = Vec::new();
+        for value in 0_u8..8 {
+            symbols.push(Bitmap {
+                width: 8,
+                height: 1,
+                stride: 1,
+                data: vec![value],
+            });
+        }
+        let output = assemble_exported_symbols(
+            SymbolCodebook::Contiguous(&[]),
+            &symbols,
+            &[0, 3, 7],
+            &limits,
+        )
+        .expect("sparse exports");
+        assert_eq!(
+            output
+                .iter()
+                .map(|bitmap| bitmap.data[0])
+                .collect::<Vec<_>>(),
+            vec![0, 3, 7]
+        );
+    }
+
+    #[test]
+    fn borrowed_symbol_buffer_reuses_pointer_capacity() {
+        let limits = Limits::default();
+        let symbols = [
+            Bitmap::blank(8, 1, &limits).expect("symbol"),
+            Bitmap::blank(8, 1, &limits).expect("symbol"),
+        ];
+        let mut borrowed = Vec::new();
+        borrowed
+            .try_reserve(symbols.len())
+            .expect("pointer reserve");
+        for symbol in &symbols {
+            borrowed.push(symbol);
+        }
+        let pointer = borrowed.as_ptr();
+        let capacity = borrowed.capacity();
+        borrowed.clear();
+        for symbol in &symbols {
+            borrowed.push(symbol);
+        }
+        assert_eq!(borrowed.as_ptr(), pointer);
+        assert_eq!(borrowed.capacity(), capacity);
     }
 
     #[test]
@@ -6111,7 +6158,7 @@ mod tests {
         arithmetic_dictionary.extend_from_slice(&[0xff, 0xac]);
         let arithmetic_output = decode_symbol_dictionary(&SymbolDictionaryInput {
             payload: &arithmetic_dictionary,
-            imported_symbols: &[],
+            imported_symbols: SymbolCodebook::Contiguous(&[]),
             custom_tables: &custom,
             used_contexts: None,
             limits: &limits,
@@ -6128,7 +6175,7 @@ mod tests {
         huffman_dictionary.extend_from_slice(&0_u32.to_be_bytes());
         let huffman_output = decode_symbol_dictionary(&SymbolDictionaryInput {
             payload: &huffman_dictionary,
-            imported_symbols: &[],
+            imported_symbols: SymbolCodebook::Contiguous(&[]),
             custom_tables: &custom,
             used_contexts: None,
             limits: &limits,
@@ -6145,7 +6192,7 @@ mod tests {
         arithmetic_text.extend_from_slice(&ANNEX_H_ENCODED);
         let arithmetic_text_output = decode_text_region(&TextRegionInput {
             payload: &arithmetic_text,
-            symbols: &[],
+            symbols: SymbolCodebook::Contiguous(&[]),
             custom_tables: &custom,
             limits: &limits,
         })
@@ -6243,5 +6290,57 @@ mod tests {
         eprintln!(
             "huffman-materialization: repeated={repeated}ns reused={reused}ns gain={gain:.2}%"
         );
+    }
+
+    #[test]
+    #[ignore = "performance microbenchmark"]
+    #[allow(clippy::cast_precision_loss)]
+    fn benchmark_borrowed_dictionary_text_codebook() {
+        let limits = Limits::default();
+        let mut symbols = Vec::new();
+        for value in 0_u16..2_048 {
+            let mut bitmap = Bitmap::blank(128, 8, &limits).expect("symbol");
+            bitmap.data.fill(u8::try_from(value & 0xff).expect("byte"));
+            symbols.push(bitmap);
+        }
+        let mut borrowed_samples = Vec::new();
+        let mut cloned_samples = Vec::new();
+        let mut borrowed = Vec::new();
+        borrowed
+            .try_reserve(symbols.len())
+            .expect("borrowed codebook capacity");
+        for round in 0..9 {
+            for cloned in [round % 2 != 0, round % 2 == 0] {
+                let start = Instant::now();
+                for _ in 0..32 {
+                    if cloned {
+                        let mut owned = Vec::new();
+                        owned.try_reserve(symbols.len()).expect("owned codebook");
+                        for symbol in &symbols {
+                            owned.push(clone_bitmap(symbol, &limits).expect("symbol clone"));
+                        }
+                        black_box(owned);
+                    } else {
+                        borrowed.clear();
+                        for symbol in &symbols {
+                            borrowed.push(symbol);
+                        }
+                        black_box(&borrowed);
+                    }
+                }
+                let elapsed = start.elapsed().as_nanos();
+                if cloned {
+                    cloned_samples.push(elapsed);
+                } else {
+                    borrowed_samples.push(elapsed);
+                }
+            }
+        }
+        borrowed_samples.sort_unstable();
+        cloned_samples.sort_unstable();
+        let borrowed = borrowed_samples[borrowed_samples.len() / 2];
+        let cloned = cloned_samples[cloned_samples.len() / 2];
+        let gain = (cloned - borrowed) as f64 * 100.0 / cloned as f64;
+        eprintln!("symbol-codebook: cloned={cloned}ns borrowed={borrowed}ns gain={gain:.2}%");
     }
 }

@@ -82,6 +82,24 @@ pub(super) open spec fn symbol_store_valid(
         )
 }
 
+pub(super) open spec fn bitmap_refs_valid(
+    bitmaps: Seq<&crate::bitmap::Bitmap>,
+) -> bool {
+    forall|index: int| 0 <= index < bitmaps.len()
+        ==> crate::spec::bitmap::storage_valid(#[trigger] bitmaps[index])
+}
+
+pub(super) open spec fn collected_symbols_valid(
+    symbols: &crate::decode::CollectedSymbols,
+) -> bool {
+    match symbols {
+        crate::decode::CollectedSymbols::Contiguous(bitmaps) =>
+            crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
+        crate::decode::CollectedSymbols::Borrowed(bitmaps) =>
+            bitmap_refs_valid(bitmaps@),
+    }
+}
+
 pub(super) open spec fn pattern_store_valid(
     patterns: &crate::decode::PatternStore,
 ) -> bool {

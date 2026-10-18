@@ -67,11 +67,25 @@ pub(crate) open spec fn bitmaps_valid(bitmaps: Seq<crate::bitmap::Bitmap>) -> bo
         ==> crate::spec::bitmap::storage_valid(#[trigger] &bitmaps[index])
 }
 
-pub(super) open spec fn bitmap_refs_valid(
+pub(crate) open spec fn bitmap_refs_valid(
     bitmaps: Seq<&crate::bitmap::Bitmap>,
 ) -> bool {
     forall|index: int| 0 <= index < bitmaps.len()
         ==> crate::spec::bitmap::storage_valid(#[trigger] bitmaps[index])
+}
+
+pub(crate) open spec fn codebook_len(codebook: super::SymbolCodebook) -> nat {
+    match codebook {
+        super::SymbolCodebook::Contiguous(symbols) => symbols@.len(),
+        super::SymbolCodebook::Borrowed(symbols) => symbols@.len(),
+    }
+}
+
+pub(crate) open spec fn codebook_valid(codebook: super::SymbolCodebook) -> bool {
+    match codebook {
+        super::SymbolCodebook::Contiguous(symbols) => bitmaps_valid(symbols@),
+        super::SymbolCodebook::Borrowed(symbols) => bitmap_refs_valid(symbols@),
+    }
 }
 
 pub(crate) open spec fn two_bit_choice_result(
