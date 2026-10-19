@@ -1,31 +1,32 @@
 {
   "schema_version": 1,
   "status": "internal_candidate_validated_publication_blocked",
-  "candidate_revision": "2a3d28bd80f4000d51b3dc6e61790ecfac2e3cbc",
-  "production_source_revision": "cb73e895935ccac9ef821105071e98d720737bec",
+  "candidate_revision": "cd7d11c894ea7a4cd4f29f38ee61fdb9031a605f",
+  "production_source_revision": "6ae6c7ab0e020eeeb4571f228f38151b22ab31d4",
   "crate_version": "0.0.1",
   "publication_enabled": false,
   "evidence": {
     "support_matrix_sha256": "b8dcee84ae9c77de40d2248f82f6c30c30bd88a4e2ee52735ce487d27aa2f43d",
     "source_provenance_sha256": "1bd2898d4e345a854c718dcfc3062aa4c4a0d5f65f6fd8b3c3b6387bcf9d4e30",
-    "proof_attestation_sha256": "0974786c3ddb1dd19976dbb3f6eb846567925e2afc55ec40a83baac24530415b",
-    "conformance_attestation_sha256": "90142579ed89d732a23e587d67d731f68a68d9e606106899e8e197d13c797a1d",
-    "fuzz_attestation_sha256": "883f0764671feb047d85495e22d123d5e5db8b290f7b78ed1a78813b52e47d3b",
-    "toolchain_sha256": "73805ad2f198150b8922540cee50e64aa974dc3459d0d97c88c252efc9faa34f",
-    "performance_results_sha256": "7dc54fa16e1dea5df0e8f81b1fa5e3e77f72c313e1b10b7457e94116249069c6"
+    "proof_attestation_sha256": "2b6fdd2a8e735ec693cf62401a55e84e37e19615800fba57b8de8056a2993a8e",
+    "conformance_attestation_sha256": "777c53ab5f635beda23af8d936b77a380e92f48ce44b521016c6676cdebba925",
+    "fuzz_attestation_sha256": "05b57c6740e033c395fc2f8856dab9c4c5fdf7529678b56f60ea11d9e40547cb",
+    "toolchain_sha256": "138d7d918a7639e51ac86eb0ce60c4514b744eca9609e68975941dfbc7fc0c04",
+    "performance_results_sha256": "b385632f7594f197dbb9b1ce5ad39eb00492c95655692202f43692bd8002cdea",
+    "competitor_comparison_sha256": "8bd46cf8cd00663ead9e2da5dcfb954b0af033953a8d03aa0c2fdc99b3e7f656"
   },
   "validation": {
     "implementation_tests": {
-      "passed": 160,
+      "passed": 205,
       "failed": 0
     },
     "verus": {
-      "verified_obligations": 998,
+      "verified_obligations": 1104,
       "errors": 0,
       "native_assumptions": 0
     },
     "production_functions": {
-      "verified": 521,
+      "verified": 599,
       "reviewed_verifier_limitations": 18,
       "audited_forwarders": 21,
       "incomplete": 0
@@ -47,7 +48,14 @@
       "x86_64-pc-windows-gnu",
       "x86_64-apple-darwin"
     ],
-    "performance_thresholds": "passed"
+    "performance_thresholds": "passed",
+    "competitive_performance": {
+      "competitor": "hayro-jbig2 0.3.1",
+      "aggregate_median_ratio": 0.694,
+      "aggregate_p95_ratio": 0.636,
+      "peak_rss_ratio": 1.008,
+      "tt10_median_exception_ratio": 1.501
+    }
   },
   "conformance": {
     "normative_vectors_run": 10,
