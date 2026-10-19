@@ -24,6 +24,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.89.0
         with:
           components: clippy,rustfmt
+      - name: Test validation gates
+        run: python -B -m unittest discover -s tools/tests -v
       - run: python tools/verify_provenance.py
       - run: python tools/audit_runtime.py
       - run: cargo fmt --all --check
