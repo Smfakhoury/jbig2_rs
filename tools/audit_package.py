@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,11 +26,14 @@ def audit(lines: list[str]) -> list[str]:
         entry = line.strip()
         if not entry:
             continue
+        if PureWindowsPath(entry).drive:
+            failures.append(f"invalid package path: {entry}")
+            continue
+        entry = entry.replace("\\", "/")
         path = PurePosixPath(entry)
         if (
             path.is_absolute()
             or ".." in path.parts
-            or "\\" in entry
             or path.as_posix() != entry
         ):
             failures.append(f"invalid package path: {entry}")

@@ -34,6 +34,13 @@ class PackageAuditTests(unittest.TestCase):
         paths = [f"jbig2_rs-0.0.1/{path}" for path in sorted(package.REQUIRED)]
         self.assertEqual(package.audit(paths), [])
 
+    def test_windows_cargo_paths(self):
+        paths = [path.replace("/", "\\") for path in sorted(package.REQUIRED)]
+        self.assertEqual(package.audit(paths), [])
+        prefixed = [f"jbig2_rs-0.0.1\\{path}" for path in paths]
+        self.assertEqual(package.audit(prefixed), [])
+        self.assertTrue(package.audit(paths + ["src/lib.rs"]))
+
     def test_reject_empty_and_missing(self):
         self.assertTrue(package.audit([]))
         self.assertTrue(package.audit(["Cargo.toml"]))
@@ -43,7 +50,8 @@ class PackageAuditTests(unittest.TestCase):
         for path in (
             "proofs/hidden.rs", "specs/model.rs", "validation/stream.jb2",
             "src/extra.rs", "docs/standard.pdf", "../src/lib.rs",
-            "/src/lib.rs", "src\\lib.rs", "src//lib.rs", "./src/lib.rs",
+            "/src/lib.rs", "C:\\src\\lib.rs", "src\\..\\lib.rs",
+            "src//lib.rs", "./src/lib.rs",
         ):
             with self.subTest(path=path):
                 self.assertTrue(package.audit(sorted(package.REQUIRED) + [path]))
