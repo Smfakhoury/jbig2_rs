@@ -21,7 +21,7 @@ use vstd::prelude::*;
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
 #[path = "../specs/generic_region.rs"]
-mod generic_region_spec;
+pub(crate) mod generic_region_spec;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -254,7 +254,7 @@ impl GenericTemplate {
             ),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
-    const fn sltp_context(self) -> usize {
+    pub(crate) const fn sltp_context(self) -> usize {
         #[cfg(verus_keep_ghost)]
         production_generic_template_facts!(self);
         match self {
@@ -473,7 +473,7 @@ struct GenericWordRaster {
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 #[allow(clippy::cast_possible_truncation)]
-fn word_byte(word: u32, index: usize) -> u8 {
+pub(crate) fn word_byte(word: u32, index: usize) -> u8 {
     match index {
         0 => (word >> 24) as u8,
         1 => (word >> 16) as u8,
@@ -857,7 +857,7 @@ impl GenericWordRaster {
 ///
 /// At most the current row and its two predecessors are retained. Completed
 /// rows are written immediately into the public byte-packed bitmap.
-#[cfg(any(test, verus_keep_ghost))]
+#[cfg(test)]
 #[derive(Debug)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 struct GenericRowRing {
@@ -868,7 +868,7 @@ struct GenericRowRing {
     charged_bytes: u64,
 }
 
-#[cfg(any(test, verus_keep_ghost))]
+#[cfg(test)]
 impl GenericRowRing {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures out.is_some() ==> {
@@ -1934,7 +1934,7 @@ fn decode_arithmetic_generic_into(
         Err(_) => true,
     },
 ))]
-#[allow(clippy::too_many_lines)]
+#[allow(clippy::collapsible_if, clippy::too_many_lines)]
 pub(crate) fn decode_generic_on(
     decoder: &mut ArithmeticDecoder<'_>,
     contexts: &mut GenericContexts,
@@ -1988,7 +1988,6 @@ pub(crate) fn decode_generic_on(
         &call.adaptive,
     );
     if matches!(descriptor, GenericContextDescriptor::NominalTemplate0) && call.skip.is_none() {
-        #[cfg(not(verus_keep_ghost))]
         if generic_row_ring::try_decode(
             &mut bitmap,
             call.width,
@@ -2007,40 +2006,8 @@ pub(crate) fn decode_generic_on(
             return Ok(bitmap);
         }
         #[cfg(verus_keep_ghost)]
-        if row_ring_fits_managed_memory(
-            call.width,
-            rows,
-            contexts.storage_bytes,
-            bitmap_bytes,
-            limits,
-        )? {
-            let base_managed = contexts
-                .storage_bytes
-                .checked_add(bitmap_bytes)
-                .ok_or_else(integer_overflow)?;
-            let available_bytes = limits
-                .max_decoder_managed_memory_bytes
-                .checked_sub(base_managed)
-                .ok_or_else(integer_overflow)?;
-            if let Some(mut ring) = GenericRowRing::try_new(call.width, rows, available_bytes) {
-                let charged_context_bytes = contexts
-                    .storage_bytes
-                    .checked_add(ring.charged_bytes)
-                    .ok_or_else(integer_overflow)?;
-                enforce_managed_memory(charged_context_bytes, bitmap_bytes, limits)?;
-                decode_nominal_template0_row_ring(
-                    &mut ring,
-                    &mut bitmap,
-                    rows,
-                    call.typical_prediction,
-                    decoder,
-                    &mut contexts.contexts,
-                )?;
-                proof! {
-                    reveal(generic_region_spec::generic_contexts_valid);
-                }
-                return Ok(bitmap);
-            }
+        proof! {
+            reveal(generic_region_spec::generic_contexts_valid);
         }
     }
 
@@ -2074,7 +2041,11 @@ pub(crate) fn decode_generic_on(
             crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder))
             && generic_region_spec::generic_contexts_valid(final(contexts)),
 ))]
-#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[allow(
+    clippy::collapsible_if,
+    clippy::too_many_arguments,
+    clippy::too_many_lines
+)]
 fn decode_generic_on_into(
     decoder: &mut ArithmeticDecoder<'_>,
     contexts: &mut GenericContexts,
@@ -2117,7 +2088,6 @@ fn decode_generic_on_into(
         &call.adaptive,
     );
     if matches!(descriptor, GenericContextDescriptor::NominalTemplate0) {
-        #[cfg(not(verus_keep_ghost))]
         if generic_row_ring::try_decode(
             bitmap,
             call.width,
@@ -2132,32 +2102,8 @@ fn decode_generic_on_into(
             return Ok(());
         }
         #[cfg(verus_keep_ghost)]
-        if row_ring_fits_managed_memory(
-            call.width,
-            rows,
-            contexts.storage_bytes,
-            bitmap_bytes,
-            limits,
-        )? {
-            let base_managed = contexts
-                .storage_bytes
-                .checked_add(bitmap_bytes)
-                .ok_or_else(integer_overflow)?;
-            let available_bytes = limits
-                .max_decoder_managed_memory_bytes
-                .checked_sub(base_managed)
-                .ok_or_else(integer_overflow)?;
-            if let Some(mut ring) = GenericRowRing::try_new(call.width, rows, available_bytes) {
-                decode_nominal_template0_row_ring(
-                    &mut ring,
-                    bitmap,
-                    rows,
-                    call.typical_prediction,
-                    decoder,
-                    &mut contexts.contexts,
-                )?;
-                return Ok(());
-            }
+        proof! {
+            reveal(generic_region_spec::generic_contexts_valid);
         }
     }
     decode_generic_with(
@@ -2206,7 +2152,7 @@ fn decode_probability(
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
-const RASTER_SIGNAL_CONTEXT: u8 = 4;
+pub(crate) const RASTER_SIGNAL_CONTEXT: u8 = 4;
 
 #[allow(clippy::ptr_arg)]
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -2218,7 +2164,7 @@ const RASTER_SIGNAL_CONTEXT: u8 = 4;
         generic_region_spec::contexts_valid(final(contexts)@),
         out <= 1 ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
 ))]
-fn decode_probability_signal(
+pub(crate) fn decode_probability_signal(
     decoder: &mut ArithmeticDecoder<'_>,
     contexts: &mut Vec<ArithmeticContext>,
     index: usize,
@@ -2231,7 +2177,7 @@ fn decode_probability_signal(
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 #[cold]
-fn probability_signal_error(
+pub(crate) fn probability_signal_error(
     decoder: &ArithmeticDecoder<'_>,
     index: usize,
     context_count: usize,
@@ -2261,7 +2207,7 @@ fn probability_signal_error(
         out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
 ))]
 #[allow(clippy::too_many_lines)]
-#[cfg(any(test, verus_keep_ghost))]
+#[cfg(test)]
 fn decode_nominal_template0_row_ring(
     ring: &mut GenericRowRing,
     bitmap: &mut Bitmap,
@@ -4999,7 +4945,7 @@ fn context_storage_bytes(count: usize) -> Result<u64, GenericRegionError> {
         Err(_) => true,
     },
 ))]
-fn enforce_managed_memory(
+pub(crate) fn enforce_managed_memory(
     context_bytes: u64,
     bitmap_bytes: u64,
     limits: &Limits,
@@ -5041,7 +4987,7 @@ fn word_raster_storage_bytes(width: u32, height: u32) -> Option<u64> {
     stride_words.checked_mul(u64::from(height))?.checked_mul(4)
 }
 
-#[cfg(any(test, verus_keep_ghost))]
+#[cfg(test)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 fn row_ring_storage_bytes(width: u32, rows: u32) -> Option<u64> {
     let stride_words = u64::from(width).checked_add(31)? / 32;
@@ -5050,7 +4996,7 @@ fn row_ring_storage_bytes(width: u32, rows: u32) -> Option<u64> {
         .checked_mul(4)
 }
 
-#[cfg(any(test, verus_keep_ghost))]
+#[cfg(test)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 fn row_ring_fits_managed_memory(
     width: u32,
@@ -5210,7 +5156,7 @@ fn enforce_input_limit(data: &[u8], limits: &Limits) -> Result<(), GenericRegion
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
-fn integer_overflow() -> GenericRegionError {
+pub(crate) fn integer_overflow() -> GenericRegionError {
     GenericRegionError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow))
 }
 
@@ -5309,7 +5255,6 @@ fn pad_bitmap_height(
     Ok(padded)
 }
 
-#[cfg(not(verus_keep_ghost))]
 #[path = "generic_row_ring.rs"]
 mod generic_row_ring;
 

@@ -39,7 +39,7 @@ pub(super) open spec fn generic_template_code(
     }
 }
 
-pub(super) open spec fn generic_context_bits(
+pub(crate) open spec fn generic_context_bits(
     template: super::GenericTemplate,
 ) -> nat {
     match template {
@@ -50,7 +50,7 @@ pub(super) open spec fn generic_context_bits(
     }
 }
 
-pub(super) open spec fn generic_sltp_context(
+pub(crate) open spec fn generic_sltp_context(
     template: super::GenericTemplate,
 ) -> nat {
     match template {
@@ -79,7 +79,7 @@ pub(super) open spec fn refinement_sltp_context(
     }
 }
 
-pub(super) open spec fn pow2(exponent: nat) -> nat
+pub(crate) open spec fn pow2(exponent: nat) -> nat
     decreases exponent,
 {
     if exponent == 0 {
