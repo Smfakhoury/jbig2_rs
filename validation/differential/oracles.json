@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "oracles": [
+    {
+      "name": "jbig2dec",
+      "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
+      "source_url": "https://github.com/ArtifexSoftware/jbig2dec",
+      "license": "GNU AGPL v3 or later with stated AFPL Ghostscript linking permission",
+      "mode": "external black-box process",
+      "build": "Makefile.unix build in /tmp at the pinned revision",
+      "version": "0.20",
+      "binary_sha256": "eb0248d7eb623999bf21e20bc1aa6749a06acf8e5c412554dc1fe316770b4b1d",
+      "redistribution": false
+    },
+    {
+      "name": "Poppler",
+      "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
+      "source_url": "https://gitlab.freedesktop.org/poppler/poppler",
+      "license": "GNU GPL v2 COPYING; exact file-level terms pending review",
+      "mode": "external black-box process",
+      "build": "minimal static pdfimages build in /tmp at the pinned revision with optional wrappers, image codecs, crypto, network, and color-management integrations disabled",
+      "version": "26.10.90",
+      "binary_sha256": "2832618f2e369528f9e124e8cf617189b5c7e4e4628530f439f1450f2cf5e25a",
+      "additional_execution": {
+        "version": "24.02.0",
+        "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814",
+        "reason": "Versioned system oracle retained to expose behavior changes across independent Poppler versions."
+      },
+      "redistribution": false
+    }
+  ],
+  "approval": "approved by CELA/legal owner for private internal black-box validation; redistribution and public publication remain prohibited"
+}

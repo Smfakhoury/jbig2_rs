@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "NEG-TRUNCATE-STANDALONE-EVERY-BYTE",
+      "surface": "document envelope",
+      "expected": "typed malformed error except the valid sequential prefix without optional EOF",
+      "coverage": "src/document.rs unit test"
+    },
+    {
+      "id": "NEG-SEGMENT-RESERVED-TYPE",
+      "surface": "segment header",
+      "expected": "MalformedError::ReservedSegmentType",
+      "coverage": "src/segment_header.rs"
+    },
+    {
+      "id": "NEG-SEGMENT-DUPLICATE-NUMBER",
+      "surface": "reference graph",
+      "expected": "MalformedError::DuplicateSegmentNumber",
+      "coverage": "src/document.rs"
+    },
+    {
+      "id": "NEG-REFERENCE-MISSING",
+      "surface": "reference graph",
+      "expected": "MalformedError::MissingReferredSegment",
+      "coverage": "src/document.rs"
+    },
+    {
+      "id": "NEG-REFERENCE-DEPTH",
+      "surface": "reference graph",
+      "expected": "LimitKind::ReferenceDepth",
+      "coverage": "src/document.rs unit test"
+    },
+    {
+      "id": "NEG-RETENTION-PREMATURE",
+      "surface": "retained segment state",
+      "expected": "MalformedError::InvalidRetentionFlags",
+      "coverage": "src/document.rs unit test"
+    },
+    {
+      "id": "NEG-PAGE-DIMENSION-BOMB",
+      "surface": "bitmap allocation",
+      "expected": "LimitKind::Width, Height, PagePixels, or Memory",
+      "coverage": "src/bitmap.rs and src/segment_data.rs"
+    },
+    {
+      "id": "NEG-ARITHMETIC-TRUNCATED-BYTEIN",
+      "surface": "arithmetic decoder",
+      "expected": "MalformedError::UnexpectedEof",
+      "coverage": "src/arithmetic.rs unit test"
+    },
+    {
+      "id": "NEG-HUFFMAN-OVERSUBSCRIBED",
+      "surface": "custom Huffman table",
+      "expected": "HuffmanErrorKind::Oversubscribed",
+      "coverage": "src/huffman.rs unit test"
+    },
+    {
+      "id": "NEG-MMR-EXTENSION",
+      "surface": "MMR",
+      "expected": "MmrErrorKind::ExtensionMode",
+      "coverage": "src/mmr.rs unit test"
+    },
+    {
+      "id": "NEG-MMR-RUN-OVERSHOOT",
+      "surface": "MMR",
+      "expected": "MmrErrorKind::RunExceedsRow",
+      "coverage": "src/mmr.rs unit test"
+    },
+    {
+      "id": "NEG-GENERIC-BAD-AT",
+      "surface": "generic arithmetic context",
+      "expected": "GenericRegionErrorKind::InvalidAdaptivePixel",
+      "coverage": "src/generic_region.rs unit test"
+    },
+    {
+      "id": "NEG-HALFTONE-PATTERN-ID",
+      "surface": "halftone",
+      "expected": "HalftoneErrorKind::InvalidPatternIndex",
+      "coverage": "src/halftone.rs unit test"
+    },
+    {
+      "id": "NEG-STRIPE-SEALED-WRITE",
+      "surface": "page composition",
+      "expected": "MalformedError::InvalidPageState",
+      "coverage": "src/decode.rs unit test"
+    }
+  ]
+}

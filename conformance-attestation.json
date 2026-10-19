@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "status": "internal_validation_passed_with_reviewed_differences",
+  "source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
+  "implementation_tests": {
+    "total": 216,
+    "passed": 202,
+    "ignored": 14,
+    "failed": 0
+  },
+  "normative_vectors": {
+    "approved": true,
+    "total": 10,
+    "passed": 2,
+    "reviewed_strict_rejections": 7,
+    "unsupported_profile": 1,
+    "unresolved_failures": 0,
+    "results_sha256": "c2f1ed30e17d397d0de5b5be02412c3559d0e0fb981ddbc3efffcebfbc0b3987"
+  },
+  "community_regressions": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0
+  },
+  "differential": {
+    "oracles": [
+      {
+        "name": "jbig2dec",
+        "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
+        "version": "0.20",
+        "binary_sha256": "eb0248d7eb623999bf21e20bc1aa6749a06acf8e5c412554dc1fe316770b4b1d",
+        "status": "executed as an approved internal black-box oracle"
+      },
+      {
+        "name": "Poppler",
+        "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
+        "executed_version": "26.10.90",
+        "binary_sha256": "2832618f2e369528f9e124e8cf617189b5c7e4e4628530f439f1450f2cf5e25a",
+        "status": "exact source revision built and executed as an approved internal black-box oracle"
+      },
+      {
+        "name": "Poppler system comparison",
+        "executed_version": "24.02.0",
+        "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814",
+        "status": "additional versioned internal black-box oracle"
+      }
+    ],
+    "unique_cases": 10,
+    "oracle_case_executions": 30,
+    "comparable_outputs": 18,
+    "exact_bitmap_agreements": 3,
+    "reviewed_disagreements": 15,
+    "skipped_or_unavailable": 12,
+    "unresolved_disagreements": 0,
+    "system_poppler_results_sha256": "2643505cc38d6837035e5a09df9c94c332f77a6c7d95d5ddfccc398ac71c71f6",
+    "pinned_poppler_results_sha256": "037cf382897322e47122e19c9015678ef1f0039d124761d7affe8fbf32b4b2ad"
+  },
+  "release_gate": "blocked"
+}

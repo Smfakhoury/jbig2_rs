@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "codeStreamTest1_TT1",
+      "classification": "reviewed_strict_rejection",
+      "expected_error_contains": "UnexpectedEof",
+      "rationale": "The MMR sub-block is truncated. Pinned jbig2dec emits recovery warnings and continues leniently; jbig2_rs fails closed.",
+      "jbig2dec_stderr_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a"
+    },
+    {
+      "id": "codeStreamTest1_TT2",
+      "classification": "reviewed_strict_rejection",
+      "expected_error_contains": "UnexpectedEof",
+      "rationale": "The declared one-byte MMR collective bitmap cannot complete the declared rows. Pinned jbig2dec reports fatal MMR errors and recovers leniently; jbig2_rs fails closed.",
+      "jbig2dec_stderr_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a"
+    },
+    {
+      "id": "codeStreamTest1_TT3",
+      "classification": "reviewed_strict_rejection",
+      "expected_error_contains": "negative export run",
+      "rationale": "IAEX produces a negative EXRUNLENGTH although T.88 6.5.4/6.5.10 defines it as an unsigned 32-bit run length. Pinned jbig2dec warns and caps the wrapped value; jbig2_rs rejects it.",
+      "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
+    },
+    {
+      "id": "codeStreamTest1_TT4",
+      "classification": "reviewed_strict_rejection",
+      "expected_error_contains": "negative export run",
+      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
+    },
+    {
+      "id": "codeStreamTest1_TT5",
+      "classification": "reviewed_strict_rejection",
+      "expected_error_contains": "negative export run",
+      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "jbig2dec_stderr_sha256": "83fb4c32a7c0adcbf69c6dc92489749783b4d57df6692e42cae5133e196ea418"
+    },
+    {
+      "id": "codeStreamTest1_TT7",
+      "classification": "reviewed_strict_rejection",
+      "expected_error_contains": "negative export run",
+      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "jbig2dec_stderr_sha256": "52f8bcbd6d8f2a55bdf1112eda6c1a36f38cd9c6fd784119a88154ce8c943a74"
+    },
+    {
+      "id": "codeStreamTest2_TT6",
+      "classification": "reviewed_strict_rejection",
+      "expected_error_contains": "negative export run",
+      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "jbig2dec_stderr_sha256": "48f47424233ba140b26527ca45651147c7a6e80d3e796ccfbad54416d0b1da73"
+    },
+    {
+      "id": "codeStreamTest3_TT8",
+      "classification": "unsupported_profile",
+      "expected_error_contains": "Unsupported(Colour)",
+      "rationale": "Colour palette decoding is explicitly outside the approved Phase 1 support matrix."
+    }
+  ]
+}

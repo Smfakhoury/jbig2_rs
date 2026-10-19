@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "production_source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
+  "tracked_functions": 18,
+  "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",
+  "workstreams": [
+    {
+      "id": "VL-001",
+      "count": 0,
+      "priority": "high",
+      "surface": "Arithmetic generic FnMut helpers",
+      "mitigation": "Replace generic mutable callback helpers with concrete decoder state-machine methods or contribute stateful callable contracts to vstd.",
+      "exit_criteria": "Annex A integer and IAID helper loops directly verify with cursor/context preservation.",
+      "status": "completed"
+    },
+    {
+      "id": "VL-002",
+      "count": 9,
+      "priority": "low",
+      "surface": "Standard trait, formatting, and std::io boundaries",
+      "mitigation": "Keep formatting outside algorithm proofs; directly verify Default and From implementations when pinned Verus supports these standard traits, and model stable IoErrorKind conversion only through a separately reviewed boundary contract.",
+      "exit_criteria": "All remaining Default, From, formatting, and I/O conversion functions have direct contracts or an approved native-boundary disposition."
+    },
+    {
+      "id": "VL-003",
+      "count": 7,
+      "priority": "high",
+      "surface": "Decode orchestration",
+      "mitigation": "Introduce verified deterministic resource stores and concrete page-sink adapters, replacing HashMap and trait-callback proof dependencies.",
+      "exit_criteria": "Page/resource insertion, lookup, release, dispatch, and sink order verify end-to-end."
+    },
+    {
+      "id": "VL-004",
+      "count": 2,
+      "priority": "high",
+      "surface": "Document parsing",
+      "mitigation": "Split bounded reader acquisition from a verified slice parser and replace iterator/closure-heavy HashMap validation with indexed deterministic vectors.",
+      "exit_criteria": "Sequential, random-access, embedded, graph, profiles, retention, and page lifecycle parsing verify end-to-end."
+    },
+    {
+      "id": "VL-005",
+      "count": 0,
+      "priority": "medium",
+      "surface": "Halftone end-to-end paths",
+      "mitigation": "Consume verified bitmap mutation contracts and replace generic decoder callbacks with a concrete arithmetic/MMR decoder enum.",
+      "exit_criteria": "Pattern slicing, gray planes, skip generation, and rendering directly verify."
+    },
+    {
+      "id": "VL-006",
+      "count": 0,
+      "priority": "medium",
+      "surface": "Profile-list materialization",
+      "mitigation": "Use the planned verified FallibleVec wrapper.",
+      "exit_criteria": "parse_profiles directly verifies allocation and exact length.",
+      "status": "completed"
+    },
+    {
+      "id": "VL-007",
+      "count": 0,
+      "priority": "high",
+      "surface": "Segment reference materialization",
+      "mitigation": "Use verified FallibleVec and prove long/short retention extraction over the allocated result.",
+      "exit_criteria": "RetentionFlags::from_bytes, parse_referred_segments, and parse_segment_header directly verify.",
+      "status": "completed"
+    },
+    {
+      "id": "VL-008",
+      "count": 0,
+      "priority": "medium",
+      "surface": "Huffman table allocation/construction",
+      "mitigation": "Use verified FallibleVec, explicit allocation-size lemmas, and slice-view adapters for static standard tables.",
+      "exit_criteria": "Canonical table construction and custom/standard table factories directly verify."
+    },
+    {
+      "id": "VL-009",
+      "count": 0,
+      "priority": "high",
+      "surface": "Symbol/text orchestration",
+      "mitigation": "Replace RefCell/dynamic callbacks with a concrete entropy-state enum, adopt verified FallibleVec, and use completed bitmap/generic contracts.",
+      "exit_criteria": "Arithmetic and Huffman dictionary/text payload decoders directly verify end-to-end."
+    },
+    {
+      "id": "VL-010",
+      "count": 0,
+      "priority": "high",
+      "surface": "Generic/refinement raster paths",
+      "mitigation": "Use verified FallibleVec/slice adapters and concrete arithmetic callbacks; finish Bitmap::blank/filled contracts first.",
+      "exit_criteria": "Generic/refinement headers, sessions, snapshots, marker handling, and raster loops directly verify.",
+      "investigation": "Resolved: Verus 0.2026.10.04.426d8b0 plus indexed parser-state loops directly verifies both composed header parsers without the former rustc generic_args panic."
+    },
+    {
+      "id": "VL-011",
+      "count": 0,
+      "priority": "high",
+      "surface": "MMR allocation/end-to-end wrappers",
+      "mitigation": "Use verified transition storage and Bitmap allocation contracts, then close decode_bitmap and its wrappers.",
+      "exit_criteria": "MMR bitmap/prefix entry points directly verify deterministic output.",
+      "status": "completed"
+    },
+    {
+      "id": "VL-012",
+      "count": 0,
+      "priority": "highest",
+      "surface": "Bitmap allocation",
+      "mitigation": "Use pinned-vstd's existing Vec::try_reserve specification while preserving explicit allocation errors; prove initialization and layout.",
+      "exit_criteria": "Bitmap::blank and Bitmap::filled directly verify without broad assumptions.",
+      "investigation": "Pinned Verus rejects Vec::try_reserve_exact but already specifies Vec::try_reserve. Production allocation paths now use that supported fallible primitive without project assumptions.",
+      "status": "completed"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "VM-1",
+      "goal": "Verified fallible allocation foundation",
+      "workstreams": ["VL-006", "VL-007", "VL-008", "VL-011", "VL-012"]
+    },
+    {
+      "id": "VM-2",
+      "goal": "Concrete verified decoder state and stores",
+      "workstreams": ["VL-001", "VL-003", "VL-004"]
+    },
+    {
+      "id": "VM-3",
+      "goal": "Close raster and composed image paths",
+      "workstreams": ["VL-005", "VL-010", "VL-011"]
+    },
+    {
+      "id": "VM-4",
+      "goal": "Close dictionary and text paths",
+      "workstreams": ["VL-009"]
+    },
+    {
+      "id": "VM-5",
+      "goal": "Review remaining non-algorithm boundaries",
+      "workstreams": ["VL-002"]
+    }
+  ]
+}

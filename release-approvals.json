@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "candidate_revision": "bb1ed2a937eb56edab17cf6ad862c5d38587f346",
+  "production_source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
+  "approvals": [
+    {
+      "id": "resource_limit_ratification",
+      "owner": "architecture/release owner",
+      "status": "approved_delegated_default",
+      "decision": "Approved for release review: 1 GiB input, 10,000 pages, 4 GiB cumulative decoded bitmap bytes, and 512 MiB retained state.",
+      "basis": "The owner was unavailable and the autonomous execution policy explicitly directed selection of the pragmatic recommended option."
+    },
+    {
+      "id": "crate_license",
+      "owner": "CELA/legal and release owner",
+      "status": "pending",
+      "decision": "Select and approve the crate license before adding Cargo license metadata."
+    },
+    {
+      "id": "normative_vector_use",
+      "owner": "standards/legal owner",
+      "status": "approved_internal_validation",
+      "decision": "Approved local/private-CI execution of the pinned ITU T.88 conformance-data package.",
+      "basis": "Owner confirmed CELA approval for internal work on 2026-10-14; public release remains separately gated."
+    },
+    {
+      "id": "normative_vector_redistribution",
+      "owner": "CELA/legal",
+      "status": "prohibited_pending_publication_review",
+      "decision": "Do not redistribute vectors before the separate public-repository review."
+    },
+    {
+      "id": "jbig2dec_oracle_execution",
+      "owner": "CELA/legal",
+      "status": "approved_internal_validation",
+      "decision": "Approved black-box internal execution of pinned AGPL jbig2dec revision 6e8205ba61a206a0830f4884ebe52be615735f3d; no linking or redistribution.",
+      "basis": "Owner confirmed CELA approval for internal work on 2026-10-14."
+    },
+    {
+      "id": "poppler_oracle_execution",
+      "owner": "CELA/legal",
+      "status": "approved_internal_validation",
+      "decision": "Approved black-box internal execution of pinned Poppler revision a45f83bdd75a7b1af73eef729383c4291abf27a3; no linking or redistribution.",
+      "basis": "Owner confirmed CELA approval for internal work on 2026-10-14."
+    },
+    {
+      "id": "performance_regression_thresholds",
+      "owner": "performance/release owner",
+      "status": "approved_delegated_default",
+      "decision": "Release-review thresholds: no more than 20% wall-time regression, 15% peak-memory regression, and no work-unit or decoded-byte limit regression.",
+      "basis": "The owner was unavailable and the autonomous execution policy explicitly directed selection of the pragmatic recommended option."
+    },
+    {
+      "id": "native_ci_attestations",
+      "owner": "release owner",
+      "status": "pending",
+      "decision": "Record successful native Linux, Windows, and macOS workflow runs."
+    },
+    {
+      "id": "architecture",
+      "owner": "architecture owner",
+      "status": "approved_with_tracked_limitations",
+      "decision": "Architecture approved with all reviewed verifier limitations tracked by body hash and a continuing mitigation/investigation plan.",
+      "basis": "Owner approval recorded on 2026-10-14."
+    },
+    {
+      "id": "cela",
+      "owner": "CELA/legal",
+      "status": "approved_internal_validation_publication_pending",
+      "decision": "Internal validation and third-party black-box use approved; publication remains separately gated.",
+      "basis": "Owner confirmed existing CELA approval on 2026-10-14."
+    },
+    {
+      "id": "release_owner",
+      "owner": "release owner",
+      "status": "pending",
+      "decision": "Approve the candidate after all other gates pass."
+    },
+    {
+      "id": "publication",
+      "owner": "release owner",
+      "status": "pending",
+      "decision": "Change publish=false only in a separately reviewed release revision."
+    }
+  ]
+}

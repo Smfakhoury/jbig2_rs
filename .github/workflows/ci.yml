@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  cargo:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: dtolnay/rust-toolchain@1.89.0
+        with:
+          components: clippy,rustfmt
+      - run: python tools/verify_provenance.py
+      - run: python tools/audit_runtime.py
+      - run: cargo fmt --all --check
+      - run: cargo clippy --all-targets --all-features -- -D warnings
+      - run: cargo test --all-features
+      - run: cargo doc --no-deps
+      - name: Audit package contents
+        shell: bash
+        run: cargo package --allow-dirty --list | python tools/audit_package.py
+      - run: cargo package --allow-dirty
