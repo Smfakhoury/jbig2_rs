@@ -8,17 +8,6 @@ macro_rules! production_one_pattern_zero_plane {
     };
 }
 
-macro_rules! production_gray_binary_step {
-    ($coded:ident, $previous:ident) => {
-        proof! {
-            crate::halftone::halftone_properties::gray_binary_step_is_xor(
-                $coded,
-                $previous,
-            );
-        }
-    };
-}
-
 macro_rules! production_skip_boundary {
     (
         $x:ident,

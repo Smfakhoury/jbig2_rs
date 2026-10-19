@@ -1115,6 +1115,82 @@ const fn gray_to_binary_bit(coded: bool, previous: Option<bool>) -> bool {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(old(current)),
+        crate::spec::bitmap::storage_valid(previous),
+    ensures match out {
+        Ok(()) => crate::spec::bitmap::storage_valid(final(current)),
+        Err(_) => true,
+    },
+))]
+fn xor_gray_plane_bytes(current: &mut Bitmap, previous: &Bitmap) -> Result<(), HalftoneError> {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(current);
+    }
+    if current.width != previous.width
+        || current.height != previous.height
+        || current.stride != previous.stride
+        || current.data.len() != previous.data.len()
+    {
+        return Err(MalformedError::IntegerOverflow.into());
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= current.data@.len(),
+            current.width == old(current).width,
+            current.height == old(current).height,
+            current.stride == old(current).stride,
+            current.data@.len() == old(current).data@.len(),
+            current.data@.len() == previous.data@.len(),
+        decreases current.data@.len() - index,
+    ))]
+    while index < current.data.len() {
+        current.data[index] ^= previous.data[index];
+        index += 1;
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(current);
+        reveal(crate::spec::bitmap::storage_valid);
+    }
+    Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires plane_index < 32,
+    ensures
+        final(values)@.len() == old(values)@.len(),
+        match out {
+            Ok(()) => offset as nat + 8 <= old(values)@.len(),
+            Err(_) => true,
+        },
+))]
+fn accumulate_gray_byte(
+    values: &mut [u32],
+    offset: usize,
+    byte: u8,
+    plane_index: u8,
+) -> Result<(), HalftoneError> {
+    let end = offset
+        .checked_add(8)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    let chunk = values
+        .get_mut(offset..end)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    chunk[0] |= u32::from((byte >> 7) & 1) << plane_index;
+    chunk[1] |= u32::from((byte >> 6) & 1) << plane_index;
+    chunk[2] |= u32::from((byte >> 5) & 1) << plane_index;
+    chunk[3] |= u32::from((byte >> 4) & 1) << plane_index;
+    chunk[4] |= u32::from((byte >> 3) & 1) << plane_index;
+    chunk[5] |= u32::from((byte >> 2) & 1) << plane_index;
+    chunk[6] |= u32::from((byte >> 1) & 1) << plane_index;
+    chunk[7] |= u32::from(byte & 1) << plane_index;
+    Ok(())
+}
+
 /// Decodes Gray-coded planes and reconstructs unsigned pattern indexes.
 #[allow(
     clippy::cast_lossless,
@@ -1235,9 +1311,32 @@ pub(crate) fn decode_gray_planes(
             skip,
         })?;
         require_bitmap_dimensions(&plane, width, height)?;
+        if let Some(previous) = more_significant.as_ref() {
+            xor_gray_plane_bytes(&mut plane, previous)?;
+        }
+        if plane_index >= 32 {
+            return Err(HalftoneError::InvalidGrayBitDepth(bit_depth));
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(plane_index < 32);
+        }
+        let width_usize =
+            usize::try_from(width).map_err(|_error| MalformedError::IntegerOverflow)?;
+        let full_bytes = width_usize / 8;
+        let tail_start = width
+            .checked_sub(width % 8)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            vstd::arithmetic::div_mod::lemma_mod_bound(width as int, 8);
+            assert(tail_start <= width);
+        }
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 y <= height,
+                plane_index < 32,
+                tail_start <= width,
                 crate::spec::bitmap::storage_valid(&plane),
                 values@.len() == pixel_count,
                 match more_significant {
@@ -1247,43 +1346,65 @@ pub(crate) fn decode_gray_planes(
             decreases height - y,
         ))]
         for y in 0..height {
+            let y_usize = usize::try_from(y).map_err(|_error| MalformedError::IntegerOverflow)?;
+            let row_start = y_usize
+                .checked_mul(plane.stride)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            let value_row = y_usize
+                .checked_mul(width_usize)
+                .ok_or(MalformedError::IntegerOverflow)?;
+            let mut byte_index = 0_usize;
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
-                    x <= width,
+                    byte_index <= full_bytes,
                     y < height,
+                    plane_index < 32,
                     crate::spec::bitmap::storage_valid(&plane),
                     values@.len() == pixel_count,
                     match more_significant {
                         Some(ref bitmap) => crate::spec::bitmap::storage_valid(bitmap),
                         None => true,
                     },
-                decreases width - x,
+                decreases full_bytes - byte_index,
             ))]
-            for x in 0..width {
-                let coded = plane.pixel(x, y).ok_or(MalformedError::IntegerOverflow)?;
-                let previous = if let Some(previous) = more_significant.as_ref() {
-                    Some(
-                        previous
-                            .pixel(x, y)
+            while byte_index < full_bytes {
+                let source_index = row_start
+                    .checked_add(byte_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let byte = *plane
+                    .data
+                    .get(source_index)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                let value_offset = value_row
+                    .checked_add(
+                        byte_index
+                            .checked_mul(8)
                             .ok_or(MalformedError::IntegerOverflow)?,
                     )
-                } else {
-                    None
-                };
-                #[cfg(verus_keep_ghost)]
-                production_gray_binary_step!(coded, previous);
-                let true_value = gray_to_binary_bit(coded, previous);
-                plane.set_pixel(x, y, true_value)?;
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                accumulate_gray_byte(&mut values, value_offset, byte, plane_index)?;
+                byte_index += 1;
+            }
+            let mut x = tail_start;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    x <= width,
+                    y < height,
+                    plane_index < 32,
+                    crate::spec::bitmap::storage_valid(&plane),
+                    values@.len() == pixel_count,
+                decreases width - x,
+            ))]
+            while x < width {
+                let true_value = plane.pixel(x, y).ok_or(MalformedError::IntegerOverflow)?;
                 if true_value {
-                    if plane_index >= 32 {
-                        return Err(HalftoneError::InvalidGrayBitDepth(bit_depth));
-                    }
                     let offset = pixel_offset(width, x, y)?;
                     let value = values
                         .get_mut(offset)
                         .ok_or(MalformedError::IntegerOverflow)?;
                     *value |= 1_u32 << plane_index;
                 }
+                x += 1;
             }
         }
         more_significant = Some(plane);
@@ -2075,6 +2196,58 @@ mod tests {
         output
     }
 
+    fn next_random(state: &mut u64) -> u32 {
+        *state = state
+            .wrapping_mul(6_364_136_223_846_793_005)
+            .wrapping_add(1_442_695_040_888_963_407);
+        (*state >> 32) as u32
+    }
+
+    fn random_bitmap(width: u32, height: u32, state: &mut u64) -> Bitmap {
+        let mut output =
+            Bitmap::blank(width, height, &generous_limits()).expect("random bitmap allocates");
+        for byte in &mut output.data {
+            *byte = u8::try_from(next_random(state) & 0xff).expect("bounded byte");
+        }
+        if width % 8 != 0 {
+            let mask = 0xff_u8 << (8 - width % 8);
+            for row in 0..height {
+                let row_start = usize::try_from(row).expect("row fits") * output.stride;
+                output.data[row_start + output.stride - 1] &= mask;
+            }
+        }
+        output
+    }
+
+    fn scalar_xor_gray_plane_oracle(
+        current: &mut Bitmap,
+        previous: &Bitmap,
+    ) -> Result<(), HalftoneError> {
+        for y in 0..current.height {
+            for x in 0..current.width {
+                let coded = current.pixel(x, y).ok_or(MalformedError::IntegerOverflow)?;
+                let previous = previous
+                    .pixel(x, y)
+                    .ok_or(MalformedError::IntegerOverflow)?;
+                current.set_pixel(x, y, gray_to_binary_bit(coded, Some(previous)))?;
+            }
+        }
+        Ok(())
+    }
+
+    fn scalar_accumulate_gray_byte_oracle(
+        values: &mut [u32],
+        offset: usize,
+        byte: u8,
+        plane_index: u8,
+    ) {
+        for bit in 0..8 {
+            if byte & (0x80 >> bit) != 0 {
+                values[offset + bit] |= 1_u32 << plane_index;
+            }
+        }
+    }
+
     fn scalar_render_clipped_pattern_oracle(
         destination: &mut Bitmap,
         pattern: &Bitmap,
@@ -2219,6 +2392,135 @@ mod tests {
             .expect("pattern dictionary should decode");
         assert_eq!(calls, 1);
         assert_eq!(patterns.len(), 2);
+    }
+
+    #[test]
+    fn bytewise_gray_xor_matches_scalar_pixels_randomized() {
+        let mut state = 0x6a18_ef03_91c5_d247;
+        for width in [1, 2, 7, 8, 9, 15, 31, 32, 33, 63, 127] {
+            for height in [1, 2, 5, 17] {
+                let current = random_bitmap(width, height, &mut state);
+                let previous = random_bitmap(width, height, &mut state);
+                let mut expected = current.clone();
+                let mut actual = current;
+                scalar_xor_gray_plane_oracle(&mut expected, &previous)
+                    .expect("scalar gray conversion");
+                xor_gray_plane_bytes(&mut actual, &previous).expect("bytewise gray conversion");
+                assert_eq!(actual, expected, "dimensions {width}x{height}");
+            }
+        }
+    }
+
+    #[test]
+    fn fixed_gray_extraction_matches_scalar_oracle() {
+        let mut state = 0x39d2_a175_64fe_08bc;
+        for plane_index in [0, 1, 7, 15, 23, 31] {
+            for byte in 0..=u8::MAX {
+                let mut expected = vec![0_u32; 24];
+                for value in &mut expected {
+                    *value = next_random(&mut state);
+                }
+                let mut actual = expected.clone();
+                scalar_accumulate_gray_byte_oracle(&mut expected, 8, byte, plane_index);
+                accumulate_gray_byte(&mut actual, 8, byte, plane_index).expect("fixed extraction");
+                assert_eq!(actual, expected);
+            }
+        }
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_bytewise_gray_xor_against_scalar_oracle() {
+        let mut state = 0x842c_017d_a639_5bef;
+        let current = random_bitmap(2048, 2048, &mut state);
+        let previous = random_bitmap(2048, 2048, &mut state);
+        let mut bytewise_times = Vec::new();
+        let mut scalar_times = Vec::new();
+        for sample in 0..11 {
+            let mut bytewise = current.clone();
+            let mut scalar = current.clone();
+            if sample & 1 == 0 {
+                let start = Instant::now();
+                xor_gray_plane_bytes(&mut bytewise, &previous).expect("bytewise xor");
+                bytewise_times.push(start.elapsed());
+                black_box(bytewise.bytes());
+
+                let start = Instant::now();
+                scalar_xor_gray_plane_oracle(&mut scalar, &previous).expect("scalar xor");
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+            } else {
+                let start = Instant::now();
+                scalar_xor_gray_plane_oracle(&mut scalar, &previous).expect("scalar xor");
+                scalar_times.push(start.elapsed());
+                black_box(scalar.bytes());
+
+                let start = Instant::now();
+                xor_gray_plane_bytes(&mut bytewise, &previous).expect("bytewise xor");
+                bytewise_times.push(start.elapsed());
+                black_box(bytewise.bytes());
+            }
+            assert_eq!(bytewise, scalar);
+        }
+        let bytewise = median_duration(bytewise_times);
+        let scalar = median_duration(scalar_times);
+        println!(
+            "gray-xor scalar_median_ns={} bytewise_median_ns={} speedup={:.3}",
+            scalar.as_nanos(),
+            bytewise.as_nanos(),
+            scalar.as_secs_f64() / bytewise.as_secs_f64(),
+        );
+    }
+
+    #[test]
+    #[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+    fn benchmark_fixed_gray_extraction_against_scalar_oracle() {
+        let mut state = 0x19b4_7c2e_d560_83af;
+        let mut bytes = vec![0_u8; 262_144];
+        for byte in &mut bytes {
+            *byte = u8::try_from(next_random(&mut state) & 0xff).expect("bounded byte");
+        }
+        let original = vec![0_u32; bytes.len() * 8];
+        let mut fixed_times = Vec::new();
+        let mut scalar_times = Vec::new();
+        for sample in 0..11 {
+            let mut fixed = original.clone();
+            let mut scalar = original.clone();
+            let run_fixed = |values: &mut [u32]| {
+                let start = Instant::now();
+                for (index, byte) in bytes.iter().copied().enumerate() {
+                    accumulate_gray_byte(values, index * 8, byte, 13).expect("fixed extraction");
+                }
+                let elapsed = start.elapsed();
+                black_box(values);
+                elapsed
+            };
+            let run_scalar = |values: &mut [u32]| {
+                let start = Instant::now();
+                for (index, byte) in bytes.iter().copied().enumerate() {
+                    scalar_accumulate_gray_byte_oracle(values, index * 8, byte, 13);
+                }
+                let elapsed = start.elapsed();
+                black_box(values);
+                elapsed
+            };
+            if sample & 1 == 0 {
+                fixed_times.push(run_fixed(&mut fixed));
+                scalar_times.push(run_scalar(&mut scalar));
+            } else {
+                scalar_times.push(run_scalar(&mut scalar));
+                fixed_times.push(run_fixed(&mut fixed));
+            }
+            assert_eq!(fixed, scalar);
+        }
+        let fixed = median_duration(fixed_times);
+        let scalar = median_duration(scalar_times);
+        println!(
+            "gray-extraction scalar_median_ns={} fixed_median_ns={} speedup={:.3}",
+            scalar.as_nanos(),
+            fixed.as_nanos(),
+            scalar.as_secs_f64() / fixed.as_secs_f64(),
+        );
     }
 
     #[test]
