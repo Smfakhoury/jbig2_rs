@@ -1,7 +1,7 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 998 obligations with zero errors and zero native
-assumptions. The production inventory contains 521 directly verified functions
+Pinned Verus verifies 1104 obligations with zero errors and zero native
+assumptions. The optimized production inventory contains 599 directly verified functions
 and 18 reviewed verifier limitations. Twenty-one one-line standard trait
 wrappers are separately classified as audited forwarders. Every limitation and
 forwarder is bound to the exact
@@ -66,6 +66,10 @@ constant tables and bounded indexed selection instead of slice coercions.
 Generic and refinement probability decoding now uses concrete decoder/context
 state, and their raster loops, reusable sessions, known/unknown framing, and
 complete segment dispatch paths verify end-to-end.
+Verified performance kernels include incremental and monotone MMR transition
+tracking, safe chunked bitmap composition, specialized arithmetic context
+assembly, Huffman prefix lookup, borrowed symbol state, batched text placement,
+and safe auto-vectorized gray-plane operations.
 Huffman construction, symbol dictionaries, text regions, patterns, halftones,
 resource retention, page lifecycle, and the concrete high-level decode
 orchestration now verify end-to-end. Remaining reviewed items are limited to

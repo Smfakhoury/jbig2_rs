@@ -5,91 +5,91 @@
     {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
+      "file_sha256": "1e5d3532d7103d783e7785e15221de14b666f13366669c3d7919e68658018a00",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
     },
     {
       "id": "arithmetic::ArithmeticError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "2f4a80639b51be37803d51c9a248559c5a5b2b4ca1642426ae6c9970e4c2acfb",
+      "file_sha256": "1e5d3532d7103d783e7785e15221de14b666f13366669c3d7919e68658018a00",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "decode::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::F::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::PageCollector::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "decode::write_page_to_sink",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_segments",
       "file": "src/decode.rs",
-      "file_sha256": "be117a0163227fe657d4311c9d9c2694e1c7a7ac008776f1cf2c9a5eec62ddd3",
+      "file_sha256": "16711dc16d30e76eed27d1e1e435b682a0184b2ce168d7e00a9ba32180a133b5",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "3bd6f129bcf9b4c8cc903ef485233e7b639dd083f3a8fdf7a7852467eb5d2dee",
+      "file_sha256": "5db9e8678f951d66bcdddac8a0dcba7c007e034e3abb49b265156836c0f105a3",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::default",
       "file": "src/document.rs",
-      "file_sha256": "3bd6f129bcf9b4c8cc903ef485233e7b639dd083f3a8fdf7a7852467eb5d2dee",
+      "file_sha256": "5db9e8678f951d66bcdddac8a0dcba7c007e034e3abb49b265156836c0f105a3",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "document::read_bounded_input",
       "file": "src/document.rs",
-      "file_sha256": "3bd6f129bcf9b4c8cc903ef485233e7b639dd083f3a8fdf7a7852467eb5d2dee",
+      "file_sha256": "5db9e8678f951d66bcdddac8a0dcba7c007e034e3abb49b265156836c0f105a3",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
@@ -138,77 +138,77 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "file_sha256": "f85e4f33055856bf12d0b9032d0e80acae2f56492082ead3bbf2422b369ac825",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "file_sha256": "f85e4f33055856bf12d0b9032d0e80acae2f56492082ead3bbf2422b369ac825",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible Vec/slice and stateful callback specifications required by complete raster decoder paths."
     },
     {
       "id": "generic_region::GenericRegionError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "file_sha256": "f85e4f33055856bf12d0b9032d0e80acae2f56492082ead3bbf2422b369ac825",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#2",
       "file": "src/generic_region.rs",
-      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "file_sha256": "f85e4f33055856bf12d0b9032d0e80acae2f56492082ead3bbf2422b369ac825",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#3",
       "file": "src/generic_region.rs",
-      "file_sha256": "77aed67cf85c5c889114ac4c311ea59c8d4944a237d8fad63253ce2feb5f1841",
+      "file_sha256": "f85e4f33055856bf12d0b9032d0e80acae2f56492082ead3bbf2422b369ac825",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::HalftoneError::from",
       "file": "src/halftone.rs",
-      "file_sha256": "13a8bcc0dbddeec6a30028d68833a9aa3ffd59b81fa62f7c832d4c527700b767",
+      "file_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::HalftoneError::from#2",
       "file": "src/halftone.rs",
-      "file_sha256": "13a8bcc0dbddeec6a30028d68833a9aa3ffd59b81fa62f7c832d4c527700b767",
+      "file_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "halftone::HalftoneError::from#3",
       "file": "src/halftone.rs",
-      "file_sha256": "13a8bcc0dbddeec6a30028d68833a9aa3ffd59b81fa62f7c832d4c527700b767",
+      "file_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from",
       "file": "src/huffman.rs",
-      "file_sha256": "9c27e4ef7cb72b29ac321daa0b2a429c1a09a5cbd9e7918020696735f4e6d1cc",
+      "file_sha256": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#2",
       "file": "src/huffman.rs",
-      "file_sha256": "9c27e4ef7cb72b29ac321daa0b2a429c1a09a5cbd9e7918020696735f4e6d1cc",
+      "file_sha256": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#3",
       "file": "src/huffman.rs",
-      "file_sha256": "9c27e4ef7cb72b29ac321daa0b2a429c1a09a5cbd9e7918020696735f4e6d1cc",
+      "file_sha256": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
@@ -222,56 +222,56 @@
     {
       "id": "mmr::MmrError::from",
       "file": "src/mmr.rs",
-      "file_sha256": "0a11429b7a6d67caf1460e10d350ccf39d23b1400a1f374b579513ecf7c913ae",
+      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from",
       "file": "src/symbol_text.rs",
-      "file_sha256": "2501d9e28054ae472dda6c0c1b194b59d09f84b37817d3fda8a036e2231c2f97",
+      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#2",
       "file": "src/symbol_text.rs",
-      "file_sha256": "2501d9e28054ae472dda6c0c1b194b59d09f84b37817d3fda8a036e2231c2f97",
+      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#3",
       "file": "src/symbol_text.rs",
-      "file_sha256": "2501d9e28054ae472dda6c0c1b194b59d09f84b37817d3fda8a036e2231c2f97",
+      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#4",
       "file": "src/symbol_text.rs",
-      "file_sha256": "2501d9e28054ae472dda6c0c1b194b59d09f84b37817d3fda8a036e2231c2f97",
+      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#5",
       "file": "src/symbol_text.rs",
-      "file_sha256": "2501d9e28054ae472dda6c0c1b194b59d09f84b37817d3fda8a036e2231c2f97",
+      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#6",
       "file": "src/symbol_text.rs",
-      "file_sha256": "2501d9e28054ae472dda6c0c1b194b59d09f84b37817d3fda8a036e2231c2f97",
+      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#7",
       "file": "src/symbol_text.rs",
-      "file_sha256": "2501d9e28054ae472dda6c0c1b194b59d09f84b37817d3fda8a036e2231c2f97",
+      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     }

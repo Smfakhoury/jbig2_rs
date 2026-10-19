@@ -1,8 +1,8 @@
 # `hayro-jbig2` comparison
 
 This comparison uses `hayro-jbig2` 0.3.1 from source revision
-`ea9c81dc70cde40c64205986fdcfcd481fe934d8` and `jbig2_rs` production
-revision `cb73e895935ccac9ef821105071e98d720737bec`.
+`ea9c81dc70cde40c64205986fdcfcd481fe934d8` and `jbig2_rs` optimized
+revision `6ae6c7ab0e020eeeb4571f228f38151b22ab31d4`.
 
 ## Reproduction
 
@@ -62,10 +62,14 @@ backend.
 
 - Both decoders produced identical bitmaps for the two valid supported ITU
   vectors and rejected the other eight streams.
-- `hayro-jbig2` was 5.3x to 8.8x faster on generated MMR cases and 7.1x to
-  16.4x faster on the two valid official vectors.
-- Peak RSS for 100 decodes of the generated 2048x2048 case was 3436 KiB for
-  `jbig2_rs` and 3344 KiB for `hayro-jbig2`.
+- `jbig2_rs` was 1.58x to 2.69x faster on generated MMR and 2.3% faster on
+  TT9. `hayro-jbig2` remained 1.50x faster at TT10 median.
+- Across generated 64/512/2048 and TT9/TT10, the geometric-mean
+  `jbig2_rs`/Hayro ratio was 0.694 at median and 0.636 at p95: `jbig2_rs` was
+  30.6% and 36.4% faster respectively on the aggregate suite.
+- TT10 p95 was slightly better in `jbig2_rs` despite its slower median.
+- Peak RSS for 100 decodes of the generated 2048x2048 case was 3408 KiB for
+  `jbig2_rs` and 3380 KiB for `hayro-jbig2`.
 - `jbig2_rs` has stronger document-level support: explicit multi-page output,
   page/global segment lifecycle validation, retention policy, configurable
   resource/work limits, typed unsupported-feature errors, and reusable globals.
@@ -77,7 +81,6 @@ backend.
   verifies every codec algorithm with Verus; its reviewed boundaries are
   limited to standard formatting/I/O and caller callbacks.
 
-The current candidate is therefore stronger on verified correctness,
-defensive limits, and document orchestration, but it is not faster. Performance
-work should focus first on bitmap representation, MMR span filling, arithmetic
-context access, and eliminating repeated validation/allocation in hot paths.
+The optimized candidate is stronger on verified correctness, defensive limits,
+document orchestration, and aggregate throughput. TT10 arithmetic-generic
+median remains the disclosed performance exception.
