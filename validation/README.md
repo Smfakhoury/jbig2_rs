@@ -26,6 +26,25 @@ python3 validation/conformance/run_itu.py \
   --output validation/conformance/itu-t88-2018-results.json
 ```
 
+`--vectors` accepts either the parent extraction directory or the
+`JBIG2_ConformanceData-A20180829` directory itself. The runner checks the exact
+file set, sizes, and hashes against the committed manifest before decoding.
+Use `--archive /path/to/conformance.zip` to check the original archive hash too.
+Each decoder invocation has a 60-second timeout, configurable with
+`--timeout-seconds`. Zero cases, missing assets, changed expectations and
+unresolved failures exit nonzero. Reviewed rejections are reported separately
+from exact-output passes and do not establish full conformance.
+
+The gate regression tests use generated fixtures, not ITU assets:
+
+```text
+python -B -m unittest discover -s tools/tests -v
+cargo package --locked --list | python tools/audit_package.py
+```
+
+The package audit requires a complete nonempty runtime inventory and rejects
+unapproved entries; invoking it without a package list is an error.
+
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized
 diagnostic hashes, output hashes, and classifications; it never copies oracle
