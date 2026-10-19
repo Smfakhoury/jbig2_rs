@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "recorded_at": "2026-10-19T02:30:33Z",
+  "recorded_at": "2026-10-19T15:04:24Z",
   "competitor": {
     "crate": "hayro-jbig2",
     "version": "0.3.1",
@@ -13,7 +13,7 @@
   },
   "candidate": {
     "crate": "jbig2_rs",
-    "source_revision": "8b024f165105cfec9c496f406e0580314085ebdb"
+    "source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb"
   },
   "toolchain": "rustc 1.98.1, release profile",
   "generated_mmr": {
@@ -24,42 +24,42 @@
         "height": 64,
         "input_bytes": 102,
         "output_bytes": 512,
-        "jbig2_rs_median_ns": 2895,
-        "jbig2_rs_p95_ns": 2986,
-        "hayro_jbig2_median_ns": 4639,
-        "hayro_jbig2_p95_ns": 8206,
-        "jbig2_rs_over_hayro": 0.624
+        "jbig2_rs_median_ns": 4869,
+        "jbig2_rs_p95_ns": 4939,
+        "hayro_jbig2_median_ns": 8196,
+        "hayro_jbig2_p95_ns": 8696,
+        "jbig2_rs_over_hayro": 0.594
       },
       {
         "width": 512,
         "height": 512,
         "input_bytes": 158,
         "output_bytes": 32768,
-        "jbig2_rs_median_ns": 61286,
-        "jbig2_rs_p95_ns": 71375,
-        "hayro_jbig2_median_ns": 163229,
-        "hayro_jbig2_p95_ns": 218494,
-        "jbig2_rs_over_hayro": 0.375
+        "jbig2_rs_median_ns": 61436,
+        "jbig2_rs_p95_ns": 80172,
+        "hayro_jbig2_median_ns": 170682,
+        "hayro_jbig2_p95_ns": 241888,
+        "jbig2_rs_over_hayro": 0.360
       },
       {
         "width": 2048,
         "height": 2048,
         "input_bytes": 350,
         "output_bytes": 524288,
-        "jbig2_rs_median_ns": 1350764,
-        "jbig2_rs_p95_ns": 1562805,
-        "hayro_jbig2_median_ns": 2902698,
-        "hayro_jbig2_p95_ns": 3346027,
-        "jbig2_rs_over_hayro": 0.465
+        "jbig2_rs_median_ns": 1627879,
+        "jbig2_rs_p95_ns": 1705526,
+        "hayro_jbig2_median_ns": 4209524,
+        "hayro_jbig2_p95_ns": 4285357,
+        "jbig2_rs_over_hayro": 0.387
       }
     ],
     "peak_rss_2048x2048_100_iterations_kib": {
-      "jbig2_rs": 3408,
-      "hayro_jbig2": 3380
+      "jbig2_rs": 3300,
+      "hayro_jbig2": 3400
     }
   },
   "official_positive_vectors": {
-    "measurement": "median parse, decode, and packed-output hash time over 20 iterations",
+    "measurement": "CPU-pinned paired runs; median of three per-run medians and p95s, each over 20 parse, decode, and packed-output hash iterations",
     "cases": [
       {
         "name": "F01_200_TT9.jb2",
@@ -67,11 +67,11 @@
         "width": 1728,
         "height": 2339,
         "exact_bitmap_match": true,
-        "jbig2_rs_median_ns": 3815144,
-        "jbig2_rs_p95_ns": 4021454,
-        "hayro_jbig2_median_ns": 3833539,
-        "hayro_jbig2_p95_ns": 4058966,
-        "jbig2_rs_over_hayro": 0.995
+        "jbig2_rs_median_ns": 4034652,
+        "jbig2_rs_p95_ns": 4102971,
+        "hayro_jbig2_median_ns": 3844072,
+        "hayro_jbig2_p95_ns": 3930776,
+        "jbig2_rs_over_hayro": 1.050
       },
       {
         "name": "F01_200_TT10.jb2",
@@ -79,13 +79,13 @@
         "width": 1728,
         "height": 2339,
         "exact_bitmap_match": true,
-        "jbig2_rs_median_ns": 20613027,
-        "jbig2_rs_p95_ns": 21228060,
-        "hayro_jbig2_median_ns": 15677044,
-        "hayro_jbig2_p95_ns": 18866347,
-        "jbig2_rs_over_hayro": 1.315,
+        "jbig2_rs_median_ns": 21466860,
+        "jbig2_rs_p95_ns": 21669102,
+        "hayro_jbig2_median_ns": 15478030,
+        "hayro_jbig2_p95_ns": 15671346,
+        "jbig2_rs_over_hayro": 1.387,
         "peak_rss_100_iterations_kib": {
-          "jbig2_rs": 3976,
+          "jbig2_rs": 3084,
           "hayro_jbig2": 3456
         }
       }
@@ -100,9 +100,9 @@
   },
   "conclusion": {
     "support": "jbig2_rs has broader document, page lifecycle, retention, limits, and verification coverage",
-    "performance": "jbig2_rs is faster on all generated MMR sizes and TT9; hayro-jbig2 retains a TT10 median advantage",
-    "aggregate_median_ratio": 0.677,
-    "aggregate_p95_ratio": 0.573,
-    "superiority_claim": "Across the five-case suite, jbig2_rs is 32.3% faster by geometric-mean median and 42.7% faster by geometric-mean p95, with TT10 median and TT10 temporary-raster RSS disclosed as remaining exceptions"
+    "performance": "jbig2_rs is faster on all generated MMR sizes; hayro-jbig2 retains modest TT9 and larger TT10 latency advantages",
+    "aggregate_median_ratio": 0.655,
+    "aggregate_p95_ratio": 0.641,
+    "superiority_claim": "Across the five-case suite, jbig2_rs is 34.5% faster by geometric-mean median and 35.9% faster by geometric-mean p95; TT9 and TT10 latency remain disclosed exceptions while direct-page rolling rows reduce TT10 peak RSS below Hayro"
   }
 }

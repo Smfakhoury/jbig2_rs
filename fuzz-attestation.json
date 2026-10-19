@@ -1,8 +1,9 @@
 {
   "schema_version": 1,
   "status": "full_smoke_passed",
-  "source_revision": "8b024f165105cfec9c496f406e0580314085ebdb",
+  "source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
   "toolchain": "rustc 1.101.0-nightly (2026-10-12); cargo-fuzz 0.13.2; libfuzzer-sys 0.4.13",
+  "per_input_timeout_seconds": 60,
   "targets": [
     {
       "name": "file_header_arbitrary",

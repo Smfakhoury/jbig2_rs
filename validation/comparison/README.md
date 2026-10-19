@@ -2,7 +2,7 @@
 
 This comparison uses `hayro-jbig2` 0.3.1 from source revision
 `ea9c81dc70cde40c64205986fdcfcd481fe934d8` and `jbig2_rs` optimized
-revision `8b024f165105cfec9c496f406e0580314085ebdb`.
+revision `fd9e4b81abe97fea7ed45df9055b594ebe0871cb`.
 
 ## Reproduction
 
@@ -62,15 +62,16 @@ backend.
 
 - Both decoders produced identical bitmaps for the two valid supported ITU
   vectors and rejected the other eight streams.
-- `jbig2_rs` was 1.58x to 2.69x faster on generated MMR and 2.3% faster on
-  TT9. `hayro-jbig2` remained 1.32x faster at TT10 median.
+- `jbig2_rs` was 1.68x to 2.78x faster on generated MMR. `hayro-jbig2`
+  remained 1.05x faster on TT9 and 1.39x faster at TT10 median.
 - Across generated 64/512/2048 and TT9/TT10, the geometric-mean
-  `jbig2_rs`/Hayro ratio was 0.677 at median and 0.573 at p95: `jbig2_rs` was
-  32.3% and 42.7% faster respectively on the aggregate suite.
-- TT10 improved through a verified temporary word raster but remains slower at
-  both median and p95; its 100-iteration peak RSS was 3976 KiB versus 3456 KiB.
-- Peak RSS for 100 decodes of the generated 2048x2048 case was 3408 KiB for
-  `jbig2_rs` and 3380 KiB for `hayro-jbig2`.
+  `jbig2_rs`/Hayro ratio was 0.655 at median and 0.641 at p95: `jbig2_rs` was
+  34.5% and 35.9% faster respectively on the aggregate suite.
+- TT10 improved through verified rolling word rows and direct-to-page decode
+  but remains slower at latency; its 100-iteration peak RSS is now 3084 KiB
+  versus Hayro's 3456 KiB.
+- Peak RSS for 100 decodes of the generated 2048x2048 case was 3300 KiB for
+  `jbig2_rs` and 3400 KiB for `hayro-jbig2`.
 - `jbig2_rs` has stronger document-level support: explicit multi-page output,
   page/global segment lifecycle validation, retention policy, configurable
   resource/work limits, typed unsupported-feature errors, and reusable globals.
@@ -83,5 +84,5 @@ backend.
   limited to standard formatting/I/O and caller callbacks.
 
 The optimized candidate is stronger on verified correctness, defensive limits,
-document orchestration, and aggregate throughput. TT10 arithmetic-generic
-median remains the disclosed performance exception.
+document orchestration, and aggregate throughput. TT9 and TT10 medians remain
+the disclosed performance exceptions.
