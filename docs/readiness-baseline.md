@@ -266,6 +266,10 @@ tools/evidence.py
 tools/evidence.schema.json
 tools/requirements.txt
 .gitattributes
+docs/distribution.md
+tools/check_distribution.py
+tools/distribution_consumer.rs
+tools/tests/test_distribution.py
 ```
 
 ## Progress and next entry point
@@ -281,7 +285,14 @@ tools/requirements.txt
   Twelve remaining runtime/proof divergences are explicit P05 release blockers,
   not counted as directly verified functions. The exact-source release command
   fails until those substitutions are removed and verified.
-- PR #6 has now merged the MIT license file. P03 will add crate license
-  metadata and validate the isolated package; crates.io remains disabled.
-- Next: P03 isolated crate verification, P04 normative traceability and P06
-  runtime coverage. P05 must close the now-identified exact-source backlog.
+- PR #6 merged the MIT license file. P03 adds MIT metadata, MSRV 1.89.0 and
+  mandatory archive licensing; the package now has 24 files and publication
+  remains disabled.
+- P03 verifies an extracted archive outside the checkout with a fresh offline
+  Cargo home, archive unit/doc tests and an independent exact-output public-API
+  consumer. CI runs this on three native platforms with MSRV/current stable.
+  See [distribution.md](distribution.md); inline inactive proof source remains,
+  while separate proof directories and proof dependencies are absent.
+- Next: P04 normative traceability and P06 runtime coverage. P05 must close
+  the identified exact-source backlog; package independence is not proof of
+  normative conformance.

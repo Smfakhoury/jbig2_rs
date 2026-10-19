@@ -1,6 +1,7 @@
 # Open-source readiness execution plan
 
-Status: P01/P02 completed; exact-source proof gaps exposed and tracked for P05.
+Status: P01/P02 completed; P03 isolated distribution implemented.
+Exact-source proof gaps are exposed and tracked for P05.
 No cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,
