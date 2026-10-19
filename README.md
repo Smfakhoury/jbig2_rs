@@ -21,9 +21,13 @@ conformance.
   performance validation.
 - `fuzz/` contains arbitrary-input and structured-input fuzz targets.
 
-Ordinary Cargo builds and packages exclude all proof bodies and validation
-assets. The pinned Verus workflow verifies `src/lib.rs`, the same crate root
-that Cargo builds.
+Ordinary Cargo builds do not compile proof-only items. Packages exclude the
+separate proof/model and validation assets, while inactive proof annotations
+and inline ghost blocks remain in the Rust source. No Verus or `vstd` dependency
+is needed by an ordinary consumer. The Verus workflow uses the same
+`src/lib.rs` crate root, with the runtime/proof differences disclosed below.
+See [proof-free distribution](docs/distribution.md) for the isolated archive
+checks and the distinction between cfg erasure and textual source stripping.
 
 ## Current status
 
@@ -68,7 +72,12 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 cargo doc --no-deps
 cargo package
+python -B tools/check_distribution.py --toolchain 1.89.0
 ```
+
+The MSRV is Rust 1.89.0; native distribution CI also tests current stable on
+Linux, Windows and macOS. Distribution checks use Python 3.11+ and the standard
+library, without the additional proof-audit dependencies.
 
 Audit tooling additionally requires the pinned development-only dependencies:
 

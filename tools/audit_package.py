@@ -4,7 +4,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REQUIRED = {"Cargo.toml", "README.md", "SECURITY.md"} | {
+REQUIRED = {"Cargo.toml", "README.md", "SECURITY.md", "LICENSE"} | {
     path.relative_to(ROOT).as_posix() for path in (ROOT / "src").rglob("*.rs")
 }
 OPTIONAL = {
