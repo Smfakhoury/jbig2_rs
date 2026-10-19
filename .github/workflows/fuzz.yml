@@ -12,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly-2026-10-12
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2026-10-12
       - run: cargo install cargo-fuzz --version 0.13.2 --locked
       - run: cargo fuzz build
       - run: cargo fuzz run file_header_arbitrary -- -max_total_time=60
