@@ -162,7 +162,6 @@
       "status": "approved pinned internal black-box executable only",
       "revision": "a45f83bdd75a7b1af73eef729383c4291abf27a3",
       "executed_version": "24.02.0",
-      "binary_sha256": "2e06bccc1ab90f48b929ab45005f3a4335a011835119037e53280d55b0692814",
       "reproducibility_note": "The executed system binary is pinned by version and hash; building the requested source revision remains future work.",
       "license": "Repository COPYING contains GNU GPL v2; file-level and later-version terms require legal review",
       "redistribution": "prohibited by project policy pending legal review; never included in the crate",

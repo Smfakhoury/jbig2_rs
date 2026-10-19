@@ -3151,6 +3151,7 @@ struct IntegerContexts {
 }
 
 impl IntegerContexts {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     fn new() -> Self {
         Self {
             slots: [[ArithmeticContext::new(); 512]; INTEGER_FIELD_COUNT],

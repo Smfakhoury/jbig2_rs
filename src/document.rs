@@ -177,6 +177,7 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::inspect`].
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn inspect(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         let result = self.decoder.inspect(input);
         self.finish_call();
@@ -188,6 +189,7 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::inspect_embedded`].
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn inspect_embedded(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         let result = self.decoder.inspect_embedded(input);
         self.finish_call();
@@ -199,6 +201,7 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::inspect_embedded_with_globals`].
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn inspect_embedded_with_globals(
         &mut self,
         input: &[u8],
@@ -214,6 +217,7 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::parse_globals`].
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn parse_globals(&mut self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
         let result = self.decoder.parse_globals(input);
         self.finish_call();

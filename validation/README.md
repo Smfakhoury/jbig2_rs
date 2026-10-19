@@ -38,6 +38,7 @@ from exact-output passes and do not establish full conformance.
 The gate regression tests use generated fixtures, not ITU assets:
 
 ```text
+python -m pip install -r tools/requirements.txt
 python -B -m unittest discover -s tools/tests -v
 cargo package --locked --list | python tools/audit_package.py
 ```

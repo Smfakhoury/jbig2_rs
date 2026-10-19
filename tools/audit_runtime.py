@@ -3,12 +3,14 @@ import re
 import sys
 from pathlib import Path
 
+from rust_source import production_code
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 PROOF_ROOTS = (ROOT / "proofs", ROOT / "specs")
 PATTERNS = {
-    "unsafe Rust": re.compile(r"\bunsafe\s*(?:fn|impl|trait|\{)"),
+    "unsafe Rust": re.compile(r"\bunsafe\b"),
     "panic macro": re.compile(r"\bpanic!\s*\("),
     "unfinished macro": re.compile(r"\b(?:todo|unimplemented)!\s*\("),
     "unreachable macro": re.compile(r"\bunreachable!\s*\("),
@@ -19,8 +21,7 @@ PATTERNS = {
 
 failures: list[str] = []
 for path in sorted(SRC.rglob("*.rs")):
-    text = path.read_text(encoding="utf-8")
-    production_text = text.split("#[cfg(test)]", maxsplit=1)[0]
+    production_text = production_code(path.read_bytes(), exclude_proofs=False)
     for label, pattern in PATTERNS.items():
         match = pattern.search(production_text)
         if match is not None:
@@ -29,11 +30,12 @@ for path in sorted(SRC.rglob("*.rs")):
 
 proof_trust = re.compile(r"\b(?:external_body|assume|admit)\s*(?:\]|\()")
 executable_function = re.compile(
-    r"(?m)^[ \t]*(?:pub(?:\([^)]*\))?[ \t]+)?fn[ \t]+[A-Za-z_]"
+    r"(?m)^[ \t]*(?:pub(?:\([^)]*\))?[ \t]+)?"
+    r"(?:(?:async|const|unsafe|extern)[ \t]+)*fn[ \t]+[A-Za-z_]"
 )
 for proof_root in PROOF_ROOTS:
     for path in sorted(proof_root.rglob("*.rs")):
-        text = path.read_text(encoding="utf-8")
+        text = production_code(path.read_bytes(), exclude_proofs=False)
         trust_match = proof_trust.search(text)
         if trust_match is not None:
             line = text.count("\n", 0, trust_match.start()) + 1
