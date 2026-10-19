@@ -631,10 +631,16 @@ impl<'a> ArithmeticDecoder<'a> {
     pub(crate) fn decode_signal(&mut self, context: &mut ArithmeticContext) -> u8 {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
-        let state = QE_STATES[usize::from(context.state_index)];
+        let state_index = usize::from(context.state_index);
+        let qe = u32::from(QE_STATES[state_index].qe);
         #[cfg(verus_keep_ghost)]
-        production_qe_transition_valid!(context.state_index, state);
-        let qe = u32::from(state.qe);
+        proof! {
+            crate::arithmetic::arithmetic_shared::qe_transition_valid(
+                context.state_index as int,
+            );
+            assert(QE_STATES@[context.state_index as int].qe > 0);
+            assert(QE_STATES@[context.state_index as int].qe <= 0x5601);
+        }
         let old_mps = context.mps;
 
         #[cfg(verus_keep_ghost)]
@@ -642,6 +648,9 @@ impl<'a> ArithmeticDecoder<'a> {
         self.interval -= qe;
 
         if self.code >> 16 < qe {
+            let state = QE_STATES[state_index];
+            #[cfg(verus_keep_ghost)]
+            production_qe_transition_valid!(context.state_index, state);
             return self.decode_lower_signal(context, state, qe, old_mps);
         }
 
@@ -653,6 +662,9 @@ impl<'a> ArithmeticDecoder<'a> {
             return old_mps;
         }
 
+        let state = QE_STATES[state_index];
+        #[cfg(verus_keep_ghost)]
+        production_qe_transition_valid!(context.state_index, state);
         self.decode_upper_signal(context, state, qe, old_mps)
     }
 
