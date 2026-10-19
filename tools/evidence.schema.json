@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nonempty": {"type": "string", "pattern": "\\S"},
+    "versioned": {
+      "type": "object", "required": ["schema_version"],
+      "properties": {"schema_version": {"const": 1}}
+    },
+    "repository": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "properties": {
+        "status": {"$ref": "#/$defs/nonempty"},
+        "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "production_source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "candidate_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "total": {"type": "integer", "minimum": 0},
+        "passed": {"type": "integer", "minimum": 0},
+        "unresolved_failures": {"type": "integer", "minimum": 0},
+        "redistribution": {"type": "boolean"},
+        "cases": {
+          "type": "array", "items": {
+            "type": "object", "required": ["id"],
+            "properties": {"id": {"$ref": "#/$defs/nonempty"}}
+          }
+        },
+        "scenarios": {
+          "type": "array", "items": {
+            "type": "object", "required": ["id"],
+            "properties": {"id": {"$ref": "#/$defs/nonempty"}}
+          }
+        },
+        "files": {
+          "type": "array", "minItems": 1, "items": {
+            "type": "object", "required": ["path", "sha256", "size_bytes", "kind"],
+            "properties": {
+              "path": {"$ref": "#/$defs/nonempty"},
+              "sha256": {"$ref": "#/$defs/sha256"},
+              "size_bytes": {"type": "integer", "minimum": 0},
+              "kind": {"enum": ["encoded_stream", "expected_bitmap"]}
+            }
+          }
+        },
+        "rows": {
+          "type": "array", "minItems": 1, "items": {
+            "type": "object", "required": ["feature", "status", "clauses"],
+            "properties": {
+              "feature": {"$ref": "#/$defs/nonempty"},
+              "status": {"enum": ["required", "deferred", "unsupported", "prohibited"]},
+              "clauses": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}}
+            }
+          }
+        },
+        "policy": {
+          "type": ["object", "string"],
+          "properties": {
+            "standards_text_committed": {"const": false},
+            "non_redistributable_assets_committed": {"const": false},
+            "third_party_uploads_permitted": {"const": false}
+          }
+        }
+      }
+    },
+    "function": {
+      "type": "object", "required": ["id", "file", "file_sha256"],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonempty"},
+        "file": {"type": "string", "pattern": "^src/.+\\.rs$"},
+        "file_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "dispositions": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "required": ["policy", "functions"],
+      "properties": {
+        "policy": {"$ref": "#/$defs/nonempty"},
+        "functions": {
+          "type": "array",
+          "items": {
+            "allOf": [{"$ref": "#/$defs/function"}],
+            "required": ["status", "reason"],
+            "properties": {
+              "status": {"enum": ["reviewed-verifier-limitation", "audited-forwarder", "runtime-proof-divergence"]},
+              "reason": {"$ref": "#/$defs/nonempty"}
+            }
+          }
+        }
+      }
+    },
+    "coverage": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "required": ["source", "verus_verified_obligations", "native_assumptions", "counts", "functions"],
+      "properties": {
+        "verus_verified_obligations": {"type": "integer", "minimum": 1},
+        "native_assumptions": {"const": []},
+        "counts": {
+          "type": "object",
+          "required": ["verified", "incomplete", "audited-forwarder", "reviewed-verifier-limitation", "native-assumption"],
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "functions": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "allOf": [{"$ref": "#/$defs/function"}],
+            "required": ["status", "visibility", "disposition_reason", "verus_functions"],
+            "properties": {
+              "status": {"enum": ["verified", "incomplete", "reviewed-verifier-limitation", "audited-forwarder", "runtime-proof-divergence"]},
+              "visibility": {"$ref": "#/$defs/nonempty"},
+              "disposition_reason": {"type": ["string", "null"]},
+              "verus_functions": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "verus": {
+      "type": "object", "required": ["verification-results", "func-details"],
+      "properties": {
+        "verification-results": {
+          "type": "object",
+          "required": ["success", "errors", "verified", "is-verifying-entire-crate"],
+          "properties": {
+            "success": {"const": true}, "errors": {"const": 0},
+            "verified": {"type": "integer", "minimum": 1},
+            "is-verifying-entire-crate": {"const": true}
+          }
+        },
+        "func-details": {
+          "type": "object", "minProperties": 1,
+          "additionalProperties": {
+            "type": "object", "required": ["failed_proof_notes"],
+            "properties": {"failed_proof_notes": {"const": []}}
+          }
+        }
+      }
+    },
+    "proof_attestation": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "required": ["source_revision", "result", "production_proof_coverage_sha256", "proof_dispositions_sha256", "release_gate"],
+      "properties": {
+        "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "production_proof_coverage_sha256": {"$ref": "#/$defs/sha256"},
+        "proof_dispositions_sha256": {"$ref": "#/$defs/sha256"},
+        "release_gate": {"type": "string"},
+        "result": {
+          "type": "object",
+          "required": ["verified_obligations", "verified_production_functions", "reviewed_verifier_limitations", "audited_forwarders", "incomplete_functions", "algorithm_bodies_verified", "native_assumptions"],
+          "properties": {
+            "verified_obligations": {"type": "integer", "minimum": 1},
+            "verified_production_functions": {"type": "integer", "minimum": 0},
+            "reviewed_verifier_limitations": {"type": "integer", "minimum": 0},
+            "audited_forwarders": {"type": "integer", "minimum": 0},
+            "incomplete_functions": {"type": "integer", "minimum": 0},
+            "runtime_proof_divergences": {"type": "integer", "minimum": 0},
+            "algorithm_bodies_verified": {"type": "boolean"},
+            "native_assumptions": {"const": []}
+          }
+        }
+      }
+    },
+    "toolchain": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "required": ["cargo_rust_toolchain", "fuzz_rust_toolchain", "cargo_fuzz_version", "verus", "source_revision"],
+      "properties": {
+        "cargo_rust_toolchain": {"$ref": "#/$defs/nonempty"},
+        "fuzz_rust_toolchain": {"$ref": "#/$defs/nonempty"},
+        "cargo_fuzz_version": {"$ref": "#/$defs/nonempty"},
+        "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "verus": {
+          "type": "object", "required": ["version", "commit", "linux_archive_sha256"],
+          "properties": {
+            "version": {"$ref": "#/$defs/nonempty"},
+            "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "linux_archive_sha256": {"$ref": "#/$defs/sha256"}
+          }
+        }
+      }
+    }
+  }
+}

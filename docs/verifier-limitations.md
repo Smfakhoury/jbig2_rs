@@ -1,11 +1,38 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1136 obligations with zero errors and zero native
-assumptions. The optimized production inventory contains 618 directly verified
-functions and 18 reviewed verifier limitations. Twenty-one one-line standard trait
-wrappers are separately classified as audited forwarders. Every limitation and
-forwarder is bound to the exact
-source-file hash in `proof-dispositions.json`.
+Pinned Verus verifies 1145 obligations with zero errors and zero native
+assumptions in its proof build. The syntax-audited production inventory contains
+597 directly verified functions, 24 reviewed verifier limitations, 23 audited
+forwarders and 12 explicitly reviewed runtime/proof divergences.
+
+The readiness audit corrected earlier same-name proof matching and exclusion
+of production code after test-only items. The old count of 618 was not reliable
+evidence of exact-source coverage. Reusable-context paths and their real
+scratch handling are now directly verified; a mutable closure was extracted
+into an ordinary helper with the same success/error cleanup behavior.
+
+The remaining divergences include bitmap copy/composition dispatch, MMR span
+filling and capacity-based memory accounting, batched text placement, and small
+conversion/operator bridges. Even where an optimized helper separately
+verifies, a different ghost wrapper is not an exact-source proof of the executing
+wrapper. See the individual IDs and reasons in `proof-dispositions.json`.
+They must be closed in P05, not relabeled as verified.
+
+`--require-complete` checks that every function is accounted for and reviewed;
+it does not imply that every function is directly proved. The release-level
+`--require-exact` additionally rejects the runtime/proof divergence backlog.
+It currently fails, as intended, and `proof-attestation.json` blocks release.
+
+The inventory scanner follows syntax-level cfg/module scopes. Unknown platform
+conditions are conservatively included; unsupported conditional exclusions,
+unresolved/ambiguous modules and macro-generated/local function declarations
+fail closed rather than disappearing. Pinned tools are in `tools/requirements.txt`
+and are not runtime crate dependencies.
+
+## Historical development notes
+
+The notes below describe proof development and kernel contracts, not a blanket
+claim that the executing decoder's every algorithm or T.88 output rule is proved.
 Generic bitmap row copying now has directly verified row-span bounds, metadata
 preservation, and byte-wise mutation safety.
 Immediate page composition, stripe sealing, and auxiliary-buffer policy are
@@ -78,7 +105,8 @@ Huffman construction, symbol dictionaries, text regions, patterns, halftones,
 resource retention, page lifecycle, and the concrete high-level decode
 orchestration now verify end-to-end. Remaining reviewed items are limited to
 formatting/error traits, `std::io::Read`, and generic caller-provided page-sink
-callbacks; codec algorithms have no reviewed proof limitations.
+callbacks in addition to the explicit runtime/proof divergence backlog above.
+Statement-level functional conformance is a separate P04/P05 review.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and

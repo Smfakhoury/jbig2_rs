@@ -79,9 +79,11 @@ backend.
   association fields but does not apply general retention/page lifecycle
   policy, and its dispatch ignores profiles, colour palettes, extensions, and
   end-of-stripe segments after its initial stripe-height pre-scan.
-- `hayro-jbig2` has no comparable formal proof inventory. `jbig2_rs` directly
-  verifies every codec algorithm with Verus; its reviewed boundaries are
-  limited to standard formatting/I/O and caller callbacks.
+- `hayro-jbig2` has no comparable formal proof inventory. `jbig2_rs` verifies
+  many production contracts with Verus, but the later readiness audit identified
+  runtime/proof substitutions and corrected over-broad identity matching.
+  Full exact-source and normative functional-correctness claims remain blocked;
+  see [verifier limitations](../../docs/verifier-limitations.md).
 
 The optimized candidate is stronger on verified correctness, defensive limits,
 document orchestration, and aggregate throughput. TT9 and TT10 medians remain

@@ -1,0 +1,245 @@
+"""Syntax-aware source selection for audit tooling, not a Rust compiler."""
+
+import re
+from pathlib import Path
+
+from tree_sitter import Language, Parser
+import tree_sitter_rust
+
+
+LANGUAGE = Language(tree_sitter_rust.language())
+
+
+def parse(source: bytes):
+    tree = Parser(LANGUAGE).parse(source)
+    if tree.root_node.has_error:
+        raise ValueError("Rust syntax could not be parsed; audit cannot proceed")
+    return tree.root_node
+
+
+def split_arguments(text: str) -> list[str]:
+    parts = []
+    start = depth = 0
+    for index, char in enumerate(text):
+        depth += (char == "(") - (char == ")")
+        if char == "," and depth == 0:
+            parts.append(text[start:index])
+            start = index + 1
+    if text[start:].strip():
+        parts.append(text[start:])
+    return parts
+
+
+def cfg_value(expression: str, exclude_proofs: bool) -> bool | None:
+    expression = expression.strip()
+    if expression == "test":
+        return False
+    if expression in {"fuzzing", "jbig2_validation"}:
+        return False
+    if expression == "verus_keep_ghost":
+        return False if exclude_proofs else None
+    match = re.fullmatch(r"(all|any|not)\s*\((.*)\)", expression, flags=re.DOTALL)
+    if not match:
+        return None
+    values = [cfg_value(part, exclude_proofs) for part in split_arguments(match[2])]
+    if match[1] == "not":
+        if len(values) != 1:
+            raise ValueError("invalid not() cfg")
+        return None if values[0] is None else not values[0]
+    if match[1] == "all":
+        return False if False in values else (None if None in values else True)
+    return True if True in values else (None if None in values else False)
+
+
+def excluded(attributes, exclude_proofs: bool) -> bool:
+    result = False
+    for attribute in attributes:
+        text = attribute.text.decode("utf-8")
+        match = re.fullmatch(r"#!?\[\s*cfg\s*\((.*)\)\s*\]", text, flags=re.DOTALL)
+        if match:
+            result |= cfg_value(match[1], exclude_proofs) is False
+        elif re.search(r"\bcfg_attr\s*\(.*\bcfg\s*\(", text, flags=re.DOTALL):
+            raise ValueError("conditional cfg attributes need explicit audit support")
+    return result
+
+
+def items(container, exclude_proofs=True):
+    if excluded(
+        [node for node in container.named_children if node.type == "inner_attribute_item"],
+        exclude_proofs,
+    ):
+        return
+    attributes = []
+    for node in container.named_children:
+        if node.type in {"line_comment", "block_comment"}:
+            continue
+        if node.type == "attribute_item":
+            attributes.append(node)
+            continue
+        selected = not excluded(attributes, exclude_proofs)
+        if selected:
+            yield node, attributes
+        attributes = []
+
+
+def production_code(source: bytes, exclude_proofs=True) -> str:
+    """Mask excluded items and non-code without losing byte/line positions."""
+    root = parse(source)
+    masked = bytearray(source)
+
+    def blank(node):
+        for index in range(node.start_byte, node.end_byte):
+            if masked[index] not in (10, 13):
+                masked[index] = 32
+
+    def visit(node):
+        if excluded(
+            [child for child in node.named_children if child.type == "inner_attribute_item"],
+            exclude_proofs,
+        ):
+            blank(node)
+            return
+        attributes = []
+        for child in node.named_children:
+            if child.type in {"line_comment", "block_comment", "string_literal",
+                              "raw_string_literal", "char_literal"}:
+                blank(child)
+            elif child.type == "attribute_item":
+                attributes.append(child)
+            else:
+                if excluded(attributes, exclude_proofs):
+                    for attribute in attributes:
+                        blank(attribute)
+                    blank(child)
+                else:
+                    visit(child)
+                attributes = []
+
+    visit(root)
+    return masked.decode("utf-8")
+
+
+def type_name(node) -> str:
+    if node is None:
+        raise ValueError("missing impl/trait owner")
+    if node.type == "generic_type":
+        return type_name(node.child_by_field_name("type"))
+    if node.type == "scoped_type_identifier":
+        return type_name(node.child_by_field_name("name"))
+    return node.text.decode("utf-8")
+
+
+def source_functions(root: Path) -> list[dict]:
+    import hashlib
+
+    root = root.resolve()
+    src = root / "src"
+    result = []
+    visited = {}
+    definitions = {}
+
+    def visit_file(path, module):
+        path = path.resolve()
+        if not path.is_relative_to(src.resolve()):
+            raise ValueError(f"runtime module outside src: {path}")
+        if path in visited:
+            raise ValueError(f"runtime module included more than once: {path}")
+        visited[path] = module
+        source = path.read_bytes()
+        walk(parse(source), module, path, None, False)
+
+    def walk(container, module, path, owner, verify_impl):
+        for node, attributes in items(container):
+            if node.type in {"function_item", "function_signature_item"}:
+                def nested_function(child):
+                    return any(
+                        grandchild.type == "function_item" or nested_function(grandchild)
+                        for grandchild in child.named_children
+                    )
+                if nested_function(node):
+                    raise ValueError("local function declarations need explicit audit support")
+                name = node.child_by_field_name("name").text.decode("utf-8")
+                visibility = next(
+                    (child.text.decode("utf-8") for child in node.named_children
+                     if child.type == "visibility_modifier"), "private",
+                )
+                identity_parts = path.relative_to(src.resolve()).with_suffix("").parts
+                if path.name == "mod.rs":
+                    identity_parts = identity_parts[:-1]
+                identity = "::".join(identity_parts)
+                inline_module = module[len(visited[path]):].strip(":")
+                if inline_module:
+                    identity += f"::{inline_module}"
+                result.append({
+                    "id": f"{identity}::{owner + '::' if owner else ''}{name}",
+                    "file": path.relative_to(root).as_posix(),
+                    "visibility": visibility,
+                    "owner": owner,
+                    "verifier_module": module,
+                    "name": name,
+                    "file_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                    "verification_requested": verify_impl or any(
+                        re.search(rb"\b(verus_verify|verus_spec)\b", attribute.text)
+                        for attribute in attributes
+                    ),
+                    "runtime_proof_divergence": bool(re.search(
+                        r"#\[\s*cfg\s*\([^]]*\bnot\s*\(\s*verus_keep_ghost\s*\)",
+                        production_code(node.text),
+                    )),
+                })
+            elif node.type in {"impl_item", "trait_item"}:
+                target = node.child_by_field_name(
+                    "type" if node.type == "impl_item" else "name"
+                )
+                body = node.child_by_field_name("body")
+                if body is not None:
+                    walk(body, module, path, type_name(target), any(
+                        re.search(rb"\bverus_verify\b", attribute.text)
+                        for attribute in attributes
+                    ))
+            elif node.type in {"struct_item", "enum_item", "type_item"}:
+                name = node.child_by_field_name("name").text.decode("utf-8")
+                definitions.setdefault(name, set()).add(module)
+            elif node.type == "mod_item":
+                name = node.child_by_field_name("name").text.decode("utf-8")
+                nested = f"{module}::{name}" if module else name
+                body = node.child_by_field_name("body")
+                if body is not None:
+                    walk(body, nested, path, None, False)
+                    continue
+                explicit = [
+                    re.fullmatch(r'#\[\s*path\s*=\s*"([^"]+)"\s*\]',
+                                 attribute.text.decode("utf-8"))
+                    for attribute in attributes
+                ]
+                explicit = [match[1] for match in explicit if match]
+                directory = path.parent
+                # Inline modules add a directory to external module resolution.
+                file_module = visited[path]
+                suffix = module[len(file_module):].strip(":")
+                if path.name not in {"lib.rs", "mod.rs"} and (not explicit or suffix):
+                    directory = directory / path.stem
+                if suffix:
+                    directory = directory.joinpath(*suffix.split("::"))
+                if explicit:
+                    candidates = [directory / explicit[0]]
+                else:
+                    candidates = [directory / f"{name}.rs", directory / name / "mod.rs"]
+                existing = [candidate for candidate in candidates if candidate.is_file()]
+                if len(existing) != 1:
+                    raise ValueError(f"missing or ambiguous module {nested} in {path}")
+                visit_file(existing[0], nested)
+            elif node.type in {"macro_definition", "macro_invocation"} and re.search(
+                r"\bfn\s+\w", production_code(node.text)
+            ):
+                raise ValueError("macro-generated functions need explicit audit support")
+
+    visit_file(src / "lib.rs", "")
+    for entry in result:
+        modules = definitions.get(entry["owner"], set())
+        if len(modules) == 1:
+            entry["verifier_module"] = next(iter(modules))
+        elif len(modules) > 1 and entry["verifier_module"] not in modules:
+            raise ValueError(f"ambiguous owner definition: {entry['id']}")
+    # Stable source order preserves duplicate trait-method disposition IDs.
+    return sorted(result, key=lambda entry: entry["file"])

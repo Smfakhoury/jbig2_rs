@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "status": "internal_candidate_validated_publication_blocked",
+  "status": "historical_candidate_superseded_exact_source_release_blocked",
+  "superseded_reason": "Readiness syntax audit found false proof identity matches and runtime/proof substitutions. This historical candidate and its evidence hashes are not the current release attestation. See proof-attestation.json.",
   "candidate_revision": "bb1ed2a937eb56edab17cf6ad862c5d38587f346",
   "production_source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
   "crate_version": "0.0.1",

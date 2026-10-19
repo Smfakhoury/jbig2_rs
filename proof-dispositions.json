@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "policy": "Every unverified production function must have a reviewed, body-hash-bound disposition. A source change makes the disposition stale.",
+  "policy": "Every non-directly-verified production function has an explicit source-hash-bound review. Runtime/proof divergences block exact-source release claims. Templates cannot approve new entries.",
   "functions": [
     {
       "id": "arithmetic::ArithmeticError::fmt",
@@ -17,81 +17,123 @@
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
-      "id": "decode::write_page",
+      "id": "arithmetic::DecodeError::from",
+      "file": "src/arithmetic.rs",
+      "file_sha256": "1e5d3532d7103d783e7785e15221de14b666f13366669c3d7919e68658018a00",
+      "status": "audited-forwarder",
+      "reason": "One-line trait forwarder to the verified ArithmeticError::into_decode method; reviewed explicitly, not directly verified as a From implementation."
+    },
+    {
+      "id": "bitmap::Bitmap::copy_prefix_from",
+      "file": "src/bitmap.rs",
+      "file_sha256": "87161eba7739939e939689a3325f88daae85f41da79536444a828e0841fd0e15",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds call copy_prefix_chunked; proof builds call copy_prefix_scalar_verified. The wrapper is not an exact-source runtime proof."
+    },
+    {
+      "id": "bitmap::Bitmap::compose",
+      "file": "src/bitmap.rs",
+      "file_sha256": "87161eba7739939e939689a3325f88daae85f41da79536444a828e0841fd0e15",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper."
+    },
+    {
+      "id": "bitmap::Bitmap::compose_region",
+      "file": "src/bitmap.rs",
+      "file_sha256": "87161eba7739939e939689a3325f88daae85f41da79536444a828e0841fd0e15",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal and proof builds select different region-composition paths; exact executing-wrapper verification remains open."
+    },
+    {
+      "id": "decode::PageSink::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::F::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::PageCollector::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "decode::write_page_to_sink",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_segments",
       "file": "src/decode.rs",
-      "file_sha256": "564f4294c9907f1355e85a23c8a22c4890436fe5fd2e69ffae0186d9e55894be",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
+      "id": "decode::same_combination_operator",
+      "file": "src/decode.rs",
+      "file_sha256": "549e55c69ced854e626a0fe27fc94523fb55d980d0643c943a52dd29d05f6bdf",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds use derived equality; proof builds use an explicit operator match. This bridge is not an exact-source body proof."
+    },
+    {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "5db9e8678f951d66bcdddac8a0dcba7c007e034e3abb49b265156836c0f105a3",
+      "file_sha256": "4e8a3e2f38e77690358ea835b2c1b46358fc77ff5d800fa99ab760d5a3ffa590",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::default",
       "file": "src/document.rs",
-      "file_sha256": "5db9e8678f951d66bcdddac8a0dcba7c007e034e3abb49b265156836c0f105a3",
+      "file_sha256": "4e8a3e2f38e77690358ea835b2c1b46358fc77ff5d800fa99ab760d5a3ffa590",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "document::read_bounded_input",
       "file": "src/document.rs",
-      "file_sha256": "5db9e8678f951d66bcdddac8a0dcba7c007e034e3abb49b265156836c0f105a3",
+      "file_sha256": "4e8a3e2f38e77690358ea835b2c1b46358fc77ff5d800fa99ab760d5a3ffa590",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
+    },
+    {
+      "id": "error::IoErrorKind::from",
+      "file": "src/error.rs",
+      "file_sha256": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
+      "status": "reviewed-verifier-limitation",
+      "reason": "Standard-library I/O error-kind classification; not directly verified by pinned Verus. Previously misattributed to DecodeError::from."
     },
     {
       "id": "error::MalformedError::fmt",
@@ -136,6 +178,13 @@
       "reason": "Pinned Verus does not support formatting, dynamic Error machinery, or std::io::ErrorKind conversion."
     },
     {
+      "id": "error::DecodeError::from#3",
+      "file": "src/error.rs",
+      "file_sha256": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
+      "status": "reviewed-verifier-limitation",
+      "reason": "std::io::Error conversion calls standard I/O machinery and IoErrorKind conversion; not directly verified. Previously conflated with other From implementations."
+    },
+    {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
       "file_sha256": "b350e8769ddfe5ea8e12fc3c0dc08365b99f966af1fd3a298d75cb65e7971b64",
@@ -171,6 +220,20 @@
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
+      "id": "generic_region::DecodeError::from",
+      "file": "src/generic_region.rs",
+      "file_sha256": "b350e8769ddfe5ea8e12fc3c0dc08365b99f966af1fd3a298d75cb65e7971b64",
+      "status": "reviewed-verifier-limitation",
+      "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
+    },
+    {
+      "id": "generic_region::copy_bitmap_row",
+      "file": "src/generic_region.rs",
+      "file_sha256": "b350e8769ddfe5ea8e12fc3c0dc08365b99f966af1fd3a298d75cb65e7971b64",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal and proof builds select different row-copy paths. Exact executing-wrapper verification remains open."
+    },
+    {
       "id": "halftone::HalftoneError::from",
       "file": "src/halftone.rs",
       "file_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
@@ -190,6 +253,13 @@
       "file_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
+    },
+    {
+      "id": "halftone::DecodeError::from",
+      "file": "src/halftone.rs",
+      "file_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
+      "status": "audited-forwarder",
+      "reason": "One-line trait forwarder to verified halftone_error_into_decode; the From implementation itself is not directly verified."
     },
     {
       "id": "huffman::HuffmanError::from",
@@ -213,6 +283,13 @@
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
+      "id": "huffman::DecodeError::from",
+      "file": "src/huffman.rs",
+      "file_sha256": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
+      "status": "reviewed-verifier-limitation",
+      "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
+    },
+    {
       "id": "limits::Limits::default",
       "file": "src/limits.rs",
       "file_sha256": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516",
@@ -227,53 +304,116 @@
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
+      "id": "mmr::DecodeError::from",
+      "file": "src/mmr.rs",
+      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
+      "status": "reviewed-verifier-limitation",
+      "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
+    },
+    {
+      "id": "mmr::prepare_transition_storage",
+      "file": "src/mmr.rs",
+      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Runtime limit handling is not fully verified."
+    },
+    {
+      "id": "mmr::fill_span",
+      "file": "src/mmr.rs",
+      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds call the optimized span filler; proof builds execute a different loop. Exact runtime span-dispatch verification remains open."
+    },
+    {
+      "id": "symbol_text::widen_u32_i64",
+      "file": "src/symbol_text.rs",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds use From while proof builds use a cast. Numerically lossless bridge, but not exact-source verification."
+    },
+    {
+      "id": "symbol_text::widen_u8_i64",
+      "file": "src/symbol_text.rs",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds use From while proof builds use a cast. Numerically lossless bridge, but not exact-source verification."
+    },
+    {
+      "id": "symbol_text::widen_u8_i32",
+      "file": "src/symbol_text.rs",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds use From while proof builds use a cast. Numerically lossless bridge, but not exact-source verification."
+    },
+    {
+      "id": "symbol_text::widen_bool_i64",
+      "file": "src/symbol_text.rs",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds use From while proof builds use explicit Boolean selection. Exact-source bridge verification remains open."
+    },
+    {
       "id": "symbol_text::SymbolTextError::from",
       "file": "src/symbol_text.rs",
-      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#2",
       "file": "src/symbol_text.rs",
-      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#3",
       "file": "src/symbol_text.rs",
-      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#4",
       "file": "src/symbol_text.rs",
-      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#5",
       "file": "src/symbol_text.rs",
-      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#6",
       "file": "src/symbol_text.rs",
-      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#7",
       "file": "src/symbol_text.rs",
-      "file_sha256": "d34b72e61750f238c1bc47aacb49ce425e9b01d7ba432d07c76bda19f6c42326",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
+    },
+    {
+      "id": "symbol_text::DecodeError::from",
+      "file": "src/symbol_text.rs",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
+      "status": "reviewed-verifier-limitation",
+      "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
+    },
+    {
+      "id": "symbol_text::flush_placement_batch",
+      "file": "src/symbol_text.rs",
+      "file_sha256": "03a8e55e2fa75e310671c3b4cd2bb671f4710eedafb5e730062115cc02ea9f05",
+      "status": "runtime-proof-divergence",
+      "reason": "Normal builds use the chunked batch kernel; proof builds iterate compose_region. Exact executing batch-dispatch verification remains open."
     }
   ]
 }

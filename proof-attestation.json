@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "status": "complete_with_reviewed_verifier_limitations",
-  "source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
-  "scope": "Exact production crate rooted at src/lib.rs",
+  "status": "blocked_by_runtime_proof_divergences",
+  "source_revision": "778de2e9d6393466f8963c087678a11c907bbe49",
+  "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
@@ -11,19 +11,22 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1136,
-    "verified_production_functions": 618,
+    "verified_obligations": 1145,
+    "verified_production_functions": 597,
     "errors": 0,
-    "exact_production_source_compiles": true,
-    "algorithm_bodies_verified": true,
+    "proof_build_compiles": true,
+    "exact_production_source_compiles": false,
+    "algorithm_bodies_verified": false,
     "production_coverage_complete": true,
     "native_assumptions": [],
-    "reviewed_verifier_limitations": 18,
-    "audited_forwarders": 21,
+    "reviewed_verifier_limitations": 24,
+    "audited_forwarders": 23,
+    "runtime_proof_divergences": 12,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "98855194d335154dd33cbcd2e6c831c21489359517d0b4ac8d163c8e00fa1dc1",
-  "proof_dispositions_sha256": "9b0dd4dae5a75bf62fcc435c052d5217d9d10c92beb0efabb24625b3d6ec6d62",
-  "duplicate_executable_proof_source": false,
-  "release_gate": "passed_for_internal_candidate"
+  "production_proof_coverage_sha256": "1b814afc87d0df364227c0405c51f257141dbedc0f2442fdbb1b8b3b6bcd1ce9",
+  "proof_dispositions_sha256": "373b243737644439ae1e5034da4f05ccbcb87ede35d4c31e7029d114764aa9de",
+  "duplicate_executable_proof_source": true,
+  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Twelve cfg-selected runtime/proof differences block exact-source release claims.",
+  "release_gate": "blocked"
 }

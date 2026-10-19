@@ -17,5 +17,11 @@ A release requires:
    output;
 8. completed attestations bound to one immutable source revision.
 
-Changing `publish = false` requires explicit release-owner approval.
+The readiness proof audit found runtime/proof substitutions. Before a release,
+run the coverage audit with both `--require-complete` and `--require-exact`.
+The first checks inventory accounting; the second rejects known substitutions.
+Currently the exact-source gate is blocked, and the historical candidate
+attestation is superseded. A passing Verus build or an accounted-for inventory
+is not permission to bypass this gate.
 
+Changing `publish = false` requires explicit release-owner approval.

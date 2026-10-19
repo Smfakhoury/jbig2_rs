@@ -1,5 +1,7 @@
 {
   "schema_version": 1,
+  "status": "historical_counts_superseded_by_readiness_audit",
+  "current_roadmap": "docs/open-source-readiness-plan.md P05; current counts and exact-source blockers are in proof-attestation.json and proof-dispositions.json",
   "production_source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
   "tracked_functions": 18,
   "policy": "Every item remains body-hash-bound in proof-dispositions.json. Closing an item requires direct pinned-Verus verification or a separately reviewed, minimal native contract counted in proof-attestation.json.",

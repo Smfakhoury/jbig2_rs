@@ -227,28 +227,6 @@ impl Decoder {
     /// sink error.
     #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
-        #[cfg(verus_keep_ghost)]
-        {
-            let (info, segments) = parse_standalone_document(input, self.limits())?;
-            let mut collector = PageCollector::new(self.limits());
-            let initial_work = structural_work(input.len(), &segments)?;
-            let mut scratch = MmrScratch::default();
-            decode_segments_collected(
-                &segments,
-                &info,
-                initial_work,
-                0,
-                self.limits(),
-                &mut scratch,
-                None,
-                &mut collector,
-            )?;
-            return Ok(DecodedDocument {
-                info,
-                pages: collector.pages,
-            });
-        }
-        #[cfg(not(verus_keep_ghost))]
         self.context().decode(input)
     }
 
@@ -271,12 +249,6 @@ impl Decoder {
     /// over-limit input.
     #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode_embedded(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
-        #[cfg(verus_keep_ghost)]
-        {
-            let mut scratch = MmrScratch::default();
-            return self.decode_embedded_internal(input, None, &mut scratch);
-        }
-        #[cfg(not(verus_keep_ghost))]
         self.context().decode_embedded(input)
     }
 
@@ -292,12 +264,6 @@ impl Decoder {
         input: &[u8],
         globals: &GlobalSegments,
     ) -> Result<DecodedDocument, DecodeError> {
-        #[cfg(verus_keep_ghost)]
-        {
-            let mut scratch = MmrScratch::default();
-            return self.decode_embedded_internal(input, Some(globals), &mut scratch);
-        }
-        #[cfg(not(verus_keep_ghost))]
         self.context().decode_embedded_with_globals(input, globals)
     }
 
@@ -388,28 +354,32 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::decode`].
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
-        let result = (|| {
-            let (info, segments) = parse_standalone_document(input, self.decoder.limits())?;
-            let mut collector = PageCollector::new(self.decoder.limits());
-            let initial_work = structural_work(input.len(), &segments)?;
-            decode_segments_collected(
-                &segments,
-                &info,
-                initial_work,
-                0,
-                self.decoder.limits(),
-                &mut self.mmr,
-                None,
-                &mut collector,
-            )?;
-            Ok(DecodedDocument {
-                info,
-                pages: collector.pages,
-            })
-        })();
+        let result = self.decode_internal(input);
         self.finish_call();
         result
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn decode_internal(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
+        let (info, segments) = parse_standalone_document(input, self.decoder.limits())?;
+        let mut collector = PageCollector::new(self.decoder.limits());
+        let initial_work = structural_work(input.len(), &segments)?;
+        decode_segments_collected(
+            &segments,
+            &info,
+            initial_work,
+            0,
+            self.decoder.limits(),
+            &mut self.mmr,
+            None,
+            &mut collector,
+        )?;
+        Ok(DecodedDocument {
+            info,
+            pages: collector.pages,
+        })
     }
 
     /// Decodes one embedded page stream using retained scratch capacity.
@@ -417,6 +387,7 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::decode_embedded`].
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode_embedded(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
         let result = self
             .decoder
@@ -430,6 +401,7 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::decode_embedded_with_globals`].
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
     pub fn decode_embedded_with_globals(
         &mut self,
         input: &[u8],
@@ -738,6 +710,12 @@ fn symbol_index(symbols: &[(u32, SymbolResource)], number: u32) -> Option<usize>
 ))]
 fn get_symbol_resource(symbols: &SymbolStore, number: u32) -> Option<&SymbolResource> {
     let index = symbol_index(symbols, number)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(crate::halftone::halftone_spec::bitmaps_valid(
+            symbols@[index as int].1.exported@,
+        ));
+    }
     Some(&symbols[index].1)
 }
 
@@ -756,6 +734,23 @@ fn insert_symbol_resource(
         return false;
     }
     symbols.push((number, resource));
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert forall|index: int| 0 <= index < symbols@.len() implies
+            crate::halftone::halftone_spec::bitmaps_valid(
+                #[trigger] symbols@[index].1.exported@,
+            ) by {
+            if index < old(symbols)@.len() {
+                assert(symbols@[index] == old(symbols)@[index]);
+                assert(crate::halftone::halftone_spec::bitmaps_valid(
+                    old(symbols)@[index].1.exported@,
+                ));
+            } else {
+                assert(symbols@[index].1 == resource);
+                assert(crate::halftone::halftone_spec::bitmaps_valid(resource.exported@));
+            }
+        }
+    }
     true
 }
 
@@ -2798,8 +2793,14 @@ fn release_referred_symbols(
                         ) by {
                         if entry < symbol_index {
                             assert(symbols@[entry] == original_symbols[entry]);
+                            assert(crate::halftone::halftone_spec::bitmaps_valid(
+                                original_symbols[entry].1.exported@,
+                            ));
                         } else {
                             assert(symbols@[entry] == original_symbols[entry + 1]);
+                            assert(crate::halftone::halftone_spec::bitmaps_valid(
+                                original_symbols[entry + 1].1.exported@,
+                            ));
                         }
                     }
                 }
