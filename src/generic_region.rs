@@ -451,6 +451,406 @@ pub(crate) struct GenericArithmeticCall<'a> {
     pub(crate) skip: Option<&'a Bitmap>,
 }
 
+/// Temporary MSB-first raster used by the nominal arithmetic fast path.
+///
+/// Rows are independently padded to a `u32` boundary. The raster never
+/// escapes generic decoding: successful decoding materializes the public
+/// byte-packed [`Bitmap`] once and then drops this storage.
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct GenericWordRaster {
+    width: u32,
+    height: u32,
+    stride_words: usize,
+    words: Vec<u32>,
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[allow(clippy::cast_possible_truncation)]
+fn word_byte(word: u32, index: usize) -> u8 {
+    match index {
+        0 => (word >> 24) as u8,
+        1 => (word >> 16) as u8,
+        2 => (word >> 8) as u8,
+        _ => word as u8,
+    }
+}
+
+impl GenericWordRaster {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out.is_some() ==> {
+            let raster = out.unwrap();
+            &&& raster.width == width
+            &&& raster.height == height
+            &&& raster.words@.len() == raster.stride_words as nat * height as nat
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn try_new(width: u32, height: u32) -> Option<Self> {
+        let stride_u32 = width.checked_add(31)? / 32;
+        let stride_words = usize::try_from(stride_u32).ok()?;
+        let height_usize = usize::try_from(height).ok()?;
+        let word_count = stride_words.checked_mul(height_usize)?;
+        let mut words = Vec::new();
+        if words.try_reserve(word_count).is_err() {
+            return None;
+        }
+        words.resize(word_count, 0);
+        Some(Self {
+            width,
+            height,
+            stride_words,
+            words,
+        })
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn row_start(&self, row: i64) -> Option<usize> {
+        if row < 0 || row > i64::from(u32::MAX) {
+            return None;
+        }
+        let row = u32::try_from(row).ok()?;
+        if row >= self.height {
+            return None;
+        }
+        usize::try_from(row).ok()?.checked_mul(self.stride_words)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn pixel(&self, x: i64, y: i64) -> bool {
+        if x < 0 || x >= i64::from(self.width) {
+            return false;
+        }
+        let Some(row_start) = self.row_start(y) else {
+            return false;
+        };
+        let Ok(x) = u32::try_from(x) else {
+            return false;
+        };
+        let Ok(word_column) = usize::try_from(x / 32) else {
+            return false;
+        };
+        let Some(index) = row_start.checked_add(word_column) else {
+            return false;
+        };
+        let Some(word) = self.words.get(index) else {
+            return false;
+        };
+        *word & (0x8000_0000_u32 >> (x % 32)) != 0
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        requires count <= 7,
+    ))]
+    fn row_bits(&self, row: i64, start_x: i64, count: u8) -> usize {
+        let mut bits = 0_usize;
+        let mut index = 0_u8;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                index <= count,
+                count <= 7,
+            decreases count - index,
+        ))]
+        while index < count {
+            let Some(sample_x) = start_x.checked_add(i64::from(index)) else {
+                return bits;
+            };
+            bits = (bits << 1) | usize::from(self.pixel(sample_x, row));
+            index += 1;
+        }
+        bits
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[allow(clippy::inline_always)]
+    #[inline(always)]
+    fn row_word(&self, row_start: Option<usize>, x: u64) -> u32 {
+        let Some(row_start) = row_start else {
+            return 0;
+        };
+        let word_column_u64 = x / 32;
+        let Ok(word_column) = usize::try_from(word_column_u64) else {
+            return 0;
+        };
+        if word_column >= self.stride_words {
+            return 0;
+        }
+        let Some(first_index) = row_start.checked_add(word_column) else {
+            return 0;
+        };
+        let Some(first) = self.words.get(first_index) else {
+            return 0;
+        };
+        let first = *first;
+        let shift = (x % 32) as u32;
+        if shift == 0 {
+            return first;
+        }
+        let second = match word_column.checked_add(1) {
+            Some(column) if column < self.stride_words => {
+                match row_start
+                    .checked_add(column)
+                    .and_then(|index| self.words.get(index))
+                {
+                    Some(word) => *word,
+                    None => 0,
+                }
+            }
+            _ => 0,
+        };
+        (first << shift) | (second >> (32 - shift))
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride_words == old(self).stride_words,
+    ))]
+    #[allow(clippy::inline_always)]
+    #[inline(always)]
+    fn set_black_in_row(&mut self, row_start: usize, x: u32) -> Result<(), GenericRegionError> {
+        let column = usize::try_from(x / 32).map_err(|_error| integer_overflow())?;
+        let index = row_start.checked_add(column).ok_or_else(integer_overflow)?;
+        let Some(word) = self.words.get_mut(index) else {
+            return Err(integer_overflow());
+        };
+        *word |= 0x8000_0000_u32 >> (x % 32);
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride_words == old(self).stride_words,
+    ))]
+    fn copy_row(&mut self, source: u32, destination: u32) -> Result<(), GenericRegionError> {
+        if source >= self.height || destination >= self.height {
+            return Err(integer_overflow());
+        }
+        let source = usize::try_from(source).map_err(|_error| integer_overflow())?;
+        let destination = usize::try_from(destination).map_err(|_error| integer_overflow())?;
+        let source_start = source
+            .checked_mul(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let destination_start = destination
+            .checked_mul(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let source_end = source_start
+            .checked_add(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let destination_end = destination_start
+            .checked_add(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        if source_end > self.words.len() || destination_end > self.words.len() {
+            return Err(integer_overflow());
+        }
+        #[cfg(not(verus_keep_ghost))]
+        {
+            self.words
+                .copy_within(source_start..source_end, destination_start);
+        }
+        #[cfg(verus_keep_ghost)]
+        let mut column = 0_usize;
+        #[cfg(verus_keep_ghost)]
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant column <= self.stride_words,
+            decreases self.stride_words - column,
+        ))]
+        #[cfg(verus_keep_ghost)]
+        while column < self.stride_words {
+            let source_index = source_start
+                .checked_add(column)
+                .ok_or_else(integer_overflow)?;
+            let destination_index = destination_start
+                .checked_add(column)
+                .ok_or_else(integer_overflow)?;
+            let Some(value) = self.words.get(source_index) else {
+                return Err(integer_overflow());
+            };
+            let value = *value;
+            let Some(word) = self.words.get_mut(destination_index) else {
+                return Err(integer_overflow());
+            };
+            *word = value;
+            column += 1;
+        }
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(bitmap)),
+            old(bitmap).width == self.width,
+            old(bitmap).height == self.height,
+        ensures match out {
+            Ok(()) =>
+                crate::spec::bitmap::storage_valid(final(bitmap))
+                && final(bitmap).width == old(bitmap).width
+                && final(bitmap).height == old(bitmap).height
+                && final(bitmap).stride == old(bitmap).stride,
+            Err(_) => true,
+        },
+    ))]
+    #[allow(clippy::cast_possible_truncation, clippy::too_many_lines)]
+    fn materialize(&self, bitmap: &mut Bitmap) -> Result<(), GenericRegionError> {
+        if bitmap.width != self.width || bitmap.height != self.height {
+            return Err(integer_overflow());
+        }
+        #[cfg(verus_keep_ghost)]
+        let bitmap_width = bitmap.width;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_height = bitmap.height;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_stride = bitmap.stride;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_length = bitmap.data.len();
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+            assert(bitmap_length as nat
+                == bitmap_stride as nat * bitmap_height as nat);
+        }
+        let mut y = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                y <= self.height,
+                bitmap.width == self.width,
+                bitmap.height == self.height,
+                bitmap.width == bitmap_width,
+                bitmap.height == bitmap_height,
+                bitmap.stride == bitmap_stride,
+                bitmap.data@.len() == bitmap_length,
+                bitmap_length as nat
+                    == bitmap_stride as nat * bitmap_height as nat,
+            decreases self.height - y,
+        ))]
+        while y < self.height {
+            let row = usize::try_from(y).map_err(|_error| integer_overflow())?;
+            let word_start = row
+                .checked_mul(self.stride_words)
+                .ok_or_else(integer_overflow)?;
+            let byte_start = row
+                .checked_mul(bitmap.stride)
+                .ok_or_else(integer_overflow)?;
+            let full_words = bitmap.stride / 4;
+            let mut word_column = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    word_column <= full_words,
+                    bitmap.width == self.width,
+                    bitmap.height == self.height,
+                    bitmap.width == bitmap_width,
+                    bitmap.height == bitmap_height,
+                    bitmap.stride == bitmap_stride,
+                    bitmap.data@.len() == bitmap_length,
+                    bitmap_length as nat
+                        == bitmap_stride as nat * bitmap_height as nat,
+                decreases full_words - word_column,
+            ))]
+            while word_column < full_words {
+                let word_index = word_start
+                    .checked_add(word_column)
+                    .ok_or_else(integer_overflow)?;
+                let Some(word) = self.words.get(word_index) else {
+                    return Err(integer_overflow());
+                };
+                let word = *word;
+                let byte_index = byte_start
+                    .checked_add(word_column.checked_mul(4).ok_or_else(integer_overflow)?)
+                    .ok_or_else(integer_overflow)?;
+                let Some(byte_end) = byte_index.checked_add(4) else {
+                    return Err(integer_overflow());
+                };
+                #[cfg(not(verus_keep_ghost))]
+                {
+                    let Some(bytes) = bitmap.data.get_mut(byte_index..byte_end) else {
+                        return Err(integer_overflow());
+                    };
+                    bytes.copy_from_slice(&[
+                        (word >> 24) as u8,
+                        (word >> 16) as u8,
+                        (word >> 8) as u8,
+                        word as u8,
+                    ]);
+                }
+                #[cfg(verus_keep_ghost)]
+                {
+                    let mut offset = 0_usize;
+                    #[cfg_attr(verus_keep_ghost, verus_spec(
+                        invariant
+                            offset <= 4,
+                            bitmap.width == bitmap_width,
+                            bitmap.height == bitmap_height,
+                            bitmap.stride == bitmap_stride,
+                            bitmap.data@.len() == bitmap_length,
+                            bitmap_length as nat
+                                == bitmap_stride as nat * bitmap_height as nat,
+                        decreases 4 - offset,
+                    ))]
+                    while offset < 4 {
+                        let Some(offset_index) = byte_index.checked_add(offset) else {
+                            return Err(integer_overflow());
+                        };
+                        let Some(byte) = bitmap.data.get_mut(offset_index) else {
+                            return Err(integer_overflow());
+                        };
+                        *byte = word_byte(word, offset);
+                        offset += 1;
+                    }
+                }
+                word_column += 1;
+            }
+            let tail_start = full_words.checked_mul(4).ok_or_else(integer_overflow)?;
+            let tail_length = bitmap.stride - tail_start;
+            let mut tail_offset = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    tail_offset <= tail_length,
+                    tail_length <= 3,
+                    bitmap.width == self.width,
+                    bitmap.height == self.height,
+                    bitmap.width == bitmap_width,
+                    bitmap.height == bitmap_height,
+                    bitmap.stride == bitmap_stride,
+                    bitmap.data@.len() == bitmap_length,
+                    bitmap_length as nat
+                        == bitmap_stride as nat * bitmap_height as nat,
+                decreases tail_length - tail_offset,
+            ))]
+            while tail_offset < tail_length {
+                let word_index = word_start
+                    .checked_add(full_words)
+                    .ok_or_else(integer_overflow)?;
+                let Some(word) = self.words.get(word_index) else {
+                    return Err(integer_overflow());
+                };
+                let word = *word;
+                let Some(byte_column) = tail_start.checked_add(tail_offset) else {
+                    return Err(integer_overflow());
+                };
+                let byte_index = byte_start
+                    .checked_add(byte_column)
+                    .ok_or_else(integer_overflow)?;
+                let Some(byte) = bitmap.data.get_mut(byte_index) else {
+                    return Err(integer_overflow());
+                };
+                *byte = word_byte(word, tail_offset);
+                tail_offset += 1;
+            }
+            y += 1;
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+        }
+        Ok(())
+    }
+}
+
 /// A continuous arithmetic stream and reusable generic-region statistics.
 ///
 /// This is used when multiple bitmaps, such as halftone gray planes, are coded
@@ -998,6 +1398,42 @@ pub(crate) fn decode_generic_on(
     }
     *cumulative_work = next_work;
 
+    let descriptor = GenericContextDescriptor::new(
+        contexts.template,
+        contexts.extended_template,
+        &call.adaptive,
+    );
+    if matches!(descriptor, GenericContextDescriptor::NominalTemplate0)
+        && call.skip.is_none()
+        && word_raster_fits_managed_memory(
+            call.width,
+            call.height,
+            contexts.storage_bytes,
+            bitmap_bytes,
+            limits,
+        )?
+    {
+        let mut decoded_words = false;
+        if let Some(mut raster) = GenericWordRaster::try_new(call.width, call.height) {
+            decode_nominal_template0_words(
+                &mut raster,
+                rows,
+                call.typical_prediction,
+                decoder,
+                &mut contexts.contexts,
+            )?;
+            raster.materialize(&mut bitmap)?;
+            decoded_words = true;
+        }
+        if decoded_words {
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                reveal(generic_region_spec::generic_contexts_valid);
+            }
+            return Ok(bitmap);
+        }
+    }
+
     decode_generic_with(
         &mut bitmap,
         rows,
@@ -1088,6 +1524,159 @@ fn probability_signal_error(
     } else {
         GenericRegionError::Decode(decoder.signal_error(signal).into_decode())
     }
+}
+
+#[allow(clippy::ptr_arg)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        rows <= old(raster).height,
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        generic_region_spec::contexts_valid(old(contexts)@),
+    ensures
+        out.is_ok() ==> final(raster).width == old(raster).width,
+        out.is_ok() ==> final(raster).height == old(raster).height,
+        out.is_ok() ==> final(raster).stride_words == old(raster).stride_words,
+        generic_region_spec::contexts_valid(final(contexts)@),
+        out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
+))]
+#[allow(clippy::too_many_lines)]
+fn decode_nominal_template0_words(
+    raster: &mut GenericWordRaster,
+    rows: u32,
+    typical_prediction: bool,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    if rows > raster.height {
+        return Err(GenericRegionError::RowCountMismatch {
+            expected: raster.height,
+            actual: rows,
+        });
+    }
+    #[cfg(verus_keep_ghost)]
+    let raster_width = raster.width;
+    #[cfg(verus_keep_ghost)]
+    let raster_height = raster.height;
+    #[cfg(verus_keep_ghost)]
+    let raster_stride = raster.stride_words;
+    let mut ltp = false;
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= rows,
+            rows <= raster.height,
+            raster.width == raster_width,
+            raster.height == raster_height,
+            raster.stride_words == raster_stride,
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+        decreases rows - y,
+    ))]
+    while y < rows {
+        if typical_prediction {
+            let context = GenericTemplate::Template0.sltp_context();
+            let sltp = decode_probability_signal(decoder, contexts, context);
+            if sltp > 1 {
+                return Err(probability_signal_error(
+                    decoder,
+                    context,
+                    contexts.len(),
+                    sltp,
+                ));
+            }
+            ltp ^= sltp != 0;
+        }
+        if ltp {
+            if y != 0 {
+                raster.copy_row(y - 1, y)?;
+            }
+            y += 1;
+            continue;
+        }
+
+        let mut history = 0_usize;
+        let y_i64 = i64::from(y);
+        let top_row = raster.row_start(y_i64 - 2);
+        let previous_row = raster.row_start(y_i64 - 1);
+        let mut top = raster.row_bits(y_i64 - 2, -2, 5);
+        let mut previous = raster.row_bits(y_i64 - 1, -3, 7);
+        let row = usize::try_from(y).map_err(|_error| integer_overflow())?;
+        let row_start = row
+            .checked_mul(raster.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= raster.width,
+                y < rows,
+                rows <= raster.height,
+                raster.width == raster_width,
+                raster.height == raster_height,
+                raster.stride_words == raster_stride,
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+            decreases raster.width - x,
+        ))]
+        while x < raster.width {
+            #[cfg(verus_keep_ghost)]
+            let chunk_start = x;
+            let mut top_queue = raster.row_word(top_row, u64::from(x) + 3);
+            let mut previous_queue = raster.row_word(previous_row, u64::from(x) + 4);
+            let remaining = raster.width - x;
+            let chunk_width = remaining.min(32);
+            let Some(chunk_end) = x.checked_add(chunk_width) else {
+                return Err(integer_overflow());
+            };
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(chunk_width > 0);
+                assert(chunk_end <= raster.width);
+            }
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    x <= chunk_end,
+                    chunk_end <= raster.width,
+                    y < rows,
+                    rows <= raster.height,
+                    raster.width == raster_width,
+                    raster.height == raster_height,
+                    raster.stride_words == raster_stride,
+                    crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                    generic_region_spec::contexts_valid(contexts@),
+                decreases chunk_end - x,
+            ))]
+            while x < chunk_end {
+                let context = (top << 11) | (previous << 4) | history & 0x0f;
+                top = ((top << 1) | usize::from(top_queue & 0x8000_0000 != 0)) & 0x1f;
+                previous =
+                    ((previous << 1) | usize::from(previous_queue & 0x8000_0000 != 0)) & 0x7f;
+                top_queue <<= 1;
+                previous_queue <<= 1;
+
+                let signal = decode_probability_signal(decoder, contexts, context);
+                if signal > 1 {
+                    return Err(probability_signal_error(
+                        decoder,
+                        context,
+                        contexts.len(),
+                        signal,
+                    ));
+                }
+                history = ((history << 1) | usize::from(signal)) & 0x0f;
+                if signal != 0 {
+                    raster.set_black_in_row(row_start, x)?;
+                }
+                x += 1;
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(x == chunk_end);
+                assert(x > chunk_start);
+            }
+        }
+        y += 1;
+    }
+    Ok(())
 }
 
 #[allow(clippy::ptr_arg)]
@@ -3587,6 +4176,32 @@ fn bitmap_storage_bytes(width: u32, height: u32) -> Result<u64, GenericRegionErr
     Ok(bytes)
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn word_raster_storage_bytes(width: u32, height: u32) -> Option<u64> {
+    let stride_words = u64::from(width).checked_add(31)? / 32;
+    stride_words.checked_mul(u64::from(height))?.checked_mul(4)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn word_raster_fits_managed_memory(
+    width: u32,
+    height: u32,
+    context_bytes: u64,
+    bitmap_bytes: u64,
+    limits: &Limits,
+) -> Result<bool, GenericRegionError> {
+    let Some(word_bytes) = word_raster_storage_bytes(width, height) else {
+        return Err(integer_overflow());
+    };
+    let Some(managed) = context_bytes
+        .checked_add(bitmap_bytes)
+        .and_then(|bytes| bytes.checked_add(word_bytes))
+    else {
+        return Err(integer_overflow());
+    };
+    Ok(managed <= limits.max_decoder_managed_memory_bytes)
+}
+
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
         Ok(()) => generic_region_spec::generic_work_spec(
@@ -3970,6 +4585,57 @@ mod tests {
         assert_eq!(left.marker, right.marker);
     }
 
+    fn assert_word_template0_parity(
+        width: u32,
+        height: u32,
+        rows: u32,
+        extended: bool,
+        typical: bool,
+        coded: &[u8],
+    ) {
+        let limits = Limits::default();
+        let header = generic_header(width, height, GenericTemplate::Template0, extended, typical);
+        let mut word_decoder = ArithmeticDecoder::new(coded).expect("word decoder");
+        let mut byte_decoder = ArithmeticDecoder::new(coded).expect("byte decoder");
+        let mut word_contexts =
+            vec![ArithmeticContext::new(); generic_context_count(GenericTemplate::Template0)];
+        let mut byte_contexts = word_contexts.clone();
+        let mut raster = GenericWordRaster::try_new(width, height).expect("word raster");
+        let mut word_bitmap = Bitmap::blank(width, height, &limits).expect("word bitmap");
+        let mut byte_bitmap = Bitmap::blank(width, height, &limits).expect("byte bitmap");
+
+        let word_result = decode_nominal_template0_words(
+            &mut raster,
+            rows,
+            typical,
+            &mut word_decoder,
+            &mut word_contexts,
+        );
+        let byte_result = decode_generic_with_oracle(
+            &mut byte_bitmap,
+            rows,
+            GenericTemplate::Template0,
+            extended,
+            &header.adaptive,
+            typical,
+            None,
+            &mut byte_decoder,
+            &mut byte_contexts,
+        );
+        assert_eq!(
+            word_result.as_ref().err().map(ToString::to_string),
+            byte_result.as_ref().err().map(ToString::to_string)
+        );
+        if word_result.is_ok() {
+            raster
+                .materialize(&mut word_bitmap)
+                .expect("materialize word raster");
+            assert_eq!(word_bitmap, byte_bitmap);
+        }
+        assert_eq!(word_contexts, byte_contexts);
+        assert_decoder_state_eq(&word_decoder, &byte_decoder);
+    }
+
     fn median_duration(mut values: Vec<Duration>) -> Duration {
         values.sort_unstable();
         values[values.len() / 2]
@@ -4349,6 +5015,129 @@ mod tests {
             );
             assert_decoder_state_eq(&optimized_decoder, &oracle_decoder);
         }
+    }
+
+    #[test]
+    fn word_template0_matches_byte_oracle_exhaustive_row_shapes() {
+        let mut state = 0x942d_63a1_b806_f75c;
+        for width in 0..=65_u32 {
+            let height = 4;
+            for rows in 0..=height {
+                for mode in 0..4_u32 {
+                    let extended = mode & 1 != 0;
+                    let typical = mode & 2 != 0;
+                    let coded = arithmetic_bytes(&mut state);
+                    assert_word_template0_parity(width, height, rows, extended, typical, &coded);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn word_template0_matches_byte_oracle_randomized() {
+        let mut state = 0x16cb_78d2_4af9_035e;
+        for case in 0..256_u32 {
+            let width = next_random(&mut state) % 258;
+            let height = next_random(&mut state) % 19;
+            let rows = if height == 0 {
+                0
+            } else {
+                next_random(&mut state) % (height + 1)
+            };
+            let extended = case & 1 != 0;
+            let typical = case & 2 != 0;
+            let coded = arithmetic_bytes(&mut state);
+            assert_word_template0_parity(width, height, rows, extended, typical, &coded);
+        }
+    }
+
+    #[test]
+    fn word_template0_matches_byte_oracle_on_entropy_error() {
+        for coded in [
+            vec![0x00, 0xff, 0xac],
+            vec![0x7f, 0x00, 0xff, 0xac],
+            vec![0x01, 0x02, 0x03, 0xff, 0xac],
+        ] {
+            assert_word_template0_parity(97, 11, 11, false, true, &coded);
+        }
+    }
+
+    #[test]
+    fn word_raster_peak_is_accounted_and_low_memory_falls_back() {
+        let width = 33;
+        let height = 3;
+        let context_bytes =
+            context_storage_bytes(generic_context_count(GenericTemplate::Template0))
+                .expect("context bytes");
+        let bitmap_bytes = bitmap_storage_bytes(width, height).expect("bitmap bytes");
+        let word_bytes = word_raster_storage_bytes(width, height).expect("word bytes");
+        assert_eq!(bitmap_bytes, 15);
+        assert_eq!(word_bytes, 24);
+
+        let fallback_limits = Limits {
+            max_decoder_managed_memory_bytes: context_bytes + bitmap_bytes,
+            ..Limits::default()
+        };
+        assert!(!word_raster_fits_managed_memory(
+            width,
+            height,
+            context_bytes,
+            bitmap_bytes,
+            &fallback_limits,
+        )
+        .expect("peak check"));
+        let mut word_limits = fallback_limits;
+        word_limits.max_decoder_managed_memory_bytes += word_bytes;
+        assert!(word_raster_fits_managed_memory(
+            width,
+            height,
+            context_bytes,
+            bitmap_bytes,
+            &word_limits,
+        )
+        .expect("peak check"));
+
+        let header = generic_header(width, height, GenericTemplate::Template0, false, true);
+        let coded = arithmetic_bytes(&mut 0x52c7_f931_0bae_846d);
+        let mut fallback_decoder = ArithmeticDecoder::new(&coded).expect("fallback decoder");
+        let mut word_decoder = ArithmeticDecoder::new(&coded).expect("word decoder");
+        let mut fallback_contexts =
+            GenericContexts::new(GenericTemplate::Template0, false, &fallback_limits)
+                .expect("fallback contexts");
+        let mut word_contexts =
+            GenericContexts::new(GenericTemplate::Template0, false, &word_limits)
+                .expect("word contexts");
+        let call = GenericArithmeticCall {
+            width,
+            height,
+            adaptive: header.adaptive,
+            typical_prediction: true,
+            skip: None,
+        };
+        let mut fallback_work = 0;
+        let mut word_work = 0;
+        let fallback = decode_generic_on(
+            &mut fallback_decoder,
+            &mut fallback_contexts,
+            call,
+            height,
+            &fallback_limits,
+            &mut fallback_work,
+        )
+        .expect("byte fallback");
+        let word = decode_generic_on(
+            &mut word_decoder,
+            &mut word_contexts,
+            call,
+            height,
+            &word_limits,
+            &mut word_work,
+        )
+        .expect("word route");
+        assert_eq!(word, fallback);
+        assert_eq!(word_contexts.contexts, fallback_contexts.contexts);
+        assert_decoder_state_eq(&word_decoder, &fallback_decoder);
+        assert_eq!(word_work, fallback_work);
     }
 
     #[test]
