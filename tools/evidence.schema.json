@@ -7,6 +7,60 @@
       "type": "object", "required": ["schema_version"],
       "properties": {"schema_version": {"const": 1}}
     },
+    "repository": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "properties": {
+        "status": {"$ref": "#/$defs/nonempty"},
+        "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "production_source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "candidate_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "total": {"type": "integer", "minimum": 0},
+        "passed": {"type": "integer", "minimum": 0},
+        "unresolved_failures": {"type": "integer", "minimum": 0},
+        "redistribution": {"type": "boolean"},
+        "cases": {
+          "type": "array", "items": {
+            "type": "object", "required": ["id"],
+            "properties": {"id": {"$ref": "#/$defs/nonempty"}}
+          }
+        },
+        "scenarios": {
+          "type": "array", "items": {
+            "type": "object", "required": ["id"],
+            "properties": {"id": {"$ref": "#/$defs/nonempty"}}
+          }
+        },
+        "files": {
+          "type": "array", "minItems": 1, "items": {
+            "type": "object", "required": ["path", "sha256", "size_bytes", "kind"],
+            "properties": {
+              "path": {"$ref": "#/$defs/nonempty"},
+              "sha256": {"$ref": "#/$defs/sha256"},
+              "size_bytes": {"type": "integer", "minimum": 0},
+              "kind": {"enum": ["encoded_stream", "expected_bitmap"]}
+            }
+          }
+        },
+        "rows": {
+          "type": "array", "minItems": 1, "items": {
+            "type": "object", "required": ["feature", "status", "clauses"],
+            "properties": {
+              "feature": {"$ref": "#/$defs/nonempty"},
+              "status": {"enum": ["required", "deferred", "unsupported", "prohibited"]},
+              "clauses": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}}
+            }
+          }
+        },
+        "policy": {
+          "type": ["object", "string"],
+          "properties": {
+            "standards_text_committed": {"const": false},
+            "non_redistributable_assets_committed": {"const": false},
+            "third_party_uploads_permitted": {"const": false}
+          }
+        }
+      }
+    },
     "function": {
       "type": "object", "required": ["id", "file", "file_sha256"],
       "properties": {

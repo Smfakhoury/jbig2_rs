@@ -42,12 +42,23 @@ The decoder implements:
   combination operators;
 - owned, bounded-reader, and page-sink APIs.
 
-Publication and conformance claims remain blocked. CELA-approved private
-validation has executed the official ITU vectors and two independent
-black-box oracles; the resulting strict-rejection and oracle differences are
-tracked under `validation/`. The production proof inventory is complete with
-body-hash-bound reviewed verifier limitations. Crate licensing, native CI,
-release-owner approval, and public-repository review remain open gates.
+The owner has reported CELA approval for open-source project publication, and
+the repository includes the MIT license. Crates.io publication remains disabled.
+Official ITU assets stay external under their separately recorded permissions.
+Native Linux, Windows and macOS CI, Verus and fuzz smoke checks are operational.
+
+The readiness audit found that earlier proof coverage overstated exact-source
+verification: some same-named functions were conflated and several cfg-selected
+runtime paths differed from proof paths. These are now explicit, hash-bound
+limitations. The current inventory has 597 directly verified functions, 24
+reviewed boundaries, 23 audited forwarders and 12 runtime/proof divergences.
+The latter block a full exact-source proof claim; passing Verus does not alone
+establish normative conformance. See [verifier limitations](docs/verifier-limitations.md).
+
+Approved local validation has executed official ITU vectors and independent
+black-box oracles. The reviewed rejections and oracle differences remain under
+`validation/` and require normative re-evaluation before stronger claims.
+The [readiness plan](docs/open-source-readiness-plan.md) tracks the remaining work.
 
 ## Local checks
 
@@ -57,6 +68,13 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 cargo doc --no-deps
 cargo package
+```
+
+Audit tooling additionally requires the pinned development-only dependencies:
+
+```text
+python -m pip install -r tools/requirements.txt
+python -B -m unittest discover -s tools/tests -v
 ```
 
 Do not use standards documents, sample software, or conformance assets unless

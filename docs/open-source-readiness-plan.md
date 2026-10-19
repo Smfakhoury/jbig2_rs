@@ -1,12 +1,18 @@
 # Open-source readiness execution plan
 
-Status: executing P01/P02; no cleanup or release enablement has been performed.
+Status: P01/P02 completed; exact-source proof gaps exposed and tracked for P05.
+No cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,
 including the merged fuzz setup fix (PR #5).
 
 Execution baseline, exact file disposition and progress:
 [readiness-baseline.md](readiness-baseline.md).
+
+P02 correction: the initial 618-function proof count below was produced by
+over-broad identity matching. The current audited inventory is authoritative.
+Known runtime/proof substitutions block exact-source release claims; the proof
+build passing does not close them.
 
 ## Goal and boundaries
 

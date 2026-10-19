@@ -9,10 +9,10 @@ conformance claim. No file removal is authorized by this inventory.
 
 - The owner reported CELA approval for open-source project publication on
   2026-10-19. This records that statement, not internal legal correspondence.
-- MIT licensing is proposed separately in
+- MIT licensing was proposed separately at the baseline in
   [PR #6](https://github.com/microsoft/jbig2_rs/pull/6), addressing
-  [issue #2](https://github.com/microsoft/jbig2_rs/issues/2). Do not duplicate
-  or assume the completion of that PR. Package license metadata is still open.
+  [issue #2](https://github.com/microsoft/jbig2_rs/issues/2), and has since merged.
+  Package license metadata is still open for P03.
 - No new ITU vector or standards-document redistribution approval was supplied.
   Keep those assets external under the existing approved internal-use policy.
 - Crates.io remains disabled. Public-source readiness is not permission to
@@ -39,6 +39,13 @@ Unmeasured: executable line/region/branch coverage. Unresolved: statement-level
 proof completeness and the normative validity of the seven reviewed official
 rejections. Neither function counts nor the classification baseline closes
 those questions.
+
+P02 subsequently found the old proof inventory was over-broad: same-named
+functions could match unrelated evidence and cfg-selected proof bodies could
+differ from runtime bodies. The table above is a historical baseline replay,
+not proof that 618 executing functions were directly verified. The current
+authoritative counts are in `proof-attestation.json`; historical candidate
+attestations are marked superseded.
 
 ## Exact path inventory
 
@@ -253,14 +260,28 @@ release record once P12 completes. Gate tests remain permanent.
 docs/open-source-readiness-plan.md
 docs/readiness-baseline.md
 tools/tests/test_validation_gates.py
+tools/tests/test_proof_audits.py
+tools/rust_source.py
+tools/evidence.py
+tools/evidence.schema.json
+tools/requirements.txt
+.gitattributes
 ```
 
 ## Progress and next entry point
 
 - P01 baseline and complete path inventory captured; unresolved license/vector
   decisions are isolated above. No file is designated for immediate deletion.
-- P02 package and ITU gates hardened with generated regression fixtures and
-  native-CI test wiring. Production cfg inventory hardening, broader evidence
-  schema validation and disposition-generator review remain open.
-- Next: complete those P02 safeguards, then P03 isolated crate verification,
-  P04 normative traceability and P06 runtime coverage can proceed independently.
+- P02 completed: package/ITU gates, syntax-based production cfg/module
+  inventory, exact proof-identity matching, strict JSON/schema validation,
+  source-bound review checks and proposal-only disposition generation.
+  The gate tests now contain 45 generated cases and use the pinned
+  development dependencies in `tools/requirements.txt`.
+- The reusable-context paths and real scratch handling now verify directly.
+  Twelve remaining runtime/proof divergences are explicit P05 release blockers,
+  not counted as directly verified functions. The exact-source release command
+  fails until those substitutions are removed and verified.
+- PR #6 has now merged the MIT license file. P03 will add crate license
+  metadata and validate the isolated package; crates.io remains disabled.
+- Next: P03 isolated crate verification, P04 normative traceability and P06
+  runtime coverage. P05 must close the now-identified exact-source backlog.

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, ValidationError, SchemaError
 
-from evidence import load_json, read_evidence
+from evidence import load_json, read_evidence, validate
 
 ROOT = Path(__file__).resolve().parents[1]
 JSON_FILES = (
@@ -52,7 +52,9 @@ for path in sorted(ROOT.rglob("*")):
                 fail(f"JSON document must be an object or array: {path.relative_to(ROOT)}")
             if isinstance(document, dict) and "$schema" in document and "$defs" in document:
                 Draft202012Validator.check_schema(document)
-        except (OSError, ValueError, SchemaError) as error:
+            elif isinstance(document, dict) and "schema_version" in document:
+                validate(document, "repository")
+        except (OSError, ValueError, SchemaError, ValidationError) as error:
             fail(f"{path.relative_to(ROOT)}: {error}")
 
 for filename, kind in (

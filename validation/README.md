@@ -46,6 +46,26 @@ cargo package --locked --list | python tools/audit_package.py
 The package audit requires a complete nonempty runtime inventory and rejects
 unapproved entries; invoking it without a package list is an error.
 
+Proof audits parse Rust syntax and include production functions after test-only
+items, nested modules and path-included runtime modules. Unsupported syntax or
+ambiguous module resolution fails closed. Evidence schemas, duplicate-key
+checks, exact owner/name matching, verification annotations and source hashes
+prevent unrelated methods or stale reviews from satisfying the inventory.
+
+Use the pinned Verus report with:
+
+```text
+python tools/audit_production_coverage.py \
+  --verus-json verus-production.json --output /tmp/coverage.json \
+  --require-complete --require-exact
+```
+
+The exact-source release gate currently fails on the 12 explicitly recorded
+runtime/proof divergences. Routine CI checks the reviewed inventory, not a claim
+that every executing body has been proved. New or changed gaps fail the
+inventory checks. `update_proof_dispositions.py --output NEW_FILE` creates
+unreviewed proposals only and cannot overwrite the reviewed disposition file.
+
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized
 diagnostic hashes, output hashes, and classifications; it never copies oracle
