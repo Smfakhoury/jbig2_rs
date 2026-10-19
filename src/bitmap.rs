@@ -1892,7 +1892,15 @@ impl Bitmap {
         Ok(())
     }
 
-    #[cfg(not(verus_keep_ghost))]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            destination_shift < 8,
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+    ))]
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn compose_row_blit_chunked(
         &mut self,
@@ -1931,6 +1939,12 @@ impl Bitmap {
                 .get_mut(destination_index)
                 .ok_or(MalformedError::IntegerOverflow)?;
             *destination_byte = (destination_value & !mask) | (combined & mask);
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                crate::views::bitmap_fields(old(self));
+                reveal(crate::spec::bitmap::storage_valid);
+            }
             source_bit = source_bit
                 .checked_add(head_bits)
                 .ok_or(MalformedError::IntegerOverflow)?;
@@ -1941,6 +1955,15 @@ impl Bitmap {
                 .checked_add(1)
                 .ok_or(MalformedError::IntegerOverflow)?;
         }
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                self.width == old(self).width,
+                self.height == old(self).height,
+                self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
+                remaining <= width,
+            decreases remaining,
+        ))]
         while remaining >= 64 {
             let source_byte = source_row
                 .checked_add(
@@ -1957,7 +1980,19 @@ impl Bitmap {
                 destination_index,
                 operator.apply_chunk(destination_chunk, source_chunk),
             ) {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(self);
+                    crate::views::bitmap_fields(old(self));
+                    reveal(crate::spec::bitmap::storage_valid);
+                }
                 return Err(MalformedError::IntegerOverflow);
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                crate::views::bitmap_fields(old(self));
+                reveal(crate::spec::bitmap::storage_valid);
             }
             source_bit = source_bit
                 .checked_add(64)
@@ -1967,6 +2002,15 @@ impl Bitmap {
                 .checked_add(8)
                 .ok_or(MalformedError::IntegerOverflow)?;
         }
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                self.width == old(self).width,
+                self.height == old(self).height,
+                self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
+                remaining <= width,
+            decreases remaining,
+        ))]
         while remaining >= 8 {
             let source_byte = source_row
                 .checked_add(
@@ -1985,6 +2029,12 @@ impl Bitmap {
                 .get_mut(destination_index)
                 .ok_or(MalformedError::IntegerOverflow)?;
             *destination_byte = operator.apply_byte(destination_value, source_value);
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                crate::views::bitmap_fields(old(self));
+                reveal(crate::spec::bitmap::storage_valid);
+            }
             source_bit = source_bit
                 .checked_add(8)
                 .ok_or(MalformedError::IntegerOverflow)?;
@@ -2014,11 +2064,28 @@ impl Bitmap {
                 .get_mut(destination_index)
                 .ok_or(MalformedError::IntegerOverflow)?;
             *destination_byte = (destination_value & !mask) | (combined & mask);
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                reveal(crate::spec::bitmap::storage_valid);
+            }
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(old(self));
+            reveal(crate::spec::bitmap::storage_valid);
         }
         Ok(())
     }
 
-    #[cfg(not(verus_keep_ghost))]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+    ))]
     fn compose_aligned_row_chunked(
         &mut self,
         source: &Self,
@@ -2027,6 +2094,14 @@ impl Bitmap {
         mut byte_count: usize,
         operator: CombinationOperator,
     ) -> Result<(), MalformedError> {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                self.width == old(self).width,
+                self.height == old(self).height,
+                self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
+            decreases byte_count,
+        ))]
         while byte_count >= 8 {
             let source_chunk =
                 read_chunk(&source.data, source_index).ok_or(MalformedError::IntegerOverflow)?;
@@ -2037,7 +2112,19 @@ impl Bitmap {
                 destination_index,
                 operator.apply_chunk(destination_chunk, source_chunk),
             ) {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(self);
+                    crate::views::bitmap_fields(old(self));
+                    reveal(crate::spec::bitmap::storage_valid);
+                }
                 return Err(MalformedError::IntegerOverflow);
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                crate::views::bitmap_fields(old(self));
+                reveal(crate::spec::bitmap::storage_valid);
             }
             source_index = source_index
                 .checked_add(8)
@@ -2047,6 +2134,14 @@ impl Bitmap {
                 .ok_or(MalformedError::IntegerOverflow)?;
             byte_count -= 8;
         }
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                self.width == old(self).width,
+                self.height == old(self).height,
+                self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
+            decreases byte_count,
+        ))]
         while byte_count != 0 {
             let source_value = *source
                 .data
@@ -2061,6 +2156,12 @@ impl Bitmap {
                 .get_mut(destination_index)
                 .ok_or(MalformedError::IntegerOverflow)?;
             *destination_byte = operator.apply_byte(destination_value, source_value);
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                crate::views::bitmap_fields(old(self));
+                reveal(crate::spec::bitmap::storage_valid);
+            }
             source_index = source_index
                 .checked_add(1)
                 .ok_or(MalformedError::IntegerOverflow)?;
@@ -2069,10 +2170,22 @@ impl Bitmap {
                 .ok_or(MalformedError::IntegerOverflow)?;
             byte_count -= 1;
         }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(old(self));
+            reveal(crate::spec::bitmap::storage_valid);
+        }
         Ok(())
     }
 
-    #[cfg(not(verus_keep_ghost))]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+    ))]
     pub(crate) fn compose_row_batch_chunked(
         &mut self,
         blits: &[RowBlit<'_>],
@@ -2081,6 +2194,15 @@ impl Bitmap {
         height: u32,
         operator: CombinationOperator,
     ) -> Result<(), MalformedError> {
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                row <= height,
+                self.width == old(self).width,
+                self.height == old(self).height,
+                self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
+            decreases height - row,
+        ))]
         for row in 0..height {
             let destination_base = usize::try_from(
                 destination_y
@@ -2090,7 +2212,18 @@ impl Bitmap {
             .map_err(|_error| MalformedError::IntegerOverflow)?
             .checked_mul(self.stride)
             .ok_or(MalformedError::IntegerOverflow)?;
-            for blit in blits {
+            let mut blit_index = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    blit_index <= blits@.len(),
+                    self.width == old(self).width,
+                    self.height == old(self).height,
+                    self.stride == old(self).stride,
+                    self.data@.len() == old(self).data@.len(),
+                decreases blits@.len() - blit_index,
+            ))]
+            while blit_index < blits.len() {
+                let blit = &blits[blit_index];
                 let source_row = usize::try_from(
                     source_y
                         .checked_add(row)
@@ -2130,6 +2263,7 @@ impl Bitmap {
                         operator,
                     )?;
                 }
+                blit_index += 1;
             }
         }
         Ok(())
