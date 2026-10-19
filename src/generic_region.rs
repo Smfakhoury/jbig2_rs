@@ -1048,34 +1048,46 @@ fn decode_probability(
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+const RASTER_SIGNAL_CONTEXT: u8 = 4;
+
 #[allow(clippy::ptr_arg)]
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
         generic_region_spec::contexts_valid(old(contexts)@),
     ensures
+        out <= RASTER_SIGNAL_CONTEXT,
         generic_region_spec::contexts_valid(final(contexts)@),
-        match out {
-            Ok(bit) =>
-                bit <= 1
-                && crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
-            Err(_) => true,
-        },
+        out <= 1 ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
 ))]
-fn decode_probability_fixed(
+fn decode_probability_signal(
     decoder: &mut ArithmeticDecoder<'_>,
     contexts: &mut Vec<ArithmeticContext>,
     index: usize,
-) -> Result<u8, GenericRegionError> {
+) -> u8 {
     let Some(context) = contexts.get_mut(index) else {
-        return Err(GenericRegionError::ContextIndex {
-            index,
-            count: contexts.len(),
-        });
+        return RASTER_SIGNAL_CONTEXT;
     };
-    decoder
-        .decode(context)
-        .map_err(|error| GenericRegionError::Decode(error.into_decode()))
+    decoder.decode_signal(context)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cold]
+fn probability_signal_error(
+    decoder: &ArithmeticDecoder<'_>,
+    index: usize,
+    context_count: usize,
+    signal: u8,
+) -> GenericRegionError {
+    if signal == RASTER_SIGNAL_CONTEXT {
+        GenericRegionError::ContextIndex {
+            index,
+            count: context_count,
+        }
+    } else {
+        GenericRegionError::Decode(decoder.signal_error(signal).into_decode())
+    }
 }
 
 #[allow(clippy::ptr_arg)]
@@ -1138,7 +1150,16 @@ fn decode_generic_with(
     ))]
     while y < rows {
         if typical_prediction {
-            let sltp = decode_probability_fixed(decoder, contexts, template.sltp_context())?;
+            let context = template.sltp_context();
+            let sltp = decode_probability_signal(decoder, contexts, context);
+            if sltp > 1 {
+                return Err(probability_signal_error(
+                    decoder,
+                    context,
+                    contexts.len(),
+                    sltp,
+                ));
+            }
             ltp ^= sltp != 0;
         }
         if ltp {
@@ -1193,7 +1214,16 @@ fn decode_generic_with(
                 continue;
             }
             let context = row_context.context_and_advance(bitmap, x, y, history);
-            let value = decode_probability_fixed(decoder, contexts, context)? != 0;
+            let signal = decode_probability_signal(decoder, contexts, context);
+            if signal > 1 {
+                return Err(probability_signal_error(
+                    decoder,
+                    context,
+                    contexts.len(),
+                    signal,
+                ));
+            }
+            let value = signal != 0;
             history = ((history << 1) | usize::from(value)) & 0x0f;
             if value {
                 bitmap.set_pixel(x, y, true)?;
@@ -2558,7 +2588,16 @@ fn decode_refinement_with(
     ))]
     while y < bitmap_height {
         if typical_prediction {
-            let sltp = decode_probability_fixed(decoder, contexts, template.sltp_context())?;
+            let context = template.sltp_context();
+            let sltp = decode_probability_signal(decoder, contexts, context);
+            if sltp > 1 {
+                return Err(probability_signal_error(
+                    decoder,
+                    context,
+                    contexts.len(),
+                    sltp,
+                ));
+            }
             ltp ^= sltp != 0;
         }
         let mut history = 0_usize;
@@ -2588,7 +2627,16 @@ fn decode_refinement_with(
                 }
             }
             let context = descriptor.context(bitmap, reference, x, y, history, parameters);
-            let value = decode_probability_fixed(decoder, contexts, context)? != 0;
+            let signal = decode_probability_signal(decoder, contexts, context);
+            if signal > 1 {
+                return Err(probability_signal_error(
+                    decoder,
+                    context,
+                    contexts.len(),
+                    signal,
+                ));
+            }
+            let value = signal != 0;
             history = ((history << 1) | usize::from(value)) & 1;
             if value {
                 bitmap.set_pixel(x, y, true)?;

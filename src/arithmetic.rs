@@ -35,6 +35,10 @@ pub(crate) const MIN_INTERVAL: u32 = 0x8000;
 pub(crate) const INTEGER_CONTEXT_COUNT: usize = 512;
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) const MAX_IAID_CODE_LENGTH: u8 = 31;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) const RASTER_SIGNAL_EOF: u8 = 2;
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) const RASTER_SIGNAL_OVERFLOW: u8 = 3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C, align(8))]
@@ -604,6 +608,27 @@ impl<'a> ArithmeticDecoder<'a> {
         &mut self,
         context: &mut ArithmeticContext,
     ) -> Result<u8, ArithmeticError> {
+        let signal = self.decode_signal(context);
+        if signal <= 1 {
+            Ok(signal)
+        } else {
+            Err(self.signal_error(signal))
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            arithmetic_spec::decoder_valid(old(self)),
+            arithmetic_spec::context_valid(*old(context)),
+        ensures
+            out <= RASTER_SIGNAL_OVERFLOW,
+            arithmetic_spec::decoder_state_valid(final(self)),
+            arithmetic_spec::context_valid(*final(context)),
+            out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    #[inline]
+    pub(crate) fn decode_signal(&mut self, context: &mut ArithmeticContext) -> u8 {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
         let state = QE_STATES[usize::from(context.state_index)];
@@ -617,18 +642,18 @@ impl<'a> ArithmeticDecoder<'a> {
         self.interval -= qe;
 
         if self.code >> 16 < qe {
-            return self.decode_lower(context, state, qe, old_mps);
+            return self.decode_lower_signal(context, state, qe, old_mps);
         }
 
-        self.code = self
-            .code
-            .checked_sub(qe << 16)
-            .ok_or(MalformedError::IntegerOverflow)?;
+        let Some(code) = self.code.checked_sub(qe << 16) else {
+            return RASTER_SIGNAL_OVERFLOW;
+        };
+        self.code = code;
         if self.interval >= MIN_INTERVAL {
-            return Ok(old_mps);
+            return old_mps;
         }
 
-        self.decode_upper_renormalized(context, state, qe, old_mps)
+        self.decode_upper_signal(context, state, qe, old_mps)
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -640,24 +665,20 @@ impl<'a> ArithmeticDecoder<'a> {
             0 < qe <= 0x5601,
             old_mps <= 1,
         ensures
+            out <= RASTER_SIGNAL_OVERFLOW,
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
-            match out {
-                Ok(decision) =>
-                    decision <= 1
-                    && arithmetic_spec::decoder_valid(final(self)),
-                Err(_) => true,
-            },
+            out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline(never)]
-    fn decode_lower(
+    fn decode_lower_signal(
         &mut self,
         context: &mut ArithmeticContext,
         state: QeState,
         qe: u32,
         old_mps: u8,
-    ) -> Result<u8, ArithmeticError> {
+    ) -> u8 {
         let decision;
         if self.interval < qe {
             decision = old_mps;
@@ -670,8 +691,12 @@ impl<'a> ArithmeticDecoder<'a> {
             }
         }
         self.interval = qe;
-        self.renormalize()?;
-        Ok(decision)
+        let signal = self.renormalize_signal();
+        if signal == 0 {
+            decision
+        } else {
+            signal
+        }
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -683,24 +708,20 @@ impl<'a> ArithmeticDecoder<'a> {
             0 < qe <= 0x5601,
             old_mps <= 1,
         ensures
+            out <= RASTER_SIGNAL_OVERFLOW,
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
-            match out {
-                Ok(decision) =>
-                    decision <= 1
-                    && arithmetic_spec::decoder_valid(final(self)),
-                Err(_) => true,
-            },
+            out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline(never)]
-    fn decode_upper_renormalized(
+    fn decode_upper_signal(
         &mut self,
         context: &mut ArithmeticContext,
         state: QeState,
         qe: u32,
         old_mps: u8,
-    ) -> Result<u8, ArithmeticError> {
+    ) -> u8 {
         let decision;
         if self.interval < qe {
             decision = 1 - old_mps;
@@ -712,8 +733,24 @@ impl<'a> ArithmeticDecoder<'a> {
             decision = old_mps;
             context.state_index = state.next_mps;
         }
-        self.renormalize()?;
-        Ok(decision)
+        let signal = self.renormalize_signal();
+        if signal == 0 {
+            decision
+        } else {
+            signal
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub(crate) fn signal_error(&self, signal: u8) -> ArithmeticError {
+        if signal == RASTER_SIGNAL_EOF {
+            match self.byte_position.checked_add(1) {
+                Some(offset) => unexpected_eof(offset, 1, 0),
+                None => MalformedError::IntegerOverflow.into(),
+            }
+        } else {
+            MalformedError::IntegerOverflow.into()
+        }
     }
 
     #[cfg(test)]
@@ -1017,9 +1054,26 @@ impl<'a> ArithmeticDecoder<'a> {
                 Err(_) => true,
             },
     ))]
+    fn renormalize(&mut self) -> Result<(), ArithmeticError> {
+        let signal = self.renormalize_signal();
+        if signal == 0 {
+            Ok(())
+        } else {
+            Err(self.signal_error(signal))
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires arithmetic_spec::decoder_state_valid(old(self)),
+        ensures
+            out <= RASTER_SIGNAL_OVERFLOW,
+            out == 0 || out == RASTER_SIGNAL_EOF || out == RASTER_SIGNAL_OVERFLOW,
+            arithmetic_spec::decoder_state_valid(final(self)),
+            out == 0 ==> arithmetic_spec::decoder_valid(final(self)),
+    ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline]
-    fn renormalize(&mut self) -> Result<(), ArithmeticError> {
+    fn renormalize_signal(&mut self) -> u8 {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
         #[cfg_attr(verus_keep_ghost, verus_spec(
@@ -1034,7 +1088,10 @@ impl<'a> ArithmeticDecoder<'a> {
                 let ghost previous_interval = self.interval;
             }
             if self.bit_count == 0 {
-                self.byte_in()?;
+                let signal = self.byte_in_signal();
+                if signal != 0 {
+                    return signal;
+                }
             }
             #[cfg(verus_keep_ghost)]
             proof! {
@@ -1049,10 +1106,10 @@ impl<'a> ArithmeticDecoder<'a> {
                 );
             }
             self.interval *= 2;
-            self.code = self
-                .code
-                .checked_mul(2)
-                .ok_or(MalformedError::IntegerOverflow)?;
+            let Some(code) = self.code.checked_mul(2) else {
+                return RASTER_SIGNAL_OVERFLOW;
+            };
+            self.code = code;
             self.bit_count -= 1;
             #[cfg(verus_keep_ghost)]
             proof! {
@@ -1067,7 +1124,7 @@ impl<'a> ArithmeticDecoder<'a> {
                 );
             }
         }
-        Ok(())
+        0
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1081,6 +1138,32 @@ impl<'a> ArithmeticDecoder<'a> {
             match out {
                 Ok(()) =>
                     old(self).byte_position + 1 < old(self).bytes@.len()
+                    && final(self).bit_count >= 7,
+                Err(_) => true,
+            },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn byte_in(&mut self) -> Result<(), ArithmeticError> {
+        let signal = self.byte_in_signal();
+        if signal == 0 {
+            Ok(())
+        } else {
+            Err(self.signal_error(signal))
+        }
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires arithmetic_spec::decoder_state_valid(old(self)),
+        ensures
+            out <= RASTER_SIGNAL_OVERFLOW,
+            out == 0 || out == RASTER_SIGNAL_EOF || out == RASTER_SIGNAL_OVERFLOW,
+            arithmetic_spec::decoder_state_valid(final(self)),
+            final(self).bytes@ == old(self).bytes@,
+            final(self).interval == old(self).interval,
+            final(self).byte_position == old(self).byte_position
+                || final(self).byte_position == old(self).byte_position + 1,
+            out == 0 ==>
+                    old(self).byte_position + 1 < old(self).bytes@.len()
                     && final(self).bit_count >= 7
                     && (
                         old(self).marker.is_none()
@@ -1088,52 +1171,50 @@ impl<'a> ArithmeticDecoder<'a> {
                         ==> final(self).byte_position
                             == old(self).byte_position
                     ),
-                Err(_) => true,
-            },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline]
-    fn byte_in(&mut self) -> Result<(), ArithmeticError> {
+    fn byte_in_signal(&mut self) -> u8 {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
         let next_position = self.byte_position + 1;
         if next_position >= self.bytes.len() {
-            return Err(unexpected_eof(next_position, 1, 0));
+            return RASTER_SIGNAL_EOF;
         }
         let next_byte = self.bytes[next_position];
 
         if self.current_byte == 0xff {
             if next_byte > 0x8f {
-                self.code = self
-                    .code
-                    .checked_add(0xff00)
-                    .ok_or(MalformedError::IntegerOverflow)?;
+                let Some(code) = self.code.checked_add(0xff00) else {
+                    return RASTER_SIGNAL_OVERFLOW;
+                };
+                self.code = code;
                 self.bit_count = 8;
                 self.marker = Some(ArithmeticMarker {
                     offset: self.byte_position,
                     code: next_byte,
                 });
-                return Ok(());
+                return 0;
             }
 
             self.byte_position = next_position;
             self.current_byte = next_byte;
-            self.code = self
-                .code
-                .checked_add(u32::from(next_byte) << 9)
-                .ok_or(MalformedError::IntegerOverflow)?;
+            let Some(code) = self.code.checked_add(u32::from(next_byte) << 9) else {
+                return RASTER_SIGNAL_OVERFLOW;
+            };
+            self.code = code;
             self.bit_count = 7;
-            return Ok(());
+            return 0;
         }
 
         self.byte_position = next_position;
         self.current_byte = next_byte;
-        self.code = self
-            .code
-            .checked_add(u32::from(next_byte) << 8)
-            .ok_or(MalformedError::IntegerOverflow)?;
+        let Some(code) = self.code.checked_add(u32::from(next_byte) << 8) else {
+            return RASTER_SIGNAL_OVERFLOW;
+        };
+        self.code = code;
         self.bit_count = 8;
-        Ok(())
+        0
     }
 
     #[cfg(test)]
@@ -1281,7 +1362,12 @@ mod tests {
 
             for _ in 0..512 {
                 let index = usize::try_from(next_random(&mut state) % 64).expect("bounded context");
-                let optimized_result = optimized.decode(&mut optimized_contexts[index]);
+                let signal = optimized.decode_signal(&mut optimized_contexts[index]);
+                let optimized_result = if signal <= 1 {
+                    Ok(signal)
+                } else {
+                    Err(optimized.signal_error(signal))
+                };
                 let oracle_result = oracle.decode_checked_oracle(&mut oracle_contexts[index]);
                 assert_eq!(optimized_result, oracle_result, "case {case}");
                 assert_eq!(optimized_contexts, oracle_contexts, "case {case}");
