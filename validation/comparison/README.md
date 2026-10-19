@@ -2,7 +2,7 @@
 
 This comparison uses `hayro-jbig2` 0.3.1 from source revision
 `ea9c81dc70cde40c64205986fdcfcd481fe934d8` and `jbig2_rs` optimized
-revision `6ae6c7ab0e020eeeb4571f228f38151b22ab31d4`.
+revision `8b024f165105cfec9c496f406e0580314085ebdb`.
 
 ## Reproduction
 
@@ -63,11 +63,12 @@ backend.
 - Both decoders produced identical bitmaps for the two valid supported ITU
   vectors and rejected the other eight streams.
 - `jbig2_rs` was 1.58x to 2.69x faster on generated MMR and 2.3% faster on
-  TT9. `hayro-jbig2` remained 1.50x faster at TT10 median.
+  TT9. `hayro-jbig2` remained 1.32x faster at TT10 median.
 - Across generated 64/512/2048 and TT9/TT10, the geometric-mean
-  `jbig2_rs`/Hayro ratio was 0.694 at median and 0.636 at p95: `jbig2_rs` was
-  30.6% and 36.4% faster respectively on the aggregate suite.
-- TT10 p95 was slightly better in `jbig2_rs` despite its slower median.
+  `jbig2_rs`/Hayro ratio was 0.677 at median and 0.573 at p95: `jbig2_rs` was
+  32.3% and 42.7% faster respectively on the aggregate suite.
+- TT10 improved through a verified temporary word raster but remains slower at
+  both median and p95; its 100-iteration peak RSS was 3976 KiB versus 3456 KiB.
 - Peak RSS for 100 decodes of the generated 2048x2048 case was 3408 KiB for
   `jbig2_rs` and 3380 KiB for `hayro-jbig2`.
 - `jbig2_rs` has stronger document-level support: explicit multi-page output,

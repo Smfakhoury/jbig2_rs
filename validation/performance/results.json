@@ -2,7 +2,7 @@
   "schema_version": 1,
   "status": "regression_thresholds_passed",
   "recorded_at": "2026-10-19T02:47:49Z",
-  "source_revision": "6ae6c7ab0e020eeeb4571f228f38151b22ab31d4",
+  "source_revision": "8b024f165105cfec9c496f406e0580314085ebdb",
   "environment": {
     "os": "linux",
     "rustc": "1.89.0",
@@ -11,7 +11,7 @@
   "command": "cargo test --release --all-features; cargo run --release --example perf_smoke",
   "measurement": "Validation-suite peak memory from five warm runs; decoder wall regression from generated runtime smoke cases so added equivalence tests do not masquerade as decoder regressions.",
   "tests": {
-    "passed": 205,
+    "passed": 209,
     "failed": 0
   },
   "wall_seconds": 0.49,
