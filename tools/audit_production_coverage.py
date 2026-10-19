@@ -44,19 +44,48 @@ def production_source(source: str) -> str:
     )[0]
 
 
-def is_test_only_item(source: str, position: int) -> bool:
-    line_start = source.rfind("\n", 0, position) + 1
-    cursor = line_start
+def item_attributes(source: str, position: int) -> list[str]:
+    cursor = position
     attributes = []
-    while cursor > 0:
-        previous_end = cursor - 1
-        previous_start = source.rfind("\n", 0, previous_end) + 1
-        line = source[previous_start:previous_end].strip()
-        if not line.startswith("#["):
+    while True:
+        while cursor > 0 and source[cursor - 1].isspace():
+            cursor -= 1
+        if cursor == 0 or source[cursor - 1] != "]":
             break
-        attributes.append(line)
-        cursor = previous_start
-    return "#[cfg(test)]" in attributes
+        end = cursor
+        depth = 0
+        cursor -= 1
+        while cursor >= 0:
+            depth += (source[cursor] == "]") - (source[cursor] == "[")
+            if depth == 0:
+                break
+            cursor -= 1
+        if cursor <= 0 or source[cursor - 1] != "#":
+            break
+        cursor -= 1
+        attributes.append(source[cursor:end])
+    return attributes
+
+
+def is_nonproduction_item(source: str, position: int) -> bool:
+    attributes = ["".join(attribute.split()) for attribute in item_attributes(source, position)]
+    return any(
+        attribute in {
+            "#[cfg(test)]",
+            "#[cfg(verus_keep_ghost)]",
+            "#[cfg(any(test,verus_keep_ghost))]",
+        }
+        for attribute in attributes
+    )
+
+
+def nonproduction_types(source: str) -> set[str]:
+    declaration = re.compile(r"\b(?:struct|enum)\s+([A-Za-z_]\w*)")
+    return {
+        match.group(1)
+        for match in declaration.finditer(code_without_strings(source))
+        if is_nonproduction_item(source, match.start())
+    }
 
 
 def block_owner(kind: str, header: str) -> str | None:
@@ -100,19 +129,35 @@ def blocks(source: str) -> list[dict]:
     return result
 
 
-def type_modules() -> dict[str, str]:
+def included_modules() -> dict[str, str]:
+    result = {}
+    declaration = re.compile(
+        r'#\s*\[\s*path\s*=\s*"([^"]+)"\s*\]\s*'
+        r"(?:pub(?:\([^)]*\))?\s+)?mod\s+([A-Za-z_]\w*)\s*;"
+    )
+    for parent in sorted((ROOT / "src").glob("*.rs")):
+        source = production_source(parent.read_text(encoding="utf-8"))
+        for match in declaration.finditer(source):
+            included = (parent.parent / match.group(1)).resolve()
+            if included.parent == (ROOT / "src").resolve():
+                result[included.stem] = f"{parent.stem}::{match.group(2)}"
+    return result
+
+
+def type_modules(module_paths: dict[str, str]) -> dict[str, str]:
     result = {}
     declaration = re.compile(r"\b(?:struct|enum)\s+([A-Za-z_]\w*)")
     for path in sorted((ROOT / "src").glob("*.rs")):
         source = production_source(path.read_text(encoding="utf-8"))
         for match in declaration.finditer(code_without_strings(source)):
-            result[match.group(1)] = path.stem
+            result[match.group(1)] = module_paths.get(path.stem, path.stem)
     return result
 
 
 def source_functions() -> list[dict]:
     result = []
-    owners = type_modules()
+    module_paths = included_modules()
+    owners = type_modules(module_paths)
     for path in sorted((ROOT / "src").glob("*.rs")):
         if path.name == "lib.rs":
             continue
@@ -121,8 +166,9 @@ def source_functions() -> list[dict]:
             scopes = blocks(source)
         except RuntimeError as error:
             raise RuntimeError(f"{path.relative_to(ROOT)}: {error}") from error
+        excluded_owners = nonproduction_types(source)
         for match in FUNCTION.finditer(code_without_strings(source)):
-            if is_test_only_item(source, match.start()):
+            if is_nonproduction_item(source, match.start()):
                 continue
             scope = next(
                 (
@@ -133,6 +179,8 @@ def source_functions() -> list[dict]:
                 None,
             )
             owner = scope["owner"] if scope else None
+            if owner in excluded_owners:
+                continue
             identifier = f"{path.stem}::"
             if owner:
                 identifier += f"{owner}::"
@@ -143,7 +191,9 @@ def source_functions() -> list[dict]:
                     "file": path.relative_to(ROOT).as_posix(),
                     "visibility": (match["visibility"] or "private").strip(),
                     "owner": owner,
-                    "verifier_module": owners.get(owner, path.stem),
+                    "verifier_module": owners.get(
+                        owner, module_paths.get(path.stem, path.stem)
+                    ),
                     "name": match["name"],
                     "file_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                 }
