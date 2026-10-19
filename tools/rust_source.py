@@ -132,6 +132,7 @@ def type_name(node) -> str:
 def source_functions(root: Path) -> list[dict]:
     import hashlib
 
+    root = root.resolve()
     src = root / "src"
     result = []
     visited = {}

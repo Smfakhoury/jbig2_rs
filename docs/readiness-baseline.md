@@ -275,7 +275,7 @@ tools/requirements.txt
 - P02 completed: package/ITU gates, syntax-based production cfg/module
   inventory, exact proof-identity matching, strict JSON/schema validation,
   source-bound review checks and proposal-only disposition generation.
-  The gate tests now contain 45 generated cases and use the pinned
+  The gate tests now contain 46 generated cases and use the pinned
   development dependencies in `tools/requirements.txt`.
 - The reusable-context paths and real scratch handling now verify directly.
   Twelve remaining runtime/proof divergences are explicit P05 release blockers,

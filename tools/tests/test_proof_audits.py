@@ -76,6 +76,10 @@ class RustAuditTests(unittest.TestCase):
     def test_file_wide_cfg(self):
         self.assertEqual(self.inventory("#![cfg(test)] fn skipped() {}"), [])
 
+    def test_inventory_normalizes_root_aliases(self):
+        expected = self.inventory("fn retained() {}")
+        self.assertEqual(source_functions(self.root / "src" / ".."), expected)
+
     def test_unknown_and_ambiguous_modules_fail(self):
         with self.assertRaisesRegex(ValueError, "missing or ambiguous"):
             self.inventory("mod missing;")
