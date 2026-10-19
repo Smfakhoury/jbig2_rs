@@ -316,6 +316,15 @@ pub(crate) struct DecodedGenericRegion {
     pub(crate) decoded_rows: u32,
 }
 
+/// Metadata for a generic region decoded directly into caller-owned storage.
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+pub(crate) struct DecodedGenericRegionDirect {
+    pub(crate) header: GenericRegionHeader,
+    pub(crate) consumed_bytes: usize,
+    pub(crate) decoded_rows: u32,
+}
+
 /// Reusable `GB` probability statistics for one generic template.
 ///
 /// This type intentionally has no infallible [`Clone`] implementation:
@@ -1356,6 +1365,33 @@ impl<'a> GenericArithmeticSession<'a> {
         )
     }
 
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            generic_region_spec::generic_session_valid(old(self)),
+            crate::spec::bitmap::storage_valid(old(bitmap)),
+            bitmap.width == call.width,
+            bitmap.height == call.height,
+        ensures
+            out.is_ok() ==> crate::spec::bitmap::storage_valid(final(bitmap)),
+            out.is_ok() ==> generic_region_spec::generic_session_valid(final(self)),
+    ))]
+    fn decode_bitmap_rows_into(
+        &mut self,
+        call: GenericArithmeticCall<'_>,
+        rows: u32,
+        bitmap: &mut Bitmap,
+    ) -> Result<(), GenericRegionError> {
+        decode_generic_on_into(
+            &mut self.decoder,
+            &mut self.contexts,
+            call,
+            rows,
+            &self.limits,
+            &mut self.work_used,
+            bitmap,
+        )
+    }
+
     /// Current compressed-byte position. A recognized marker is not consumed,
     /// so this equals the marker prefix offset after marker recognition.
     #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -1540,6 +1576,53 @@ pub(crate) fn decode_generic_region_segment_reused(
     })
 }
 
+/// Decode an arithmetic generic region directly into a matching, caller-owned
+/// blank bitmap. Unsupported encodings return `Ok(None)` before modification.
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(old(bitmap)),
+    ensures out.is_ok() ==> crate::spec::bitmap::storage_valid(final(bitmap)),
+))]
+pub(crate) fn decode_generic_region_segment_into(
+    payload: &[u8],
+    unknown_length: bool,
+    limits: &Limits,
+    bitmap: &mut Bitmap,
+) -> Result<Option<DecodedGenericRegionDirect>, GenericRegionError> {
+    let (header, header_length) = parse_generic_region_header(payload, limits)?;
+    if header.mmr
+        || bitmap.width() != header.region.width
+        || bitmap.height() != header.region.height
+    {
+        return Ok(None);
+    }
+    let coded_and_following = payload
+        .get(header_length..)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    let (rows, coded_consumed) = if unknown_length {
+        let terminal =
+            split_unknown_length_data(coded_and_following, false, header.region.height, limits)?;
+        decode_arithmetic_generic_into(terminal.coded, &header, terminal.rows, limits, bitmap)?;
+        (terminal.rows, terminal.consumed)
+    } else {
+        decode_known_length_arithmetic_generic_into(
+            coded_and_following,
+            &header,
+            header.region.height,
+            limits,
+            bitmap,
+        )?;
+        (header.region.height, coded_and_following.len())
+    };
+    let consumed_bytes = header_length
+        .checked_add(coded_consumed)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    Ok(Some(DecodedGenericRegionDirect {
+        header,
+        consumed_bytes,
+        decoded_rows: rows,
+    }))
+}
+
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
         Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
@@ -1596,6 +1679,61 @@ fn decode_known_length_arithmetic_generic(
     }
     normalized.push(ARITHMETIC_TERMINATOR[1]);
     decode_arithmetic_generic(&normalized, header, rows, None, limits)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(old(bitmap)),
+    ensures out.is_ok() ==> crate::spec::bitmap::storage_valid(final(bitmap)),
+))]
+fn decode_known_length_arithmetic_generic_into(
+    coded: &[u8],
+    header: &GenericRegionHeader,
+    rows: u32,
+    limits: &Limits,
+    bitmap: &mut Bitmap,
+) -> Result<(), GenericRegionError> {
+    let has_terminator = coded.len() >= 2
+        && coded[coded.len() - 2] == ARITHMETIC_TERMINATOR[0]
+        && coded[coded.len() - 1] == ARITHMETIC_TERMINATOR[1];
+    if has_terminator {
+        return decode_arithmetic_generic_into(coded, header, rows, limits, bitmap);
+    }
+    if coded.last() != Some(&0xff) {
+        return Err(GenericRegionError::InvalidArithmeticTerminator);
+    }
+    let requested_bytes = u64::try_from(coded.len())
+        .map_err(|_error| MalformedError::IntegerOverflow)?
+        .checked_add(1)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    if requested_bytes > limits.max_decoder_managed_memory_bytes {
+        return Err(DecodeError::LimitExceeded(LimitExceeded {
+            kind: LimitKind::Memory,
+            limit: limits.max_decoder_managed_memory_bytes,
+            actual: requested_bytes,
+        })
+        .into());
+    }
+    let capacity = coded
+        .len()
+        .checked_add(1)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    let mut normalized = Vec::new();
+    if normalized.try_reserve(capacity).is_err() {
+        return Err(DecodeError::Allocation { requested_bytes }.into());
+    }
+    let mut index = 0_usize;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            index <= coded@.len(),
+            normalized@ == coded@.subrange(0, index as int),
+        decreases coded@.len() - index,
+    ))]
+    while index < coded.len() {
+        normalized.push(coded[index]);
+        index += 1;
+    }
+    normalized.push(ARITHMETIC_TERMINATOR[1]);
+    decode_arithmetic_generic_into(&normalized, header, rows, limits, bitmap)
 }
 
 #[derive(Debug)]
@@ -1730,6 +1868,48 @@ pub(crate) fn decode_arithmetic_generic(
     )?;
     session.validate_final_marker()?;
     Ok(bitmap)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires crate::spec::bitmap::storage_valid(old(bitmap)),
+    ensures out.is_ok() ==> crate::spec::bitmap::storage_valid(final(bitmap)),
+))]
+fn decode_arithmetic_generic_into(
+    coded: &[u8],
+    header: &GenericRegionHeader,
+    rows: u32,
+    limits: &Limits,
+    bitmap: &mut Bitmap,
+) -> Result<(), GenericRegionError> {
+    if header.mmr
+        || rows > header.region.height
+        || bitmap.width() != header.region.width
+        || bitmap.height() != header.region.height
+    {
+        return Err(GenericRegionError::InvalidFlags(0x01));
+    }
+    validate_arithmetic_terminator(coded)?;
+    validate_generic_adaptive_values(header.template, header.extended_template, &header.adaptive)?;
+    enforce_generic_work(header.region.width, rows, header.typical_prediction, limits)?;
+    let mut session =
+        GenericArithmeticSession::new(coded, header.template, header.extended_template, limits)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(bitmap);
+    }
+    session.decode_bitmap_rows_into(
+        GenericArithmeticCall {
+            width: header.region.width,
+            height: header.region.height,
+            adaptive: header.adaptive,
+            typical_prediction: header.typical_prediction,
+            skip: None,
+        },
+        rows,
+        bitmap,
+    )?;
+    session.validate_final_marker()?;
+    Ok(())
 }
 
 /// Decode one generic bitmap on an existing arithmetic stream and statistics
@@ -1880,6 +2060,117 @@ pub(crate) fn decode_generic_on(
         reveal(generic_region_spec::generic_contexts_valid);
     }
     Ok(bitmap)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        crate::spec::bitmap::storage_valid(old(bitmap)),
+        bitmap.width == call.width,
+        bitmap.height == call.height,
+    ensures
+        out.is_ok() ==> crate::spec::bitmap::storage_valid(final(bitmap)),
+        out.is_ok() ==>
+            crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder))
+            && generic_region_spec::generic_contexts_valid(final(contexts)),
+))]
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn decode_generic_on_into(
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut GenericContexts,
+    call: GenericArithmeticCall<'_>,
+    rows: u32,
+    limits: &Limits,
+    cumulative_work: &mut u64,
+    bitmap: &mut Bitmap,
+) -> Result<(), GenericRegionError> {
+    if rows > call.height || bitmap.width() != call.width || bitmap.height() != call.height {
+        return Err(MalformedError::GenericRegionRowCount {
+            declared: call.height,
+            actual: rows,
+        }
+        .into());
+    }
+    validate_generic_context_layout(
+        contexts.template,
+        contexts.extended_template,
+        &contexts.contexts,
+    )?;
+    validate_probability_states(&contexts.contexts)?;
+    validate_generic_adaptive_values(
+        contexts.template,
+        contexts.extended_template,
+        &call.adaptive,
+    )?;
+    let call_work = generic_work(call.width, rows, call.typical_prediction)?;
+    let next_work = cumulative_work
+        .checked_add(call_work)
+        .ok_or(MalformedError::IntegerOverflow)?;
+    enforce_work(next_work, limits)?;
+    let bitmap_bytes = bitmap_storage_bytes(call.width, call.height)?;
+    enforce_managed_memory(contexts.storage_bytes, bitmap_bytes, limits)?;
+    *cumulative_work = next_work;
+
+    let descriptor = GenericContextDescriptor::new(
+        contexts.template,
+        contexts.extended_template,
+        &call.adaptive,
+    );
+    if matches!(descriptor, GenericContextDescriptor::NominalTemplate0) {
+        #[cfg(not(verus_keep_ghost))]
+        if generic_row_ring::try_decode(
+            bitmap,
+            call.width,
+            rows,
+            contexts.storage_bytes,
+            bitmap_bytes,
+            limits,
+            call.typical_prediction,
+            decoder,
+            &mut contexts.contexts,
+        )? {
+            return Ok(());
+        }
+        #[cfg(verus_keep_ghost)]
+        if row_ring_fits_managed_memory(
+            call.width,
+            rows,
+            contexts.storage_bytes,
+            bitmap_bytes,
+            limits,
+        )? {
+            let base_managed = contexts
+                .storage_bytes
+                .checked_add(bitmap_bytes)
+                .ok_or_else(integer_overflow)?;
+            let available_bytes = limits
+                .max_decoder_managed_memory_bytes
+                .checked_sub(base_managed)
+                .ok_or_else(integer_overflow)?;
+            if let Some(mut ring) = GenericRowRing::try_new(call.width, rows, available_bytes) {
+                decode_nominal_template0_row_ring(
+                    &mut ring,
+                    bitmap,
+                    rows,
+                    call.typical_prediction,
+                    decoder,
+                    &mut contexts.contexts,
+                )?;
+                return Ok(());
+            }
+        }
+    }
+    decode_generic_with(
+        bitmap,
+        rows,
+        contexts.template,
+        contexts.extended_template,
+        &call.adaptive,
+        call.typical_prediction,
+        None,
+        decoder,
+        &mut contexts.contexts,
+    )
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -5158,6 +5449,22 @@ mod tests {
         bytes
     }
 
+    fn arithmetic_segment_payload(width: u32, height: u32, typical: bool, coded: &[u8]) -> Vec<u8> {
+        let mut payload = region_prefix(width, height);
+        payload.push(if typical { 0x08 } else { 0 });
+        for offset in [
+            TemplateOffset::new(3, -1),
+            TemplateOffset::new(-3, -1),
+            TemplateOffset::new(2, -2),
+            TemplateOffset::new(-2, -2),
+        ] {
+            payload.push(offset.x.to_be_bytes()[3]);
+            payload.push(offset.y.to_be_bytes()[3]);
+        }
+        payload.extend_from_slice(coded);
+        payload
+    }
+
     fn assert_decoder_state_eq(left: &ArithmeticDecoder<'_>, right: &ArithmeticDecoder<'_>) {
         assert_eq!(left.byte_position, right.byte_position);
         assert_eq!(left.current_byte, right.current_byte);
@@ -5664,6 +5971,104 @@ mod tests {
         ] {
             assert_word_template0_parity(97, 11, 11, false, true, &coded);
         }
+    }
+
+    #[test]
+    fn direct_bitmap_matches_owned_region_exhaustive_widths() {
+        let limits = Limits::default();
+        let mut state = 0xa314_6d29_8bf0_c572;
+        for width in 1..=65_u32 {
+            for height in 1..=4_u32 {
+                for typical in [false, true] {
+                    let coded = arithmetic_bytes(&mut state);
+                    let payload = arithmetic_segment_payload(width, height, typical, &coded);
+                    let mut scratch = MmrScratch::default();
+                    let owned = decode_generic_region_segment_reused(
+                        &payload,
+                        false,
+                        &limits,
+                        &mut scratch,
+                    )
+                    .expect("owned decode");
+                    let mut direct = Bitmap::blank(width, height, &limits).expect("direct target");
+                    let metadata =
+                        decode_generic_region_segment_into(&payload, false, &limits, &mut direct)
+                            .expect("direct decode")
+                            .expect("arithmetic route");
+                    assert_eq!(direct, owned.bitmap);
+                    assert_eq!(metadata.decoded_rows, owned.decoded_rows);
+                    assert_eq!(metadata.consumed_bytes, owned.consumed_bytes);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn direct_bitmap_matches_owned_unknown_rows_randomized() {
+        let limits = Limits::default();
+        let mut state = 0x4bc7_9da2_105e_f638;
+        for case in 0..128_u32 {
+            let width = 1 + next_random(&mut state) % 129;
+            let height = 1 + next_random(&mut state) % 17;
+            let rows = next_random(&mut state) % (height + 1);
+            let typical = case & 1 != 0;
+            let mut coded = arithmetic_bytes(&mut state);
+            coded.extend_from_slice(&rows.to_be_bytes());
+            let payload = arithmetic_segment_payload(width, height, typical, &coded);
+            let mut scratch = MmrScratch::default();
+            let owned = decode_generic_region_segment_reused(&payload, true, &limits, &mut scratch)
+                .expect("owned unknown-height decode");
+            let mut direct = Bitmap::blank(width, height, &limits).expect("direct target");
+            let metadata = decode_generic_region_segment_into(&payload, true, &limits, &mut direct)
+                .expect("direct unknown-height decode")
+                .expect("arithmetic route");
+            assert_eq!(direct, owned.bitmap);
+            assert_eq!(metadata.decoded_rows, rows);
+            assert_eq!(metadata.consumed_bytes, owned.consumed_bytes);
+        }
+    }
+
+    #[test]
+    fn direct_bitmap_preserves_error_and_memory_limit_classification() {
+        let width = 97;
+        let height = 11;
+        let limits = Limits::default();
+        for coded in [
+            vec![0x00, 0xff, 0xac],
+            vec![0x7f, 0x00, 0xff, 0xac],
+            vec![0x01, 0x02, 0x03, 0xff, 0xac],
+        ] {
+            let payload = arithmetic_segment_payload(width, height, false, &coded);
+            let mut scratch = MmrScratch::default();
+            let owned =
+                decode_generic_region_segment_reused(&payload, false, &limits, &mut scratch);
+            let mut direct = Bitmap::blank(width, height, &limits).expect("direct target");
+            let direct = decode_generic_region_segment_into(&payload, false, &limits, &mut direct);
+            assert_eq!(
+                owned.as_ref().err().map(ToString::to_string),
+                direct.as_ref().err().map(ToString::to_string)
+            );
+        }
+
+        let mut state = 0x18e5_a720_64bc_93df;
+        let coded = arithmetic_bytes(&mut state);
+        let payload = arithmetic_segment_payload(width, height, false, &coded);
+        let bitmap_bytes = bitmap_storage_bytes(width, height).expect("bitmap bytes");
+        let context_bytes =
+            context_storage_bytes(generic_context_count(GenericTemplate::Template0))
+                .expect("context bytes");
+        let limited = Limits {
+            max_decoder_managed_memory_bytes: context_bytes + bitmap_bytes - 1,
+            ..limits
+        };
+        let mut scratch = MmrScratch::default();
+        let owned = decode_generic_region_segment_reused(&payload, false, &limited, &mut scratch);
+        let mut direct = Bitmap::blank(width, height, &limits).expect("preallocated target");
+        let direct = decode_generic_region_segment_into(&payload, false, &limited, &mut direct);
+        assert_eq!(
+            owned.as_ref().err().map(ToString::to_string),
+            direct.as_ref().err().map(ToString::to_string)
+        );
     }
 
     #[test]

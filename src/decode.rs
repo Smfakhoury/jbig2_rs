@@ -6,7 +6,8 @@ use crate::document::{
     DecoderContext, DocumentInfo, GlobalSegments, PageInfo, ParsedData, ParsedSegment,
 };
 use crate::generic_region::{
-    decode_arithmetic_refinement, decode_generic_region_segment_reused,
+    decode_arithmetic_refinement, decode_generic_region_segment_into,
+    decode_generic_region_segment_reused, parse_generic_region_header,
     parse_refinement_region_header, GenericRegionError, GenericTemplate, RefinementParameters,
 };
 use crate::halftone::{
@@ -555,7 +556,10 @@ fn write_page_to_sink<S: PageSink>(sink: &mut S, page: Page) -> Result<(), Decod
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
+#[allow(clippy::struct_excessive_bools)]
 struct RuntimePage {
+    default_pixel: bool,
+    pristine: bool,
     default_operator: crate::bitmap::CombinationOperator,
     combination_override: bool,
     refinements_allowed: bool,
@@ -925,6 +929,18 @@ impl DecodeWork {
         production_work_fields!(self);
         Ok(())
     }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn can_charge_pair(&self, first: u64, second: u64, limits: &Limits) -> bool {
+        match self
+            .used
+            .checked_add(first)
+            .and_then(|used| used.checked_add(second))
+        {
+            Some(used) => used <= limits.max_work_units,
+            None => false,
+        }
+    }
 }
 
 impl RetainedBudget {
@@ -1237,6 +1253,8 @@ macro_rules! decode_segments_body {
                         &mut pages,
                         public.number(),
                         RuntimePage {
+                            default_pixel: page_data.default_pixel,
+                            pristine: true,
                             default_operator: page_data.default_operator,
                             combination_override: page_data.combination_operator_override,
                             refinements_allowed: page_data.might_contain_refinements,
@@ -1442,6 +1460,109 @@ fn decode_segments<S: PageSink>(
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires decode_spec::runtime_pages_valid(pages),
+    ensures match out {
+        Some(index) => index < pages@.len(),
+        None => true,
+    },
+))]
+fn direct_generic_page_index(
+    segment: &ParsedSegment<'_>,
+    pages: &RuntimePages,
+    work: &DecodeWork,
+    limits: &Limits,
+) -> Option<usize> {
+    if !matches!(
+        segment.header.segment_type,
+        SegmentType::ImmediateGenericRegion | SegmentType::ImmediateLosslessGenericRegion
+    ) {
+        return None;
+    }
+    let (header, _) = match parse_generic_region_header(segment.payload, limits) {
+        Ok(header) => header,
+        Err(_error) => return None,
+    };
+    if header.mmr
+        || header.region.x != 0
+        || header.region.y != 0
+        || !matches!(
+            header.region.operator,
+            CombinationOperator::Or | CombinationOperator::Replace
+        )
+    {
+        return None;
+    }
+    let index = runtime_page_index(pages, segment.header.page_association)?;
+    let page = &pages[index].1;
+    if !page.pristine
+        || page.default_pixel
+        || page.last_stripe_end.is_some()
+        || page.open_stripe_max_row.is_some()
+        || header.region.width != page.bitmap.width()
+        || header.region.height != page.bitmap.height()
+        || (!page.combination_override && page.default_operator != header.region.operator)
+    {
+        return None;
+    }
+    let pixels = u64::from(header.region.width).checked_mul(u64::from(header.region.height))?;
+    let region_work = pixels.checked_mul(18)?;
+    if !work.can_charge_pair(region_work, pixels, limits) {
+        return None;
+    }
+    Some(index)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(&old(page).bitmap),
+    ensures out.is_ok() ==> crate::spec::bitmap::storage_valid(&final(page).bitmap),
+))]
+fn decode_generic_segment_direct_on_page(
+    segment: &ParsedSegment<'_>,
+    page: &mut RuntimePage,
+    work: &mut DecodeWork,
+    limits: &Limits,
+) -> Result<bool, DecodeError> {
+    let Some(decoded) = decode_generic_region_segment_into(
+        segment.payload,
+        segment.header.data_length.is_none(),
+        limits,
+        &mut page.bitmap,
+    )
+    .map_err(generic_error_into_decode)?
+    else {
+        return Ok(false);
+    };
+    if decoded.consumed_bytes != segment.payload.len() {
+        let trailing = segment
+            .payload
+            .len()
+            .checked_sub(decoded.consumed_bytes)
+            .and_then(|bytes| u64::try_from(bytes).ok())
+            .ok_or(MalformedError::IntegerOverflow)?;
+        return Err(MalformedError::TrailingData(trailing).into());
+    }
+    let region_work = u64::from(decoded.header.region.width)
+        .checked_mul(u64::from(decoded.decoded_rows))
+        .and_then(|pixels| pixels.checked_mul(18))
+        .ok_or(MalformedError::IntegerOverflow)?;
+    work.charge(region_work, limits)?;
+    check_combination_operator(
+        page.combination_override,
+        decoded.header.region.operator,
+        page.default_operator,
+        false,
+    )?;
+    note_page_write(page, &decoded.header.region)?;
+    let composition_work = u64::from(decoded.header.region.width)
+        .checked_mul(u64::from(decoded.header.region.height))
+        .ok_or(MalformedError::IntegerOverflow)?;
+    work.charge(composition_work, limits)?;
+    page.pristine = false;
+    Ok(true)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         decode_spec::runtime_pages_valid(old(pages)),
         decode_spec::region_buffers_valid(old(buffers)),
@@ -1452,7 +1573,42 @@ fn decode_segments<S: PageSink>(
         Err(_) => true,
     },
 ))]
+#[allow(clippy::too_many_arguments)]
 fn decode_generic_segment(
+    segment: &ParsedSegment<'_>,
+    pages: &mut RuntimePages,
+    buffers: &mut RegionBuffers,
+    retained: &mut RetainedBudget,
+    work: &mut DecodeWork,
+    limits: &Limits,
+    mmr_scratch: &mut MmrScratch,
+) -> Result<(), DecodeError> {
+    let arithmetic = match segment.payload.get(17) {
+        Some(flags) => *flags & 0x01 == 0,
+        None => false,
+    };
+    if arithmetic {
+        if let Some(index) = direct_generic_page_index(segment, pages, work, limits) {
+            if decode_generic_segment_direct_on_page(segment, &mut pages[index].1, work, limits)? {
+                return Ok(());
+            }
+        }
+    }
+    decode_generic_segment_buffered(segment, pages, buffers, retained, work, limits, mmr_scratch)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        decode_spec::runtime_pages_valid(old(pages)),
+        decode_spec::region_buffers_valid(old(buffers)),
+    ensures match out {
+        Ok(()) =>
+            decode_spec::runtime_pages_valid(final(pages))
+                && decode_spec::region_buffers_valid(final(buffers)),
+        Err(_) => true,
+    },
+))]
+fn decode_generic_segment_buffered(
     segment: &ParsedSegment<'_>,
     pages: &mut RuntimePages,
     buffers: &mut RegionBuffers,
@@ -1504,6 +1660,20 @@ fn decode_generic_segment(
         )?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments)]
+fn decode_generic_segment_oracle(
+    segment: &ParsedSegment<'_>,
+    pages: &mut RuntimePages,
+    buffers: &mut RegionBuffers,
+    retained: &mut RetainedBudget,
+    work: &mut DecodeWork,
+    limits: &Limits,
+    mmr_scratch: &mut MmrScratch,
+) -> Result<(), DecodeError> {
+    decode_generic_segment_buffered(segment, pages, buffers, retained, work, limits, mmr_scratch)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -2241,6 +2411,7 @@ fn compose_immediate_on_page(
     work.charge(composition_work, limits)?;
     page.bitmap
         .compose(bitmap, region.x, region.y, region.operator)?;
+    page.pristine = false;
     Ok(())
 }
 
@@ -2934,6 +3105,53 @@ mod tests {
         bytes
     }
 
+    fn arithmetic_generic_document(
+        width: u32,
+        height: u32,
+        region_flags: u8,
+        coded: &[u8],
+    ) -> Vec<u8> {
+        let mut page = [0_u8; 19];
+        page[0..4].copy_from_slice(&width.to_be_bytes());
+        page[4..8].copy_from_slice(&height.to_be_bytes());
+        let mut generic = Vec::new();
+        generic.extend_from_slice(&width.to_be_bytes());
+        generic.extend_from_slice(&height.to_be_bytes());
+        generic.extend_from_slice(&0_u32.to_be_bytes());
+        generic.extend_from_slice(&0_u32.to_be_bytes());
+        generic.push(region_flags);
+        generic.push(0);
+        generic.extend_from_slice(&[3, 0xff, 0xfd, 0xff, 2, 0xfe, 0xfe, 0xfe]);
+        generic.extend_from_slice(coded);
+        let mut bytes = SIGNATURE.to_vec();
+        bytes.push(0x01);
+        bytes.extend_from_slice(&1_u32.to_be_bytes());
+        bytes.extend_from_slice(&segment_header(0, 48, 1, 19));
+        bytes.extend_from_slice(&page);
+        bytes.extend_from_slice(&segment_header(
+            1,
+            38,
+            1,
+            u32::try_from(generic.len()).expect("payload fits"),
+        ));
+        bytes.extend_from_slice(&generic);
+        bytes.extend_from_slice(&segment_header(2, 49, 1, 0));
+        bytes.extend_from_slice(&segment_header(3, 51, 0, 0));
+        bytes
+    }
+
+    fn arithmetic_test_bytes(state: &mut u64) -> Vec<u8> {
+        let mut coded = Vec::with_capacity(1_026);
+        for _ in 0..1_024 {
+            *state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            coded.push(state.to_be_bytes()[3] & 0x7f);
+        }
+        coded.extend_from_slice(&[0xff, 0xac]);
+        coded
+    }
+
     fn all_white_mmr_document(width: u32, height: u32) -> Vec<u8> {
         let mut page = [0_u8; 19];
         page[0..4].copy_from_slice(&width.to_be_bytes());
@@ -2976,6 +3194,148 @@ mod tests {
         assert_eq!(decoded.pages().len(), 1);
         assert_eq!(decoded.pages()[0].number(), 1);
         assert_eq!(decoded.pages()[0].bitmap().bytes(), &[0xFF]);
+    }
+
+    fn runtime_test_page(
+        width: u32,
+        height: u32,
+        default_pixel: bool,
+        pristine: bool,
+        operator: CombinationOperator,
+        limits: &Limits,
+    ) -> RuntimePage {
+        RuntimePage {
+            default_pixel,
+            pristine,
+            default_operator: operator,
+            combination_override: false,
+            refinements_allowed: false,
+            auxiliary_allowed: false,
+            last_stripe_end: None,
+            open_stripe_max_row: None,
+            bitmap: Bitmap::filled(width, height, default_pixel, limits).expect("test page bitmap"),
+        }
+    }
+
+    fn assert_direct_page_matches_oracle(
+        document: &[u8],
+        default_pixel: bool,
+        pristine: bool,
+        page_operator: CombinationOperator,
+        limits: &Limits,
+    ) {
+        let (_info, segments) =
+            parse_standalone_document(document, &Limits::default()).expect("test document");
+        let segment = &segments[1];
+        let (header, _) =
+            parse_generic_region_header(segment.payload, &Limits::default()).expect("header");
+        let mut direct_pages = vec![(
+            1,
+            runtime_test_page(
+                header.region.width,
+                header.region.height,
+                default_pixel,
+                pristine,
+                page_operator,
+                &Limits::default(),
+            ),
+        )];
+        let mut oracle_pages = vec![(
+            1,
+            runtime_test_page(
+                header.region.width,
+                header.region.height,
+                default_pixel,
+                pristine,
+                page_operator,
+                &Limits::default(),
+            ),
+        )];
+        let mut direct_buffers = Vec::new();
+        let mut oracle_buffers = Vec::new();
+        let mut direct_retained = RetainedBudget::new();
+        let mut oracle_retained = RetainedBudget::new();
+        let mut direct_work = DecodeWork::new(0, limits).expect("direct work");
+        let mut oracle_work = DecodeWork::new(0, limits).expect("oracle work");
+        let mut direct_scratch = MmrScratch::default();
+        let mut oracle_scratch = MmrScratch::default();
+        let direct = decode_generic_segment(
+            segment,
+            &mut direct_pages,
+            &mut direct_buffers,
+            &mut direct_retained,
+            &mut direct_work,
+            limits,
+            &mut direct_scratch,
+        );
+        let oracle = decode_generic_segment_oracle(
+            segment,
+            &mut oracle_pages,
+            &mut oracle_buffers,
+            &mut oracle_retained,
+            &mut oracle_work,
+            limits,
+            &mut oracle_scratch,
+        );
+        assert_eq!(
+            direct.as_ref().err().map(ToString::to_string),
+            oracle.as_ref().err().map(ToString::to_string)
+        );
+        if direct.is_ok() {
+            let direct_page = &direct_pages[0].1;
+            let oracle_page = &oracle_pages[0].1;
+            assert_eq!(direct_page.bitmap, oracle_page.bitmap);
+            assert_eq!(direct_page.pristine, oracle_page.pristine);
+            assert_eq!(
+                direct_page.open_stripe_max_row,
+                oracle_page.open_stripe_max_row
+            );
+            assert_eq!(direct_work.used, oracle_work.used);
+            assert_eq!(direct_retained.bytes, oracle_retained.bytes);
+        }
+    }
+
+    #[test]
+    fn direct_page_matches_intermediate_compose_oracle() {
+        let limits = Limits::default();
+        let mut state = 0x5ca1_49e7_2d83_b604;
+        for width in 1..=65_u32 {
+            let height = 1 + width % 4;
+            let coded = arithmetic_test_bytes(&mut state);
+            let document = arithmetic_generic_document(width, height, 0, &coded);
+            assert_direct_page_matches_oracle(
+                &document,
+                false,
+                true,
+                CombinationOperator::Or,
+                &limits,
+            );
+        }
+    }
+
+    #[test]
+    fn incompatible_and_limited_direct_pages_use_exact_oracle_fallback() {
+        let mut state = 0xd630_18ab_795c_42ef;
+        let coded = arithmetic_test_bytes(&mut state);
+        let document = arithmetic_generic_document(97, 11, 0, &coded);
+        for (default_pixel, pristine, operator) in [
+            (true, true, CombinationOperator::Or),
+            (false, false, CombinationOperator::Or),
+            (false, true, CombinationOperator::Xor),
+        ] {
+            assert_direct_page_matches_oracle(
+                &document,
+                default_pixel,
+                pristine,
+                operator,
+                &Limits::default(),
+            );
+        }
+        let limits = Limits {
+            max_work_units: 1,
+            ..Limits::default()
+        };
+        assert_direct_page_matches_oracle(&document, false, true, CombinationOperator::Or, &limits);
     }
 
     #[test]
