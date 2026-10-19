@@ -668,6 +668,7 @@ fn decode_bitmap<'a>(
         let mut emitted_black = false;
         let mut initial = true;
         let mut mode_count = 0_u64;
+        let mut reference_index = 0_usize;
         row_transitions.clear();
         #[cfg(verus_keep_ghost)]
         production_mmr_transition_empty!(width);
@@ -689,6 +690,7 @@ fn decode_bitmap<'a>(
                 mmr_spec::bitmap_storage_valid(&bitmap),
                 mmr_spec::reference_line_valid(transitions@, width),
                 transitions@.len() <= width as nat + 2,
+                reference_index < transitions@.len(),
                 mmr_spec::transition_prefix_valid(row_transitions@, x, width),
                 row_transitions@.len() <= x as nat,
                 mmr_spec::reader_valid(&reader),
@@ -705,7 +707,14 @@ fn decode_bitmap<'a>(
             #[cfg(verus_keep_ghost)]
             production_mmr_mode_budget!(mode_count, max_modes);
 
-            let (b1, b2) = reference_elements(transitions, x, black, width, initial)?;
+            let (b1, b2) = reference_elements_from(
+                transitions,
+                x,
+                black,
+                width,
+                initial,
+                &mut reference_index,
+            )?;
             let mode_offset = reader.bit_position;
             match decode_mode(&mut reader)? {
                 Mode::Extension => {
@@ -1304,6 +1313,79 @@ fn reference_elements(
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        mmr_spec::reference_line_valid(transitions@, width),
+        x <= width,
+        *old(search_start) < transitions@.len(),
+    ensures
+        *final(search_start) < transitions@.len(),
+        match out {
+            Ok((b1, b2)) => x <= b1 <= b2 <= width,
+            Err(_) => true,
+        },
+))]
+fn reference_elements_from(
+    transitions: &[u32],
+    x: u32,
+    black: bool,
+    width: u32,
+    initial: bool,
+    search_start: &mut usize,
+) -> Result<(u32, u32), MmrError> {
+    let search_end = transitions
+        .len()
+        .checked_sub(1)
+        .ok_or(MmrError::InvalidTransition)?;
+    if *search_start > search_end {
+        return Err(MmrError::InvalidTransition);
+    }
+    let mut index = *search_start;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mmr_spec::reference_line_valid(transitions@, width),
+            x <= width,
+            search_end == transitions@.len() - 1,
+            index <= search_end,
+        decreases search_end - index,
+    ))]
+    while index < search_end {
+        let position = *transitions.get(index).ok_or(MmrError::InvalidTransition)?;
+        if position > x || (initial && position == x) {
+            break;
+        }
+        index = index.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    *search_start = index;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            mmr_spec::reference_line_valid(transitions@, width),
+            x <= width,
+            search_end == transitions@.len() - 1,
+            *search_start <= search_end,
+            *search_start <= index <= search_end,
+        decreases search_end - index,
+    ))]
+    while index < search_end {
+        let position = *transitions.get(index).ok_or(MmrError::InvalidTransition)?;
+        if position < x {
+            return Err(MmrError::InvalidTransition);
+        }
+        let post_transition_black = index % 2 == 0;
+        if post_transition_black != black {
+            let next_index = index.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+            let b2 = *transitions
+                .get(next_index)
+                .ok_or(MmrError::InvalidTransition)?;
+            #[cfg(verus_keep_ghost)]
+            production_mmr_reference_bounds!(transitions, index, next_index, position, b2, width);
+            return Ok((position, b2));
+        }
+        index = index.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    Ok((width, width))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires mmr_spec::bitmap_storage_valid(old(bitmap)),
     ensures
         final(bitmap).width == old(bitmap).width,
@@ -1839,6 +1921,46 @@ mod tests {
                     }
                 }
                 assert_incremental_transitions_match_scan(&bitmap);
+            }
+        }
+    }
+
+    #[test]
+    fn monotone_reference_cursor_matches_full_scan_exactly() {
+        for width in 1..=9_u32 {
+            let interior = width.saturating_sub(1);
+            for mask in 0..(1_u32 << interior) {
+                let mut transitions = Vec::new();
+                for position in 0..width {
+                    if mask & (1 << position) != 0 {
+                        transitions.push(position);
+                    }
+                }
+                transitions.push(width);
+                transitions.push(width);
+
+                let mut cursor = 0;
+                let mut initial = true;
+                for x in 0..width {
+                    for black in [false, true, false] {
+                        let expected = reference_elements(&transitions, x, black, width, initial)
+                            .expect("full scan accepts valid transitions");
+                        let actual = reference_elements_from(
+                            &transitions,
+                            x,
+                            black,
+                            width,
+                            initial,
+                            &mut cursor,
+                        )
+                        .expect("cursor accepts valid transitions");
+                        assert_eq!(
+                            actual, expected,
+                            "width={width}, mask={mask:#x}, x={x}, black={black}, initial={initial}"
+                        );
+                        initial = false;
+                    }
+                }
             }
         }
     }
