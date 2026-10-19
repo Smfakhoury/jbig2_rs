@@ -79,3 +79,12 @@ python -B -m unittest discover -s tools/tests -v
 
 Do not use standards documents, sample software, or conformance assets unless
 their entry in `source-provenance.json` records the required legal approval.
+
+## Runtime coverage
+
+The pinned Linux coverage workflow measures ordinary runtime code, excluding
+inline tests/oracles and ghost items. Its initial baseline is **75.74% lines,
+70.70% regions and 63.96% branch outcomes**. CI checks aggregate/per-file
+non-regression; the proposed 90% line / 85% branch release goals remain unmet.
+See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
+uncovered-code artifacts and the remaining P06 test-improvement work.

@@ -1,6 +1,46 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
+    "coverage_fraction": {
+      "type": "object", "required": ["count", "covered"],
+      "properties": {
+        "count": {"type": "integer", "minimum": 0},
+        "covered": {"type": "integer", "minimum": 0}
+      }
+    },
+    "coverage_metrics": {
+      "type": "object", "required": ["lines", "regions", "branches"],
+      "properties": {
+        "lines": {"$ref": "#/$defs/coverage_fraction"},
+        "regions": {"$ref": "#/$defs/coverage_fraction"},
+        "branches": {"$ref": "#/$defs/coverage_fraction"}
+      }
+    },
+    "coverage_baseline": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "required": ["scope_version", "source_revision", "source_sha256", "toolchain", "release_goals", "totals", "files", "policy"],
+      "properties": {
+        "scope_version": {"const": 1},
+        "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "policy": {"$ref": "#/$defs/nonempty"},
+        "toolchain": {
+          "type": "object", "required": ["rust_toolchain", "cargo_llvm_cov_version", "component"]
+        },
+        "release_goals": {
+          "type": "object", "required": ["lines", "branches"], "additionalProperties": false,
+          "properties": {
+            "lines": {"type": "number", "minimum": 0, "maximum": 100},
+            "branches": {"type": "number", "minimum": 0, "maximum": 100}
+          }
+        },
+        "totals": {"$ref": "#/$defs/coverage_metrics"},
+        "files": {
+          "type": "object", "minProperties": 1,
+          "additionalProperties": {"$ref": "#/$defs/coverage_metrics"}
+        }
+      }
+    },
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "nonempty": {"type": "string", "pattern": "\\S"},
     "versioned": {

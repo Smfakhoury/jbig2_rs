@@ -3,6 +3,12 @@
   "cargo_rust_toolchain": "1.89.0",
   "fuzz_rust_toolchain": "nightly-2026-10-12",
   "cargo_fuzz_version": "0.13.2",
+  "coverage": {
+    "rust_toolchain": "nightly-2026-10-12",
+    "cargo_llvm_cov_version": "0.9.1",
+    "component": "llvm-tools-preview",
+    "note": "Dedicated ordinary-runtime coverage build; nightly enables branch instrumentation, not Verus cfgs."
+  },
   "verus": {
     "version": "0.2026.10.04.426d8b0",
     "commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",

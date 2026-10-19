@@ -1,0 +1,55 @@
+name: Runtime coverage
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install -r tools/requirements.txt
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly-2026-10-12
+          components: llvm-tools-preview
+      - run: cargo install cargo-llvm-cov --version 0.9.1 --locked
+      - name: Collect runtime coverage and enforce non-regression baseline
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        shell: bash
+        run: |
+          args=()
+          if [[ -n "$BASE_REF" && "$BASE_REF" != "0000000000000000000000000000000000000000" ]]; then
+            args+=(--base-ref "$BASE_REF")
+          fi
+          python -B tools/run_coverage.py "${args[@]}"
+      - name: Summarize runtime scope and remaining release goals
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f target/coverage/runtime.md ]]; then
+            cat target/coverage/runtime.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-coverage
+          path: |
+            target/coverage/raw.json
+            target/coverage/raw.lcov
+            target/coverage/runtime.json
+            target/coverage/runtime.md
+            target/coverage/collection.json
+            target/coverage/failure.json
+            target/coverage/html/
