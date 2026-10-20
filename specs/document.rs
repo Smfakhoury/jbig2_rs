@@ -50,6 +50,27 @@ pub closed spec fn document_pages(
     document.pages@
 }
 
+pub(crate) open spec fn page_information_count(
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    prefix: nat,
+) -> nat
+    recommends prefix <= segments.len(),
+    decreases prefix,
+{
+    if prefix == 0 {
+        0
+    } else {
+        let header = segments[(prefix - 1) as int].header;
+        page_information_count(segments, (prefix - 1) as nat)
+            + if header.page_association != 0
+                && header.segment_type == crate::segment_header::SegmentType::PageInformation {
+                1nat
+            } else {
+                0nat
+            }
+    }
+}
+
 pub closed spec fn global_segment_count(
     globals: &crate::document::GlobalSegments,
 ) -> nat {

@@ -161,23 +161,60 @@
     }
   ],
   "bindings": {
+    "proofs/production_impl/document.rs": "be644143f4b507fbf7923af1eadeb051ee6192c94aa99e02d792dc495890646f",
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "3eaa609e5600f5286d0a4e7f45ee73aaaee481352e376df8a6ab38c55e3f4ca5",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
+    "specs/document.rs": "2d5bde0d2dd84ab0ccdfb451c971efdb79cc26c72531f312ad1af0b73d11ca34",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
-    "src/document.rs": "4e8a3e2f38e77690358ea835b2c1b46358fc77ff5d800fa99ab760d5a3ffa590",
+    "src/document.rs": "e3055a5df99eb48541bb2f9172ddec7d9acbe6903cd6396df71c175c1c8ffe50",
     "src/file_header.rs": "faa0bfac630fffd59ad855389b2a4cc03fd26f4e1fd6f42c03712865e41f4220",
     "src/generic_region.rs": "b350e8769ddfe5ea8e12fc3c0dc08365b99f966af1fd3a298d75cb65e7971b64",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909",
-    "tests/spec_header.rs": "324fe776f7ffebf4f677854e6a4fc354e72e94fc35c6566d073969b1ad559e79"
+    "tests/spec_header.rs": "2269e2aad63dde5184bd6282e7804446d704bb69864462693acde1880a4af672"
   },
   "definitions": {
+    "document-pages": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "document_pages",
+      "role": "returned public page-vector view"
+    },
+    "document-count": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "document_declared_page_count",
+      "role": "returned optional declared count"
+    },
+    "page-information-count": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "page_information_count",
+      "role": "positive-page-associated PageInformation cardinality over a parsed-segment prefix"
+    },
+    "document-fields": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": ["document_proofs"],
+      "name": "production_document_fields",
+      "role": "expose returned metadata field views"
+    },
+    "page-information-count-step": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": ["document_proofs"],
+      "name": "production_page_information_count_step",
+      "role": "prove the parsed-prefix count recurrence at each collection step"
+    },
     "bit-value": {
       "kind": "spec",
       "file": "specs/readers.rs",
@@ -732,26 +769,80 @@
       "title": "A declared page count agrees with the document's pages",
       "feature": "multiple_pages",
       "runtime": [
-        "document::build_document_info"
+        "document::build_document_info",
+        "document::collect_page_states",
+        "document::collect_page_states_into",
+        "document::finalize_pages"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "document-pages",
+        "document-count",
+        "page-information-count"
+      ],
+      "proof_macros": [
+        "document-fields",
+        "page-information-count-step"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "document::tests::rejects_page_count_mismatch"
+        },
+        {
+          "target": "spec_header",
+          "name": "accepted_document_counts_match_page_declarations_in_both_organizations"
+        },
+        {
+          "target": "spec_header",
+          "name": "inconsistent_declared_counts_report_exact_actual_count"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The body verifies, but its attribute has no functional return-value postcondition for page-count agreement.",
+      "scope_of_formal_result": "On success, returned page-vector length equals the positive-page-associated PageInformation count in the parsed-segment input and any declared count. Collection maintains prefix cardinality; finalization preserves order length. Organization, optional declaration and segment count are preserved.",
       "assumptions": [
-        "Called parsing helpers satisfy their preconditions; a passing test is not a functional proof."
+        "The model starts from parsed segments, not raw bytes. Called helpers satisfy their verified contracts.",
+        "The private collection helper starts with empty vectors; its verified wrapper discharges those preconditions.",
+        "Cardinality does not establish page identity, lifecycle completeness or faithful raw-byte parsing."
       ],
       "gaps": [
-        "Add or identify a postcondition relating accepted metadata to declared and collected page counts."
+        "Prove the raw-byte parser to parsed-segment correspondence and propagate the result to public entry-point contracts.",
+        "Separately establish complete page identity/lifecycle semantics and finish normative/model review."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::build_document_info",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::document_declared_page_count(&info) == declared_page_count",
+            "document_spec::document_pages(&info).len() == document_spec::page_information_count(segments@, segments@.len())",
+            "Some(count) => document_spec::document_pages(&info).len() == count as nat"
+          ]
+        },
+        {
+          "runtime": "document::collect_page_states",
+          "section": "ensures",
+          "tokens": [
+            "result.0@.len() == result.1@.len()",
+            "result.0@.len() == document_spec::page_information_count(segments@, segments@.len())"
+          ]
+        },
+        {
+          "runtime": "document::collect_page_states_into",
+          "section": "ensures",
+          "tokens": [
+            "out.is_ok() ==> final(page_states)@.len() == final(page_order)@.len()",
+            "final(page_states)@.len() == document_spec::page_information_count(segments@, segments@.len())"
+          ]
+        },
+        {
+          "runtime": "document::finalize_pages",
+          "section": "ensures",
+          "tokens": [
+            "Ok(pages) => pages@.len() == page_order@.len()"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {

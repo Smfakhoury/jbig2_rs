@@ -1,6 +1,6 @@
-//! Generated clause-specific header checks for T.88 5.4.2 and D.4.
+//! Generated clause-specific header and document-count checks for T.88 5.4.2 and D.4.
 
-use jbig2_rs::{inspect_file_header, DecodeError, MalformedError, Organization};
+use jbig2_rs::{inspect_file_header, DecodeError, Decoder, MalformedError, Organization};
 
 const SIGNATURE: [u8; 8] = [0x97, 0x4a, 0x42, 0x32, 0x0d, 0x0a, 0x1a, 0x0a];
 
@@ -92,5 +92,105 @@ fn page_count_field_is_unsigned_and_most_significant_first() {
         let parsed = inspect_file_header(&header(1, count)).expect("four-byte count");
         assert_eq!(parsed.page_count(), Some(count));
         assert_eq!(parsed.byte_length(), 13);
+    }
+}
+
+fn document(sequential: bool, declared: Option<u32>, page_numbers: &[u8]) -> Vec<u8> {
+    let flags = u8::from(sequential) | if declared.is_none() { 2 } else { 0 };
+    let mut bytes = header(flags, declared.unwrap_or(0));
+    let mut payloads = Vec::new();
+    let mut number = 0_u32;
+    for &page in page_numbers {
+        let mut payload = [0_u8; 19];
+        payload[..4].copy_from_slice(&8_u32.to_be_bytes());
+        payload[4..8].copy_from_slice(&1_u32.to_be_bytes());
+        for (kind, data) in [(48, payload.as_slice()), (49, &[][..])] {
+            bytes.extend_from_slice(&number.to_be_bytes());
+            bytes.extend_from_slice(&[kind, 0, page]);
+            bytes.extend_from_slice(&u32::try_from(data.len()).unwrap().to_be_bytes());
+            if sequential {
+                bytes.extend_from_slice(data);
+            } else {
+                payloads.extend_from_slice(data);
+            }
+            number += 1;
+        }
+    }
+    bytes.extend_from_slice(&number.to_be_bytes());
+    bytes.extend_from_slice(&[51, 0, 0]);
+    bytes.extend_from_slice(&0_u32.to_be_bytes());
+    bytes.extend_from_slice(&payloads);
+    bytes
+}
+
+#[test]
+fn accepted_document_counts_match_page_declarations_in_both_organizations() {
+    let decoder = Decoder::default();
+    for pages in [&[][..], &[1][..], &[3, 1, 2][..]] {
+        let count = u32::try_from(pages.len()).unwrap();
+        for declared in [None, Some(count)] {
+            for sequential in [false, true] {
+                let bytes = document(sequential, declared, pages);
+                let info = decoder.inspect(&bytes).expect("consistent generated count");
+                assert_eq!(
+                    info.organization(),
+                    if sequential {
+                        Organization::Sequential
+                    } else {
+                        Organization::RandomAccess
+                    }
+                );
+                assert_eq!(info.declared_page_count(), declared);
+                assert_eq!(info.segment_count(), count * 2 + 1);
+                assert_eq!(info.pages().len(), pages.len());
+                for (index, page) in info.pages().iter().enumerate() {
+                    assert_eq!(page.number(), u32::try_from(index + 1).unwrap());
+                    assert_eq!((page.width(), page.height()), (8, 1));
+                }
+                let output = decoder.decode(&bytes).expect("blank pages decode");
+                assert_eq!(output.info(), &info);
+                assert_eq!(output.pages().len(), pages.len());
+                assert_eq!(
+                    decoder
+                        .inspect_reader(&mut std::io::Cursor::new(&bytes))
+                        .expect("reader count"),
+                    info
+                );
+                assert_eq!(decoder.context().inspect(&bytes).unwrap(), info);
+            }
+        }
+    }
+}
+
+#[test]
+fn inconsistent_declared_counts_report_exact_actual_count() {
+    let decoder = Decoder::default();
+    for pages in [&[][..], &[1][..], &[1, 2, 3][..]] {
+        let actual = u32::try_from(pages.len()).unwrap();
+        for declared in [0, 1, 2, 4, u32::MAX] {
+            if declared == actual {
+                continue;
+            }
+            for sequential in [false, true] {
+                let bytes = document(sequential, Some(declared), pages);
+                for result in [
+                    decoder.inspect(&bytes).map(|_| ()),
+                    decoder.decode(&bytes).map(|_| ()),
+                    decoder
+                        .inspect_reader(&mut std::io::Cursor::new(&bytes))
+                        .map(|_| ()),
+                    decoder.context().inspect(&bytes).map(|_| ()),
+                ] {
+                    assert!(
+                        matches!(result,
+                                Err(DecodeError::Malformed(MalformedError::PageCountMismatch {
+                                    declared: reported_declared,
+                                    actual: reported_actual,
+                                })) if reported_declared == declared && reported_actual == actual),
+                        "declared {declared}, actual {actual}, sequential {sequential}: {result:?}"
+                    );
+                }
+            }
+        }
     }
 }
