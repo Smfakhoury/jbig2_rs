@@ -74,6 +74,17 @@ the executable was built from a pinned source revision. The committed
 `results.json` records the versioned system comparison, while
 `pinned-poppler-results.json` records the exact approved source revision.
 
+## Runtime coverage comparisons
+
+The Linux coverage workflow always enforces the reviewed global and per-file
+baseline. Changed-line coverage is informational and compares with the pull
+request's base commit or the push event's previous commit. A full checkout
+may not contain that previous commit after a branch history rewrite, so the
+workflow fetches the exact comparison commit from `origin` when it is missing.
+If that fetch fails, the job fails rather than skipping the comparison or
+substituting another revision. An initial push without a previous commit still
+runs all baseline coverage checks without a changed-line comparison.
+
 ## Bounded fuzz campaigns and replay
 
 The Linux runner retains all seven pinned cargo-fuzz targets:
