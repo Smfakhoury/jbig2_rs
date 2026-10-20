@@ -23,6 +23,7 @@
         "scope_version": {"const": 1},
         "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
         "source_sha256": {"$ref": "#/$defs/sha256"},
+        "test_source_sha256": {"$ref": "#/$defs/sha256"},
         "policy": {"$ref": "#/$defs/nonempty"},
         "toolchain": {
           "type": "object", "required": ["rust_toolchain", "cargo_llvm_cov_version", "component"]

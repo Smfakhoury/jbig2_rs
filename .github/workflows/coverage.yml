@@ -34,6 +34,11 @@ jobs:
             args+=(--base-ref "$BASE_REF")
           fi
           python -B tools/run_coverage.py "${args[@]}"
+      - name: Check critical public-API mutation sensitivity
+        run: >-
+          python -B tools/check_contract_mutations.py
+          --toolchain nightly-2026-10-12
+          --output target/coverage/mutations.json
       - name: Summarize runtime scope and remaining release goals
         if: always()
         shell: bash
@@ -52,4 +57,5 @@ jobs:
             target/coverage/runtime.md
             target/coverage/collection.json
             target/coverage/failure.json
+            target/coverage/mutations.json
             target/coverage/html/
