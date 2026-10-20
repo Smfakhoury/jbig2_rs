@@ -101,7 +101,15 @@ pub(crate) struct RetentionFlags {
 }
 
 impl RetentionFlags {
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(flags) =>
+                flags.values@.len() == count as nat + 1
+                && crate::spec::segments::retention_values_match(flags.values@, bytes@),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn from_bytes(count: u32, bytes: &[u8]) -> Result<Self, DecodeError> {
         let value_count = count
             .checked_add(1)
@@ -296,7 +304,12 @@ fn read_referred_segments_into(
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec())]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires old(values)@.len() == 0,
+    ensures
+        out.is_ok() ==> final(values)@.len() == value_count as nat,
+        out.is_ok() ==> crate::spec::segments::retention_values_match(final(values)@, bytes@),
+))]
 fn fill_retention_values(
     values: &mut Vec<u8>,
     value_count: u32,
@@ -306,10 +319,12 @@ fn fill_retention_values(
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             index <= value_count,
+            values@.len() == index as nat,
+            crate::spec::segments::retention_values_match(values@, bytes@),
         decreases value_count - index,
     ))]
     while index < value_count {
-        values.push(retention_value(bytes, index)?);
+        values.push(read_retention_flag(bytes, index)?);
         index += 1;
     }
     Ok(())
@@ -450,17 +465,13 @@ fn require_lower_reference(segment: u32, referred: u32) -> Result<(), MalformedE
             Err(_) => true,
         },
 ))]
-fn retention_value(bytes: &[u8], index: u32) -> Result<u8, MalformedError> {
-    let Ok(byte_group) = usize::try_from(index / 8) else {
+fn read_retention_flag(bytes: &[u8], index: u32) -> Result<u8, MalformedError> {
+    let Ok(byte_index) = usize::try_from(index / 8) else {
         return Err(MalformedError::IntegerOverflow);
     };
-    let Some(after_group) = bytes.len().checked_sub(byte_group) else {
-        return Err(MalformedError::IntegerOverflow);
-    };
-    let Some(byte_index) = after_group.checked_sub(1) else {
-        return Err(MalformedError::IntegerOverflow);
-    };
-    let byte = bytes[byte_index];
+    let byte = *bytes
+        .get(byte_index)
+        .ok_or(MalformedError::IntegerOverflow)?;
     let result = match index % 8 {
         0 => byte & 1,
         1 => (byte >> 1) & 1,
@@ -473,9 +484,7 @@ fn retention_value(bytes: &[u8], index: u32) -> Result<u8, MalformedError> {
     };
     #[cfg(verus_keep_ghost)]
     proof! {
-        assert(byte_group as nat == (index / 8) as nat);
-        assert(byte_index as nat == bytes@.len() - (index / 8) as nat - 1);
-        assert(result == crate::spec::segments::retention_bit(bytes@, index as nat));
+        assert(byte_index as nat == (index / 8) as nat);
     }
     Ok(result)
 }
@@ -568,8 +577,8 @@ fn validate_unused_retention_bits(bit_count: u32, bytes: &[u8]) -> Result<(), Ma
         7 => 0x007F,
         _ => return Err(MalformedError::IntegerOverflow),
     };
-    let first = bytes.first().ok_or(MalformedError::IntegerOverflow)?;
-    if u16::from(*first) & !used_mask != 0 {
+    let last = bytes.last().ok_or(MalformedError::IntegerOverflow)?;
+    if u16::from(*last) & !used_mask != 0 {
         return Err(MalformedError::NonZeroUnusedRetentionFlags);
     }
     Ok(())
@@ -581,6 +590,331 @@ mod tests {
 
     fn parse(input: &[u8]) -> Result<SegmentHeader, DecodeError> {
         parse_segment_header(&mut ByteReader::new(input), &Limits::default())
+    }
+
+    const DEFINED_TYPES: [(u8, SegmentType); 22] = [
+        (0, SegmentType::SymbolDictionary),
+        (4, SegmentType::IntermediateTextRegion),
+        (6, SegmentType::ImmediateTextRegion),
+        (7, SegmentType::ImmediateLosslessTextRegion),
+        (16, SegmentType::PatternDictionary),
+        (20, SegmentType::IntermediateHalftoneRegion),
+        (22, SegmentType::ImmediateHalftoneRegion),
+        (23, SegmentType::ImmediateLosslessHalftoneRegion),
+        (36, SegmentType::IntermediateGenericRegion),
+        (38, SegmentType::ImmediateGenericRegion),
+        (39, SegmentType::ImmediateLosslessGenericRegion),
+        (40, SegmentType::IntermediateGenericRefinementRegion),
+        (42, SegmentType::ImmediateGenericRefinementRegion),
+        (43, SegmentType::ImmediateLosslessGenericRefinementRegion),
+        (48, SegmentType::PageInformation),
+        (49, SegmentType::EndOfPage),
+        (50, SegmentType::EndOfStripe),
+        (51, SegmentType::EndOfFile),
+        (52, SegmentType::Profiles),
+        (53, SegmentType::Tables),
+        (54, SegmentType::ColourPalette),
+        (62, SegmentType::Extension),
+    ];
+
+    fn generated_header(
+        number: u32,
+        flags: u8,
+        page: u32,
+        references: &[u32],
+        retain: &[bool],
+        length: u32,
+    ) -> Vec<u8> {
+        assert_eq!(retain.len(), references.len() + 1);
+        let count = u32::try_from(references.len()).unwrap();
+        let mut input = number.to_be_bytes().to_vec();
+        input.push(flags);
+        if count <= 4 {
+            let bits = retain
+                .iter()
+                .enumerate()
+                .fold(0_u8, |bits, (index, value)| {
+                    bits | (u8::from(*value) << index)
+                });
+            input.push((u8::try_from(count).unwrap() << 5) | bits);
+        } else {
+            input.extend_from_slice(&(0xe000_0000 | count).to_be_bytes());
+            let mut bytes = vec![0_u8; retain.len().div_ceil(8)];
+            for (index, value) in retain.iter().enumerate() {
+                bytes[index / 8] |= u8::from(*value) << (index % 8);
+            }
+            input.extend_from_slice(&bytes);
+        }
+        for referred in references {
+            if number <= 256 {
+                input.push(u8::try_from(*referred).unwrap());
+            } else if number <= 65_536 {
+                input.extend_from_slice(&u16::try_from(*referred).unwrap().to_be_bytes());
+            } else {
+                input.extend_from_slice(&referred.to_be_bytes());
+            }
+        }
+        if flags & 0x40 == 0 {
+            input.push(u8::try_from(page).unwrap());
+        } else {
+            input.extend_from_slice(&page.to_be_bytes());
+        }
+        input.extend_from_slice(&length.to_be_bytes());
+        input
+    }
+
+    #[test]
+    fn every_flag_byte_has_exact_type_page_and_deferred_fields() {
+        for flags in 0..=u8::MAX {
+            let page = if flags & 0x40 == 0 { 255 } else { 0x0102_0304 };
+            let input = generated_header(u32::MAX, flags, page, &[], &[true], 0x1020_3040);
+            let expected = DEFINED_TYPES.iter().find(|(code, _)| *code == flags & 0x3f);
+            let Some((_, kind)) = expected else {
+                assert!(matches!(parse(&input),
+                    Err(DecodeError::Malformed(MalformedError::ReservedSegmentType(code)))
+                        if code == flags & 0x3f));
+                continue;
+            };
+            let header = parse(&input).unwrap();
+            assert_eq!(header.number, u32::MAX);
+            assert_eq!(header.segment_type, *kind);
+            assert_eq!(header.page_association, page);
+            assert_eq!(header.deferred_non_retain, flags & 0x80 != 0);
+            assert_eq!(header.byte_length, input.len());
+            assert_eq!(header.data_length, Some(0x1020_3040));
+            assert!(header.retention_flags.retain_this_segment());
+        }
+        for code in 64..=u8::MAX {
+            assert!(matches!(SegmentType::from_number(code),
+                Err(MalformedError::ReservedSegmentType(value)) if value == code));
+        }
+    }
+
+    #[test]
+    fn every_short_count_byte_obeys_count_and_unused_bit_rules() {
+        for first in 0..=u8::MAX {
+            let count = first >> 5;
+            let result = validate_short_count(first);
+            if count > 4 {
+                assert!(matches!(result,
+                    Err(MalformedError::InvalidReferredToCountCode(value)) if value == count));
+            } else {
+                let allowed = (1_u16 << (count + 1)) - 1;
+                if u16::from(first & 0x1f) & !allowed != 0 {
+                    assert!(matches!(
+                        result,
+                        Err(MalformedError::NonZeroUnusedRetentionFlags)
+                    ));
+                } else {
+                    assert_eq!(result.unwrap(), u32::from(count));
+                }
+            }
+        }
+        for code in 0..=u8::MAX {
+            let result = validate_count_code(code);
+            match code {
+                0..=4 | 7 => assert!(result.is_ok()),
+                5 | 6 => assert!(matches!(result,
+                    Err(MalformedError::InvalidReferredToCountCode(value)) if value == code)),
+                _ => assert!(matches!(result, Err(MalformedError::IntegerOverflow))),
+            }
+        }
+    }
+
+    #[test]
+    fn reference_width_boundaries_and_retention_groups_round_trip() {
+        for number in [256_u32, 257, 65_536, 65_537, u32::MAX] {
+            for count in (0..=17).chain([31, 32, 33, 255, 256, 257]) {
+                if count > number {
+                    continue;
+                }
+                let references: Vec<u32> = (0..count).collect();
+                let retain: Vec<bool> = (0..=count).map(|index| index % 3 == 1).collect();
+                for flags in [0_u8, 0x40] {
+                    let page = if flags == 0 { 17 } else { 0xf102_0304 };
+                    let input = generated_header(number, flags, page, &references, &retain, 0);
+                    let mut framed = vec![0xaa; 3];
+                    framed.extend_from_slice(&input);
+                    framed.extend_from_slice(&[0x55; 2]);
+                    let mut reader = ByteReader::new(&framed);
+                    reader.read_bytes(3).unwrap();
+                    let header = parse_segment_header(&mut reader, &Limits::default()).unwrap();
+                    assert_eq!(header.referred_segments, references);
+                    assert_eq!(header.retention_flags.retain_this_segment(), retain[0]);
+                    for index in 0..references.len() {
+                        assert_eq!(
+                            header.retention_flags.retain_referred_segment(index),
+                            Some(retain[index + 1])
+                        );
+                    }
+                    assert_eq!(
+                        header
+                            .retention_flags
+                            .retain_referred_segment(references.len()),
+                        None
+                    );
+                    assert_eq!(
+                        header.retention_flags.retain_referred_segment(usize::MAX),
+                        None
+                    );
+                    assert_eq!(header.page_association, page);
+                    assert_eq!(header.byte_length, input.len());
+                    assert_eq!(reader.position(), input.len() + 3);
+                    assert_eq!(reader.remaining(), 2);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn every_two_byte_retention_mask_matches_forward_lsb_indexing() {
+        for first in 0..=u8::MAX {
+            for second in 0..=u8::MAX {
+                let bytes = [first, second];
+                let flags = RetentionFlags::from_bytes(15, &bytes).unwrap();
+                assert_eq!(flags.values.len(), 16);
+                for index in 0..16 {
+                    assert_eq!(flags.values[index], (bytes[index / 8] >> (index % 8)) & 1);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn unused_long_retention_bits_validate_only_the_last_byte() {
+        for bit_count in 1_u32..=40 {
+            let used = bit_count % 8;
+            let allowed = if used == 0 { 255 } else { (1_u16 << used) - 1 };
+            for value in 0..=u8::MAX {
+                let mut bytes = vec![0xff; usize::try_from(bit_count.div_ceil(8)).unwrap()];
+                *bytes.last_mut().unwrap() = value;
+                let result = validate_unused_retention_bits(bit_count, &bytes);
+                if u16::from(value) & !allowed == 0 {
+                    assert!(result.is_ok());
+                } else {
+                    assert!(matches!(
+                        result,
+                        Err(MalformedError::NonZeroUnusedRetentionFlags)
+                    ));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn every_generated_header_prefix_is_a_typed_truncation() {
+        for number in [256_u32, 257, 65_537] {
+            for count in [0, 4, 5, 8, 16] {
+                let references: Vec<u32> = (0..count).collect();
+                let retain = vec![true; references.len() + 1];
+                for flags in [0_u8, 0x40] {
+                    let input = generated_header(number, flags, 1, &references, &retain, 0);
+                    for length in 0..input.len() {
+                        let mut reader = ByteReader::new(&input[..length]);
+                        let result = parse_segment_header(&mut reader, &Limits::default());
+                        assert!(matches!(result,
+                            Err(DecodeError::Malformed(MalformedError::UnexpectedEof {
+                                offset, needed, remaining,
+                            })) if offset == u64::try_from(reader.position()).unwrap()
+                                && remaining == u64::try_from(length - reader.position()).unwrap()
+                                && needed > remaining),
+                            "segment {number}, count {count}, flags {flags}, prefix {length}: {result:?}");
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn count_and_length_boundaries_preserve_exact_error_values() {
+        for count in 0..=4 {
+            assert!(matches!(validate_long_count(0xe000_0000 | count),
+                Err(MalformedError::NonCanonicalReferredToCount(value)) if value == count));
+        }
+        for count in [5, 7, 8, 15, 16, 0x1fff_ffff] {
+            assert_eq!(validate_long_count(0xe000_0000 | count).unwrap(), count);
+            assert_eq!(
+                retention_byte_count(count).unwrap(),
+                usize::try_from((count + 8) / 8).unwrap()
+            );
+        }
+        assert!(matches!(
+            RetentionFlags::from_bytes(u32::MAX, &[]),
+            Err(DecodeError::Malformed(MalformedError::IntegerOverflow))
+        ));
+        assert!(matches!(
+            read_retention_flag(&[], 0),
+            Err(MalformedError::IntegerOverflow)
+        ));
+        assert!(matches!(
+            read_retention_flag(&[1], 8),
+            Err(MalformedError::IntegerOverflow)
+        ));
+        assert!(matches!(
+            validate_unused_retention_bits(1, &[]),
+            Err(MalformedError::IntegerOverflow)
+        ));
+        assert!(matches!(
+            header_byte_length(2, 1),
+            Err(MalformedError::IntegerOverflow)
+        ));
+        assert_eq!(header_byte_length(7, 7).unwrap(), 0);
+        for (code, kind) in DEFINED_TYPES {
+            for length in [0, 1, u32::MAX - 1] {
+                assert_eq!(decode_data_length(kind, length).unwrap(), Some(length));
+            }
+            let result = decode_data_length(kind, u32::MAX);
+            if code == 38 {
+                assert_eq!(result.unwrap(), None);
+            } else {
+                assert!(
+                    matches!(result, Err(MalformedError::InvalidUnknownSegmentLength(value)) if value == code)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn reference_numbers_are_strictly_lower_at_every_width_boundary() {
+        for segment in [1_u32, 256, 257, 65_536, 65_537, u32::MAX] {
+            assert!(require_lower_reference(segment, 0).is_ok());
+            assert!(require_lower_reference(segment, segment - 1).is_ok());
+        }
+        for (segment, referred) in [
+            (0, 0),
+            (0, 1),
+            (1, 1),
+            (1, 2),
+            (256, 256),
+            (257, 257),
+            (65_536, 65_536),
+            (65_537, u32::MAX),
+            (u32::MAX, u32::MAX),
+        ] {
+            assert!(matches!(require_lower_reference(segment, referred),
+                Err(MalformedError::InvalidReferredSegmentNumber {
+                    segment: actual_segment, referred: actual_referred,
+                }) if actual_segment == segment && actual_referred == referred));
+        }
+    }
+
+    #[test]
+    fn generated_reference_limits_fail_before_reading_references() {
+        let limits = Limits {
+            max_references_per_segment: 4,
+            ..Limits::default()
+        };
+        for count in [5_u32, 8, 0x1fff_ffff] {
+            let mut input = 65_537_u32.to_be_bytes().to_vec();
+            input.push(0);
+            input.extend_from_slice(&(0xe000_0000 | count).to_be_bytes());
+            let mut reader = ByteReader::new(&input);
+            assert!(matches!(parse_segment_header(&mut reader, &limits),
+                Err(DecodeError::LimitExceeded(LimitExceeded {
+                    kind: LimitKind::ReferencesPerSegment, limit: 4, actual,
+                })) if actual == u64::from(count)));
+            assert_eq!(reader.position(), input.len());
+        }
     }
 
     #[test]
@@ -608,13 +942,40 @@ mod tests {
     }
 
     #[test]
+    fn long_retention_flags_follow_wire_byte_order() {
+        let flags = RetentionFlags::from_bytes(8, &[0x05, 0x01]).unwrap();
+        assert_eq!(flags.values, [1, 0, 1, 0, 0, 0, 0, 0, 1]);
+        assert!(flags.retain_this_segment());
+        assert_eq!(flags.retain_referred_segment(1), Some(true));
+        assert_eq!(flags.retain_referred_segment(7), Some(true));
+        assert_eq!(flags.retain_referred_segment(8), None);
+    }
+
+    #[test]
+    fn long_retention_unused_bits_are_in_the_final_wire_byte() {
+        assert!(validate_unused_retention_bits(9, &[0xff, 0x01]).is_ok());
+        assert!(matches!(
+            validate_unused_retention_bits(9, &[0x01, 0xff]),
+            Err(MalformedError::NonZeroUnusedRetentionFlags)
+        ));
+    }
+
+    #[test]
     fn parses_long_form_header() {
-        let input = [
+        let mut input = [
             0x00, 0x00, 0x02, 0x34, 0x40, 0xE0, 0x00, 0x00, 0x09, 0x02, 0xFD, 0x01, 0x00, 0x00,
             0x02, 0x00, 0x1E, 0x00, 0x05, 0x02, 0x00, 0x02, 0x01, 0x02, 0x02, 0x02, 0x03, 0x02,
             0x04, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00,
         ];
-        let header = parse(&input).expect("header is valid");
+        // The worked example conflicts with 7.2.4; follow the explicit field rules.
+        assert!(matches!(
+            parse(&input),
+            Err(DecodeError::Malformed(
+                MalformedError::NonZeroUnusedRetentionFlags
+            ))
+        ));
+        input.swap(9, 10);
+        let header = parse(&input).expect("field-order correction is valid");
         assert_eq!(header.number, 564);
         assert_eq!(header.segment_type, SegmentType::SymbolDictionary);
         assert_eq!(

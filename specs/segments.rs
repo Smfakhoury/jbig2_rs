@@ -56,7 +56,7 @@ pub(crate) open spec fn short_count_valid(first: u8) -> bool {
 pub(crate) open spec fn retention_bit(bytes: Seq<u8>, index: nat) -> u8
     recommends index / 8 < bytes.len(),
 {
-    let byte = bytes[(bytes.len() - index / 8 - 1) as int];
+    let byte = bytes[(index / 8) as int];
     if index % 8 == 0 { byte & 1 }
     else if index % 8 == 1 { (byte >> 1) & 1 }
     else if index % 8 == 2 { (byte >> 2) & 1 }
@@ -65,6 +65,12 @@ pub(crate) open spec fn retention_bit(bytes: Seq<u8>, index: nat) -> u8
     else if index % 8 == 5 { (byte >> 5) & 1 }
     else if index % 8 == 6 { (byte >> 6) & 1 }
     else { (byte >> 7) & 1 }
+}
+
+pub(crate) open spec fn retention_values_match(values: Seq<u8>, bytes: Seq<u8>) -> bool {
+    forall|index: int| 0 <= index < values.len() ==>
+        index / 8 < bytes.len()
+        && values[index] == retention_bit(bytes, index as nat)
 }
 
 pub(crate) open spec fn unused_retention_bits_zero(
@@ -84,7 +90,7 @@ pub(crate) open spec fn unused_retention_bits_zero(
     };
     used == 0
         || (bytes.len() > 0
-            && ((bytes[0] as u16) & !mask) == 0u16)
+            && ((bytes[bytes.len() - 1] as u16) & !mask) == 0u16)
 }
 
 pub(crate) open spec fn combination_operator(

@@ -2,6 +2,15 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-HEADER-RETENTION-WIDTH-ROUNDTRIP",
+      "transformation": "encode generated references across short/long counts, reference-width boundaries and both page field sizes",
+      "invariant": "exact reference values, forward wire-order flags, page values, header length and payload boundary",
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::reference_width_boundaries_and_retention_groups_round_trip"},
+        {"target": "lib", "name": "segment_header::tests::every_two_byte_retention_mask_matches_forward_lsb_indexing"}
+      ]
+    },
+    {
       "id": "META-PUBLIC-READER-CHUNKS",
       "transformation": "slice input to reader chunks of 1, 3, or 8192 bytes and owned output to page sink",
       "invariant": "document information, page order, dimensions, and exact bitmap bytes",

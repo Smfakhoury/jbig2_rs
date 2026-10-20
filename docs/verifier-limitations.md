@@ -164,6 +164,20 @@ sensitivity harness checks six compiled counterexamples with weaker controls.
 Zero initialization remains a foundation for, not a completed proof of,
 first-row caller/SLTP behavior.
 
+Segment retention now uses forward wire-byte order and validates unused bits
+in the last flag byte, following the explicit 7.2.4 field definitions.
+Flag construction exports exact length and the complete supplied-byte relation;
+the materializer's verified prefix invariant connects each appended flag to
+the model. The previous reverse traversal and model have been corrected
+together. Three compiled semantic controls distinguish those guarantees from
+bounds/length preservation alone.
+
+The 7.2.8 worked example conflicts with these field definitions. Its original
+fixture is preserved as a documented strict rejection under this interpretation,
+not silently rewritten or accepted through an ambiguous fallback. Normative
+owner adjudication, raw parser correspondence and full retention lifecycle
+proofs remain open; no full conformance claim is added.
+
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
 probability-state preservation contracts.

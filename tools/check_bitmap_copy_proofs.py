@@ -2,14 +2,12 @@
 """Check bitmap copying, zero initialization and padding semantic contracts."""
 
 import argparse
-import hashlib
 import json
 import subprocess
 import sys
 from pathlib import Path
 
-from check_distribution import run
-from proof_sensitivity import proof_workspace, replace_once, selected_proof
+from proof_sensitivity import check_semantic_cases, replace_once, weakened_contract
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -82,7 +80,7 @@ def mutated_copy(source: str, case: dict) -> str:
 
 
 def weaker_contract(source: str, case: dict) -> str:
-    return replace_once(source, case["control"], "")
+    return weakened_contract(source, case)
 
 
 def check_bitmap_copy_proofs(executable: Path) -> dict:
@@ -91,47 +89,10 @@ def check_bitmap_copy_proofs(executable: Path) -> dict:
         "proofs/shared/bitmap.rs", "proofs/production_impl/bitmap.rs",
         "proofs/production_impl/generic_region.rs",
     )
-    sources = {name: (ROOT / name).read_bytes() for name in files}
-    results = []
-    with proof_workspace(ROOT, executable, "jbig2-bitmap-proof-") as (
-        directory, environment, expected, rust,
-    ):
-        for case in CASES:
-            path = directory / case["file"]
-            original = path.read_text(encoding="utf-8")
-            baseline = selected_proof(
-                executable, directory, environment, False, case["module"], case["function"],
-            )
-            source = mutated_copy(original, case)
-            path.write_text(source, encoding="utf-8")
-            run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
-                directory, environment, capture=True)
-            rejected = selected_proof(
-                executable, directory, environment, True, case["module"], case["function"],
-            )
-            path.write_text(weaker_contract(source, case), encoding="utf-8")
-            control = selected_proof(
-                executable, directory, environment, False, case["module"], case["function"],
-            )
-            results.append({
-                "id": case["id"], "function": case["module"] + "::" + case["function"],
-                "normal_rust_compiles": True,
-                "strong_contract": "rejected", "weaker_control": "accepted",
-                "strong_verifier_errors": rejected["errors"],
-                "control_verifier_errors": control["errors"],
-                "baseline_selected_verification": baseline,
-            })
-            path.write_text(original, encoding="utf-8")
-    if any((ROOT / name).read_bytes() != data for name, data in sources.items()):
-        raise ValueError("production source changed during bitmap sensitivity checks")
-    return {
-        "schema_version": 2, "status": "passed", "verus_version": expected,
-        "scope": "Selected bitmap materialization proofs only; whole-crate verification is separate",
-        "production_sources_modified": False, "counterexamples": results,
-        "source_bindings": {
-            name: hashlib.sha256(data).hexdigest() for name, data in sources.items()
-        },
-    }
+    return check_semantic_cases(
+        ROOT, executable, CASES, files, "jbig2-bitmap-proof-",
+        "Selected bitmap materialization proofs only; whole-crate verification is separate",
+    )
 
 
 def main() -> int:

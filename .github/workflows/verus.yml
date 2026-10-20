@@ -72,6 +72,11 @@ jobs:
           python -B tools/check_bitmap_copy_proofs.py
           --verus-executable verus-x86-linux/verus
           --output target/traceability/bitmap-copy-proof-sensitivity.json
+      - name: Check segment retention proof semantic sensitivity
+        run: >-
+          python -B tools/check_retention_proofs.py
+          --verus-executable verus-x86-linux/verus
+          --output target/traceability/retention-proof-sensitivity.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
