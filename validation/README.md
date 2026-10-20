@@ -35,6 +35,45 @@ Each decoder invocation has a 60-second timeout, configurable with
 unresolved failures exit nonzero. Reviewed rejections are reported separately
 from exact-output passes and do not establish full conformance.
 
+## Generated base/head performance comparison
+
+```text
+python -B tools/run_performance.py --base-ref origin/main \
+  --output-dir target/performance-comparison
+python -B tools/check_performance_controls.py \
+  --output-dir target/performance-controls
+```
+
+The same head-side driver, generated fixtures and pinned compiler are linked
+against independently built base/head release libraries. Three or more paired
+runs alternate execution order on the same CPU. Every returned bitmap byte,
+dimension and page number is checked against the generated expectation; work
+guard-rejection and late-truncation errors are checked explicitly. Validation, output
+hashing and owned-result destruction are outside the measured decode call.
+Raw samples reproduce the upper median and nearest-rank p95.
+
+The public corpus currently covers white/transition-heavy MMR, multiple pages,
+an exact input-work guard rejection and late malformed input. These are not
+normative vectors or a diverse PDF corpus. The shared fixture is also used by
+the old smoke example and optional oracle harness; the shared spread formula
+retains the existing three-percent stability policy.
+
+Hosted timing is **informational**. Unstable measurements are inconclusive,
+never a latency pass. The existing delegated twenty-percent median policy is
+reported; p95 remains informational. Local `--enforce-timing` rejects a stable
+median regression or an inconclusive comparison, but the hosted workflow
+deliberately does not enable it. Proposed five-percent median/ten-percent p95
+release thresholds still require owner ratification and a dedicated runner.
+
+The isolated control adds a real decoder delay, checks that timing enforcement
+does not accept it, then shortens packed output and requires correctness
+validation to fail. A noisy slowdown may be classified inconclusive, not passed.
+No production source is modified. Allocation counts, allocated peak bytes,
+per-case RSS, arithmetic/text/refinement/halftone cases and representative PDFs
+remain unmeasured P09 gaps. No aggregate speed or release-performance claim is
+made from this lane. Missing/invalid samples, mismatched outputs and build
+failures always fail, with reports/logs uploaded even when validation fails.
+
 The gate regression tests use generated fixtures, not ITU assets:
 
 ```text

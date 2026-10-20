@@ -1,0 +1,48 @@
+name: Generated performance comparison
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: dtolnay/rust-toolchain@1.89.0
+      - name: Validate real slowdown and exact-output controls
+        run: python -B tools/check_performance_controls.py --output-dir target/performance-controls
+      - name: Compare generated outputs and informational same-host timings
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: >-
+          python -B tools/run_performance.py
+          --base-ref "$BASE_REF"
+          --output-dir target/performance-comparison
+      - name: Summarize correctness and informational timing scope
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f target/performance-comparison/report.md ]]; then
+            cat target/performance-comparison/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: generated-performance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/performance-comparison/report.json
+            target/performance-comparison/*.json
+            target/performance-comparison/*.log
+            target/performance-comparison/report.md
+            target/performance-controls/
