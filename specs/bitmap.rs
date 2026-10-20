@@ -116,6 +116,29 @@ pub open spec fn storage_valid(bitmap: &crate::bitmap::Bitmap) -> bool {
                 * (crate::views::bitmap_height(bitmap) as nat)
 }
 
+pub open spec fn zeroed_storage(bitmap: &crate::bitmap::Bitmap) -> bool {
+    forall|index: int| 0 <= index < crate::views::bitmap_data(bitmap).len() ==>
+        crate::views::bitmap_data(bitmap)[index] == 0
+}
+
+pub open spec fn prefix_copy_result(
+    before: &crate::bitmap::Bitmap,
+    after: &crate::bitmap::Bitmap,
+    source: &crate::bitmap::Bitmap,
+    count: usize,
+) -> bool {
+    &&& crate::views::bitmap_width(after) == crate::views::bitmap_width(before)
+    &&& crate::views::bitmap_height(after) == crate::views::bitmap_height(before)
+    &&& crate::views::bitmap_stride(after) == crate::views::bitmap_stride(before)
+    &&& crate::views::bitmap_data(after).len() == crate::views::bitmap_data(before).len()
+    &&& forall|index: int| 0 <= index < crate::views::bitmap_data(before).len() ==>
+        crate::views::bitmap_data(after)[index] == if index < count {
+            crate::views::bitmap_data(source)[index]
+        } else {
+            crate::views::bitmap_data(before)[index]
+        }
+}
+
 pub open spec fn row_copy_result(
     before: &crate::bitmap::Bitmap,
     after: &crate::bitmap::Bitmap,

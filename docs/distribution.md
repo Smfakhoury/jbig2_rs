@@ -73,6 +73,6 @@ archive hashes are not expected to match across toolchains.
 
 Passing distribution checks establishes that the ordinary crate is independent
 of repository proof files and tools. It does not establish full JBIG2
-conformance or close the 12 runtime/proof divergences tracked in
+conformance or close the 10 runtime/proof divergences tracked in
 [verifier-limitations.md](verifier-limitations.md). Those remain separate,
 release-blocking P05 work.

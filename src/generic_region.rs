@@ -5221,7 +5221,12 @@ fn copy_bitmap_row(
         Ok(bitmap) =>
             crate::spec::bitmap::storage_valid(&bitmap)
             && bitmap.width == decoded.width
-            && bitmap.height == nominal_height,
+            && bitmap.height == nominal_height
+            && forall|index: int| 0 <= index < crate::views::bitmap_data(&bitmap).len() ==>
+                crate::views::bitmap_data(&bitmap)[index]
+                    == if index < crate::views::bitmap_data(&decoded).len() {
+                        crate::views::bitmap_data(&decoded)[index]
+                    } else { 0u8 },
         Err(_) => true,
     },
 ))]
@@ -5244,6 +5249,7 @@ fn pad_bitmap_height(
     proof! {
         crate::views::bitmap_fields(&padded);
         reveal(crate::spec::bitmap::storage_valid);
+        reveal(crate::spec::bitmap::zeroed_storage);
     }
     let byte_count = decoded.data.len();
     if byte_count > padded.data.len() {
@@ -5253,7 +5259,9 @@ fn pad_bitmap_height(
     #[cfg(verus_keep_ghost)]
     proof! {
         crate::views::bitmap_fields(&padded);
+        crate::views::bitmap_fields(&decoded);
         reveal(crate::spec::bitmap::storage_valid);
+        reveal(crate::spec::bitmap::prefix_copy_result);
     }
     Ok(padded)
 }
@@ -5632,6 +5640,52 @@ mod tests {
         assert_eq!(contexts, vec![0x0195]);
         assert_eq!(bitmap.pixel(0, 0), Some(false));
         assert_eq!(bitmap.pixel(1, 0), Some(false));
+    }
+
+    #[test]
+    fn height_padding_preserves_decoded_bytes_and_zeroes_new_rows() {
+        let limits = Limits::default();
+        for width in [0, 1, 7, 8, 9, 63, 64, 65] {
+            for height in [0, 1, 3] {
+                let mut decoded = Bitmap::blank(width, height, &limits).unwrap();
+                for (index, byte) in decoded.data.iter_mut().enumerate() {
+                    *byte = u8::try_from(index % 251).unwrap().wrapping_add(17);
+                }
+                for nominal in [height, height + 1, height + 3] {
+                    let result = pad_bitmap_height(decoded.clone(), nominal, &limits).unwrap();
+                    assert_eq!(
+                        (result.width(), result.height(), result.stride()),
+                        (width, nominal, decoded.stride())
+                    );
+                    assert_eq!(&result.bytes()[..decoded.data.len()], decoded.bytes());
+                    assert!(result.bytes()[decoded.data.len()..]
+                        .iter()
+                        .all(|byte| *byte == 0));
+                }
+            }
+        }
+        let decoded = Bitmap::blank(8, 2, &limits).unwrap();
+        assert!(matches!(
+            pad_bitmap_height(decoded.clone(), 1, &limits),
+            Err(GenericRegionError::RowCountMismatch {
+                expected: 1,
+                actual: 2
+            })
+        ));
+        let restricted = Limits {
+            max_height: 2,
+            ..limits
+        };
+        assert!(matches!(
+            pad_bitmap_height(decoded, 3, &restricted),
+            Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+                crate::LimitExceeded {
+                    kind: crate::LimitKind::Height,
+                    limit: 2,
+                    actual: 3,
+                }
+            )))
+        ));
     }
 
     #[test]

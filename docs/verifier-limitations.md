@@ -1,9 +1,9 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1145 obligations with zero errors and zero native
+Pinned Verus verifies 1140 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 599 directly verified functions, 24 reviewed verifier limitations, 23 audited
-forwarders and 11 explicitly reviewed runtime/proof divergences.
+forwarders and 10 explicitly reviewed runtime/proof divergences.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -11,7 +11,7 @@ evidence of exact-source coverage. Reusable-context paths and their real
 scratch handling are now directly verified; a mutable closure was extracted
 into an ordinary helper with the same success/error cleanup behavior.
 
-The remaining divergences include bitmap copy/composition dispatch, MMR span
+The remaining divergences include bitmap composition dispatch, MMR span
 filling and capacity-based memory accounting, batched text placement, and small
 conversion/operator bridges. Even where an optimized helper separately
 verifies, a different ghost wrapper is not an exact-source proof of the executing
@@ -147,6 +147,22 @@ semantic mutants distinguish byte contents/frame preservation from storage
 safety alone. Fewer obligations reflect removed loops/duplicate proof code,
 not weaker production accounting. Caller SLTP timing/loop semantics, the
 first-row zero edge and normative review remain open.
+
+Bitmap prefix copying now also executes the same verified packed-byte helper,
+with both the ghost scalar and manual chunked prefix helpers deleted. On
+success, every prefix byte equals the source and the destination suffix is
+unchanged. Out-of-range counts return the exact overflow error without mutating
+the destination. This is an implementation contract, not a newly reviewed
+standalone T.88 requirement.
+
+Blank bitmap construction and false-filled construction now prove zeroed
+storage. Height padding propagates the exact decoded prefix and zeroes all
+added stored bytes. These statements are proved, not inferred from storage
+validity, and are tested with nonzero input, differing dimensions, zero sizes,
+partial rows, limit errors and invalid counts. The generalized bitmap proof
+sensitivity harness checks six compiled counterexamples with weaker controls.
+Zero initialization remains a foundation for, not a completed proof of,
+first-row caller/SLTP behavior.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and

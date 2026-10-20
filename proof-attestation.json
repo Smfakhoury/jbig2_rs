@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "cb1913926fa862e8659a617f06839ae7e8846d40",
+  "source_revision": "c68fdf0828eff81279da0da58a77bc8bbd937bb4",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,7 +11,7 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1145,
+    "verified_obligations": 1140,
     "verified_production_functions": 599,
     "errors": 0,
     "proof_build_compiles": true,
@@ -21,12 +21,12 @@
     "native_assumptions": [],
     "reviewed_verifier_limitations": 24,
     "audited_forwarders": 23,
-    "runtime_proof_divergences": 11,
+    "runtime_proof_divergences": 10,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "f381ac5731e014d9702c882c24541939905b1f744f1ded06b566b1c4cf8c1559",
-  "proof_dispositions_sha256": "3434ed1cf3ab31bf06b91bb26696ca726444fbb5ff47d28e14972ea09a80200c",
+  "production_proof_coverage_sha256": "44051a082e142b790f8729382c5e18c1b162c8060979b8fd7d85eb53cf20ba04",
+  "proof_dispositions_sha256": "29282fc7edcf4e9dcb4ec2278cf6c37259426ce9715db07af2e5e0d7f98435f1",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. Selected closures include zeroed batch reset, public inspection metadata/count propagation and exact executing typical-row copying. The row-copy scalar substitute is removed; one safe native path proves complete byte/frame semantics and visible-pixel equality, including verified short-row fast paths. Compiled semantic controls distinguish output guarantees from storage safety. Pinned standard-library specifications remain trusted. Eleven runtime/proof differences, caller/first-row semantics and other existing semantic gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Selected closures include batch reset, public inspection metadata, executing row/prefix copy byte/frame semantics, zeroed blank storage and exact decoded-prefix/zero-tail height padding. Prefix scalar/chunked substitutes are deleted; existing row kernel bodies are unchanged. Six compiled bitmap controls distinguish these output guarantees from storage safety alone. Pinned standard-library specifications remain trusted. Ten runtime/proof differences, caller/first-row semantics and other existing gaps still block release claims.",
   "release_gate": "blocked"
 }

@@ -316,6 +316,7 @@ impl Bitmap {
                 crate::views::bitmap_width(&bitmap) == width
                 && crate::views::bitmap_height(&bitmap) == height
                 && crate::spec::bitmap::storage_valid(&bitmap)
+                && crate::spec::bitmap::zeroed_storage(&bitmap)
                 && crate::spec::bitmap::limits_allow_bitmap(width, height, limits),
             Err(_) => true,
         },
@@ -331,6 +332,7 @@ impl Bitmap {
                 crate::views::bitmap_width(&bitmap) == width
                 && crate::views::bitmap_height(&bitmap) == height
                 && crate::spec::bitmap::storage_valid(&bitmap)
+                && (!value ==> crate::spec::bitmap::zeroed_storage(&bitmap))
                 && crate::spec::bitmap::limits_allow_bitmap(width, height, limits),
             Err(_) => true,
         },
@@ -939,8 +941,14 @@ impl Bitmap {
             final(self).data@.len() == old(self).data@.len(),
             match out {
                 Ok(()) => byte_count <= old(self).data@.len()
-                    && byte_count <= source.data@.len(),
-                Err(_) => true,
+                    && byte_count <= source.data@.len()
+                    && crate::spec::bitmap::prefix_copy_result(
+                        old(self), final(self), source, byte_count,
+                    ),
+                Err(error) =>
+                    error == MalformedError::IntegerOverflow
+                    && (byte_count > old(self).data@.len() || byte_count > source.data@.len())
+                    && final(self).data@ == old(self).data@,
             },
     ))]
     pub(crate) fn copy_prefix_from(
@@ -951,114 +959,22 @@ impl Bitmap {
         if byte_count > self.data.len() || byte_count > source.data.len() {
             return Err(MalformedError::IntegerOverflow);
         }
+        // Keep fixed-word prefix copies inline without changing the row kernel.
+        if byte_count == 8 {
+            self.data.as_mut_slice()[..8].copy_from_slice(&source.data.as_slice()[..8]);
+        } else {
+            copy_row_bytes(
+                &mut self.data.as_mut_slice()[..byte_count],
+                &source.data.as_slice()[..byte_count],
+            );
+        }
         #[cfg(verus_keep_ghost)]
-        {
-            return self.copy_prefix_scalar_verified(source, byte_count);
-        }
-        #[cfg(not(verus_keep_ghost))]
-        self.copy_prefix_chunked(source, byte_count)
-    }
-
-    #[cfg(verus_keep_ghost)]
-    #[verus_spec(out =>
-        requires
-            crate::spec::bitmap::storage_valid(old(self)),
-            crate::spec::bitmap::storage_valid(source),
-            byte_count <= old(self).data@.len(),
-            byte_count <= source.data@.len(),
-        ensures
-            out.is_ok(),
-            crate::spec::bitmap::storage_valid(final(self)),
-            final(self).width == old(self).width,
-            final(self).height == old(self).height,
-            final(self).stride == old(self).stride,
-            final(self).data@.len() == old(self).data@.len(),
-    )]
-    fn copy_prefix_scalar_verified(
-        &mut self,
-        source: &Self,
-        byte_count: usize,
-    ) -> Result<(), MalformedError> {
-        let width = self.width;
-        let height = self.height;
-        let stride = self.stride;
-        let data_len = self.data.len();
         proof! {
             crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(old(self));
+            crate::views::bitmap_fields(source);
             reveal(crate::spec::bitmap::storage_valid);
-        }
-        let mut index = 0_usize;
-        #[verus_spec(
-            invariant
-                crate::spec::bitmap::storage_valid(source),
-                self.width == width,
-                self.height == height,
-                self.stride == stride,
-                self.data@.len() == data_len,
-                data_len == stride as nat * height as nat,
-                stride as nat
-                    == crate::spec::bitmap::stride_for_width(width as nat),
-                index <= byte_count,
-                byte_count <= self.data@.len(),
-                byte_count <= source.data@.len(),
-            decreases byte_count - index,
-        )]
-        while index < byte_count {
-            self.data[index] = source.data[index];
-            index += 1;
-        }
-        proof! {
-            crate::views::bitmap_fields(self);
-            reveal(crate::spec::bitmap::storage_valid);
-        }
-        Ok(())
-    }
-
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        requires
-            byte_count <= old(self).data@.len(),
-            byte_count <= source.data@.len(),
-        ensures
-            final(self).width == old(self).width,
-            final(self).height == old(self).height,
-            final(self).stride == old(self).stride,
-    ))]
-    fn copy_prefix_chunked(
-        &mut self,
-        source: &Self,
-        byte_count: usize,
-    ) -> Result<(), MalformedError> {
-        let mut index = 0_usize;
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant index <= byte_count,
-            decreases byte_count - index,
-        ))]
-        while byte_count - index >= 8 {
-            let value = read_chunk(&source.data, index).ok_or(MalformedError::IntegerOverflow)?;
-            if !write_chunk(&mut self.data, index, value) {
-                return Err(MalformedError::IntegerOverflow);
-            }
-            index = index
-                .checked_add(8)
-                .ok_or(MalformedError::IntegerOverflow)?;
-        }
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant index <= byte_count,
-            decreases byte_count - index,
-        ))]
-        while index < byte_count {
-            let value = *source
-                .data
-                .get(index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let destination = self
-                .data
-                .get_mut(index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            *destination = value;
-            index = index
-                .checked_add(1)
-                .ok_or(MalformedError::IntegerOverflow)?;
+            reveal(crate::spec::bitmap::prefix_copy_result);
         }
         Ok(())
     }
@@ -2841,6 +2757,65 @@ mod tests {
                 )
                 .expect("chunk region composition succeeds");
             assert_eq!(actual, expected, "case {case}");
+        }
+    }
+
+    #[test]
+    fn prefix_copy_preserves_suffix_source_and_error_state() {
+        for (source_height, destination_height) in [
+            (0, 0),
+            (0, 9),
+            (9, 0),
+            (3, 7),
+            (7, 3),
+            (66, 129),
+            (129, 66),
+            (257, 1024),
+        ] {
+            let source = patterned_bitmap(8, source_height, 17);
+            let original = patterned_bitmap(8, destination_height, 29);
+            let immutable = source.clone();
+            let limit = source.data.len().min(original.data.len());
+            for count in 0..=limit {
+                let mut expected = original.clone();
+                expected.data[..count].copy_from_slice(&source.data[..count]);
+                let mut actual = original.clone();
+                actual.copy_prefix_from(&source, count).unwrap();
+                assert_eq!(
+                    actual, expected,
+                    "source {source_height}, destination {destination_height}, count {count}"
+                );
+                assert_eq!(source, immutable);
+            }
+            for count in [
+                limit + 1,
+                source.data.len().max(original.data.len()) + 1,
+                usize::MAX,
+            ] {
+                let mut actual = original.clone();
+                assert!(matches!(
+                    actual.copy_prefix_from(&source, count),
+                    Err(MalformedError::IntegerOverflow)
+                ));
+                assert_eq!(actual, original);
+                assert_eq!(source, immutable);
+            }
+        }
+    }
+
+    #[test]
+    fn blank_storage_is_zero_for_empty_and_partial_rows() {
+        for width in [0, 1, 7, 8, 9, 63, 64, 65] {
+            for height in [0, 1, 3] {
+                let bitmap = Bitmap::blank(width, height, &Limits::default()).unwrap();
+                assert_eq!((bitmap.width(), bitmap.height()), (width, height));
+                assert!(bitmap.bytes().iter().all(|byte| *byte == 0));
+                for y in 0..height {
+                    for x in 0..width {
+                        assert_eq!(bitmap.pixel(x, y), Some(false));
+                    }
+                }
+            }
         }
     }
 

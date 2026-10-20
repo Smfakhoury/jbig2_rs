@@ -17,9 +17,13 @@ The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
 scalar proof substitute is removed. The current selected ledger has 15
 functional and one state-preservation record; all 16 remain provisional.
-Caller timing/first-row semantics, other semantic gaps and 11 runtime/proof
+Prefix copying now shares the verified packed-byte implementation; successful
+prefix/suffix bytes and unchanged error state are explicit contracts. Blank
+zero-storage and exact height-padding bytes are also proved. Six compiled
+bitmap counterexamples check those semantic guarantees.
+Caller timing/first-row semantics, other semantic gaps and 10 runtime/proof
 substitutions remain open.
-No cleanup or release enablement has been performed.
+No broad repository cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,
 including the merged fuzz setup fix (PR #5).
