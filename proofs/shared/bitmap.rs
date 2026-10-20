@@ -2,6 +2,86 @@ use vstd::prelude::*;
 
 verus! {
 
+pub(super) proof fn row_copy_bounds(
+    bitmap: &crate::bitmap::Bitmap,
+    source: u32,
+    destination: u32,
+)
+    requires
+        crate::spec::bitmap::storage_valid(bitmap),
+        source < bitmap.height,
+        destination < bitmap.height,
+    ensures
+        source as nat * bitmap.stride as nat + bitmap.stride as nat <= bitmap.data@.len(),
+        destination as nat * bitmap.stride as nat + bitmap.stride as nat <= bitmap.data@.len(),
+        source < destination ==>
+            source as nat * bitmap.stride as nat + bitmap.stride as nat
+                <= destination as nat * bitmap.stride as nat,
+        destination < source ==>
+            destination as nat * bitmap.stride as nat + bitmap.stride as nat
+                <= source as nat * bitmap.stride as nat,
+{
+    crate::views::bitmap_fields(bitmap);
+    reveal(crate::spec::bitmap::storage_valid);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(
+        bitmap.stride as int, bitmap.height as int,
+    );
+    vstd::arithmetic::mul::lemma_mul_inequality(
+        source as int + 1, bitmap.height as int, bitmap.stride as int,
+    );
+    vstd::arithmetic::mul::lemma_mul_inequality(
+        destination as int + 1, bitmap.height as int, bitmap.stride as int,
+    );
+    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
+        bitmap.stride as int, source as int, 1,
+    );
+    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
+        bitmap.stride as int, destination as int, 1,
+    );
+    if source < destination {
+        vstd::arithmetic::mul::lemma_mul_inequality(
+            source as int + 1, destination as int, bitmap.stride as int,
+        );
+    } else if destination < source {
+        vstd::arithmetic::mul::lemma_mul_inequality(
+            destination as int + 1, source as int, bitmap.stride as int,
+        );
+    }
+}
+
+pub(crate) proof fn row_copy_pixels(
+    before: &crate::bitmap::Bitmap,
+    after: &crate::bitmap::Bitmap,
+    source: u32,
+    destination: u32,
+)
+    requires
+        crate::spec::bitmap::storage_valid(before),
+        crate::spec::bitmap::storage_valid(after),
+        source < before.height,
+        destination < before.height,
+        crate::spec::bitmap::row_copy_result(before, after, source, destination),
+    ensures
+        forall|x: u32| x < before.width ==>
+            crate::spec::bitmap::stored_pixel(after, x, destination)
+                == crate::spec::bitmap::stored_pixel(before, x, source),
+{
+    crate::views::bitmap_fields(before);
+    crate::views::bitmap_fields(after);
+    reveal(crate::spec::bitmap::row_copy_result);
+    row_copy_bounds(before, source, destination);
+    stride_covers_width(before.width);
+    assert forall|x: u32| x < before.width implies
+        crate::spec::bitmap::stored_pixel(after, x, destination)
+            == crate::spec::bitmap::stored_pixel(before, x, source) by {
+        vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int, 8);
+        vstd::arithmetic::div_mod::lemma_mod_bound(x as int, 8);
+        assert(x as int / 8 < before.stride as int);
+        reveal(crate::spec::bitmap::stored_pixel);
+        reveal(crate::spec::bitmap::byte_index);
+    }
+}
+
 pub(crate) proof fn stride_covers_width(width: u32)
     ensures
         crate::spec::bitmap::stride_for_width(width as nat) * 8

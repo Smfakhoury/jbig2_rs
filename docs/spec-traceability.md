@@ -31,12 +31,12 @@ decomposition. This tranche does not complete P04.
 
 ## Evidence strength is not inferred from a function count
 
-| Classification | Initial records | What the record establishes |
+| Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 14 | Explicit postcondition evidence within the stated narrow property scope |
+| `functional_contract` | 15 | Explicit postcondition evidence within the stated narrow property scope |
 | `state_preservation` | 1 | Decoder/context invariants, not the requested semantic transformation |
 | `safety_only` | 0 | A verified body without the claimed functional result postcondition |
-| `runtime_divergence` | 1 | An executing/proof-body substitution already tracked by P05 |
+| `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
 The mapped areas are packed-bit/word order, standalone header fields and
 rejection behavior, selected generic-template parameters, arithmetic reset and
@@ -72,8 +72,12 @@ Important examples:
   order is implementation-defined; those numeric indices are not universal
   normative constants. The diagram-to-gather-order bridge and caller timing
   need separate evidence.
-- A row-copy proof/runtime substitution cannot be credited as exact-source
-  functional verification merely because scripted-entropy row tests pass.
+- The row-copy substitution is now removed. The actual native slice-copy path
+  preserves every non-destination byte, copies the complete stored row and
+  explicitly relates each visible destination pixel to the old source pixel.
+  Typical-prediction timing, caller-loop semantics and the first-row zero edge
+  remain separate gaps. Eleven other runtime/proof divergences remain in the
+  full inventory outside this selected ledger.
 
 The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
@@ -173,6 +177,38 @@ enum `PartialEq`: the latter did not expose the structural equality needed by
 the proof. Mutable keyed access now exports preservation of slice length.
 There are no new assumptions or runtime/proof substitutions. The result is
 still provisional, scoped evidence for D.4.3, not full conformance.
+
+## Executing typical-row copy
+
+`Bitmap::copy_row` now uses safe disjoint slices and `copy_from_slice`, not a
+word loop paired with a different ghost scalar helper. Bounds and disjointness
+follow from valid storage and in-range row numbers. Runtime checks retain typed
+errors for invalid ranges; self-copy and zero-stride rows remain no-ops.
+`copy_bitmap_row` calls the same implementation in both builds. The obsolete
+proof-only scalar row copier is deleted.
+
+The shared row-byte helper proves complete slice equality, including its short
+0-2 byte and 65-128 byte fixed-block paths. Those paths avoid measured small-row
+library-call overhead without architecture-specific unsafe code. Kernel timing
+is informational on a shared host, not a substitute for P09's dedicated gate.
+
+The functional byte model specifies the entire output buffer, including
+unchanged bytes outside the destination row. A proved bitmap-layout bridge
+establishes the wrapper's explicit visible-pixel equality. Pinned vstd's
+`split_at_mut`/`copy_from_slice` specifications, Rust's standard library and the
+compiler are part of the trust boundary; this does not prove their internals.
+
+`tools/check_row_copy_proof.py` skips the copy or corrupts a different row in
+isolated copies. Both mutants compile normally, fail the strong byte-result
+contract and pass the control removing only that result while retaining
+storage validity, metadata, length and success. CI uploads the selected
+semantic evidence separately from its required whole-crate proof. Exact tests
+cover arbitrary stored bytes, padding, both row orders, self-copy, zero width,
+large rows and invalid ranges; existing scalar-oracle comparisons remain.
+
+This closes the helper-level row-content and exact-execution gap, not SLTP
+state/timing, caller-loop output semantics, first-row zero initialization or
+full generic-region conformance. All requirement reviews remain provisional.
 
 ## Batch-reset semantic sensitivity
 

@@ -90,6 +90,29 @@ impl CombinationOperator {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    requires old(destination)@.len() == source@.len(),
+    ensures final(destination)@ == source@,
+))]
+#[inline]
+fn copy_row_bytes(destination: &mut [u8], source: &[u8]) {
+    let length = source.len();
+    if length <= 2 {
+        if length != 0 {
+            destination[0] = source[0];
+        }
+        if length == 2 {
+            destination[1] = source[1];
+        }
+    } else if length > 64 && length <= 128 {
+        // Avoid the slow short-copy path with a fixed block and a small tail.
+        destination[..64].copy_from_slice(&source[..64]);
+        destination[64..].copy_from_slice(&source[64..]);
+    } else {
+        destination.copy_from_slice(source);
+    }
+}
+
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures out.is_some() ==> start as nat + 8 <= bytes@.len(),
 ))]
@@ -848,14 +871,22 @@ impl Bitmap {
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires
+            crate::spec::bitmap::storage_valid(old(self)),
             source < old(self).height,
             destination < old(self).height,
         ensures
+            crate::spec::bitmap::storage_valid(final(self)),
             final(self).width == old(self).width,
             final(self).height == old(self).height,
             final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+            crate::spec::bitmap::row_copy_result(old(self), final(self), source, destination),
+            out.is_ok(),
     ))]
     pub(crate) fn copy_row(&mut self, source: u32, destination: u32) -> Result<(), MalformedError> {
+        let data_length = self.data.len();
+        #[cfg(verus_keep_ghost)]
+        production_bitmap_row_copy_bounds!(self, source, destination);
         if source >= self.height || destination >= self.height {
             return Err(MalformedError::IntegerOverflow);
         }
@@ -870,58 +901,28 @@ impl Bitmap {
             .map_err(|_error| MalformedError::IntegerOverflow)?
             .checked_mul(self.stride)
             .ok_or(MalformedError::IntegerOverflow)?;
-        let mut index = 0_usize;
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                self.width == old(self).width,
-                self.height == old(self).height,
-                self.stride == old(self).stride,
-                index <= self.stride,
-            decreases self.stride - index,
-        ))]
-        while self.stride - index >= 8 {
-            let source_index = source_start
-                .checked_add(index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let destination_index = destination_start
-                .checked_add(index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let value =
-                read_chunk(&self.data, source_index).ok_or(MalformedError::IntegerOverflow)?;
-            if !write_chunk(&mut self.data, destination_index, value) {
-                return Err(MalformedError::IntegerOverflow);
-            }
-            index = index
-                .checked_add(8)
-                .ok_or(MalformedError::IntegerOverflow)?;
+        let source_end = source_start
+            .checked_add(self.stride)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        let destination_end = destination_start
+            .checked_add(self.stride)
+            .ok_or(MalformedError::IntegerOverflow)?;
+        if source_end > data_length || destination_end > data_length {
+            return Err(MalformedError::IntegerOverflow);
         }
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                self.width == old(self).width,
-                self.height == old(self).height,
-                self.stride == old(self).stride,
-                index <= self.stride,
-            decreases self.stride - index,
-        ))]
-        while index < self.stride {
-            let source_index = source_start
-                .checked_add(index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let destination_index = destination_start
-                .checked_add(index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let value = *self
-                .data
-                .get(source_index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            let destination_byte = self
-                .data
-                .get_mut(destination_index)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            *destination_byte = value;
-            index = index
-                .checked_add(1)
-                .ok_or(MalformedError::IntegerOverflow)?;
+        if source < destination {
+            let (before, after) = self.data.split_at_mut(destination_start);
+            copy_row_bytes(&mut after[..self.stride], &before[source_start..source_end]);
+        } else {
+            let (before, after) = self.data.split_at_mut(source_start);
+            copy_row_bytes(
+                &mut before[destination_start..destination_end],
+                &after[..self.stride],
+            );
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(self);
         }
         Ok(())
     }
@@ -1058,101 +1059,6 @@ impl Bitmap {
             index = index
                 .checked_add(1)
                 .ok_or(MalformedError::IntegerOverflow)?;
-        }
-        Ok(())
-    }
-
-    #[cfg(verus_keep_ghost)]
-    #[verus_spec(out =>
-        requires
-            crate::spec::bitmap::storage_valid(old(self)),
-            source < old(self).height,
-            destination < old(self).height,
-        ensures
-            crate::spec::bitmap::storage_valid(final(self)),
-            final(self).width == old(self).width,
-            final(self).height == old(self).height,
-            final(self).stride == old(self).stride,
-            final(self).data@.len() == old(self).data@.len(),
-            out.is_ok(),
-    )]
-    pub(crate) fn copy_row_scalar_verified(
-        &mut self,
-        source: u32,
-        destination: u32,
-    ) -> Result<(), MalformedError> {
-        if source >= self.height || destination >= self.height {
-            return Err(MalformedError::IntegerOverflow);
-        }
-        if source == destination {
-            return Ok(());
-        }
-        let width = self.width;
-        let height = self.height;
-        let stride = self.stride;
-        let data_len = self.data.len();
-        proof! {
-            crate::views::bitmap_fields(self);
-            reveal(crate::spec::bitmap::storage_valid);
-            assert(data_len == stride as nat * height as nat);
-            vstd::arithmetic::mul::lemma_mul_is_commutative(
-                stride as int,
-                height as int,
-            );
-            assert(data_len == height as nat * stride as nat);
-            assert(source as nat + 1 <= height as nat);
-            assert(destination as nat + 1 <= height as nat);
-            vstd::arithmetic::mul::lemma_mul_inequality(
-                source as int + 1,
-                height as int,
-                stride as int,
-            );
-            vstd::arithmetic::mul::lemma_mul_inequality(
-                destination as int + 1,
-                height as int,
-                stride as int,
-            );
-            vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
-                stride as int,
-                source as int,
-                1,
-            );
-            vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
-                stride as int,
-                destination as int,
-                1,
-            );
-            assert(source as nat * stride as nat + stride as nat <= data_len);
-            assert(destination as nat * stride as nat + stride as nat <= data_len);
-            assert(source as nat * stride as nat <= usize::MAX);
-            assert(destination as nat * stride as nat <= usize::MAX);
-        }
-        let source_start = (source as usize) * stride;
-        let destination_start = (destination as usize) * stride;
-        let mut index = 0_usize;
-        #[verus_spec(
-            invariant
-                self.width == width,
-                self.height == height,
-                self.stride == stride,
-                self.data@.len() == data_len,
-                index <= stride,
-                source_start + stride <= data_len,
-                destination_start + stride <= data_len,
-            decreases stride - index,
-        )]
-        while index < stride {
-            proof! {
-                assert(source_start + index < data_len);
-                assert(destination_start + index < data_len);
-            }
-            let value = self.data[source_start + index];
-            self.data[destination_start + index] = value;
-            index += 1;
-        }
-        proof! {
-            crate::views::bitmap_fields(self);
-            reveal(crate::spec::bitmap::storage_valid);
         }
         Ok(())
     }
@@ -2935,6 +2841,63 @@ mod tests {
                 )
                 .expect("chunk region composition succeeds");
             assert_eq!(actual, expected, "case {case}");
+        }
+    }
+
+    #[test]
+    fn row_copy_bytes_and_chunk_access_have_exact_boundaries() {
+        for length in [0, 1, 2, 8, 64, 65, 66, 127, 128, 129, 257] {
+            let source: Vec<u8> = (0..length)
+                .map(|index| u8::try_from(index % 251).unwrap())
+                .collect();
+            let mut destination = vec![0xa5; length];
+            copy_row_bytes(&mut destination, &source);
+            assert_eq!(destination, source);
+        }
+        let mut bytes = vec![0x81; 8];
+        let original = bytes.clone();
+        for start in [1, usize::MAX - 7, usize::MAX] {
+            assert_eq!(read_chunk(&bytes, start), None);
+            assert!(!write_chunk(&mut bytes, start, u64::MAX));
+            assert_eq!(bytes, original);
+        }
+        assert_eq!(read_shifted_byte(&bytes, 0, 8), None);
+        assert_eq!(read_shifted_tail(&bytes, 0, 1, 0), None);
+        assert_eq!(read_shifted_tail(&bytes, 0, 1, 9), None);
+        assert_eq!(read_shifted_chunk(&bytes, 0, 8), None);
+    }
+
+    #[test]
+    fn row_copy_rejects_invalid_indices_and_storage_without_mutation() {
+        for (source, destination) in [(2, 0), (0, 2), (2, 2)] {
+            let mut bitmap = Bitmap::blank(8, 2, &Limits::default()).unwrap();
+            let original = bitmap.clone();
+            assert!(matches!(
+                bitmap.copy_row(source, destination),
+                Err(MalformedError::IntegerOverflow)
+            ));
+            assert_eq!(bitmap, original);
+        }
+        for (stride, source, destination) in [
+            (usize::MAX, 2, 0),
+            (usize::MAX, 0, 2),
+            (usize::MAX, 1, 0),
+            (usize::MAX, 0, 1),
+            (1, 1, 0),
+            (1, 0, 1),
+        ] {
+            let mut bitmap = Bitmap {
+                width: 8,
+                height: 3,
+                stride,
+                data: vec![0xa5],
+            };
+            let original = bitmap.clone();
+            assert!(matches!(
+                bitmap.copy_row(source, destination),
+                Err(MalformedError::IntegerOverflow)
+            ));
+            assert_eq!(bitmap, original);
         }
     }
 

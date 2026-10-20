@@ -67,6 +67,11 @@ jobs:
           python -B tools/check_document_count_proof.py
           --verus-executable verus-x86-linux/verus
           --output target/traceability/document-count-proof-sensitivity.json
+      - name: Check executing row-copy proof semantic sensitivity
+        run: >-
+          python -B tools/check_row_copy_proof.py
+          --verus-executable verus-x86-linux/verus
+          --output target/traceability/row-copy-proof-sensitivity.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,9 +1,9 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1146 obligations with zero errors and zero native
+Pinned Verus verifies 1145 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-597 directly verified functions, 24 reviewed verifier limitations, 23 audited
-forwarders and 12 explicitly reviewed runtime/proof divergences.
+599 directly verified functions, 24 reviewed verifier limitations, 23 audited
+forwarders and 11 explicitly reviewed runtime/proof divergences.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -118,7 +118,7 @@ loop's runtime statements are unchanged. Two valid nonzero counterexamples
 compile normally, are rejected by the stronger selected proof, and verify under
 the validity-only control. This closes that helper-level semantic gap, not the
 remaining arithmetic-decision relation, reset call-site timing, or any of the
-12 runtime/proof divergences.
+remaining runtime/proof divergences.
 
 Document count agreement now relates accepted metadata to both the declared
 count and the cardinality of positive-page-associated PageInformation records
@@ -135,6 +135,18 @@ and known-count agreement. Existing runtime statements are unchanged.
 Body-byte parser correspondence, page identity/lifecycle semantics, decoded
 output contracts, rejection completeness and normative review remain open.
 Reader I/O remains a reviewed boundary rather than a newly verified body.
+
+The generic typical-row copying wrapper now calls the same native slice-copy
+path in normal and proof builds. The obsolete ghost scalar copier and manual
+word-copy loop are removed. The new contract copies the old source row,
+preserves all other bytes and metadata, and explicitly proves corresponding
+visible pixels equal. Disjointness/bounds proofs justify safe
+`split_at_mut`/`copy_from_slice` use under the pinned vstd contracts; no new
+project assumption or proof-only algorithm is introduced. Two compiling
+semantic mutants distinguish byte contents/frame preservation from storage
+safety alone. Fewer obligations reflect removed loops/duplicate proof code,
+not weaker production accounting. Caller SLTP timing/loop semantics, the
+first-row zero edge and normative review remain open.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and

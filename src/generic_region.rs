@@ -5192,6 +5192,10 @@ fn unexpected_eof(offset: usize, needed: usize, remaining: usize) -> GenericRegi
         final(bitmap).height == old(bitmap).height,
         final(bitmap).stride == old(bitmap).stride,
         final(bitmap).data@.len() == old(bitmap).data@.len(),
+        crate::spec::bitmap::row_copy_result(old(bitmap), final(bitmap), source, destination),
+        forall|x: u32| x < old(bitmap).width ==>
+            crate::spec::bitmap::stored_pixel(final(bitmap), x, destination)
+                == crate::spec::bitmap::stored_pixel(old(bitmap), x, source),
         out.is_ok(),
 ))]
 #[allow(clippy::cast_possible_truncation)]
@@ -5200,10 +5204,9 @@ fn copy_bitmap_row(
     source: u32,
     destination: u32,
 ) -> Result<(), GenericRegionError> {
-    #[cfg(verus_keep_ghost)]
-    bitmap.copy_row_scalar_verified(source, destination)?;
-    #[cfg(not(verus_keep_ghost))]
     bitmap.copy_row(source, destination)?;
+    #[cfg(verus_keep_ghost)]
+    production_generic_copied_row_pixels!(bitmap, source, destination);
     #[cfg(verus_keep_ghost)]
     proof! {
         crate::views::bitmap_fields(bitmap);
@@ -5629,6 +5632,45 @@ mod tests {
         assert_eq!(contexts, vec![0x0195]);
         assert_eq!(bitmap.pixel(0, 0), Some(false));
         assert_eq!(bitmap.pixel(1, 0), Some(false));
+    }
+
+    #[test]
+    fn typical_row_copy_preserves_source_and_other_rows() {
+        for width in [
+            0, 1, 7, 8, 9, 63, 64, 65, 127, 128, 129, 511, 512, 513, 1017, 1023, 1024, 1025, 4096,
+        ] {
+            let mut original = Bitmap::blank(width, 4, &Limits::default()).unwrap();
+            for (index, byte) in original.data.iter_mut().enumerate() {
+                *byte = u8::try_from(index % 251)
+                    .unwrap()
+                    .wrapping_mul(37)
+                    .wrapping_add(11);
+            }
+            for source in 0..4 {
+                for destination in 0..4 {
+                    let stride = original.stride();
+                    let source_start = usize::try_from(source).unwrap() * stride;
+                    let destination_start = usize::try_from(destination).unwrap() * stride;
+                    let mut expected = original.bytes().to_vec();
+                    expected[destination_start..destination_start + stride]
+                        .copy_from_slice(&original.bytes()[source_start..source_start + stride]);
+                    let mut actual = original.clone();
+                    copy_bitmap_row(&mut actual, source, destination).unwrap();
+                    assert_eq!(
+                        actual.bytes(),
+                        expected,
+                        "{width}: {source} -> {destination}"
+                    );
+                    assert_eq!(
+                        (actual.width(), actual.height(), actual.stride()),
+                        (width, 4, stride)
+                    );
+                    for x in 0..width {
+                        assert_eq!(actual.pixel(x, destination), original.pixel(x, source));
+                    }
+                }
+            }
+        }
     }
 
     #[test]
