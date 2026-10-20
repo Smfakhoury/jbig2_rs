@@ -31,6 +31,9 @@ jobs:
         run: |
           args=()
           if [[ -n "$BASE_REF" && "$BASE_REF" != "0000000000000000000000000000000000000000" ]]; then
+            if ! git cat-file -e "$BASE_REF^{commit}" 2>/dev/null; then
+              git fetch --no-tags origin "$BASE_REF"
+            fi
             args+=(--base-ref "$BASE_REF")
           fi
           python -B tools/run_coverage.py "${args[@]}"

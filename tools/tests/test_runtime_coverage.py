@@ -1,6 +1,9 @@
 import copy
+import os
+import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -230,6 +233,97 @@ class RuntimeCoverageTests(unittest.TestCase):
         broken["totals"]["lines"]["covered"] += 1
         with self.assertRaisesRegex(ValueError, "totals do not match"):
             validate(broken, "coverage_baseline")
+
+
+@unittest.skipUnless(sys.platform == "linux", "the coverage workflow runs on Linux")
+class CoverageWorkflowTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.origin = self.root / "origin"
+        self.checkout = self.root / "checkout"
+        self.environment = dict(os.environ)
+        self.environment.update({
+            "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_TERMINAL_PROMPT": "0",
+        })
+        self.git("init", "--template=", "--initial-branch=original", str(self.origin))
+        self.git("commit", "--allow-empty", "-m", "Before rewrite", cwd=self.origin)
+        self.before = self.git("rev-parse", "HEAD", cwd=self.origin).stdout.strip()
+        self.git("checkout", "--orphan", "rewritten", cwd=self.origin)
+        self.git("commit", "--allow-empty", "-m", "After rewrite", cwd=self.origin)
+        self.git("update-ref", "-d", "refs/heads/original", cwd=self.origin)
+        self.git("clone", "--no-local", str(self.origin), str(self.checkout))
+        self.arguments = self.root / "arguments"
+        binary = self.root / "bin"
+        binary.mkdir()
+        python = binary / "python"
+        python.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$COVERAGE_ARGUMENTS"\n')
+        python.chmod(0o755)
+        self.environment.update({
+            "PATH": str(binary) + os.pathsep + self.environment["PATH"],
+            "COVERAGE_ARGUMENTS": str(self.arguments),
+        })
+        workflow = (TOOLS.parent / ".github/workflows/coverage.yml").read_text()
+        step = workflow.split(
+            "      - name: Collect runtime coverage and enforce non-regression baseline\n", 1,
+        )[1].split("      - name:", 1)[0]
+        self.script = textwrap.dedent(step.split("        run: |\n", 1)[1])
+
+    def git(self, *arguments, cwd=None, check=True):
+        return subprocess.run(
+            ["git", "-c", "user.name=Coverage test", "-c", "user.email=coverage@example.test",
+             "-c", "commit.gpgsign=false", *arguments],
+            cwd=cwd or self.root, env=self.environment,
+            capture_output=True, text=True, check=check,
+        )
+
+    def collect(self, reference):
+        return subprocess.run(
+            ["bash", "-e", "-o", "pipefail", "-c", self.script],
+            cwd=self.checkout, env={**self.environment, "BASE_REF": reference},
+            capture_output=True, text=True, check=False,
+        )
+
+    def test_rewritten_push_fetches_the_exact_missing_comparison_commit(self):
+        self.assertNotEqual(self.git(
+            "cat-file", "-e", self.before + "^{commit}", cwd=self.checkout, check=False,
+        ).returncode, 0)
+        process = self.collect(self.before)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(
+            self.git("rev-parse", "FETCH_HEAD", cwd=self.checkout).stdout.strip(), self.before,
+        )
+        self.assertEqual(
+            self.arguments.read_text().splitlines(),
+            ["-B", "tools/run_coverage.py", "--base-ref", self.before],
+        )
+
+    def test_existing_comparison_commit_does_not_require_network(self):
+        reference = self.git("rev-parse", "HEAD", cwd=self.checkout).stdout.strip()
+        self.git("remote", "set-url", "origin", str(self.root / "missing"), cwd=self.checkout)
+        process = self.collect(reference)
+        self.assertEqual(process.returncode, 0, process.stderr)
+        self.assertEqual(self.arguments.read_text().splitlines()[-2:], ["--base-ref", reference])
+        self.assertFalse((self.checkout / ".git/FETCH_HEAD").exists())
+
+    def test_unfetchable_comparison_commit_fails_without_running_coverage(self):
+        process = self.collect("f" * 40)
+        self.assertNotEqual(process.returncode, 0)
+        self.assertFalse(self.arguments.exists())
+        self.assertIn("not our ref", process.stderr)
+
+    def test_first_push_still_runs_baseline_coverage_without_a_comparison(self):
+        self.git("remote", "set-url", "origin", str(self.root / "missing"), cwd=self.checkout)
+        for reference in ("", "0" * 40):
+            with self.subTest(reference=reference):
+                process = self.collect(reference)
+                self.assertEqual(process.returncode, 0, process.stderr)
+                self.assertEqual(
+                    self.arguments.read_text().splitlines(), ["-B", "tools/run_coverage.py"],
+                )
+                self.assertFalse((self.checkout / ".git/FETCH_HEAD").exists())
 
 
 if __name__ == "__main__":

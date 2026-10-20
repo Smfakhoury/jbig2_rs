@@ -28,6 +28,11 @@ unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
 conflicting 7.2.8 worked example is explicitly retained as a strict rejection
 under the field-rule interpretation; owner normative adjudication remains open.
+An independent local P08 tranche adds bounded smoke/extended fuzz orchestration,
+generated seeds, trusted-only corpus caching, failure diagnostics and exact
+single-input replay. An isolated real failure/replay control protects the
+workflow contract. Hosted validation and broader structured/stateful campaigns
+remain pending; this is not completion of P08 or the quality-CI package.
 No broad repository cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,
