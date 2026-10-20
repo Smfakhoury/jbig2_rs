@@ -149,6 +149,14 @@ Existing generated seed names must match their bytes; changed/symlinked,
 oversized or excessive corpus entries fail explicitly. Reports bind tool pins,
 source revision/content hashes, bounded commands, logs and reproducer hashes.
 Single-file replay uses one execution rather than starting an open campaign.
+Every otherwise successful target must emit exactly one valid, positive
+libFuzzer final execution counter. Missing, zero, malformed or duplicated
+counters fail the run even when the process exits zero; successful replay
+additionally requires exactly one execution. Reports include verified
+per-target counts and their exact total; the CLI summary includes that total.
+Failed targets retain
+their original exit status, logs and reproducers without requiring final
+statistics from a crashed or terminated process.
 
 PR/push runs use smoke budgets without restoring or saving a trusted corpus.
 Daily scheduled runs use extended budgets. Manual runs choose a profile.

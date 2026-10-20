@@ -34,6 +34,9 @@ single-input replay. An isolated real failure/replay control protects the
 workflow contract. Hosted smoke campaigns and failure/replay controls have been
 validated; trusted-default-branch extended/cache execution and broader
 structured/stateful campaigns remain pending. This is not completion of P08.
+Successful targets now require unambiguous positive final execution counters;
+single-input replay requires exactly one execution. Per-target counts and
+their exact total are reported, while missing/invalid evidence fails closed.
 The initial P09 lane adds eight correctness-gated generated base/head cases
 with paired raw median/p95 samples and explicit spread classifications. Hosted
 informational runs and real slowdown/output-corruption controls have been
