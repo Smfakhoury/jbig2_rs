@@ -2,9 +2,9 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only floor after exact row-copy/frame and primitive boundary regressions. Replacing manual copy loops with verified native slice fast paths changes emitted runtime denominators; all per-file/global metric ratios remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
-  "source_revision": "cb1913926fa862e8659a617f06839ae7e8846d40",
-  "source_sha256": "03f1a137823c4b799a2ec70b2f63b733ae341d9d04545f8e77ad699377f22168",
+  "policy": "Upward-only floor after exact prefix/zero-padding and error-state regressions. Deleting obsolete prefix loops changes emitted runtime denominators; all per-file/global metric ratios remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "c68fdf0828eff81279da0da58a77bc8bbd937bb4",
+  "source_sha256": "dd6a52a81dd7ae23ac4b6c1c06c652b6b94d2e5175f6437490ee00cb799bec4b",
   "test_source_sha256": "877b7cbeaa7272ff3cc97eab1bf3112a171a2da9b95905429e52ee3142f65b90",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
@@ -14,18 +14,18 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 9789, "count": 12634},
-    "regions": {"covered": 9422, "count": 12941},
-    "branches": {"covered": 1723, "count": 2646}
+    "lines": {"covered": 9772, "count": 12611},
+    "regions": {"covered": 9412, "count": 12921},
+    "branches": {"covered": 1723, "count": 2642}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
-    "src/bitmap.rs": {"lines": {"covered": 909, "count": 991}, "regions": {"covered": 820, "count": 1057}, "branches": {"covered": 154, "count": 192}},
+    "src/bitmap.rs": {"lines": {"covered": 888, "count": 968}, "regions": {"covered": 808, "count": 1037}, "branches": {"covered": 153, "count": 188}},
     "src/decode.rs": {"lines": {"covered": 1042, "count": 1391}, "regions": {"covered": 870, "count": 1326}, "branches": {"covered": 135, "count": 230}},
     "src/document.rs": {"lines": {"covered": 907, "count": 1168}, "regions": {"covered": 894, "count": 1131}, "branches": {"covered": 204, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
     "src/file_header.rs": {"lines": {"covered": 60, "count": 60}, "regions": {"covered": 55, "count": 55}, "branches": {"covered": 22, "count": 22}},
-    "src/generic_region.rs": {"lines": {"covered": 1640, "count": 2029}, "regions": {"covered": 1945, "count": 2398}, "branches": {"covered": 295, "count": 424}},
+    "src/generic_region.rs": {"lines": {"covered": 1644, "count": 2029}, "regions": {"covered": 1947, "count": 2398}, "branches": {"covered": 296, "count": 424}},
     "src/generic_row_ring.rs": {"lines": {"covered": 289, "count": 322}, "regions": {"covered": 292, "count": 371}, "branches": {"covered": 55, "count": 76}},
     "src/halftone.rs": {"lines": {"covered": 807, "count": 1065}, "regions": {"covered": 739, "count": 1061}, "branches": {"covered": 178, "count": 242}},
     "src/huffman.rs": {"lines": {"covered": 661, "count": 832}, "regions": {"covered": 659, "count": 853}, "branches": {"covered": 154, "count": 234}},
