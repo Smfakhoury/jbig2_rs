@@ -17,13 +17,12 @@ ROOT = Path(__file__).resolve().parents[1]
 METRICS = ("lines", "regions", "branches")
 EXCLUDED_FILES = {"src/lib.rs": "Module declarations and re-exports; no executing functions."}
 SCOPE_VERSION = 1
+TEST_FIXTURES = ("tools/distribution_consumer.rs", "benchmarks/generated.rs")
 
 
 def test_source_hash(root: Path) -> str:
     paths = sorted((root / "tests").rglob("*.rs"))
-    fixture = root / "tools/distribution_consumer.rs"
-    if fixture.is_file():
-        paths.append(fixture)
+    paths += [root / name for name in TEST_FIXTURES if (root / name).is_file()]
     identity = hashlib.sha256()
     for path in paths:
         identity.update(path.relative_to(root).as_posix().encode() + b"\0" + path.read_bytes() + b"\0")
@@ -31,7 +30,7 @@ def test_source_hash(root: Path) -> str:
 
 
 def test_driver_source(path: Path, root: Path) -> bool:
-    return path.is_relative_to(root / "tests") or path == root / "tools/distribution_consumer.rs"
+    return path.is_relative_to(root / "tests") or path in {root / name for name in TEST_FIXTURES}
 
 
 def ratio(covered: int, count: int) -> dict:

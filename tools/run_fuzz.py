@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGETS = (
     "file_header_arbitrary", "file_header_structured", "document_arbitrary",
     "arithmetic", "huffman", "mmr", "generic_region",
+    "document_context_structured",
 )
 PROFILES = {"smoke": 60, "extended": 300}
 INPUT_TIMEOUT = 5
@@ -52,6 +53,7 @@ def source_identity(root: Path) -> str:
         "Cargo.toml", "Cargo.lock", "fuzz/Cargo.toml", "fuzz/Cargo.lock",
         "validation/runtime_access.rs", "examples/fuzz_seeds.rs",
         "tools/distribution_consumer.rs", "tools/run_fuzz.py", "toolchain.json",
+        "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
     )]
     identity = hashlib.sha256()
     for path in paths:

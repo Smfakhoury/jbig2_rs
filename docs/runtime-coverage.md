@@ -13,16 +13,16 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 9,779 / 12,635 | 77.40% |
-| Code regions | 9,388 / 12,931 | 72.60% |
-| Branch outcomes | 1,702 / 2,636 | 64.57% |
+| Lines | 9,805 / 12,609 | 77.76% |
+| Code regions | 9,454 / 12,918 | 73.18% |
+| Branch outcomes | 1,731 / 2,638 | 65.62% |
 
-These measurements run 202 library correctness tests and 21 public integration
-tests. The 14 ignored microbenchmarks are not executed. Compared with the
-initial baseline (75.74% / 70.70% / 63.96%), the tests cover 209 more runtime
-lines, 246 more regions and 16 more branch outcomes, with identical denominators
-and no per-file regression. The initial raw, mixed-source LLVM line
-coverage was 79.35%; that includes test code and is not the runtime baseline.
+The structured-context tranche runs 250 correctness tests, with 14 ignored
+microbenchmarks excluded. Its measured region count is 9,455 / 12,918 (73.19%),
+one region above the existing reviewed floor; line and branch counts are
+unchanged. All runtime denominators and per-file floors are unchanged. The new
+regressions primarily strengthen sequence/output/error checks rather than add
+newly executed lines, so no broad coverage improvement is claimed.
 
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.
@@ -45,9 +45,12 @@ the reviewed, upward-ratcheted fractions**, not that release coverage is adequat
   following runtime dereference or tuple, a known syntax-grammar ambiguity.
 - Positive ghost-only items, separate proofs/models, external test drivers,
   benchmarks and developer tools do not enter the runtime denominator.
-- The integration tests reuse `tools/distribution_consumer.rs`. This exact
-  first-party driver is excluded even when LLVM emits function mappings without
-  a file summary. Unknown non-runtime mappings still fail closed.
+- Integration tests reuse `tools/distribution_consumer.rs` and the pure
+  `benchmarks/generated.rs` fixture through the structured context scenarios.
+  These exact first-party fixtures are excluded even when LLVM emits function
+  mappings without a file summary. Their bytes and all Rust test/support files
+  participate in the test-source identity. Unknown non-runtime mappings,
+  including other benchmark sources, still fail closed.
 - The only source-file exclusion is `src/lib.rs`, which declares modules and
   re-exports. The gate fails if it gains an executing function. Every other
   current runtime file must appear with line instrumentation.
