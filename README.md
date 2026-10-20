@@ -102,7 +102,7 @@ their entry in `source-provenance.json` records the required legal approval.
 
 The pinned Linux coverage workflow measures ordinary runtime code, excluding
 inline tests/oracles and ghost items. Its ratcheted baseline is **77.40% lines,
-72.60% regions and 64.30% branch outcomes**. CI checks aggregate/per-file
+72.60% regions and 64.57% branch outcomes**. CI checks aggregate/per-file
 non-regression; the proposed 90% line / 85% branch release goals remain unmet.
 See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
 uncovered-code artifacts and the remaining P06 test-improvement work. Public
