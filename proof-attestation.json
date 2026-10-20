@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "778de2e9d6393466f8963c087678a11c907bbe49",
+  "source_revision": "bb7ed48205b28cd7e2fc0c1797038a85e4fbb492",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 12,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "1b814afc87d0df364227c0405c51f257141dbedc0f2442fdbb1b8b3b6bcd1ce9",
-  "proof_dispositions_sha256": "373b243737644439ae1e5034da4f05ccbcb87ede35d4c31e7029d114764aa9de",
+  "production_proof_coverage_sha256": "684e8622ae1731984b81d9750813eeae5e8095501f78f5c3c078c85e817c70b0",
+  "proof_dispositions_sha256": "425571dd2e7a2582792357c734d3ae4ec04bdb933645c0f922353911bbb454e4",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Twelve cfg-selected runtime/proof differences block exact-source release claims.",
+  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Batch arithmetic reset now proves quantified zero output and length preservation, with selected semantic sensitivity controls; whole-crate obligation counts alone do not express this stronger result. Twelve runtime/proof differences and other semantic gaps still block release claims.",
   "release_gate": "blocked"
 }

@@ -5,21 +5,21 @@
     {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "1e5d3532d7103d783e7785e15221de14b666f13366669c3d7919e68658018a00",
+      "file_sha256": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
     },
     {
       "id": "arithmetic::ArithmeticError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "1e5d3532d7103d783e7785e15221de14b666f13366669c3d7919e68658018a00",
+      "file_sha256": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "arithmetic::DecodeError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "1e5d3532d7103d783e7785e15221de14b666f13366669c3d7919e68658018a00",
+      "file_sha256": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
       "status": "audited-forwarder",
       "reason": "One-line trait forwarder to the verified ArithmeticError::into_decode method; reviewed explicitly, not directly verified as a From implementation."
     },
