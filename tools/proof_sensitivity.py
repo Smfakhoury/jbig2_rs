@@ -1,6 +1,7 @@
 """Shared isolated, pinned selected-proof sensitivity checks."""
 
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -8,6 +9,13 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
+
+
+def replace_once(source: str, original: str, replacement: str) -> str:
+    pattern = re.compile(r"\s*".join(re.escape(token) for token in original.split()))
+    if len(pattern.findall(source)) != 1:
+        raise ValueError("proof sensitivity site is missing or ambiguous")
+    return pattern.sub(lambda _: replacement, source, count=1)
 
 
 @contextmanager

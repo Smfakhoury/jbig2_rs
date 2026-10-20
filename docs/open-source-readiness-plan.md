@@ -13,9 +13,11 @@ metadata is linked to the original header-byte fields and known count.
 Document cardinality is tied to positive PageInformation records through
 collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
-The current selected ledger
-has 14 functional, one state-preservation and one runtime-divergence record;
-all 16 remain provisional. Other semantic gaps and the 12 runtime/proof
+The typical-row copy now executes and verifies the same safe native slice-copy
+path, with full byte/frame and visible-pixel postconditions; its obsolete
+scalar proof substitute is removed. The current selected ledger has 15
+functional and one state-preservation record; all 16 remain provisional.
+Caller timing/first-row semantics, other semantic gaps and 11 runtime/proof
 substitutions remain open.
 No cleanup or release enablement has been performed.
 Prepared: 2026-10-19.

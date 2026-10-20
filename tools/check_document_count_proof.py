@@ -4,13 +4,12 @@
 import argparse
 import hashlib
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
 
 from check_distribution import run
-from proof_sensitivity import proof_workspace, selected_proof
+from proof_sensitivity import proof_workspace, replace_once, selected_proof
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,13 +63,6 @@ CASES = (
 )
 PREFIX_INVARIANT = """page_states@.len()
                 == document_spec::page_information_count(segments@, segment_index as nat),"""
-
-
-def replace_once(source: str, original: str, replacement: str) -> str:
-    pattern = re.compile(r"\s*".join(re.escape(token) for token in original.split()))
-    if len(pattern.findall(source)) != 1:
-        raise ValueError("document-count sensitivity site is missing or ambiguous")
-    return pattern.sub(lambda _: replacement, source, count=1)
 
 
 def mutated_document(source: str, case: dict) -> str:

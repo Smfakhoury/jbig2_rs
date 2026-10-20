@@ -116,6 +116,28 @@ pub open spec fn storage_valid(bitmap: &crate::bitmap::Bitmap) -> bool {
                 * (crate::views::bitmap_height(bitmap) as nat)
 }
 
+pub open spec fn row_copy_result(
+    before: &crate::bitmap::Bitmap,
+    after: &crate::bitmap::Bitmap,
+    source: u32,
+    destination: u32,
+) -> bool {
+    let stride = crate::views::bitmap_stride(before) as int;
+    let source_start = source as int * stride;
+    let destination_start = destination as int * stride;
+    &&& crate::views::bitmap_width(after) == crate::views::bitmap_width(before)
+    &&& crate::views::bitmap_height(after) == crate::views::bitmap_height(before)
+    &&& crate::views::bitmap_stride(after) == crate::views::bitmap_stride(before)
+    &&& crate::views::bitmap_data(after).len() == crate::views::bitmap_data(before).len()
+    &&& forall|index: int| 0 <= index < crate::views::bitmap_data(before).len() ==>
+        crate::views::bitmap_data(after)[index]
+            == if destination_start <= index < destination_start + stride {
+                crate::views::bitmap_data(before)[source_start + index - destination_start]
+            } else {
+                crate::views::bitmap_data(before)[index]
+            }
+}
+
 pub open spec fn invariant(bitmap: &crate::bitmap::Bitmap) -> bool {
     storage_valid(bitmap) && padding_is_zero(bitmap)
 }

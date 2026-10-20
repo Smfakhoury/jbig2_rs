@@ -60,7 +60,7 @@ python tools/audit_production_coverage.py \
   --require-complete --require-exact
 ```
 
-The exact-source release gate currently fails on the 12 explicitly recorded
+The exact-source release gate currently fails on the 11 explicitly recorded
 runtime/proof divergences. Routine CI checks the reviewed inventory, not a claim
 that every executing body has been proved. New or changed gaps fail the
 inventory checks. `update_proof_dispositions.py --output NEW_FILE` creates
