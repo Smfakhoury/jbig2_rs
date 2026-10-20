@@ -1,5 +1,6 @@
 """Shared isolated, pinned selected-proof sensitivity checks."""
 
+import hashlib
 import json
 import re
 import shutil
@@ -72,3 +73,57 @@ def selected_proof(
     elif process.returncode != 0 or result["errors"] != 0 or result["verified"] < 1:
         raise ValueError("baseline/control proof did not pass:\n" + process.stderr)
     return result
+
+
+def weakened_contract(source: str, case: dict) -> str:
+    controls = case["controls"] if "controls" in case else ((case["control"], ""),)
+    if not controls:
+        raise ValueError("semantic counterexample has no weaker control")
+    for original, replacement in controls:
+        source = replace_once(source, original, replacement)
+    return source
+
+
+def check_semantic_cases(
+    root: Path, executable: Path, cases: tuple, files: tuple, prefix: str, scope: str,
+) -> dict:
+    sources = {name: (root / name).read_bytes() for name in files}
+    results = []
+    with proof_workspace(root, executable, prefix) as (
+        directory, environment, expected, rust,
+    ):
+        baselines = {}
+        for case in cases:
+            if case["file"] not in sources:
+                raise ValueError("semantic counterexample edits an unbound source")
+            path = directory / case["file"]
+            original = path.read_text(encoding="utf-8")
+            target = (case["module"], case["function"])
+            if target not in baselines:
+                baselines[target] = selected_proof(
+                    executable, directory, environment, False, *target,
+                )
+            source = replace_once(original, case["site"], case["replacement"])
+            path.write_text(source, encoding="utf-8")
+            run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
+                directory, environment, capture=True)
+            rejected = selected_proof(executable, directory, environment, True, *target)
+            path.write_text(weakened_contract(source, case), encoding="utf-8")
+            control = selected_proof(executable, directory, environment, False, *target)
+            results.append({
+                "id": case["id"], "function": "::".join(target),
+                "normal_rust_compiles": True, "strong_contract": "rejected",
+                "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
+                "control_verifier_errors": control["errors"],
+                "baseline_selected_verification": baselines[target],
+            })
+            path.write_text(original, encoding="utf-8")
+    if any((root / name).read_bytes() != data for name, data in sources.items()):
+        raise ValueError("production source changed during semantic sensitivity checks")
+    return {
+        "schema_version": 2, "status": "passed", "verus_version": expected,
+        "scope": scope, "production_sources_modified": False, "counterexamples": results,
+        "source_bindings": {
+            name: hashlib.sha256(data).hexdigest() for name, data in sources.items()
+        },
+    }

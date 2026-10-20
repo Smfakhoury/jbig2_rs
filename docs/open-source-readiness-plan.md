@@ -3,7 +3,7 @@
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
 Exact-source proof gaps are exposed and tracked for P05.
-P04 is in progress with a provisional 16-record statement-level ledger and
+P04 is in progress with a provisional 20-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
 Targeted P05 tranches close the selected batch-reset output-contract gap
 and parsed-document count agreement, with compiled semantic counterexamples
@@ -15,14 +15,36 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 15
-functional and one state-preservation record; all 16 remain provisional.
+scalar proof substitute is removed. The current selected ledger has 19
+functional and one state-preservation record; all 20 remain provisional.
 Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled
 bitmap counterexamples check those semantic guarantees.
 Caller timing/first-row semantics, other semantic gaps and 10 runtime/proof
 substitutions remain open.
+Generated segment-header coverage uncovered a long-retention wire-order and
+unused-bit-location mismatch between implementation/model and 7.2.4. Both are
+corrected with exact materialization contracts and independent tests. The
+conflicting 7.2.8 worked example is explicitly retained as a strict rejection
+under the field-rule interpretation; owner normative adjudication remains open.
+The initial P08 tranche adds bounded smoke/extended fuzz orchestration,
+generated seeds, trusted-only corpus caching, failure diagnostics and exact
+single-input replay. An isolated real failure/replay control protects the
+workflow contract. Hosted smoke campaigns and failure/replay controls have been
+validated; trusted-default-branch extended/cache execution and broader
+structured/stateful campaigns remain pending. This is not completion of P08.
+The initial P09 lane adds eight correctness-gated generated base/head cases
+with paired raw median/p95 samples and explicit spread classifications. Hosted
+informational runs and real slowdown/output-corruption controls have been
+validated. Dedicated-host latency gates, broader corpus, allocation/RSS/work
+telemetry and threshold ratification remain open.
+The P10 integration tranche combines the reviewed PR #19/#20 history from the
+former stack base with PR #21 on main, preserving both fuzz and performance
+lanes without rewriting history. A merged PR targeting the former stack base
+did not by itself deliver those changes to main. This integration preserves
+the reviewed runtime/proof bodies and coverage floors; it does not complete
+the quality-CI package or approve the provisional normative ledger.
 No broad repository cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,

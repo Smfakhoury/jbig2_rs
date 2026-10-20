@@ -36,7 +36,34 @@
       "id": "NEG-SEGMENT-RESERVED-TYPE",
       "surface": "segment header",
       "expected": "MalformedError::ReservedSegmentType",
-      "coverage": "src/segment_header.rs"
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::every_flag_byte_has_exact_type_page_and_deferred_fields"}
+      ]
+    },
+    {
+      "id": "NEG-HEADER-RETENTION-UNUSED-BITS",
+      "surface": "short and long retention fields under the explicit 7.2.4 field policy",
+      "expected": "MalformedError::NonZeroUnusedRetentionFlags; worked-example inconsistency remains documented",
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::every_short_count_byte_obeys_count_and_unused_bit_rules"},
+        {"target": "lib", "name": "segment_header::tests::unused_long_retention_bits_validate_only_the_last_byte"}
+      ]
+    },
+    {
+      "id": "NEG-HEADER-EVERY-BYTE-TRUNCATION",
+      "surface": "generated segment header fields",
+      "expected": "typed UnexpectedEof with exact reader offset and remaining-byte values",
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::every_generated_header_prefix_is_a_typed_truncation"}
+      ]
+    },
+    {
+      "id": "NEG-HEADER-REFERENCE-BUDGET",
+      "surface": "long reference counts",
+      "expected": "ReferencesPerSegment limit failure before retention/reference payload acquisition or allocation",
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::generated_reference_limits_fail_before_reading_references"}
+      ]
     },
     {
       "id": "NEG-SEGMENT-DUPLICATE-NUMBER",
