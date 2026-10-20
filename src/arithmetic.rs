@@ -421,8 +421,13 @@ impl Default for ArithmeticContext {
 
 /// Resets every context in a statistics set.
 #[cfg_attr(verus_keep_ghost, verus_spec(
-    ensures forall|index: int| 0 <= index < final(contexts)@.len() ==>
-        arithmetic_spec::context_valid(final(contexts)@[index]),
+    ensures
+        final(contexts)@.len() == old(contexts)@.len(),
+        forall|index: int| 0 <= index < final(contexts)@.len() ==>
+            arithmetic_spec::context_valid(final(contexts)@[index]),
+        forall|index: int| 0 <= index < final(contexts)@.len() ==>
+            final(contexts)@[index].state_index == 0
+            && final(contexts)@[index].mps == 0,
 ))]
 pub(crate) fn reset_contexts(contexts: &mut [ArithmeticContext]) {
     let mut index = 0;
@@ -432,6 +437,9 @@ pub(crate) fn reset_contexts(contexts: &mut [ArithmeticContext]) {
             contexts@.len() == old(contexts)@.len(),
             forall|completed: int| 0 <= completed < index ==>
                 arithmetic_spec::context_valid(contexts@[completed]),
+            forall|completed: int| 0 <= completed < index ==>
+                contexts@[completed].state_index == 0
+                && contexts@[completed].mps == 0,
         decreases contexts@.len() - index,
     ))]
     while index < contexts.len() {
@@ -1754,6 +1762,47 @@ mod tests {
             ArithmeticContext::from_state(0, 2),
             Err(ArithmeticError::InvalidContextState { .. })
         ));
+    }
+
+    #[test]
+    fn batch_reset_zeros_all_stored_byte_pairs_and_is_idempotent() {
+        reset_contexts(&mut []);
+        let mut contexts = Vec::new();
+        for state_index in 0..=u8::MAX {
+            for mps in 0..=u8::MAX {
+                contexts.push(ArithmeticContext { state_index, mps });
+            }
+        }
+        let length = contexts.len();
+        reset_contexts(&mut contexts);
+        assert_eq!(contexts.len(), length);
+        assert!(contexts
+            .iter()
+            .all(|context| context.state_index() == 0 && context.mps() == 0));
+        reset_contexts(&mut contexts);
+        assert!(contexts
+            .iter()
+            .all(|context| context.state_index() == 0 && context.mps() == 0));
+    }
+
+    #[test]
+    fn batch_reset_only_changes_the_selected_slice() {
+        let original = [(1, 0), (2, 1), (3, 0), (4, 1), (5, 0), (46, 1)]
+            .map(|(index, mps)| ArithmeticContext::from_state(index, mps).expect("valid"));
+        for start in 0..=original.len() {
+            for end in start..=original.len() {
+                let mut contexts = original;
+                reset_contexts(&mut contexts[start..end]);
+                for (index, actual) in contexts.iter().enumerate() {
+                    let expected = if (start..end).contains(&index) {
+                        ArithmeticContext::new()
+                    } else {
+                        original[index]
+                    };
+                    assert_eq!(*actual, expected, "range {start}..{end}, slot {index}");
+                }
+            }
+        }
     }
 
     #[test]

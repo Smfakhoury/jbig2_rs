@@ -253,6 +253,18 @@ class TraceabilityTests(unittest.TestCase):
         self.assertTrue(all(entry["review"] == "provisional" for entry in ledger["requirements"]))
         self.assertTrue(any(entry["strength"] == "runtime_divergence" for entry in ledger["requirements"]))
 
+    def test_batch_reset_ledger_records_the_proved_zero_result(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        requirement = next(entry for entry in ledger["requirements"]
+                           if entry["id"] == "T88-ARITHMETIC-RESET-SET")
+        self.assertEqual(requirement["strength"], "functional_contract")
+        self.assertEqual(requirement["review"], "provisional")
+        tokens = " ".join(
+            token for claim in requirement["functional_evidence"] for token in claim["tokens"]
+        )
+        self.assertIn("state_index == 0", tokens)
+        self.assertIn("mps == 0", tokens)
+
 
 if __name__ == "__main__":
     unittest.main()

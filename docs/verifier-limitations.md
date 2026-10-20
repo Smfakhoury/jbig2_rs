@@ -108,6 +108,18 @@ formatting/error traits, `std::io::Read`, and generic caller-provided page-sink
 callbacks in addition to the explicit runtime/proof divergence backlog above.
 Statement-level functional conformance is a separate P04/P05 review.
 
+## Selected semantic contract closures
+
+The P04 ledger found that batch context reset exported validity but not the
+zeroed output required by the selected E.3.7 transformation. Its P05 contract
+now quantifies zero state index and MPS over the complete selected slice,
+preserves slice length, and requires no valid incoming context values. The
+loop's runtime statements are unchanged. Two valid nonzero counterexamples
+compile normally, are rejected by the stronger selected proof, and verify under
+the validity-only control. This closes that helper-level semantic gap, not the
+remaining arithmetic-decision relation, reset call-site timing, page-count
+agreement, or any of the 12 runtime/proof divergences.
+
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
 probability-state preservation contracts.
