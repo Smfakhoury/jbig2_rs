@@ -33,8 +33,8 @@ decomposition. This tranche does not complete P04.
 
 | Classification | Initial records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 12 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 2 | Decoder/context invariants, not the requested semantic transformation |
+| `functional_contract` | 13 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 1 | Decoder/context invariants, not the requested semantic transformation |
 | `safety_only` | 1 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 1 | An executing/proof-body substitution already tracked by P05 |
 
@@ -51,9 +51,11 @@ Important examples:
   regression test, but its current verification annotation does not expose a
   functional return-value postcondition for that obligation.
 - `ArithmeticContext::reset` explicitly promises zero index and MPS fields.
-  The batch `reset_contexts` postcondition promises validity only. The batch
-  implementation currently writes zero, but that fact is not its exported
-  semantic contract.
+  The initial batch `reset_contexts` contract promised validity only. The P05
+  reset tranche now proves all selected output indices and MPS fields are zero,
+  preserves slice length, and retains the validity guarantee without adding an
+  input-validity precondition. Reset call-site timing is still outside this
+  helper-level record, and normative review remains provisional.
 - Arithmetic decision decoding preserves bounded, valid state. Its exposed
   contract is not a complete relation between old state, decoded decision and
   the prescribed next state.
@@ -134,3 +136,25 @@ Keep T.6/MMR obligations and project-only resource policy distinct. Review
 model adequacy, caller obligations and official-vector disagreements, then close
 the semantic and exact-source gaps under P05. P06 coverage/mutation evidence
 can strengthen testing but cannot substitute for those proofs.
+
+## Batch-reset semantic sensitivity
+
+`tools/check_reset_proof.py` validates that the stronger reset proof is not a
+label-only promotion. In isolated copies it replaces the zeroing assignment with
+valid but nonzero contexts `(I=1, MPS=0)` and `(I=0, MPS=1)`. Both compile as
+ordinary Rust, fail the selected strong Verus reset proof, and pass the control
+that removes only the zero-result postcondition/invariant while retaining
+length and context validity. Thus validity alone does not prove E.3.7's selected
+reset transformation.
+
+```text
+python -B tools/check_reset_proof.py \
+  --verus-executable /path/to/pinned/verus \
+  --output target/traceability/reset-proof-sensitivity.json
+```
+
+Verus CI runs this after normal whole-crate verification. The tool's selected
+function report is explicitly partial and cannot replace the whole-crate gate.
+No mutation or weakened contract is written to the repository's source tree.
+Runtime regressions also cover all 65,536 stored byte pairs, idempotence, empty
+slices and every subslice of a distinct-state array with unchanged neighbours.

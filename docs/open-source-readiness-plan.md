@@ -5,6 +5,9 @@ and targeted public-contract mutation checks.
 Exact-source proof gaps are exposed and tracked for P05.
 P04 is in progress with a provisional 16-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
+A targeted P05 tranche closes the selected batch-reset output-contract gap
+with quantified zero-state semantics and proof-sensitivity controls. Other
+semantic gaps and the runtime/proof substitution backlog remain open.
 No cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,
