@@ -2,6 +2,31 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-PUBLIC-READER-FAILURE",
+      "surface": "bounded reader acquisition",
+      "expected": "preserved typed I/O error and no sink calls, including after a complete valid input prefix",
+      "tests": [
+        {"target": "public_api", "name": "reader_errors_remain_typed_and_never_call_the_sink"},
+        {"target": "public_api", "name": "complete_page_prefix_does_not_hide_a_late_reader_error"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-SINK-FAILURE",
+      "surface": "page sink",
+      "expected": "exact sink failure returned after one callback; subsequent independent decode still succeeds",
+      "tests": [
+        {"target": "public_api", "name": "sink_failure_is_preserved_and_does_not_poison_the_decoder"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-STREAM-BYTE-LIMIT",
+      "surface": "slice and bounded reader input",
+      "expected": "inclusive limit accepts exact input size and rejects one byte less",
+      "tests": [
+        {"target": "public_api", "name": "stream_byte_limit_is_inclusive_for_slice_and_reader_apis"}
+      ]
+    },
+    {
       "id": "NEG-TRUNCATE-STANDALONE-EVERY-BYTE",
       "surface": "document envelope",
       "expected": "typed malformed error except the valid sequential prefix without optional EOF",

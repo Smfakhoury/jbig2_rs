@@ -19,6 +19,21 @@ EXCLUDED_FILES = {"src/lib.rs": "Module declarations and re-exports; no executin
 SCOPE_VERSION = 1
 
 
+def test_source_hash(root: Path) -> str:
+    paths = sorted((root / "tests").rglob("*.rs"))
+    fixture = root / "tools/distribution_consumer.rs"
+    if fixture.is_file():
+        paths.append(fixture)
+    identity = hashlib.sha256()
+    for path in paths:
+        identity.update(path.relative_to(root).as_posix().encode() + b"\0" + path.read_bytes() + b"\0")
+    return identity.hexdigest()
+
+
+def test_driver_source(path: Path, root: Path) -> bool:
+    return path.is_relative_to(root / "tests") or path == root / "tools/distribution_consumer.rs"
+
+
 def ratio(covered: int, count: int) -> dict:
     return {
         "covered": covered, "count": count,
@@ -111,7 +126,7 @@ def scoped_report(document: dict, lcov: str, root: Path) -> dict:
     data = document["data"][0]
     exported = {Path(entry["filename"]).resolve() for entry in data["files"]}
     extras = exported - set(masks)
-    if any(not path.is_relative_to(root / "tests") for path in extras):
+    if any(not test_driver_source(path, root) for path in extras):
         raise ValueError("unexpected non-runtime coverage source file")
     if not masks or not set(masks).issubset(exported) or exported != set(lines):
         raise ValueError("coverage file set differs from the declared runtime source set")
@@ -126,11 +141,13 @@ def scoped_report(document: dict, lcov: str, root: Path) -> dict:
             "selected_instantiations": 0, "excluded_test_instantiations": 0,
             "excluded_test_lines": set(),
         }
+    excluded_drivers = set(extras)
     for function in data["functions"]:
         if len(function["filenames"]) != 1 or not function["regions"]:
             raise ValueError("unsupported multi-file or empty function mapping")
         path = Path(function["filenames"][0]).resolve()
-        if path in extras:
+        if test_driver_source(path, root):
+            excluded_drivers.add(path)
             continue
         if path not in records:
             raise ValueError("function maps outside runtime report files")
@@ -185,7 +202,7 @@ def scoped_report(document: dict, lcov: str, root: Path) -> dict:
         "schema_version": 1, "scope_version": SCOPE_VERSION,
         "source_sha256": source_hash, "coverage_platform": "linux",
         "totals": totals, "files": files, "excluded_files": EXCLUDED_FILES,
-        "excluded_integration_test_sources": sorted(path.relative_to(root).as_posix() for path in extras),
+        "excluded_integration_test_sources": sorted(path.relative_to(root).as_posix() for path in excluded_drivers),
     }
 
 
@@ -255,6 +272,7 @@ def main() -> int:
         collection = load_json(arguments.collection)
         if (
             collection["source_sha256"] != report["source_sha256"]
+            or collection["test_source_sha256"] != test_source_hash(ROOT)
             or collection["toolchain"] != configuration
             or collection["report_sha256"] != {
                 "json": hashlib.sha256(arguments.json.read_bytes()).hexdigest(),

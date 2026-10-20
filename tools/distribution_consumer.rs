@@ -9,7 +9,7 @@ fn segment(number: u32, kind: u8, page: u8, payload: &[u8], output: &mut Vec<u8>
     output.extend_from_slice(payload);
 }
 
-fn generated_page() -> (Vec<u8>, Vec<u8>) {
+pub(crate) fn generated_page() -> (Vec<u8>, Vec<u8>) {
     let mut page = Vec::new();
     page.extend_from_slice(&8_u32.to_be_bytes());
     page.extend_from_slice(&1_u32.to_be_bytes());
@@ -42,7 +42,7 @@ fn check_page(page: &Page) {
     assert_eq!(page.bitmap().bytes(), &[0]);
 }
 
-fn main() -> Result<(), DecodeError> {
+pub(crate) fn main() -> Result<(), DecodeError> {
     let decoder = Decoder::new(Limits::default());
     let (standalone, embedded) = generated_page();
     let document = decoder.decode(&standalone)?;

@@ -9,7 +9,10 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from coverage_report import changed_lines, lcov_lines, ratio, regressions, scoped_report
+from coverage_report import (
+    changed_lines, lcov_lines, ratio, regressions, scoped_report,
+    test_source_hash as fingerprint_test_sources,
+)
 from evidence import load_json, validate
 
 
@@ -66,6 +69,37 @@ class RuntimeCoverageTests(unittest.TestCase):
         self.assertEqual(report["totals"]["branches"], ratio(1, 2))
         self.assertEqual(report["files"]["src/runtime.rs"]["uncovered_lines"], [5])
         self.assertEqual(report["files"]["src/runtime.rs"]["excluded_test_instantiations"], 1)
+
+    def test_reused_test_driver_is_excluded_even_without_a_file_summary(self):
+        driver = self.root / "tools/distribution_consumer.rs"
+        driver.parent.mkdir()
+        driver.write_text("pub fn smoke() {}\n", encoding="utf-8")
+        self.document["data"][0]["functions"].append({
+            "name": "test_driver", "filenames": [str(driver)],
+            "regions": [[1, 1, 1, 18, 999, 0, 0, 0]], "branches": [],
+        })
+        report = self.report()
+        self.assertEqual(report["totals"]["lines"], ratio(6, 7))
+        self.assertIn("tools/distribution_consumer.rs", report["excluded_integration_test_sources"])
+
+    def test_unknown_function_only_driver_is_not_silently_excluded(self):
+        self.document["data"][0]["functions"].append({
+            "name": "unexpected", "filenames": [str(self.root / "tools/unapproved.rs")],
+            "regions": [[1, 1, 1, 18, 999, 0, 0, 0]], "branches": [],
+        })
+        with self.assertRaisesRegex(ValueError, "outside runtime"):
+            self.report()
+
+    def test_test_driver_fingerprint_detects_edits_outside_runtime_source(self):
+        before = fingerprint_test_sources(self.root)
+        directory = self.root / "tests"
+        directory.mkdir()
+        path = directory / "external.rs"
+        path.write_text("#[test] fn external() {}\n", encoding="utf-8")
+        added = fingerprint_test_sources(self.root)
+        self.assertNotEqual(before, added)
+        path.write_text("#[test] fn changed() {}\n", encoding="utf-8")
+        self.assertNotEqual(added, fingerprint_test_sources(self.root))
 
     def test_instantiations_are_merged_without_counting_denominator_twice(self):
         other = copy.deepcopy(self.document["data"][0]["functions"][0])

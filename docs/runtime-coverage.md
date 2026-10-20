@@ -4,7 +4,7 @@ P06 is in progress. This tranche establishes a reproducible baseline and
 non-regression checks; it does not meet or ratify the proposed release goals,
 complete the missing tests, or establish normative correctness.
 
-## Initial measured baseline
+## Current ratcheted baseline
 
 Pinned compiler: `nightly-2026-10-12`; collector: `cargo-llvm-cov 0.9.1`;
 component: matching `llvm-tools-preview`. Nightly is used for unstable branch
@@ -13,17 +13,20 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 9,570 / 12,635 | 75.74% |
-| Code regions | 9,142 / 12,931 | 70.70% |
-| Branch outcomes | 1,686 / 2,636 | 63.96% |
+| Lines | 9,779 / 12,635 | 77.40% |
+| Code regions | 9,388 / 12,931 | 72.60% |
+| Branch outcomes | 1,695 / 2,636 | 64.30% |
 
-These measurements ran all 202 current correctness tests. The 14 ignored
-microbenchmarks were not executed. The initial raw, mixed-source LLVM line
+These measurements run 202 library correctness tests and 17 public integration
+tests. The 14 ignored microbenchmarks are not executed. Compared with the
+initial baseline (75.74% / 70.70% / 63.96%), the tests cover 209 more runtime
+lines, 246 more regions and 9 more branch outcomes, with identical denominators
+and no per-file regression. The initial raw, mixed-source LLVM line
 coverage was 79.35%; that includes test code and is not the runtime baseline.
 
 The proposed release goals remain **90% lines and 85% branches**, pending review
 and substantially more tests. The CI baseline pass means **no regression below
-the initial measured fractions**, not that release coverage is adequate.
+the reviewed, upward-ratcheted fractions**, not that release coverage is adequate.
 
 ## Scope and metric definitions
 
@@ -37,6 +40,9 @@ the initial measured fractions**, not that release coverage is adequate.
   following runtime dereference or tuple, a known syntax-grammar ambiguity.
 - Positive ghost-only items, separate proofs/models, external test drivers,
   benchmarks and developer tools do not enter the runtime denominator.
+- The integration tests reuse `tools/distribution_consumer.rs`. This exact
+  first-party driver is excluded even when LLVM emits function mappings without
+  a file summary. Unknown non-runtime mappings still fail closed.
 - The only source-file exclusion is `src/lib.rs`, which declares modules and
   re-exports. The gate fails if it gains an executing function. Every other
   current runtime file must appear with line instrumentation.
@@ -88,8 +94,11 @@ not currently included in this coverage collection.
   diagnostic data. **Raw HTML includes test code** and has a different scope
   from the authoritative runtime summary.
 - `target/coverage/collection.json`: source identity, actual compiler, collector
-  pins and hashes of the raw reports. Stale/mismatched inputs fail.
+  pins and hashes of the raw reports, integration tests and shared fixture.
+  Edits to tests during/after collection invalidate evidence, even if runtime
+  source is unchanged.
 - `target/coverage/failure.json`: explicit collector failure details.
+- `target/coverage/mutations.json`: results from the isolated contract-sensitivity checks.
 
 The compact reviewed baseline is
 [`validation/coverage/baseline.json`](../validation/coverage/baseline.json).
@@ -108,16 +117,41 @@ repository permissions and requires no private vectors or secrets.
 1. Symbol/text decoding: 65.25% lines, 47.74% branch outcomes; largest uncovered
    runtime surface. Add valid arithmetic/Huffman/refinement combinations and
    malformed export/placement/aggregation regressions.
-2. High-level decode and document lifecycle: 73.90% / 72.66% lines, 58.26% /
-   60.74% branches. Exercise reader/sink failures, retained resources, stripes,
-   limits and context recovery through public APIs.
-3. Typed error formatting/conversions: 19.21% lines. These remain in the
-   denominator rather than being excluded to improve the headline percentage.
+2. High-level decode and document lifecycle: now 74.91% / 77.29% lines and
+   58.70% / 61.96% branches. New tests cover short reads, late reader failures,
+   sink failure propagation, inclusive input/dimension/work limits, mandatory
+   retained state versus optional scratch, and reusable-context recovery.
+   More resource, stripe and reference-graph cases remain.
+3. Typed error formatting/conversions: raised from 19.21% to 100% lines and
+   regions. Tests verify exact diagnostics and parameter values, I/O kind
+   preservation without retaining private messages, full-width sizes, and
+   formatter failure propagation. No branch sites are emitted for this file;
+   that is unavailable branch data, not 100% branch coverage.
 4. Other coding families: use the uncovered-line artifacts to add exact-output
    and boundary tests, tied to P04 requirement IDs as that ledger is built.
 
-Remaining P06 work includes executable IDs for negative/metamorphic cases,
-broader public-API tests, all-limit boundary coverage, more generated valid
-streams, targeted mutation testing, and review/enforcement of release and
-changed-line thresholds. Coverage is distinct from proof coverage and cannot
-close P05's known runtime/proof divergences.
+## Targeted mutation sensitivity
+
+```text
+python -B tools/check_contract_mutations.py --toolchain 1.89.0 \
+  --output target/coverage/mutations.json
+```
+
+CI runs the same check with the pinned coverage nightly. It copies source and
+fixtures outside the checkout, uses a fresh offline Cargo home, and tests three
+single-site mutations: wrong I/O classification, an inclusive-reader-limit
+off-by-one, and a swallowed sink error. For each case the original selected test
+must pass, the mutant must compile, and that exact test must fail. Missing or
+ambiguous mutation sites, compile failures and surviving mutants fail the gate.
+No mutation is written to repository runtime files.
+
+This is sensitivity evidence for three contracts, not exhaustive codec mutation
+coverage. New catalog cases have exact integration-test target/name references
+checked against non-ignored `#[test]` functions. The 19 legacy file-only case
+references are an explicit migration backlog, not accepted for new cases.
+
+Remaining P06 work includes migrating those legacy IDs, broader coding-family
+and all-limit tests, additional generated valid streams, broader mutation
+testing, and review/enforcement of release and changed-line thresholds.
+Coverage is distinct from proof coverage and cannot close P05's known
+runtime/proof divergences.

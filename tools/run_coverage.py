@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from coverage_report import runtime_sources
+from coverage_report import runtime_sources, test_source_hash
 from evidence import load_json
 
 
@@ -38,7 +38,10 @@ def main():
     output = arguments.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
     try:
-        for name in ("raw.json", "raw.lcov", "runtime.json", "runtime.md", "collection.json", "failure.json"):
+        for name in (
+            "raw.json", "raw.lcov", "runtime.json", "runtime.md", "collection.json",
+            "failure.json", "mutations.json",
+        ):
             (output / name).unlink(missing_ok=True)
         configuration = load_json(ROOT / "toolchain.json")["coverage"]
         cargo = ["cargo", f"+{configuration['rust_toolchain']}", "llvm-cov"]
@@ -60,6 +63,7 @@ def main():
         if version != f"cargo-llvm-cov {configuration['cargo_llvm_cov_version']}":
             raise ValueError(f"unexpected coverage tool version: {version}")
         _, source_hash = runtime_sources(ROOT)
+        tests_hash = test_source_hash(ROOT)
         run(cargo + [
             "--branch", "--tests", "--all-features", "--json",
             "--output-path", str(output / "raw.json"),
@@ -72,10 +76,13 @@ def main():
         ], environment)
         if runtime_sources(ROOT)[1] != source_hash:
             raise ValueError("source changed during coverage collection")
+        if test_source_hash(ROOT) != tests_hash:
+            raise ValueError("test sources changed during coverage collection")
         collection = {
             "schema_version": 1,
             "source_revision": run(["git", "rev-parse", "HEAD"], environment, True),
             "source_sha256": source_hash,
+            "test_source_sha256": tests_hash,
             "toolchain": configuration,
             "rustc": run(["rustc", f"+{configuration['rust_toolchain']}", "--version"], environment, True),
             "test_scope": "unit_and_integration_tests_no_ignored_microbenchmarks",
