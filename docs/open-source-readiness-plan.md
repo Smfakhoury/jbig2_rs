@@ -1,6 +1,7 @@
 # Open-source readiness execution plan
 
-Status: P01/P02 completed; P03 isolated distribution implemented.
+Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
+and targeted public-contract mutation checks.
 Exact-source proof gaps are exposed and tracked for P05.
 No cleanup or release enablement has been performed.
 Prepared: 2026-10-19.

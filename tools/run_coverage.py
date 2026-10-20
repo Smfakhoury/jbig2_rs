@@ -38,7 +38,10 @@ def main():
     output = arguments.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
     try:
-        for name in ("raw.json", "raw.lcov", "runtime.json", "runtime.md", "collection.json", "failure.json"):
+        for name in (
+            "raw.json", "raw.lcov", "runtime.json", "runtime.md", "collection.json",
+            "failure.json", "mutations.json",
+        ):
             (output / name).unlink(missing_ok=True)
         configuration = load_json(ROOT / "toolchain.json")["coverage"]
         cargo = ["cargo", f"+{configuration['rust_toolchain']}", "llvm-cov"]
