@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "a6087b7b1512fe73d3a0cc97ca23a4b87cb9df20",
+  "source_revision": "cb1913926fa862e8659a617f06839ae7e8846d40",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,8 +11,8 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1146,
-    "verified_production_functions": 597,
+    "verified_obligations": 1145,
+    "verified_production_functions": 599,
     "errors": 0,
     "proof_build_compiles": true,
     "exact_production_source_compiles": false,
@@ -21,12 +21,12 @@
     "native_assumptions": [],
     "reviewed_verifier_limitations": 24,
     "audited_forwarders": 23,
-    "runtime_proof_divergences": 12,
+    "runtime_proof_divergences": 11,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "df78873d4879548b0d85fb337c92ec363ec4804c74ab983f163151a41c6c6ec0",
-  "proof_dispositions_sha256": "6c5b55f2377dba71ef6657d5b34d74ab1486cc381790d31cc10b3eddff886919",
+  "production_proof_coverage_sha256": "f381ac5731e014d9702c882c24541939905b1f744f1ded06b566b1c4cf8c1559",
+  "proof_dispositions_sha256": "3434ed1cf3ab31bf06b91bb26696ca726444fbb5ff47d28e14972ea09a80200c",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Batch reset proves quantified zero output; document count agreement now propagates through parser results and all six slice inspection APIs. Standalone metadata preserves original header organization/count and known-count agreement; embedded metadata has sequential/unknown-declaration shape. Five compiled count/metadata counterexamples validate selected contract sensitivity. Runtime statements are unchanged in this propagation tranche. Body-byte parser correspondence, page identity/lifecycle, rejection completeness, decoded output contracts and reader boundaries remain open. Twelve runtime/proof differences and other semantic gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Selected closures include zeroed batch reset, public inspection metadata/count propagation and exact executing typical-row copying. The row-copy scalar substitute is removed; one safe native path proves complete byte/frame semantics and visible-pixel equality, including verified short-row fast paths. Compiled semantic controls distinguish output guarantees from storage safety. Pinned standard-library specifications remain trusted. Eleven runtime/proof differences, caller/first-row semantics and other existing semantic gaps still block release claims.",
   "release_gate": "blocked"
 }

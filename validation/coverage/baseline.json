@@ -2,9 +2,9 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only floor after generated public metadata/context regressions, with unchanged runtime denominators and no per-file regression. Not release coverage approval; changes require explicit review and proposed release goals remain unfulfilled.",
-  "source_revision": "a6087b7b1512fe73d3a0cc97ca23a4b87cb9df20",
-  "source_sha256": "8afe74afd2ef4cc9e9f11cfe001eabe84d05b5ef2d2780e8ba0739d9c4b60e28",
+  "policy": "Upward-only floor after exact row-copy/frame and primitive boundary regressions. Replacing manual copy loops with verified native slice fast paths changes emitted runtime denominators; all per-file/global metric ratios remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "cb1913926fa862e8659a617f06839ae7e8846d40",
+  "source_sha256": "03f1a137823c4b799a2ec70b2f63b733ae341d9d04545f8e77ad699377f22168",
   "test_source_sha256": "877b7cbeaa7272ff3cc97eab1bf3112a171a2da9b95905429e52ee3142f65b90",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
@@ -14,13 +14,13 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 9784, "count": 12636},
-    "regions": {"covered": 9393, "count": 12932},
-    "branches": {"covered": 1704, "count": 2636}
+    "lines": {"covered": 9789, "count": 12634},
+    "regions": {"covered": 9422, "count": 12941},
+    "branches": {"covered": 1723, "count": 2646}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
-    "src/bitmap.rs": {"lines": {"covered": 904, "count": 993}, "regions": {"covered": 791, "count": 1048}, "branches": {"covered": 135, "count": 182}},
+    "src/bitmap.rs": {"lines": {"covered": 909, "count": 991}, "regions": {"covered": 820, "count": 1057}, "branches": {"covered": 154, "count": 192}},
     "src/decode.rs": {"lines": {"covered": 1042, "count": 1391}, "regions": {"covered": 870, "count": 1326}, "branches": {"covered": 135, "count": 230}},
     "src/document.rs": {"lines": {"covered": 907, "count": 1168}, "regions": {"covered": 894, "count": 1131}, "branches": {"covered": 204, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
