@@ -24,23 +24,16 @@
       "reason": "One-line trait forwarder to the verified ArithmeticError::into_decode method; reviewed explicitly, not directly verified as a From implementation."
     },
     {
-      "id": "bitmap::Bitmap::copy_prefix_from",
-      "file": "src/bitmap.rs",
-      "file_sha256": "5786a90c93274df75a82156e3120b98566903c3a139c050e00e4ecd4f84d68bd",
-      "status": "runtime-proof-divergence",
-      "reason": "Normal builds call copy_prefix_chunked; proof builds call copy_prefix_scalar_verified. The wrapper is not an exact-source runtime proof."
-    },
-    {
       "id": "bitmap::Bitmap::compose",
       "file": "src/bitmap.rs",
-      "file_sha256": "5786a90c93274df75a82156e3120b98566903c3a139c050e00e4ecd4f84d68bd",
+      "file_sha256": "f2c68d357d44f9eca86c17ea2b44c20f4e6a04446076d028470e271b3c48ec7b",
       "status": "runtime-proof-divergence",
       "reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper."
     },
     {
       "id": "bitmap::Bitmap::compose_region",
       "file": "src/bitmap.rs",
-      "file_sha256": "5786a90c93274df75a82156e3120b98566903c3a139c050e00e4ecd4f84d68bd",
+      "file_sha256": "f2c68d357d44f9eca86c17ea2b44c20f4e6a04446076d028470e271b3c48ec7b",
       "status": "runtime-proof-divergence",
       "reason": "Normal and proof builds select different region-composition paths; exact executing-wrapper verification remains open."
     },
@@ -187,42 +180,42 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "1e8a41d746e5e2698b97e8e98eece467397fb1fafea2dab4ddf8e92604681a79",
+      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
       "status": "reviewed-verifier-limitation",
       "reason": "Standard Display formatting uses formatting machinery not directly verified by pinned Verus; this is not a raster-kernel or fallible-allocation limitation."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "1e8a41d746e5e2698b97e8e98eece467397fb1fafea2dab4ddf8e92604681a79",
+      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
       "status": "reviewed-verifier-limitation",
       "reason": "The standard Error trait source method is not directly verified by pinned Verus; raster algorithms and allocation specifications are accounted for separately."
     },
     {
       "id": "generic_region::GenericRegionError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "1e8a41d746e5e2698b97e8e98eece467397fb1fafea2dab4ddf8e92604681a79",
+      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#2",
       "file": "src/generic_region.rs",
-      "file_sha256": "1e8a41d746e5e2698b97e8e98eece467397fb1fafea2dab4ddf8e92604681a79",
+      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#3",
       "file": "src/generic_region.rs",
-      "file_sha256": "1e8a41d746e5e2698b97e8e98eece467397fb1fafea2dab4ddf8e92604681a79",
+      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::DecodeError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "1e8a41d746e5e2698b97e8e98eece467397fb1fafea2dab4ddf8e92604681a79",
+      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     },

@@ -76,7 +76,9 @@ Important examples:
   preserves every non-destination byte, copies the complete stored row and
   explicitly relates each visible destination pixel to the old source pixel.
   Typical-prediction timing, caller-loop semantics and the first-row zero edge
-  remain separate gaps. Eleven other runtime/proof divergences remain in the
+  remain separate gaps. Blank construction now also proves zeroed storage as a
+  foundation for, not a complete proof of, the first-row caller rule.
+  Ten other runtime/proof divergences remain in the
   full inventory outside this selected ledger.
 
 The ledger records these distinctions rather than upgrading weaker evidence.
@@ -187,7 +189,7 @@ errors for invalid ranges; self-copy and zero-stride rows remain no-ops.
 `copy_bitmap_row` calls the same implementation in both builds. The obsolete
 proof-only scalar row copier is deleted.
 
-The shared row-byte helper proves complete slice equality, including its short
+The shared packed-byte helper proves complete slice equality, including its short
 0-2 byte and 65-128 byte fixed-block paths. Those paths avoid measured small-row
 library-call overhead without architecture-specific unsafe code. Kernel timing
 is informational on a shared host, not a substitute for P09's dedicated gate.
@@ -198,7 +200,7 @@ establishes the wrapper's explicit visible-pixel equality. Pinned vstd's
 `split_at_mut`/`copy_from_slice` specifications, Rust's standard library and the
 compiler are part of the trust boundary; this does not prove their internals.
 
-`tools/check_row_copy_proof.py` skips the copy or corrupts a different row in
+`tools/check_bitmap_copy_proofs.py` skips the row copy or corrupts a different row in
 isolated copies. Both mutants compile normally, fail the strong byte-result
 contract and pass the control removing only that result while retaining
 storage validity, metadata, length and success. CI uploads the selected
@@ -207,8 +209,35 @@ cover arbitrary stored bytes, padding, both row orders, self-copy, zero width,
 large rows and invalid ranges; existing scalar-oracle comparisons remain.
 
 This closes the helper-level row-content and exact-execution gap, not SLTP
-state/timing, caller-loop output semantics, first-row zero initialization or
+state/timing, caller-loop output semantics, first-row caller zero-edge semantics or
 full generic-region conformance. All requirement reviews remain provisional.
+
+## Exact prefix and zero-padding implementation contracts
+
+The same packed-byte helper now serves `Bitmap::copy_prefix_from`. The old
+normal chunked helper and proof-only scalar helper are deleted. Accepted copies
+promise the exact source prefix and unchanged destination suffix; rejected
+counts promise the exact error and no destination mutation. `Bitmap::blank`
+and false-filled construction promise zero stored bytes, and height padding
+preserves decoded bytes while zeroing the newly added storage.
+An eight-byte prefix specialization uses a fixed-size standard slice copy;
+the existing row-copy implementation and shared helper bodies are unchanged.
+
+The generalized bitmap sensitivity tool runs six compiled counterexamples:
+skipping a row, corrupting another row, skipping a prefix, corrupting an
+uncopied suffix, creating a nonzero blank bitmap, and discarding decoded rows
+during padding. Each fails its strong selected proof and passes a control
+removing only the corresponding output clause, retaining storage/dimensions
+and, where applicable, exact error/non-mutation guarantees. The report is
+`bitmap-copy-proof-sensitivity.json` in Verus CI artifacts; it is explicitly
+partial and cannot replace normal whole-crate verification.
+
+These prefix/padding statements are project implementation contracts, not
+newly approved T.88 requirement records. The existing typical-row record links
+zero initialization as supporting evidence while retaining first-row caller
+and SLTP timing/loop gaps. Its classification and all provisional owner-review
+states remain unchanged. The tool replaces the former row-only checker; no
+ordinary crate API changes.
 
 ## Batch-reset semantic sensitivity
 

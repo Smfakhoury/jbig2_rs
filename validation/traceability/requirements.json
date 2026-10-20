@@ -167,22 +167,29 @@
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
-    "specs/bitmap.rs": "017b31d60494e9d5b48c12eb82ad3b29f24cb4d906c2c8ea8e713ef08b498aca",
+    "specs/bitmap.rs": "36b0b0f4b75158816eff0250614f1abc366153c6678b4bb1d4a0e746f538f8aa",
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
-    "src/bitmap.rs": "5786a90c93274df75a82156e3120b98566903c3a139c050e00e4ecd4f84d68bd",
+    "src/bitmap.rs": "f2c68d357d44f9eca86c17ea2b44c20f4e6a04446076d028470e271b3c48ec7b",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
-    "src/generic_region.rs": "1e8a41d746e5e2698b97e8e98eece467397fb1fafea2dab4ddf8e92604681a79",
+    "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616"
   },
   "definitions": {
+    "zeroed-storage": {
+      "kind": "spec",
+      "file": "specs/bitmap.rs",
+      "module_path": ["spec", "bitmap"],
+      "name": "zeroed_storage",
+      "role": "all stored bytes are zero; an initialization foundation, not caller timing or a complete first-typical-row proof"
+    },
     "row-copy-result": {
       "kind": "spec",
       "file": "specs/bitmap.rs",
@@ -1204,9 +1211,11 @@
       "runtime": [
         "generic_region::copy_bitmap_row",
         "bitmap::Bitmap::copy_row",
-        "bitmap::copy_row_bytes"
+        "bitmap::copy_row_bytes",
+        "bitmap::Bitmap::blank",
+        "bitmap::Bitmap::filled"
       ],
-      "models": ["row-copy-result", "stored-pixel"],
+      "models": ["row-copy-result", "stored-pixel", "zeroed-storage"],
       "proof_macros": ["row-copy-bounds", "copied-row-pixels"],
       "tests": [
         {
@@ -1232,18 +1241,22 @@
         {
           "target": "lib",
           "name": "bitmap::tests::row_copy_bytes_and_chunk_access_have_exact_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "bitmap::tests::blank_storage_is_zero_for_empty_and_partial_rows"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "With valid bitmap storage and in-bounds row numbers, the same native slice-copy path executes and verifies. Success copies every stored destination-row byte from the old source row, preserves every other byte and metadata, and the generic wrapper explicitly proves equality of every visible destination pixel to the corresponding old source pixel.",
+      "scope_of_formal_result": "With valid bitmap storage and in-bounds row numbers, the same native slice-copy path executes and verifies. Success copies every stored destination-row byte from the old source row, preserves every other byte and metadata, and the generic wrapper explicitly proves equality of every visible destination pixel to the corresponding old source pixel. Successful blank construction and false-filled construction additionally prove zero stored bytes, without crediting first-row caller semantics.",
       "assumptions": [
         "Bitmap storage validity and in-bounds rows are verified caller obligations, not assumptions on arbitrary raw bytes.",
         "The pinned vstd specifications for split_at_mut and copy_from_slice, the Rust standard library and compiler remain trusted; their implementation is not proved here."
       ],
       "gaps": [
         "Propagate row semantics through caller loop invariants and the typical-prediction state transition/timing.",
-        "Prove the first typical row's zero-initialization edge rule; its current evidence is an executable test, not this copying helper.",
+        "Propagate the proved blank zero-storage result into first-row caller/SLTP semantics to close the zero-edge rule; the first-row path still has executable rather than complete functional evidence.",
         "Finish normative/model review and complete generic-region decomposition."
       ],
       "functional_evidence": [
@@ -1251,6 +1264,16 @@
           "runtime": "bitmap::copy_row_bytes",
           "section": "ensures",
           "tokens": ["final(destination)@ == source@"]
+        },
+        {
+          "runtime": "bitmap::Bitmap::blank",
+          "section": "ensures",
+          "tokens": ["crate::spec::bitmap::zeroed_storage(&bitmap)"]
+        },
+        {
+          "runtime": "bitmap::Bitmap::filled",
+          "section": "ensures",
+          "tokens": ["!value ==> crate::spec::bitmap::zeroed_storage(&bitmap)"]
         },
         {
           "runtime": "bitmap::Bitmap::copy_row",

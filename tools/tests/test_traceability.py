@@ -260,6 +260,7 @@ class TraceabilityTests(unittest.TestCase):
         self.assertEqual(requirement["review"], "provisional")
         self.assertEqual(set(requirement["runtime"]), {
             "generic_region::copy_bitmap_row", "bitmap::Bitmap::copy_row", "bitmap::copy_row_bytes",
+            "bitmap::Bitmap::blank", "bitmap::Bitmap::filled",
         })
         tokens = " ".join(
             token for claim in requirement["functional_evidence"] for token in claim["tokens"]
@@ -267,6 +268,8 @@ class TraceabilityTests(unittest.TestCase):
         self.assertIn("row_copy_result(old(bitmap), final(bitmap)", tokens)
         self.assertIn("stored_pixel(final(bitmap), x, destination)", tokens)
         self.assertIn("copied-row-pixels", requirement["proof_macros"])
+        self.assertIn("zeroed-storage", requirement["models"])
+        self.assertIn("zeroed_storage(&bitmap)", tokens)
 
     def test_batch_reset_ledger_records_the_proved_zero_result(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
