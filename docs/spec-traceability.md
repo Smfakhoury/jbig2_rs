@@ -33,9 +33,9 @@ decomposition. This tranche does not complete P04.
 
 | Classification | Initial records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 13 | Explicit postcondition evidence within the stated narrow property scope |
+| `functional_contract` | 14 | Explicit postcondition evidence within the stated narrow property scope |
 | `state_preservation` | 1 | Decoder/context invariants, not the requested semantic transformation |
-| `safety_only` | 1 | A verified body without the claimed functional result postcondition |
+| `safety_only` | 0 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 1 | An executing/proof-body substitution already tracked by P05 |
 
 The mapped areas are packed-bit/word order, standalone header fields and
@@ -47,9 +47,12 @@ Important examples:
 - `inspect_file_header` has an explicit relation to its local syntax/field
   models, including validity rejection and optional count interpretation.
   This does not prove complete-document page-count agreement.
-- `build_document_info` checks page counts in its implementation and has a
-  regression test, but its current verification annotation does not expose a
-  functional return-value postcondition for that obligation.
+- `build_document_info` now promises that accepted page-vector length equals
+  both the positive-page-associated PageInformation count in its parsed-segment
+  input and any declared count. Collection maintains prefix cardinality and
+  finalization preserves order length. This does not prove raw-byte parsing,
+  page identity or complete lifecycle semantics, nor propagate a formal
+  guarantee through the public parser entry points.
 - `ArithmeticContext::reset` explicitly promises zero index and MPS fields.
   The initial batch `reset_contexts` contract promised validity only. The P05
   reset tranche now proves all selected output indices and MPS fields are zero,
@@ -136,6 +139,23 @@ Keep T.6/MMR obligations and project-only resource policy distinct. Review
 model adequacy, caller obligations and official-vector disagreements, then close
 the semantic and exact-source gaps under P05. P06 coverage/mutation evidence
 can strengthen testing but cannot substitute for those proofs.
+
+## Document-count semantic sensitivity
+
+`tools/check_document_count_proof.py` runs three isolated counterexamples:
+accepting an inconsistent declared count, dropping a finalized page, and
+collecting a PageInformation payload with a non-PageInformation header. Each
+compiles as ordinary Rust, fails its selected strong contract and passes a
+control removing only the relevant cardinality clauses. Other metadata and
+collection length-agreement guarantees remain in those controls. The last
+case deliberately separates parsed header/data consistency from counting;
+it is not evidence that such input can pass the raw-byte parser.
+
+The collection guard uses an equivalent `matches!` pattern instead of generated
+enum `PartialEq`: the latter did not expose the structural equality needed by
+the proof. Mutable keyed access now exports preservation of slice length.
+There are no new assumptions or runtime/proof substitutions. The result is
+still provisional, helper-level evidence for D.4.3, not full conformance.
 
 ## Batch-reset semantic sensitivity
 

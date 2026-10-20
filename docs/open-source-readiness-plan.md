@@ -5,9 +5,14 @@ and targeted public-contract mutation checks.
 Exact-source proof gaps are exposed and tracked for P05.
 P04 is in progress with a provisional 16-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
-A targeted P05 tranche closes the selected batch-reset output-contract gap
-with quantified zero-state semantics and proof-sensitivity controls. Other
-semantic gaps and the runtime/proof substitution backlog remain open.
+Targeted P05 tranches close the selected batch-reset output-contract gap
+and parsed-document count agreement, with compiled semantic counterexamples
+and weaker proof controls. Document cardinality is tied to positive
+PageInformation records through collection/finalization, not raw-byte parser
+correctness or complete page lifecycle semantics. The current selected ledger
+has 14 functional, one state-preservation and one runtime-divergence record;
+all 16 remain provisional. Other semantic gaps and the 12 runtime/proof
+substitutions remain open.
 No cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,

@@ -1,5 +1,24 @@
 use vstd::prelude::*;
 
+macro_rules! production_page_information_count_step {
+    ($segments:expr, $index:expr) => {
+        proof! {
+            reveal_with_fuel(document_spec::page_information_count, 1);
+            assert(
+                document_spec::page_information_count(($segments)@, ($index) as nat + 1)
+                    == document_spec::page_information_count(($segments)@, ($index) as nat)
+                        + if ($segments)@[($index) as int].header.page_association != 0
+                            && ($segments)@[($index) as int].header.segment_type
+                                == SegmentType::PageInformation {
+                            1nat
+                        } else {
+                            0nat
+                        }
+            );
+        }
+    };
+}
+
 macro_rules! production_page_info_fields {
     ($page:ident) => {
         proof! {

@@ -69,7 +69,9 @@ fn keyed_get<T>(entries: &[(u32, T)], number: u32) -> Option<&T> {
     Some(&entries[index].1)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(
+    ensures final(entries)@.len() == old(entries)@.len(),
+))]
 fn keyed_get_mut<T>(entries: &mut [(u32, T)], number: u32) -> Option<&mut T> {
     let index = keyed_index(entries, number)?;
     Some(&mut entries[index].1)
@@ -873,7 +875,21 @@ fn parse_known_segment_data(
     Ok(data)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(info) =>
+            document_spec::document_organization(&info) == organization
+            && document_spec::document_declared_page_count(&info) == declared_page_count
+            && document_spec::document_segment_count(&info) as nat == segments@.len()
+            && document_spec::document_pages(&info).len()
+                == document_spec::page_information_count(segments@, segments@.len())
+            && match declared_page_count {
+                Some(count) => document_spec::document_pages(&info).len() == count as nat,
+                None => true,
+            },
+        Err(_) => true,
+    },
+))]
 fn build_document_info(
     organization: Organization,
     declared_page_count: Option<u32>,
@@ -901,15 +917,26 @@ fn build_document_info(
     let Ok(segment_count) = u32::try_from(segments.len()) else {
         return Err(MalformedError::IntegerOverflow.into());
     };
-    Ok(DocumentInfo {
+    let info = DocumentInfo {
         organization,
         declared_page_count,
         segment_count,
         pages,
-    })
+    };
+    #[cfg(verus_keep_ghost)]
+    production_document_fields!(&info);
+    Ok(info)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(result) =>
+            result.0@.len() == result.1@.len()
+            && result.0@.len()
+                == document_spec::page_information_count(segments@, segments@.len()),
+        Err(_) => true,
+    },
+))]
 fn collect_page_states(
     segments: &[ParsedSegment<'_>],
     limits: &Limits,
@@ -938,7 +965,15 @@ fn collect_page_states(
     Ok((page_states, page_order))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        old(page_states)@.len() == 0,
+        old(page_order)@.len() == 0,
+    ensures out.is_ok() ==>
+        final(page_states)@.len() == final(page_order)@.len()
+        && final(page_states)@.len()
+            == document_spec::page_information_count(segments@, segments@.len()),
+))]
 fn collect_page_states_into(
     segments: &[ParsedSegment<'_>],
     limits: &Limits,
@@ -947,10 +982,16 @@ fn collect_page_states_into(
 ) -> Result<(), DecodeError> {
     let mut segment_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant segment_index <= segments@.len(),
+        invariant
+            segment_index <= segments@.len(),
+            page_states@.len() == page_order@.len(),
+            page_states@.len()
+                == document_spec::page_information_count(segments@, segment_index as nat),
         decreases segments@.len() - segment_index,
     ))]
     while segment_index < segments.len() {
+        #[cfg(verus_keep_ghost)]
+        production_page_information_count_step!(segments, segment_index);
         let segment = &segments[segment_index];
         validate_page_association(&segment.header)?;
         let page = segment.header.page_association;
@@ -960,7 +1001,7 @@ fn collect_page_states_into(
         }
 
         if keyed_index(page_states, page).is_none() {
-            if segment.header.segment_type != SegmentType::PageInformation {
+            if !matches!(segment.header.segment_type, SegmentType::PageInformation) {
                 return Err(MalformedError::MissingPageInformation(page).into());
             }
             enforce_page_limit(page_states.len(), limits)?;
@@ -1007,7 +1048,12 @@ fn collect_page_states_into(
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(pages) => pages@.len() == page_order@.len(),
+        Err(_) => true,
+    },
+))]
 fn finalize_pages(
     mut page_states: PageStates,
     page_order: &[u32],
@@ -1021,7 +1067,9 @@ fn finalize_pages(
     }
     let mut order_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant order_index <= page_order@.len(),
+        invariant
+            order_index <= page_order@.len(),
+            pages@.len() == order_index,
         decreases page_order@.len() - order_index,
     ))]
     while order_index < page_order.len() {

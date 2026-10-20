@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "bb7ed48205b28cd7e2fc0c1797038a85e4fbb492",
+  "source_revision": "8b8fb6401d08189ad8fbff1b11e9e01f12688833",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,7 +11,7 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1145,
+    "verified_obligations": 1146,
     "verified_production_functions": 597,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 12,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "684e8622ae1731984b81d9750813eeae5e8095501f78f5c3c078c85e817c70b0",
-  "proof_dispositions_sha256": "425571dd2e7a2582792357c734d3ae4ec04bdb933645c0f922353911bbb454e4",
+  "production_proof_coverage_sha256": "bf41d6756ebe4037dc1583d4071671be1fd5af0927fa87de9787a50029ada620",
+  "proof_dispositions_sha256": "d5941d1fb1fa8125c5795f446e3c8084c0fcbe31b4158bb2f522f2f6d9238b6f",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Batch arithmetic reset now proves quantified zero output and length preservation, with selected semantic sensitivity controls; whole-crate obligation counts alone do not express this stronger result. Twelve runtime/proof differences and other semantic gaps still block release claims.",
+  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Batch reset proves quantified zero output; parsed-document metadata cardinality matches positive PageInformation records and any declared count, with collection/finalization contracts and compiled semantic sensitivity controls. Raw-byte parser correspondence and page identity/lifecycle semantics remain open. Twelve runtime/proof differences and other semantic gaps still block release claims.",
   "release_gate": "blocked"
 }

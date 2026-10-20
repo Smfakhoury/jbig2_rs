@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1145 obligations with zero errors and zero native
+Pinned Verus verifies 1146 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 597 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 12 explicitly reviewed runtime/proof divergences.
@@ -117,8 +117,18 @@ preserves slice length, and requires no valid incoming context values. The
 loop's runtime statements are unchanged. Two valid nonzero counterexamples
 compile normally, are rejected by the stronger selected proof, and verify under
 the validity-only control. This closes that helper-level semantic gap, not the
-remaining arithmetic-decision relation, reset call-site timing, page-count
-agreement, or any of the 12 runtime/proof divergences.
+remaining arithmetic-decision relation, reset call-site timing, or any of the
+12 runtime/proof divergences.
+
+Document count agreement now relates accepted metadata to both the declared
+count and the cardinality of positive-page-associated PageInformation records
+in the parsed input. Collection maintains prefix cardinality from empty
+vectors, finalization preserves order length, and metadata field views expose
+the result. An equivalent pattern-matching guard replaces an enum `PartialEq`
+comparison whose generated contract did not establish structural equality.
+Three compiling semantic mutants fail the strong selected proofs and pass
+weaker controls. Raw-byte parser correspondence, public entry-point contract
+propagation, page identity/lifecycle semantics and normative review remain open.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and
