@@ -1,8 +1,17 @@
-name: Fuzz smoke test
+name: Bounded fuzz validation
 
 on:
   pull_request:
   push:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Campaign duration
+        type: choice
+        options: [smoke, extended]
+        default: smoke
 
 permissions:
   contents: read
@@ -10,17 +19,45 @@ permissions:
 jobs:
   fuzz:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PROFILE: ${{ github.event_name == 'schedule' && 'extended' || inputs.profile || 'smoke' }}
+      TRUSTED_CORPUS: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
       - uses: dtolnay/rust-toolchain@nightly
         with:
           toolchain: nightly-2026-10-12
       - run: cargo install cargo-fuzz --version 0.13.2 --locked
-      - run: cargo fuzz build
-      - run: cargo fuzz run file_header_arbitrary -- -max_total_time=60
-      - run: cargo fuzz run file_header_structured -- -max_total_time=60
-      - run: cargo fuzz run document_arbitrary -- -max_total_time=60
-      - run: cargo fuzz run arithmetic -- -max_total_time=60
-      - run: cargo fuzz run huffman -- -max_total_time=60
-      - run: cargo fuzz run mmr -- -max_total_time=60
-      - run: cargo fuzz run generic_region -- -max_total_time=60
+      - uses: actions/cache/restore@v4
+        id: corpus
+        if: env.TRUSTED_CORPUS == 'true'
+        with:
+          path: target/fuzz-corpus
+          key: fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs') }}-${{ github.run_id }}
+          restore-keys: |
+            fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs') }}-
+      - name: Validate failure capture and single-input replay
+        run: python -B tools/check_fuzz_controls.py --output-dir target/fuzz-controls
+      - name: Run all bounded fuzz targets
+        id: campaign
+        run: >-
+          python -B tools/run_fuzz.py run
+          --profile "$PROFILE"
+          --corpus-dir target/fuzz-corpus
+          --output-dir target/fuzz-run
+      - uses: actions/cache/save@v4
+        if: success() && env.TRUSTED_CORPUS == 'true'
+        with:
+          path: target/fuzz-corpus
+          key: ${{ steps.corpus.outputs.cache-primary-key }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/fuzz-run/
+            target/fuzz-controls/

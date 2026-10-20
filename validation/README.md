@@ -73,3 +73,48 @@ source or vector content into the repository. Pass `--poppler-revision` when
 the executable was built from a pinned source revision. The committed
 `results.json` records the versioned system comparison, while
 `pinned-poppler-results.json` records the exact approved source revision.
+
+## Bounded fuzz campaigns and replay
+
+The Linux runner retains all seven pinned cargo-fuzz targets:
+
+```text
+python -B tools/run_fuzz.py run --profile smoke \
+  --corpus-dir target/fuzz-corpus --output-dir target/fuzz-run
+python -B tools/run_fuzz.py replay --targets document_arbitrary \
+  --artifact /path/to/reproducer --output-dir target/fuzz-replay
+```
+
+Output directories must be fresh, so a prior result cannot be overwritten or
+mistaken for the current run. The smoke profile gives each target 60 seconds;
+extended runs give each 300 seconds. Both use a five-second per-input timeout,
+1024 MiB RSS limit and 16384-byte input bound, with an additional runner
+deadline. Only the runner's own newly created process group is terminated if
+its deadline expires. Expected parser errors are fuzz inputs, not failures;
+target failures, timeouts, build errors and reproducers make the run fail.
+
+The seed example reuses the shared project-generated page fixture and constant
+byte patterns. No ITU vectors, third-party samples or private files are read.
+Existing generated seed names must match their bytes; changed/symlinked,
+oversized or excessive corpus entries fail explicitly. Reports bind tool pins,
+source revision/content hashes, bounded commands, logs and reproducer hashes.
+Single-file replay uses one execution rather than starting an open campaign.
+
+PR/push runs use smoke budgets without restoring or saving a trusted corpus.
+Daily scheduled runs use extended budgets. Manual runs choose a profile.
+Only scheduled/manual runs on the repository's default branch may restore or
+save the generated corpus cache; every other run remains isolated. Failed jobs
+always upload the run/control diagnostics and captured reproducers to GitHub
+artifacts, without granting write permissions or secrets to pull requests.
+
+`tools/check_fuzz_controls.py` verifies real failure capture and replay using a
+temporary local clone and a project-generated assertion/input. Baseline replay
+must pass, the isolated altered target must produce the exact input artifact,
+that artifact must reproduce the expected failure, and restoring the original
+target must make replay pass. Production sources are never altered. This
+control does not count as a production fuzz finding or a conformance test.
+
+P08 remains incomplete until hosted campaign/artifact behavior is validated
+and coverage-driven structured/stateful targets, regression-corpus review and
+periodic minimization are completed. These bounded campaigns do not replace
+unit tests, proof checking or normative review.
