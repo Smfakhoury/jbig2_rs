@@ -1,6 +1,6 @@
 # Provisional statement-level T.88 traceability
 
-P04 is in progress. The first ledger maps **16 selected requirement records**
+P04 is in progress. The ledger maps **20 selected requirement records**
 to source contracts, project models, proof support and exact test identities.
 It also inventories all **30 support-matrix features** as a decomposition
 worklist. That worklist is not a count of all normative obligations.
@@ -24,8 +24,8 @@ the repository. Ledger titles and scope notes are original paraphrases.
   source links, model/proof support, exact tests, assumptions and unresolved gaps.
   CI uploads these instead of committing constantly regenerated reports.
 
-All 16 initial records are **provisional**, pending owner normative/model review.
-Five feature groups have partial requirement records; 24 remain not started,
+All 20 records are **provisional**, pending owner normative/model review.
+Seven feature groups have partial requirement records; 22 remain not started,
 one deferred feature is excluded, and none has an approved complete normative
 decomposition. This tranche does not complete P04.
 
@@ -33,7 +33,7 @@ decomposition. This tranche does not complete P04.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 15 | Explicit postcondition evidence within the stated narrow property scope |
+| `functional_contract` | 19 | Explicit postcondition evidence within the stated narrow property scope |
 | `state_preservation` | 1 | Decoder/context invariants, not the requested semantic transformation |
 | `safety_only` | 0 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
@@ -211,6 +211,43 @@ large rows and invalid ranges; existing scalar-oracle comparisons remain.
 This closes the helper-level row-content and exact-execution gap, not SLTP
 state/timing, caller-loop output semantics, first-row caller zero-edge semantics or
 full generic-region conformance. All requirement reviews remain provisional.
+
+## Segment-header retention field interpretation
+
+The approved edition's explicit field definitions in 7.2.4 assign flag bits
+from the first wire byte onward, least-significant bit first within each byte.
+Unused positions are in the final long-form flag byte. The previous runtime
+and model traversed bytes in reverse and checked padding in the first byte.
+Generated independent tests failed before correcting both sides.
+
+There is an **unresolved inconsistency with the worked example in 7.2.8**:
+its existing two-byte fixture has the opposite order to the field definitions
+and its accompanying interpretation. This branch follows 7.2.4, preserves the
+existing fixture as an explicit strict rejection, then tests the field-order
+correction. It does not add a guessed dual-order acceptance heuristic.
+Owner normative adjudication remains a recorded gap, not an assumed approval.
+
+This intentionally changes multi-byte long-form retention behavior. Short
+fields and one-byte long fields retain their interpretation. Successful
+materialization now proves the exact count and wire-bit relation for every
+flag, rather than just vector bounds. The private helper's empty-vector
+precondition is discharged by its verified constructor.
+
+Four provisional records cover flag order/materialization, unused bits,
+reference-width boundaries and strictly lower reference numbers. They are
+helper-level results: raw header-window correspondence, reference graph
+validity and retention lifecycle/caller rules still need separate work.
+Generated tests cover all flag/count bytes, all 65,536 two-byte flag patterns,
+field-width boundaries, page forms, truncations and exact errors. The three
+compiled controls in `tools/check_retention_proofs.py` reject reversed order,
+first-byte padding checks and inverted materialized flags; weaker controls
+retain bounds/length safety without those semantic guarantees.
+
+The approved official-vector classification was re-executed locally and remains
+two exact outputs, seven reviewed strict rejections and one unsupported colour
+case. That unchanged classification does not adjudicate this worked-example
+conflict or establish full conformance. No standards text or vector assets
+are added to the repository.
 
 ## Exact prefix and zero-padding implementation contracts
 

@@ -132,12 +132,12 @@
     {
       "feature": "retention_flags",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial"
     },
     {
       "feature": "referred_to_segment_handling",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial"
     },
     {
       "feature": "combination_operators",
@@ -166,6 +166,7 @@
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
+    "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
     "specs/bitmap.rs": "36b0b0f4b75158816eff0250614f1abc366153c6678b4bb1d4a0e746f538f8aa",
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
@@ -173,6 +174,7 @@
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
+    "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
     "src/bitmap.rs": "f2c68d357d44f9eca86c17ea2b44c20f4e6a04446076d028470e271b3c48ec7b",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
@@ -180,9 +182,41 @@
     "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909",
+    "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616"
   },
   "definitions": {
+    "retention-wire-bit": {
+      "kind": "spec", "file": "specs/segments.rs",
+      "module_path": ["spec", "segments"], "name": "retention_bit",
+      "role": "forward wire-byte order with least-significant-bit indexing within each flag byte"
+    },
+    "retention-values-match": {
+      "kind": "spec", "file": "specs/segments.rs",
+      "module_path": ["spec", "segments"], "name": "retention_values_match",
+      "role": "every materialized retention flag equals its supplied wire bit"
+    },
+    "retention-unused-zero": {
+      "kind": "spec", "file": "specs/segments.rs",
+      "module_path": ["spec", "segments"], "name": "unused_retention_bits_zero",
+      "role": "unused high bits in the final long-form flag byte are zero"
+    },
+    "short-count-valid": {
+      "kind": "spec", "file": "specs/segments.rs",
+      "module_path": ["spec", "segments"], "name": "short_count_valid",
+      "role": "short count/retention field validity, including unused low-field bits"
+    },
+    "reference-width": {
+      "kind": "spec", "file": "specs/segments.rs",
+      "module_path": ["spec", "segments"], "name": "reference_width",
+      "role": "one/two/four-byte reference width at inclusive segment-number boundaries"
+    },
+    "reference-width-facts": {
+      "kind": "macro", "file": "proofs/production_impl/segment_header.rs",
+      "module_path": ["segment_header", "segment_header_proofs"],
+      "name": "production_reference_width",
+      "role": "establish the reference-width runtime partition"
+    },
     "zeroed-storage": {
       "kind": "spec",
       "file": "specs/bitmap.rs",
@@ -433,6 +467,122 @@
     }
   },
   "requirements": [
+    {
+      "id": "T88-SEGMENT-RETENTION-WIRE-ORDER",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.4",
+      "title": "Retention flags progress through wire bytes and low-to-high bits",
+      "feature": "retention_flags",
+      "runtime": [
+        "segment_header::read_retention_flag",
+        "segment_header::fill_retention_values",
+        "segment_header::RetentionFlags::from_bytes"
+      ],
+      "models": ["retention-wire-bit", "retention-values-match"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::long_retention_flags_follow_wire_byte_order"},
+        {"target": "lib", "name": "segment_header::tests::every_two_byte_retention_mask_matches_forward_lsb_indexing"},
+        {"target": "lib", "name": "segment_header::tests::reference_width_boundaries_and_retention_groups_round_trip"},
+        {"target": "lib", "name": "segment_header::tests::parses_long_form_header"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Given supplied flag bytes, successful construction produces exactly count+1 entries and every entry equals the forward wire-bit model. The private append helper starts empty and preserves the relation for every completed entry.",
+      "assumptions": [
+        "Interpretation follows the explicit 7.2.4 field definitions. The reversed 7.2.8 worked example conflicts; owner normative adjudication is pending.",
+        "The verified constructor discharges the private materializer's empty-vector precondition."
+      ],
+      "gaps": [
+        "Complete the raw header-window/field-slice correspondence contract through the parser.",
+        "Review the worked-example discrepancy and complete retention lifecycle/caller obligations; helper equality is not full retention-policy conformance."
+      ],
+      "functional_evidence": [
+        {"runtime": "segment_header::read_retention_flag", "section": "ensures", "tokens": [
+          "value == crate::spec::segments::retention_bit(bytes@, index as nat)"
+        ]},
+        {"runtime": "segment_header::fill_retention_values", "section": "ensures", "tokens": [
+          "out.is_ok() ==> final(values)@.len() == value_count as nat",
+          "out.is_ok() ==> crate::spec::segments::retention_values_match(final(values)@, bytes@)"
+        ]},
+        {"runtime": "segment_header::RetentionFlags::from_bytes", "section": "ensures", "tokens": [
+          "flags.values@.len() == count as nat + 1",
+          "crate::spec::segments::retention_values_match(flags.values@, bytes@)"
+        ]}
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-RETENTION-UNUSED-BITS",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.4",
+      "title": "Unused retention positions are zero in short and long fields",
+      "feature": "retention_flags",
+      "runtime": ["segment_header::validate_short_count", "segment_header::validate_unused_retention_bits"],
+      "models": ["short-count-valid", "retention-unused-zero"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::every_short_count_byte_obeys_count_and_unused_bit_rules"},
+        {"target": "lib", "name": "segment_header::tests::long_retention_unused_bits_are_in_the_final_wire_byte"},
+        {"target": "lib", "name": "segment_header::tests::unused_long_retention_bits_validate_only_the_last_byte"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The short-form guard and long-form final-byte guard accept exactly their field-validity models. Long-form byte ordering follows 7.2.4, not the conflicting worked example.",
+      "assumptions": [
+        "Long-form byte count and supplied field boundaries remain caller obligations.",
+        "The 7.2.4 versus 7.2.8 inconsistency is explicit and not resolved by a dual-order heuristic."
+      ],
+      "gaps": ["Owner normative/model review and complete parser/caller correspondence remain pending."],
+      "functional_evidence": [
+        {"runtime": "segment_header::validate_short_count", "section": "ensures", "tokens": [
+          "crate::spec::segments::short_count_valid(first)", "!crate::spec::segments::short_count_valid(first)"
+        ]},
+        {"runtime": "segment_header::validate_unused_retention_bits", "section": "ensures", "tokens": [
+          "Ok(()) => crate::spec::segments::unused_retention_bits_zero(bit_count, bytes@)",
+          "Err(_) => !crate::spec::segments::unused_retention_bits_zero(bit_count, bytes@)"
+        ]}
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-REFERENCE-WIDTH",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.5",
+      "title": "Reference-number width follows inclusive segment-number boundaries",
+      "feature": "referred_to_segment_handling",
+      "runtime": ["segment_header::reference_width"],
+      "models": ["reference-width"], "proof_macros": ["reference-width-facts"],
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::reference_width_boundaries_and_retention_groups_round_trip"},
+        {"target": "lib", "name": "segment_header::tests::every_generated_header_prefix_is_a_typed_truncation"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper returns the one/two/four-byte model at the 256 and 65536 inclusive boundaries.",
+      "assumptions": ["The model is a provisional translation of the field definition, not a complete parser proof."],
+      "gaps": ["Propagate width selection through raw field-consumption contracts and complete normative review."],
+      "functional_evidence": [
+        {"runtime": "segment_header::reference_width", "section": "ensures", "tokens": [
+          "out == crate::spec::segments::reference_width(segment_number)"
+        ]}
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-REFERENCE-PRECEDENCE",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.5",
+      "title": "A reference names a strictly lower-numbered segment",
+      "feature": "referred_to_segment_handling",
+      "runtime": ["segment_header::require_lower_reference"],
+      "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::reference_numbers_are_strictly_lower_at_every_width_boundary"},
+        {"target": "lib", "name": "segment_header::tests::rejects_nonpreceding_references"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The scalar guard succeeds exactly when the referred number is below the current segment number.",
+      "assumptions": ["Reference existence, type, page association and lifetime require separate records."],
+      "gaps": ["Complete caller validation and normative review; this scalar comparison does not establish graph validity."],
+      "functional_evidence": [
+        {"runtime": "segment_header::require_lower_reference", "section": "ensures", "tokens": [
+          "Ok(()) => referred < segment", "Err(_) => referred >= segment"
+        ]}
+      ],
+      "invariant_evidence": []
+    },
     {
       "id": "T88-BITS-MSB-FIRST",
       "standard": "ITU-T T.88 (08/2018)",
