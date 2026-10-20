@@ -179,7 +179,12 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::inspect`].
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(info) => document_spec::standalone_metadata(input@, &info),
+            Err(_) => true,
+        },
+    ))]
     pub fn inspect(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         let result = self.decoder.inspect(input);
         self.finish_call();
@@ -191,7 +196,12 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::inspect_embedded`].
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(info) => document_spec::embedded_metadata(&info),
+            Err(_) => true,
+        },
+    ))]
     pub fn inspect_embedded(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         let result = self.decoder.inspect_embedded(input);
         self.finish_call();
@@ -203,7 +213,12 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::inspect_embedded_with_globals`].
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(info) => document_spec::embedded_metadata(&info),
+            Err(_) => true,
+        },
+    ))]
     pub fn inspect_embedded_with_globals(
         &mut self,
         input: &[u8],
@@ -244,12 +259,19 @@ impl Decoder {
     ///
     /// This method validates the document envelope and page lifecycle without
     /// decoding compressed region payloads.
+    /// On success, organization and the optional declared count match the
+    /// standalone header; a known count equals the returned page count.
     ///
     /// # Errors
     ///
     /// Returns a typed error for malformed, unsupported, over-limit, or
     /// allocation-failing input.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(info) => document_spec::standalone_metadata(input@, &info),
+            Err(_) => true,
+        },
+    ))]
     pub fn inspect(&self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         let (info, _segments) = parse_standalone_document(input, &self.limits)?;
         Ok(info)
@@ -272,7 +294,12 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unsupported, over-limit, or
     /// allocation-failing input.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(info) => document_spec::embedded_metadata(&info),
+            Err(_) => true,
+        },
+    ))]
     pub fn inspect_embedded(&self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         self.inspect_embedded_internal(input, None)
     }
@@ -283,7 +310,12 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unsupported, over-limit,
     /// allocation-failing, or unresolved input.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(info) => document_spec::embedded_metadata(&info),
+            Err(_) => true,
+        },
+    ))]
     pub fn inspect_embedded_with_globals(
         &self,
         input: &[u8],
@@ -357,7 +389,12 @@ impl Decoder {
         })
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(info) => document_spec::embedded_metadata(&info),
+            Err(_) => true,
+        },
+    ))]
     fn inspect_embedded_internal(
         &self,
         input: &[u8],
@@ -582,7 +619,16 @@ pub(crate) enum ParsedData {
     Other,
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(result) =>
+            document_spec::standalone_metadata(input@, &result.0)
+            && document_spec::document_segment_count(&result.0) as nat == result.1@.len()
+            && document_spec::document_pages(&result.0).len()
+                == document_spec::page_information_count(result.1@, result.1@.len()),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn parse_standalone_document<'a>(
     input: &'a [u8],
     limits: &Limits,
@@ -613,7 +659,16 @@ pub(crate) fn parse_standalone_document<'a>(
     Ok((info, segments))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(result) =>
+            document_spec::embedded_metadata(&result.0)
+            && document_spec::document_segment_count(&result.0) as nat == result.1@.len()
+            && document_spec::document_pages(&result.0).len()
+                == document_spec::page_information_count(result.1@, result.1@.len()),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn parse_embedded_document<'a>(
     input: &'a [u8],
     limits: &Limits,

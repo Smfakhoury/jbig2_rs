@@ -1,4 +1,5 @@
 use vstd::prelude::*;
+use crate::file_header::file_header_spec;
 
 verus! {
 
@@ -48,6 +49,33 @@ pub closed spec fn document_pages(
     document: &crate::document::DocumentInfo,
 ) -> Seq<crate::document::PageInfo> {
     document.pages@
+}
+
+pub open spec fn declared_count_matches_pages(
+    document: &crate::document::DocumentInfo,
+) -> bool {
+    match document_declared_page_count(document) {
+        Some(count) => document_pages(document).len() == count as nat,
+        None => true,
+    }
+}
+
+pub open spec fn standalone_metadata(
+    input: Seq<u8>,
+    document: &crate::document::DocumentInfo,
+) -> bool {
+    &&& file_header_spec::valid(input)
+    &&& !file_header_spec::colour_regions(input)
+    &&& document_organization(document) == file_header_spec::organization(input)
+    &&& document_declared_page_count(document) == file_header_spec::page_count(input)
+    &&& declared_count_matches_pages(document)
+}
+
+pub open spec fn embedded_metadata(
+    document: &crate::document::DocumentInfo,
+) -> bool {
+    &&& document_organization(document) == crate::file_header::Organization::Sequential
+    &&& document_declared_page_count(document) == None
 }
 
 pub(crate) open spec fn page_information_count(

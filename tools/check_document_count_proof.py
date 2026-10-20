@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check semantic sensitivity of parsed-document cardinality contracts."""
+"""Check semantic sensitivity of document cardinality and metadata contracts."""
 
 import argparse
 import hashlib
@@ -43,6 +43,24 @@ CASES = (
             == document_spec::page_information_count(segments@, segments@.len()),""",
         "control_replacement": ",",
     },
+    {
+        "id": "discard_standalone_header_count",
+        "function": "parse_standalone_document",
+        "site": "file_header.page_count(),\n        &segments,",
+        "replacement": "None,\n        &segments,",
+        "control_file": "specs/document.rs",
+        "control_site": "&&& document_declared_page_count(document) == file_header_spec::page_count(input)",
+        "control_replacement": "",
+    },
+    {
+        "id": "invent_embedded_header_count",
+        "function": "parse_embedded_document",
+        "site": "build_document_info(Organization::Sequential, None, &segments, limits, globals)?",
+        "replacement": "build_document_info(Organization::Sequential, Some(0), &segments, limits, globals)?",
+        "control_file": "specs/document.rs",
+        "control_site": "&&& document_declared_page_count(document) == None",
+        "control_replacement": "",
+    },
 )
 PREFIX_INVARIANT = """page_states@.len()
                 == document_spec::page_information_count(segments@, segment_index as nat),"""
@@ -67,7 +85,10 @@ def weaker_contract(source: str, case: dict) -> str:
 
 
 def check_document_count_proof(executable: Path) -> dict:
-    files = ("src/document.rs", "specs/document.rs", "proofs/production_impl/document.rs")
+    files = (
+        "src/document.rs", "specs/document.rs", "proofs/production_impl/document.rs",
+        "src/file_header.rs", "specs/file_header.rs",
+    )
     sources = {name: (ROOT / name).read_bytes() for name in files}
     results = []
     with proof_workspace(ROOT, executable, "jbig2-count-proof-") as (
@@ -76,6 +97,8 @@ def check_document_count_proof(executable: Path) -> dict:
         path = directory / "src/document.rs"
         original = path.read_text(encoding="utf-8")
         for case in CASES:
+            control_path = directory / case.get("control_file", "src/document.rs")
+            control_original = control_path.read_text(encoding="utf-8")
             baseline = selected_proof(
                 executable, directory, environment, False, "document", case["function"],
             )
@@ -86,7 +109,8 @@ def check_document_count_proof(executable: Path) -> dict:
             rejected = selected_proof(
                 executable, directory, environment, True, "document", case["function"],
             )
-            path.write_text(weaker_contract(source, case), encoding="utf-8")
+            control_source = source if control_path == path else control_original
+            control_path.write_text(weaker_contract(control_source, case), encoding="utf-8")
             control = selected_proof(
                 executable, directory, environment, False, "document", case["function"],
             )
@@ -98,11 +122,13 @@ def check_document_count_proof(executable: Path) -> dict:
                 "baseline_selected_verification": baseline,
             })
             path.write_text(original, encoding="utf-8")
+            if control_path != path:
+                control_path.write_text(control_original, encoding="utf-8")
     if any((ROOT / name).read_bytes() != data for name, data in sources.items()):
         raise ValueError("production source changed during document proof sensitivity checks")
     return {
         "schema_version": 1, "status": "passed", "verus_version": expected,
-        "scope": "Selected parsed-document count proofs only; whole-crate verification is separate",
+        "scope": "Selected document count/metadata proofs only; whole-crate verification is separate",
         "production_sources_modified": False, "counterexamples": results,
         "source_bindings": {
             name: hashlib.sha256(data).hexdigest() for name, data in sources.items()

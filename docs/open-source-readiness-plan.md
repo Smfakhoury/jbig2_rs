@@ -7,9 +7,13 @@ P04 is in progress with a provisional 16-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
 Targeted P05 tranches close the selected batch-reset output-contract gap
 and parsed-document count agreement, with compiled semantic counterexamples
-and weaker proof controls. Document cardinality is tied to positive
-PageInformation records through collection/finalization, not raw-byte parser
-correctness or complete page lifecycle semantics. The current selected ledger
+and weaker proof controls. Parser result contracts now retain parsed cardinality;
+all six slice inspection APIs expose successful metadata shape, and standalone
+metadata is linked to the original header-byte fields and known count.
+Document cardinality is tied to positive PageInformation records through
+collection/finalization, not body-byte parser correctness or complete page
+lifecycle semantics. Reader I/O remains a reviewed formal boundary.
+The current selected ledger
 has 14 functional, one state-preservation and one runtime-divergence record;
 all 16 remain provisional. Other semantic gaps and the 12 runtime/proof
 substitutions remain open.
