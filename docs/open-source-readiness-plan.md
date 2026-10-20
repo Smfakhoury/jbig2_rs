@@ -3,7 +3,7 @@
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
 Exact-source proof gaps are exposed and tracked for P05.
-P04 is in progress with a provisional 16-record statement-level ledger and
+P04 is in progress with a provisional 20-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
 Targeted P05 tranches close the selected batch-reset output-contract gap
 and parsed-document count agreement, with compiled semantic counterexamples
@@ -15,14 +15,19 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 15
-functional and one state-preservation record; all 16 remain provisional.
+scalar proof substitute is removed. The current selected ledger has 19
+functional and one state-preservation record; all 20 remain provisional.
 Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled
 bitmap counterexamples check those semantic guarantees.
 Caller timing/first-row semantics, other semantic gaps and 10 runtime/proof
 substitutions remain open.
+Generated segment-header coverage uncovered a long-retention wire-order and
+unused-bit-location mismatch between implementation/model and 7.2.4. Both are
+corrected with exact materialization contracts and independent tests. The
+conflicting 7.2.8 worked example is explicitly retained as a strict rejection
+under the field-rule interpretation; owner normative adjudication remains open.
 No broad repository cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,

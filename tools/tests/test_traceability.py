@@ -249,8 +249,21 @@ class TraceabilityTests(unittest.TestCase):
     def test_checked_repository_ledger_is_schema_valid_and_provisional(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         validate(ledger, "traceability")
-        self.assertEqual(len(ledger["requirements"]), 16)
+        self.assertEqual(len(ledger["requirements"]), 20)
         self.assertTrue(all(entry["review"] == "provisional" for entry in ledger["requirements"]))
+
+    def test_retention_records_disclose_the_worked_example_conflict(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        for identity in ("T88-SEGMENT-RETENTION-WIRE-ORDER", "T88-SEGMENT-RETENTION-UNUSED-BITS"):
+            requirement = next(entry for entry in ledger["requirements"] if entry["id"] == identity)
+            with self.subTest(requirement=identity):
+                self.assertEqual(requirement["strength"], "functional_contract")
+                self.assertEqual(requirement["review"], "provisional")
+                self.assertIn("7.2.8", " ".join(requirement["assumptions"]))
+                self.assertTrue(requirement["gaps"])
+        definition = ledger["definitions"]["retention-wire-bit"]
+        self.assertEqual(definition["module_path"], ["spec", "segments"])
+        self.assertEqual(definition["name"], "retention_bit")
 
     def test_typical_row_ledger_records_exact_bytes_and_visible_pixels(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")

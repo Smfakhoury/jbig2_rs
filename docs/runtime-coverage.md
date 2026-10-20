@@ -151,8 +151,8 @@ ambiguous mutation sites, compile failures and surviving mutants fail the gate.
 No mutation is written to repository runtime files.
 
 This is sensitivity evidence for three contracts, not exhaustive codec mutation
-coverage. New catalog cases have exact integration-test target/name references
-checked against non-ignored `#[test]` functions. The 19 legacy file-only case
+coverage. New catalog cases have exact ordinary Cargo target/name references
+checked against non-ignored `#[test]` functions. The 18 legacy file-only case
 references are an explicit migration backlog, not accepted for new cases.
 
 Remaining P06 work includes migrating those legacy IDs, broader coding-family
@@ -160,3 +160,21 @@ and all-limit tests, additional generated valid streams, broader mutation
 testing, and review/enforcement of release and changed-line thresholds.
 Coverage is distinct from proof coverage and cannot close P05's known
 runtime/proof divergences.
+
+## Generated segment-header tranche
+
+The segment-header corpus now covers every flag/count byte, all 65,536 two-byte
+retention patterns, inclusive reference-width boundaries, both page-field forms,
+every generated-header truncation and exact count/limit/reference errors.
+The reserved-type catalog entry now points to an exact executable test; new
+negative/metamorphic entries use ordinary library-test identities as well as
+integration targets. The legacy-exception list must match the remaining
+file-only cases exactly, so a migrated ID cannot silently regress.
+
+This raises `src/segment_header.rs` to 95.27% emitted runtime lines and 88.64%
+branch outcomes without coverage exclusions. Global release goals remain
+unmet. The corpus also exposed the long-retention byte-order and final-byte
+padding mismatch; runtime and model now follow the explicit 7.2.4 field rules.
+The conflicting 7.2.8 worked example is documented in
+[spec-traceability.md](spec-traceability.md), with owner adjudication still open.
+Coverage and passing synthetic tests do not resolve that normative-review gap.

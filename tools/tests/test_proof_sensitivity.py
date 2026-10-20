@@ -9,10 +9,18 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from proof_sensitivity import selected_proof
+from proof_sensitivity import selected_proof, weakened_contract
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_multi_clause_controls_are_explicit_and_nonempty(self):
+        self.assertEqual(
+            weakened_contract("first second", {"controls": (("first", "one"), ("second", "two"))}),
+            "one two",
+        )
+        with self.assertRaises(ValueError):
+            weakened_contract("unchanged", {"controls": ()})
+
     def verify(self, report, returncode=0, stderr="", expect_failure=False):
         process = CompletedProcess([], returncode, json.dumps(report), stderr)
         with patch("proof_sensitivity.subprocess.run", return_value=process):
