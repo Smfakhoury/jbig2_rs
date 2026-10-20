@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "c68fdf0828eff81279da0da58a77bc8bbd937bb4",
+  "source_revision": "7d4b842447b08c5a299dfbe53610a27765b63073",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 10,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "44051a082e142b790f8729382c5e18c1b162c8060979b8fd7d85eb53cf20ba04",
+  "production_proof_coverage_sha256": "b4336ee2533d09ca3a5df5302b1fed7ba0cc25d2441614ea31ecf17e18e0a396",
   "proof_dispositions_sha256": "29282fc7edcf4e9dcb4ec2278cf6c37259426ce9715db07af2e5e0d7f98435f1",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. Selected closures include batch reset, public inspection metadata, executing row/prefix copy byte/frame semantics, zeroed blank storage and exact decoded-prefix/zero-tail height padding. Prefix scalar/chunked substitutes are deleted; existing row kernel bodies are unchanged. Six compiled bitmap controls distinguish these output guarantees from storage safety alone. Pinned standard-library specifications remain trusted. Ten runtime/proof differences, caller/first-row semantics and other existing gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Earlier selected reset/metadata/bitmap materialization guarantees remain. Retention helpers now follow explicit 7.2.4 forward-byte/final-padding field rules and prove exact flag materialization. The conflicting 7.2.8 worked example is documented as a strict rejection under this interpretation; owner adjudication remains open. Three compiled retention controls supplement existing semantic evidence. Twenty requirement records remain provisional. Ten runtime/proof differences and other caller/conformance gaps still block release claims.",
   "release_gate": "blocked"
 }

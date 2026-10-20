@@ -2,9 +2,9 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only floor after exact prefix/zero-padding and error-state regressions. Deleting obsolete prefix loops changes emitted runtime denominators; all per-file/global metric ratios remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
-  "source_revision": "c68fdf0828eff81279da0da58a77bc8bbd937bb4",
-  "source_sha256": "dd6a52a81dd7ae23ac4b6c1c06c652b6b94d2e5175f6437490ee00cb799bec4b",
+  "policy": "Upward-only floor after generated segment-header/retention/error regressions. Correcting reverse-index guards changes emitted denominators; all per-file/global metric ratios remain nondecreasing. No coverage exclusions added. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "7d4b842447b08c5a299dfbe53610a27765b63073",
+  "source_sha256": "e625083b9d002811ab5968ed50fe08b1ccb34e8eebb1f79dc6f01c1d09333b63",
   "test_source_sha256": "877b7cbeaa7272ff3cc97eab1bf3112a171a2da9b95905429e52ee3142f65b90",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
@@ -14,9 +14,9 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 9772, "count": 12611},
-    "regions": {"covered": 9412, "count": 12921},
-    "branches": {"covered": 1723, "count": 2642}
+    "lines": {"covered": 9805, "count": 12609},
+    "regions": {"covered": 9454, "count": 12918},
+    "branches": {"covered": 1731, "count": 2638}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
@@ -31,9 +31,9 @@
     "src/huffman.rs": {"lines": {"covered": 661, "count": 832}, "regions": {"covered": 659, "count": 853}, "branches": {"covered": 154, "count": 234}},
     "src/limits.rs": {"lines": {"covered": 22, "count": 22}, "regions": {"covered": 19, "count": 19}, "branches": {"covered": 0, "count": 0}},
     "src/mmr.rs": {"lines": {"covered": 516, "count": 615}, "regions": {"covered": 469, "count": 606}, "branches": {"covered": 115, "count": 150}},
-    "src/reader.rs": {"lines": {"covered": 97, "count": 101}, "regions": {"covered": 87, "count": 93}, "branches": {"covered": 9, "count": 12}},
+    "src/reader.rs": {"lines": {"covered": 98, "count": 101}, "regions": {"covered": 88, "count": 93}, "branches": {"covered": 9, "count": 12}},
     "src/segment_data.rs": {"lines": {"covered": 222, "count": 263}, "regions": {"covered": 225, "count": 275}, "branches": {"covered": 52, "count": 70}},
-    "src/segment_header.rs": {"lines": {"covered": 230, "count": 277}, "regions": {"covered": 235, "count": 297}, "branches": {"covered": 31, "count": 48}},
+    "src/segment_header.rs": {"lines": {"covered": 262, "count": 275}, "regions": {"covered": 276, "count": 294}, "branches": {"covered": 39, "count": 44}},
     "src/symbol_text.rs": {"lines": {"covered": 1962, "count": 3007}, "regions": {"covered": 1635, "count": 2842}, "branches": {"covered": 253, "count": 530}}
   }
 }
