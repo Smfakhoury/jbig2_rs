@@ -1,0 +1,991 @@
+{
+  "schema_version": 1,
+  "review_policy": "Provisional assistant source/normative assessment, not owner approval or a conformance certificate. Source hashes bind the review. Functional contracts relate implementation to project models; translation from T.88 remains a separate review obligation. Feature worklists are not exhaustive requirement counts.",
+  "standards": [
+    {
+      "id": "ITU-T T.88 (08/2018)",
+      "edition": "2.0",
+      "document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6"
+    }
+  ],
+  "features": [
+    {
+      "feature": "decoder",
+      "support_status": "required",
+      "decomposition": "partial"
+    },
+    {
+      "feature": "encoder",
+      "support_status": "deferred",
+      "decomposition": "excluded"
+    },
+    {
+      "feature": "standalone_file_organization",
+      "support_status": "required",
+      "decomposition": "partial"
+    },
+    {
+      "feature": "sequential_organization",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "random_access_organization",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "embedded_organization",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "pdf_global_and_page_segments",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "known_height_pages",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "unknown_height_pages",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "arithmetic_coding",
+      "support_status": "required",
+      "decomposition": "partial"
+    },
+    {
+      "feature": "standard_huffman_tables",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "custom_huffman_tables",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "mmr_coding",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "generic_regions",
+      "support_status": "required",
+      "decomposition": "partial"
+    },
+    {
+      "feature": "generic_refinement_regions",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "symbol_dictionaries",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "text_regions",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "pattern_dictionaries",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "halftone_regions",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "immediate_regions",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "intermediate_regions",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "refinement_aggregation",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "multiple_pages",
+      "support_status": "required",
+      "decomposition": "partial"
+    },
+    {
+      "feature": "global_segments",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "retention_flags",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "referred_to_segment_handling",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "combination_operators",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "striped_pages",
+      "support_status": "required",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "colour_palette",
+      "support_status": "unsupported",
+      "decomposition": "not_started"
+    },
+    {
+      "feature": "lossy_symbol_substitution_by_decoder",
+      "support_status": "prohibited",
+      "decomposition": "not_started"
+    }
+  ],
+  "bindings": {
+    "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
+    "proofs/production_impl/generic_region.rs": "3eaa609e5600f5286d0a4e7f45ee73aaaee481352e376df8a6ab38c55e3f4ca5",
+    "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
+    "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
+    "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
+    "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
+    "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
+    "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
+    "src/arithmetic.rs": "1e5d3532d7103d783e7785e15221de14b666f13366669c3d7919e68658018a00",
+    "src/document.rs": "4e8a3e2f38e77690358ea835b2c1b46358fc77ff5d800fa99ab760d5a3ffa590",
+    "src/file_header.rs": "faa0bfac630fffd59ad855389b2a4cc03fd26f4e1fd6f42c03712865e41f4220",
+    "src/generic_region.rs": "b350e8769ddfe5ea8e12fc3c0dc08365b99f966af1fd3a298d75cb65e7971b64",
+    "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
+    "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909",
+    "tests/spec_header.rs": "324fe776f7ffebf4f677854e6a4fc354e72e94fc35c6566d073969b1ad559e79"
+  },
+  "definitions": {
+    "bit-value": {
+      "kind": "spec",
+      "file": "specs/readers.rs",
+      "module_path": [
+        "spec",
+        "readers"
+      ],
+      "name": "bits_value",
+      "role": "unsigned MSB-first output model"
+    },
+    "header-valid": {
+      "kind": "spec",
+      "file": "specs/file_header.rs",
+      "module_path": [
+        "file_header",
+        "file_header_spec"
+      ],
+      "name": "valid",
+      "role": "local header syntax acceptance"
+    },
+    "header-signature": {
+      "kind": "spec",
+      "file": "specs/file_header.rs",
+      "module_path": [
+        "file_header",
+        "file_header_spec"
+      ],
+      "name": "has_signature",
+      "role": "identification octets"
+    },
+    "header-organization": {
+      "kind": "spec",
+      "file": "specs/file_header.rs",
+      "module_path": [
+        "file_header",
+        "file_header_spec"
+      ],
+      "name": "organization",
+      "role": "organization bit interpretation"
+    },
+    "header-count": {
+      "kind": "spec",
+      "file": "specs/file_header.rs",
+      "module_path": [
+        "file_header",
+        "file_header_spec"
+      ],
+      "name": "page_count",
+      "role": "optional four-byte count"
+    },
+    "header-extended": {
+      "kind": "spec",
+      "file": "specs/file_header.rs",
+      "module_path": [
+        "file_header",
+        "file_header_spec"
+      ],
+      "name": "extended_templates",
+      "role": "declaration bit only"
+    },
+    "header-colour": {
+      "kind": "spec",
+      "file": "specs/file_header.rs",
+      "module_path": [
+        "file_header",
+        "file_header_spec"
+      ],
+      "name": "colour_regions",
+      "role": "declaration bit only, not colour decoding"
+    },
+    "header-length": {
+      "kind": "spec",
+      "file": "specs/file_header.rs",
+      "module_path": [
+        "file_header",
+        "file_header_spec"
+      ],
+      "name": "byte_length",
+      "role": "conditional header size"
+    },
+    "context-valid": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "context_valid",
+      "role": "context bounds invariant, not reset-to-zero semantics"
+    },
+    "decoder-valid": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "decoder_valid",
+      "role": "normalized decoder-state invariant, not decoded-decision equivalence"
+    },
+    "template-bits": {
+      "kind": "spec",
+      "file": "specs/generic_region.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec"
+      ],
+      "name": "generic_context_bits",
+      "role": "template cardinality lookup"
+    },
+    "sltp-index": {
+      "kind": "spec",
+      "file": "specs/generic_region.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec"
+      ],
+      "name": "generic_sltp_context",
+      "role": "project gather-order SLTP index lookup"
+    },
+    "bits-before": {
+      "kind": "macro",
+      "file": "proofs/production_impl/readers.rs",
+      "module_path": [
+        "reader_proofs"
+      ],
+      "name": "production_read_bits_before",
+      "role": "loop-state proof support"
+    },
+    "bits-after": {
+      "kind": "macro",
+      "file": "proofs/production_impl/readers.rs",
+      "module_path": [
+        "reader_proofs"
+      ],
+      "name": "production_read_bits_after",
+      "role": "bit-value recurrence proof support"
+    },
+    "header-result": {
+      "kind": "macro",
+      "file": "proofs/production_impl/file_header.rs",
+      "module_path": [
+        "file_header_proofs"
+      ],
+      "name": "production_file_header_result",
+      "role": "field-view proof support"
+    },
+    "template-facts": {
+      "kind": "macro",
+      "file": "proofs/production_impl/generic_region.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_proofs"
+      ],
+      "name": "production_generic_template_facts",
+      "role": "template parameter proof support"
+    }
+  },
+  "requirements": [
+    {
+      "id": "T88-BITS-MSB-FIRST",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "5.4.1",
+      "title": "Read packed bits from the high bit of each byte before advancing to the next byte",
+      "feature": "decoder",
+      "runtime": [
+        "reader::BitReader::read_bits"
+      ],
+      "models": [
+        "bit-value"
+      ],
+      "proof_macros": [
+        "bits-before",
+        "bits-after"
+      ],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "reader::tests::bit_reader_crosses_byte_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "reader::tests::failed_bit_read_preserves_position"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Successful bounded reads equal the recursive bit-value model and advance by the requested count; errors preserve the cursor.",
+      "assumptions": [
+        "Reader cursor is within input; input length is representable in bits; the model's extraction order is a reviewed translation of 5.4.1."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "reader::BitReader::read_bits",
+          "section": "ensures",
+          "tokens": [
+            "value as nat == crate::spec::readers::bits_value(",
+            "final(self).bit_position == old(self).bit_position + count"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-WORDS-MSB-FIRST",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "5.4.2",
+      "title": "Interpret supported multi-byte integer primitives with the first byte most significant",
+      "feature": "decoder",
+      "runtime": [
+        "reader::ByteReader::read_u16",
+        "reader::ByteReader::read_u32"
+      ],
+      "models": [],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "reader::tests::byte_reader_uses_big_endian_values"
+        },
+        {
+          "target": "spec_header",
+          "name": "page_count_field_is_unsigned_and_most_significant_first"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "The 16- and 32-bit primitive postconditions specify byte shifts and cursor advancement directly.",
+      "assumptions": [
+        "Cursor validity is established by construction/prior reads; other field widths require their own mappings."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "reader::ByteReader::read_u16",
+          "section": "ensures",
+          "tokens": [
+            "<< 8",
+            "value",
+            "final(self).position == old(self).position + 2"
+          ]
+        },
+        {
+          "runtime": "reader::ByteReader::read_u32",
+          "section": "ensures",
+          "tokens": [
+            "<< 24",
+            "<< 16",
+            "<< 8",
+            "final(self).position == old(self).position + 4"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HEADER-SIGNATURE",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.1",
+      "title": "Recognize the fixed eight-byte standalone identifier",
+      "feature": "standalone_file_organization",
+      "runtime": [
+        "file_header::inspect_file_header"
+      ],
+      "models": [
+        "header-valid",
+        "header-signature"
+      ],
+      "proof_macros": [
+        "header-result"
+      ],
+      "tests": [
+        {
+          "target": "spec_header",
+          "name": "signature_mismatch_is_rejected_at_each_octet"
+        },
+        {
+          "target": "spec_header",
+          "name": "every_valid_header_prefix_remains_truncated_until_complete"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Acceptance/rejection follows the local header-validity model, which includes the exact signature predicate.",
+      "assumptions": [
+        "The model's identification octets are a provisional, source-hash-bound normative capture."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "file_header::inspect_file_header",
+          "section": "ensures",
+          "tokens": [
+            "file_header_spec::valid(input@)",
+            "Err(_) => !file_header_spec::valid(input@)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HEADER-ORGANIZATION",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.2 bit 0",
+      "title": "Decode the standalone organization declaration",
+      "feature": "standalone_file_organization",
+      "runtime": [
+        "file_header::inspect_file_header"
+      ],
+      "models": [
+        "header-organization"
+      ],
+      "proof_macros": [
+        "header-result"
+      ],
+      "tests": [
+        {
+          "target": "spec_header",
+          "name": "flag_fields_follow_d4_2_for_every_flag_byte"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Returned organization equals the bit-0 model; this does not prove processing of either complete organization.",
+      "assumptions": [
+        "The bit-to-enum model is a provisional translation of D.4.2."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "file_header::inspect_file_header",
+          "section": "ensures",
+          "tokens": [
+            "== file_header_spec::organization(input@)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HEADER-COUNT-PRESENCE",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.2 bit 1; D.4.3",
+      "title": "Omit the declared count when the unknown-count flag is set",
+      "feature": "standalone_file_organization",
+      "runtime": [
+        "file_header::inspect_file_header"
+      ],
+      "models": [
+        "header-count",
+        "header-length",
+        "header-valid"
+      ],
+      "proof_macros": [
+        "header-result"
+      ],
+      "tests": [
+        {
+          "target": "spec_header",
+          "name": "flag_fields_follow_d4_2_for_every_flag_byte"
+        },
+        {
+          "target": "spec_header",
+          "name": "every_valid_header_prefix_remains_truncated_until_complete"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Optional count and consumed header length match the conditional field model.",
+      "assumptions": [
+        "Header length is only the header extent, not complete-stream validity."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "file_header::inspect_file_header",
+          "section": "ensures",
+          "tokens": [
+            "== file_header_spec::page_count(input@)",
+            "== file_header_spec::byte_length(input@)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HEADER-EXTENDED-DECLARATION",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.2 bit 2",
+      "title": "Expose the declaration that extended adaptive templates may occur",
+      "feature": "standalone_file_organization",
+      "runtime": [
+        "file_header::inspect_file_header"
+      ],
+      "models": [
+        "header-extended"
+      ],
+      "proof_macros": [
+        "header-result"
+      ],
+      "tests": [
+        {
+          "target": "spec_header",
+          "name": "flag_fields_follow_d4_2_for_every_flag_byte"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Declaration-bit decoding only, not cross-segment enforcement or extended-template raster semantics.",
+      "assumptions": [
+        "The bit position is captured from the pinned D.4.2 edition."
+      ],
+      "gaps": [
+        "Cross-segment use restrictions need a separate requirement and proof assessment."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "file_header::inspect_file_header",
+          "section": "ensures",
+          "tokens": [
+            "== file_header_spec::extended_templates(input@)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HEADER-COLOUR-DECLARATION",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.2 bit 3",
+      "title": "Expose the declaration that coloured regions may occur",
+      "feature": "standalone_file_organization",
+      "runtime": [
+        "file_header::inspect_file_header"
+      ],
+      "models": [
+        "header-colour"
+      ],
+      "proof_macros": [
+        "header-result"
+      ],
+      "tests": [
+        {
+          "target": "spec_header",
+          "name": "flag_fields_follow_d4_2_for_every_flag_byte"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Header metadata only; this is not colour-decoder support.",
+      "assumptions": [
+        "Colour decoding remains outside the approved project profile."
+      ],
+      "gaps": [
+        "Colour rejection/profile handling needs its own policy trace."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "file_header::inspect_file_header",
+          "section": "ensures",
+          "tokens": [
+            "== file_header_spec::colour_regions(input@)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HEADER-RESERVED-FLAGS",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.2 bits 4-7",
+      "title": "Do not accept a standalone header with reserved flag bits set",
+      "feature": "standalone_file_organization",
+      "runtime": [
+        "file_header::inspect_file_header"
+      ],
+      "models": [
+        "header-valid"
+      ],
+      "proof_macros": [
+        "header-result"
+      ],
+      "tests": [
+        {
+          "target": "spec_header",
+          "name": "flag_fields_follow_d4_2_for_every_flag_byte"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Header validity includes a zero high nibble; typed error details are checked by tests rather than this postcondition.",
+      "assumptions": [
+        "The acceptance predicate is the reviewed local syntactic model."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "file_header::inspect_file_header",
+          "section": "ensures",
+          "tokens": [
+            "file_header_spec::valid(input@)",
+            "Err(_) => !file_header_spec::valid(input@)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HEADER-COUNT-VALUE",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.3; 5.4.2; 5.4.4",
+      "title": "Decode the present page-count field as an unsigned four-byte value",
+      "feature": "standalone_file_organization",
+      "runtime": [
+        "file_header::inspect_file_header"
+      ],
+      "models": [
+        "header-count"
+      ],
+      "proof_macros": [
+        "header-result"
+      ],
+      "tests": [
+        {
+          "target": "spec_header",
+          "name": "page_count_field_is_unsigned_and_most_significant_first"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Decoded metadata equals the unsigned big-endian field model, including numeric endpoints.",
+      "assumptions": [
+        "No claim is made here that the declared count matches actual document pages."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "file_header::inspect_file_header",
+          "section": "ensures",
+          "tokens": [
+            "== file_header_spec::page_count(input@)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-DOCUMENT-COUNT-AGREEMENT",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.4.3",
+      "title": "A declared page count agrees with the document's pages",
+      "feature": "multiple_pages",
+      "runtime": [
+        "document::build_document_info"
+      ],
+      "models": [],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "document::tests::rejects_page_count_mismatch"
+        }
+      ],
+      "strength": "safety_only",
+      "review": "provisional",
+      "scope_of_formal_result": "The body verifies, but its attribute has no functional return-value postcondition for page-count agreement.",
+      "assumptions": [
+        "Called parsing helpers satisfy their preconditions; a passing test is not a functional proof."
+      ],
+      "gaps": [
+        "Add or identify a postcondition relating accepted metadata to declared and collected page counts."
+      ],
+      "functional_evidence": [],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-GENERIC-CONTEXT-SIZE",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.2.5.3; Figures 3-6",
+      "title": "Select the context cardinality associated with each generic template",
+      "feature": "generic_regions",
+      "runtime": [
+        "generic_region::GenericTemplate::context_bits"
+      ],
+      "models": [
+        "template-bits"
+      ],
+      "proof_macros": [
+        "template-facts"
+      ],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "generic_region::tests::generic_template_geometry_and_sltp_indices_are_exact"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "The helper returns the project's template-size model and a bounded bit count.",
+      "assumptions": [
+        "Template-to-model capture needs normative review; cardinality does not prove geometric gathering."
+      ],
+      "gaps": [
+        "Full template geometry and context-gathering equivalence need separate requirements."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "generic_region::GenericTemplate::context_bits",
+          "section": "ensures",
+          "tokens": [
+            "out as nat == generic_region_spec::generic_context_bits(self)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-GENERIC-SLTP-CONTEXT",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.2.5.7 step 3b; Figures 8-11",
+      "title": "Select the template-specific SLTP context, independently of relocated adaptive pixels",
+      "feature": "generic_regions",
+      "runtime": [
+        "generic_region::GenericTemplate::sltp_context"
+      ],
+      "models": [
+        "sltp-index"
+      ],
+      "proof_macros": [
+        "template-facts"
+      ],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "generic_region::tests::generic_template_geometry_and_sltp_indices_are_exact"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Lookup equality to the project gather-order model and index bounds only.",
+      "assumptions": [
+        "Context gathering order is implementation-defined but must be consistent; the numeric indices are not universal normative constants."
+      ],
+      "gaps": [
+        "Diagram-to-gather-order translation and callers' use at the required raster step need independent review/proofs."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "generic_region::GenericTemplate::sltp_context",
+          "section": "ensures",
+          "tokens": [
+            "out as nat == generic_region_spec::generic_sltp_context(self)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-ARITHMETIC-RESET-ONE",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "E.3.7",
+      "title": "Reset one probability context's state index and MPS sense to zero",
+      "feature": "arithmetic_coding",
+      "runtime": [
+        "arithmetic::ArithmeticContext::reset"
+      ],
+      "models": [
+        "context-valid"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::contexts_reset_and_restore_safely"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Both reset fields are explicitly zero in the method's postcondition.",
+      "assumptions": [
+        "The invariant model alone is weaker than the zero-field postcondition; call-site timing is outside this record."
+      ],
+      "gaps": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticContext::reset",
+          "section": "ensures",
+          "tokens": [
+            "final(self).state_index == 0",
+            "final(self).mps == 0"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-ARITHMETIC-RESET-SET",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "E.3.7",
+      "title": "Reset every selected probability context to zero",
+      "feature": "arithmetic_coding",
+      "runtime": [
+        "arithmetic::reset_contexts"
+      ],
+      "models": [
+        "context-valid"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::contexts_reset_and_restore_safely"
+        }
+      ],
+      "strength": "state_preservation",
+      "review": "provisional",
+      "scope_of_formal_result": "The batch routine's current postcondition establishes context validity, not zero values.",
+      "assumptions": [
+        "The implementation calls the zero constructor; this implementation fact is not exported as a batch semantic postcondition."
+      ],
+      "gaps": [
+        "Strengthen the batch postcondition and loop invariant to quantify zero state index and MPS over all output contexts."
+      ],
+      "functional_evidence": [],
+      "invariant_evidence": [
+        {
+          "runtime": "arithmetic::reset_contexts",
+          "section": "ensures",
+          "tokens": [
+            "arithmetic_spec::context_valid(final(contexts)@[index])"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T88-ARITHMETIC-DECISION",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "E.3.2; Figures E.15-E.17",
+      "title": "Produce the prescribed arithmetic decision and probability-state transition",
+      "feature": "arithmetic_coding",
+      "runtime": [
+        "arithmetic::ArithmeticDecoder::decode_signal"
+      ],
+      "models": [
+        "context-valid",
+        "decoder-valid"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+        }
+      ],
+      "strength": "state_preservation",
+      "review": "provisional",
+      "scope_of_formal_result": "The exposed postcondition bounds the signal and preserves decoder/context validity; it is not a full decision-recurrence model.",
+      "assumptions": [
+        "Valid input decoder/context state and reviewed probability tables; the Annex-H-derived test is not proof of all decisions."
+      ],
+      "gaps": [
+        "A functional postcondition must relate the returned decision and updated registers/context to the normative transition."
+      ],
+      "functional_evidence": [],
+      "invariant_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "section": "ensures",
+          "tokens": [
+            "arithmetic_spec::decoder_state_valid(final(self))",
+            "arithmetic_spec::context_valid(*final(context))"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "T88-GENERIC-TYPICAL-ROW",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.2.5.5; 6.2.5.7 step 3c",
+      "title": "A typical row reproduces the preceding row under the specified edge convention",
+      "feature": "generic_regions",
+      "runtime": [
+        "generic_region::copy_bitmap_row"
+      ],
+      "models": [],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "generic_region::tests::tpgd_toggles_and_copies_without_pixel_decisions"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::first_typical_generic_row_is_zero"
+        }
+      ],
+      "strength": "runtime_divergence",
+      "review": "provisional",
+      "scope_of_formal_result": "The wrapper selects different runtime/proof copy paths and cannot be credited as an exact executing-body proof.",
+      "assumptions": [
+        "Storage/bounds contracts and tests do not imply whole-row pixel equivalence of the executing wrapper."
+      ],
+      "gaps": [
+        "Close the P05 runtime/proof substitution and prove row contents, then trace the caller's typical-prediction state transition."
+      ],
+      "functional_evidence": [],
+      "invariant_evidence": []
+    }
+  ]
+}

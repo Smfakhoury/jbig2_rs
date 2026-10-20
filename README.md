@@ -64,6 +64,15 @@ black-box oracles. The reviewed rejections and oracle differences remain under
 `validation/` and require normative re-evaluation before stronger claims.
 The [readiness plan](docs/open-source-readiness-plan.md) tracks the remaining work.
 
+## Normative traceability
+
+The [provisional T.88 ledger](docs/spec-traceability.md) links an initial
+16 requirement records to exact contracts, model/proof definitions and test
+identities. It distinguishes functional postconditions from state/bounds-only
+evidence and runtime/proof substitutions. All 30 feature rows have a
+decomposition worklist, but requirement decomposition and owner review remain
+incomplete; passing the reference checker is not a conformance certificate.
+
 ## Local checks
 
 ```text
