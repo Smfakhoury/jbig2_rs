@@ -126,9 +126,15 @@ in the parsed input. Collection maintains prefix cardinality from empty
 vectors, finalization preserves order length, and metadata field views expose
 the result. An equivalent pattern-matching guard replaces an enum `PartialEq`
 comparison whose generated contract did not establish structural equality.
-Three compiling semantic mutants fail the strong selected proofs and pass
-weaker controls. Raw-byte parser correspondence, public entry-point contract
-propagation, page identity/lifecycle semantics and normative review remain open.
+Five compiling semantic mutants fail the strong selected proofs and pass
+weaker controls. The standalone and embedded parsers now export those
+cardinality guarantees against their returned segment sequences. All six
+slice-based `Decoder`/`DecoderContext` inspection methods expose successful
+metadata shape; standalone results preserve header-byte organization/count
+and known-count agreement. Existing runtime statements are unchanged.
+Body-byte parser correspondence, page identity/lifecycle semantics, decoded
+output contracts, rejection completeness and normative review remain open.
+Reader I/O remains a reviewed boundary rather than a newly verified body.
 
 The Annex A integer and IAID callback limitation is closed: production now
 uses concrete decoder-state methods with verified context, cursor, and

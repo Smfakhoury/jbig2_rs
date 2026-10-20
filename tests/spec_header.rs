@@ -194,3 +194,83 @@ fn inconsistent_declared_counts_report_exact_actual_count() {
         }
     }
 }
+
+#[test]
+fn inspection_metadata_preserves_headers_across_context_reuse() {
+    let decoder = Decoder::default();
+    let mut context = decoder.context();
+    for pages in [&[][..], &[1][..], &[3, 1, 2][..]] {
+        for declared in [None, Some(u32::try_from(pages.len()).unwrap())] {
+            for sequential in [false, true] {
+                for extended in [false, true] {
+                    let mut bytes = document(sequential, declared, pages);
+                    if extended {
+                        bytes[8] |= 4;
+                    }
+                    let expected = decoder.inspect(&bytes).unwrap();
+                    assert!(context.inspect(b"invalid header").is_err());
+                    let info = context.inspect(&bytes).expect("recovered metadata");
+                    let parsed_header = inspect_file_header(&bytes).unwrap();
+                    assert_eq!(info.organization(), parsed_header.organization());
+                    assert_eq!(info.declared_page_count(), parsed_header.page_count());
+                    assert_eq!(info.pages().len(), pages.len());
+                    assert_eq!(info, expected);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn embedded_inspection_metadata_has_no_standalone_declaration() {
+    let decoder = Decoder::default();
+    let globals = decoder.parse_globals(&[]).unwrap();
+    let mut context = decoder.context();
+    let empty = document(true, None, &[]);
+    let header_length = inspect_file_header(&empty).unwrap().byte_length();
+    let end_marker_length = empty.len() - header_length;
+    for pages in [&[][..], &[1][..], &[3, 1, 2][..]] {
+        let bytes = document(true, None, pages);
+        let expected = decoder.inspect(&bytes).unwrap();
+        let embedded = &bytes[header_length..bytes.len() - end_marker_length];
+        assert!(context.inspect_embedded(&[0xff]).is_err());
+        for info in [
+            decoder.inspect_embedded(embedded).unwrap(),
+            decoder
+                .inspect_embedded_with_globals(embedded, &globals)
+                .unwrap(),
+            context.inspect_embedded(embedded).unwrap(),
+            context
+                .inspect_embedded_with_globals(embedded, &globals)
+                .unwrap(),
+        ] {
+            assert_eq!(info.organization(), Organization::Sequential);
+            assert_eq!(info.declared_page_count(), None);
+            assert_eq!(
+                info.segment_count(),
+                u32::try_from(pages.len() * 2).unwrap()
+            );
+            assert_eq!(info.pages(), expected.pages());
+        }
+    }
+}
+
+#[test]
+fn colour_header_is_not_accepted_as_document_metadata() {
+    let decoder = Decoder::default();
+    let mut context = decoder.context();
+    for sequential in [false, true] {
+        for declared in [None, Some(1)] {
+            let mut bytes = document(sequential, declared, &[1]);
+            bytes[8] |= 8;
+            for result in [decoder.inspect(&bytes), context.inspect(&bytes)] {
+                assert!(matches!(
+                    result,
+                    Err(DecodeError::Unsupported(
+                        jbig2_rs::UnsupportedFeature::Colour
+                    ))
+                ));
+            }
+        }
+    }
+}

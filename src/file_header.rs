@@ -6,7 +6,7 @@ use vstd::prelude::*;
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
 #[path = "../specs/file_header.rs"]
-mod file_header_spec;
+pub(crate) mod file_header_spec;
 
 /// Segment and payload organization for a standalone JBIG2 file.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

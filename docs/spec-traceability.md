@@ -50,9 +50,15 @@ Important examples:
 - `build_document_info` now promises that accepted page-vector length equals
   both the positive-page-associated PageInformation count in its parsed-segment
   input and any declared count. Collection maintains prefix cardinality and
-  finalization preserves order length. This does not prove raw-byte parsing,
-  page identity or complete lifecycle semantics, nor propagate a formal
-  guarantee through the public parser entry points.
+  finalization preserves order length. Both parser results now retain that
+  relation to their returned parsed segments. `Decoder::inspect` and
+  `DecoderContext::inspect` expose successful metadata's organization and count
+  relation to the original standalone header bytes, including known-count
+  agreement. This does not prove body-byte parsing, page identity or complete
+  lifecycle semantics, rejection completeness or decoded output-page contracts.
+  Embedded inspection wrappers also preserve the project's sequential/unknown-
+  declaration metadata shape; this auxiliary API invariant is not an
+  independent interpretation of D.4.3.
 - `ArithmeticContext::reset` explicitly promises zero index and MPS fields.
   The initial batch `reset_contexts` contract promised validity only. The P05
   reset tranche now proves all selected output indices and MPS fields are zero,
@@ -142,20 +148,31 @@ can strengthen testing but cannot substitute for those proofs.
 
 ## Document-count semantic sensitivity
 
-`tools/check_document_count_proof.py` runs three isolated counterexamples:
+`tools/check_document_count_proof.py` runs five isolated counterexamples:
 accepting an inconsistent declared count, dropping a finalized page, and
-collecting a PageInformation payload with a non-PageInformation header. Each
+collecting a PageInformation payload with a non-PageInformation header, plus
+discarding the standalone header count and inventing an embedded declaration. Each
 compiles as ordinary Rust, fails its selected strong contract and passes a
 control removing only the relevant cardinality clauses. Other metadata and
-collection length-agreement guarantees remain in those controls. The last
-case deliberately separates parsed header/data consistency from counting;
+collection length-agreement guarantees remain in those controls. The
+non-PageInformation-header case deliberately separates parsed header/data consistency from counting;
 it is not evidence that such input can pass the raw-byte parser.
+
+The parser controls remove only the corresponding declaration relation in the
+isolated metadata model, retaining header validity, organization and known-count
+agreement. The proof-only file-header model module is crate-visible so the
+document predicate reuses the already verified field interpretation rather
+than duplicating header parsing. All runtime statements are unchanged in this
+public-contract propagation tranche. Generated tests exercise all six slice
+inspection APIs, reuse after failures, both organizations, known/unknown counts,
+extended flags, embedded globals and colour-header rejection. Reader results
+are tested but `std::io::Read` remains a reviewed formal boundary.
 
 The collection guard uses an equivalent `matches!` pattern instead of generated
 enum `PartialEq`: the latter did not expose the structural equality needed by
 the proof. Mutable keyed access now exports preservation of slice length.
 There are no new assumptions or runtime/proof substitutions. The result is
-still provisional, helper-level evidence for D.4.3, not full conformance.
+still provisional, scoped evidence for D.4.3, not full conformance.
 
 ## Batch-reset semantic sensitivity
 
