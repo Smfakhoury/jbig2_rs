@@ -64,6 +64,15 @@ black-box oracles. The reviewed rejections and oracle differences remain under
 `validation/` and require normative re-evaluation before stronger claims.
 The [readiness plan](docs/open-source-readiness-plan.md) tracks the remaining work.
 
+## Normative traceability
+
+The [provisional T.88 ledger](docs/spec-traceability.md) links an initial
+16 requirement records to exact contracts, model/proof definitions and test
+identities. It distinguishes functional postconditions from state/bounds-only
+evidence and runtime/proof substitutions. All 30 feature rows have a
+decomposition worklist, but requirement decomposition and owner review remain
+incomplete; passing the reference checker is not a conformance certificate.
+
 ## Local checks
 
 ```text
@@ -93,7 +102,7 @@ their entry in `source-provenance.json` records the required legal approval.
 
 The pinned Linux coverage workflow measures ordinary runtime code, excluding
 inline tests/oracles and ghost items. Its ratcheted baseline is **77.40% lines,
-72.60% regions and 64.30% branch outcomes**. CI checks aggregate/per-file
+72.60% regions and 64.57% branch outcomes**. CI checks aggregate/per-file
 non-regression; the proposed 90% line / 85% branch release goals remain unmet.
 See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
 uncovered-code artifacts and the remaining P06 test-improvement work. Public

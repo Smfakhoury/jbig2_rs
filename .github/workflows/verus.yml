@@ -54,6 +54,9 @@ jobs:
             --require-complete
           diff -u production-proof-coverage.json \
             production-proof-coverage-ci.json
+          python tools/check_traceability.py \
+            --verus-json verus-production.json \
+            --output target/traceability/verifier-report.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -61,3 +64,4 @@ jobs:
           path: |
             verus-production.json
             production-proof-coverage-ci.json
+            target/traceability/

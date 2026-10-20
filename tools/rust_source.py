@@ -30,10 +30,10 @@ def split_arguments(text: str) -> list[str]:
     return parts
 
 
-def cfg_value(expression: str, exclude_proofs: bool) -> bool | None:
+def cfg_value(expression: str, exclude_proofs: bool, testing=False) -> bool | None:
     expression = expression.strip()
     if expression == "test":
-        return False
+        return testing
     if expression in {"fuzzing", "jbig2_validation"}:
         return False
     if expression == "verus_keep_ghost":
@@ -41,7 +41,7 @@ def cfg_value(expression: str, exclude_proofs: bool) -> bool | None:
     match = re.fullmatch(r"(all|any|not)\s*\((.*)\)", expression, flags=re.DOTALL)
     if not match:
         return None
-    values = [cfg_value(part, exclude_proofs) for part in split_arguments(match[2])]
+    values = [cfg_value(part, exclude_proofs, testing) for part in split_arguments(match[2])]
     if match[1] == "not":
         if len(values) != 1:
             raise ValueError("invalid not() cfg")
@@ -51,13 +51,13 @@ def cfg_value(expression: str, exclude_proofs: bool) -> bool | None:
     return True if True in values else (None if None in values else False)
 
 
-def excluded(attributes, exclude_proofs: bool) -> bool:
+def excluded(attributes, exclude_proofs: bool, testing=False) -> bool:
     result = False
     for attribute in attributes:
         text = attribute.text.decode("utf-8")
         match = re.fullmatch(r"#!?\[\s*cfg\s*\((.*)\)\s*\]", text, flags=re.DOTALL)
         if match:
-            result |= cfg_value(match[1], exclude_proofs) is False
+            result |= cfg_value(match[1], exclude_proofs, testing) is False
         elif re.search(r"\bcfg_attr\s*\(.*\bcfg\s*\(", text, flags=re.DOTALL):
             raise ValueError("conditional cfg attributes need explicit audit support")
     return result
@@ -200,7 +200,11 @@ def source_functions(root: Path) -> list[dict]:
                     "visibility": visibility,
                     "owner": owner,
                     "verifier_module": module,
+                    "file_module": visited[path],
                     "name": name,
+                    "line": node.start_point.row + 1,
+                    "attributes": [attribute.text.decode("utf-8") for attribute in attributes],
+                    "body_text": node.text.decode("utf-8"),
                     "file_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
                     "verification_requested": verify_impl or any(
                         re.search(rb"\b(verus_verify|verus_spec)\b", attribute.text)

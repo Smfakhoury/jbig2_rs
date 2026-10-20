@@ -15,14 +15,19 @@ ordinary native build policy are unchanged.
 |---|---:|---:|
 | Lines | 9,779 / 12,635 | 77.40% |
 | Code regions | 9,388 / 12,931 | 72.60% |
-| Branch outcomes | 1,695 / 2,636 | 64.30% |
+| Branch outcomes | 1,702 / 2,636 | 64.57% |
 
-These measurements run 202 library correctness tests and 17 public integration
+These measurements run 202 library correctness tests and 21 public integration
 tests. The 14 ignored microbenchmarks are not executed. Compared with the
 initial baseline (75.74% / 70.70% / 63.96%), the tests cover 209 more runtime
-lines, 246 more regions and 9 more branch outcomes, with identical denominators
+lines, 246 more regions and 16 more branch outcomes, with identical denominators
 and no per-file regression. The initial raw, mixed-source LLVM line
 coverage was 79.35%; that includes test code and is not the runtime baseline.
+
+The additional four clause-specific header tests from P04 cover all flag bytes,
+truncated valid prefixes, identifier-byte corruption, and unsigned count order.
+They raise `file_header.rs` to 100% of its emitted line/region/branch mappings
+without changing runtime source. This does not prove complete document semantics.
 
 The proposed release goals remain **90% lines and 85% branches**, pending review
 and substantially more tests. The CI baseline pass means **no regression below
