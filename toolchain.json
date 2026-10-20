@@ -16,6 +16,6 @@
     "linux_archive_url": "https://github.com/verus-lang/verus/releases/download/release/0.2026.10.04.426d8b0/verus-0.2026.10.04.426d8b0-x86-linux.zip",
     "linux_archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "source_revision": "8b8fb6401d08189ad8fbff1b11e9e01f12688833",
+  "source_revision": "a6087b7b1512fe73d3a0cc97ca23a4b87cb9df20",
   "note": "source_revision must be an immutable commit before any release attestation is signed."
 }

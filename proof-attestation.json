@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "8b8fb6401d08189ad8fbff1b11e9e01f12688833",
+  "source_revision": "a6087b7b1512fe73d3a0cc97ca23a4b87cb9df20",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 12,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "bf41d6756ebe4037dc1583d4071671be1fd5af0927fa87de9787a50029ada620",
-  "proof_dispositions_sha256": "d5941d1fb1fa8125c5795f446e3c8084c0fcbe31b4158bb2f522f2f6d9238b6f",
+  "production_proof_coverage_sha256": "df78873d4879548b0d85fb337c92ec363ec4804c74ab983f163151a41c6c6ec0",
+  "proof_dispositions_sha256": "6c5b55f2377dba71ef6657d5b34d74ab1486cc381790d31cc10b3eddff886919",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Batch reset proves quantified zero output; parsed-document metadata cardinality matches positive PageInformation records and any declared count, with collection/finalization contracts and compiled semantic sensitivity controls. Raw-byte parser correspondence and page identity/lifecycle semantics remain open. Twelve runtime/proof differences and other semantic gaps still block release claims.",
+  "note": "Complete inventory means every executing function is accounted for, not that every body or normative property is proved. Batch reset proves quantified zero output; document count agreement now propagates through parser results and all six slice inspection APIs. Standalone metadata preserves original header organization/count and known-count agreement; embedded metadata has sequential/unknown-declaration shape. Five compiled count/metadata counterexamples validate selected contract sensitivity. Runtime statements are unchanged in this propagation tranche. Body-byte parser correspondence, page identity/lifecycle, rejection completeness, decoded output contracts and reader boundaries remain open. Twelve runtime/proof differences and other semantic gaps still block release claims.",
   "release_gate": "blocked"
 }
