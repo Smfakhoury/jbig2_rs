@@ -149,6 +149,13 @@ Existing generated seed names must match their bytes; changed/symlinked,
 oversized or excessive corpus entries fail explicitly. Reports bind tool pins,
 source revision/content hashes, bounded commands, logs and reproducer hashes.
 Single-file replay uses one execution rather than starting an open campaign.
+Every otherwise successful target must emit exactly one valid, positive
+libFuzzer final execution counter. Missing, zero, malformed or duplicated
+counters fail the run even when the process exits zero; successful replay
+additionally requires exactly one execution. Reports include verified
+per-target counts and their exact total; the CLI summary includes that total.
+Failed targets retain their original exit status, logs and reproducers without requiring final
+statistics from a crashed or terminated process.
 
 PR/push runs use smoke budgets without restoring or saving a trusted corpus.
 Daily scheduled runs use extended budgets. Manual runs choose a profile.
@@ -164,7 +171,23 @@ that artifact must reproduce the expected failure, and restoring the original
 target must make replay pass. Production sources are never altered. This
 control does not count as a production fuzz finding or a conformance test.
 
-P08 remains incomplete until hosted campaign/artifact behavior is validated
-and coverage-driven structured/stateful targets, regression-corpus review and
-periodic minimization are completed. These bounded campaigns do not replace
-unit tests, proof checking or normative review.
+Trusted-main validation on 2026-10-20 used immutable revision
+`2a621a2702e6e49b946b393ab5ea82e3a9dd9d34`:
+
+- [Smoke run](https://github.com/microsoft/jbig2_rs/actions/runs/39504279479):
+  all seven targets passed with 110,251,322 libFuzzer executions.
+- [Extended run](https://github.com/microsoft/jbig2_rs/actions/runs/39505509187):
+  all seven targets passed with 451,371,561 executions at 300 seconds per target.
+- The extended run restored the smoke run's actual main-scoped cache; every
+  starting-corpus file/byte count matches the smoke report. It saved a new
+  main-scoped cache after completion. Both real capture/replay controls passed.
+
+Those runs used the main runner before execution-accounting enforcement;
+counts were independently reconstructed from raw final-stat logs and source
+identities checked. Executions are not unique cases or code coverage. These
+manual default-branch runs validate the trusted campaign/cache path, not that
+the scheduled trigger itself has fired.
+
+P08 remains incomplete: coverage-driven structured/stateful targets,
+regression-corpus review and periodic minimization are still pending. These
+bounded campaigns do not replace unit tests, proof checking or normative review.

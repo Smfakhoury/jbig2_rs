@@ -143,6 +143,18 @@ def fuzz_command(cargo: list[str], target: str, inputs: Path, artifacts: Path, s
     return cargo + ["fuzz", "run", target, str(inputs), "--"] + limits
 
 
+def execution_count(log: Path) -> int:
+    prefix = "stat::number_of_executed_units:"
+    with log.open(encoding="utf-8") as stream:
+        values = [line[len(prefix):].strip() for line in stream if line.startswith(prefix)]
+    if (
+        len(values) != 1 or not values[0].isascii() or not values[0].isdecimal()
+        or int(values[0]) < 1
+    ):
+        raise ValueError(f"missing, duplicated or invalid libFuzzer execution counter: {log}")
+    return int(values[0])
+
+
 def run(arguments, root: Path = ROOT) -> dict:
     if sys.platform != "linux":
         raise ValueError("the bounded fuzz runner currently requires Linux process groups")
@@ -222,16 +234,20 @@ def run(arguments, root: Path = ROOT) -> dict:
                 outcome["corpus"] = corpus_summary(
                     inventory(corpus / target, MAX_INPUT_BYTES, MAX_CORPUS_FILES)
                 )
-            outcome["status"] = (
-                "passed" if not outcome["exit_code"] and not outcome["timed_out"]
-                and not outcome["artifacts"] else "failed"
-            )
+            outcome["status"] = "failed"
             result["targets"].append(outcome)
+            if not outcome["exit_code"] and not outcome["timed_out"] and not outcome["artifacts"]:
+                outcome["executions"] = execution_count(output / outcome["log"])
+                if arguments.mode == "replay" and outcome["executions"] != 1:
+                    raise ValueError(f"single-input replay requires exactly one execution: {target}")
+                outcome["status"] = "passed"
         if source_identity(root) != identity:
             raise ValueError("fuzz source changed during the campaign")
         if arguments.mode == "replay" and hashlib.sha256(artifact.read_bytes()).hexdigest() != result["input_sha256"]:
             raise ValueError("replay input changed during execution")
-        result["status"] = "passed" if all(item["status"] == "passed" for item in result["targets"]) else "failed"
+        if all(item["status"] == "passed" for item in result["targets"]):
+            result["executions"] = sum(item["executions"] for item in result["targets"])
+            result["status"] = "passed"
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         result["error"] = str(error)
         print(f"fuzz validation failed: {error}", file=sys.stderr)
@@ -255,7 +271,10 @@ def main() -> int:
     except (OSError, ValueError) as error:
         print(f"fuzz setup failed: {error}", file=sys.stderr)
         return 1
-    print(json.dumps({"status": result["status"], "targets": len(result["targets"])}, indent=2))
+    summary = {"status": result["status"], "targets": len(result["targets"])}
+    if "executions" in result:
+        summary["executions"] = result["executions"]
+    print(json.dumps(summary, indent=2))
     return 0 if result["status"] == "passed" else 1
 
 

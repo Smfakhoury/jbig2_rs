@@ -1,9 +1,12 @@
+import io
 import json
 import os
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -12,7 +15,7 @@ sys.path.insert(0, str(TOOLS))
 
 from run_fuzz import (
     INPUT_TIMEOUT, MAX_INPUT_BYTES, PROFILES, ROOT, RSS_LIMIT_MB, TARGETS,
-    execute, fuzz_command, fuzz_environment, inventory, source_identity, validate_targets,
+    execute, fuzz_command, fuzz_environment, inventory, run, source_identity, validate_targets,
 )
 
 
@@ -123,6 +126,104 @@ class FuzzRunnerTests(unittest.TestCase):
         self.assertIn("if: always()", workflow)
         self.assertIn("tools/check_fuzz_controls.py", workflow)
         self.assertIn("target/fuzz-run/", workflow)
+
+
+@unittest.skipUnless(sys.platform == "linux", "bounded process-group fuzz runner is Linux-only")
+class FuzzExecutionEvidenceTests(unittest.TestCase):
+    def fixture(self, logs, mode="run", exit_code=0):
+        configuration = json.loads((ROOT / "toolchain.json").read_text())
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            corpus = directory / "corpus"
+            artifact = directory / "input"
+            artifact.write_bytes(b"generated replay fixture")
+            arguments = SimpleNamespace(
+                mode=mode, profile="smoke", targets=list(logs),
+                output_dir=directory / "output", corpus_dir=corpus, artifact=artifact,
+            )
+
+            def process(command, **kwargs):
+                if command == ["git", "rev-parse", "HEAD"]:
+                    text = "a" * 40
+                elif command == ["git", "status", "--porcelain"]:
+                    text = ""
+                elif command == [
+                    "cargo", "+" + configuration["fuzz_rust_toolchain"], "fuzz", "--version",
+                ]:
+                    text = "cargo-fuzz " + configuration["cargo_fuzz_version"]
+                else:
+                    self.fail(f"unexpected subprocess: {command}")
+                return SimpleNamespace(stdout=text)
+
+            def execute_fixture(command, root, environment, log, timeout):
+                if log.name == "seeds.log":
+                    for target in TARGETS:
+                        path = corpus / target
+                        path.mkdir(parents=True)
+                        (path / "seed").write_bytes(b"generated test fixture")
+                log.write_text(logs[log.stem] if log.stem in logs else "generated fixture")
+                return {
+                    "command": command, "exit_code": exit_code if log.stem in logs else 0,
+                    "timed_out": False, "seconds": 0.0, "log": log.name,
+                }
+
+            errors = io.StringIO()
+            with patch("run_fuzz.subprocess.run", side_effect=process), \
+                    patch("run_fuzz.execute", side_effect=execute_fixture), redirect_stderr(errors):
+                report = run(arguments)
+            self.assertEqual(json.loads((arguments.output_dir / "report.json").read_text()), report)
+            for case in report["targets"]:
+                self.assertTrue((arguments.output_dir / case["log"]).is_file())
+            if "error" in report:
+                self.assertIn(report["error"], errors.getvalue())
+            return report
+
+    def test_successful_campaign_binds_per_target_counts_and_exact_total(self):
+        report = self.fixture({
+            TARGETS[0]: "stat::number_of_executed_units: 7\n",
+            TARGETS[1]: "stat::number_of_executed_units: 11\n",
+        })
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual([case["executions"] for case in report["targets"]], [7, 11])
+        self.assertEqual(report["executions"], 18)
+
+    def test_zero_exit_without_unambiguous_positive_counts_is_not_success(self):
+        for text in (
+            "no execution statistics\n",
+            "stat::number_of_executed_units: 0\n",
+            "stat::number_of_executed_units: -1\n",
+            "stat::number_of_executed_units: invalid\n",
+            "stat::number_of_executed_units: 1.5\n",
+            "stat::number_of_executed_units: \u0661\n",
+            "stat::number_of_executed_units: 1\nstat::number_of_executed_units: 1\n",
+            "stat::number_of_executed_units: 1\nstat::number_of_executed_units: invalid\n",
+        ):
+            with self.subTest(log=text):
+                report = self.fixture({TARGETS[0]: text})
+                self.assertEqual(report["status"], "failed")
+                self.assertEqual(report["targets"][0]["status"], "failed")
+                self.assertIn("execution counter", report["error"])
+                self.assertNotIn("executions", report)
+
+    def test_replay_must_execute_the_single_input_exactly_once(self):
+        for count, expected in ((1, "passed"), (2, "failed")):
+            with self.subTest(count=count):
+                report = self.fixture({
+                    TARGETS[0]: f"stat::number_of_executed_units: {count}\n",
+                }, mode="replay")
+                self.assertEqual(report["status"], expected)
+                if expected == "passed":
+                    self.assertEqual(report["executions"], 1)
+                else:
+                    self.assertEqual(report["targets"][0]["status"], "failed")
+                    self.assertIn("exactly one execution", report["error"])
+
+    def test_real_target_failure_is_preserved_without_requiring_final_statistics(self):
+        report = self.fixture({TARGETS[0]: "controlled target failure\n"}, exit_code=7)
+        self.assertEqual(report["status"], "failed")
+        self.assertEqual(report["targets"][0]["exit_code"], 7)
+        self.assertNotIn("executions", report)
+        self.assertNotIn("error", report)
 
 
 class FuzzPlatformGuardTests(unittest.TestCase):

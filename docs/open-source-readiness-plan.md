@@ -31,9 +31,16 @@ under the field-rule interpretation; owner normative adjudication remains open.
 The initial P08 tranche adds bounded smoke/extended fuzz orchestration,
 generated seeds, trusted-only corpus caching, failure diagnostics and exact
 single-input replay. An isolated real failure/replay control protects the
-workflow contract. Hosted smoke campaigns and failure/replay controls have been
-validated; trusted-default-branch extended/cache execution and broader
-structured/stateful campaigns remain pending. This is not completion of P08.
+workflow contract. Hosted smoke/extended campaigns and failure/replay controls
+have been validated on trusted main. Actual cache creation, restoration into
+the extended run and saving its updated corpus are verified; all seven
+extended starting-corpus file/byte counts match the saved smoke corpus.
+These were manual default-branch runs, not an observed scheduled trigger.
+Broader structured/stateful targets, corpus review and minimization remain
+pending. This is not completion of P08.
+Successful targets now require unambiguous positive final execution counters;
+single-input replay requires exactly one execution. Per-target counts and
+their exact total are reported, while missing/invalid evidence fails closed.
 The initial P09 lane adds eight correctness-gated generated base/head cases
 with paired raw median/p95 samples and explicit spread classifications. Hosted
 informational runs and real slowdown/output-corruption controls have been
