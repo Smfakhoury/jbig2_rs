@@ -32,6 +32,18 @@ def validate(document, kind: str) -> None:
     schema["$ref"] = f"#/$defs/{kind}"
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(document)
+    if kind == "coverage_baseline":
+        for metric in ("lines", "regions", "branches"):
+            for entry in [document["totals"], *document["files"].values()]:
+                if entry[metric]["covered"] > entry[metric]["count"]:
+                    raise ValueError("coverage exceeds its denominator")
+            for field in ("covered", "count"):
+                if document["totals"][metric][field] != sum(
+                    entry[metric][field] for entry in document["files"].values()
+                ):
+                    raise ValueError("coverage baseline totals do not match files")
+            if not document["totals"][metric]["count"]:
+                raise ValueError("coverage baseline lacks runtime instrumentation")
     if kind in {"coverage", "dispositions"}:
         identifiers = [entry["id"] for entry in document["functions"]]
         if len(identifiers) != len(set(identifiers)):

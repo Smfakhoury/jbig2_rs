@@ -52,6 +52,8 @@ for path in sorted(ROOT.rglob("*")):
                 fail(f"JSON document must be an object or array: {path.relative_to(ROOT)}")
             if isinstance(document, dict) and "$schema" in document and "$defs" in document:
                 Draft202012Validator.check_schema(document)
+            elif path.relative_to(ROOT).as_posix() == "validation/coverage/baseline.json":
+                validate(document, "coverage_baseline")
             elif isinstance(document, dict) and "schema_version" in document:
                 validate(document, "repository")
         except (OSError, ValueError, SchemaError, ValidationError) as error:

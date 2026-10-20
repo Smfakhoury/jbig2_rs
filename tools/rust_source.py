@@ -82,7 +82,7 @@ def items(container, exclude_proofs=True):
         attributes = []
 
 
-def production_code(source: bytes, exclude_proofs=True) -> str:
+def production_code(source: bytes, exclude_proofs=True, mask_noncode=True) -> str:
     """Mask excluded items and non-code without losing byte/line positions."""
     root = parse(source)
     masked = bytearray(source)
@@ -91,6 +91,24 @@ def production_code(source: bytes, exclude_proofs=True) -> str:
         for index in range(node.start_byte, node.end_byte):
             if masked[index] not in (10, 13):
                 masked[index] = 32
+
+    def proof_statement(node):
+        # The grammar can join a brace-macro statement to a following dereference
+        # or tuple. A cfg on proof! applies to the macro, not that next statement.
+        start = node.start_byte
+        end = node.end_byte
+        while node.start_byte == start:
+            if node.type == "macro_invocation":
+                name = node.child_by_field_name("macro")
+                if name is not None and name.text in {b"proof", b"proof_decl"}:
+                    return node
+                if source[node.end_byte:end].strip() not in (b"", b";"):
+                    raise ValueError("ambiguous cfg-gated macro statement needs audit support")
+                return None
+            if not node.named_children:
+                break
+            node = node.named_children[0]
+        return None
 
     def visit(node):
         if excluded(
@@ -103,14 +121,20 @@ def production_code(source: bytes, exclude_proofs=True) -> str:
         for child in node.named_children:
             if child.type in {"line_comment", "block_comment", "string_literal",
                               "raw_string_literal", "char_literal"}:
-                blank(child)
+                if mask_noncode:
+                    blank(child)
             elif child.type == "attribute_item":
                 attributes.append(child)
             else:
                 if excluded(attributes, exclude_proofs):
                     for attribute in attributes:
                         blank(attribute)
-                    blank(child)
+                    statement = proof_statement(child)
+                    if statement is not None and statement.end_byte < child.end_byte:
+                        blank(statement)
+                        visit(child)
+                    else:
+                        blank(child)
                 else:
                     visit(child)
                 attributes = []

@@ -133,6 +133,22 @@ class RustAuditTests(unittest.TestCase):
         self.assertNotIn("panic!", code)
         self.assertIn("assume(false)", code)
 
+    def test_ghost_macro_does_not_swallow_following_runtime_statement(self):
+        source = b"""
+            fn f(output: &mut i32) -> (i32, i32) {
+                #[cfg(verus_keep_ghost)] proof! { assert(true); }
+                *output = 1;
+                #[cfg(verus_keep_ghost)] proof! { assert(true); }
+                (1, 2)
+            }
+        """
+        code = production_code(source, mask_noncode=False)
+        self.assertIn("*output = 1", code)
+        self.assertIn("(1, 2)", code)
+        self.assertNotIn("proof!", code)
+        self.assertNotIn("assert(true)", code)
+        self.assertEqual(len(code.encode()), len(source))
+
     def run_gate(self, details, dispositions=(), *options):
         report = self.root / "verus.json"
         report.write_text(json.dumps({
