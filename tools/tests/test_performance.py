@@ -1,0 +1,110 @@
+import copy
+import sys
+import unittest
+from unittest.mock import patch
+from pathlib import Path
+
+
+TOOLS = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(TOOLS))
+
+from run_performance import compare_runs, environment, markdown_report, validate_measurement
+from metrics import relative_spread
+
+
+def measurement(median=11):
+    return {
+        "schema_version": 1, "iterations": 20,
+        "cases": [{
+            "id": "white-64", "input_bytes": 102, "output_bytes": 512,
+            "outcome": "decoded", "exact_output_checked": True,
+            "samples_ns": list(range(1, 21)), "median_ns": median, "p95_ns": 19,
+        }],
+    }
+
+
+def row(median):
+    return {"white-64": {
+        "input_bytes": 102, "output_bytes": 512, "outcome": "decoded",
+        "median_ns": median, "p95_ns": median + 10,
+    }}
+
+
+class PerformanceReportTests(unittest.TestCase):
+    def test_caller_profile_and_compiler_overrides_are_removed(self):
+        with patch.dict("os.environ", {
+            "CARGO_PROFILE_RELEASE_OPT_LEVEL": "0", "RUSTFLAGS": "--cfg alternate",
+            "RUSTC_WRAPPER": "/alternate/compiler",
+        }):
+            result = environment()
+        for name in ("CARGO_PROFILE_RELEASE_OPT_LEVEL", "RUSTFLAGS", "RUSTC_WRAPPER"):
+            self.assertNotIn(name, result)
+
+    def test_raw_samples_define_upper_median_and_nearest_rank_p95(self):
+        self.assertEqual(validate_measurement(measurement(), 20, ["white-64"])["white-64"]["p95_ns"], 19)
+        invalid = measurement()
+        invalid["cases"][0]["p95_ns"] = 18
+        with self.assertRaises(ValueError):
+            validate_measurement(invalid, 20, ["white-64"])
+
+    def test_empty_duplicate_wrong_shape_and_missing_validation_fail_closed(self):
+        for change in (
+            lambda report: report.update(cases=[]),
+            lambda report: report["cases"].append(copy.deepcopy(report["cases"][0])),
+            lambda report: report["cases"][0].update(exact_output_checked=False),
+            lambda report: report["cases"][0].update(output_bytes=0),
+            lambda report: report["cases"][0].update(samples_ns=[-1] * 20),
+        ):
+            report = measurement()
+            change(report)
+            with self.assertRaises(ValueError):
+                validate_measurement(report, 20, ["white-64"])
+
+    def test_exact_wall_threshold_is_inclusive(self):
+        base = [row(100)] * 3
+        self.assertEqual(compare_runs(base, [row(120)] * 3, 20)[0]["timing_status"], "within_policy")
+        self.assertEqual(compare_runs(base, [row(121)] * 3, 20)[0]["timing_status"], "regression_observed")
+
+    def test_unstable_results_are_inconclusive_not_a_latency_pass(self):
+        result = compare_runs([row(100)] * 3, [row(100), row(150), row(200)], 20)
+        self.assertEqual(result[0]["timing_status"], "inconclusive")
+
+    def test_descriptor_changes_and_short_run_counts_are_errors(self):
+        changed = row(100)
+        changed["white-64"]["output_bytes"] = 511
+        with self.assertRaises(ValueError):
+            compare_runs([row(100)] * 3, [changed] * 3, 20)
+        with self.assertRaises(ValueError):
+            compare_runs([row(100)] * 2, [row(100)] * 2, 20)
+
+    def test_shared_spread_rejects_invalid_measurements(self):
+        self.assertEqual(relative_spread([100, 100, 100]), 0)
+        for values in ([], [0], [-1], [float("nan")]):
+            with self.assertRaises(ValueError):
+                relative_spread(values)
+
+    def test_invalid_thresholds_cannot_make_regressions_look_accepted(self):
+        for threshold in (-1, float("nan"), float("inf")):
+            with self.assertRaises(ValueError):
+                compare_runs([row(100)] * 3, [row(100)] * 3, threshold)
+
+    def test_summary_does_not_present_unchecked_or_informational_timing_as_a_pass(self):
+        summary = markdown_report({"status": "failed", "error": "missing samples"})
+        self.assertIn("Correctness: not established", summary)
+        self.assertIn("not a release-performance pass", summary)
+        self.assertIn("missing samples", summary)
+
+    def test_hosted_workflow_keeps_timing_informational_and_uploads_failures(self):
+        workflow = (TOOLS.parent / ".github/workflows/performance.yml").read_text()
+        self.assertIn("contents: read", workflow)
+        self.assertIn("fetch-depth: 0", workflow)
+        self.assertIn("timeout-minutes: 20", workflow)
+        self.assertNotIn("--enforce-timing", workflow)
+        self.assertIn("if: always()", workflow)
+        self.assertIn("GITHUB_STEP_SUMMARY", workflow)
+        self.assertIn("tools/check_performance_controls.py", workflow)
+        self.assertNotIn("            target/performance-controls/\n", workflow)
+
+
+if __name__ == "__main__":
+    unittest.main()

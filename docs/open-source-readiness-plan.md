@@ -337,6 +337,13 @@ Acceptance: a controlled slowdown is detected; base/head results and environment
 metadata are uploaded; the quality gate has a trustworthy runner or is clearly
 marked informational. SIMD/hotpath experiments are not prerequisites for this gate.
 
+Execution note: an initial generated lane compares identical drivers against
+base/head libraries, checks complete generated MMR/page/error outputs, records
+paired median/p95 samples and explicitly marks unstable timing inconclusive.
+Hosted timing is informational, with real isolated slowdown/output controls.
+This is not P09 completion: the broader coding corpus, allocator/RSS telemetry,
+dedicated runner and threshold ratification remain open.
+
 ### P10 - Consolidate CI into a documented quality contract
 
 Dependencies: P03, P04, P06, P07, P08, P09.

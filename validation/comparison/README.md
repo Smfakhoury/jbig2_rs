@@ -22,6 +22,10 @@ benchmarks/hayro-comparison/run-comparison.sh 50
 
 Generated timing records include both median and p95 latency. Set
 `JBIG2_VECTOR_DIR` to add the private vector outcome comparison to the run.
+Generated inputs now come from the same project fixture module as the runtime
+performance lane. New p95 reports use the shared nearest-rank definition;
+the historical results below retain their original measurement method and are
+not rewritten. Cross-run stability uses the shared spread calculation.
 
 Run the required three-run stability gate:
 

@@ -3,6 +3,7 @@ import json
 import statistics
 import sys
 from pathlib import Path
+from metrics import relative_spread
 
 
 def main() -> int:
@@ -35,7 +36,7 @@ def main() -> int:
         ):
             values = [run[case_index][metric] for run in runs]
             median = statistics.median(values)
-            spread = (max(values) - min(values)) / median
+            spread = relative_spread(values)
             passed = spread <= maximum
             case["metrics"][metric] = {
                 "values": values,
