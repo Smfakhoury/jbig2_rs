@@ -45,4 +45,7 @@ jobs:
             target/performance-comparison/*.json
             target/performance-comparison/*.log
             target/performance-comparison/report.md
-            target/performance-controls/
+            target/performance-controls/control-report.json
+            target/performance-controls/*/*.json
+            target/performance-controls/*/*.log
+            target/performance-controls/*/*.md

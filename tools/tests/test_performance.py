@@ -103,6 +103,7 @@ class PerformanceReportTests(unittest.TestCase):
         self.assertIn("if: always()", workflow)
         self.assertIn("GITHUB_STEP_SUMMARY", workflow)
         self.assertIn("tools/check_performance_controls.py", workflow)
+        self.assertNotIn("            target/performance-controls/\n", workflow)
 
 
 if __name__ == "__main__":
