@@ -275,7 +275,7 @@ unknown-length MMR envelope termination and second-page sink failure effects.
 Typed malformed/unsupported/limit fields and literal packed pixels are the
 oracles; fresh/reused agreement and formatted error strings are not.
 
-The pinned before/after collection on the unchanged production source measures
+The original PR42 pinned before/after collection on unchanged production source measures
 **135 additional runtime source lines, 113 regions and 62 branch outcomes**.
 The freshly measured main-side starting point is 10,069 lines / 9,704 regions /
 1,798 branch outcomes, already above the older committed floor of 10,022 /
@@ -285,8 +285,26 @@ coordinates or decreasing per-file fractions. Source-bound identities and
 coordinate checks are recorded in
 [`coverage/public-envelope.json`](coverage/public-envelope.json).
 
+After normally merging main `d1bf46914c6d7e57177b7c02087cca2555794b52`, a new
+independent collection is bound to immutable merge commit
+`c95032a826771c66266c00daf0b47a21cb1db206` before its separate floor update.
+The runtime source tree and pins are byte-identical to that main; all twenty
+public-envelope tests are unchanged. Fresh main/merged-branch coverage is
+10,072 / 10,207 lines out of 12,620, 9,710 / 9,823 regions out of 12,932 and
+1,799 / 1,861 branch outcomes out of 2,640. These are new collections, not sums
+of historical deltas. Main's bitmap source changes the line/region mappings;
+the source-coordinate denominators match between the two new runs, not the
+older source. Every current-main covered coordinate is retained, and exact
+integer comparisons confirm no previous floor global/per-file fraction falls.
+The full 312 Rust / 238 Python tests, strict MSRV Clippy/format/docs, provenance
+and executable catalogs, verified package and offline downstream consumer pass.
+The original evidence remains intact; the refreshed identities, mapping checks
+and raw report hashes are in
+[`coverage/public-envelope-main-integration.json`](coverage/public-envelope-main-integration.json).
+
 Production sources, specifications, proofs, the normative ledger, dependencies
-and coverage exclusions are unchanged. Allocation-failure/overflow paths and
+and coverage exclusions are unchanged relative to the corresponding main.
+Allocation-failure/overflow paths and
 broader entropy/resource interactions remain genuine gaps; the proposed
 90% line / 85% branch release goals are still unmet. These generated contracts
 are not normative conformance or release approval.

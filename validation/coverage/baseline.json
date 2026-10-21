@@ -2,9 +2,9 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only floor after twenty ordinary public document-envelope tests with literal metadata/pixel and exact typed-error/effect oracles for profiles, extensions, page lifecycle, globals, retention, readers/sinks and resource boundaries. Measured on the immutable source_revision before this separate evidence commit. Runtime source-coordinate denominators and exclusions are unchanged; all global/per-file fractions remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
-  "source_revision": "3c2a351d6c7a556df8208d33fac5d8170b16bc0a",
-  "source_sha256": "38efe199f08091769efd85bc53cc111e47711d640cf7a70a203454c0e30fefd4",
+  "policy": "Upward-only refresh after normally merging current main into the unchanged twenty-test public-envelope PR. Runtime source and pins are byte-identical to current main. Independent fresh current-main/merged-branch collections use identical new source-coordinate denominators and retain every current-main covered coordinate; all prior floor global/per-file fractions remain nondecreasing by exact integer comparison. Historical deltas are not summed. Measured on the immutable source_revision before this separate evidence commit. Coverage scope/exclusions are unchanged. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "c95032a826771c66266c00daf0b47a21cb1db206",
+  "source_sha256": "ec4d5c8588f2a7fd04ae6ae12293ee0cdd187b46943f719dadf1ee14089e449c",
   "test_source_sha256": "8ed358cceb368d5d35c33057fccb42a37e6e2464f15d92e9bce471e6b166872e",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
@@ -14,13 +14,13 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 10204, "count": 12617},
-    "regions": {"covered": 9817, "count": 12931},
-    "branches": {"covered": 1860, "count": 2640}
+    "lines": {"covered": 10207, "count": 12620},
+    "regions": {"covered": 9823, "count": 12932},
+    "branches": {"covered": 1861, "count": 2640}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
-    "src/bitmap.rs": {"lines": {"covered": 894, "count": 969}, "regions": {"covered": 814, "count": 1038}, "branches": {"covered": 162, "count": 188}},
+    "src/bitmap.rs": {"lines": {"covered": 897, "count": 972}, "regions": {"covered": 820, "count": 1039}, "branches": {"covered": 163, "count": 188}},
     "src/decode.rs": {"lines": {"covered": 1092, "count": 1396}, "regions": {"covered": 929, "count": 1336}, "branches": {"covered": 143, "count": 230}},
     "src/document.rs": {"lines": {"covered": 1036, "count": 1168}, "regions": {"covered": 1001, "count": 1131}, "branches": {"covered": 264, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
