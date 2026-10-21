@@ -9,14 +9,18 @@ are enforced in native CI. Five focused regressions strengthen typed duplicate,
 missing-reference, truncation and repeat-result claims. Catalog linking is not
 semantic or normative approval, and broader P06 coverage goals remain open.
 Exact-source proof gaps are exposed and tracked for P05.
-P04 is in progress with a provisional 111-record statement-level ledger and
+P04 is in progress with a provisional 249-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
 The initial organization/Huffman/MMR tranche added 28 selected records. The
 follow-up adds 46 across the 16 previously unstarted worklists. Twenty-nine of
 30 worklists are now partial, none unstarted and one deferred encoder excluded;
 none is complete. A concrete T.6 source tranche adds 17 records after the
-94-record stage; the total now comprises 102 selected normative rules and nine
-separately counted, hash-bound project-profile policies. Starting every feature
+94-record stage. The selected Annex A/E arithmetic enumeration adds 138
+state-preservation records with explicit semantic gaps, including all selected
+integer representation and Qe table-row relations. The total now comprises
+240 selected normative rules and nine separately counted, hash-bound
+project-profile policies. All records remain provisional; selected arithmetic
+accounting is not owner-reviewed exhaustive enumeration. Starting every feature
 does not establish exhaustive normative enumeration. Eighteen generated
 integration regressions supplement 134 distinct linked non-ignored Cargo test
 identities. Exact per-feature membership, remaining scope, official source
@@ -41,7 +45,7 @@ lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
 scalar proof substitute is removed. The current selected ledger has 60
-functional, 25 state-preservation and 26 safety-only records; all 111 remain
+functional, 163 state-preservation and 26 safety-only records; all 249 remain
 provisional.
 Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
