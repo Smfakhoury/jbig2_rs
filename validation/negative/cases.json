@@ -30,7 +30,9 @@
       "id": "NEG-TRUNCATE-STANDALONE-EVERY-BYTE",
       "surface": "document envelope",
       "expected": "typed malformed error except the valid sequential prefix without optional EOF",
-      "coverage": "src/document.rs unit test"
+      "tests": [
+        {"target": "catalog_contracts", "name": "every_standalone_prefix_is_malformed_or_the_exact_optional_eof_prefix"}
+      ]
     },
     {
       "id": "NEG-SEGMENT-RESERVED-TYPE",
@@ -68,74 +70,101 @@
     {
       "id": "NEG-SEGMENT-DUPLICATE-NUMBER",
       "surface": "reference graph",
-      "expected": "MalformedError::DuplicateSegmentNumber",
-      "coverage": "src/document.rs"
+      "expected": "DuplicateSegmentNumber for a globals/page collision; NonIncreasingSegmentNumber for repeated local wire numbers",
+      "tests": [
+        {"target": "catalog_contracts", "name": "global_page_number_collision_is_an_exact_duplicate_error"},
+        {"target": "catalog_contracts", "name": "duplicate_local_wire_numbers_have_exact_order_errors"}
+      ]
     },
     {
       "id": "NEG-REFERENCE-MISSING",
       "surface": "reference graph",
       "expected": "MalformedError::MissingReferredSegment",
-      "coverage": "src/document.rs"
+      "tests": [
+        {"target": "catalog_contracts", "name": "missing_reference_has_exact_segment_and_referred_numbers"}
+      ]
     },
     {
       "id": "NEG-REFERENCE-DEPTH",
       "surface": "reference graph",
       "expected": "LimitKind::ReferenceDepth",
-      "coverage": "src/document.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "document::tests::enforces_total_reference_and_depth_limits"}
+      ]
     },
     {
       "id": "NEG-RETENTION-PREMATURE",
       "surface": "retained segment state",
       "expected": "MalformedError::InvalidRetentionFlags",
-      "coverage": "src/document.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "document::tests::rejects_reference_to_nonretained_segment"}
+      ]
     },
     {
       "id": "NEG-PAGE-DIMENSION-BOMB",
       "surface": "bitmap allocation",
       "expected": "LimitKind::Width, Height, PagePixels, or Memory",
-      "coverage": "src/bitmap.rs and src/segment_data.rs"
+      "tests": [
+        {"target": "public_api", "name": "page_dimensions_and_structural_work_limits_are_inclusive"},
+        {"target": "lib", "name": "bitmap::tests::checked_layout_enforces_each_bitmap_limit"}
+      ]
     },
     {
       "id": "NEG-ARITHMETIC-TRUNCATED-BYTEIN",
       "surface": "arithmetic decoder",
       "expected": "MalformedError::UnexpectedEof",
-      "coverage": "src/arithmetic.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"},
+        {"target": "lib", "name": "arithmetic::tests::marker_fill_requires_a_real_marker"}
+      ]
     },
     {
       "id": "NEG-HUFFMAN-OVERSUBSCRIBED",
       "surface": "custom Huffman table",
       "expected": "HuffmanErrorKind::Oversubscribed",
-      "coverage": "src/huffman.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::rejects_oversubscribed_and_structurally_invalid_tables"}
+      ]
     },
     {
       "id": "NEG-MMR-EXTENSION",
       "surface": "MMR",
       "expected": "MmrErrorKind::ExtensionMode",
-      "coverage": "src/mmr.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::extension_mode_is_rejected"}
+      ]
     },
     {
       "id": "NEG-MMR-RUN-OVERSHOOT",
       "surface": "MMR",
       "expected": "MmrErrorKind::RunExceedsRow",
-      "coverage": "src/mmr.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::run_overshoot_is_rejected"}
+      ]
     },
     {
       "id": "NEG-GENERIC-BAD-AT",
       "surface": "generic arithmetic context",
       "expected": "GenericRegionErrorKind::InvalidAdaptivePixel",
-      "coverage": "src/generic_region.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::rejects_reserved_flags_mmr_template_and_future_at"}
+      ]
     },
     {
       "id": "NEG-HALFTONE-PATTERN-ID",
       "surface": "halftone",
       "expected": "HalftoneErrorKind::InvalidPatternIndex",
-      "coverage": "src/halftone.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "halftone::tests::rejects_unused_gray_code_and_work_overrun"}
+      ]
     },
     {
       "id": "NEG-STRIPE-SEALED-WRITE",
       "surface": "page composition",
       "expected": "MalformedError::InvalidPageState",
-      "coverage": "src/decode.rs unit test"
+      "tests": [
+        {"target": "lib", "name": "decode::tests::rejects_region_that_modifies_a_sealed_stripe"}
+      ]
     }
   ]
 }

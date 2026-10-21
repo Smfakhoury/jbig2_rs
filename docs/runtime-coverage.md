@@ -122,6 +122,12 @@ repository permissions and requires no private vectors or secrets.
 
 ## Test-improvement priorities
 
+The negative/metamorphic catalog migration now requires exact executable
+references for every case, with native Cargo discovery and five additional
+typed public-API regressions. This closes the file-only reference gap, not the
+line/branch coverage goals or normative proof gaps. The catalog checker records
+discovery separately from execution; native CI runs the tests independently.
+
 1. Symbol/text decoding: 65.25% lines, 47.74% branch outcomes; largest uncovered
    runtime surface. Add valid arithmetic/Huffman/refinement combinations and
    malformed export/placement/aggregation regressions.

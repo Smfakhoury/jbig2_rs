@@ -40,31 +40,42 @@
       "id": "META-ORGANIZATION-EQUIVALENCE",
       "transformation": "sequential to random-access organization",
       "invariant": "decoded page dimensions and bitmap bytes",
-      "coverage": "src/decode.rs::sequential_and_random_access_outputs_match"
+      "tests": [
+        {"target": "lib", "name": "decode::tests::sequential_and_random_access_outputs_match"}
+      ]
     },
     {
       "id": "META-REPEAT-DETERMINISM",
       "transformation": "decode identical bytes twice",
       "invariant": "DocumentInfo and error classification",
-      "coverage": "src/document.rs::document_inspection_is_deterministic"
+      "tests": [
+        {"target": "catalog_contracts", "name": "repeated_inspection_preserves_metadata_and_exact_error_fields"}
+      ]
     },
     {
       "id": "META-BYTE-READER",
       "transformation": "failed oversized read followed by exact read",
       "invariant": "failed read preserves cursor",
-      "coverage": "src/reader.rs"
+      "tests": [
+        {"target": "lib", "name": "reader::tests::failed_byte_read_preserves_position"},
+        {"target": "lib", "name": "reader::tests::failed_bit_read_preserves_position"}
+      ]
     },
     {
       "id": "META-COMBINATION-IDENTITIES",
       "transformation": "Boolean inputs across all operators",
       "invariant": "OR/AND/XOR/XNOR/REPLACE truth tables",
-      "coverage": "src/bitmap.rs"
+      "tests": [
+        {"target": "lib", "name": "bitmap::tests::every_combination_operator_matches_boolean_definition"}
+      ]
     },
     {
       "id": "META-STREAMING-COLLECTION",
       "transformation": "owned output to page-sink output",
       "invariant": "page count and bitmap bytes",
-      "coverage": "src/decode.rs"
+      "tests": [
+        {"target": "public_api", "name": "short_reads_preserve_inspection_decode_and_sink_output"}
+      ]
     }
   ]
 }

@@ -7,7 +7,7 @@ TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
 from check_contract_mutations import MUTATIONS, mutate
-from evidence import load_json
+from evidence import load_json, validate
 from rust_source import parse
 from rust_tests import test_inventory as inventory_tests
 
@@ -52,34 +52,20 @@ class ContractMutationTests(unittest.TestCase):
         for mutation in MUTATIONS:
             self.assertIn(mutation["test"], integration_test_names(mutation["target"]))
 
-    def test_new_catalog_cases_require_exact_executable_test_references(self):
-        legacy = {
-            "NEG-TRUNCATE-STANDALONE-EVERY-BYTE",
-            "NEG-SEGMENT-DUPLICATE-NUMBER", "NEG-REFERENCE-MISSING", "NEG-REFERENCE-DEPTH",
-            "NEG-RETENTION-PREMATURE", "NEG-PAGE-DIMENSION-BOMB", "NEG-ARITHMETIC-TRUNCATED-BYTEIN",
-            "NEG-HUFFMAN-OVERSUBSCRIBED", "NEG-MMR-EXTENSION", "NEG-MMR-RUN-OVERSHOOT",
-            "NEG-GENERIC-BAD-AT", "NEG-HALFTONE-PATTERN-ID", "NEG-STRIPE-SEALED-WRITE",
-            "META-ORGANIZATION-EQUIVALENCE", "META-REPEAT-DETERMINISM", "META-BYTE-READER",
-            "META-COMBINATION-IDENTITIES", "META-STREAMING-COLLECTION",
-        }
-        discovered_legacy = set()
+    def test_all_catalog_cases_require_exact_executable_test_references(self):
         tests = inventory_tests(TOOLS.parent)
         structured = 0
         for kind in ("negative", "metamorphic"):
             document = load_json(TOOLS.parent / "validation" / kind / "cases.json")
+            validate(document, "test_catalog")
             for case in document["cases"]:
-                if "tests" not in case:
-                    self.assertIn(case["id"], legacy, "new cases need explicit executable references")
-                    discovered_legacy.add(case["id"])
-                    continue
                 self.assertTrue(case["tests"], case["id"])
                 structured += 1
                 for reference in case["tests"]:
                     identity = (reference["target"], reference["name"])
                     self.assertIn(identity, tests, case["id"])
                     self.assertFalse(tests[identity]["ignored"], case["id"])
-        self.assertEqual(discovered_legacy, legacy)
-        self.assertGreaterEqual(structured, 10)
+        self.assertEqual(structured, 29)
 
 
 if __name__ == "__main__":

@@ -1,9 +1,30 @@
 """Source identities for named, ordinary Rust tests; not execution evidence."""
 
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 from rust_source import excluded, parse, source_functions
+
+
+def discover_tests(root: Path, targets) -> set:
+    targets = sorted(set(targets))
+    if not targets:
+        raise ValueError("Cargo discovery requires at least one test target")
+    result = set()
+    for target in targets:
+        selector = ["--lib"] if target == "lib" else ["--test", target]
+        process = subprocess.run(
+            ["cargo", "test", "--locked", "--all-features", *selector, "--", "--list"],
+            cwd=root, text=True, capture_output=True, check=False,
+        )
+        if process.returncode:
+            print(process.stderr, file=sys.stderr)
+            process.check_returncode()
+        result.update((target, line.removesuffix(": test")) for line in process.stdout.splitlines()
+                      if line.endswith(": test"))
+    return result
 
 
 def test_inventory(root: Path) -> dict:

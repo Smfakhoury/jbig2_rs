@@ -3,9 +3,44 @@
   "$defs": {
     "traceability_test": {
       "type": "object", "required": ["target", "name"],
+      "additionalProperties": false,
       "properties": {
         "target": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
         "name": {"$ref": "#/$defs/nonempty"}
+      }
+    },
+    "test_catalog": {
+      "allOf": [{"$ref": "#/$defs/versioned"}],
+      "required": ["cases"], "additionalProperties": false,
+      "properties": {
+        "schema_version": {"const": 1},
+        "cases": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "required": ["id", "tests"], "additionalProperties": false,
+            "properties": {
+              "id": {"type": "string", "pattern": "^(NEG|META)-[A-Z0-9-]+$"},
+              "surface": {"$ref": "#/$defs/nonempty"},
+              "expected": {"$ref": "#/$defs/nonempty"},
+              "transformation": {"$ref": "#/$defs/nonempty"},
+              "invariant": {"$ref": "#/$defs/nonempty"},
+              "tests": {
+                "type": "array", "minItems": 1, "uniqueItems": true,
+                "items": {"$ref": "#/$defs/traceability_test"}
+              }
+            },
+            "oneOf": [
+              {
+                "required": ["surface", "expected"],
+                "properties": {"id": {"pattern": "^NEG-"}, "transformation": false, "invariant": false}
+              },
+              {
+                "required": ["transformation", "invariant"],
+                "properties": {"id": {"pattern": "^META-"}, "surface": false, "expected": false}
+              }
+            ]
+          }
+        }
       }
     },
     "traceability_claim": {

@@ -85,6 +85,35 @@ cargo package --locked --list | python tools/audit_package.py
 The package audit requires a complete nonempty runtime inventory and rejects
 unapproved entries; invoking it without a package list is an error.
 
+## Executable test catalogs
+
+Every negative/metamorphic case now names nonempty exact `{target, name}` test
+references. All 29 cases resolve to 38 references and 37 distinct ordinary
+tests; file-only `coverage` entries are no longer accepted. Missing, ignored,
+duplicated or wrong-target references and empty catalogs fail explicitly.
+
+```text
+python -B tools/check_test_catalogs.py --discover-tests \
+  --output target/traceability/test-catalogs.json
+```
+
+The checker validates source identities and actual Cargo test discovery, and
+records catalog hashes, test locations and source-file hashes. It does not
+execute tests or certify that English statements faithfully describe their
+assertions. Native CI separately runs the ordinary tests before checking the
+catalogs on Linux, Windows and macOS. The report is uploaded with traceability
+artifacts. Normative statement completeness and runtime code coverage remain
+separate measurements.
+
+Five focused public regressions strengthen the migrated claims: exact local
+duplicate-order and globals/page collision errors, missing-reference fields,
+repeated metadata/error results, and every-byte truncation with the one valid
+prefix lacking optional EOF. Duplicate local wire numbers are rejected as
+`NonIncreasingSegmentNumber`, while the globals/page collision produces
+`DuplicateSegmentNumber`; the catalog preserves this existing distinction.
+
+## Proof and normative link audits
+
 Proof audits parse Rust syntax and include production functions after test-only
 items, nested modules and path-included runtime modules. Unsupported syntax or
 ambiguous module resolution fails closed. Evidence schemas, duplicate-key
@@ -188,6 +217,13 @@ counts were independently reconstructed from raw final-stat logs and source
 identities checked. Executions are not unique cases or code coverage. These
 manual default-branch runs validate the trusted campaign/cache path, not that
 the scheduled trigger itself has fired.
+
+The subsequent actual
+[scheduled extended run](https://github.com/microsoft/jbig2_rs/actions/runs/39534526812)
+on `de2fbf31b8fc37249f33625c6ba9030db6559f66` passed all seven then-current
+targets with 566,048,292 executions, real replay controls, cache restoration
+and a new cache save. This observes the scheduled trigger on that older
+seven-target source, not a scheduled deployment of the later eighth target.
 
 P08 remains incomplete: coverage-driven structured/stateful targets,
 regression-corpus review and periodic minimization are still pending. These

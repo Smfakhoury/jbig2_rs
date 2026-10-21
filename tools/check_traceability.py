@@ -13,7 +13,7 @@ from jsonschema import ValidationError
 
 from evidence import load_json, read_evidence
 from rust_source import items, parse, production_code, source_functions
-from rust_tests import test_inventory
+from rust_tests import discover_tests as discover_cargo_tests, test_inventory
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -264,20 +264,9 @@ def check(ledger, root, verifier_names=None, discovered=None):
 
 
 def discover_tests(root, ledger):
-    result = set()
-    targets = sorted({test["target"] for req in ledger["requirements"] for test in req["tests"]})
-    for target in targets:
-        selector = ["--lib"] if target == "lib" else ["--test", target]
-        process = subprocess.run(
-            ["cargo", "test", "--locked", "--all-features", *selector, "--", "--list"],
-            cwd=root, text=True, capture_output=True, check=False,
-        )
-        if process.returncode:
-            print(process.stderr, file=sys.stderr)
-            process.check_returncode()
-        result.update((target, line.removesuffix(": test")) for line in process.stdout.splitlines()
-                      if line.endswith(": test"))
-    return result
+    return discover_cargo_tests(
+        root, {test["target"] for req in ledger["requirements"] for test in req["tests"]},
+    )
 
 
 def main():
