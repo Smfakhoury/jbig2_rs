@@ -15,6 +15,16 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 ACTION = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*@[0-9a-f]{40}")
 TOOLCHAIN = re.compile(r"(?:[0-9]+\.[0-9]+\.[0-9]+|nightly-[0-9]{4}-[0-9]{2}-[0-9]{2})")
+FUZZ_TRUST = (
+    "(github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')"
+    " && github.ref == 'refs/heads/main' && github.event.repository.default_branch == 'main'"
+)
+FUZZ_PRODUCER_GROUP = (
+    "${{ " + FUZZ_TRUST
+    + " && format('fuzz-generated-v2-trusted-{0}-main', github.repository)"
+    " || format('fuzz-generated-v2-untrusted-{0}-{1}-{2}',"
+    " github.repository, github.run_id, github.run_attempt) }}"
+)
 
 
 class UniqueLoader(yaml.BaseLoader):
@@ -76,6 +86,24 @@ def selected_toolchain(step, job):
     raise ValueError("Rust setup requires a fixed version/dated nightly or reviewed stable matrix")
 
 
+def check_fuzz_producer_serialization(document):
+    jobs = document.get("jobs", {})
+    producer = jobs.get("fuzz")
+    if not isinstance(producer, dict) or not isinstance(producer.get("env"), dict):
+        raise ValueError("fuzz corpus producer and exact trust predicate are required")
+    if producer["env"].get("TRUSTED_CORPUS") != "${{ " + FUZZ_TRUST + " }}":
+        raise ValueError("fuzz corpus trust predicate must remain unchanged")
+    if producer.get("concurrency") != {
+        "group": FUZZ_PRODUCER_GROUP, "cancel-in-progress": "false",
+    }:
+        raise ValueError("fuzz corpus producer serialization or untrusted isolation changed")
+    if "concurrency" in document or any(
+        isinstance(job, dict) and "concurrency" in job
+        for name, job in jobs.items() if name != "fuzz"
+    ):
+        raise ValueError("fuzz concurrency belongs only to the corpus producer job")
+
+
 def check_workflow(document, name):
     if document.get("permissions") != {"contents": "read"}:
         raise ValueError(f"{name}: workflow must default to contents: read only")
@@ -87,6 +115,8 @@ def check_workflow(document, name):
     jobs = document.get("jobs")
     if not isinstance(jobs, dict) or not jobs:
         raise ValueError(f"{name}: workflow must contain jobs")
+    if name in {"fuzz.yml", "fuzz.yaml"}:
+        check_fuzz_producer_serialization(document)
     actions = []
     for job_name, job in jobs.items():
         if not isinstance(job, dict):
@@ -157,7 +187,7 @@ def main():
             "source_revision": subprocess.run(
                 ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True,
             ).stdout.strip(),
-            "note": "Checks configuration pins, explicit toolchains, read-only permissions, job budgets and update configuration. Not upstream code approval, protected-branch enforcement, trigger execution or full readiness evidence.",
+            "note": "Checks configuration pins, explicit toolchains, read-only permissions, job budgets, fuzz producer serialization/isolation and update configuration. Not upstream code approval, protected-branch enforcement, trigger execution or full readiness evidence.",
         }
         arguments.output.parent.mkdir(parents=True, exist_ok=True)
         arguments.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
