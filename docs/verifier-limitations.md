@@ -23,6 +23,22 @@ verifies, a different ghost wrapper is not an exact-source proof of the executin
 wrapper. See the individual IDs and reasons in `proof-dispositions.json`.
 They must be closed in P05, not relabeled as verified.
 
+Independent wide-code regressions exposed an incorrect zero-bit-offset shortcut
+in both `WideCode::fits_in_bits` and its project model. At widths 64, 128 and
+192 it ignored the entire first excluded limb, allowing oversubscribed
+canonical tables through construction. Removing that shortcut makes the
+boundary limb participate even when the intra-limb shift is zero.
+
+Both regressions fail on the previous source: one compares all 256 single-bit
+positions and additional limb patterns at every width from 0 through 257
+against independent significant-bit counts; the other checks complete,
+incomplete and oversubscribed code trees across word boundaries and neighboring
+lengths. Valid codes still round-trip, including 255-bit prefixes. Only this
+production helper body and its matching model expression change; all other
+655 production bodies/attributes and reviewed disposition classifications are
+unchanged. Correcting a mirrored model defect is not a proof of the complete
+canonical algorithm or faithful normative translation.
+
 MMR span dispatch now executes and verifies the same optimized bitmap filler;
 the scalar proof-only loop is removed. The filler additionally preserves
 stored length and proves successful empty spans are no-ops. The wrapper proves

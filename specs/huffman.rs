@@ -99,7 +99,7 @@ pub(super) open spec fn fits_in_bits(
         !(limb < 3 && code.limbs@[3] != 0)
             && !(limb < 2 && code.limbs@[2] != 0)
             && !(limb < 1 && code.limbs@[1] != 0)
-            && (bit == 0 || code.limbs@[limb as int] >> bit == 0)
+            && code.limbs@[limb as int] >> bit == 0
     }
 }
 

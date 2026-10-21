@@ -154,6 +154,15 @@ prefix lacking optional EOF. Duplicate local wire numbers are rejected as
 
 ## Proof and normative link audits
 
+The Huffman width regressions independently count significant bits for all
+single-bit positions and additional limb patterns at widths 0 through 257.
+They also reject oversubscribed canonical trees at 64/128/192-bit boundaries,
+check neighboring lengths, and retain decoding of valid complete/incomplete
+trees through 255-bit prefixes. Both tests fail on the former zero-offset
+shortcut; runtime and project-model expressions are corrected together.
+These local regressions are not official conformance vectors or a complete
+canonical prefix-freedom theorem.
+
 Proof audits parse Rust syntax and include production functions after test-only
 items, nested modules and path-included runtime modules. Unsupported syntax or
 ambiguous module resolution fails closed. Evidence schemas, duplicate-key
