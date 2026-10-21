@@ -13,9 +13,21 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 10,022 / 12,617 | 79.43% |
-| Code regions | 9,667 / 12,931 | 74.76% |
-| Branch outcomes | 1,785 / 2,640 | 67.61% |
+| Lines | 10,266 / 12,622 | 81.33% |
+| Code regions | 9,875 / 12,934 | 76.35% |
+| Branch outcomes | 1,880 / 2,640 | 71.21% |
+
+The latest MMR contract floor is bound to immutable test-source commit
+`8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
+It adds **57 covered lines, 50 regions and 19 branch outcomes** over a fresh
+`d970ac4` main collection with identical source-coordinate denominators and no
+lost covered coordinates. The older reviewed floor was 10,207/12,620 lines,
+9,823/12,932 regions and 1,861/2,640 branches; main already contributes two
+covered bitmap lines/regions and their denominator entries. Those two are not
+counted as new test gains. All global/per-file fractions are nondecreasing.
+[`mmr-contracts.json`](../validation/coverage/mmr-contracts.json) records the raw
+identities, exact coordinate deltas and complete native-source identity review.
+The following paragraphs retain the history of earlier tranches.
 
 The source-offset dispatch floor was established with 262 correctness tests, with
 14 ignored microbenchmarks excluded. Focused invalid/zero-area cases cover five
@@ -275,3 +287,12 @@ progress and minimum run lengths, and internal span/transition errors excluded
 by valid bitmap/reference invariants. Byte-aligned slices cannot end midway
 through EOFB byte-alignment padding. These are not marked covered, excluded or
 proved merely because adjacent error conversions execute.
+
+Fourteen new correctness tests increase the full native/coverage scope from
+314 to 328 passing tests, with the same fourteen ignored microbenchmarks.
+`mmr.rs` increases from 518/615 to 574/615 lines, 471/606 to 520/606 regions,
+and 118/150 to 136/150 branch outcomes. `reader.rs` increases from 98/101 to
+99/101 lines, 88/93 to 89/93 regions, and 9/12 to 10/12 branch outcomes.
+Three typed constructors used by the proof-facing implementation remain
+unexecuted in ordinary runtime tests; their lines are still in the denominator.
+These measurements are not completion of all P06 work or release coverage goals.

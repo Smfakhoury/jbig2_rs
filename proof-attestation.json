@@ -24,8 +24,8 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "cd953a4b8ddd26d9f0c135f4ea1c0cdac86eb76ef435bd37ae9e2d187279a1ec",
-  "proof_dispositions_sha256": "ff6dccfa1285d60366ebd00eb5cae45bcd29dc60fd1e408243d4369cd2a4b17b",
+  "production_proof_coverage_sha256": "e9be8dee4420d13cc418f1f0980db0179cc8fd0769bcd2b27e78b2cb693bb3b2",
+  "proof_dispositions_sha256": "a5bac8559baf41a4184cab00072696ebdcb0f81b8f15986fe4c0e9b8ea6f6e14",
   "duplicate_executable_proof_source": true,
   "note": "Complete inventory is not complete normative correctness. Every output bit of all five byte/word combination operators now equals the existing Boolean combination model for all input pairs and valid bit positions. Two bit-vector lemmas prove the model bridge; four compiling constant-output violations fail the per-bit contracts and verify under the original true-only output controls. Native operator expressions are unchanged with pure result bindings around erased proof code; all other 654 production bodies/attributes and all existing model/lemma tokens are unchanged. Four pure definitions and two proved lemmas are added. Exhaustive byte-pair and boundary-word truth tables supplement the universal proof. Placement, mask/shift integration, wire mapping and normative translation remain separate; full raster/pixel correctness is not inferred. Earlier exact composition/storage/frame, reset, metadata, retention and other helper guarantees remain. Only MMR capacity accounting remains a runtime/proof substitution; no new assumptions, weaker memory policy or normative approval are introduced. Broader semantic/caller/conformance gaps still block release claims.",
   "release_gate": "blocked"
