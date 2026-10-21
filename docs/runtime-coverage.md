@@ -13,9 +13,9 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 9,830 / 12,617 | 77.91% |
-| Code regions | 9,478 / 12,931 | 73.30% |
-| Branch outcomes | 1,747 / 2,640 | 66.17% |
+| Lines | 10,022 / 12,617 | 79.43% |
+| Code regions | 9,667 / 12,931 | 74.76% |
+| Branch outcomes | 1,785 / 2,640 | 67.61% |
 
 The source-offset dispatch floor was established with 262 correctness tests, with
 14 ignored microbenchmarks excluded. Focused invalid/zero-area cases cover five
@@ -37,6 +37,36 @@ The packed-byte contract tranche runs 266 correctness tests. Its independent
 endian and complete/short/overflowing-range oracles strengthen value/frame
 evidence without changing any per-file/global count, denominator or exclusion.
 The same baseline is retained byte-for-byte; no coverage increase is claimed.
+
+The structured codec-family tranche adds five ordinary integration tests using
+the same bounded program as `codec_families_structured`. First-party encoders
+cover MMR pattern/halftone and raw/MMR collective Huffman dictionary/text
+documents through public standalone, random-access, embedded/global, reader,
+sink and reusable-context APIs. Scalar Boolean painting and literal packed
+pixels are the oracles, including dimensions and padding; fresh/reused agreement
+is not an independent pixel oracle. Fourteen limit kinds and typed malformed
+paths are tested with recovery. Runtime source and coverage exclusions are
+unchanged. The pinned before/after run increases covered source-coordinate unions
+by **192 lines, 189 regions and 38 branch outcomes**, with exactly unchanged
+global and per-file denominators and no lost covered coordinates. All per-file
+fractions are nondecreasing. In particular `halftone.rs` gains 57/49/8 and
+`symbol_text.rs` gains 113/111/24 lines/regions/branch outcomes. The baseline is
+bound to immutable fixture commit
+`f338287afe3e6026fe0104436ec4c25c5f726f5a`; ordinary native correctness tests
+increase from 266 to 271, with the same fourteen ignored microbenchmarks.
+Separate pinned family collections attribute 67/63/11 new runtime
+lines/regions/branch outcomes to MMR pattern/halftone and 133/132/27 to Huffman
+dictionary/text. Their union is 192/189/37 (overlap 8/6/1), not the sum of family
+counts. Shared seed/control tests add the remaining bitmap branch outcome.
+[`structured-families.json`](../validation/coverage/structured-families.json)
+records exact raw-report and source-coordinate identities, per-file gains,
+unchanged denominators and the separate shared branch. Reproduce the full
+collection below; for an individual family use the pinned `cargo llvm-cov
+--branch --test fuzz_codec_families --json --output-path <report> -- <test-name>`
+with the exact test name recorded in that evidence and a separate
+`CARGO_LLVM_COV_TARGET_DIR`.
+See the detailed grammar and remaining family gaps in
+[`validation/README.md`](../validation/README.md#structured-codec-families).
 
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.
@@ -142,11 +172,11 @@ typed public-API regressions. This closes the file-only reference gap, not the
 line/branch coverage goals or normative proof gaps. The catalog checker records
 discovery separately from execution; native CI runs the tests independently.
 
-1. Symbol/text decoding: 65.25% lines, 47.74% branch outcomes; largest uncovered
+1. Symbol/text decoding: 69.03% lines, 52.44% branch outcomes; largest uncovered
    runtime surface. Add valid arithmetic/Huffman/refinement combinations and
    malformed export/placement/aggregation regressions.
-2. High-level decode and document lifecycle: now 74.91% / 77.29% lines and
-   58.70% / 61.96% branches. New tests cover short reads, late reader failures,
+2. High-level decode and document lifecycle: now 75.36% / 79.20% lines and
+   58.70% / 64.42% branches. New tests cover short reads, late reader failures,
    sink failure propagation, inclusive input/dimension/work limits, mandatory
    retained state versus optional scratch, and reusable-context recovery.
    More resource, stripe and reference-graph cases remain.

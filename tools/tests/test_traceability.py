@@ -6,18 +6,22 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from jsonschema import ValidationError
+
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_traceability import check, runtime_inventory
+from check_traceability import check, policy_row_hash, runtime_inventory
 from evidence import load_json, validate
 from rust_tests import test_inventory as inventory_tests
 
 
 class TraceabilityTests(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
+        fixture_directory = TOOLS.parent / "target" / "traceability-test-fixtures"
+        fixture_directory.mkdir(parents=True, exist_ok=True)
+        self.temporary = tempfile.TemporaryDirectory(dir=fixture_directory)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
         self.write("src/lib.rs", """
@@ -48,7 +52,15 @@ class TraceabilityTests(unittest.TestCase):
         """)
         self.write_json("support-matrix.json", {"rows": [{"feature": "decoder", "status": "required"}]})
         self.standard = {"id": "ITU-T T.88 (08/2018)", "edition": "2.0", "document_sha256": "a" * 64}
-        self.write_json("source-provenance.json", {"normative_documents": [self.standard]})
+        self.consultation = {
+            "standard": self.standard["id"],
+            "acquisition_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items",
+            "package_sha256": "b" * 64, "document_sha256": self.standard["document_sha256"],
+            "clause_families": ["5.4 (synthetic fixture)"],
+        }
+        self.write_json("source-provenance.json", {"normative_documents": [self.standard | {
+            "package_sha256": "b" * 64, "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
+        }]})
         runtime = runtime_inventory(self.root)
         coverage = {
             "schema_version": 1, "source": "src/*.rs", "verus_verified_obligations": 2,
@@ -68,7 +80,12 @@ class TraceabilityTests(unittest.TestCase):
         self.ledger = {
             "schema_version": 1, "review_policy": "provisional fixture",
             "standards": [self.standard],
-            "features": [{"feature": "decoder", "support_status": "required", "decomposition": "partial"}],
+            "source_consultations": [self.consultation],
+            "features": [{
+                "feature": "decoder", "support_status": "required", "decomposition": "partial",
+                "requirement_ids": ["T88-FIXTURE"],
+                "remaining_scope": ["Synthetic fixture is not a full normative decomposition."],
+            }],
             "definitions": {
                 "identity-model": {
                     "kind": "spec", "file": "specs/model.rs", "module_path": ["spec"],
@@ -122,6 +139,11 @@ class TraceabilityTests(unittest.TestCase):
         self.assertEqual(report["status"], "references_valid_scope_incomplete")
         self.assertTrue(report["verifier_report_checked"])
         self.assertTrue(report["cargo_test_discovery_checked"])
+        feature = report["feature_decomposition"][0]
+        self.assertEqual(feature["requirement_ids"], ["T88-FIXTURE"])
+        self.assertEqual(feature["requirement_count"], 1)
+        self.assertEqual(feature["evidence_strength_counts"]["functional_contract"], 1)
+        self.assertTrue(feature["remaining_scope"])
 
     def test_test_inventory_respects_test_and_ghost_scopes(self):
         self.write("tests/hidden.rs", "#![cfg(verus_keep_ghost)]\n#[test] fn hidden() {}")
@@ -229,6 +251,195 @@ class TraceabilityTests(unittest.TestCase):
         })
         with self.assertRaisesRegex(ValueError, "complete feature has no requirement"):
             self.run_check(ledger)
+
+    def test_feature_accounting_fields_are_required_by_schema(self):
+        for field in ("requirement_ids", "remaining_scope"):
+            ledger = copy.deepcopy(self.ledger)
+            del ledger["features"][0][field]
+            with self.subTest(field=field), self.assertRaises(ValidationError):
+                validate(ledger, "traceability")
+
+    def test_missing_stale_and_duplicate_feature_requirement_ids_fail(self):
+        for references in ([], ["T88-STALE"], ["T88-FIXTURE", "T88-FIXTURE"]):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["features"][0]["requirement_ids"] = references
+            with self.subTest(references=references), self.assertRaisesRegex(ValueError, "accounting"):
+                self.run_check(ledger)
+
+    def test_feature_cannot_claim_another_features_requirement(self):
+        self.write_json("support-matrix.json", {"rows": [
+            {"feature": "decoder", "status": "required"},
+            {"feature": "other", "status": "required"},
+        ]})
+        ledger = copy.deepcopy(self.ledger)
+        ledger["features"].append({
+            "feature": "other", "support_status": "required", "decomposition": "partial",
+            "requirement_ids": ["T88-FIXTURE"], "remaining_scope": ["Still unenumerated."],
+        })
+        with self.assertRaisesRegex(ValueError, "accounting"):
+            self.run_check(ledger)
+
+    def test_recorded_feature_cannot_stay_not_started(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["features"][0]["decomposition"] = "not_started"
+        with self.assertRaisesRegex(ValueError, "state disagrees"):
+            self.run_check(ledger)
+
+    def test_partial_feature_cannot_have_no_requirement_records(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"] = []
+        ledger["definitions"] = {}
+        ledger["bindings"] = {}
+        ledger["features"][0]["requirement_ids"] = []
+        with self.assertRaisesRegex(ValueError, "state disagrees"):
+            self.run_check(ledger)
+
+    def test_unfinished_or_excluded_feature_needs_remaining_scope(self):
+        for status, state, selected in (
+            ("required", "partial", True),
+            ("required", "not_started", False),
+            ("deferred", "excluded", False),
+        ):
+            self.write_json("support-matrix.json", {"rows": [{"feature": "decoder", "status": status}]})
+            for notes in ([], ["   "]):
+                ledger = copy.deepcopy(self.ledger)
+                ledger["features"][0].update(
+                    support_status=status, decomposition=state, remaining_scope=notes,
+                    requirement_ids=["T88-FIXTURE"] if selected else [],
+                )
+                if not selected:
+                    ledger.update(requirements=[], definitions={}, bindings={})
+                with self.subTest(state=state, notes=notes), self.assertRaisesRegex(ValueError, "remaining scope"):
+                    self.run_check(ledger)
+
+    def test_complete_feature_rejects_provisional_gapped_or_weak_records(self):
+        for change in (
+            {"review": "provisional"},
+            {"gaps": ["Unproved output semantics."]},
+            {"strength": "safety_only", "functional_evidence": []},
+        ):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["features"][0].update(decomposition="complete", remaining_scope=[])
+            ledger["requirements"][0]["review"] = "approved"
+            ledger["requirements"][0].update(change)
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "unresolved scope or evidence"):
+                self.run_check(ledger)
+
+    def test_complete_feature_cannot_hide_remaining_scope(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["features"][0]["decomposition"] = "complete"
+        ledger["requirements"][0]["review"] = "approved"
+        with self.assertRaisesRegex(ValueError, "unresolved scope or evidence"):
+            self.run_check(ledger)
+
+    def test_duplicate_runtime_model_test_and_contract_evidence_fails(self):
+        for field in ("runtime", "models", "tests", "functional_evidence"):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["requirements"][0][field].append(copy.deepcopy(ledger["requirements"][0][field][0]))
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, f"duplicate {field}"):
+                self.run_check(ledger)
+            with self.subTest(schema=field), self.assertRaises(ValidationError):
+                validate(ledger, "traceability")
+
+    def test_duplicate_contract_tokens_fail_even_when_whitespace_differs(self):
+        for token in ("out == crate::spec::identity(x)", "out==crate::spec::identity(x)"):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["requirements"][0]["functional_evidence"][0]["tokens"].append(token)
+            with self.subTest(token=token), self.assertRaisesRegex(ValueError, "duplicate contract token"):
+                self.run_check(ledger)
+
+    def test_unused_and_aliased_duplicate_model_definitions_fail(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["definitions"]["alias"] = copy.deepcopy(ledger["definitions"]["identity-model"])
+        with self.assertRaisesRegex(ValueError, "unused or missing"):
+            self.run_check(ledger)
+        ledger["requirements"][0]["models"].append("alias")
+        with self.assertRaisesRegex(ValueError, "duplicate model/proof definition"):
+            self.run_check(ledger)
+
+    def test_weakened_contract_fails_after_source_hashes_are_refreshed(self):
+        path = self.root / "src/leaf.rs"
+        path.write_text(path.read_text().replace(
+            "ensures out == crate::spec::identity(x)", "ensures out <= 255",
+        ))
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        ledger = copy.deepcopy(self.ledger)
+        ledger["bindings"]["src/leaf.rs"] = digest
+        coverage = load_json(self.root / "production-proof-coverage.json")
+        for function in coverage["functions"]:
+            if function["file"] == "src/leaf.rs":
+                function["file_sha256"] = digest
+        self.write_json("production-proof-coverage.json", coverage)
+        with self.assertRaisesRegex(ValueError, "not present"):
+            self.run_check(ledger)
+
+    def test_commented_out_postcondition_cannot_satisfy_a_refreshed_binding(self):
+        path = self.root / "src/leaf.rs"
+        path.write_text(path.read_text().replace(
+            "ensures out == crate::spec::identity(x),",
+            "ensures /* out == crate::spec::identity(x) */ true,",
+        ))
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        ledger = copy.deepcopy(self.ledger)
+        ledger["bindings"]["src/leaf.rs"] = digest
+        coverage = load_json(self.root / "production-proof-coverage.json")
+        for function in coverage["functions"]:
+            if function["file"] == "src/leaf.rs":
+                function["file_sha256"] = digest
+        self.write_json("production-proof-coverage.json", coverage)
+        with self.assertRaisesRegex(ValueError, "not present"):
+            self.run_check(ledger)
+
+    def test_documentation_cannot_replace_a_removed_ghost_contract(self):
+        path = self.root / "src/leaf.rs"
+        path.write_text(path.read_text().replace(
+            """#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+                ensures out == crate::spec::identity(x),
+            ))]""",
+            """#[doc = "verus_spec(ensures out == crate::spec::identity(x))"]
+            #[cfg_attr(verus_keep_ghost, verus_verify)]""",
+        ))
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        ledger = copy.deepcopy(self.ledger)
+        ledger["bindings"]["src/leaf.rs"] = digest
+        coverage = load_json(self.root / "production-proof-coverage.json")
+        for function in coverage["functions"]:
+            if function["file"] == "src/leaf.rs":
+                function["file_sha256"] = digest
+        self.write_json("production-proof-coverage.json", coverage)
+        with self.assertRaisesRegex(ValueError, "not present"):
+            self.run_check(ledger)
+
+    def test_true_cannot_be_promoted_into_functional_or_state_evidence(self):
+        for strength in ("functional_contract", "state_preservation"):
+            ledger = copy.deepcopy(self.ledger)
+            requirement = ledger["requirements"][0]
+            requirement["strength"] = strength
+            claim = {"runtime": "leaf::identity", "section": "ensures", "tokens": ["( true )"]}
+            requirement["functional_evidence"] = [claim] if strength == "functional_contract" else []
+            requirement["invariant_evidence"] = [claim] if strength == "state_preservation" else []
+            with self.subTest(strength=strength), self.assertRaisesRegex(ValueError, "tautological"):
+                self.run_check(ledger)
+
+    def test_state_preservation_cannot_use_a_precondition(self):
+        ledger = copy.deepcopy(self.ledger)
+        requirement = ledger["requirements"][0]
+        requirement["strength"] = "state_preservation"
+        requirement["invariant_evidence"] = requirement["functional_evidence"]
+        requirement["functional_evidence"] = []
+        requirement["invariant_evidence"][0]["section"] = "requires"
+        with self.assertRaisesRegex(ValueError, "preconditions cannot satisfy a state"):
+            self.run_check(ledger)
+
+    def test_functional_evidence_cannot_hide_under_a_weaker_strength(self):
+        for strength in ("state_preservation", "safety_only"):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["requirements"][0]["strength"] = strength
+            ledger["requirements"][0]["invariant_evidence"] = copy.deepcopy(
+                ledger["requirements"][0]["functional_evidence"],
+            )
+            with self.subTest(strength=strength), self.assertRaisesRegex(ValueError, "weaker strength classification"):
+                self.run_check(ledger)
     def test_duplicate_requirements_and_unused_bindings_fail(self):
         ledger = copy.deepcopy(self.ledger)
         ledger["requirements"].append(copy.deepcopy(ledger["requirements"][0]))
@@ -246,11 +457,145 @@ class TraceabilityTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaisesRegex(ValueError, "normative"):
                 self.run_check(ledger)
 
+    def test_source_consultations_are_required_and_cannot_disappear_or_duplicate(self):
+        ledger = copy.deepcopy(self.ledger)
+        del ledger["source_consultations"]
+        with self.assertRaises(ValidationError):
+            validate(ledger, "traceability")
+        for consultations in ([], [self.consultation, self.consultation]):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["source_consultations"] = consultations
+            with self.subTest(consultations=consultations), self.assertRaisesRegex(ValueError, "exact normative standards once"):
+                self.run_check(ledger)
+
+    def test_stale_document_or_package_consultation_hash_fails(self):
+        for field in ("document_sha256", "package_sha256"):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["source_consultations"][0][field] = "c" * 64
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "consultation .* differs"):
+                self.run_check(ledger)
+
+    def test_consultation_cannot_point_to_a_mirror_or_credentialed_url(self):
+        for url in (
+            "https://mirror.invalid/T88.zip",
+            "http://www.itu.int/rec/dologin_pub.asp?id=fixture",
+            "https://user@www.itu.int/rec/dologin_pub.asp?id=fixture",
+            "https://www.itu.int/unrecorded/path",
+        ):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["source_consultations"][0]["acquisition_url"] = url
+            with self.subTest(url=url), self.assertRaisesRegex(ValueError, "official publication host"):
+                self.run_check(ledger)
+
+    def test_consultation_cannot_name_another_official_publication(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["source_consultations"][0]["acquisition_url"] = (
+            "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!SOFT-ZST-E&type=items"
+        )
+        with self.assertRaisesRegex(ValueError, "different publication/package"):
+            self.run_check(ledger)
+
+    def test_consultation_clause_families_cannot_be_empty_or_repeated(self):
+        for families in ([], [" "], ["6.3", "6.3 "], ["6.3", "6.3"]):
+            ledger = copy.deepcopy(self.ledger)
+            ledger["source_consultations"][0]["clause_families"] = families
+            with self.subTest(families=families), self.assertRaisesRegex(ValueError, "nonempty distinct clause families"):
+                self.run_check(ledger)
+
+    def test_explicit_project_policy_is_counted_separately_from_normative_rules(self):
+        policy = {"feature": "decoder", "status": "required", "note": "Synthetic API policy."}
+        self.write_json("support-matrix.json", {"rows": [policy]})
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"][0].update(
+            obligation_kind="project_profile_policy", policy_row_sha256=policy_row_hash(policy),
+        )
+        validate(ledger, "traceability")
+        report = self.run_check(ledger)
+        self.assertEqual(report["obligation_kind_counts"], {"normative_rule": 0, "project_profile_policy": 1})
+        self.assertEqual(report["requirements"][0]["obligation_kind"], "project_profile_policy")
+        self.assertEqual(report["requirements"][0]["policy_row_sha256"], policy_row_hash(policy))
+
+    def test_stale_missing_or_unstated_policy_basis_fails(self):
+        policy = {"feature": "decoder", "status": "required", "note": "Synthetic API policy."}
+        self.write_json("support-matrix.json", {"rows": [policy]})
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"][0]["obligation_kind"] = "project_profile_policy"
+        with self.assertRaisesRegex(ValueError, "stale or missing project policy"):
+            self.run_check(ledger)
+        ledger["requirements"][0]["policy_row_sha256"] = policy_row_hash(policy)
+        self.write_json("support-matrix.json", {"rows": [policy | {"note": "Weakened API policy."}]})
+        with self.assertRaisesRegex(ValueError, "stale or missing project policy"):
+            self.run_check(ledger)
+        self.write_json("support-matrix.json", {"rows": [{"feature": "decoder", "status": "required"}]})
+        with self.assertRaisesRegex(ValueError, "no explicit support-matrix basis"):
+            self.run_check(ledger)
+
+    def test_project_policy_hash_cannot_be_mislabeled_normative(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"][0]["policy_row_sha256"] = "c" * 64
+        with self.assertRaises(ValidationError):
+            validate(ledger, "traceability")
+        with self.assertRaisesRegex(ValueError, "cannot hide a project policy"):
+            self.run_check(ledger)
+
     def test_checked_repository_ledger_is_schema_valid_and_provisional(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         validate(ledger, "traceability")
-        self.assertEqual(len(ledger["requirements"]), 20)
+        self.assertEqual(len(ledger["requirements"]), 94)
         self.assertTrue(all(entry["review"] == "provisional" for entry in ledger["requirements"]))
+
+    def test_repository_feature_accounting_is_exact_but_still_incomplete(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        features = {feature["feature"]: feature for feature in ledger["features"]}
+        for name, feature in features.items():
+            expected = {row["id"] for row in ledger["requirements"] if row["feature"] == name}
+            with self.subTest(feature=name):
+                self.assertEqual(set(feature["requirement_ids"]), expected)
+                self.assertTrue(feature["remaining_scope"])
+                self.assertNotEqual(feature["decomposition"], "complete")
+        for name in (
+            "sequential_organization", "random_access_organization", "embedded_organization",
+            "standard_huffman_tables", "custom_huffman_tables", "mmr_coding",
+        ):
+            self.assertEqual(features[name]["decomposition"], "partial")
+
+    def test_new_family_records_do_not_upgrade_parser_or_pixel_evidence(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for name in ("T88-SEQUENTIAL-SEGMENT-LAYOUT", "T88-RANDOM-HEADER-PAYLOAD-LAYOUT",
+                     "T88-HUFFMAN-CANONICAL-ASSIGNMENT", "T88-HUFFMAN-STANDARD-TABLES"):
+            self.assertEqual(rows[name]["strength"], "safety_only")
+            self.assertEqual(rows[name]["functional_evidence"], [])
+            self.assertTrue(rows[name]["gaps"])
+        self.assertEqual(rows["T88-HUFFMAN-PREFIX-MATCH"]["strength"], "state_preservation")
+        self.assertEqual(rows["T88-MMR-BINARY-POLARITY"]["strength"], "state_preservation")
+        self.assertIn("T.6", " ".join(rows["T88-MMR-BINARY-POLARITY"]["assumptions"]))
+
+    def test_all_feature_worklists_have_started_without_claiming_full_decomposition(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        self.assertEqual(sum(feature["decomposition"] == "partial" for feature in ledger["features"]), 29)
+        self.assertEqual(sum(feature["decomposition"] == "excluded" for feature in ledger["features"]), 1)
+        self.assertTrue(all(feature["decomposition"] != "complete" for feature in ledger["features"]))
+        self.assertTrue(all(feature["remaining_scope"] for feature in ledger["features"]))
+        policy = [row for row in ledger["requirements"] if row.get("obligation_kind") == "project_profile_policy"]
+        self.assertEqual(len(policy), 6)
+        self.assertEqual({row["feature"] for row in policy}, {
+            "pdf_global_and_page_segments", "colour_palette", "lossy_symbol_substitution_by_decoder",
+        })
+        for row in policy:
+            self.assertTrue(row["policy_row_sha256"])
+            self.assertTrue(row["gaps"])
+
+    def test_new_page_records_do_not_claim_transitive_kernel_or_pixel_equivalence(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for name in ("T88-IMMEDIATE-DIRECT-PAGE", "T88-IMMEDIATE-CLIPPED-PAGE"):
+            self.assertTrue(all(runtime.startswith("decode::compose_immediate") for runtime in rows[name]["runtime"]))
+            self.assertEqual(rows[name]["strength"], "state_preservation")
+            self.assertEqual(rows[name]["functional_evidence"], [])
+            self.assertTrue(rows[name]["invariant_evidence"])
+            self.assertIn("audited inventory", " ".join(rows[name]["assumptions"]))
+            self.assertTrue(rows[name]["gaps"])
 
     def test_retention_records_disclose_the_worked_example_conflict(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
