@@ -2,6 +2,8 @@ import copy
 import contextlib
 import io
 import json
+import hashlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -18,6 +20,104 @@ from jsonschema import ValidationError
 from rust_source import production_code, source_functions
 from audit_production_coverage import verified_matches
 import audit_production_coverage as coverage_audit
+
+
+class ConformanceExpectationSchemaTests(unittest.TestCase):
+    def expectation(self):
+        return {
+            "schema_version": 1,
+            "cases": [{
+                "id": "original-fixture", "classification": "pending_normative_review",
+                "rationale": "Source-bound observation, not normative approval",
+                "expected_error_exact": "Error: original fixture",
+                "stream_sha256": "1" * 64,
+                "source_files_sha256": {"src/reader.rs": "2" * 64},
+            }],
+        }
+
+    def test_source_bound_pending_diagnosis_schema(self):
+        validate(self.expectation(), "conformance_differences")
+
+    def test_pending_review_requires_exact_error_and_safe_hash_identities(self):
+        for overrides in (
+            {"expected_error_exact": ""}, {"expected_error_contains": "fixture"},
+            {"stream_sha256": "not-a-hash"}, {"source_files_sha256": {}},
+            {"source_files_sha256": {"../src/reader.rs": "2" * 64}},
+            {"source_files_sha256": {"src/reader.rs": True}},
+            {"classification": "passed"}, {"extra": "not accepted"},
+        ):
+            with self.subTest(overrides=overrides):
+                document = self.expectation()
+                document["cases"][0].update(overrides)
+                with self.assertRaises(ValidationError):
+                    validate(document, "conformance_differences")
+        for key in ("expected_error_exact", "stream_sha256", "source_files_sha256"):
+            document = self.expectation()
+            del document["cases"][0][key]
+            with self.assertRaises(ValidationError):
+                validate(document, "conformance_differences")
+
+    def test_duplicate_case_identity_fails(self):
+        document = self.expectation()
+        document["cases"].append(copy.deepcopy(document["cases"][0]))
+        with self.assertRaisesRegex(ValueError, "duplicate conformance"):
+            validate(document, "conformance_differences")
+
+    def test_provenance_rejects_stale_hash_count_and_rehashed_source_claim(self):
+        source = TOOLS.parent
+        review_path = "validation/conformance/seven-rejection-review.json"
+        review = load_json(source / review_path)
+        paths = {
+            "tools/verify_provenance.py", "tools/evidence.py", "tools/evidence.schema.json",
+            "support-matrix.json", "source-provenance.json", "proof-attestation.json",
+            "conformance-attestation.json", "fuzz-attestation.json",
+            "release-attestation.schema.json", "toolchain.json",
+            "production-proof-coverage.json", "proof-dispositions.json",
+            "validation/conformance/expected-differences.json",
+            "validation/conformance/itu-t88-2018-manifest.json",
+            "validation/conformance/itu-t88-2018-results.json", review_path,
+            *review["source_files_sha256"], *review["validation_files_sha256"],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for relative in paths:
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source / relative, destination)
+            attestation_path = root / "conformance-attestation.json"
+            original_attestation = attestation_path.read_text()
+            original_review = (root / review_path).read_text()
+
+            def audit():
+                return subprocess.run(
+                    [sys.executable, "-B", str(root / "tools/verify_provenance.py")],
+                    cwd=root, capture_output=True, text=True, check=False,
+                )
+
+            baseline = audit()
+            self.assertEqual(baseline.returncode, 0, baseline.stderr)
+            for mutation in ("hash", "count", "source", "source_inventory"):
+                with self.subTest(mutation=mutation):
+                    document = json.loads(original_attestation)
+                    (root / review_path).write_text(original_review)
+                    if mutation == "hash":
+                        document["normative_vectors"]["review_sha256"] = "0" * 64
+                    elif mutation == "count":
+                        document["normative_vectors"]["pending_normative_reviews"] = 0
+                    else:
+                        changed = json.loads(original_review)
+                        if mutation == "source_inventory":
+                            del changed["source_files_sha256"]["src/mmr.rs"]
+                        else:
+                            changed["source_files_sha256"]["src/mmr.rs"] = "0" * 64
+                        (root / review_path).write_text(json.dumps(changed))
+                        document["normative_vectors"]["review_sha256"] = hashlib.sha256(
+                            (root / review_path).read_bytes()
+                        ).hexdigest()
+                    attestation_path.write_text(json.dumps(document))
+                    result = audit()
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("provenance audit failed", result.stderr)
 
 
 class RustAuditTests(unittest.TestCase):

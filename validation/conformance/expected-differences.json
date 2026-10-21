@@ -3,51 +3,88 @@
   "cases": [
     {
       "id": "codeStreamTest1_TT1",
-      "classification": "reviewed_strict_rejection",
-      "expected_error_contains": "UnexpectedEof",
-      "rationale": "The MMR sub-block is truncated. Pinned jbig2dec emits recovery warnings and continues leniently; jbig2_rs fails closed.",
+      "classification": "pending_normative_review",
+      "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 192, needed: 1, remaining: 0 })",
+      "stream_sha256": "d7fed4f97e960c45c404eb94dac84cfcd1dbb77f774aa3c58c052783c130b543",
+      "source_files_sha256": {
+        "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+        "src/huffman.rs": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
+        "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909"
+      },
+      "rationale": "The earlier MMR-truncation explanation is refuted: both initial dictionaries complete. Text segment 3 exhausts its 24-byte entropy body while requesting SubsequentS for placement 5 of 5 (file byte 179). Earlier text entropy desynchronization versus official asset inconsistency remains unadjudicated. See seven-rejection-review.json; no normative rejection approval or conformance credit.",
       "jbig2dec_stderr_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a"
     },
     {
       "id": "codeStreamTest1_TT2",
-      "classification": "reviewed_strict_rejection",
-      "expected_error_contains": "UnexpectedEof",
-      "rationale": "The declared one-byte MMR collective bitmap cannot complete the declared rows. Pinned jbig2dec reports fatal MMR errors and recovers leniently; jbig2_rs fails closed.",
+      "classification": "pending_normative_review",
+      "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
+      "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
+      "source_files_sha256": {
+        "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+        "src/mmr.rs": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
+        "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909"
+      },
+      "rationale": "Observed bounded MMR underflow: BMSIZE is decoded as 1 for a 5x8 collective bitmap; the first row exhausts that bound at file byte 69. Native recoveries do not match the expected bitmap. Upstream field alignment and official-positive validity remain unadjudicated; no exception, row synthesis or normative rejection approval.",
       "jbig2dec_stderr_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a"
     },
     {
       "id": "codeStreamTest1_TT3",
-      "classification": "reviewed_strict_rejection",
-      "expected_error_contains": "negative export run",
-      "rationale": "IAEX produces a negative EXRUNLENGTH although T.88 6.5.4/6.5.10 defines it as an unsigned 32-bit run length. Pinned jbig2dec warns and caps the wrapped value; jbig2_rs rejects it.",
+      "classification": "pending_normative_review",
+      "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "stream_sha256": "23341708b770936cd199bbfa7a4f7be41b7b0257b38532a3e678710bac46012b",
+      "source_files_sha256": {
+        "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+        "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a"
+      },
+      "rationale": "Observed IAEX terminal-state divergence at file byte 91: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved. A negative observation is not proof of normative asset malformation.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
       "id": "codeStreamTest1_TT4",
-      "classification": "reviewed_strict_rejection",
-      "expected_error_contains": "negative export run",
-      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "classification": "pending_normative_review",
+      "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "stream_sha256": "872ef6cb28c55b5e7d9f7d04c834896f4b06e52819254b3e2596d022dcc06305",
+      "source_files_sha256": {
+        "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+        "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a"
+      },
+      "rationale": "Observed IAEX terminal-state divergence at file byte 91: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
       "id": "codeStreamTest1_TT5",
-      "classification": "reviewed_strict_rejection",
-      "expected_error_contains": "negative export run",
-      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "classification": "pending_normative_review",
+      "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "stream_sha256": "ebec26a22425cce27de5feaf91bc8a6528428283cfdeeb5f39825fe1ba992871",
+      "source_files_sha256": {
+        "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+        "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a"
+      },
+      "rationale": "Observed IAEX terminal-state divergence at file byte 86: this decoder rejects -76 after seven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
       "jbig2dec_stderr_sha256": "83fb4c32a7c0adcbf69c6dc92489749783b4d57df6692e42cae5133e196ea418"
     },
     {
       "id": "codeStreamTest1_TT7",
-      "classification": "reviewed_strict_rejection",
-      "expected_error_contains": "negative export run",
-      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "classification": "pending_normative_review",
+      "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "stream_sha256": "afa20c52a9fc0c4b33c867338b4447e0be7d402a814fadf52f414ed4d4f08a82",
+      "source_files_sha256": {
+        "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+        "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a"
+      },
+      "rationale": "Observed IAEX terminal-state divergence at file byte 91: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
       "jbig2dec_stderr_sha256": "52f8bcbd6d8f2a55bdf1112eda6c1a36f38cd9c6fd784119a88154ce8c943a74"
     },
     {
       "id": "codeStreamTest2_TT6",
-      "classification": "reviewed_strict_rejection",
-      "expected_error_contains": "negative export run",
-      "rationale": "IAEX produces a negative unsigned export run. Pinned jbig2dec recovers by capping; jbig2_rs fails closed.",
+      "classification": "pending_normative_review",
+      "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "stream_sha256": "e53dbbbc54b71e8f873c767a2e321444c26a245728007e4842c8746933df1bad",
+      "source_files_sha256": {
+        "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+        "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a"
+      },
+      "rationale": "Observed IAEX terminal-state divergence at file byte 85: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
       "jbig2dec_stderr_sha256": "48f47424233ba140b26527ca45651147c7a6e80d3e796ccfbad54416d0b1da73"
     },
     {

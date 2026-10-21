@@ -35,6 +35,28 @@ Each decoder invocation has a 60-second timeout, configurable with
 unresolved failures exit nonzero. Reviewed rejections are reported separately
 from exact-output passes and do not establish full conformance.
 
+The seven existing official rejections are now `pending_normative_review`, not
+reviewed malformation determinations. A pending entry pins the complete typed
+error, stream hash and relevant runtime source hashes. It remains an unresolved
+failure even when those identities match; changed errors, success, crashes,
+unknown fields, stale source identities and invalid JSON fail closed. No
+runtime acceptance, marker, retention or recovery policy is relaxed.
+
+The prior TT1 MMR-truncation explanation was disproved: its initial dictionaries
+complete before a text Huffman read exhausts the segment entropy body at file
+byte 179. See [the source-bound seven-case review](conformance/seven-rejection-review.json)
+for the distinction between observations and unresolved normative causes.
+The T.88 7.2.4/7.2.8 retention conflict still requires owner adjudication.
+
+Independent first-party pixel fixtures verify both BMP readers for both palette
+orders, top-down/bottom-up orientation, packed-bit padding and four-byte row
+padding. An eleven-page fixture checks numeric page pairing. These fixtures
+contain no official bytes and found no normalization bug in the covered layouts.
+The existing locked Hayro 0.3.1 harness supplies additional rejection evidence,
+but its single-image API and FNV64 output summary are not full-byte or
+multi-page conformance proofs; an error cannot corroborate an unexposed entropy
+position.
+
 ## Generated base/head performance comparison
 
 ```text

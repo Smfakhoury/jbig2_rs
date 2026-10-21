@@ -56,6 +56,8 @@ for path in sorted(ROOT.rglob("*")):
                 validate(document, "coverage_baseline")
             elif path.relative_to(ROOT).as_posix() == "validation/traceability/requirements.json":
                 validate(document, "traceability")
+            elif path.relative_to(ROOT).as_posix() == "validation/conformance/expected-differences.json":
+                validate(document, "conformance_differences")
             elif path.relative_to(ROOT).as_posix() in {
                 "validation/negative/cases.json", "validation/metamorphic/cases.json",
             }:
@@ -100,6 +102,93 @@ if coverage["counts"].get("runtime-proof-divergence", 0):
         fail("runtime/proof divergences must block exact-source release claims")
 
 provenance = load_json(ROOT / "source-provenance.json")
+differences = read_evidence(
+    ROOT / "validation/conformance/expected-differences.json", "conformance_differences"
+)
+manifest = load_json(ROOT / "validation/conformance/itu-t88-2018-manifest.json")
+streams = {
+    Path(entry["path"]).stem: entry["sha256"]
+    for entry in manifest["files"] if entry["kind"] == "encoded_stream"
+}
+for entry in differences["cases"]:
+    if entry["id"] not in streams:
+        fail(f"unknown conformance expectation: {entry['id']}")
+    if entry["classification"] == "pending_normative_review":
+        if entry["stream_sha256"] != streams[entry["id"]]:
+            fail(f"pending review stream hash mismatch: {entry['id']}")
+        for path, expected in entry["source_files_sha256"].items():
+            if hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected:
+                fail(f"pending review source hash mismatch: {entry['id']}: {path}")
+conformance = load_json(ROOT / "conformance-attestation.json")
+normative = conformance["normative_vectors"]
+for relative, key in (
+    ("validation/conformance/itu-t88-2018-results.json", "results_sha256"),
+    ("validation/conformance/seven-rejection-review.json", "review_sha256"),
+):
+    if hashlib.sha256((ROOT / relative).read_bytes()).hexdigest() != normative[key]:
+        fail(f"stale conformance attestation hash: {relative}")
+results = load_json(ROOT / "validation/conformance/itu-t88-2018-results.json")
+for key in ("total", "passed", "reviewed_strict_rejections", "unsupported_profile",
+            "pending_normative_reviews", "unresolved_failures"):
+    if normative[key] != results[key]:
+        fail(f"stale conformance attestation count: {key}")
+pending_ids = {
+    entry["id"] for entry in differences["cases"]
+    if entry["classification"] == "pending_normative_review"
+}
+if (
+    {entry["id"] for entry in results["cases"]} != set(streams)
+    or len(results["cases"]) != len(streams)
+    or results["total"] != len(streams)
+    or {entry["id"] for entry in results["cases"] if entry["status"] == "pending_normative_review"}
+        != pending_ids
+):
+    fail("conformance result case identities do not match the manifest and review ledger")
+for key, status in (
+    ("passed", "passed"), ("reviewed_strict_rejections", "reviewed_strict_rejection"),
+    ("unsupported_profile", "unsupported_profile"),
+    ("pending_normative_reviews", "pending_normative_review"),
+):
+    if results[key] != sum(entry["status"] == status for entry in results["cases"]):
+        fail(f"inconsistent conformance result count: {key}")
+if results["unresolved_failures"] != sum(
+    entry["status"] not in {"passed", "reviewed_strict_rejection", "unsupported_profile"}
+    for entry in results["cases"]
+):
+    fail("unresolved conformance cases must not receive pass credit")
+expectations = {entry["id"]: entry for entry in differences["cases"]}
+for entry in results["cases"]:
+    if entry["stream_sha256"] != streams[entry["id"]]:
+        fail(f"conformance result stream identity mismatch: {entry['id']}")
+    if entry["id"] in pending_ids and entry["stderr"] != expectations[entry["id"]]["expected_error_exact"]:
+        fail(f"pending review typed error changed: {entry['id']}")
+review = load_json(ROOT / "validation/conformance/seven-rejection-review.json")
+if (
+    {entry["id"] for entry in review["cases"]} != pending_ids
+    or len(review["cases"]) != len(pending_ids)
+    or any(entry["normative_approval"] is not False for entry in review["cases"])
+    or review["release_gate"] != "blocked"
+    or review["source_revision"] != conformance["source_revision"]
+    or review["normal_conformance_results_sha256"] != normative["results_sha256"]
+):
+    fail("pending review evidence must not imply normative approval")
+if set(review["source_files_sha256"]) != {
+    path.relative_to(ROOT).as_posix() for path in (ROOT / "src").rglob("*.rs")
+}:
+    fail("conformance review must identify the complete runtime source inventory")
+for field in ("source_files_sha256", "validation_files_sha256"):
+    for path, expected in review[field].items():
+        actual = ROOT / path
+        if (
+            not actual.resolve().is_relative_to(ROOT)
+            or hashlib.sha256(actual.read_bytes()).hexdigest() != expected
+        ):
+            fail(f"stale conformance review identity: {path}")
+if results["unresolved_failures"] and (
+    conformance["status"] != "blocked_pending_normative_review"
+    or conformance["release_gate"] != "blocked"
+):
+    fail("unresolved official cases must block conformance approval")
 if provenance["policy"]["standards_text_committed"]:
     fail("standards_text_committed must remain false")
 if provenance["policy"]["non_redistributable_assets_committed"]:

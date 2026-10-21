@@ -64,8 +64,14 @@ backend.
 
 ## Findings
 
-- Both decoders produced identical bitmaps for the two valid supported ITU
-  vectors and rejected the other eight streams.
+- The historical comparison reports matching dimensions and FNV64 bitmap
+  summaries for two supported single-page ITU vectors and errors for the other
+  eight streams. The wrapper does not compare all bytes or establish that an
+  official positive is malformed merely because both decoders reject it.
+  A fresh locked-harness run and the seven unresolved rejection diagnoses are
+  recorded in [the conformance review](../conformance/seven-rejection-review.json).
+  Hayro's single-image wrapper is partial evidence for the multi-page TT1 case,
+  and its errors expose no entropy offsets confirming the IAEX failure stage.
 - `jbig2_rs` was 1.68x to 2.78x faster on generated MMR. `hayro-jbig2`
   remained 1.05x faster on TT9 and 1.39x faster at TT10 median.
 - Across generated 64/512/2048 and TT9/TT10, the geometric-mean

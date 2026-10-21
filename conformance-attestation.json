@@ -1,10 +1,11 @@
 {
   "schema_version": 1,
-  "status": "internal_validation_passed_with_reviewed_differences",
-  "source_revision": "fd9e4b81abe97fea7ed45df9055b594ebe0871cb",
+  "status": "blocked_pending_normative_review",
+  "source_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+  "scope": "Runtime sources unchanged; seven official rejection diagnoses remain unresolved, not normatively approved malformations.",
   "implementation_tests": {
-    "total": 216,
-    "passed": 202,
+    "total": 328,
+    "passed": 314,
     "ignored": 14,
     "failed": 0
   },
@@ -12,10 +13,12 @@
     "approved": true,
     "total": 10,
     "passed": 2,
-    "reviewed_strict_rejections": 7,
+    "reviewed_strict_rejections": 0,
+    "pending_normative_reviews": 7,
     "unsupported_profile": 1,
-    "unresolved_failures": 0,
-    "results_sha256": "c2f1ed30e17d397d0de5b5be02412c3559d0e0fb981ddbc3efffcebfbc0b3987"
+    "unresolved_failures": 7,
+    "results_sha256": "d1ab80c1244af84081fa52f9e4f7ae8b190b0079a76fe20381128d85f9e11cc0",
+    "review_sha256": "12bc235bfd2a191c59ac4846be6714b982bddc8e3698e8bc5b52d93d21975a7e"
   },
   "community_regressions": {
     "total": 0,
@@ -23,6 +26,7 @@
     "failed": 0
   },
   "differential": {
+    "scope": "Historical execution counts below are not normative adjudication; current source/tool identities and unresolved seven-case diagnoses are in validation/conformance/seven-rejection-review.json.",
     "oracles": [
       {
         "name": "jbig2dec",
