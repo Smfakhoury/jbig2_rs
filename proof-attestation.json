@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "286c3cbfb6203e6473a25939d6b91188c22c8b8b",
+  "source_revision": "f30bab75faca88dbec9c4bb1a86f0daf11c9cf77",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,8 +11,8 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1135,
-    "verified_production_functions": 607,
+    "verified_obligations": 1136,
+    "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
     "exact_production_source_compiles": false,
@@ -21,12 +21,12 @@
     "native_assumptions": [],
     "reviewed_verifier_limitations": 24,
     "audited_forwarders": 23,
-    "runtime_proof_divergences": 2,
+    "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "417893bb8c40ab54daefdc48c9c81761e8034c1f7c6d6cd72404d7e6b602283a",
-  "proof_dispositions_sha256": "94f229e64298814707353464895fcc122a251948fa075cbe4de361f3fd1c288f",
+  "production_proof_coverage_sha256": "b392f4a8daa90e07faa0d8f6954ce565829ee77431786f1fcde6771616f0a04c",
+  "proof_dispositions_sha256": "ff6dccfa1285d60366ebd00eb5cae45bcd29dc60fd1e408243d4369cd2a4b17b",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. Packed-byte read/write kernels now prove exact big-endian values, complete range acceptance, unchanged length, successful outside-span byte frames and full failed-write non-mutation. Four compiling value/frame violations fail strong proofs and verify when only the affected relation is removed. Both changed production declarations have identical erased runtime tokens; other 654 bodies/attributes and existing bitmap model definitions are unchanged. Two pure chunk models are added. This prepares ordinary composition proof, not a closure of its dispatch or clipping/pixel relation. The MMR capacity probe is rejected on unsupported pinned Vec::capacity and Result::unwrap_or; its runtime body is restored unchanged, with no new assumptions or capacity-to-length substitution. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention guarantees remain; the 7.2.4 versus 7.2.8 conflict and all twenty provisional normative records are unchanged. Both runtime/proof substitutions and broader semantic/caller/conformance gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Ordinary bitmap composition now verifies its actual optimized chunked path with the original unconditional success, storage/metadata and outside-clipped-byte frame. The obsolete scalar proof substitute is removed. Four fully proved arithmetic/frame lemmas and stronger shifted-reader availability cover all aligned/unaligned word/byte/tail access paths. Five compiling success/frame mutations fail strong contracts and verify when only the affected relation is removed. Three shifted-reader native bodies are unchanged; equivalent explicit checked-multiply/add sequencing and a pure tail-result binding expose facts hidden by the pinned callback interface while preserving order and exact errors. All other 651 production bodies/attributes are byte-identical; existing model tokens are unchanged with a new equivalent frame predicate. General pixel/operator/caller semantics remain scalar-oracle tested, not newly proved. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention guarantees remain, with existing provisional normative rows unchanged by this tranche. Only MMR capacity accounting remains a runtime/proof substitution, blocked by unsupported pinned standard-library calls; no new assumptions, weaker memory policy or conformance approval are introduced. Broader semantic/caller/conformance gaps still block release claims.",
   "release_gate": "blocked"
 }

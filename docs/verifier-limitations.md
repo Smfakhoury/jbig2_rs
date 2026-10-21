@@ -1,9 +1,9 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1135 obligations with zero errors and zero native
+Pinned Verus verifies 1136 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-607 directly verified functions, 24 reviewed verifier limitations, 23 audited
-forwarders and 2 explicitly reviewed runtime/proof divergences.
+608 directly verified functions, 24 reviewed verifier limitations, 23 audited
+forwarders and 1 explicitly reviewed runtime/proof divergence.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -11,9 +11,8 @@ evidence of exact-source coverage. Reusable-context paths and their real
 scratch handling are now directly verified; a mutable closure was extracted
 into an ordinary helper with the same success/error cleanup behavior.
 
-The remaining divergences are ordinary bitmap composition dispatch and MMR
-capacity-based memory accounting.
-Including the latter's executing blocks is rejected by the pinned verifier
+The remaining divergence is MMR capacity-based memory accounting.
+Including its executing blocks is rejected by the pinned verifier
 on `Vec::capacity` and `Result::unwrap_or`. This is a standard-library
 specification prerequisite, not a reason to count vector length as capacity,
 add project assumptions or declare the source gap closed. Its runtime body
@@ -68,6 +67,24 @@ in the controls. Independent standard-library endian oracles cover all 256
 byte values in each of eight positions, plus complete/short/overflowing ranges.
 These contracts are prerequisites for the ordinary composition proof, not a
 closure of that dispatch substitution or its clipping/pixel relation.
+
+Ordinary bitmap composition now verifies the optimized chunked path with the
+original unconditional success, storage/metadata and outside-clipped-byte
+frame contract. Its obsolete scalar proof substitute is removed. Four proved
+arithmetic/frame lemmas establish complete row accesses and witnesses for
+every byte that may change; shifted readers export sufficient availability
+guarantees for the real word/byte/tail paths. Five compiling success/frame
+mutations fail strong contracts and verify when only the affected relation is
+removed. General operator/pixel equivalence is still scalar-oracle tested,
+not newly derived by this byte-frame proof.
+
+Two equivalent native syntax changes expose facts hidden behind the pinned
+callback interface: the row's checked multiply and checked add are explicitly
+sequenced instead of using `and_then`, preserving their order and exact error;
+the wrapper names and returns its call result around proof-only field reveals.
+The three shifted-reader runtime bodies are unchanged. All other 651
+production bodies/attributes are byte-identical. Full proof verification
+includes the added lemmas, not just assumed helper contracts.
 
 `--require-complete` checks that every function is accounted for and reviewed;
 it does not imply that every function is directly proved. The release-level
