@@ -109,6 +109,8 @@ class FuzzRunnerTests(unittest.TestCase):
                 "tools/run_fuzz.py", "toolchain.json",
                 "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
                 "tests/support/codec_scenarios.rs",
+                "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",
+                ".github/workflows/fuzz.yml",
             )
             for name in names:
                 path = root / name
@@ -124,6 +126,8 @@ class FuzzRunnerTests(unittest.TestCase):
             for name in (
                 "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
                 "tests/support/codec_scenarios.rs",
+                "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",
+                ".github/workflows/fuzz.yml",
             ):
                 before = source_identity(root)
                 (root / name).write_text("changed structured fixture", encoding="utf-8")
@@ -146,14 +150,14 @@ class FuzzRunnerTests(unittest.TestCase):
         self.assertIn("timeout-minutes: 60", workflow)
         self.assertIn('cron: "30 2 * * *"', workflow)
         self.assertNotIn("pull_request_target:", workflow)
-        self.assertEqual(workflow.count("env.TRUSTED_CORPUS == 'true'"), 2)
+        self.assertEqual(workflow.count("env.TRUSTED_CORPUS == 'true'"), 3)
         self.assertIn("github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'", workflow)
         self.assertIn("github.event.repository.default_branch", workflow)
         self.assertIn("if: always()", workflow)
         self.assertIn("tools/check_fuzz_controls.py", workflow)
         self.assertIn("target/fuzz-run/", workflow)
-        self.assertIn("'tests/support/context_scenarios.rs', 'benchmarks/generated.rs'", workflow)
-        self.assertIn("'tests/support/codec_scenarios.rs'", workflow)
+        self.assertIn("steps.identity.outputs.sha256", workflow)
+        self.assertIn("github.ref == 'refs/heads/main'", workflow)
 
 
 @unittest.skipUnless(sys.platform == "linux", "bounded process-group fuzz runner is Linux-only")

@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import signal
+import stat
 import subprocess
 import sys
 import time
@@ -26,6 +27,8 @@ RSS_LIMIT_MB = 1024
 MAX_INPUT_BYTES = 16_384
 MAX_CORPUS_FILES = 50_000
 MAX_CORPUS_BYTES = 128 << 20
+CAMPAIGN_STEP_SECONDS = 49 * 60
+CAMPAIGN_SECONDS = CAMPAIGN_STEP_SECONDS - 5
 
 
 def fuzz_environment() -> dict:
@@ -56,6 +59,8 @@ def source_identity(root: Path) -> str:
         "tools/distribution_consumer.rs", "tools/run_fuzz.py", "toolchain.json",
         "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
         "tests/support/codec_scenarios.rs",
+        "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",
+        ".github/workflows/fuzz.yml",
     )]
     identity = hashlib.sha256()
     for path in paths:
@@ -78,18 +83,40 @@ def inventory(directory: Path, max_size: int, max_files: int) -> list[dict]:
         raise ValueError(f"fuzz inputs must be in a real directory: {directory}")
     result = []
     total = 0
-    for path in sorted(directory.iterdir()):
-        if path.is_symlink() or not path.is_file():
+    paths = []
+    for path in directory.iterdir():
+        if len(paths) >= max_files:
+            raise ValueError(f"fuzz input collection exceeds reviewed bounds: {directory}")
+        paths.append(path)
+    for path in sorted(paths):
+        metadata = path.lstat()
+        if not stat.S_ISREG(metadata.st_mode):
             raise ValueError(f"non-regular fuzz input: {path}")
-        size = path.stat().st_size
+        size = metadata.st_size
         if size > max_size:
             raise ValueError(f"oversized fuzz input: {path}")
         total += size
         if total > MAX_CORPUS_BYTES or len(result) >= max_files:
             raise ValueError(f"fuzz input collection exceeds reviewed bounds: {directory}")
+        descriptor = os.open(
+            path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0),
+        )
+        with os.fdopen(descriptor, "rb") as stream:
+            opened = os.fstat(stream.fileno())
+            if not stat.S_ISREG(opened.st_mode):
+                raise ValueError(f"non-regular opened fuzz input: {path}")
+            contents = stream.read(max_size + 1)
+        current = path.lstat()
+        fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+        if (
+            len(contents) != size
+            or any(getattr(metadata, field) != getattr(opened, field)
+                   or getattr(metadata, field) != getattr(current, field) for field in fields)
+        ):
+            raise ValueError(f"fuzz input changed during inventory: {path}")
         result.append({
             "name": path.name, "bytes": size,
-            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "sha256": hashlib.sha256(contents).hexdigest(),
         })
     return result
 
@@ -165,7 +192,14 @@ def run(arguments, root: Path = ROOT) -> dict:
     output = arguments.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=False)
     result = {"schema_version": 1, "status": "failed", "mode": arguments.mode, "targets": []}
+    deadline = time.monotonic() + CAMPAIGN_SECONDS
     try:
+        def bounded(command, log, seconds):
+            remaining = int(deadline - time.monotonic()) - 5
+            if remaining < 1:
+                raise ValueError("fuzz campaign total deadline exhausted")
+            return execute(command, root, environment, log, min(seconds, remaining))
+
         targets = arguments.targets
         validate_targets(root, targets)
         configuration = json.loads((root / "toolchain.json").read_text())
@@ -190,18 +224,22 @@ def run(arguments, root: Path = ROOT) -> dict:
             "source_sha256": identity, "toolchain": configuration["fuzz_rust_toolchain"],
             "cargo_fuzz": version, "profile": arguments.profile,
             "limits": {"input_seconds": INPUT_TIMEOUT, "rss_mb": RSS_LIMIT_MB,
-                       "max_input_bytes": MAX_INPUT_BYTES},
+                       "max_input_bytes": MAX_INPUT_BYTES, "total_seconds": CAMPAIGN_SECONDS},
         })
         if arguments.mode == "run":
             if arguments.corpus_dir.is_symlink():
                 raise ValueError("corpus directory must not be a symlink")
             corpus = arguments.corpus_dir.resolve()
+            if corpus.exists() and (
+                not corpus.is_dir() or {path.name for path in corpus.iterdir()} - set(TARGETS)
+            ):
+                raise ValueError("unsupported corpus collection")
             for target in TARGETS:
                 if (corpus / target).exists() or (corpus / target).is_symlink():
                     inventory(corpus / target, MAX_INPUT_BYTES, MAX_CORPUS_FILES)
-            seeded = execute(
+            seeded = bounded(
                 cargo + ["run", "--quiet", "--example", "fuzz_seeds", "--", str(corpus)],
-                root, environment, output / "seeds.log", 180,
+                output / "seeds.log", 60,
             )
             result["seeds"] = seeded
             if seeded["exit_code"] or seeded["timed_out"]:
@@ -216,9 +254,9 @@ def run(arguments, root: Path = ROOT) -> dict:
             if not artifact.is_file() or artifact.stat().st_size > MAX_INPUT_BYTES:
                 raise ValueError("replay input must be a bounded regular file")
             result["input_sha256"] = hashlib.sha256(artifact.read_bytes()).hexdigest()
-        built = execute(
+        built = bounded(
             cargo + ["fuzz", "build"] + (targets if len(targets) == 1 else []),
-            root, environment, output / "build.log", 900,
+            output / "build.log", 180,
         )
         result["build"] = built
         if built["exit_code"] or built["timed_out"]:
@@ -228,9 +266,9 @@ def run(arguments, root: Path = ROOT) -> dict:
             artifacts.mkdir()
             seconds = PROFILES[arguments.profile]
             inputs = corpus / target if arguments.mode == "run" else artifact
-            outcome = execute(
+            outcome = bounded(
                 fuzz_command(cargo, target, inputs, artifacts, seconds, arguments.mode == "replay"),
-                root, environment, output / (target + ".log"), seconds + 120,
+                output / (target + ".log"), seconds + 10,
             )
             outcome["target"] = target
             outcome["artifacts"] = inventory(artifacts, MAX_INPUT_BYTES, MAX_CORPUS_FILES)
@@ -247,6 +285,8 @@ def run(arguments, root: Path = ROOT) -> dict:
                 outcome["status"] = "passed"
         if source_identity(root) != identity:
             raise ValueError("fuzz source changed during the campaign")
+        if time.monotonic() >= deadline:
+            raise ValueError("fuzz campaign total deadline exhausted")
         if arguments.mode == "replay" and hashlib.sha256(artifact.read_bytes()).hexdigest() != result["input_sha256"]:
             raise ValueError("replay input changed during execution")
         if all(item["status"] == "passed" for item in result["targets"]):
