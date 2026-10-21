@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -84,6 +85,19 @@ class FuzzRunnerTests(unittest.TestCase):
         first = source_identity(ROOT)
         self.assertEqual(len(first), 64)
         self.assertEqual(first, source_identity(ROOT))
+
+    def test_structured_helpers_explicitly_bound_every_public_limit(self):
+        fields = set(re.findall(r"pub (max_[a-z_]+):", (ROOT / "src/limits.rs").read_text()))
+        self.assertEqual(len(fields), 15)
+        for name in ("context_scenarios.rs", "codec_scenarios.rs"):
+            source = (ROOT / "tests/support" / name).read_text()
+            body = source.split("fn limits() -> Limits {", 1)[1].split("\n}", 1)[0]
+            assignments = re.findall(r"limits\.(max_[a-z_]+)\s*=\s*([^;\n]+);", body)
+            with self.subTest(fixture=name):
+                self.assertEqual(len(assignments), len(fields))
+                self.assertEqual({field for field, _ in assignments}, fields)
+                for _, value in assignments:
+                    self.assertRegex(value, r"^[1-9][0-9_]*(?:\s*<<\s*[0-9]+)?$")
 
     def test_source_identity_changes_with_target_and_fixture_bytes(self):
         with tempfile.TemporaryDirectory() as temporary:

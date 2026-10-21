@@ -2,10 +2,10 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only floor after exact executing source-offset dispatch storage/no-op proofs and invalid/zero-area regressions. A pure wrapper result binding adds one covered line/region; kernel runtime tokens and exclusions are unchanged. All global/per-file fractions remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
-  "source_revision": "823ded0b23a9b8717042400eb5ae251910b9a748",
-  "source_sha256": "b82e5266a95807180c66c96812376a6bf55955586ab40b85b661fb1a0a2f4b8d",
-  "test_source_sha256": "470e0f1d77b290278cc1a7385267932c3f3b87dc985349ea79339f15aafbfde2",
+  "policy": "Upward-only floor after project-generated MMR pattern/halftone and Huffman dictionary/text public-decoder fixtures with independent scalar/literal packed-pixel, typed-error, recovery and resource-limit oracles. Measured on the immutable source_revision before this evidence commit. Runtime source-coordinate denominators and exclusions are unchanged; all global/per-file fractions remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "f338287afe3e6026fe0104436ec4c25c5f726f5a",
+  "source_sha256": "38efe199f08091769efd85bc53cc111e47711d640cf7a70a203454c0e30fefd4",
+  "test_source_sha256": "72e7e4437e6c176405a01380d6959f063c87d17b64d79e3811dd298c8cc77cba",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
     "cargo_llvm_cov_version": "0.9.1",
@@ -14,26 +14,26 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 9830, "count": 12617},
-    "regions": {"covered": 9478, "count": 12931},
-    "branches": {"covered": 1747, "count": 2640}
+    "lines": {"covered": 10022, "count": 12617},
+    "regions": {"covered": 9667, "count": 12931},
+    "branches": {"covered": 1785, "count": 2640}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
-    "src/bitmap.rs": {"lines": {"covered": 894, "count": 969}, "regions": {"covered": 814, "count": 1038}, "branches": {"covered": 161, "count": 188}},
-    "src/decode.rs": {"lines": {"covered": 1047, "count": 1396}, "regions": {"covered": 880, "count": 1336}, "branches": {"covered": 135, "count": 230}},
-    "src/document.rs": {"lines": {"covered": 918, "count": 1168}, "regions": {"covered": 899, "count": 1131}, "branches": {"covered": 207, "count": 326}},
+    "src/bitmap.rs": {"lines": {"covered": 894, "count": 969}, "regions": {"covered": 814, "count": 1038}, "branches": {"covered": 162, "count": 188}},
+    "src/decode.rs": {"lines": {"covered": 1052, "count": 1396}, "regions": {"covered": 893, "count": 1336}, "branches": {"covered": 135, "count": 230}},
+    "src/document.rs": {"lines": {"covered": 925, "count": 1168}, "regions": {"covered": 904, "count": 1131}, "branches": {"covered": 210, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
     "src/file_header.rs": {"lines": {"covered": 60, "count": 60}, "regions": {"covered": 55, "count": 55}, "branches": {"covered": 22, "count": 22}},
     "src/generic_region.rs": {"lines": {"covered": 1644, "count": 2029}, "regions": {"covered": 1947, "count": 2398}, "branches": {"covered": 296, "count": 424}},
     "src/generic_row_ring.rs": {"lines": {"covered": 289, "count": 322}, "regions": {"covered": 292, "count": 371}, "branches": {"covered": 55, "count": 76}},
-    "src/halftone.rs": {"lines": {"covered": 807, "count": 1065}, "regions": {"covered": 739, "count": 1061}, "branches": {"covered": 178, "count": 242}},
-    "src/huffman.rs": {"lines": {"covered": 661, "count": 832}, "regions": {"covered": 659, "count": 853}, "branches": {"covered": 154, "count": 234}},
+    "src/halftone.rs": {"lines": {"covered": 864, "count": 1065}, "regions": {"covered": 788, "count": 1061}, "branches": {"covered": 186, "count": 242}},
+    "src/huffman.rs": {"lines": {"covered": 668, "count": 832}, "regions": {"covered": 666, "count": 853}, "branches": {"covered": 156, "count": 234}},
     "src/limits.rs": {"lines": {"covered": 22, "count": 22}, "regions": {"covered": 19, "count": 19}, "branches": {"covered": 0, "count": 0}},
-    "src/mmr.rs": {"lines": {"covered": 517, "count": 615}, "regions": {"covered": 470, "count": 606}, "branches": {"covered": 118, "count": 150}},
+    "src/mmr.rs": {"lines": {"covered": 518, "count": 615}, "regions": {"covered": 471, "count": 606}, "branches": {"covered": 118, "count": 150}},
     "src/reader.rs": {"lines": {"covered": 98, "count": 101}, "regions": {"covered": 88, "count": 93}, "branches": {"covered": 9, "count": 12}},
-    "src/segment_data.rs": {"lines": {"covered": 222, "count": 263}, "regions": {"covered": 225, "count": 275}, "branches": {"covered": 52, "count": 70}},
-    "src/segment_header.rs": {"lines": {"covered": 262, "count": 275}, "regions": {"covered": 276, "count": 294}, "branches": {"covered": 39, "count": 44}},
-    "src/symbol_text.rs": {"lines": {"covered": 1964, "count": 3009}, "regions": {"covered": 1637, "count": 2844}, "branches": {"covered": 255, "count": 532}}
+    "src/segment_data.rs": {"lines": {"covered": 224, "count": 263}, "regions": {"covered": 227, "count": 275}, "branches": {"covered": 52, "count": 70}},
+    "src/segment_header.rs": {"lines": {"covered": 262, "count": 275}, "regions": {"covered": 277, "count": 294}, "branches": {"covered": 39, "count": 44}},
+    "src/symbol_text.rs": {"lines": {"covered": 2077, "count": 3009}, "regions": {"covered": 1748, "count": 2844}, "branches": {"covered": 279, "count": 532}}
   }
 }

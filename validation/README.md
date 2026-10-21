@@ -391,6 +391,16 @@ new runtime coverage exclusion or package content is introduced. PR/push runs
 still cannot restore/save the trusted-main cache. Production source, proof
 inventory, dispositions and attestations are unchanged.
 
+Local pinned validation on 2026-10-21, bound to immutable source commit
+`f338287afe3e6026fe0104436ec4c25c5f726f5a`, passed all nine smoke targets with
+55,586,929 verified final-counter executions. The new codec target executed
+22,431 inputs; its single-file replay executed exactly once, and real isolated
+failure capture/replay/restoration controls passed. Exact per-target counts,
+source identities and report hashes are recorded in
+[`coverage/structured-families.json`](coverage/structured-families.json).
+These local runs did not read/write a trusted cache and do not claim that a
+nine-target scheduled or trusted-main deployment has occurred.
+
 This does not close arithmetic symbol/text, aggregate/single-instance refinement,
 arithmetic/skip halftone, deeper dictionaries, arbitrary custom tables or corpus
 minimization gaps. Those require further first-party valid encoders and
