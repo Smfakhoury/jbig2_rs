@@ -59,6 +59,15 @@ removed. Both changed declarations have identical erased runtime tokens;
 pixel values and placement order remain scalar-oracle tested, not newly proved.
 Ordinary bitmap composition and MMR capacity accounting remain the two explicit
 source substitutions.
+The next P05 prerequisite proves exact big-endian packed-byte read/write
+values, complete range acceptance, failed-write non-mutation and outside-span
+byte frames. Executing tokens and all existing bitmap models are unchanged;
+four compiling semantic contrasts and independent endian/range oracles check
+the stronger contracts. This does not reduce the two source substitutions or
+prove complete composition. An executing MMR accounting probe identifies
+unsupported pinned `Vec::capacity`/`Result::unwrap_or` calls; its edits were
+restored. Reviewed library specification/toolchain support is needed, without
+substituting length for capacity or introducing project assumptions.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The

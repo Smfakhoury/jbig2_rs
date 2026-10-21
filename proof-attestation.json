@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "21f5ca7908d877a299edb3cec7eae385c0b836af",
+  "source_revision": "286c3cbfb6203e6473a25939d6b91188c22c8b8b",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 2,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "aed6adbea0caf5d7284249192f7d5ac4518b3c1d5079807e60246095765694b5",
-  "proof_dispositions_sha256": "e035243a8e9c858b8b8b5bab73fc86e2ef107ba701312228af0d50943ee4cfe5",
+  "production_proof_coverage_sha256": "417893bb8c40ab54daefdc48c9c81761e8034c1f7c6d6cd72404d7e6b602283a",
+  "proof_dispositions_sha256": "94f229e64298814707353464895fcc122a251948fa075cbe4de361f3fd1c288f",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. Text-placement batch dispatch now calls the same optimized row-batch kernel in both builds, preserving existing successful storage/metadata, batch clearing and validity guarantees, with explicit stride/length and empty/zero-height success/no-op contracts. Four compiling clearing/no-op violations fail strong proofs and verify when only the affected relation is removed. Both changed production declarations have identical erased runtime tokens; all other 654 bodies/attributes and bitmap/text models are unchanged. General pixels and placement order remain scalar-oracle tested, not formally derived here. One obsolete proof-loop obligation is removed. Earlier bridge/reset/metadata/bitmap/MMR/retention guarantees remain; the 7.2.4 versus 7.2.8 conflict and all twenty provisional normative records are unchanged. Two remaining runtime/proof substitutions and other semantic/caller/conformance gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Packed-byte read/write kernels now prove exact big-endian values, complete range acceptance, unchanged length, successful outside-span byte frames and full failed-write non-mutation. Four compiling value/frame violations fail strong proofs and verify when only the affected relation is removed. Both changed production declarations have identical erased runtime tokens; other 654 bodies/attributes and existing bitmap model definitions are unchanged. Two pure chunk models are added. This prepares ordinary composition proof, not a closure of its dispatch or clipping/pixel relation. The MMR capacity probe is rejected on unsupported pinned Vec::capacity and Result::unwrap_or; its runtime body is restored unchanged, with no new assumptions or capacity-to-length substitution. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention guarantees remain; the 7.2.4 versus 7.2.8 conflict and all twenty provisional normative records are unchanged. Both runtime/proof substitutions and broader semantic/caller/conformance gaps still block release claims.",
   "release_gate": "blocked"
 }

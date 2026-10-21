@@ -33,6 +33,11 @@ and unused geometry. Existing randomized/exhaustive placement oracles remain.
 All per-file/global metrics, denominators and exclusions are unchanged, so the
 reviewed baseline is retained byte-for-byte rather than falsely ratcheted.
 
+The packed-byte contract tranche runs 266 correctness tests. Its independent
+endian and complete/short/overflowing-range oracles strengthen value/frame
+evidence without changing any per-file/global count, denominator or exclusion.
+The same baseline is retained byte-for-byte; no coverage increase is claimed.
+
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.
 They raise `file_header.rs` to 100% of its emitted line/region/branch mappings

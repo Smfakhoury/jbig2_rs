@@ -209,6 +209,15 @@ The batch kernel proves zero-height success without byte changes. Runtime
 tokens are unchanged; general pixel composition and placement order remain
 scalar-oracle tested rather than formally derived by these frame contracts.
 
+`tools/check_bitmap_chunk_proofs.py` checks four compiling wrong byte-kernel
+implementations: incorrect read/write high-byte shifts, a successful write
+changing its prefix, and an overflowing write changing storage. Exact values
+or byte frames reject each; controls omit only the affected relation and
+retain complete range acceptance, length and unaffected value/frame relations.
+Ordinary tests use independent `to_be_bytes`/`from_be_bytes` oracles and compare
+all storage around complete, short and overflowing accesses. These are helper
+contracts, not a complete composition or release proof.
+
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized
 diagnostic hashes, output hashes, and classifications; it never copies oracle
