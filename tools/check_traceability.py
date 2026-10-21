@@ -401,8 +401,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
             raise ValueError(f"feature decomposition state disagrees with records: {name}")
         if state == "complete":
             if feature["remaining_scope"] or any(
-                row["review"] != "approved" or row["gaps"]
-                or row["strength"] != "functional_contract" for row in selected
+                row["review"] != "approved" for row in selected
             ):
                 raise ValueError(f"complete feature has unresolved scope or evidence: {name}")
         elif not feature["remaining_scope"] or any(
@@ -418,16 +417,20 @@ def check(ledger, root, verifier_names=None, discovered=None):
                 for strength in ("functional_contract", "state_preservation", "safety_only", "runtime_divergence")
             },
         })
-    complete = all(
+    decomposition_complete = all(
         entry["decomposition"] in {"complete", "excluded"} for entry in ledger["features"]
-    ) and all(
+    ) and all(entry["review"] == "approved" for entry in ledger["requirements"])
+    semantic_complete = decomposition_complete and all(
         entry["review"] == "approved" and not entry["gaps"]
         and entry["strength"] == "functional_contract" for entry in ledger["requirements"]
     )
     return {
         "schema_version": 1,
-        "status": "references_valid_scope_complete" if complete else "references_valid_scope_incomplete",
-        "normative_decomposition_complete": complete,
+        "status": "references_valid_scope_complete" if semantic_complete else "references_valid_scope_incomplete",
+        # Preserve the legacy full-strength gate while exposing the P04-only milestone.
+        "normative_decomposition_complete": semantic_complete,
+        "decomposition_review_complete": decomposition_complete,
+        "semantic_claims_complete": semantic_complete,
         "scope_completeness_is_review_declared_not_proved": True,
         "requirements": rows, "requirement_count": len(rows),
         "feature_count": len(features),
@@ -449,7 +452,11 @@ def check(ledger, root, verifier_names=None, discovered=None):
         "features_without_requirement_records": sorted(set(features) - mapped_features),
         "verifier_report_checked": verifier_names is not None,
         "cargo_test_discovery_checked": discovered is not None,
-        "release_gate": "complete_scope_review_required" if not complete else "owner_release_review_required",
+        "release_gate": (
+            "complete_scope_review_required" if not decomposition_complete
+            else "semantic_claims_review_required" if not semantic_complete
+            else "owner_release_review_required"
+        ),
         "note": "Links and declared evidence strength are checked, not semantic truth. Report symbols do not establish report freshness: the caller must run pinned Verus on the same source, as CI does. Standard-to-model translation remains a review obligation.",
     }
 
@@ -458,6 +465,13 @@ def discover_tests(root, ledger):
     return discover_cargo_tests(
         root, {test["target"] for req in ledger["requirements"] for test in req["tests"]},
     )
+
+
+def enforce_completion(report, require_decomposition=False, require_complete=False):
+    if require_decomposition and not report["decomposition_review_complete"]:
+        raise ValueError("reviewed normative requirement decomposition remains incomplete")
+    if require_complete and not report["semantic_claims_complete"]:
+        raise ValueError("normative decomposition, semantic claims and approval remain incomplete")
 
 
 def main():
@@ -471,10 +485,16 @@ def main():
         help="Hash-check a named declared standard; repeat for multiple local documents.",
     )
     parser.add_argument("--require-complete", action="store_true")
+    parser.add_argument(
+        "--require-reviewed-decomposition", action="store_true",
+        help="Require reviewed requirement enumeration without treating recorded semantic gaps as closed.",
+    )
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
-    if arguments.require_complete and (not arguments.verus_json or not arguments.discover_tests):
-        parser.error("--require-complete needs Verus evidence and Cargo test discovery")
+    if (arguments.require_complete or arguments.require_reviewed_decomposition) and (
+        not arguments.verus_json or not arguments.discover_tests
+    ):
+        parser.error("completion gates need Verus evidence and Cargo test discovery")
     try:
         ledger = read_evidence(arguments.ledger, "traceability")
         verifier = read_evidence(arguments.verus_json, "verus") if arguments.verus_json else None
@@ -494,6 +514,8 @@ def main():
         table = [
             "# Provisional normative traceability", "",
             f"Status: **{report['status']}**. No full-conformance or complete-proof claim.", "",
+            f"Reviewed decomposition complete: **{report['decomposition_review_complete']}**.",
+            f"Semantic claims complete: **{report['semantic_claims_complete']}**.", "",
             "| Requirement | Standard | Clause/context | Basis | Scope | Evidence strength | Open gaps |",
             "|---|---|---|---|---|---|---|",
         ]
@@ -558,9 +580,11 @@ def main():
         print(json.dumps({key: report[key] for key in (
             "status", "requirement_count", "feature_count", "verifier_report_checked",
             "cargo_test_discovery_checked", "normative_document_hash_checked", "normative_document_hash_checks",
+            "decomposition_review_complete", "semantic_claims_complete",
         )}, indent=2))
-        if arguments.require_complete and not report["normative_decomposition_complete"]:
-            raise ValueError("normative decomposition and approval remain incomplete")
+        enforce_completion(
+            report, arguments.require_reviewed_decomposition, arguments.require_complete,
+        )
         return 0
     except (OSError, ValueError, KeyError, TypeError, ValidationError, subprocess.CalledProcessError) as error:
         print(f"traceability validation failed: {error}", file=sys.stderr)

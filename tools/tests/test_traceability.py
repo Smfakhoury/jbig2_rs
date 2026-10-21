@@ -1,9 +1,13 @@
 import copy
+from contextlib import redirect_stderr, redirect_stdout
 import hashlib
+from io import StringIO
 import json
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from jsonschema import ValidationError
@@ -12,9 +16,10 @@ from jsonschema import ValidationError
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_traceability import check, local_document_checks, policy_row_hash, runtime_inventory
+from check_traceability import check, enforce_completion, local_document_checks, policy_row_hash, runtime_inventory
 from evidence import load_json, validate
 from rust_tests import test_inventory as inventory_tests
+import check_traceability as checker
 
 
 class TraceabilityTests(unittest.TestCase):
@@ -338,18 +343,94 @@ class TraceabilityTests(unittest.TestCase):
                 with self.subTest(state=state, notes=notes), self.assertRaisesRegex(ValueError, "remaining scope"):
                     self.run_check(ledger)
 
-    def test_complete_feature_rejects_provisional_gapped_or_weak_records(self):
+    def test_complete_decomposition_still_rejects_unreviewed_records(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["features"][0].update(decomposition="complete", remaining_scope=[])
+        with self.assertRaisesRegex(ValueError, "unresolved scope or evidence"):
+            self.run_check(ledger)
+
+    def test_reviewed_decomposition_can_account_for_explicit_semantic_gaps(self):
         for change in (
-            {"review": "provisional"},
             {"gaps": ["Unproved output semantics."]},
             {"strength": "safety_only", "functional_evidence": []},
+            {"strength": "safety_only", "functional_evidence": [], "gaps": ["Unproved output semantics."]},
         ):
             ledger = copy.deepcopy(self.ledger)
             ledger["features"][0].update(decomposition="complete", remaining_scope=[])
             ledger["requirements"][0]["review"] = "approved"
             ledger["requirements"][0].update(change)
-            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "unresolved scope or evidence"):
-                self.run_check(ledger)
+            with self.subTest(change=change):
+                report = self.run_check(ledger)
+                self.assertTrue(report["decomposition_review_complete"])
+                self.assertFalse(report["semantic_claims_complete"])
+                self.assertFalse(report["normative_decomposition_complete"])
+                self.assertEqual(report["status"], "references_valid_scope_incomplete")
+                self.assertEqual(report["release_gate"], "semantic_claims_review_required")
+                enforce_completion(report, require_decomposition=True)
+                with self.assertRaisesRegex(ValueError, "semantic claims"):
+                    enforce_completion(report, require_complete=True)
+
+    def test_both_gates_pass_only_when_reviewed_scope_and_functional_claims_are_closed(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["features"][0].update(decomposition="complete", remaining_scope=[])
+        ledger["requirements"][0]["review"] = "approved"
+        report = self.run_check(ledger)
+        self.assertTrue(report["decomposition_review_complete"])
+        self.assertTrue(report["semantic_claims_complete"])
+        self.assertTrue(report["normative_decomposition_complete"])
+        enforce_completion(report, require_decomposition=True, require_complete=True)
+
+    def test_reviewed_functional_rows_cannot_hide_unenumerated_feature_scope(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"][0]["review"] = "approved"
+        report = self.run_check(ledger)
+        self.assertFalse(report["decomposition_review_complete"])
+        self.assertFalse(report["semantic_claims_complete"])
+        for flags in ({"require_decomposition": True}, {"require_complete": True}):
+            with self.subTest(flags=flags), self.assertRaises(ValueError):
+                enforce_completion(report, **flags)
+
+    def test_cli_decomposition_gate_does_not_make_the_full_semantic_gate_pass(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["features"][0].update(decomposition="complete", remaining_scope=[])
+        ledger["requirements"][0].update(
+            review="approved", strength="safety_only", functional_evidence=[],
+            gaps=["The output transformation is unproved."],
+        )
+        self.write_json("validation/traceability/requirements.json", ledger)
+        original_read = checker.read_evidence
+
+        def read(path, kind):
+            if kind == "verus":
+                return {"func-details": {name: {} for name in self.names}}
+            return original_read(path, kind)
+
+        for flag, expected in (("--require-reviewed-decomposition", 0), ("--require-complete", 1)):
+            with self.subTest(flag=flag):
+                output = self.root / ("result-" + flag[2:] + ".json")
+                arguments = [
+                    "check_traceability.py", flag, "--verus-json", "fixture.json",
+                    "--discover-tests", "--output", str(output),
+                ]
+                with patch.object(checker, "ROOT", self.root), patch.object(sys, "argv", arguments), \
+                        patch.object(checker, "read_evidence", side_effect=read), \
+                        patch.object(checker, "discover_tests", return_value=self.discovered), \
+                        patch.object(checker.subprocess, "run", return_value=SimpleNamespace(stdout="fixture\n")), \
+                        redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                    self.assertEqual(checker.main(), expected)
+                result = load_json(output)
+                self.assertTrue(result["decomposition_review_complete"])
+                self.assertFalse(result["semantic_claims_complete"])
+                self.assertFalse(result["normative_decomposition_complete"])
+
+    def test_both_cli_gates_require_verifier_and_real_discovery_inputs(self):
+        for flag in ("--require-reviewed-decomposition", "--require-complete"):
+            with self.subTest(flag=flag):
+                with patch.object(sys, "argv", [
+                    "check_traceability.py", flag, "--output", str(self.root / "unused.json"),
+                ]), redirect_stderr(StringIO()), self.assertRaises(SystemExit) as error:
+                    checker.main()
+                self.assertEqual(error.exception.code, 2)
 
     def test_complete_feature_cannot_hide_remaining_scope(self):
         ledger = copy.deepcopy(self.ledger)
