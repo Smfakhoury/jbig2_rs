@@ -229,6 +229,15 @@ edges, clipping, empty dimensions and maximal origins; bit-loop oracles check
 complete shifted byte/word/tail availability. Coverage exclusions and the
 reviewed floor are unchanged; the separate P06 family work owns floor updates.
 
+`tools/run_semantic_proofs.py` runs all ten existing isolated semantic checkers
+with at most two concurrent children. Each checker retains its pinned verifier,
+selected-target checks, native compilation and strong/weaker solver limits.
+Reports and logs keep their existing names; stale reports are removed before
+launch, and missing/malformed/duplicate/failed evidence fails the aggregate.
+The 40 required contrasts, whole-crate verification, 20-minute job budget,
+action pins and read-only permissions are unchanged. The aggregate report is
+additional orchestration evidence, not a substitute for individual reports.
+
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized
 diagnostic hashes, output hashes, and classifications; it never copies oracle
