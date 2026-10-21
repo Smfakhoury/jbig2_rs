@@ -2,6 +2,84 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-PUBLIC-PROFILE-CONTRACT",
+      "surface": "public standalone and embedded profile envelopes",
+      "expected": "exact invalid profile segment numbers for placement, duplicate and non-superset declarations; exact u64 expected/actual payload lengths including the maximum count before allocation",
+      "tests": [
+        {"target": "public_envelope", "name": "misplaced_duplicate_and_non_superset_profiles_have_exact_segment_numbers"},
+        {"target": "public_envelope", "name": "profile_lengths_report_exact_u64_expected_lengths_before_allocation"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-EXTENSION-CONTRACT",
+      "surface": "optional comment and necessary extension envelopes",
+      "expected": "malformed comment framing is rejected for both code-unit widths; short payload lengths and necessary extension types preserve exact fields rather than silently ignoring invalid data",
+      "tests": [
+        {"target": "public_envelope", "name": "malformed_comment_framing_is_not_an_ignored_optional_extension"},
+        {"target": "public_envelope", "name": "extension_length_and_necessary_flag_errors_preserve_all_bits"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-PAGE-LIFECYCLE",
+      "surface": "page association, information, end-of-page and stripe boundaries",
+      "expected": "exact missing/duplicate/after-end/page-association and stripe-row failures before any sink call; unknown-height width rejection preserves actual/limit values",
+      "tests": [
+        {"target": "public_envelope", "name": "page_lifecycle_rejections_are_exact_and_precede_all_sink_effects"},
+        {"target": "public_envelope", "name": "stripe_end_boundaries_and_unknown_height_failures_are_typed"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-REFERENCE-RETENTION",
+      "surface": "embedded segment identity, page visibility and last-reference retention",
+      "expected": "exact duplicate numbers, cross-page association and prematurely released segment/referred pairs; valid last-use release and reordered embedded headers remain accepted",
+      "tests": [
+        {"target": "public_envelope", "name": "reference_retention_uses_the_last_reference_not_the_first_or_wire_order"},
+        {"target": "public_envelope", "name": "embedded_duplicate_numbers_and_cross_page_references_are_exact"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-GLOBAL-RESOURCE-BOUNDARIES",
+      "surface": "immutable nonempty globals and consuming decoder limits",
+      "expected": "inclusive retained-byte, per-segment/total-reference and global-to-local depth limits report exact fields; missing globals are typed and reusable state survives failures",
+      "tests": [
+        {"target": "public_envelope", "name": "globals_retained_bytes_are_inclusive_and_rechecked_by_the_consuming_decoder"},
+        {"target": "public_envelope", "name": "public_reference_limits_accept_exact_counts_and_reject_one_less"},
+        {"target": "public_envelope", "name": "nonempty_global_reference_chains_reuse_immutable_state_and_exact_depth"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-UNKNOWN-MMR-ENVELOPE",
+      "surface": "unknown-length generated MMR segment envelope",
+      "expected": "missing terminators and excessive terminal row counts have exact typed fields without scanning following sequential headers as a test oracle",
+      "tests": [
+        {"target": "public_envelope", "name": "unknown_length_mmr_envelope_has_exact_terminator_and_row_count_errors"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-ORGANIZATION-TRAILING-DATA",
+      "surface": "sequential and random-access final payload boundaries",
+      "expected": "exact trailing byte count through slice inspection and reader decoding",
+      "tests": [
+        {"target": "public_envelope", "name": "trailing_bytes_are_counted_after_each_organization_payload_area"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-MULTIPAGE-SINK-FAILURE",
+      "surface": "owned page delivery through slice and reader sinks",
+      "expected": "the exact second-callback error and first two literal page effects are preserved; the third page is not delivered and subsequent decoding recovers",
+      "tests": [
+        {"target": "public_envelope", "name": "second_page_sink_failure_preserves_prior_effects_and_prevents_third_delivery"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-STRUCTURAL-BOUNDARIES",
+      "surface": "public document segment, page and structural-work limits",
+      "expected": "exact inclusive and one-less page/segment/work boundaries for both standalone organizations",
+      "tests": [
+        {"target": "public_envelope", "name": "page_segment_and_structural_work_limits_have_exact_boundary_values"}
+      ]
+    },
+    {
       "id": "NEG-STRUCTURED-CODEC-FAMILIES",
       "surface": "generated MMR pattern/halftone and Huffman collective-dictionary/text documents",
       "expected": "exact typed flag, reference, trailing-data and fourteen resource-limit errors; every truncated prefix is malformed or independently checked complete output; subsequent context decode recovers",

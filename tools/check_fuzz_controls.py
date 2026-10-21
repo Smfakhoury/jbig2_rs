@@ -11,7 +11,7 @@ import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
-from run_fuzz import ROOT, run
+from run_fuzz import ROOT, run, source_identity
 
 
 MARKER = b"generated-fuzz-control-v1"
@@ -34,6 +34,7 @@ def arguments(mode: str, output: Path, corpus: Path, artifact=None):
 def check_controls(output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=False)
     original = (ROOT / "fuzz/fuzz_targets/file_header_arbitrary.rs").read_bytes()
+    original_identity = source_identity(ROOT)
     with tempfile.TemporaryDirectory(prefix="jbig2-fuzz-control-") as temporary:
         directory = Path(temporary).resolve() / "source"
         subprocess.run(
@@ -46,6 +47,8 @@ def check_controls(output: Path) -> dict:
             "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
             "toolchain.json", "validation/runtime_access.rs", "examples/fuzz_seeds.rs",
             "tools/distribution_consumer.rs", "tools/run_fuzz.py",
+            "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",
+            ".github/workflows/fuzz.yml",
             "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
             "tests/support/codec_scenarios.rs",
             "fuzz/Cargo.toml", "fuzz/Cargo.lock",
@@ -55,6 +58,8 @@ def check_controls(output: Path) -> dict:
             path = directory / name
             path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, path)
+        if source_identity(directory) != original_identity:
+            raise ValueError("isolated fuzz control copy does not match production source identity")
         corpus = output / "corpus"
         target_corpus = corpus / "file_header_arbitrary"
         target_corpus.mkdir(parents=True)
@@ -84,13 +89,28 @@ def check_controls(output: Path) -> dict:
         restored = run(arguments("replay", output / "restored", corpus, artifact), directory)
         if restored["status"] != "passed" or len(restored["targets"]) != 1:
             raise ValueError("restored production target did not pass reproducer replay")
-    if (ROOT / "fuzz/fuzz_targets/file_header_arbitrary.rs").read_bytes() != original:
+        if (
+            baseline["source_sha256"] != original_identity
+            or restored["source_sha256"] != original_identity
+            or campaign["source_sha256"] == original_identity
+            or replay["source_sha256"] != campaign["source_sha256"]
+        ):
+            raise ValueError("isolated failure/replay source identities do not match expected transitions")
+    if (
+        (ROOT / "fuzz/fuzz_targets/file_header_arbitrary.rs").read_bytes() != original
+        or source_identity(ROOT) != original_identity
+    ):
         raise ValueError("production fuzz target changed during isolated control")
     return {
         "schema_version": 1, "status": "passed", "production_sources_modified": False,
         "baseline_single_input": "passed", "generated_failure": "captured",
         "failure_replay": "reproduced", "restored_target_replay": "passed",
         "reproducer_sha256": hashlib.sha256(MARKER).hexdigest(),
+        "production_source_sha256": original_identity,
+        "baseline_source_sha256": baseline["source_sha256"],
+        "failure_source_sha256": campaign["source_sha256"],
+        "replay_source_sha256": replay["source_sha256"],
+        "restored_source_sha256": restored["source_sha256"],
         "fixture_provenance": "project-generated constant and assertion; no official/private inputs",
     }
 

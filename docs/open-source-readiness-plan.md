@@ -99,6 +99,13 @@ compiled strong-proof/weaker-control contrasts and expanded scalar/bit-span
 oracles pass. The only native syntax differences are equivalent explicitly
 sequenced checked row operations and a pure result binding. This closes that
 source substitution, not general pixel/operator/caller or normative gaps.
+The next P05 tranche closes the primitive operator output-contract gap:
+every byte/word output bit now equals the existing Boolean model for every
+input pair, bit position and all five operators. Proved bit-vector lemmas,
+independent truth-table tests and four compiled strong/weaker contrasts back
+the claim. The underlying expressions are unchanged apart from pure result
+bindings. Complete raster placement/mask/shift integration and normative
+translation are still not inferred from these helper contracts.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
@@ -115,8 +122,13 @@ The subsequent actual scheduled extended run on the seven-target
 `de2fbf3` source also passed, with 566,048,292 executions and actual cache
 restore/save. The later eighth-target source has not yet been observed through
 a scheduled trigger.
-Broader structured/stateful targets, corpus review and minimization remain
-pending. This is not completion of P08.
+Broader structured/stateful target work remains separate. The existing nine
+targets now have an operational generated-corpus lifecycle: complete bounded
+inventories, preserved owned copies, pinned libFuzzer merge evidence, exact
+before/after replay, and source-bound trusted-main-only cache promotion.
+See [the operational lifecycle](fuzz-corpus-lifecycle.md) for limits, failure
+behavior and reproduction. This does not establish source-line coverage
+preservation or complete the remaining P08 readiness work.
 Successful targets now require unambiguous positive final execution counters;
 single-input replay requires exactly one execution. Per-target counts and
 their exact total are reported, while missing/invalid evidence fails closed.

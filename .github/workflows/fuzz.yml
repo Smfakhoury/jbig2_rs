@@ -17,12 +17,9 @@ permissions:
   contents: read
 
 jobs:
-  fuzz:
+  controls:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-    env:
-      PROFILE: ${{ github.event_name == 'schedule' && 'extended' || inputs.profile || 'smoke' }}
-      TRUSTED_CORPUS: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -32,32 +29,86 @@ jobs:
         with:
           toolchain: nightly-2026-10-12
       - run: cargo install cargo-fuzz --version 0.13.2 --locked
+      - name: Validate failure capture and single-input replay
+        timeout-minutes: 12
+        run: python -B tools/check_fuzz_controls.py --output-dir target/fuzz-controls
+      - name: Validate real existing-generated corpus minimization and exact replay
+        timeout-minutes: 3
+        run: >-
+          python -B tools/maintain_fuzz_corpus.py --generated
+          --output-dir target/fuzz-generated-maintenance
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: fuzz-controls-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/fuzz-controls/
+            target/fuzz-generated-maintenance/
+  fuzz:
+    needs: controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && github.event.repository.default_branch == 'main' && format('fuzz-generated-v2-trusted-{0}-main', github.repository) || format('fuzz-generated-v2-untrusted-{0}-{1}-{2}', github.repository, github.run_id, github.run_attempt) }}
+      cancel-in-progress: false
+    env:
+      PROFILE: ${{ github.event_name == 'schedule' && 'extended' || inputs.profile || 'smoke' }}
+      TRUSTED_CORPUS: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && github.event.repository.default_branch == 'main' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        timeout-minutes: 1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        timeout-minutes: 1
+        with:
+          python-version: "3.13"
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        timeout-minutes: 1
+        with:
+          toolchain: nightly-2026-10-12
+      - name: Install pinned fuzzer and bind cache to all runtime/control sources
+        id: identity
+        timeout-minutes: 2
+        run: |
+          cargo install cargo-fuzz --version 0.13.2 --locked
+          python -B -c "import sys; sys.path.insert(0, 'tools'); from run_fuzz import ROOT, source_identity; print('sha256=' + source_identity(ROOT))" >> "$GITHUB_OUTPUT"
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: corpus
+        timeout-minutes: 1
         if: env.TRUSTED_CORPUS == 'true'
         with:
           path: target/fuzz-corpus
-          key: fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs', 'tests/support/context_scenarios.rs', 'benchmarks/generated.rs', 'tests/support/codec_scenarios.rs') }}-${{ github.run_id }}
+          key: fuzz-generated-v2-${{ runner.os }}-${{ steps.identity.outputs.sha256 }}-${{ github.run_id }}
           restore-keys: |
-            fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs', 'tests/support/context_scenarios.rs', 'benchmarks/generated.rs', 'tests/support/codec_scenarios.rs') }}-
-      - name: Validate failure capture and single-input replay
-        run: python -B tools/check_fuzz_controls.py --output-dir target/fuzz-controls
+            fuzz-generated-v2-${{ runner.os }}-${{ steps.identity.outputs.sha256 }}-
       - name: Run all bounded fuzz targets
         id: campaign
+        timeout-minutes: 49
         run: >-
           python -B tools/run_fuzz.py run
           --profile "$PROFILE"
           --corpus-dir target/fuzz-corpus
           --output-dir target/fuzz-run
+      - name: Validate, minimize and replay trusted existing corpus
+        if: success() && env.TRUSTED_CORPUS == 'true'
+        timeout-minutes: 3
+        run: >-
+          python -B tools/maintain_fuzz_corpus.py
+          --corpus-dir target/fuzz-corpus
+          --campaign-report target/fuzz-run/report.json
+          --output-dir target/fuzz-maintenance
+          --install
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        timeout-minutes: 1
         if: success() && env.TRUSTED_CORPUS == 'true'
         with:
           path: target/fuzz-corpus
           key: ${{ steps.corpus.outputs.cache-primary-key }}
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        timeout-minutes: 1
         if: always()
         with:
           name: fuzz-validation-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             target/fuzz-run/
             target/fuzz-controls/
+            target/fuzz-maintenance/

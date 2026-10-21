@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1154 obligations with zero errors and zero native
+Pinned Verus verifies 1164 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -52,10 +52,11 @@ from weaker controls retaining all prior guarantees. The mandatory semantic
 runner includes these contrasts. Independent scalar storage oracles now also
 exercise arbitrary dirty padding. No MMR caller/polarity row is upgraded:
 the wrapper's weaker storage predicate and complete raster-loop composition
-remain separate obligations, as do general bitmap composition/operator
-semantics and the unchanged capacity-accounting source gap.
+remain separate obligations, as do general bitmap composition pixel
+semantics and the unchanged capacity-accounting source gap. Primitive
+byte/word operator semantics are proved independently below.
 
-Before refreshing source bindings, all 656 production declarations were
+Before the black-span source-binding refresh, all 656 production declarations were
 compared with base `d1bf46914c6d7e57177b7c02087cca2555794b52`: only
 `Bitmap::fill_black_span` changes, with identical erased native tokens; the
 other 655 bodies/attributes are byte-identical. All 27 existing bitmap model
@@ -64,6 +65,12 @@ macros are unchanged. There are no bitmap dispositions to relabel; disposition
 identities, reasons and statuses remain unchanged. The three existing bitmap
 ledger file bindings are refreshed only after this review; no normative
 strength/review classification changes.
+
+Merging the later operator-bit proofs retains both sets of bitmap models,
+helpers and production contracts. The combined source verifies 1164 obligations;
+all twelve mandatory semantic checkers cover 50 contrasts. Bitmap source
+bindings are refreshed for this combined source without relabeling dispositions
+or upgrading normative evidence.
 
 Source-offset region composition now also verifies the executing chunked
 dispatcher rather than a scalar proof substitute. Its existing storage,
@@ -116,6 +123,17 @@ the wrapper names and returns its call result around proof-only field reveals.
 The three shifted-reader runtime bodies are unchanged. All other 651
 production bodies/attributes are byte-identical. Full proof verification
 includes the added lemmas, not just assumed helper contracts.
+
+Byte and word combination operators now additionally prove that every output
+bit agrees with the existing Boolean combination model for all five operators,
+all u8/u64 input pairs and all valid bit positions. Two proved bit-vector
+lemmas connect pure byte/word definitions to that Boolean relation. Native
+operator expressions are unchanged; pure result bindings expose their values
+to erased proof code. Exhaustive byte-pair truth tables and boundary-word
+pairings are independent runtime oracles. Four compiling constant-output
+violations fail the per-bit contracts while the original `ensures true`
+controls verify. Placement, shifts/masks, wire-value mapping and the normative
+translation remain separate obligations; this is not full raster correctness.
 
 `--require-complete` checks that every function is accounted for and reviewed;
 it does not imply that every function is directly proved. The release-level

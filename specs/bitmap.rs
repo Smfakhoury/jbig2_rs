@@ -16,6 +16,42 @@ pub(crate) open spec fn combine(
     }
 }
 
+pub(crate) open spec fn operator_byte(
+    operator: crate::bitmap::CombinationOperator, destination: u8, source: u8,
+) -> u8 {
+    match operator {
+        crate::bitmap::CombinationOperator::Or => destination | source,
+        crate::bitmap::CombinationOperator::And => destination & source,
+        crate::bitmap::CombinationOperator::Xor => destination ^ source,
+        crate::bitmap::CombinationOperator::Xnor => !(destination ^ source),
+        crate::bitmap::CombinationOperator::Replace => source,
+    }
+}
+
+pub(crate) open spec fn operator_word(
+    operator: crate::bitmap::CombinationOperator, destination: u64, source: u64,
+) -> u64 {
+    match operator {
+        crate::bitmap::CombinationOperator::Or => destination | source,
+        crate::bitmap::CombinationOperator::And => destination & source,
+        crate::bitmap::CombinationOperator::Xor => destination ^ source,
+        crate::bitmap::CombinationOperator::Xnor => !(destination ^ source),
+        crate::bitmap::CombinationOperator::Replace => source,
+    }
+}
+
+pub open spec fn byte_operator_bit(value: u8, bit: u32) -> bool
+    recommends bit < 8,
+{
+    ((value >> (bit as u8)) & 1u8) != 0
+}
+
+pub open spec fn word_operator_bit(value: u64, bit: u32) -> bool
+    recommends bit < 64,
+{
+    ((value >> (bit as u64)) & 1u64) != 0
+}
+
 pub open spec fn stride_for_width(width: nat) -> nat {
     (width + 7) / 8
 }
