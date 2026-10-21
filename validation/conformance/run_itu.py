@@ -11,6 +11,9 @@ import tempfile
 from pathlib import Path, PurePosixPath
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def unique_object(pairs: list[tuple]) -> dict:
     result = {}
     for key, value in pairs:
@@ -21,7 +24,56 @@ def unique_object(pairs: list[tuple]) -> dict:
 
 
 def read_json(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+    def invalid_constant(value: str) -> None:
+        raise ValueError(f"non-JSON numeric constant: {value}")
+
+    return json.loads(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=unique_object,
+        parse_constant=invalid_constant,
+    )
+
+
+def validate_difference(entry: dict, streams: dict[str, Path]) -> None:
+    if not isinstance(entry, dict) or entry.get("id") not in streams:
+        raise ValueError("expected difference refers to an unknown case")
+    classification = entry.get("classification")
+    if classification not in {
+        "reviewed_strict_rejection", "unsupported_profile", "pending_normative_review",
+    }:
+        raise ValueError(f"invalid expected classification: {entry['id']}")
+    field = "expected_error_exact" if classification == "pending_normative_review" else "expected_error_contains"
+    for key in (field, "rationale"):
+        if not isinstance(entry.get(key), str) or not entry[key].strip():
+            raise ValueError(f"empty expected difference: {entry['id']}")
+    allowed = {"id", "classification", field, "rationale", "jbig2dec_stderr_sha256"}
+    if classification == "pending_normative_review":
+        allowed |= {"stream_sha256", "source_files_sha256"}
+        stream_hash = entry.get("stream_sha256")
+        if (
+            not isinstance(stream_hash, str)
+            or not re.fullmatch(r"[0-9a-f]{64}", stream_hash)
+            or hashlib.sha256(streams[entry["id"]].read_bytes()).hexdigest() != stream_hash
+        ):
+            raise ValueError(f"pending review stream hash mismatch: {entry['id']}")
+        sources = entry.get("source_files_sha256")
+        if not isinstance(sources, dict) or not sources:
+            raise ValueError(f"missing pending review source identities: {entry['id']}")
+        for path, expected_hash in sources.items():
+            if (
+                not re.fullmatch(r"src/[a-z_]+\.rs", path)
+                or not isinstance(expected_hash, str)
+                or not re.fullmatch(r"[0-9a-f]{64}", expected_hash)
+                or hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected_hash
+            ):
+                raise ValueError(f"pending review source hash mismatch: {entry['id']}")
+    if set(entry) - allowed:
+        raise ValueError(f"unknown expected difference fields: {entry['id']}")
+    if "jbig2dec_stderr_sha256" in entry and (
+        not isinstance(entry["jbig2dec_stderr_sha256"], str)
+        or not re.fullmatch(r"[0-9a-f]{64}", entry["jbig2dec_stderr_sha256"])
+    ):
+        raise ValueError(f"invalid oracle diagnostic hash: {entry['id']}")
 
 
 def parse_raw(path: Path, expected_page: int) -> tuple[int, int, bytes]:
@@ -157,11 +209,16 @@ def run_case(stream: Path, decoder: Path, output: Path, timeout: float, differen
     case["decoder_exit"] = process.returncode
     if process.returncode != 0:
         case["stderr"] = process.stderr.strip()
-        # Signals and infrastructure failures are never reviewed malformed input.
+        pending = difference and difference["classification"] == "pending_normative_review"
+        error_matches = difference and (
+            case["stderr"] == difference["expected_error_exact"]
+            if pending else difference["expected_error_contains"] in case["stderr"]
+        )
+        # Pending diagnoses remain unresolved, even when their exact error matches.
         if (
             process.returncode == 1
             and difference
-            and difference["expected_error_contains"] in case["stderr"]
+            and error_matches
         ):
             case["status"] = difference["classification"]
             case["review"] = difference["rationale"]
@@ -221,6 +278,7 @@ def main() -> int:
     if not math.isfinite(arguments.timeout_seconds) or arguments.timeout_seconds <= 0:
         parser.error("--timeout-seconds must be finite and positive")
     try:
+        arguments.output.unlink(missing_ok=True)
         manifest = read_json(arguments.manifest)
         if arguments.archive:
             actual_hash = hashlib.sha256(arguments.archive.read_bytes()).hexdigest()
@@ -229,13 +287,20 @@ def main() -> int:
         streams = validate_vectors(arguments.vectors.resolve(), manifest)
         differences = {}
         if arguments.expected_differences:
-            for entry in read_json(arguments.expected_differences)["cases"]:
+            document = read_json(arguments.expected_differences)
+            if (
+                not isinstance(document, dict)
+                or set(document) != {"schema_version", "cases"}
+                or type(document["schema_version"]) is not int
+                or document["schema_version"] != 1
+                or not isinstance(document["cases"], list)
+            ):
+                raise ValueError("invalid expected differences schema")
+            stream_map = {stream.stem: stream for stream in streams}
+            for entry in document["cases"]:
+                validate_difference(entry, stream_map)
                 if entry["id"] in differences:
                     raise ValueError(f"duplicate expected difference: {entry['id']}")
-                if entry["classification"] not in {"reviewed_strict_rejection", "unsupported_profile"}:
-                    raise ValueError(f"invalid expected classification: {entry['id']}")
-                if not entry["expected_error_contains"] or not entry["rationale"]:
-                    raise ValueError(f"empty expected difference: {entry['id']}")
                 differences[entry["id"]] = entry
         if set(differences) - {stream.stem for stream in streams}:
             raise ValueError("expected differences refer to unknown cases")
@@ -250,6 +315,7 @@ def main() -> int:
         passed = sum(case["status"] == "passed" for case in cases)
         reviewed = sum(case["status"] == "reviewed_strict_rejection" for case in cases)
         unsupported = sum(case["status"] == "unsupported_profile" for case in cases)
+        pending = sum(case["status"] == "pending_normative_review" for case in cases)
         result = {
             "schema_version": 1,
             "source": "ITU-T T.88 (08/2018) electronic conformance data",
@@ -259,6 +325,7 @@ def main() -> int:
             "passed": passed,
             "reviewed_strict_rejections": reviewed,
             "unsupported_profile": unsupported,
+            "pending_normative_reviews": pending,
             "unresolved_failures": len(cases) - passed - reviewed - unsupported,
             "cases": cases,
         }
@@ -266,7 +333,7 @@ def main() -> int:
         arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({key: result[key] for key in (
             "total", "passed", "reviewed_strict_rejections",
-            "unsupported_profile", "unresolved_failures",
+            "unsupported_profile", "pending_normative_reviews", "unresolved_failures",
         )}))
         return 1 if result["unresolved_failures"] else 0
     except (OSError, ValueError, KeyError, TypeError, struct.error) as error:

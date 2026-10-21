@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "d4ff9a688bba5b5574c4c119eb3d95fb74efe455",
+  "source_revision": "83070c87a550811c8cfe1cca97a61558a4526fad",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -9,9 +9,9 @@
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/huffman-contracts/verus --cfg verus_keep_ghost --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/arithmetic-decision/verus --cfg verus_keep_ghost --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1164,
+    "verified_obligations": 1165,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "84f768ceed0ab2767f60cbfef03ba7678d684c1c28319b71051efd7ab0d646f4",
-  "proof_dispositions_sha256": "d1dcb5cb8292bc4888a0aed1bccc2be33704626eb14bf96262a269e374133edc",
+  "production_proof_coverage_sha256": "19fa840570fe4865b040ab90048f78472441b3c7dc2db8eeaaff95e2a6a800fa",
+  "proof_dispositions_sha256": "13b0a5299269e6a4fbfb0f7461b55ee0e94458c16a9a63762aa32f7a0f67be94",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. The immutable source revision corrects the mirrored zero-offset defect in WideCode::fits_in_bits and its project model: the first excluded limb must be zero even at exact 64/128/192-bit widths. Independent significant-bit and canonical-tree regressions both fail on the previous source and pass after the correction; valid incomplete/complete code trees and 255-bit prefixes remain supported. Only this production helper body changes; all other 655 production bodies/attributes are byte-identical. The whole proof build compiles and verifies 1164 obligations with zero errors. Existing Huffman source bindings and the generated production ledger are refreshed; disposition identities, statuses and reasons are unchanged. All 249 normative/project-policy records remain provisional with unchanged strength classifications. The mandatory semantic runner retains twelve groups and 50 contrasts. The correction does not establish the complete canonical histogram/first-code/line-order recurrence, prefix-freedom of every accepted table or faithful normative translation. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The single MMR capacity-accounting runtime/proof substitution still requires unsupported pinned Vec::capacity/Result::unwrap_or specifications, without new assumptions or memory-policy changes. Broader semantic, official-conformance and coverage release gates remain unmet. Release remains blocked.",
+  "note": "Complete inventory is not complete normative correctness. The immutable source revision above retains owner main updates and proves successful arithmetic decisions and exact next probability-context index/MPS against the project Qe-table model. Lower/upper exchange helpers additionally specify context updates on error. Existing preconditions, model definitions and all erased native tokens are unchanged; only four production contracts/proof blocks change, while the other 652 production bodies/attributes are byte-identical. The full proof build compiles and verifies 1165 obligations with zero errors. The mandatory semantic runner includes thirteen checkers and 54 contrasts, adding four real compiling arithmetic strong/weaker controls. Existing arithmetic source bindings are refreshed without changing disposition identities, statuses or reasons. All 249 normative/project-policy records remain provisional with unchanged strength classifications. Exact renormalized registers, byte consumption, initialization/refill, caller composition and faithful normative translation remain separate obligations. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Coverage release goals remain unmet. Release remains blocked.",
   "release_gate": "blocked"
 }

@@ -434,7 +434,7 @@
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
-    "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
+    "specs/arithmetic.rs": "219325b7b94af05582de1bd682e294a8a7c3922efe9886534779e557fc2c5ae6",
     "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
     "specs/decode.rs": "270442a6accf85260af0ffdccb76e8c7a1a7f9cbfcc8157d030f9c1e45523860",
@@ -447,7 +447,7 @@
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
-    "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
+    "src/arithmetic.rs": "7d0b2c33864f5fecdc767b26bbb3b446c5f8beb4a63961fa0309b6291e104cb5",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
@@ -3270,17 +3270,25 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::successful_decisions_and_contexts_cover_every_probability_row_and_route"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::exchange_context_update_precedes_truncation_and_keeps_supplied_mps_distinct"
         }
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The exposed postcondition bounds the signal and preserves decoder/context validity; it is not a full decision-recurrence model.",
+      "scope_of_formal_result": "The exposed postcondition bounds the signal and preserves decoder/context validity. Successful decisions additionally match the project Qe-table entry decision and exact next probability-context index/MPS relative to the entry interval/code. Exact renormalized registers, input consumption, initialization/refill and normative translation are not established by this partial relation.",
       "assumptions": [
         "Valid input decoder/context state and reviewed probability tables; the Annex-H-derived test is not proof of all decisions.",
         "This pre-existing aggregate decision record is retained; the DECODE and EXCHANGE rows enumerate its constituent steps without counting their tests as independent semantic proofs."
       ],
       "gaps": [
-        "A functional postcondition must relate the returned decision and updated registers/context to the normative transition."
+        "The successful decision/context relation still needs faithful normative-model review, exact renormalized-register and input-consumption postconditions, and composition with initialization/refill and callers."
       ],
       "functional_evidence": [],
       "invariant_evidence": [

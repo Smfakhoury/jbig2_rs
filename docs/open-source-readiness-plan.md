@@ -122,6 +122,16 @@ global/per-file floor passes before the upward ratchet. One region and two
 branch outcomes disappear with the incorrect guard, not a scope/exclusion
 change. The 90%/85% release goals and complete canonical/normative proof remain
 open.
+The arithmetic decision tranche proves successful returned bits and exact next
+probability-context index/MPS against the project Qe-table model and entry
+interval/code. Exchange helpers also specify context updates on error. Four
+compiling strong/weaker contrasts and independent all-47-row/MPS/route tests
+supplement the 1165-obligation whole proof. Native tokens, preconditions and
+existing models are unchanged. The semantic runner now has thirteen groups and
+54 contrasts. Exact renormalized registers, input consumption,
+initialization/refill, caller composition and normative translation remain
+open; the aggregate arithmetic record remains provisional state-preservation
+evidence rather than a complete transition claim.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The

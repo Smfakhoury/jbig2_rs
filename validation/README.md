@@ -35,6 +35,37 @@ Each decoder invocation has a 60-second timeout, configurable with
 unresolved failures exit nonzero. Reviewed rejections are reported separately
 from exact-output passes and do not establish full conformance.
 
+The seven existing official rejections are now `pending_normative_review`, not
+reviewed malformation determinations. A pending entry pins the complete typed
+error, stream hash and relevant runtime source hashes. It remains an unresolved
+failure even when those identities match; changed errors, success, crashes,
+unknown fields, stale source identities and invalid JSON fail closed. No
+runtime acceptance, marker, retention or recovery policy is relaxed.
+
+`tools/verify_provenance.py` validates the shape and byte identities of these
+truthful blocked records; its success is not a conformance execution pass.
+`--require-exact-conformance` separately rejects any recorded non-passing case.
+The official `run_itu.py` invocation remains nonzero for the seven unresolved
+cases. Tests exercise all three outcomes, including strict-gate rejection.
+Hash-bound Rust, JSON and Python files have explicit LF checkout rules so the
+same source bytes are checked on Linux, Windows and macOS. Approved main
+integration requires refreshing the diagnosis identities, not skipping them.
+
+The prior TT1 MMR-truncation explanation was disproved: its initial dictionaries
+complete before a text Huffman read exhausts the segment entropy body at file
+byte 179. See [the source-bound seven-case review](conformance/seven-rejection-review.json)
+for the distinction between observations and unresolved normative causes.
+The T.88 7.2.4/7.2.8 retention conflict still requires owner adjudication.
+
+Independent first-party pixel fixtures verify both BMP readers for both palette
+orders, top-down/bottom-up orientation, packed-bit padding and four-byte row
+padding. An eleven-page fixture checks numeric page pairing. These fixtures
+contain no official bytes and found no normalization bug in the covered layouts.
+The existing locked Hayro 0.3.1 harness supplies additional rejection evidence,
+but its single-image API and FNV64 output summary are not full-byte or
+multi-page conformance proofs; an error cannot corroborate an unexposed entropy
+position.
+
 ## Generated base/head performance comparison
 
 ```text
@@ -260,13 +291,24 @@ edges, clipping, empty dimensions and maximal origins; bit-loop oracles check
 complete shifted byte/word/tail availability. Coverage exclusions and the
 reviewed floor are unchanged; the separate P06 family work owns floor updates.
 
-`tools/run_semantic_proofs.py` runs all twelve isolated semantic checkers
+`tools/check_arithmetic_decision_proofs.py` checks four compiling wrong
+decision/context mutations against the exact arithmetic decision, checked
+wrapper and lower/upper exchange contracts. Weaker controls retain the prior
+validity/signal guarantees; the exchange controls retain their conditional
+decision relation while omitting only the context outputs. Tests independently
+exercise all 47 probability rows, both MPS values, boundary routes and context
+updates before truncation. The theorem covers successful decisions and context
+steps against the project model, not exact renormalized registers, byte
+consumption or normative entropy-stream equivalence.
+
+`tools/run_semantic_proofs.py` runs all thirteen isolated semantic checkers
 with at most two concurrent children. Each checker retains its pinned verifier,
 selected-target checks, native compilation and strong/weaker solver limits.
 Reports and logs keep their existing names; stale reports are removed before
 launch, and missing/malformed/duplicate/failed evidence fails the aggregate.
-The 50 required contrasts include the six black-span and four operator-bit
-contrasts. Whole-crate verification, the 20-minute job budget, action pins and
+The 54 required contrasts include the six black-span, four operator-bit and
+four arithmetic decision/context contrasts. Whole-crate verification, the
+20-minute job budget, action pins and
 read-only permissions are unchanged. The aggregate report is additional
 orchestration evidence, not a substitute for individual reports.
 

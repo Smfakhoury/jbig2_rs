@@ -606,7 +606,16 @@ impl<'a> ArithmeticDecoder<'a> {
             match out {
                 Ok(decision) =>
                     decision <= 1
-                    && arithmetic_spec::decoder_valid(final(self)),
+                    && arithmetic_spec::decoder_valid(final(self))
+                    && decision == arithmetic_spec::entry_decision(
+                        old(self).interval, old(self).code, old(context).state_index, old(context).mps,
+                    )
+                    && final(context).state_index == arithmetic_spec::entry_index(
+                        old(self).interval, old(self).code, old(context).state_index,
+                    )
+                    && final(context).mps == arithmetic_spec::entry_mps(
+                        old(self).interval, old(self).code, old(context).state_index, old(context).mps,
+                    ),
                 Err(_) => true,
             },
     ))]
@@ -633,12 +642,27 @@ impl<'a> ArithmeticDecoder<'a> {
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
             out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
+            out <= 1 ==> out == arithmetic_spec::entry_decision(
+                old(self).interval, old(self).code, old(context).state_index, old(context).mps,
+            ),
+            out <= 1 ==> final(context).state_index == arithmetic_spec::entry_index(
+                old(self).interval, old(self).code, old(context).state_index,
+            ),
+            out <= 1 ==> final(context).mps == arithmetic_spec::entry_mps(
+                old(self).interval, old(self).code, old(context).state_index, old(context).mps,
+            ),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline]
     pub(crate) fn decode_signal(&mut self, context: &mut ArithmeticContext) -> u8 {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            arithmetic_spec::entry_model_equations(
+                self.interval, self.code, context.state_index, context.mps,
+            );
+        }
         let state_index = usize::from(context.state_index);
         let qe = u32::from(QE_STATES[state_index].qe);
         #[cfg(verus_keep_ghost)]
@@ -689,6 +713,15 @@ impl<'a> ArithmeticDecoder<'a> {
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
             out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
+            final(context).state_index == arithmetic_spec::exchange_index(
+                true, old(self).interval, qe, state.next_mps, state.next_lps,
+            ),
+            final(context).mps == arithmetic_spec::exchange_mps(
+                true, old(self).interval, qe, state.switch_mps, old(context).mps, old_mps,
+            ),
+            out <= 1 ==> out == arithmetic_spec::exchange_decision(
+                true, old(self).interval, qe, old_mps,
+            ),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline(never)]
@@ -699,6 +732,13 @@ impl<'a> ArithmeticDecoder<'a> {
         qe: u32,
         old_mps: u8,
     ) -> u8 {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(arithmetic_spec::exchange_decision);
+            reveal(arithmetic_spec::exchange_is_mps);
+            reveal(arithmetic_spec::exchange_index);
+            reveal(arithmetic_spec::exchange_mps);
+        }
         let decision;
         if self.interval < qe {
             decision = old_mps;
@@ -732,6 +772,15 @@ impl<'a> ArithmeticDecoder<'a> {
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
             out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
+            final(context).state_index == arithmetic_spec::exchange_index(
+                false, old(self).interval, qe, state.next_mps, state.next_lps,
+            ),
+            final(context).mps == arithmetic_spec::exchange_mps(
+                false, old(self).interval, qe, state.switch_mps, old(context).mps, old_mps,
+            ),
+            out <= 1 ==> out == arithmetic_spec::exchange_decision(
+                false, old(self).interval, qe, old_mps,
+            ),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline(never)]
@@ -742,6 +791,13 @@ impl<'a> ArithmeticDecoder<'a> {
         qe: u32,
         old_mps: u8,
     ) -> u8 {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(arithmetic_spec::exchange_decision);
+            reveal(arithmetic_spec::exchange_is_mps);
+            reveal(arithmetic_spec::exchange_index);
+            reveal(arithmetic_spec::exchange_mps);
+        }
         let decision;
         if self.interval < qe {
             decision = 1 - old_mps;
@@ -1351,6 +1407,107 @@ mod tests {
         assert_eq!(left.interval, right.interval);
         assert_eq!(left.bit_count, right.bit_count);
         assert_eq!(left.marker, right.marker);
+    }
+
+    fn decision_fixture(
+        bytes: &[u8],
+        interval: u32,
+        code: u32,
+        bit_count: u8,
+    ) -> ArithmeticDecoder<'_> {
+        ArithmeticDecoder {
+            bytes,
+            byte_position: 0,
+            current_byte: bytes[0],
+            code,
+            interval,
+            bit_count,
+            marker: None,
+        }
+    }
+
+    #[test]
+    fn successful_decisions_and_contexts_cover_every_probability_row_and_route() {
+        let bytes = [0; 32];
+        for (index, state) in QE_STATES.iter().copied().enumerate() {
+            let qe = u32::from(state.qe);
+            for old_mps in 0..=1 {
+                for interval in [
+                    MIN_INTERVAL,
+                    0xffff,
+                    (2 * qe).max(MIN_INTERVAL),
+                    (MIN_INTERVAL + qe).min(0xffff),
+                ] {
+                    for upper in [0, qe - 1, qe, qe + 1] {
+                        let code = upper << 16;
+                        let reduced = interval - qe;
+                        let lower = upper < qe;
+                        let fast = !lower && reduced >= MIN_INTERVAL;
+                        let mps_route = (lower && reduced < qe) || (!lower && reduced >= qe);
+                        let decision = if fast || mps_route {
+                            old_mps
+                        } else {
+                            1 - old_mps
+                        };
+                        let expected = ArithmeticContext {
+                            state_index: if fast {
+                                u8::try_from(index).unwrap()
+                            } else if mps_route {
+                                state.next_mps
+                            } else {
+                                state.next_lps
+                            },
+                            mps: if !fast && !mps_route && state.switch_mps {
+                                1 - old_mps
+                            } else {
+                                old_mps
+                            },
+                        };
+                        let mut decoder = decision_fixture(&bytes, interval, code, 8);
+                        let mut context =
+                            ArithmeticContext::from_state(u8::try_from(index).unwrap(), old_mps)
+                                .unwrap();
+                        assert_eq!(decoder.decode_signal(&mut context), decision);
+                        assert_eq!(context, expected);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn exchange_context_update_precedes_truncation_and_keeps_supplied_mps_distinct() {
+        let bytes = [0];
+        for state in QE_STATES {
+            let qe = u32::from(state.qe);
+            for lower in [false, true] {
+                for prior_mps in 0..=1 {
+                    for supplied_mps in 0..=1 {
+                        let mut decoder = decision_fixture(&bytes, 1, 0, 0);
+                        let mut context = ArithmeticContext::from_state(0, prior_mps).unwrap();
+                        let mps_route = (1 < qe) == lower;
+                        let expected_index = if mps_route {
+                            state.next_mps
+                        } else {
+                            state.next_lps
+                        };
+                        let expected_mps = if !mps_route && state.switch_mps {
+                            1 - supplied_mps
+                        } else {
+                            prior_mps
+                        };
+                        let result = if lower {
+                            decoder.decode_lower_signal(&mut context, state, qe, supplied_mps)
+                        } else {
+                            decoder.decode_upper_signal(&mut context, state, qe, supplied_mps)
+                        };
+                        assert_eq!(result, RASTER_SIGNAL_EOF);
+                        assert_eq!(context.state_index, expected_index);
+                        assert_eq!(context.mps, expected_mps);
+                    }
+                }
+            }
+        }
     }
 
     #[test]
