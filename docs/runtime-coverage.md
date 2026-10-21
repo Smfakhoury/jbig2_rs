@@ -13,9 +13,21 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 10,022 / 12,617 | 79.43% |
-| Code regions | 9,667 / 12,931 | 74.76% |
-| Branch outcomes | 1,785 / 2,640 | 67.61% |
+| Lines | 10,266 / 12,622 | 81.33% |
+| Code regions | 9,875 / 12,934 | 76.35% |
+| Branch outcomes | 1,880 / 2,640 | 71.21% |
+
+The latest MMR contract floor is bound to immutable test-source commit
+`8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
+It adds **57 covered lines, 50 regions and 19 branch outcomes** over a fresh
+`d970ac4` main collection with identical source-coordinate denominators and no
+lost covered coordinates. The older reviewed floor was 10,207/12,620 lines,
+9,823/12,932 regions and 1,861/2,640 branches; main already contributes two
+covered bitmap lines/regions and their denominator entries. Those two are not
+counted as new test gains. All global/per-file fractions are nondecreasing.
+[`mmr-contracts.json`](../validation/coverage/mmr-contracts.json) records the raw
+identities, exact coordinate deltas and complete native-source identity review.
+The following paragraphs retain the history of earlier tranches.
 
 The source-offset dispatch floor was established with 262 correctness tests, with
 14 ignored microbenchmarks excluded. Focused invalid/zero-area cases cover five
@@ -231,3 +243,56 @@ padding mismatch; runtime and model now follow the explicit 7.2.4 field rules.
 The conflicting 7.2.8 worked example is documented in
 [spec-traceability.md](spec-traceability.md), with owner adjudication still open.
 Coverage and passing synthetic tests do not resolve that normative-review gap.
+
+## MMR resource, state, framing and bit-reader contracts
+
+The MMR contract tranche adds bounded inline unit tests, not a new encoded
+family, generator, grammar or fuzz target. Static T.6 bitcodes and existing
+first-party all-white/all-black fixtures exercise retained-scratch cleanup,
+release under a smaller memory budget, recovery after both decoding and framing
+errors, and inclusive stream/work/memory limits. Expected requested charges use
+bitmap storage plus two typed `width + 2` vectors; expected actual charges use
+independent safe `Vec<u32>::capacity()` observations, never the scratch's cached
+charge as an oracle. The width-one case distinguishes requested storage from
+the allocator's minimum capacity without forcing an allocation failure.
+
+EOFB tests cover all eight bit alignments, exact prefix consumption and preserved
+suffix bytes, required-versus-optional framing, invalid/truncated markers,
+trailing data and nonzero alignment padding, including reader positions on
+failure. Literal pixel oracles cover vertical displacements of two/three;
+static run cases cover terminating/make-up codes, exact overshoot and truncation
+positions, and zero-pair nonprogress. Exhaustive bounded bit-reader count/offset
+cases use a separate packed-integer value oracle and check exact errors and
+unchanged bytes/positions. The largest new bitmap width is 128 and all new
+allocations are far below 1 MiB.
+
+Direct conversion tests cover every MMR error classification without claiming
+that every variant can be produced by a valid decoder state. Direct native
+reference-search tests also check defensive rejection of short/unordered
+transition slices and invalid cursors; these inputs are not reachable from the
+decoder's valid transition invariant. No production hooks or allocation-failure
+injection are used.
+
+Before refreshing existing whole-file hashes, the complete parsed non-test AST
+(including attributes, proof cfgs, types, constants, macros and bodies) and the
+source-function inventory are compared against the collected main baseline.
+Production/model/proof behavior and coverage scope/exclusions remain unchanged.
+In particular the one explicit `prepare_transition_storage` runtime/proof
+divergence remains: pinned Verus does not support the normal capacity accounting
+through `Vec::capacity` and `Result::unwrap_or`.
+
+Remaining gaps include real allocator failures, unrepresentable slice sizes and
+integer-overflow defenses, unreachable mode/make-up budget guards implied by
+progress and minimum run lengths, and internal span/transition errors excluded
+by valid bitmap/reference invariants. Byte-aligned slices cannot end midway
+through EOFB byte-alignment padding. These are not marked covered, excluded or
+proved merely because adjacent error conversions execute.
+
+Fourteen new correctness tests increase the full native/coverage scope from
+314 to 328 passing tests, with the same fourteen ignored microbenchmarks.
+`mmr.rs` increases from 518/615 to 574/615 lines, 471/606 to 520/606 regions,
+and 118/150 to 136/150 branch outcomes. `reader.rs` increases from 98/101 to
+99/101 lines, 88/93 to 89/93 regions, and 9/12 to 10/12 branch outcomes.
+Three typed constructors used by the proof-facing implementation remain
+unexecuted in ordinary runtime tests; their lines are still in the denominator.
+These measurements are not completion of all P06 work or release coverage goals.
