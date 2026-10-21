@@ -76,9 +76,12 @@ Important examples:
   preserves slice length, and retains the validity guarantee without adding an
   input-validity precondition. Reset call-site timing is still outside this
   helper-level record, and normative review remains provisional.
-- Arithmetic decision decoding preserves bounded, valid state. Its exposed
-  contract is not a complete relation between old state, decoded decision and
-  the prescribed next state.
+- Arithmetic decision decoding now relates the successful bit and next
+  probability-context index/MPS to the project Qe-table model and entry
+  interval/code. Exchange helpers additionally specify context updates on
+  error. Exact renormalized registers, byte consumption, initialization/refill
+  and normative translation are not yet proved. The aggregate record retains
+  state-preservation strength rather than claiming the complete transition.
 - Generic SLTP indices match the project's lookup model. Context-gathering
   order is implementation-defined; those numeric indices are not universal
   normative constants. The diagram-to-gather-order bridge and caller timing
