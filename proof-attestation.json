@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "7d4b842447b08c5a299dfbe53610a27765b63073",
+  "source_revision": "36bbcbdab3227c2d0bf550b1c5821333e92651f1",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -12,7 +12,7 @@
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1140,
-    "verified_production_functions": 599,
+    "verified_production_functions": 604,
     "errors": 0,
     "proof_build_compiles": true,
     "exact_production_source_compiles": false,
@@ -21,12 +21,12 @@
     "native_assumptions": [],
     "reviewed_verifier_limitations": 24,
     "audited_forwarders": 23,
-    "runtime_proof_divergences": 10,
+    "runtime_proof_divergences": 5,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "b4336ee2533d09ca3a5df5302b1fed7ba0cc25d2441614ea31ecf17e18e0a396",
-  "proof_dispositions_sha256": "29282fc7edcf4e9dcb4ec2278cf6c37259426ce9715db07af2e5e0d7f98435f1",
+  "production_proof_coverage_sha256": "fb5459c6100db93b684fd946fb7b9a9d922472fed273cf2888760921e3dde9ed",
+  "proof_dispositions_sha256": "ec53e57b4b91abc29c8ac8196bc075b1b2b0a7f15d7c1a8d5049b5b34d177659",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. Earlier selected reset/metadata/bitmap materialization guarantees remain. Retention helpers now follow explicit 7.2.4 forward-byte/final-padding field rules and prove exact flag materialization. The conflicting 7.2.8 worked example is documented as a strict rejection under this interpretation; owner adjudication remains open. Three compiled retention controls supplement existing semantic evidence. Twenty requirement records remain provisional. Ten runtime/proof differences and other caller/conformance gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Five value/operator bridges now share exact executing/proof bodies and retain exact result contracts. Five compiling wrong-result controls fail the strong selected proofs and verify under weaker controls. Earlier reset/metadata/bitmap/retention guarantees remain; the 7.2.4 versus 7.2.8 conflict and all twenty provisional normative records are unchanged. Five remaining runtime/proof substitutions and other caller/conformance gaps still block release claims.",
   "release_gate": "blocked"
 }

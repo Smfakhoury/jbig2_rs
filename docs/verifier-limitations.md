@@ -2,8 +2,8 @@
 
 Pinned Verus verifies 1140 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-599 directly verified functions, 24 reviewed verifier limitations, 23 audited
-forwarders and 10 explicitly reviewed runtime/proof divergences.
+604 directly verified functions, 24 reviewed verifier limitations, 23 audited
+forwarders and 5 explicitly reviewed runtime/proof divergences.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -12,8 +12,9 @@ scratch handling are now directly verified; a mutable closure was extracted
 into an ordinary helper with the same success/error cleanup behavior.
 
 The remaining divergences include bitmap composition dispatch, MMR span
-filling and capacity-based memory accounting, batched text placement, and small
-conversion/operator bridges. Even where an optimized helper separately
+filling and capacity-based memory accounting, and batched text placement.
+The five primitive value/operator bridges now share their verified executing
+bodies. Even where an optimized helper separately
 verifies, a different ghost wrapper is not an exact-source proof of the executing
 wrapper. See the individual IDs and reasons in `proof-dispositions.json`.
 They must be closed in P05, not relabeled as verified.

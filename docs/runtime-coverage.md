@@ -13,17 +13,16 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 9,816 / 12,609 | 77.85% |
-| Code regions | 9,459 / 12,918 | 73.22% |
-| Branch outcomes | 1,734 / 2,638 | 65.73% |
+| Lines | 9,823 / 12,616 | 77.86% |
+| Code regions | 9,471 / 12,930 | 73.25% |
+| Branch outcomes | 1,736 / 2,640 | 65.76% |
 
-The executable-catalog tranche runs 255 correctness tests, with 14 ignored
-microbenchmarks excluded. The upward-only floor adds 11 covered document
-lines, five regions and three branch outcomes to the previous floor; one of
-those regions had already been observed by the structured-context tests.
-Runtime source, denominators and exclusions are unchanged. Only document
-coverage and aggregate floors rise; no other per-file floor is lowered.
-The proposed 90%/85% release goals remain unmet.
+The exact value-bridge tranche runs 258 correctness tests, with 14 ignored
+microbenchmarks excluded. Shared executing Boolean/operator bodies change the
+emitted denominators; the seven added line sites, 12 regions and two branch
+outcomes are fully covered. All per-file/global fractions remain nondecreasing
+and exclusions are unchanged. These source-shape changes are not a broad codec
+coverage improvement. The proposed 90%/85% release goals remain unmet.
 
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.
