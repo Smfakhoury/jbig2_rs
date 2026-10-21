@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "6154c9c27aa3f27ceb727e982a56453ac0bcde2b",
+  "source_revision": "f3f347dbce22e7edde44e925158e3b12ee996268",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,7 +11,7 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1154,
+    "verified_obligations": 1164,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "e314bf64aa87a7b7305d2243cd0bd5120bf3e4df08f012c73aa873d7abe31799",
+  "production_proof_coverage_sha256": "bed3bda2913522d611f23bccd327de5da8c97dbebfdbba70453670fc54574327",
   "proof_dispositions_sha256": "ff6dccfa1285d60366ebd00eb5cae45bcd29dc60fd1e408243d4369cd2a4b17b",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. At the immutable source revision above, the executing optimized Bitmap::fill_black_span proves valid-storage success and exact effects on every stored bit: requested row pixels become black and all other bits, including arbitrary dirty padding and other rows, are preserved. Derived postconditions expose the visible-pixel relation and exact outside-byte frame. Existing preconditions and metadata/length/empty-span guarantees remain; storage validity conditions the new guarantees rather than strengthening the precondition. Five fully proved mask/step/extensionality/pixel-bridge helpers close the optimized first-mask/word/byte/tail path using exact write_chunk bytes and frames. Six compiling output mutants fail stronger contracts and verify under weaker controls retaining all prior guarantees; all eleven mandatory semantic checkers pass their 46 contrasts. Native tests pass 293 with 14 ignored microbenchmarks; 241 audit-tool tests, strict native lint/format, proof-free 24-file package/downstream tests and unchanged per-file coverage floors pass. Coverage release goals remain unmet. Relative to base d1bf46914c6d7e57177b7c02087cca2555794b52, the filler's erased native tokens are identical and all other 655 production bodies/attributes are byte-identical. All 27 old bitmap model definitions, 11 old shared proof helpers and existing production proof macros are unchanged; no disposition status/reason changes. Existing ledger bindings were refreshed only after this review; all 111 normative/project-policy records remain provisional with unchanged evidence-strength classifications. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. This primitive theorem is not yet propagated through the MMR wrapper's weaker storage predicate or complete raster loop, and general composition/operator semantics remain separate gaps. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Release remains blocked.",
+  "note": "Complete inventory is not complete normative correctness. The immutable source revision above merges main d970ac4dbdb9881347529c600512d040ecd94ffa while retaining both the optimized black-span storage/pixel proofs and the universal byte/word operator-bit proofs. The combined proof build compiles and verifies 1164 obligations with zero errors. The mandatory semantic runner retains all twelve checkers and 50 contrasts, including six black-span and four operator-bit contrasts. Bitmap source hashes and the generated production ledger are refreshed for the merged source; disposition identities, statuses and reasons remain unchanged. All 111 normative/project-policy records remain provisional with unchanged evidence-strength classifications. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The black-span theorem is not yet propagated through the MMR wrapper's weaker storage predicate or complete raster loop. General composition pixel semantics, placement/mask/shift integration, wire mapping and normative translation remain separate gaps. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Coverage release goals remain unmet. Release remains blocked.",
   "release_gate": "blocked"
 }
