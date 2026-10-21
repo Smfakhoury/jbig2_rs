@@ -65,6 +65,12 @@ lanes without rewriting history. A merged PR targeting the former stack base
 did not by itself deliver those changes to main. This integration preserves
 the reviewed runtime/proof bodies and coverage floors; it does not complete
 the quality-CI package or approve the provisional normative ledger.
+The next P10 preparatory tranche pins all action references to full commits,
+separates Rust compiler selection from action ref names, bounds native/proof
+jobs, and enforces parsed-YAML policy with a weekly action-update proposal
+configuration. Compiler/profile choices, triggers, matrices, cache trust and
+read-only permissions are preserved. It does not configure branch rules,
+prove upstream action correctness or complete P10's unresolved dependencies.
 No broad repository cleanup or release enablement has been performed.
 Prepared: 2026-10-19.
 Baseline: hosted `main` at `ec6064128d06dfbc3a404b800a718d303c8dad02`,
