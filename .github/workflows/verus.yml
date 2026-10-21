@@ -60,56 +60,11 @@ jobs:
           python tools/check_traceability.py \
             --verus-json verus-production.json \
             --output target/traceability/verifier-report.json
-      - name: Check reset proof semantic sensitivity
+      - name: Check all semantic proof contrasts with two isolated workers
         run: >-
-          python -B tools/check_reset_proof.py
+          python -B tools/run_semantic_proofs.py
           --verus-executable verus-x86-linux/verus
-          --output target/traceability/reset-proof-sensitivity.json
-      - name: Check document count proof semantic sensitivity
-        run: >-
-          python -B tools/check_document_count_proof.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/document-count-proof-sensitivity.json
-      - name: Check bitmap materialization proof semantic sensitivity
-        run: >-
-          python -B tools/check_bitmap_copy_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/bitmap-copy-proof-sensitivity.json
-      - name: Check segment retention proof semantic sensitivity
-        run: >-
-          python -B tools/check_retention_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/retention-proof-sensitivity.json
-      - name: Check exact value-bridge proof semantic sensitivity
-        run: >-
-          python -B tools/check_value_bridge_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/value-bridge-proof-sensitivity.json
-      - name: Check executing MMR span proof semantic sensitivity
-        run: >-
-          python -B tools/check_mmr_span_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/mmr-span-proof-sensitivity.json
-      - name: Check executing source-offset composition proof sensitivity
-        run: >-
-          python -B tools/check_region_dispatch_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/region-dispatch-proof-sensitivity.json
-      - name: Check executing text-placement batch proof sensitivity
-        run: >-
-          python -B tools/check_text_batch_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/text-batch-proof-sensitivity.json
-      - name: Check packed-byte kernel value and frame proof sensitivity
-        run: >-
-          python -B tools/check_bitmap_chunk_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/bitmap-chunk-proof-sensitivity.json
-      - name: Check executing clipped composition proof sensitivity
-        run: >-
-          python -B tools/check_bitmap_compose_proofs.py
-          --verus-executable verus-x86-linux/verus
-          --output target/traceability/bitmap-compose-proof-sensitivity.json
+          --output-dir target/traceability
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
