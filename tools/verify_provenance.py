@@ -56,6 +56,10 @@ for path in sorted(ROOT.rglob("*")):
                 validate(document, "coverage_baseline")
             elif path.relative_to(ROOT).as_posix() == "validation/traceability/requirements.json":
                 validate(document, "traceability")
+            elif path.relative_to(ROOT).as_posix() in {
+                "validation/negative/cases.json", "validation/metamorphic/cases.json",
+            }:
+                validate(document, "test_catalog")
             elif isinstance(document, dict) and "schema_version" in document:
                 validate(document, "repository")
         except (OSError, ValueError, SchemaError, ValidationError) as error:

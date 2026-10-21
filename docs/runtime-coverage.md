@@ -13,16 +13,17 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 9,805 / 12,609 | 77.76% |
-| Code regions | 9,454 / 12,918 | 73.18% |
-| Branch outcomes | 1,731 / 2,638 | 65.62% |
+| Lines | 9,816 / 12,609 | 77.85% |
+| Code regions | 9,459 / 12,918 | 73.22% |
+| Branch outcomes | 1,734 / 2,638 | 65.73% |
 
-The structured-context tranche runs 250 correctness tests, with 14 ignored
-microbenchmarks excluded. Its measured region count is 9,455 / 12,918 (73.19%),
-one region above the existing reviewed floor; line and branch counts are
-unchanged. All runtime denominators and per-file floors are unchanged. The new
-regressions primarily strengthen sequence/output/error checks rather than add
-newly executed lines, so no broad coverage improvement is claimed.
+The executable-catalog tranche runs 255 correctness tests, with 14 ignored
+microbenchmarks excluded. The upward-only floor adds 11 covered document
+lines, five regions and three branch outcomes to the previous floor; one of
+those regions had already been observed by the structured-context tests.
+Runtime source, denominators and exclusions are unchanged. Only document
+coverage and aggregate floors rise; no other per-file floor is lowered.
+The proposed 90%/85% release goals remain unmet.
 
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.
@@ -121,6 +122,12 @@ service or third-party upload is introduced. The coverage workflow has read-only
 repository permissions and requires no private vectors or secrets.
 
 ## Test-improvement priorities
+
+The negative/metamorphic catalog migration now requires exact executable
+references for every case, with native Cargo discovery and five additional
+typed public-API regressions. This closes the file-only reference gap, not the
+line/branch coverage goals or normative proof gaps. The catalog checker records
+discovery separately from execution; native CI runs the tests independently.
 
 1. Symbol/text decoding: 65.25% lines, 47.74% branch outcomes; largest uncovered
    runtime surface. Add valid arithmetic/Huffman/refinement combinations and

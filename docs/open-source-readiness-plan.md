@@ -2,6 +2,12 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The negative/metamorphic catalogs now contain 29 fully executable-linked cases
+(38 references to 37 distinct ordinary tests), with no legacy file-only
+exceptions. Strict schema, source/ignored-test checks and real Cargo discovery
+are enforced in native CI. Five focused regressions strengthen typed duplicate,
+missing-reference, truncation and repeat-result claims. Catalog linking is not
+semantic or normative approval, and broader P06 coverage goals remain open.
 Exact-source proof gaps are exposed and tracked for P05.
 P04 is in progress with a provisional 20-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
@@ -35,7 +41,10 @@ workflow contract. Hosted smoke/extended campaigns and failure/replay controls
 have been validated on trusted main. Actual cache creation, restoration into
 the extended run and saving its updated corpus are verified; all seven
 extended starting-corpus file/byte counts match the saved smoke corpus.
-These were manual default-branch runs, not an observed scheduled trigger.
+The subsequent actual scheduled extended run on the seven-target
+`de2fbf3` source also passed, with 566,048,292 executions and actual cache
+restore/save. The later eighth-target source has not yet been observed through
+a scheduled trigger.
 Broader structured/stateful targets, corpus review and minimization remain
 pending. This is not completion of P08.
 Successful targets now require unambiguous positive final execution counters;
