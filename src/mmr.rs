@@ -1393,6 +1393,13 @@ fn reference_elements_from(
         final(bitmap).stride == old(bitmap).stride,
         final(bitmap).data@.len() == old(bitmap).data@.len(),
         mmr_spec::bitmap_storage_valid(final(bitmap)),
+        (start > end || end > old(bitmap).width || row >= old(bitmap).height)
+            ==> matches!(out, Err(MmrError::InvalidTransition)),
+        (start <= end <= old(bitmap).width && row < old(bitmap).height
+            && (!black || start == end)) ==> out.is_ok(),
+        (start > end || end > old(bitmap).width || row >= old(bitmap).height
+            || !black || start == end)
+            ==> final(bitmap).data@ == old(bitmap).data@,
 ))]
 fn fill_span(
     bitmap: &mut Bitmap,
@@ -1407,47 +1414,9 @@ fn fill_span(
     if !black {
         return Ok(());
     }
-    #[cfg(not(verus_keep_ghost))]
     bitmap
         .fill_black_span(row, start, end)
         .map_err(|_error| MmrError::InvalidTransition)?;
-    #[cfg(verus_keep_ghost)]
-    {
-        let row_index = usize::try_from(row).map_err(|_error| MmrError::IntegerOverflow)?;
-        let row_base = row_index
-            .checked_mul(bitmap.stride)
-            .ok_or(MmrError::IntegerOverflow)?;
-        proof! {
-            reveal(mmr_spec::bitmap_storage_valid);
-        }
-        let mut x = start;
-        #[verus_spec(
-            invariant
-                start <= x <= end,
-                end <= bitmap.width,
-                row < bitmap.height,
-                bitmap.width == old(bitmap).width,
-                bitmap.height == old(bitmap).height,
-                bitmap.stride == old(bitmap).stride,
-                bitmap.data@.len() == old(bitmap).data@.len(),
-                mmr_spec::bitmap_storage_valid(bitmap),
-            decreases end - x,
-        )]
-        while x < end {
-            production_mmr_span_byte!(bitmap, row, x);
-            let byte_in_row = usize::try_from(x / 8).map_err(|_error| MmrError::IntegerOverflow)?;
-            let byte_index = row_base
-                .checked_add(byte_in_row)
-                .ok_or(MmrError::IntegerOverflow)?;
-            if byte_index >= bitmap.data.len() {
-                return Err(MmrError::InvalidTransition);
-            }
-            let byte = &mut bitmap.data[byte_index];
-            let shift = 7_u32.checked_sub(x % 8).ok_or(MmrError::IntegerOverflow)?;
-            *byte |= 1_u8 << shift;
-            x = x.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
-        }
-    }
     Ok(())
 }
 
@@ -1730,6 +1699,67 @@ fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn span_test_bitmap(width: u32) -> Bitmap {
+        let mut bitmap = Bitmap::blank(width, 3, &Limits::default()).expect("bounded bitmap");
+        for (index, byte) in bitmap.data.iter_mut().enumerate() {
+            *byte = u8::try_from(index % 256)
+                .expect("bounded pattern")
+                .wrapping_mul(37)
+                .wrapping_add(11);
+        }
+        bitmap
+    }
+
+    #[test]
+    fn optimized_span_dispatch_matches_scalar_pixels_and_full_storage() {
+        for width in [0, 1, 7, 8, 9, 63, 64, 65, 71, 72, 73, 127, 128, 129] {
+            let original = span_test_bitmap(width);
+            for row in 0..3 {
+                for start in 0..=width {
+                    for end in start..=width {
+                        for black in [false, true] {
+                            let mut actual = original.clone();
+                            let mut expected = original.clone();
+                            if black {
+                                for x in start..end {
+                                    let index = usize::try_from(row).expect("row")
+                                        * expected.stride
+                                        + usize::try_from(x / 8).expect("byte");
+                                    expected.data[index] |= 0x80 >> (x % 8);
+                                }
+                            }
+                            fill_span(&mut actual, row, start, end, black).expect("valid span");
+                            assert_eq!(actual, expected, "{width}/{row}/{start}/{end}/{black}");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_span_dispatch_preserves_exact_error_and_all_bytes() {
+        for width in [0, 1, 8, 65, 129] {
+            let original = span_test_bitmap(width);
+            for (row, start, end) in [
+                (3, 0, 0),
+                (u32::MAX, 0, width),
+                (0, 1, 0),
+                (0, 0, width + 1),
+                (0, u32::MAX, u32::MAX),
+            ] {
+                for black in [false, true] {
+                    let mut bitmap = original.clone();
+                    assert!(matches!(
+                        fill_span(&mut bitmap, row, start, end, black),
+                        Err(MmrError::InvalidTransition)
+                    ));
+                    assert_eq!(bitmap, original);
+                }
+            }
+        }
+    }
 
     fn assert_incremental_transitions_match_scan(bitmap: &Bitmap) {
         for row in 0..bitmap.height() {

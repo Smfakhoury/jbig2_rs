@@ -527,6 +527,9 @@ impl Bitmap {
             final(self).width == old(self).width,
             final(self).height == old(self).height,
             final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+            start == end ==> final(self).data@ == old(self).data@,
+            start == end ==> out.is_ok(),
     ))]
     pub(crate) fn fill_black_span(
         &mut self,
@@ -569,6 +572,7 @@ impl Bitmap {
                 self.width == old(self).width,
                 self.height == old(self).height,
                 self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
             decreases end - x,
         ))]
         while end - x >= 64 {
@@ -587,6 +591,7 @@ impl Bitmap {
                 self.width == old(self).width,
                 self.height == old(self).height,
                 self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
             decreases end - x,
         ))]
         while end - x >= 8 {

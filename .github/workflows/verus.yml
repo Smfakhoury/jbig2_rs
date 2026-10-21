@@ -85,6 +85,11 @@ jobs:
           python -B tools/check_value_bridge_proofs.py
           --verus-executable verus-x86-linux/verus
           --output target/traceability/value-bridge-proof-sensitivity.json
+      - name: Check executing MMR span proof semantic sensitivity
+        run: >-
+          python -B tools/check_mmr_span_proofs.py
+          --verus-executable verus-x86-linux/verus
+          --output target/traceability/mmr-span-proof-sensitivity.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
