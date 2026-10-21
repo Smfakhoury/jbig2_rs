@@ -126,7 +126,7 @@ dedicated performance hardware and the complete P10 contract remain open.
 ## Executable test catalogs
 
 Every negative/metamorphic case now names nonempty exact `{target, name}` test
-references. All 29 cases resolve to 38 references and 37 distinct ordinary
+references. All 43 cases resolve to 67 references and 62 distinct ordinary
 tests; file-only `coverage` entries are no longer accepted. Missing, ignored,
 duplicated or wrong-target references and empty catalogs fail explicitly.
 Failed validation removes any previous output report, preventing stale success
@@ -256,6 +256,58 @@ workflow fetches the exact comparison commit from `origin` when it is missing.
 If that fetch fails, the job fails rather than skipping the comparison or
 substituting another revision. An initial push without a previous commit still
 runs all baseline coverage checks without a changed-line comparison.
+
+### Public envelope contracts
+
+`tests/public_envelope.rs` adds twenty ordinary public-API tests using
+project-generated document structures, blank pages and the existing generated
+MMR white-row encoding. It does not extend a codec-family grammar or fuzz target.
+The negative/metamorphic catalogs bind every new test to executable Cargo
+discovery, not file-only claims.
+
+The assertions cover every public metadata field, ascending metadata order
+versus stream-order page delivery, known/unknown declared page counts, zero
+dimensions, default-black padding, known/unknown striped heights, profile
+placement/supersets, optional/necessary extensions and both comment encodings.
+They also check immutable nonempty global-reference chains, last-reference
+retention with reordered embedded headers, exact inclusive resource boundaries,
+unknown-length MMR envelope termination and second-page sink failure effects.
+Typed malformed/unsupported/limit fields and literal packed pixels are the
+oracles; fresh/reused agreement and formatted error strings are not.
+
+The original PR42 pinned before/after collection on unchanged production source measures
+**135 additional runtime source lines, 113 regions and 62 branch outcomes**.
+The freshly measured main-side starting point is 10,069 lines / 9,704 regions /
+1,798 branch outcomes, already above the older committed floor of 10,022 /
+9,667 / 1,785. The tests bring the measured union to 10,204 / 9,817 / 1,860.
+Denominators remain 12,617 / 12,931 / 2,640, with no lost previously covered
+coordinates or decreasing per-file fractions. Source-bound identities and
+coordinate checks are recorded in
+[`coverage/public-envelope.json`](coverage/public-envelope.json).
+
+After normally merging main `d1bf46914c6d7e57177b7c02087cca2555794b52`, a new
+independent collection is bound to immutable merge commit
+`c95032a826771c66266c00daf0b47a21cb1db206` before its separate floor update.
+The runtime source tree and pins are byte-identical to that main; all twenty
+public-envelope tests are unchanged. Fresh main/merged-branch coverage is
+10,072 / 10,207 lines out of 12,620, 9,710 / 9,823 regions out of 12,932 and
+1,799 / 1,861 branch outcomes out of 2,640. These are new collections, not sums
+of historical deltas. Main's bitmap source changes the line/region mappings;
+the source-coordinate denominators match between the two new runs, not the
+older source. Every current-main covered coordinate is retained, and exact
+integer comparisons confirm no previous floor global/per-file fraction falls.
+The full 312 Rust / 238 Python tests, strict MSRV Clippy/format/docs, provenance
+and executable catalogs, verified package and offline downstream consumer pass.
+The original evidence remains intact; the refreshed identities, mapping checks
+and raw report hashes are in
+[`coverage/public-envelope-main-integration.json`](coverage/public-envelope-main-integration.json).
+
+Production sources, specifications, proofs, the normative ledger, dependencies
+and coverage exclusions are unchanged relative to the corresponding main.
+Allocation-failure/overflow paths and
+broader entropy/resource interactions remain genuine gaps; the proposed
+90% line / 85% branch release goals are still unmet. These generated contracts
+are not normative conformance or release approval.
 
 ## Bounded fuzz campaigns and replay
 

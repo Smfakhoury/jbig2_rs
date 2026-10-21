@@ -2,6 +2,34 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-PUBLIC-ENVELOPE-METADATA",
+      "transformation": "sequential/random-access/embedded documents, known/unknown declared counts, reversed page encounter order, zero dimensions and known/unknown stripe heights",
+      "invariant": "all public metadata fields match literal declarations; metadata is page-number sorted while decoded/sink pages retain stream order; complete packed bytes and padding match literal expectations",
+      "tests": [
+        {"target": "public_envelope", "name": "organizations_preserve_sorted_metadata_but_deliver_pages_in_stream_order"},
+        {"target": "public_envelope", "name": "empty_documents_and_zero_sized_bitmaps_have_complete_metadata"},
+        {"target": "public_envelope", "name": "stripe_metadata_and_zero_padding_follow_independently_declared_rows"}
+      ]
+    },
+    {
+      "id": "META-PUBLIC-VALID-PROFILES-EXTENSIONS",
+      "transformation": "add empty or superset profile declarations, opaque optional extensions and empty/nonempty one-byte or UTF-16 comments",
+      "invariant": "literal page metadata, dimensions, stride and complete packed output are unchanged; nonempty global profile streams are reusable",
+      "tests": [
+        {"target": "public_envelope", "name": "profile_supersets_and_empty_profile_sets_are_accepted_without_changing_pixels"},
+        {"target": "public_envelope", "name": "optional_extensions_and_both_comment_encodings_preserve_literal_output"}
+      ]
+    },
+    {
+      "id": "META-PUBLIC-NONEMPTY-GLOBAL-REFERENCES",
+      "transformation": "reuse an immutable two-level extension-reference chain across contexts and reorder embedded global headers with deferred retention flags",
+      "invariant": "exact global segment counts, local metadata and literal pixels; last-reference retention and graph depth are independent of wire encounter order",
+      "tests": [
+        {"target": "public_envelope", "name": "nonempty_global_reference_chains_reuse_immutable_state_and_exact_depth"},
+        {"target": "public_envelope", "name": "reference_retention_uses_the_last_reference_not_the_first_or_wire_order"}
+      ]
+    },
+    {
       "id": "META-STRUCTURED-CODEC-FAMILIES",
       "transformation": "generated dictionaries and regions across sequential/random-access, embedded nonempty reusable globals, reader/sink and reused context APIs; all codec operators, corners, transposition, raw/MMR collectives and Gray-plane depths zero through two",
       "invariant": "independent scalar literal pixels, exact dimensions/stride/packed bytes/zero padding; typed failures and recovery; no fresh-versus-reused agreement is used as the pixel oracle",
