@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "status": "measured_nonregression_release_goals_unmet",
+  "base_revision": "65c902f682a0380978358325dc2da712327c40d4",
+  "source_revision": "3c2a351d6c7a556df8208d33fac5d8170b16bc0a",
+  "source_sha256": "38efe199f08091769efd85bc53cc111e47711d640cf7a70a203454c0e30fefd4",
+  "before_test_source_sha256": "a97349773b4c00c4378a763f10ce43b75e2852a98e56b181d9f7fc75f9234a69",
+  "test_source_sha256": "8ed358cceb368d5d35c33057fccb42a37e6e2464f15d92e9bce471e6b166872e",
+  "production_sources_modified": false,
+  "coverage_scope_policy_modified": false,
+  "runtime_source_coordinate_denominators_identical": true,
+  "all_global_and_per_file_fractions_nondecreasing": true,
+  "previously_covered_source_coordinates_lost": {"lines": 0, "regions": 0, "branches": 0},
+  "new_test_driver_mappings": ["tests/public_envelope.rs"],
+  "toolchain": {
+    "rust_toolchain": "nightly-2026-10-12",
+    "cargo_llvm_cov_version": "0.9.1",
+    "component": "llvm-tools-preview",
+    "note": "Dedicated ordinary-runtime coverage build; nightly enables branch instrumentation, not Verus cfgs.",
+    "rustc": "rustc 1.101.0-nightly (080cc2714 2026-10-11)"
+  },
+  "totals": {
+    "lines": {
+      "before": 10069, "after": 10204, "count": 12617, "new": 135,
+      "new_source_coordinate_sha256": "ca012720a782949b00d2711d36a610de41d59750867b1718514e981d11811851",
+      "denominator_source_coordinate_sha256": "e6448618cdcd06fcf04e95adafa0f97e7d1486ae6fa79041f79ecafa694f3aa3"
+    },
+    "regions": {
+      "before": 9704, "after": 9817, "count": 12931, "new": 113,
+      "new_source_coordinate_sha256": "07d0d78b5617387f06c457185517faeafc8fb2f8400028fff0b8245d3d55a54b",
+      "denominator_source_coordinate_sha256": "9d5d7465db1fdef4d6f918fa52fbe65bcf7523fc8eff4af23c0a6632ebb8474b"
+    },
+    "branches": {
+      "before": 1798, "after": 1860, "count": 2640, "new": 62,
+      "new_source_coordinate_sha256": "4016ed21912db54fcf690ae233460a840a9bbc4afc5779ab03e13b64677d4f7c",
+      "denominator_source_coordinate_sha256": "424c6a304d218f0ad4bd34d5ea8d4e493045f02b49198f16fa49c82a883c1c94"
+    }
+  },
+  "per_file": {
+    "src/decode.rs": {
+      "lines": {"before": 1084, "after": 1092, "count": 1396, "new": 8},
+      "regions": {"before": 919, "after": 929, "count": 1336, "new": 10},
+      "branches": {"before": 139, "after": 143, "count": 230, "new": 4}
+    },
+    "src/document.rs": {
+      "lines": {"before": 940, "after": 1036, "count": 1168, "new": 96},
+      "regions": {"before": 915, "after": 1001, "count": 1131, "new": 86},
+      "branches": {"before": 219, "after": 264, "count": 326, "new": 45}
+    },
+    "src/segment_data.rs": {
+      "lines": {"before": 224, "after": 255, "count": 263, "new": 31},
+      "regions": {"before": 227, "after": 244, "count": 275, "new": 17},
+      "branches": {"before": 52, "after": 65, "count": 70, "new": 13}
+    }
+  },
+  "measurement": {
+    "method": "Pinned complete ordinary unit/integration runs before and after, using run_coverage.py unchanged. Line coordinates come from the masked runtime LCOV records; region coordinates and both branch outcome indices are unioned across all raw LLVM function instantiations using coverage_report.runtime_sources and active_region. All set sizes equal the scoped report counters. All three complete denominator sets are identical and every covered before coordinate is retained after.",
+    "coordinate_digest_format": "SHA-256 of UTF-8 compact JSON sorted unique tuples: [relative_file,line] or [relative_file,start_line,start_column,end_line,end_column], with outcome index 0=true/1=false appended for branches.",
+    "base_already_exceeds_preexisting_committed_floor": true,
+    "preexisting_floor_source_revision": "f338287afe3e6026fe0104436ec4c25c5f726f5a",
+    "preexisting_floor_totals": {
+      "lines": {"covered": 10022, "count": 12617},
+      "regions": {"covered": 9667, "count": 12931},
+      "branches": {"covered": 1785, "count": 2640}
+    },
+    "note": "The measured improvement is against a fresh collection on the requested main commit, not the older lower committed floor."
+  },
+  "raw_reports_sha256": {
+    "before": {
+      "json": "37adab24fd8e2bb7b9e7062ec3a7bbe282739bf26f99ed107dee74d64453426d",
+      "lcov": "fca862477f227482af2c210a9ce5b24be7fff4c79d1ed72273ca648fbce0db8c"
+    },
+    "after": {
+      "json": "ab0cad2b9e5bcf3a2ede49d1718f445fd66f9c7e0abb025c1b18313cb3b8bbd1",
+      "lcov": "e25d2a758e63977625bc22e0f46bcbe0fc6c7cf45e84349d3f48825717fe4791"
+    }
+  },
+  "validation": {
+    "msrv": "1.89.0",
+    "ordinary_correctness_tests_before": 289,
+    "ordinary_correctness_tests_after": 309,
+    "new_nonignored_integration_tests": 20,
+    "ignored_microbenchmarks": 14,
+    "python_tooling_tests": 212,
+    "strict_clippy_all_targets_all_features": "passed",
+    "runtime_provenance_workflow_catalog_checks": "passed",
+    "package_inventory_and_verified_archive": "passed",
+    "proposed_release_goals_met": false
+  },
+  "remaining_gaps": [
+    "Allocation failure and architecture-infeasible integer-overflow paths",
+    "Broader entropy decoding, global resource and retained-memory interactions",
+    "Normative conformance review and release coverage goals"
+  ]
+}

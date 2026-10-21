@@ -2,10 +2,10 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only floor after project-generated MMR pattern/halftone and Huffman dictionary/text public-decoder fixtures with independent scalar/literal packed-pixel, typed-error, recovery and resource-limit oracles. Measured on the immutable source_revision before this evidence commit. Runtime source-coordinate denominators and exclusions are unchanged; all global/per-file fractions remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
-  "source_revision": "f338287afe3e6026fe0104436ec4c25c5f726f5a",
+  "policy": "Upward-only floor after twenty ordinary public document-envelope tests with literal metadata/pixel and exact typed-error/effect oracles for profiles, extensions, page lifecycle, globals, retention, readers/sinks and resource boundaries. Measured on the immutable source_revision before this separate evidence commit. Runtime source-coordinate denominators and exclusions are unchanged; all global/per-file fractions remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "3c2a351d6c7a556df8208d33fac5d8170b16bc0a",
   "source_sha256": "38efe199f08091769efd85bc53cc111e47711d640cf7a70a203454c0e30fefd4",
-  "test_source_sha256": "72e7e4437e6c176405a01380d6959f063c87d17b64d79e3811dd298c8cc77cba",
+  "test_source_sha256": "8ed358cceb368d5d35c33057fccb42a37e6e2464f15d92e9bce471e6b166872e",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
     "cargo_llvm_cov_version": "0.9.1",
@@ -14,15 +14,15 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 10022, "count": 12617},
-    "regions": {"covered": 9667, "count": 12931},
-    "branches": {"covered": 1785, "count": 2640}
+    "lines": {"covered": 10204, "count": 12617},
+    "regions": {"covered": 9817, "count": 12931},
+    "branches": {"covered": 1860, "count": 2640}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
     "src/bitmap.rs": {"lines": {"covered": 894, "count": 969}, "regions": {"covered": 814, "count": 1038}, "branches": {"covered": 162, "count": 188}},
-    "src/decode.rs": {"lines": {"covered": 1052, "count": 1396}, "regions": {"covered": 893, "count": 1336}, "branches": {"covered": 135, "count": 230}},
-    "src/document.rs": {"lines": {"covered": 925, "count": 1168}, "regions": {"covered": 904, "count": 1131}, "branches": {"covered": 210, "count": 326}},
+    "src/decode.rs": {"lines": {"covered": 1092, "count": 1396}, "regions": {"covered": 929, "count": 1336}, "branches": {"covered": 143, "count": 230}},
+    "src/document.rs": {"lines": {"covered": 1036, "count": 1168}, "regions": {"covered": 1001, "count": 1131}, "branches": {"covered": 264, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
     "src/file_header.rs": {"lines": {"covered": 60, "count": 60}, "regions": {"covered": 55, "count": 55}, "branches": {"covered": 22, "count": 22}},
     "src/generic_region.rs": {"lines": {"covered": 1644, "count": 2029}, "regions": {"covered": 1947, "count": 2398}, "branches": {"covered": 296, "count": 424}},
@@ -32,7 +32,7 @@
     "src/limits.rs": {"lines": {"covered": 22, "count": 22}, "regions": {"covered": 19, "count": 19}, "branches": {"covered": 0, "count": 0}},
     "src/mmr.rs": {"lines": {"covered": 518, "count": 615}, "regions": {"covered": 471, "count": 606}, "branches": {"covered": 118, "count": 150}},
     "src/reader.rs": {"lines": {"covered": 98, "count": 101}, "regions": {"covered": 88, "count": 93}, "branches": {"covered": 9, "count": 12}},
-    "src/segment_data.rs": {"lines": {"covered": 224, "count": 263}, "regions": {"covered": 227, "count": 275}, "branches": {"covered": 52, "count": 70}},
+    "src/segment_data.rs": {"lines": {"covered": 255, "count": 263}, "regions": {"covered": 244, "count": 275}, "branches": {"covered": 65, "count": 70}},
     "src/segment_header.rs": {"lines": {"covered": 262, "count": 275}, "regions": {"covered": 277, "count": 294}, "branches": {"covered": 39, "count": 44}},
     "src/symbol_text.rs": {"lines": {"covered": 2077, "count": 3009}, "regions": {"covered": 1748, "count": 2844}, "branches": {"covered": 279, "count": 532}}
   }
