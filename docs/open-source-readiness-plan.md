@@ -27,7 +27,7 @@ Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled
 bitmap counterexamples check those semantic guarantees.
-Caller timing/first-row semantics, other semantic gaps and 3 runtime/proof
+Caller timing/first-row semantics, other semantic gaps and 2 runtime/proof
 substitutions remain open.
 Five small value/operator bridge substitutions are closed with shared
 executing/proof bodies and exact output contracts. Three integer widenings
@@ -49,8 +49,16 @@ succeed unchanged. Three compiling no-op violations fail strong contracts and
 verify under storage/error-only controls. The kernel runtime tokens are
 unchanged; the wrapper adds only a pure result binding around proof hints.
 General composition pixel correctness remains scalar-oracle tested, not newly
-proved. Ordinary composition, MMR capacity accounting and text batching remain
-the three explicit source substitutions.
+proved.
+Text-placement batch dispatch now also shares its executing optimized row-batch
+call with the proof build. Existing successful storage, metadata, clearing
+and batch-validity guarantees remain, with explicit stored length/stride and
+empty/zero-height success/no-op guarantees. Four compiling mutations fail the
+strong clearing/no-op contracts and verify when only the affected relation is
+removed. Both changed declarations have identical erased runtime tokens;
+pixel values and placement order remain scalar-oracle tested, not newly proved.
+Ordinary bitmap composition and MMR capacity accounting remain the two explicit
+source substitutions.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The

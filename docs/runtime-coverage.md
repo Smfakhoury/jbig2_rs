@@ -17,7 +17,7 @@ ordinary native build policy are unchanged.
 | Code regions | 9,478 / 12,931 | 73.30% |
 | Branch outcomes | 1,747 / 2,640 | 66.17% |
 
-The executing source-offset dispatch tranche runs 262 correctness tests, with
+The source-offset dispatch floor was established with 262 correctness tests, with
 14 ignored microbenchmarks excluded. Focused invalid/zero-area cases cover five
 previously uncovered bitmap lines/regions and eight branch outcomes. Naming
 the wrapper's unchanged chunked-call result adds one covered line/region to the
@@ -25,6 +25,13 @@ denominator. The optimized kernel and exclusions are unchanged; only bitmap
 and global floors increase, and all per-file/global fractions are nondecreasing.
 This is not a broad codec coverage improvement, and the proposed 90%/85% release
 goals remain unmet.
+
+The subsequent executing text-batch tranche runs 264 correctness tests with
+the same 14 ignored microbenchmarks. New all-operator empty/zero-height tests
+check complete destination storage, pending-entry clearing, retained capacity
+and unused geometry. Existing randomized/exhaustive placement oracles remain.
+All per-file/global metrics, denominators and exclusions are unchanged, so the
+reviewed baseline is retained byte-for-byte rather than falsely ratcheted.
 
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.

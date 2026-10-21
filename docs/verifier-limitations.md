@@ -1,9 +1,9 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1136 obligations with zero errors and zero native
+Pinned Verus verifies 1135 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-606 directly verified functions, 24 reviewed verifier limitations, 23 audited
-forwarders and 3 explicitly reviewed runtime/proof divergences.
+607 directly verified functions, 24 reviewed verifier limitations, 23 audited
+forwarders and 2 explicitly reviewed runtime/proof divergences.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -11,8 +11,8 @@ evidence of exact-source coverage. Reusable-context paths and their real
 scratch handling are now directly verified; a mutable closure was extracted
 into an ordinary helper with the same success/error cleanup behavior.
 
-The remaining divergences include bitmap composition dispatch, MMR
-capacity-based memory accounting, and batched text placement.
+The remaining divergences are ordinary bitmap composition dispatch and MMR
+capacity-based memory accounting.
 The five primitive value/operator bridges now share their verified executing
 bodies. Even where an optimized helper separately
 verifies, a different ghost wrapper is not an exact-source proof of the executing
@@ -40,6 +40,18 @@ Three compiling wrong-result mutations fail the no-op contract while controls
 retaining storage/error guarantees verify. Existing scalar-oracle tests cover
 composition pixels, which are not formally derived by these frame contracts.
 The deleted scalar substitute accounts for the lower obligation count.
+
+Text-placement batch dispatch now verifies the same optimized row-batch call
+as normal Rust; its proof-only repeated-region loop is removed. Existing
+successful storage/metadata, batch clearing and batch-validity guarantees
+remain, with explicit stored-length/stride preservation and empty/zero-height
+success/no-op contracts. Four compiling mutations distinguish those guarantees
+from weaker controls retaining storage/layout and the unaffected relation.
+Both changed production declarations have identical erased runtime tokens;
+all other 654 production bodies/attributes and all bitmap/text models are
+unchanged. General pixel values and overlapping-placement order remain checked
+by the retained scalar oracles, not formally derived here. One obsolete loop
+obligation disappears; this is not a completeness metric.
 
 `--require-complete` checks that every function is accounted for and reviewed;
 it does not imply that every function is directly proved. The release-level

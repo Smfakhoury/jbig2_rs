@@ -2092,16 +2092,29 @@ impl<'a> PlacementBatch<'a> {
                 == crate::views::bitmap_width(old(destination))
             && crate::views::bitmap_height(final(destination))
                 == crate::views::bitmap_height(old(destination))
+            && crate::views::bitmap_stride(final(destination))
+                == crate::views::bitmap_stride(old(destination))
+            && crate::views::bitmap_data(final(destination)).len()
+                == crate::views::bitmap_data(old(destination)).len()
             && final(batch).blits@.len() == 0
             && symbol_text_spec::placement_batch_valid(final(batch), final(destination)),
         Err(_) => true,
     },
+        (old(batch).blits@.len() == 0 || old(batch).height == 0) ==> out.is_ok(),
+        (old(batch).blits@.len() == 0 || old(batch).height == 0) ==>
+            crate::views::bitmap_data(final(destination))
+                == crate::views::bitmap_data(old(destination)),
 ))]
 fn flush_placement_batch(
     destination: &mut Bitmap,
     batch: &mut PlacementBatch<'_>,
     operator: CombinationOperator,
 ) -> Result<(), SymbolTextError> {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(destination);
+        crate::views::bitmap_fields(old(destination));
+    }
     if batch.blits.is_empty() {
         #[cfg(verus_keep_ghost)]
         proof! {
@@ -2113,6 +2126,11 @@ fn flush_placement_batch(
     }
     if batch.blits.len() == 1 {
         let blit = batch.blits[0];
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(symbol_text_spec::placement_batch_valid);
+            crate::views::bitmap_fields(blit.source);
+        }
         destination.compose_region(
             blit.source,
             blit.source_x,
@@ -2132,40 +2150,6 @@ fn flush_placement_batch(
         }
         return Ok(());
     }
-    #[cfg(verus_keep_ghost)]
-    {
-        proof! {
-            reveal(symbol_text_spec::placement_batch_valid);
-        }
-        let mut index = 0_usize;
-        #[verus_spec(
-            invariant
-                index <= batch.blits@.len(),
-                crate::spec::bitmap::storage_valid(destination),
-                destination.width == old(destination).width,
-                destination.height == old(destination).height,
-                symbol_text_spec::placement_batch_valid(batch, destination),
-            decreases batch.blits@.len() - index,
-        )]
-        while index < batch.blits.len() {
-            proof! {
-                reveal(symbol_text_spec::placement_batch_valid);
-            }
-            let blit = batch.blits[index];
-            destination.compose_region(
-                blit.source,
-                blit.source_x,
-                batch.source_y,
-                blit.destination_x,
-                batch.destination_y,
-                blit.width,
-                batch.height,
-                operator,
-            )?;
-            index += 1;
-        }
-    }
-    #[cfg(not(verus_keep_ghost))]
     destination.compose_row_batch_chunked(
         &batch.blits,
         batch.source_y,
@@ -6376,6 +6360,104 @@ mod tests {
                     .expect("batched placement");
                     assert_eq!(actual, expected);
                     assert_eq!(actual_resources, expected_resources);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn empty_placement_batch_flush_preserves_all_storage_and_metadata() {
+        let limits = Limits::default();
+        for width in [0, 1, 7, 8, 9, 65] {
+            for height in [0, 1, 3] {
+                for operator in [
+                    CombinationOperator::Or,
+                    CombinationOperator::And,
+                    CombinationOperator::Xor,
+                    CombinationOperator::Xnor,
+                    CombinationOperator::Replace,
+                ] {
+                    let original = Bitmap::filled(width, height, true, &limits).expect("bitmap");
+                    let mut destination = original.clone();
+                    let mut batch = PlacementBatch {
+                        blits: Vec::with_capacity(MAX_PLACEMENT_BATCH),
+                        source_y: u32::MAX,
+                        destination_y: u32::MAX,
+                        height: u32::MAX,
+                        source_shift: 7,
+                        destination_shift: 7,
+                    };
+                    let capacity = batch.blits.capacity();
+                    flush_placement_batch(&mut destination, &mut batch, operator)
+                        .expect("empty flush succeeds without consulting unused geometry");
+                    assert_eq!(destination, original);
+                    assert!(batch.blits.is_empty());
+                    assert_eq!(batch.blits.capacity(), capacity);
+                    assert_eq!(
+                        (
+                            batch.source_y,
+                            batch.destination_y,
+                            batch.height,
+                            batch.source_shift,
+                            batch.destination_shift,
+                        ),
+                        (u32::MAX, u32::MAX, u32::MAX, 7, 7),
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn zero_height_placement_batches_clear_pending_entries_without_mutation() {
+        let limits = Limits::default();
+        let source = Bitmap::filled(129, 3, true, &limits).expect("source");
+        let original = Bitmap::filled(139, 4, true, &limits).expect("destination");
+        for count in [1, 2, MAX_PLACEMENT_BATCH] {
+            for width in [0, 1, 7, 8, 64] {
+                for operator in [
+                    CombinationOperator::Or,
+                    CombinationOperator::And,
+                    CombinationOperator::Xor,
+                    CombinationOperator::Xnor,
+                    CombinationOperator::Replace,
+                ] {
+                    let mut destination = original.clone();
+                    let mut batch = PlacementBatch {
+                        blits: (0..count)
+                            .map(|index| RowBlit {
+                                source: &source,
+                                source_x: 3,
+                                destination_x: 5 + u32::try_from(index % 4)
+                                    .expect("bounded column")
+                                    * 8,
+                                width,
+                            })
+                            .collect(),
+                        source_y: source.height(),
+                        destination_y: destination.height(),
+                        height: 0,
+                        source_shift: 3,
+                        destination_shift: 5,
+                    };
+                    let capacity = batch.blits.capacity();
+                    for _ in 0..2 {
+                        flush_placement_batch(&mut destination, &mut batch, operator)
+                            .expect("zero-height and subsequent empty flush succeed");
+                        assert_eq!(destination, original);
+                        assert!(batch.blits.is_empty());
+                        assert_eq!(batch.blits.capacity(), capacity);
+                        assert_eq!(
+                            (
+                                batch.source_y,
+                                batch.destination_y,
+                                batch.height,
+                                batch.source_shift,
+                                batch.destination_shift,
+                            ),
+                            (3, 4, 0, 3, 5),
+                        );
+                    }
                 }
             }
         }

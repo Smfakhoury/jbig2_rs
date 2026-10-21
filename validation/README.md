@@ -168,7 +168,7 @@ python tools/audit_production_coverage.py \
   --require-complete --require-exact
 ```
 
-The exact-source release gate currently fails on the 3 explicitly recorded
+The exact-source release gate currently fails on the 2 explicitly recorded
 runtime/proof divergences. Routine CI checks the reviewed inventory, not a claim
 that every executing body has been proved. New or changed gaps fail the
 inventory checks. `update_proof_dispositions.py --output NEW_FILE` creates
@@ -199,6 +199,15 @@ guarantee is removed. Controls retain storage, exact invalid-request errors
 and valid zero-area success; mutant-only proof hints expose unchanged field
 metadata after the deliberate byte mutation. General composed pixels remain
 covered by exhaustive/random scalar-oracle tests rather than these contracts.
+
+`tools/check_text_batch_proofs.py` checks the executing text-placement batch
+dispatcher with four compiling mutations. Empty/zero-height byte mutations
+fail its no-op contract, and single/multiple pending-entry mutations fail its
+successful-clearing contract. Controls remove only the affected relation,
+retaining storage/layout, zero-height success and the other semantic guarantee.
+The batch kernel proves zero-height success without byte changes. Runtime
+tokens are unchanged; general pixel composition and placement order remain
+scalar-oracle tested rather than formally derived by these frame contracts.
 
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized

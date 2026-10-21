@@ -95,6 +95,11 @@ jobs:
           python -B tools/check_region_dispatch_proofs.py
           --verus-executable verus-x86-linux/verus
           --output target/traceability/region-dispatch-proof-sensitivity.json
+      - name: Check executing text-placement batch proof sensitivity
+        run: >-
+          python -B tools/check_text_batch_proofs.py
+          --verus-executable verus-x86-linux/verus
+          --output target/traceability/text-batch-proof-sensitivity.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
