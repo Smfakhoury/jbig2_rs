@@ -280,6 +280,14 @@ the executable was built from a pinned source revision. The committed
 
 ## Runtime coverage comparisons
 
+The Huffman limb-boundary correction is measured on immutable source
+`d4ff9a688bba5b5574c4c119eb3d95fb74efe455`: 10287/12622 lines,
+9900/12933 regions and 1892/2638 branch outcomes. Its upward-only baseline
+refresh retains all prior global/per-file fractions. Removing the incorrect
+guard removes one region and two branch outcomes; source-line scope,
+exclusions and release goals are unchanged. The resulting 81.50% line and
+71.72% branch coverage do not meet the proposed 90%/85% release goals.
+
 The Linux coverage workflow always enforces the reviewed global and per-file
 baseline. Changed-line coverage is informational and compares with the pull
 request's base commit or the push event's previous commit. A full checkout

@@ -22,7 +22,7 @@ integer representation and Qe table-row relations. The total now comprises
 project-profile policies. All records remain provisional; selected arithmetic
 accounting is not owner-reviewed exhaustive enumeration. Starting every feature
 does not establish exhaustive normative enumeration. Eighteen generated
-integration regressions supplement 134 distinct linked non-ignored Cargo test
+integration regressions supplement 147 distinct linked non-ignored Cargo test
 identities. Exact per-feature membership, remaining scope, official source
 consultation identity and policy-row hashes are checked. T.88 hashes were
 rechecked through its official public package; no standard assets were
@@ -110,6 +110,18 @@ independent truth-table tests and four compiled strong/weaker contrasts back
 the claim. The underlying expressions are unchanged apart from pure result
 bindings. Complete raster placement/mask/shift integration and normative
 translation are still not inferred from these helper contracts.
+Independent Huffman width regressions found and corrected a mirrored
+runtime/model defect: exact 64/128/192-bit boundaries ignored their first
+excluded limb and could accept oversubscribed canonical tables. Both new
+regressions fail on the previous source and pass after removing the shortcut;
+valid complete/incomplete trees still decode through 255-bit prefixes. All
+other 655 production bodies/attributes and evidence-strength classifications
+remain unchanged. Fresh source-bound runtime coverage measures 10287/12622
+lines (81.50%) and 1892/2638 branch outcomes (71.72%); every previous
+global/per-file floor passes before the upward ratchet. One region and two
+branch outcomes disappear with the incorrect guard, not a scope/exclusion
+change. The 90%/85% release goals and complete canonical/normative proof remain
+open.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
