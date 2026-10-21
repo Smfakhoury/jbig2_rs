@@ -13,16 +13,15 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 9,823 / 12,616 | 77.86% |
-| Code regions | 9,471 / 12,930 | 73.25% |
-| Branch outcomes | 1,736 / 2,640 | 65.76% |
+| Lines | 9,824 / 12,616 | 77.87% |
+| Code regions | 9,472 / 12,930 | 73.26% |
+| Branch outcomes | 1,739 / 2,640 | 65.87% |
 
-The exact value-bridge tranche runs 258 correctness tests, with 14 ignored
-microbenchmarks excluded. Shared executing Boolean/operator bodies change the
-emitted denominators; the seven added line sites, 12 regions and two branch
-outcomes are fully covered. All per-file/global fractions remain nondecreasing
-and exclusions are unchanged. These source-shape changes are not a broad codec
-coverage improvement. The proposed 90%/85% release goals remain unmet.
+The executing MMR span tranche runs 260 correctness tests, with 14 ignored
+microbenchmarks excluded. Focused invalid-span cases add one covered MMR line,
+one region and three branch outcomes. Normal-runtime tokens, denominators and
+exclusions are unchanged; only MMR/global floors increase. This is not a broad
+codec coverage improvement, and the proposed 90%/85% release goals remain unmet.
 
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.

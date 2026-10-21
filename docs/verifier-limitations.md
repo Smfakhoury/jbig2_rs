@@ -1,9 +1,9 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1140 obligations with zero errors and zero native
+Pinned Verus verifies 1139 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-604 directly verified functions, 24 reviewed verifier limitations, 23 audited
-forwarders and 5 explicitly reviewed runtime/proof divergences.
+605 directly verified functions, 24 reviewed verifier limitations, 23 audited
+forwarders and 4 explicitly reviewed runtime/proof divergences.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -11,13 +11,24 @@ evidence of exact-source coverage. Reusable-context paths and their real
 scratch handling are now directly verified; a mutable closure was extracted
 into an ordinary helper with the same success/error cleanup behavior.
 
-The remaining divergences include bitmap composition dispatch, MMR span
-filling and capacity-based memory accounting, and batched text placement.
+The remaining divergences include bitmap composition dispatch, MMR
+capacity-based memory accounting, and batched text placement.
 The five primitive value/operator bridges now share their verified executing
 bodies. Even where an optimized helper separately
 verifies, a different ghost wrapper is not an exact-source proof of the executing
 wrapper. See the individual IDs and reasons in `proof-dispositions.json`.
 They must be closed in P05, not relabeled as verified.
+
+MMR span dispatch now executes and verifies the same optimized bitmap filler;
+the scalar proof-only loop is removed. The filler additionally preserves
+stored length and proves successful empty spans are no-ops. The wrapper proves
+storage/metadata preservation, exact invalid-bound errors and unchanged bytes
+for invalid, white and empty spans. Three compiling mutations violate those
+no-op guarantees and fail the stronger proof while storage/error-only controls
+verify. Exhaustive bounded pixel/storage oracle tests check black spans, but
+this tranche does not formally establish their pixel relation, complete MMR
+decoding or T.88 conformance. The changed obligation count reflects removal of
+the obsolete proof path, not a completeness metric.
 
 `--require-complete` checks that every function is accounted for and reviewed;
 it does not imply that every function is directly proved. The release-level
