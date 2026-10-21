@@ -85,6 +85,44 @@ cargo package --locked --list | python tools/audit_package.py
 The package audit requires a complete nonempty runtime inventory and rejects
 unapproved entries; invoking it without a package list is an error.
 
+## Workflow action policy
+
+All 26 action references across the five workflows use full immutable commit
+SHAs, with comments retaining their upstream moving-ref names. Revisions were
+resolved from the existing official action repositories; a pinned revision is
+not an independent approval of upstream code.
+
+Rust setup uses a pinned generic action with explicit compiler inputs.
+Version-named upstream action wrappers hard-code their version and do not
+accept that input, so they are not used as implicit compiler selectors.
+MSRV remains 1.89.0, Verus uses 1.98.1, fuzz/coverage use their existing dated
+nightly, and distribution intentionally tests both MSRV and current stable.
+All jobs have explicit budgets; native Cargo and Verus now have 20-minute
+caps instead of the hosted six-hour default. Existing fuzz, coverage,
+distribution and performance budgets are unchanged.
+
+```text
+python -m pip install -r tools/requirements.txt
+python -B tools/check_workflows.py \
+  --output target/traceability/workflow-policy.json
+```
+
+The audit uses pinned PyYAML only as a development dependency, preserving
+GitHub's `on` key and checking parsed block/flow YAML rather than searching
+script text. Duplicate keys, merge keys and custom tags fail explicitly.
+It requires remote SHA-pinned actions, explicit Rust versions or the reviewed
+stable matrix, read-only permissions and bounded jobs without failure masking.
+Local/container actions and reusable jobs need an explicit policy extension;
+they are not silently skipped. Failed validation removes prior success output.
+Native CI runs the audit and uploads source-bound reports on all three hosts.
+
+The weekly root `github-actions` entry in `.github/dependabot.yml` proposes
+action updates. Review the upstream revision and require all checks before
+merging; updates do not authorize changing the compiler/profile, granting
+write permissions or automatic merging. Configuration does not prove that
+Dependabot has delivered a PR. Branch protection, official-asset CI access,
+dedicated performance hardware and the complete P10 contract remain open.
+
 ## Executable test catalogs
 
 Every negative/metamorphic case now names nonempty exact `{target, name}` test
