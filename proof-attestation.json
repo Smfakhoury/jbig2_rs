@@ -24,8 +24,8 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "bed3bda2913522d611f23bccd327de5da8c97dbebfdbba70453670fc54574327",
-  "proof_dispositions_sha256": "ff6dccfa1285d60366ebd00eb5cae45bcd29dc60fd1e408243d4369cd2a4b17b",
+  "production_proof_coverage_sha256": "d2df6787929b850282b17716b3e8dc8df40eea947ab57e949be4f666306f4a2f",
+  "proof_dispositions_sha256": "a5bac8559baf41a4184cab00072696ebdcb0f81b8f15986fe4c0e9b8ea6f6e14",
   "duplicate_executable_proof_source": true,
   "note": "Complete inventory is not complete normative correctness. The immutable source revision above merges main d970ac4dbdb9881347529c600512d040ecd94ffa while retaining both the optimized black-span storage/pixel proofs and the universal byte/word operator-bit proofs. The combined proof build compiles and verifies 1164 obligations with zero errors. The mandatory semantic runner retains all twelve checkers and 50 contrasts, including six black-span and four operator-bit contrasts. Bitmap source hashes and the generated production ledger are refreshed for the merged source; disposition identities, statuses and reasons remain unchanged. All 111 normative/project-policy records remain provisional with unchanged evidence-strength classifications. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The black-span theorem is not yet propagated through the MMR wrapper's weaker storage predicate or complete raster loop. General composition pixel semantics, placement/mask/shift integration, wire mapping and normative translation remain separate gaps. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Coverage release goals remain unmet. Release remains blocked.",
   "release_gate": "blocked"
