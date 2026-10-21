@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import hashlib
 import sys
 from pathlib import Path
@@ -20,6 +21,13 @@ JSON_FILES = (
 FORBIDDEN_SUFFIXES = {".pdf", ".doc", ".docx"}
 FORBIDDEN_ORACLE_SUFFIXES = {".c", ".cc", ".cpp", ".js"}
 IGNORED_PARTS = {".git", "target"}
+
+parser = argparse.ArgumentParser(description="Validate reference identities, not vector execution.")
+parser.add_argument(
+    "--require-exact-conformance", action="store_true",
+    help="Also require every recorded official case to be an exact output pass; does not execute vectors.",
+)
+arguments = parser.parse_args()
 
 
 def fail(message: str) -> None:
@@ -163,6 +171,8 @@ for entry in results["cases"]:
     if entry["id"] in pending_ids and entry["stderr"] != expectations[entry["id"]]["expected_error_exact"]:
         fail(f"pending review typed error changed: {entry['id']}")
 review = load_json(ROOT / "validation/conformance/seven-rejection-review.json")
+if hashlib.sha256((ROOT / ".gitattributes").read_bytes()).hexdigest() != review["checkout_policy_sha256"]:
+    fail("stale conformance checkout policy identity")
 if (
     {entry["id"] for entry in review["cases"]} != pending_ids
     or len(review["cases"]) != len(pending_ids)
@@ -193,5 +203,9 @@ if provenance["policy"]["standards_text_committed"]:
     fail("standards_text_committed must remain false")
 if provenance["policy"]["non_redistributable_assets_committed"]:
     fail("non_redistributable_assets_committed must remain false")
+if arguments.require_exact_conformance and any(
+    entry["status"] != "passed" for entry in results["cases"]
+):
+    fail("exact conformance gate blocked by non-passing official cases")
 
 print("provenance audit passed")

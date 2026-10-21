@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
-  "scope": "Runtime sources unchanged; seven official rejection diagnoses remain unresolved, not normatively approved malformations.",
+  "source_revision": "6877cf605c856a54b3706f835d3a4ffe374657a8",
+  "scope": "Approved main integrated and exact source snapshot refreshed; selected ordinary decoder tokens and seven typed rejections are unchanged. Pending diagnoses are not normatively approved malformations.",
   "implementation_tests": {
-    "total": 328,
-    "passed": 314,
+    "total": 343,
+    "passed": 329,
     "ignored": 14,
     "failed": 0
   },
@@ -18,7 +18,7 @@
     "unsupported_profile": 1,
     "unresolved_failures": 7,
     "results_sha256": "d1ab80c1244af84081fa52f9e4f7ae8b190b0079a76fe20381128d85f9e11cc0",
-    "review_sha256": "12bc235bfd2a191c59ac4846be6714b982bddc8e3698e8bc5b52d93d21975a7e"
+    "review_sha256": "098e5217f52d7c06627ba0fdb55d31538ad599b2a2c0b8a8f1156e56210b0f6a"
   },
   "community_regressions": {
     "total": 0,

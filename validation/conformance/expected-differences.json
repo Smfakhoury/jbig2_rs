@@ -9,7 +9,7 @@
       "source_files_sha256": {
         "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
         "src/huffman.rs": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
-        "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909"
+        "src/reader.rs": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba"
       },
       "rationale": "The earlier MMR-truncation explanation is refuted: both initial dictionaries complete. Text segment 3 exhausts its 24-byte entropy body while requesting SubsequentS for placement 5 of 5 (file byte 179). Earlier text entropy desynchronization versus official asset inconsistency remains unadjudicated. See seven-rejection-review.json; no normative rejection approval or conformance credit.",
       "jbig2dec_stderr_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a"
@@ -21,8 +21,8 @@
       "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
       "source_files_sha256": {
         "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
-        "src/mmr.rs": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
-        "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909"
+        "src/mmr.rs": "b89b82c480098c224473d18c1743864ef2a155602719a764fd02acd091e80e34",
+        "src/reader.rs": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba"
       },
       "rationale": "Observed bounded MMR underflow: BMSIZE is decoded as 1 for a 5x8 collective bitmap; the first row exhausts that bound at file byte 69. Native recoveries do not match the expected bitmap. Upstream field alignment and official-positive validity remain unadjudicated; no exception, row synthesis or normative rejection approval.",
       "jbig2dec_stderr_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a"

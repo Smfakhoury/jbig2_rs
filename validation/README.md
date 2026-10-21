@@ -42,6 +42,15 @@ failure even when those identities match; changed errors, success, crashes,
 unknown fields, stale source identities and invalid JSON fail closed. No
 runtime acceptance, marker, retention or recovery policy is relaxed.
 
+`tools/verify_provenance.py` validates the shape and byte identities of these
+truthful blocked records; its success is not a conformance execution pass.
+`--require-exact-conformance` separately rejects any recorded non-passing case.
+The official `run_itu.py` invocation remains nonzero for the seven unresolved
+cases. Tests exercise all three outcomes, including strict-gate rejection.
+Hash-bound Rust, JSON and Python files have explicit LF checkout rules so the
+same source bytes are checked on Linux, Windows and macOS. Approved main
+integration requires refreshing the diagnosis identities, not skipping them.
+
 The prior TT1 MMR-truncation explanation was disproved: its initial dictionaries
 complete before a text Huffman read exhausts the segment entropy body at file
 byte 179. See [the source-bound seven-case review](conformance/seven-rejection-review.json)
