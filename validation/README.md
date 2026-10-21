@@ -240,7 +240,8 @@ runs all baseline coverage checks without a changed-line comparison.
 ## Bounded fuzz campaigns and replay
 
 The Linux runner retains the original seven pinned cargo-fuzz targets and adds
-`document_context_structured`, for eight targets in each complete campaign:
+`document_context_structured` and `codec_families_structured`, for nine targets
+in each complete campaign:
 
 ```text
 python -B tools/run_fuzz.py run --profile smoke \
@@ -309,7 +310,7 @@ targets with 566,048,292 executions, real replay controls, cache restoration
 and a new cache save. This observes the scheduled trigger on that older
 seven-target source, not a scheduled deployment of the later eighth target.
 
-P08 remains incomplete: coverage-driven structured/stateful targets,
+P08 remains incomplete: more coverage-driven structured/stateful families,
 regression-corpus review and periodic minimization are still pending. These
 bounded campaigns do not replace unit tests, proof checking or normative review.
 
@@ -335,3 +336,62 @@ seeds execute the program before being written. Harness source identities and
 trusted cache keys include both the scenario source and shared MMR generator.
 The new fixture hash selects a separate corpus namespace; existing cache entries
 are not deleted and PR cache isolation is unchanged.
+
+### Structured codec families
+
+`codec_families_structured` uses the shared, first-party
+`tests/support/codec_scenarios.rs` encoder, scalar pixel oracle and deterministic
+60-entry seed manifest. It creates complete public-decoder streams, not private
+primitive calls. No official vectors, third-party codec code or external samples
+are used. Its two related collective-bitmap families are:
+
+- MMR pattern dictionaries with one through four patterns; halftone Gray planes
+  of depth zero, one or two, each with an explicit EOFB marker. Signed fractional
+  grid origins, rotated grids, clipping, all five pattern operators and default
+  pixels are checked against independently painted Boolean pixels.
+- Huffman symbol dictionaries with raw packed or MMR collective bitmaps;
+  Huffman text with one through four instances, all four reference corners,
+  transposition, strip sizes 1/2/4/8, same-strip overlap or separate strips,
+  all four text operators and default pixels.
+
+The grammar is sixteen zero-padded shape bytes followed by at most four
+opcode/byte-argument pairs. Bytes after offset 23 are ignored. The first byte
+selects a family modulo two. Page sizes are 1..33 by 1..9, pattern/symbol sizes
+1..9 by 1..3, dictionary counts 1..4, and halftone grids 1..9 by 1..5. Origins
+are -3..3 before the fixed fractional offset; every encoded length derives from
+these bounded structures. Operations 0..7 are reused standalone decoding,
+random-access decoding, nonempty reusable globals/embedded decoding, reader,
+sink, typed malformed call/recovery, typed limit rejection, and prefix
+truncation/recovery. Every input first executes a valid pixel-checked decode.
+
+All fifteen decoder limits are explicitly assigned:
+
+| Limit | Maximum |
+|---|---:|
+| Width / height / pixels | 36 / 9 / 324 |
+| Decoder-managed memory / stream bytes | 1,048,576 / 4,096 |
+| Pages / segments / symbols | 1 / 5 / 64 |
+| References per segment / total references | 1 / 1 |
+| Reference depth / nesting depth | 2 / 2 |
+| Work units | 262,144 |
+| Cumulative bitmap bytes / retained bytes | 4,096 / 65,536 |
+
+The symbol bound also permits the 35-entry text run-code table. Ordinary
+`fuzz_codec_families` tests execute all opcodes, all fourteen exercised limit
+kinds, flag/reference/trailing-data faults, every generated-stream prefix,
+pattern widths 1..9 and heights 1..3, packed-byte boundaries, seed determinism,
+and bounded empty/long control inputs. The nesting limit is set explicitly but
+is not claimed as an exercised rejection: these fixtures do not nest codecs.
+Every successful API path checks dimensions and complete packed pixels including
+padding; sink output is checked directly, not through fresh/reused agreement.
+
+Runner source identities, isolated failure-control copies, seed generation and
+trusted corpus cache fingerprints include the exact shared fixture path. No
+new runtime coverage exclusion or package content is introduced. PR/push runs
+still cannot restore/save the trusted-main cache. Production source, proof
+inventory, dispositions and attestations are unchanged.
+
+This does not close arithmetic symbol/text, aggregate/single-instance refinement,
+arithmetic/skip halftone, deeper dictionaries, arbitrary custom tables or corpus
+minimization gaps. Those require further first-party valid encoders and
+independent oracles; successful bounded fuzz runs are not normative conformance.

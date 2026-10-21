@@ -38,6 +38,17 @@ endian and complete/short/overflowing-range oracles strengthen value/frame
 evidence without changing any per-file/global count, denominator or exclusion.
 The same baseline is retained byte-for-byte; no coverage increase is claimed.
 
+The structured codec-family tranche adds five ordinary integration tests using
+the same bounded program as `codec_families_structured`. First-party encoders
+cover MMR pattern/halftone and raw/MMR collective Huffman dictionary/text
+documents through public standalone, random-access, embedded/global, reader,
+sink and reusable-context APIs. Scalar Boolean painting and literal packed
+pixels are the oracles, including dimensions and padding; fresh/reused agreement
+is not an independent pixel oracle. Fourteen limit kinds and typed malformed
+paths are tested with recovery. Runtime source and coverage exclusions are
+unchanged. See the detailed grammar and remaining family gaps in
+[`validation/README.md`](../validation/README.md#structured-codec-families).
+
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.
 They raise `file_header.rs` to 100% of its emitted line/region/branch mappings

@@ -5,6 +5,8 @@ use std::fs::{self, OpenOptions};
 use std::io::{self, Write};
 use std::path::Path;
 
+#[path = "../tests/support/codec_scenarios.rs"]
+mod codec_scenarios;
 #[path = "../tests/support/context_scenarios.rs"]
 mod context_scenarios;
 #[allow(dead_code)]
@@ -57,6 +59,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "mmr",
         "generic_region",
         "document_context_structured",
+        "codec_families_structured",
     ] {
         let directory = Path::new(&output).join(target);
         fs::create_dir_all(&directory)?;
@@ -75,6 +78,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut controls = controls.to_vec();
         for operation in [8, 9, 4, 6, 7, 1, 3, 2] {
             controls.extend_from_slice(&[operation, 0, 2]);
+        }
+        for (name, controls) in codec_scenarios::seeds() {
+            codec_scenarios::exercise(&controls);
+            write_seed(
+                &Path::new(&output)
+                    .join("codec_families_structured")
+                    .join(name),
+                &controls,
+            )?;
         }
         context_scenarios::exercise(&controls);
         write_seed(

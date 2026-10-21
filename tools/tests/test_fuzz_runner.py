@@ -23,8 +23,9 @@ from run_fuzz import (
 class FuzzRunnerTests(unittest.TestCase):
     def test_all_declared_targets_are_covered_and_selectors_fail_closed(self):
         validate_targets(ROOT, list(TARGETS))
-        self.assertEqual(len(TARGETS), 8)
+        self.assertEqual(len(TARGETS), 9)
         self.assertIn("document_context_structured", TARGETS)
+        self.assertIn("codec_families_structured", TARGETS)
         for targets in ([], ["unknown"], [TARGETS[0], TARGETS[0]]):
             with self.subTest(targets=targets), self.assertRaises(ValueError):
                 validate_targets(ROOT, targets)
@@ -93,6 +94,7 @@ class FuzzRunnerTests(unittest.TestCase):
                 "examples/fuzz_seeds.rs", "tools/distribution_consumer.rs",
                 "tools/run_fuzz.py", "toolchain.json",
                 "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
+                "tests/support/codec_scenarios.rs",
             )
             for name in names:
                 path = root / name
@@ -105,7 +107,10 @@ class FuzzRunnerTests(unittest.TestCase):
             self.assertNotEqual(original, changed)
             (root / "tools/distribution_consumer.rs").write_text("changed fixture", encoding="utf-8")
             self.assertNotEqual(changed, source_identity(root))
-            for name in ("tests/support/context_scenarios.rs", "benchmarks/generated.rs"):
+            for name in (
+                "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
+                "tests/support/codec_scenarios.rs",
+            ):
                 before = source_identity(root)
                 (root / name).write_text("changed structured fixture", encoding="utf-8")
                 self.assertNotEqual(before, source_identity(root))
@@ -134,6 +139,7 @@ class FuzzRunnerTests(unittest.TestCase):
         self.assertIn("tools/check_fuzz_controls.py", workflow)
         self.assertIn("target/fuzz-run/", workflow)
         self.assertIn("'tests/support/context_scenarios.rs', 'benchmarks/generated.rs'", workflow)
+        self.assertIn("'tests/support/codec_scenarios.rs'", workflow)
 
 
 @unittest.skipUnless(sys.platform == "linux", "bounded process-group fuzz runner is Linux-only")

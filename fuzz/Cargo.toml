@@ -67,5 +67,12 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "codec_families_structured"
+path = "fuzz_targets/codec_families_structured.rs"
+test = false
+doc = false
+bench = false
+
 [workspace]
 members = ["."]

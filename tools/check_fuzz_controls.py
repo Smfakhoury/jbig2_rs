@@ -47,6 +47,7 @@ def check_controls(output: Path) -> dict:
             "toolchain.json", "validation/runtime_access.rs", "examples/fuzz_seeds.rs",
             "tools/distribution_consumer.rs", "tools/run_fuzz.py",
             "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
+            "tests/support/codec_scenarios.rs",
             "fuzz/Cargo.toml", "fuzz/Cargo.lock",
         ]
         files += [str(path.relative_to(ROOT)) for path in (ROOT / "fuzz/fuzz_targets").glob("*.rs")]
