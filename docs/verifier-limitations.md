@@ -1,9 +1,9 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1139 obligations with zero errors and zero native
+Pinned Verus verifies 1136 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-605 directly verified functions, 24 reviewed verifier limitations, 23 audited
-forwarders and 4 explicitly reviewed runtime/proof divergences.
+606 directly verified functions, 24 reviewed verifier limitations, 23 audited
+forwarders and 3 explicitly reviewed runtime/proof divergences.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -29,6 +29,17 @@ verify. Exhaustive bounded pixel/storage oracle tests check black spans, but
 this tranche does not formally establish their pixel relation, complete MMR
 decoding or T.88 conformance. The changed obligation count reflects removal of
 the obsolete proof path, not a completeness metric.
+
+Source-offset region composition now also verifies the executing chunked
+dispatcher rather than a scalar proof substitute. Its existing storage,
+metadata and stored-length guarantees are preserved, with exact invalid-request
+errors and unchanged bytes for invalid or zero-area requests. Valid zero-area
+requests succeed. The optimized kernel's runtime tokens are unchanged; the
+wrapper only names and returns its call result around proof-only field reveals.
+Three compiling wrong-result mutations fail the no-op contract while controls
+retaining storage/error guarantees verify. Existing scalar-oracle tests cover
+composition pixels, which are not formally derived by these frame contracts.
+The deleted scalar substitute accounts for the lower obligation count.
 
 `--require-complete` checks that every function is accounted for and reviewed;
 it does not imply that every function is directly proved. The release-level

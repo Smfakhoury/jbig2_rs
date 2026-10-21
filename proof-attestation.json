@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "afeaa8219dc4fb4089bf9e74a54a2596ffc781a1",
+  "source_revision": "823ded0b23a9b8717042400eb5ae251910b9a748",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,8 +11,8 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1139,
-    "verified_production_functions": 605,
+    "verified_obligations": 1136,
+    "verified_production_functions": 606,
     "errors": 0,
     "proof_build_compiles": true,
     "exact_production_source_compiles": false,
@@ -21,12 +21,12 @@
     "native_assumptions": [],
     "reviewed_verifier_limitations": 24,
     "audited_forwarders": 23,
-    "runtime_proof_divergences": 4,
+    "runtime_proof_divergences": 3,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "dcf93d2dece724cb1c5ccda9e4b61b6fc862a0e1296fac48c7affccf8697b51f",
-  "proof_dispositions_sha256": "4f6d72023f75ee22d898e20720618f7c00f63ae7009ea70160b7eca26eb241e2",
+  "production_proof_coverage_sha256": "ac45c8427a94fb6376e1453ec4675dfb9440fea935243865c279f3edcbc64b6b",
+  "proof_dispositions_sha256": "6db7a938fcbde9b1260be7eff274e24ad71dccf6a6e8161bc0e2509619bed24c",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. MMR span dispatch now calls the same optimized filler in both builds, with storage/metadata, typed invalid-bound and invalid/white/empty no-op guarantees. Three compiling no-op violations fail strong proofs and verify under storage/error-only controls. Normal runtime tokens are unchanged; black-span pixels remain oracle-tested, not formally derived here. Earlier bridge/reset/metadata/bitmap/retention guarantees remain; the 7.2.4 versus 7.2.8 conflict and all twenty provisional normative records are unchanged. Four remaining runtime/proof substitutions and other semantic/caller/conformance gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Source-offset region composition now calls the same optimized chunked path in both builds, preserving storage/metadata/length and proving exact invalid-request errors plus invalid/zero-area byte no-op guarantees. Three compiling no-op violations fail strong proofs and verify under storage/error-only controls. Kernel runtime tokens are unchanged; the wrapper adds only a pure result binding around proof hints. General composition pixels remain scalar-oracle tested, not formally derived here. The obsolete scalar proof helper is removed. Earlier bridge/reset/metadata/bitmap/MMR/retention guarantees remain; the 7.2.4 versus 7.2.8 conflict and all twenty provisional normative records are unchanged. Three remaining runtime/proof substitutions and other semantic/caller/conformance gaps still block release claims.",
   "release_gate": "blocked"
 }

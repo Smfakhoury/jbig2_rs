@@ -13,15 +13,18 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 9,824 / 12,616 | 77.87% |
-| Code regions | 9,472 / 12,930 | 73.26% |
-| Branch outcomes | 1,739 / 2,640 | 65.87% |
+| Lines | 9,830 / 12,617 | 77.91% |
+| Code regions | 9,478 / 12,931 | 73.30% |
+| Branch outcomes | 1,747 / 2,640 | 66.17% |
 
-The executing MMR span tranche runs 260 correctness tests, with 14 ignored
-microbenchmarks excluded. Focused invalid-span cases add one covered MMR line,
-one region and three branch outcomes. Normal-runtime tokens, denominators and
-exclusions are unchanged; only MMR/global floors increase. This is not a broad
-codec coverage improvement, and the proposed 90%/85% release goals remain unmet.
+The executing source-offset dispatch tranche runs 262 correctness tests, with
+14 ignored microbenchmarks excluded. Focused invalid/zero-area cases cover five
+previously uncovered bitmap lines/regions and eight branch outcomes. Naming
+the wrapper's unchanged chunked-call result adds one covered line/region to the
+denominator. The optimized kernel and exclusions are unchanged; only bitmap
+and global floors increase, and all per-file/global fractions are nondecreasing.
+This is not a broad codec coverage improvement, and the proposed 90%/85% release
+goals remain unmet.
 
 The additional four clause-specific header tests from P04 cover all flag bytes,
 truncated valid prefixes, identifier-byte corruption, and unsigned count order.
