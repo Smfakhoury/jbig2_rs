@@ -56,7 +56,7 @@ def main():
         result = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/mmr.rs", "src/bitmap.rs"), "jbig2-mmr-span-proof-",
-            "Executing optimized span dispatch: storage/metadata preservation, typed invalid bounds and invalid/white/empty no-op guarantees only; black-span pixels remain oracle-tested, not formally derived",
+            "Executing optimized span dispatch: storage/metadata preservation, typed invalid bounds and invalid/white/empty no-op guarantees only; separate primitive black-span theorem is not a complete MMR caller/polarity proof",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"MMR span proof sensitivity failed: {error}", file=sys.stderr)

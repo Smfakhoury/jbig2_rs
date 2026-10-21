@@ -2,6 +2,209 @@ use vstd::prelude::*;
 
 verus! {
 
+pub(super) proof fn black_span_mask(byte: u8, shift: u32, count: u32)
+    requires shift < 8, 0 < count <= 8 - shift,
+    ensures forall|bit: u32| bit < 8 ==>
+        #[trigger] crate::spec::bitmap::byte_bit(
+            byte | ((0xFFu8 >> shift) & (0xFFu8 << ((8 - shift - count) as u32))), bit,
+        ) == (shift <= bit < shift + count || crate::spec::bitmap::byte_bit(byte, bit)),
+{
+    assert forall|bit: u32| bit < 8 implies
+        #[trigger] crate::spec::bitmap::byte_bit(
+            byte | ((0xFFu8 >> shift) & (0xFFu8 << ((8 - shift - count) as u32))), bit,
+        ) == (shift <= bit < shift + count || crate::spec::bitmap::byte_bit(byte, bit)) by {
+        reveal(crate::spec::bitmap::byte_bit);
+        reveal(crate::spec::bitmap::bit_mask);
+        assert(
+            (byte | ((0xFFu8 >> shift) & (0xFFu8 << ((8 - shift - count) as u32))))
+                & crate::spec::bitmap::bit_mask(bit) != 0
+                <==> (shift <= bit < shift + count
+                    || byte & crate::spec::bitmap::bit_mask(bit) != 0)
+        ) by (bit_vector)
+            requires shift < 8, 0 < count <= 8 - shift, bit < 8;
+    }
+}
+
+pub(super) proof fn black_span_partial_step(
+    original: Seq<u8>, before: Seq<u8>, after: Seq<u8>,
+    row_start: int, start: u32, x: u32, count: u32,
+)
+    requires
+        0 <= row_start,
+        start <= x,
+        0 < count <= 8 - x % 8,
+        x as int + count as int <= u32::MAX,
+        row_start + x as int / 8 < before.len(),
+        crate::spec::bitmap::black_span_bits(original, before, row_start, start, x),
+        after.len() == before.len(),
+        after[row_start + x as int / 8] == before[row_start + x as int / 8]
+            | ((0xFFu8 >> (x % 8)) & (0xFFu8 << ((8 - x % 8 - count) as u32))),
+        forall|i: int| 0 <= i < before.len() && i != row_start + x as int / 8
+            ==> after[i] == before[i],
+    ensures
+        crate::spec::bitmap::black_span_bits(original, after, row_start, start, (x + count) as u32),
+{
+    reveal(crate::spec::bitmap::black_span_bits);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(x as int, 8);
+    black_span_mask(before[row_start + x as int / 8], x % 8, count);
+    assert forall|i: int, bit: u32| 0 <= i < original.len() && bit < 8 implies
+        crate::spec::bitmap::byte_bit(after[i], bit)
+            == (row_start <= i
+                && start as int <= (i - row_start) * 8 + bit as int
+                && (i - row_start) * 8 + (bit as int) < x as int + count as int
+                || crate::spec::bitmap::byte_bit(original[i], bit)) by {
+        assert(crate::spec::bitmap::byte_bit(before[i], bit)
+            == (row_start <= i
+                && start as int <= (i - row_start) * 8 + bit as int
+                && (i - row_start) * 8 + (bit as int) < x as int
+                || crate::spec::bitmap::byte_bit(original[i], bit)));
+        if i == row_start + x as int / 8 {
+            assert((i - row_start) * 8 + x as int % 8 == x as int);
+        } else {
+            assert(!((x as int) <= (i - row_start) * 8 + bit as int
+                && (i - row_start) * 8 + (bit as int) < x as int + count as int));
+        }
+    }
+}
+
+pub(super) proof fn black_span_full_step(
+    original: Seq<u8>, before: Seq<u8>, after: Seq<u8>,
+    row_start: int, start: u32, x: u32, count: u32,
+)
+    requires
+        0 <= row_start,
+        start <= x,
+        x % 8 == 0,
+        count == 8 || count == 64,
+        x as int + count as int <= u32::MAX,
+        crate::spec::bitmap::black_span_bits(original, before, row_start, start, x),
+        after.len() == before.len(),
+        forall|i: int| 0 <= i < before.len() ==>
+            after[i] == if row_start + x as int / 8 <= i
+                < row_start + (x as int + count as int) / 8 { 0xFFu8 } else { before[i] },
+    ensures
+        crate::spec::bitmap::black_span_bits(original, after, row_start, start, (x + count) as u32),
+{
+    reveal(crate::spec::bitmap::black_span_bits);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int + count as int, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(x as int + count as int, 8);
+    assert forall|i: int, bit: u32| 0 <= i < original.len() && bit < 8 implies
+        crate::spec::bitmap::byte_bit(after[i], bit)
+            == (row_start <= i
+                && start as int <= (i - row_start) * 8 + bit as int
+                && (i - row_start) * 8 + (bit as int) < x as int + count as int
+                || crate::spec::bitmap::byte_bit(original[i], bit)) by {
+        assert(crate::spec::bitmap::byte_bit(before[i], bit)
+            == (row_start <= i
+                && start as int <= (i - row_start) * 8 + bit as int
+                && (i - row_start) * 8 + (bit as int) < x as int
+                || crate::spec::bitmap::byte_bit(original[i], bit)));
+        if row_start + x as int / 8 <= i < row_start + (x as int + count as int) / 8 {
+            reveal(crate::spec::bitmap::byte_bit);
+            reveal(crate::spec::bitmap::bit_mask);
+            assert(0xFFu8 & crate::spec::bitmap::bit_mask(bit) != 0) by (bit_vector)
+                requires bit < 8;
+        }
+    }
+}
+
+pub(super) proof fn byte_bits_extensional(a: u8, b: u8)
+    requires forall|bit: u32| bit < 8 ==>
+        #[trigger] crate::spec::bitmap::byte_bit(a, bit)
+            == crate::spec::bitmap::byte_bit(b, bit),
+    ensures a == b,
+{
+    assert(crate::spec::bitmap::byte_bit(a, 0) == crate::spec::bitmap::byte_bit(b, 0));
+    assert(crate::spec::bitmap::byte_bit(a, 1) == crate::spec::bitmap::byte_bit(b, 1));
+    assert(crate::spec::bitmap::byte_bit(a, 2) == crate::spec::bitmap::byte_bit(b, 2));
+    assert(crate::spec::bitmap::byte_bit(a, 3) == crate::spec::bitmap::byte_bit(b, 3));
+    assert(crate::spec::bitmap::byte_bit(a, 4) == crate::spec::bitmap::byte_bit(b, 4));
+    assert(crate::spec::bitmap::byte_bit(a, 5) == crate::spec::bitmap::byte_bit(b, 5));
+    assert(crate::spec::bitmap::byte_bit(a, 6) == crate::spec::bitmap::byte_bit(b, 6));
+    assert(crate::spec::bitmap::byte_bit(a, 7) == crate::spec::bitmap::byte_bit(b, 7));
+    reveal(crate::spec::bitmap::byte_bit);
+    reveal(crate::spec::bitmap::bit_mask);
+    assert(a == b) by (bit_vector)
+        requires
+            (a & 0x80u8 != 0) == (b & 0x80u8 != 0),
+            (a & 0x40u8 != 0) == (b & 0x40u8 != 0),
+            (a & 0x20u8 != 0) == (b & 0x20u8 != 0),
+            (a & 0x10u8 != 0) == (b & 0x10u8 != 0),
+            (a & 0x08u8 != 0) == (b & 0x08u8 != 0),
+            (a & 0x04u8 != 0) == (b & 0x04u8 != 0),
+            (a & 0x02u8 != 0) == (b & 0x02u8 != 0),
+            (a & 0x01u8 != 0) == (b & 0x01u8 != 0);
+}
+
+pub(super) proof fn black_span_result(
+    before: &crate::bitmap::Bitmap, after: &crate::bitmap::Bitmap,
+    row: u32, start: u32, end: u32,
+)
+    requires
+        crate::spec::bitmap::storage_valid(before),
+        after.width == before.width,
+        after.height == before.height,
+        after.stride == before.stride,
+        row < before.height,
+        start <= end <= before.width,
+        crate::spec::bitmap::black_span_bits(
+            before.data@, after.data@, row as int * before.stride as int, start, end,
+        ),
+    ensures crate::spec::bitmap::black_span_result(before, after, row, start, end),
+{
+    crate::views::bitmap_fields(before);
+    crate::views::bitmap_fields(after);
+    reveal(crate::spec::bitmap::black_span_result);
+    reveal(crate::spec::bitmap::black_span_bits);
+    reveal(crate::spec::bitmap::storage_valid);
+    let base = row as int * before.stride as int;
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(start as int, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(start as int, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(end as int + 7, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(end as int + 7, 8);
+    assert forall|i: int| 0 <= i < before.data@.len()
+        && (start == end || i < base + start as int / 8 || base + (end as int + 7) / 8 <= i)
+        implies after.data@[i] == before.data@[i] by {
+        assert forall|bit: u32| bit < 8 implies
+            crate::spec::bitmap::byte_bit(after.data@[i], bit)
+                == crate::spec::bitmap::byte_bit(before.data@[i], bit) by {
+            assert(crate::spec::bitmap::byte_bit(after.data@[i], bit)
+                == (base <= i && start as int <= (i - base) * 8 + bit as int
+                    && (i - base) * 8 + (bit as int) < end as int
+                    || crate::spec::bitmap::byte_bit(before.data@[i], bit)));
+        }
+        byte_bits_extensional(after.data@[i], before.data@[i]);
+    }
+    stride_covers_width(before.width);
+    assert forall|x: u32, y: u32|
+        crate::spec::bitmap::coordinates_in_bounds(before.width, before.height, x, y)
+        implies crate::spec::bitmap::stored_pixel(after, x, y)
+            == (y == row && start <= x < end || crate::spec::bitmap::stored_pixel(before, x, y)) by {
+        in_bounds_byte(before, x, y);
+        reveal(crate::spec::bitmap::stored_pixel);
+        reveal(crate::spec::bitmap::byte_index);
+        reveal(crate::spec::bitmap::byte_bit);
+        reveal(crate::spec::bitmap::bit_mask);
+        vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int, 8);
+        vstd::arithmetic::div_mod::lemma_mod_bound(x as int, 8);
+        let i = y as int * before.stride as int + x as int / 8;
+        assert(x as int / 8 < before.stride as int);
+        assert(crate::spec::bitmap::byte_bit(after.data@[i], x % 8)
+            == (base <= i && start as int <= (i - base) * 8 + (x % 8) as int
+                && (i - base) * 8 + ((x % 8) as int) < end as int
+                || crate::spec::bitmap::byte_bit(before.data@[i], x % 8)));
+        if y < row {
+            vstd::arithmetic::mul::lemma_mul_inequality(y as int + 1, row as int, before.stride as int);
+            vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(before.stride as int, y as int, 1);
+        } else if row < y {
+            vstd::arithmetic::mul::lemma_mul_inequality(row as int + 1, y as int, before.stride as int);
+            vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(before.stride as int, row as int, 1);
+        }
+    }
+}
+
 pub(super) proof fn byte_operator_semantics(
     operator: crate::bitmap::CombinationOperator, destination: u8, source: u8, bit: u32,
 )

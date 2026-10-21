@@ -24,6 +24,7 @@ CHECKS = (
     ("text-batch", "check_text_batch_proofs.py", 4, "strong_contract", "weaker_control"),
     ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
     ("bitmap-compose", "check_bitmap_compose_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("black-span", "check_black_span_proofs.py", 6, "strong_contract", "weaker_control"),
     ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
 )
 

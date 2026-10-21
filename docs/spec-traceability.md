@@ -92,6 +92,13 @@ Important examples:
   See the current audited inventory for remaining runtime/proof substitutions.
   A caller's storage contract is not independent exact-source evidence for
   every transitive kernel it invokes.
+- The executing optimized `Bitmap::fill_black_span` now proves valid-storage
+  success, exact black requested pixels, and preservation of all other stored
+  bits, including dirty padding, with a derived outside-byte frame. This
+  auxiliary primitive result is not yet a complete MMR raster-loop/polarity
+  theorem: the wrapper's weaker storage predicate and the decoder's caller
+  composition remain separate obligations. The polarity record remains
+  `state_preservation`, and all normative records remain provisional.
 
 The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
