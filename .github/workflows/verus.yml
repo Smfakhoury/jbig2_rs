@@ -105,6 +105,11 @@ jobs:
           python -B tools/check_bitmap_chunk_proofs.py
           --verus-executable verus-x86-linux/verus
           --output target/traceability/bitmap-chunk-proof-sensitivity.json
+      - name: Check executing clipped composition proof sensitivity
+        run: >-
+          python -B tools/check_bitmap_compose_proofs.py
+          --verus-executable verus-x86-linux/verus
+          --output target/traceability/bitmap-compose-proof-sensitivity.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

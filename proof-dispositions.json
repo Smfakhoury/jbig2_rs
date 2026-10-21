@@ -24,13 +24,6 @@
       "reason": "One-line trait forwarder to the verified ArithmeticError::into_decode method; reviewed explicitly, not directly verified as a From implementation."
     },
     {
-      "id": "bitmap::Bitmap::compose",
-      "file": "src/bitmap.rs",
-      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
-      "status": "runtime-proof-divergence",
-      "reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper."
-    },
-    {
       "id": "decode::PageSink::write_page",
       "file": "src/decode.rs",
       "file_sha256": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",

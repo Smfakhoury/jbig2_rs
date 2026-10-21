@@ -171,6 +171,31 @@ pub(super) proof fn u32_bitmap_arithmetic_is_checked(width: u32, height: u32)
     assert((u32::MAX as nat + 7) / 8 <= usize::MAX) by (compute);
 }
 
+pub(super) proof fn packed_span_bounds(width: u32, stride: usize, bit: u32, count: u32)
+    requires
+        stride as int == (width as int + 7) / 8,
+        count > 0,
+        bit as int + count as int <= width as int,
+    ensures
+        bit as int / 8 + (bit as int % 8 + count as int + 7) / 8 <= stride as int,
+        count == 8 ==> (bit as int % 8 + count as int + 7) / 8
+            == if bit % 8 == 0 { 1int } else { 2int },
+        count == 64 ==> (bit as int % 8 + count as int + 7) / 8
+            == if bit % 8 == 0 { 8int } else { 9int },
+        count <= 8 ==> (bit as int % 8 + count as int + 7) / 8
+            == if count as int <= 8 - bit as int % 8 { 1int } else { 2int },
+{
+    let b = bit as int;
+    let c = count as int;
+    let w = width as int;
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(b, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(b, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(w + 7, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(w + 7, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(b % 8 + c + 7, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(b % 8 + c + 7, 8);
+}
+
 pub(super) proof fn clipped_bounds(
     destination_width: u32,
     destination_height: u32,
@@ -203,6 +228,99 @@ pub(super) proof fn clipped_bounds(
 {
     reveal(crate::spec::bitmap::clipped_width);
     reveal(crate::spec::bitmap::clipped_height);
+}
+
+pub(super) proof fn aligned_byte_position(x: u32, head: u32, width: u32, bit: u32)
+    requires
+        0 < x % 8 < 8,
+        head as int == if width <= 8 - x % 8 { width as int } else { 8 - x % 8 },
+        head <= bit < width,
+        (bit as int - head as int) % 8 == 0,
+    ensures
+        (x as int + bit as int) % 8 == 0,
+        (x as int + bit as int) / 8
+            == x as int / 8 + 1 + (bit as int - head as int) / 8,
+{
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(x as int, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(bit as int - head as int, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int + bit as int, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(x as int + bit as int, 8);
+}
+
+pub(super) proof fn compose_row_byte(
+    index: int, stride: usize, dw: u32, dh: u32, sw: u32, sh: u32,
+    x: u32, y: u32, row: u32,
+)
+    requires
+        crate::spec::bitmap::clipped_width(dw, sw, x) > 0,
+        row < crate::spec::bitmap::clipped_height(dh, sh, y),
+        (y as int + row as int) * stride as int + x as int / 8 <= index,
+        index < (y as int + row as int) * stride as int
+            + (x as int + crate::spec::bitmap::clipped_width(dw, sw, x) as int + 7) / 8,
+    ensures
+        crate::spec::bitmap::compose_byte_may_change(
+            index, stride, dw, dh, sw, sh, x, y,
+        ),
+{
+    reveal(crate::spec::bitmap::clipped_width);
+    reveal(crate::spec::bitmap::clipped_height);
+    let w = crate::spec::bitmap::clipped_width(dw, sw, x) as int;
+    let base = (y as int + row as int) * stride as int;
+    let column = index - base;
+    let px = if column == x as int / 8 { x as int } else { column * 8 };
+    let sx = px - x as int;
+    let sy = row as int;
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(x as int, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(x as int + w + 7, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(x as int + w + 7, 8);
+    vstd::arithmetic::div_mod::lemma_fundamental_div_mod(px, 8);
+    vstd::arithmetic::div_mod::lemma_mod_bound(px, 8);
+    assert(0 <= sx < w);
+    assert(px < dw);
+    assert(y as int + sy < dh);
+    reveal(crate::spec::bitmap::compose_byte_may_change);
+    reveal(crate::spec::bitmap::byte_index);
+    assert(index == crate::spec::bitmap::byte_index(
+        stride, (x as int + sx) as u32, (y as int + sy) as u32,
+    ) as int);
+    assert(exists|candidate_x: int, candidate_y: int|
+        0 <= candidate_x < crate::spec::bitmap::clipped_width(dw, sw, x)
+        && 0 <= candidate_y < crate::spec::bitmap::clipped_height(dh, sh, y)
+        && index == #[trigger] crate::spec::bitmap::byte_index(
+            stride, (x as int + candidate_x) as u32, (y as int + candidate_y) as u32,
+        ) as int
+    );
+}
+
+pub(super) proof fn compose_step_frame(
+    before: Seq<u8>, after: Seq<u8>, original: Seq<u8>,
+    stride: usize, dw: u32, dh: u32, sw: u32, sh: u32,
+    x: u32, y: u32, row: u32, start: usize, count: int,
+)
+    requires
+        crate::spec::bitmap::compose_frame(original, before, stride, dw, dh, sw, sh, x, y),
+        after.len() == before.len(),
+        forall|i: int| 0 <= i < before.len()
+            && (i < start as int || start as int + count <= i) ==> after[i] == before[i],
+        count > 0,
+        crate::spec::bitmap::clipped_width(dw, sw, x) > 0,
+        row < crate::spec::bitmap::clipped_height(dh, sh, y),
+        (y as int + row as int) * stride as int + x as int / 8 <= start as int,
+        start as int + count <= (y as int + row as int) * stride as int
+            + (x as int + crate::spec::bitmap::clipped_width(dw, sw, x) as int + 7) / 8,
+    ensures
+        crate::spec::bitmap::compose_frame(original, after, stride, dw, dh, sw, sh, x, y),
+{
+    reveal(crate::spec::bitmap::compose_frame);
+    assert forall|i: int| 0 <= i < original.len()
+        && !crate::spec::bitmap::compose_byte_may_change(i, stride, dw, dh, sw, sh, x, y)
+        implies after[i] == original[i] by {
+        if start as int <= i < start as int + count {
+            compose_row_byte(i, stride, dw, dh, sw, sh, x, y, row);
+        }
+    }
 }
 
 pub(super) proof fn set_byte_reads_written_value(

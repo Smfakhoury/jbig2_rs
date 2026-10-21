@@ -27,8 +27,8 @@ Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled
 bitmap counterexamples check those semantic guarantees.
-Caller timing/first-row semantics, other semantic gaps and 2 runtime/proof
-substitutions remain open.
+Caller timing/first-row semantics, other semantic gaps and one runtime/proof
+substitution remain open.
 Five small value/operator bridge substitutions are closed with shared
 executing/proof bodies and exact output contracts. Three integer widenings
 retain their ordinary `From` calls; Boolean conversion and operator equality
@@ -57,17 +57,25 @@ empty/zero-height success/no-op guarantees. Four compiling mutations fail the
 strong clearing/no-op contracts and verify when only the affected relation is
 removed. Both changed declarations have identical erased runtime tokens;
 pixel values and placement order remain scalar-oracle tested, not newly proved.
-Ordinary bitmap composition and MMR capacity accounting remain the two explicit
-source substitutions.
+MMR capacity accounting remains the explicit source substitution after the
+ordinary composition closure described below.
 The next P05 prerequisite proves exact big-endian packed-byte read/write
 values, complete range acceptance, failed-write non-mutation and outside-span
 byte frames. Executing tokens and all existing bitmap models are unchanged;
 four compiling semantic contrasts and independent endian/range oracles check
-the stronger contracts. This does not reduce the two source substitutions or
-prove complete composition. An executing MMR accounting probe identifies
+the stronger contracts. That prerequisite alone did not close either source
+substitution or prove complete composition. An executing MMR accounting probe identifies
 unsupported pinned `Vec::capacity`/`Result::unwrap_or` calls; its edits were
 restored. Reviewed library specification/toolchain support is needed, without
 substituting length for capacity or introducing project assumptions.
+Ordinary composition now executes and verifies the optimized chunked path,
+preserving its original successful storage/metadata and outside-clipped-byte
+frame contract. Four proved arithmetic/frame lemmas and stronger shifted-read
+availability support all aligned/unaligned word, byte and tail paths. Five
+compiled strong-proof/weaker-control contrasts and expanded scalar/bit-span
+oracles pass. The only native syntax differences are equivalent explicitly
+sequenced checked row operations and a pure result binding. This closes that
+source substitution, not general pixel/operator/caller or normative gaps.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
