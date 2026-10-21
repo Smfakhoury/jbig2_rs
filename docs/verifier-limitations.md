@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1164 obligations with zero errors and zero native
+Pinned Verus verifies 1165 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -71,6 +71,30 @@ helpers and production contracts. The combined source verifies 1164 obligations;
 all mandatory semantic checkers retain their complete configured contrasts. Bitmap source
 bindings are refreshed for this combined source without relabeling dispositions
 or upgrading normative evidence.
+
+Arithmetic decision decoding additionally proves the successful returned bit
+and exact next probability-context index/MPS against the project Qe-table
+model, relative to the entry interval and code. Both the signal helper and its
+checked wrapper expose this relation. The lower/upper exchange helpers also
+prove their context update on error, preserving the distinction between their
+supplied old MPS and the context's prior MPS. No precondition is strengthened.
+
+Seven pure model functions and one proved equation bridge expose these
+relations without changing existing model definitions or native tokens. All
+656 production declarations were compared before refreshing source bindings:
+only the four decision/exchange contracts and proof blocks change; the other
+652 bodies/attributes are byte-identical. The reviewed arithmetic dispositions
+retain their identities, statuses and reasons.
+
+Four compiling mutations distinguish wrong successful decisions and wrong
+error-path context updates from weaker controls retaining the prior guarantees.
+Normal tests independently check all 47 probability rows, both MPS values,
+boundary decision routes and context updates before truncation. The combined
+whole-crate proof verifies 1165 obligations; thirteen mandatory semantic
+checkers cover 54 contrasts. Exact renormalized registers, input consumption,
+initialization/refill and faithful normative translation remain separate
+obligations. The aggregate arithmetic ledger record therefore retains its
+state-preservation classification and provisional review.
 
 P05 CI scheduling separates whole-crate verification from an independently
 bounded job per semantic group (at most four concurrent groups). The stable

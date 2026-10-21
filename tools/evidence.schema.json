@@ -1,6 +1,41 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
+    "conformance_differences": {
+      "type": "object", "required": ["schema_version", "cases"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {"type": "integer", "const": 1},
+        "cases": {
+          "type": "array", "items": {
+            "type": "object", "required": ["id", "classification", "rationale"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {"$ref": "#/$defs/nonempty"},
+              "classification": {"enum": ["reviewed_strict_rejection", "unsupported_profile", "pending_normative_review"]},
+              "rationale": {"$ref": "#/$defs/nonempty"},
+              "expected_error_contains": {"$ref": "#/$defs/nonempty"},
+              "expected_error_exact": {"$ref": "#/$defs/nonempty"},
+              "stream_sha256": {"$ref": "#/$defs/sha256"},
+              "jbig2dec_stderr_sha256": {"$ref": "#/$defs/sha256"},
+              "source_files_sha256": {
+                "type": "object", "minProperties": 1, "additionalProperties": false,
+                "patternProperties": {"^src/[a-z_]+\\.rs$": {"$ref": "#/$defs/sha256"}}
+              }
+            },
+            "if": {"properties": {"classification": {"const": "pending_normative_review"}}},
+            "then": {
+              "required": ["expected_error_exact", "stream_sha256", "source_files_sha256"],
+              "properties": {"expected_error_contains": false}
+            },
+            "else": {
+              "required": ["expected_error_contains"],
+              "properties": {"expected_error_exact": false, "stream_sha256": false, "source_files_sha256": false}
+            }
+          }
+        }
+      }
+    },
     "traceability_test": {
       "type": "object", "required": ["target", "name"],
       "additionalProperties": false,

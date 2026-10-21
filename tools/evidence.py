@@ -32,6 +32,10 @@ def validate(document, kind: str) -> None:
     schema["$ref"] = f"#/$defs/{kind}"
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(document)
+    if kind == "conformance_differences":
+        identifiers = [entry["id"] for entry in document["cases"]]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError("duplicate conformance expectation identity")
     if kind == "coverage_baseline":
         for metric in ("lines", "regions", "branches"):
             for entry in [document["totals"], *document["files"].values()]:

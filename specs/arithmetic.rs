@@ -8,6 +8,114 @@ pub(crate) open spec fn context_valid(
     context.state_index < 47 && context.mps <= 1
 }
 
+pub(crate) open spec fn exchange_is_mps(lower: bool, interval: u32, qe: u32) -> bool {
+    (interval < qe) == lower
+}
+
+pub(crate) open spec fn exchange_decision(
+    lower: bool, interval: u32, qe: u32, old_mps: u8,
+) -> u8
+    recommends old_mps <= 1,
+{
+    if exchange_is_mps(lower, interval, qe) {
+        old_mps
+    } else {
+        (1 - old_mps) as u8
+    }
+}
+
+pub(crate) open spec fn exchange_index(
+    lower: bool, interval: u32, qe: u32, next_mps: u8, next_lps: u8,
+) -> u8 {
+    if exchange_is_mps(lower, interval, qe) { next_mps } else { next_lps }
+}
+
+pub(crate) open spec fn exchange_mps(
+    lower: bool, interval: u32, qe: u32, switch_mps: bool,
+    prior_context_mps: u8, old_mps: u8,
+) -> u8
+    recommends old_mps <= 1,
+{
+    if !exchange_is_mps(lower, interval, qe) && switch_mps {
+        exchange_decision(lower, interval, qe, old_mps)
+    } else {
+        prior_context_mps
+    }
+}
+
+pub(crate) closed spec fn entry_decision(
+    interval: u32, code: u32, index: u8, mps: u8,
+) -> u8
+    recommends index < 47, mps <= 1, interval >= super::MIN_INTERVAL,
+{
+    let state = super::QE_STATES@[index as int];
+    let qe = state.qe as u32;
+    let reduced = (interval as int - qe as int) as u32;
+    if code >> 16 >= qe && reduced >= super::MIN_INTERVAL {
+        mps
+    } else {
+        exchange_decision(code >> 16 < qe, reduced, qe, mps)
+    }
+}
+
+pub(crate) closed spec fn entry_index(
+    interval: u32, code: u32, index: u8,
+) -> u8
+    recommends index < 47, interval >= super::MIN_INTERVAL,
+{
+    let state = super::QE_STATES@[index as int];
+    let qe = state.qe as u32;
+    let reduced = (interval as int - qe as int) as u32;
+    if code >> 16 >= qe && reduced >= super::MIN_INTERVAL {
+        index
+    } else {
+        exchange_index(code >> 16 < qe, reduced, qe, state.next_mps, state.next_lps)
+    }
+}
+
+pub(crate) closed spec fn entry_mps(
+    interval: u32, code: u32, index: u8, mps: u8,
+) -> u8
+    recommends index < 47, mps <= 1, interval >= super::MIN_INTERVAL,
+{
+    let state = super::QE_STATES@[index as int];
+    let qe = state.qe as u32;
+    let reduced = (interval as int - qe as int) as u32;
+    if code >> 16 >= qe && reduced >= super::MIN_INTERVAL {
+        mps
+    } else {
+        exchange_mps(code >> 16 < qe, reduced, qe, state.switch_mps, mps, mps)
+    }
+}
+
+pub(super) proof fn entry_model_equations(
+    interval: u32, code: u32, index: u8, mps: u8,
+)
+    requires index < 47, mps <= 1, interval >= super::MIN_INTERVAL,
+    ensures ({
+        let state = super::QE_STATES@[index as int];
+        let qe = state.qe as u32;
+        let reduced = (interval as int - qe as int) as u32;
+        let fast = code >> 16 >= qe && reduced >= super::MIN_INTERVAL;
+        entry_decision(interval, code, index, mps)
+            == if fast { mps } else {
+                exchange_decision(code >> 16 < qe, reduced, qe, mps)
+            }
+        && entry_index(interval, code, index)
+            == if fast { index } else {
+                exchange_index(code >> 16 < qe, reduced, qe, state.next_mps, state.next_lps)
+            }
+        && entry_mps(interval, code, index, mps)
+            == if fast { mps } else {
+                exchange_mps(code >> 16 < qe, reduced, qe, state.switch_mps, mps, mps)
+            }
+    }),
+{
+    reveal(entry_decision);
+    reveal(entry_index);
+    reveal(entry_mps);
+}
+
 pub(crate) open spec fn decoder_position_valid(
     decoder: &super::ArithmeticDecoder,
 ) -> bool {

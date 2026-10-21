@@ -1,0 +1,773 @@
+{
+  "schema_version": 1,
+  "status": "blocked_pending_normative_review",
+  "recorded_at": "2026-10-21T23:07:45.911104+00:00",
+  "source_revision": "6877cf605c856a54b3706f835d3a4ffe374657a8",
+  "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
+  "scope": "Seven existing official rejections only; summary hashes and original numeric diagnostics, no redistributed assets.",
+  "ordinary_runtime_tokens_unchanged": true,
+  "runtime_source_snapshot_refreshed": true,
+  "bmp_normalizers_unchanged": true,
+  "source_files_sha256": {
+    "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
+    "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
+    "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
+    "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
+    "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
+    "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
+    "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+    "src/generic_row_ring.rs": "dd6f05b2fc2deb8d612d826828c8ba2661c6094ba44a7579faacb3dee80c0e11",
+    "src/halftone.rs": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
+    "src/huffman.rs": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
+    "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
+    "src/limits.rs": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516",
+    "src/mmr.rs": "b89b82c480098c224473d18c1743864ef2a155602719a764fd02acd091e80e34",
+    "src/reader.rs": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba",
+    "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
+    "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
+    "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f"
+  },
+  "ordinary_runtime_source_sha256": "25fd559686e8895aea3d0e6265b018cfbf25069790ef83cf205e50e770e992ff",
+  "normal_decoder_sha256": "5a3622a9bdd6ea9c9481185c06fd19448707b7214d64e69b7141c132863fbc7d",
+  "assets": {
+    "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
+    "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
+    "t6_document_sha256": "8ccbe2d203e03ee2ac37478d50d2d946bab49dfb45376eb0f773009d183a7767",
+    "nested_conformance_archive_sha256": "fe3de9056d94b20db3a6ab17032c621a7f05b6ecb1db84b4b58d0825fd6b7033",
+    "manifest_sha256": "e9ee986db84fdfe960d56dedb843d3c16ea3e12d2a2f97f6cf56e96f55372ff1",
+    "verified_manifest_files": 26,
+    "sample_software_opened": false,
+    "t88_package_route": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items",
+    "t6_route": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items"
+  },
+  "diagnosis_origin": {
+    "prior_local_diagnosis_sha256": "b2115c5168c60840df1196aa6883570087e91278e44a54760358e883c2c73854",
+    "source_trace_patch_sha256": "979e819bf1e853ceb6f4d1c476e3ca7c0f36566b314f50ef8519ef5aa5bc498f",
+    "trace_repeated_in_followup": false,
+    "historical_trace_source_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+    "fresh_execution_source_revision": "6877cf605c856a54b3706f835d3a4ffe374657a8",
+    "ordinary_source_comparison_sha256": "9c0a58091bf22cddee37a4448ec81e9c4f4eb28a5bce91769653a0b3df8e56fc",
+    "ordinary_source_comparison_selector_sha256": "bcd72f729645e72b91d2bee6051e78aeed4d5fe955729ac9f6c45b5c504a12b6",
+    "ordinary_source_comparison_scope": "Syntax-aware ordinary-token equality after test/Verus-only selection and proof cfg attributes; not normative translation or complete compiler semantics."
+  },
+  "validation_files_sha256": {
+    "validation/conformance/run_itu.py": "a5a29e1f004ea1dacaee963478b363c6cadf23b8b38460abceb64226eb188e89",
+    "validation/differential/run_oracles.py": "0ddc98d3d9a443b9a3b0ee1241916d7096fab90198a27e08a55caa5f9b373c8c",
+    "tools/tests/test_validation_gates.py": "a69271c3cfea29f2ebf8521048d9865d333aa8f1a8df724ecfe47c589907a42e",
+    "tools/tests/test_proof_audits.py": "2c6511c3702195351d0217c18d778a2f78b701e5b6a24372fd9956401cf9ea59",
+    "tools/evidence.schema.json": "62fdb207f78b8a18a9ad0833f20f4f1ed36abbb2e8a084ec59df64ae37dd1016",
+    "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
+    "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
+    "source-provenance.json": "98e7b5390912d6d8dce068a851c1afbcd2bedf4856c64cbe9678bc7dcef1bf49"
+  },
+  "normalization_controls": {
+    "fixture_origin": "Original first-party pixel grids, not official bytes.",
+    "test_source": "tools/tests/test_validation_gates.py",
+    "tests": [
+      "BitmapNormalizationTests.test_both_runners_match_independent_pixels_for_palette_padding_orientation",
+      "BitmapNormalizationTests.test_page_pairing_is_numeric_and_checks_each_page_number_and_bitmap"
+    ],
+    "bmp_fixture_cases": 20,
+    "widths": [
+      1,
+      8,
+      9,
+      32,
+      33
+    ],
+    "height": 3,
+    "palette_orders": 2,
+    "orientations": 2,
+    "row_padding_contains_set_bits": true,
+    "unused_packed_bits_contain_set_bits": true,
+    "numeric_page_pairing_pages": 11,
+    "both_existing_bmp_readers_equal_independent_pixel_expectations": true,
+    "normalization_bug_observed": false,
+    "official_expected_hashes_unchanged_from_prior_native_run": true,
+    "scope_limit": "Covered one-bit BI_RGB layouts, not a general BMP parser certification."
+  },
+  "hayro": {
+    "crate": "hayro-jbig2",
+    "version": "0.3.1",
+    "registry_package_sha256": "000e025850f4592ddcaee85640db70704151f2bafd43b6f431aa5b6a2c6a35a9",
+    "recorded_upstream_revision": "ea9c81dc70cde40c64205986fdcfcd481fe934d8",
+    "revision_scope": "Cargo.lock registry checksum is execution pin; recorded upstream commit is not newly checkout-verified.",
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "features": [
+      "std",
+      "simd"
+    ],
+    "binary_sha256": "1c7a19247b914fcb0c26e4ff8ef2e86a4b45692ccd2bbed94b28d08643865216",
+    "harness_files_sha256": {
+      "benchmarks/hayro-comparison/Cargo.toml": "c52af510f56cff89f7e9e9a6fb7031894650961d079686db80c517145580e471",
+      "benchmarks/hayro-comparison/Cargo.lock": "ffa4928ea5fb38e7be4ded8a67b44f9ea2fe04adddb4b925e68832778e696e89",
+      "benchmarks/hayro-comparison/src/main.rs": "d0333e0f137a054b4c37389d580bd2a2bc750dae2182c7e794fd9dd1d1a19382",
+      "benchmarks/generated.rs": "2a41a4622c7a07f3eed50a56b822e93e70f8072aa490dd7b0368e1f6c22acc26",
+      "benchmarks/timing.rs": "e1d6820361b43398693c8f5be39f9f6a241b475566286ac6a89df12a413370ac"
+    },
+    "build_command": "cargo +1.98.1 run --locked --offline --release --manifest-path benchmarks/hayro-comparison/Cargo.toml -- vectors APPROVED_VECTOR_DIRECTORY",
+    "fresh_raw_results_sha256": "47a48454c3bd8507946790758e6b841c1c242d33bab506f6fb318c1bfb0af833",
+    "all_seven_rejected": true,
+    "seven_case_normative_passes": 0,
+    "two_single_page_controls_have_matching_dimensions_and_fnv64_summary": true,
+    "scope_limit": "Wrapper exposes one image and an FNV64 bitmap summary, not full-byte/all-page validation; errors do not establish pre-error entropy equivalence."
+  },
+  "native_tool_identities": {
+    "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
+    "version": "0.20",
+    "binary_sha256": "c717b715ecfd7be8809a28ff78c955a5a8fde607ff5ee0fda26c1513b5011776"
+  },
+  "system_poppler_identity": {
+    "revision": null,
+    "version": "24.02.0",
+    "binary_sha256": "6cc39af8f3a4a4ec65d60d9ea48b21e8736db8c3d9ab0fafc8fb8b613bab06bd"
+  },
+  "fresh_native_oracle_results_sha256": "09185886ad9b92d1ea8e78cbc8819feb7aef575fbb5b77cf4174c5fd39d5a637",
+  "ci_repair": {
+    "failed_head": "e58356d184ae52ab1647024ea8eb2ae101eb6c53",
+    "failed_native_runs": [
+      39688485532,
+      39688460158
+    ],
+    "failed_verifier_run": 39688485492,
+    "failed_checkout_merge_abbreviated": "4b390be",
+    "failed_checkout_main": "22bef171b90e0b9ce8b60480ee12accaafd9532e",
+    "integrated_main": "f31e481d1ccce24de4d391f4352942981649db43",
+    "root_cause": "The PR merge checkout included approved main reader/MMR proof/test changes, while the review still pinned d970 physical source bytes.",
+    "additional_cross_platform_risk": "Hash-bound Python files lacked an explicit LF checkout rule; the repair pins LF without normalizing or weakening the byte hash checks.",
+    "reference_shape_gate": "Truthful source-bound pending records are valid bookkeeping, not passing conformance.",
+    "strict_gate": "verify_provenance.py --require-exact-conformance rejects non-passing recorded cases.",
+    "execution_gate": "run_itu.py still exits 1 with seven unresolved official cases."
+  },
+  "summary": {
+    "official_cases": 10,
+    "exact_positive_passes": 2,
+    "reviewed_strict_rejections": 0,
+    "pending_normative_reviews": 7,
+    "unsupported_profile": 1,
+    "unresolved_failures": 7,
+    "new_normative_approvals": 0,
+    "new_runtime_exceptions": 0
+  },
+  "retention": {
+    "clauses": [
+      "T.88 7.2.4",
+      "T.88 7.2.8"
+    ],
+    "status": "owner_adjudication_pending",
+    "strict_policy_unchanged": true,
+    "blanket_root_cause_claimed_for_seven_cases": false
+  },
+  "normal_conformance_results_sha256": "d1ab80c1244af84081fa52f9e4f7ae8b190b0079a76fe20381128d85f9e11cc0",
+  "release_gate": "blocked",
+  "cases": [
+    {
+      "id": "codeStreamTest1_TT1",
+      "classification": "pending_normative_review",
+      "stream_sha256": "d7fed4f97e960c45c404eb94dac84cfcd1dbb77f774aa3c58c052783c130b543",
+      "runtime_error_exact": "Error: Malformed(UnexpectedEof { offset: 192, needed: 1, remaining: 0 })",
+      "observation": "unresolved_text_huffman_exhaustion_prior_mmr_cause_refuted",
+      "position": {
+        "unit": "bits",
+        "origin": "text entropy body",
+        "offset": 192,
+        "body_file_byte": 155,
+        "absolute_file_byte": 179,
+        "needed_bits": 1,
+        "remaining_bits": 0,
+        "decoded_instances": 4,
+        "declared_instances": 5
+      },
+      "source_chain": [
+        "symbol_text::decode_text_region",
+        "symbol_text::decode_text_region_body",
+        "symbol_text::HuffmanCodec::decode_integer",
+        "huffman::HuffmanTable::decode",
+        "reader::BitReader::read_bits"
+      ],
+      "normative_checks": [
+        "T.88 6.4.5, 6.4.8 and Table B.8",
+        "T.88 6.5.9 and 6.2.6"
+      ],
+      "source_trace_sha256": "e6b157debad4281af44889333801e245cc5f2b3a773b787948c0f8de65abd508",
+      "source_trace_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+      "current_source_exact_error_reproduced": true,
+      "rationale": "The earlier MMR-truncation explanation is refuted: both initial dictionaries complete. Text segment 3 exhausts its 24-byte entropy body while requesting SubsequentS for placement 5 of 5 (file byte 179). Earlier text entropy desynchronization versus official asset inconsistency remains unadjudicated. See seven-rejection-review.json; no normative rejection approval or conformance credit.",
+      "resolution_blocker": "Need an independently anchored text entropy/ID/strip trace, or official attachment-owner clarification, before identifying an unambiguous production correction.",
+      "expected_pages": [
+        {
+          "index": 0,
+          "file_sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+          "width": 64,
+          "height": 56,
+          "normalized_bitmap_sha256": "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4"
+        },
+        {
+          "index": 1,
+          "file_sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+          "width": 64,
+          "height": 56,
+          "normalized_bitmap_sha256": "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4"
+        },
+        {
+          "index": 2,
+          "file_sha256": "86832cb54093ba8095d6dc56d652db0d07e19816964f6ae3e8f73fff93a0f7d6",
+          "width": 37,
+          "height": 8,
+          "normalized_bitmap_sha256": "b4808b8cad01a10e426a955fd02d4d3da6525fb2951681911a4ed91e37131276"
+        }
+      ],
+      "jbig2dec": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a",
+          "fatal_count": 0,
+          "warning_count": 1,
+          "error_count": 0
+        },
+        "bitmap_sha256": [
+          "56ff983a798732b7ebf7f167f22635ce89511152aa1ad96e53055de825fe004d",
+          "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4",
+          "b4808b8cad01a10e426a955fd02d4d3da6525fb2951681911a4ed91e37131276"
+        ],
+        "match": false
+      },
+      "system_poppler": {
+        "match": null,
+        "status": "skipped_multi_page_or_colour"
+      },
+      "hayro": {
+        "reported_category": "input_exhaustion",
+        "reported_error_sha256": "5544f8f57e72c3d42d6d59b00b6554e0254b794d0ad0a0277b448d2822382826",
+        "decoded": false,
+        "bitmap_returned": false,
+        "normative_conformance_credit": false,
+        "scope": "Partial: single-image wrapper cannot validate all three TT1 pages; no exposed entropy offset."
+      },
+      "normative_approval": false
+    },
+    {
+      "id": "codeStreamTest1_TT2",
+      "classification": "pending_normative_review",
+      "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
+      "runtime_error_exact": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
+      "observation": "unresolved_bounded_mmr_underflow_observed",
+      "position": {
+        "unit": "bits",
+        "origin": "bounded MMR sub-block",
+        "offset": 8,
+        "dictionary_body_file_byte": 64,
+        "subblock_body_byte": 4,
+        "subblock_file_byte": 68,
+        "absolute_file_byte": 69,
+        "needed_bits": 1,
+        "remaining_bits": 0,
+        "declared_subblock_bytes": 1,
+        "width": 5,
+        "height": 8,
+        "row": 0,
+        "x": 0,
+        "initial_mode": "Horizontal"
+      },
+      "source_chain": [
+        "symbol_text::decode_symbol_dictionary_huffman",
+        "symbol_text::decode_collective_bitmap",
+        "mmr::decode_bitmap",
+        "mmr::decode_run",
+        "reader::BitReader::read_bits"
+      ],
+      "normative_checks": [
+        "T.88 6.5.9 and Table B.1",
+        "T.88 6.2.6",
+        "T.6 Table 1 and 2.2.5.2"
+      ],
+      "source_trace_sha256": "14757f8b8d0089aa431cd0d5a3c1ee09c77430f226ea0833a3a2c779a1f496d3",
+      "source_trace_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+      "current_source_exact_error_reproduced": true,
+      "rationale": "Observed bounded MMR underflow: BMSIZE is decoded as 1 for a 5x8 collective bitmap; the first row exhausts that bound at file byte 69. Native recoveries do not match the expected bitmap. Upstream field alignment and official-positive validity remain unadjudicated; no exception, row synthesis or normative rejection approval.",
+      "resolution_blocker": "Do not extend BMSIZE or synthesize row data. Need independent upstream Huffman field alignment or official asset-owner clarification before assigning normative malformation.",
+      "expected_pages": [
+        {
+          "index": 0,
+          "file_sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+          "width": 64,
+          "height": 56,
+          "normalized_bitmap_sha256": "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4"
+        }
+      ],
+      "jbig2dec": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a",
+          "fatal_count": 1,
+          "warning_count": 5,
+          "error_count": 1
+        },
+        "bitmap_sha256": [
+          "5c55c8f4db4010ba9203d83536d0609856af8c847ac039e37e7dde8fbd574b61"
+        ],
+        "match": false
+      },
+      "system_poppler": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "1b2414e80371677775fb4fcf86b78952f8e002aa1d97c59c961880f63b34aa82",
+          "fatal_count": 0,
+          "warning_count": 0,
+          "error_count": 3
+        },
+        "bitmap_sha256": [
+          "5c55c8f4db4010ba9203d83536d0609856af8c847ac039e37e7dde8fbd574b61"
+        ],
+        "match": false
+      },
+      "hayro": {
+        "reported_category": "mmr_decode_error",
+        "reported_error_sha256": "d97707ab455b86d4bebfda006ceebf15232ae16ef8cd1c549318445705185532",
+        "decoded": false,
+        "bitmap_returned": false,
+        "normative_conformance_credit": false,
+        "scope": "Rejection evidence only; no exposed entropy offset or proof of the same pre-error state."
+      },
+      "normative_approval": false
+    },
+    {
+      "id": "codeStreamTest1_TT3",
+      "classification": "pending_normative_review",
+      "stream_sha256": "23341708b770936cd199bbfa7a4f7be41b7b0257b38532a3e678710bac46012b",
+      "runtime_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "observation": "unresolved_arithmetic_export_terminal_state_divergence",
+      "position": {
+        "unit": "bytes",
+        "origin": "arithmetic dictionary entropy body",
+        "before": 19,
+        "after": 19,
+        "body_file_byte": 72,
+        "absolute_file_byte": 91,
+        "original_body_length": 20,
+        "normalized_body_length": 21,
+        "observed_marker_offset": 19,
+        "marker_completion": "Existing normalizer appends the missing AC after the asset's terminal FF.",
+        "run_index_one_based": 12,
+        "preceding_zero_runs": 11,
+        "decoded_negative_run": -5,
+        "candidate_symbols": 3,
+        "native_recovered_unsigned_run": 4294967285,
+        "native_signed_reinterpretation_for_comparison_only": -11
+      },
+      "source_chain": [
+        "symbol_text::decode_symbol_dictionary_arithmetic",
+        "symbol_text::normalized_bounded_arithmetic",
+        "symbol_text::decode_export_runs",
+        "symbol_text::ArithmeticCodec::decode_integer",
+        "arithmetic::ArithmeticDecoder::decode_integer"
+      ],
+      "normative_checks": [
+        "T.88 6.5.4 and 6.5.10",
+        "T.88 Annex A and Annex E"
+      ],
+      "source_trace_sha256": "b10d665c2180b605627120f1eda641edd91ffc8eec9f6cea24e94741b8d61061",
+      "source_trace_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+      "current_source_exact_error_reproduced": true,
+      "rationale": "Observed IAEX terminal-state divergence at file byte 91: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved. A negative observation is not proof of normative asset malformation.",
+      "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
+      "expected_pages": [
+        {
+          "index": 0,
+          "file_sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+          "width": 64,
+          "height": 56,
+          "normalized_bitmap_sha256": "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4"
+        }
+      ],
+      "jbig2dec": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514",
+          "fatal_count": 0,
+          "warning_count": 10,
+          "error_count": 0
+        },
+        "bitmap_sha256": [
+          "96a20e2fffdc88c3f15753c4dfcdf570bbe6e8fcbd4d62a9689c27ce09117c11"
+        ],
+        "match": false
+      },
+      "system_poppler": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "5f815174891a91078799de6e20ed2ea8211c3c1e791b3722953804fb442e6642",
+          "fatal_count": 0,
+          "warning_count": 0,
+          "error_count": 3
+        },
+        "bitmap_sha256": [
+          "5c55c8f4db4010ba9203d83536d0609856af8c847ac039e37e7dde8fbd574b61"
+        ],
+        "match": false
+      },
+      "hayro": {
+        "reported_category": "huffman_decode_error",
+        "reported_error_sha256": "ef73f29df48dca3f98d7635a2cb1f2ac62babd6d2c6ea9376566446987447bf3",
+        "decoded": false,
+        "bitmap_returned": false,
+        "normative_conformance_credit": false,
+        "scope": "Rejection evidence only; no exposed entropy offset or proof of the same pre-error state."
+      },
+      "normative_approval": false
+    },
+    {
+      "id": "codeStreamTest1_TT4",
+      "classification": "pending_normative_review",
+      "stream_sha256": "872ef6cb28c55b5e7d9f7d04c834896f4b06e52819254b3e2596d022dcc06305",
+      "runtime_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "observation": "unresolved_arithmetic_export_terminal_state_divergence",
+      "position": {
+        "unit": "bytes",
+        "origin": "arithmetic dictionary entropy body",
+        "before": 19,
+        "after": 19,
+        "body_file_byte": 72,
+        "absolute_file_byte": 91,
+        "original_body_length": 20,
+        "normalized_body_length": 21,
+        "observed_marker_offset": 19,
+        "marker_completion": "Existing normalizer appends the missing AC after the asset's terminal FF.",
+        "run_index_one_based": 12,
+        "preceding_zero_runs": 11,
+        "decoded_negative_run": -5,
+        "candidate_symbols": 3,
+        "native_recovered_unsigned_run": 4294967285,
+        "native_signed_reinterpretation_for_comparison_only": -11
+      },
+      "source_chain": [
+        "symbol_text::decode_symbol_dictionary_arithmetic",
+        "symbol_text::normalized_bounded_arithmetic",
+        "symbol_text::decode_export_runs",
+        "symbol_text::ArithmeticCodec::decode_integer",
+        "arithmetic::ArithmeticDecoder::decode_integer"
+      ],
+      "normative_checks": [
+        "T.88 6.5.4 and 6.5.10",
+        "T.88 Annex A and Annex E"
+      ],
+      "source_trace_sha256": "5ea8fb0789178b025c0ccc377afef04eae89851c8c89e19e792636525c707095",
+      "source_trace_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+      "current_source_exact_error_reproduced": true,
+      "rationale": "Observed IAEX terminal-state divergence at file byte 91: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
+      "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
+      "expected_pages": [
+        {
+          "index": 0,
+          "file_sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+          "width": 64,
+          "height": 56,
+          "normalized_bitmap_sha256": "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4"
+        }
+      ],
+      "jbig2dec": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514",
+          "fatal_count": 0,
+          "warning_count": 10,
+          "error_count": 0
+        },
+        "bitmap_sha256": [
+          "96a20e2fffdc88c3f15753c4dfcdf570bbe6e8fcbd4d62a9689c27ce09117c11"
+        ],
+        "match": false
+      },
+      "system_poppler": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "5f815174891a91078799de6e20ed2ea8211c3c1e791b3722953804fb442e6642",
+          "fatal_count": 0,
+          "warning_count": 0,
+          "error_count": 3
+        },
+        "bitmap_sha256": [
+          "5c55c8f4db4010ba9203d83536d0609856af8c847ac039e37e7dde8fbd574b61"
+        ],
+        "match": false
+      },
+      "hayro": {
+        "reported_category": "huffman_decode_error",
+        "reported_error_sha256": "ef73f29df48dca3f98d7635a2cb1f2ac62babd6d2c6ea9376566446987447bf3",
+        "decoded": false,
+        "bitmap_returned": false,
+        "normative_conformance_credit": false,
+        "scope": "Rejection evidence only; no exposed entropy offset or proof of the same pre-error state."
+      },
+      "normative_approval": false
+    },
+    {
+      "id": "codeStreamTest1_TT5",
+      "classification": "pending_normative_review",
+      "stream_sha256": "ebec26a22425cce27de5feaf91bc8a6528428283cfdeeb5f39825fe1ba992871",
+      "runtime_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "observation": "unresolved_arithmetic_export_terminal_state_divergence",
+      "position": {
+        "unit": "bytes",
+        "origin": "arithmetic dictionary entropy body",
+        "before": 14,
+        "after": 14,
+        "body_file_byte": 72,
+        "absolute_file_byte": 86,
+        "original_body_length": 15,
+        "normalized_body_length": 16,
+        "observed_marker_offset": 14,
+        "marker_completion": "Existing normalizer appends the missing AC after the asset's terminal FF.",
+        "run_index_one_based": 8,
+        "preceding_zero_runs": 7,
+        "decoded_negative_run": -76,
+        "candidate_symbols": 2,
+        "native_recovered_unsigned_run": 4294967280,
+        "native_signed_reinterpretation_for_comparison_only": -16
+      },
+      "source_chain": [
+        "symbol_text::decode_symbol_dictionary_arithmetic",
+        "symbol_text::normalized_bounded_arithmetic",
+        "symbol_text::decode_export_runs",
+        "symbol_text::ArithmeticCodec::decode_integer",
+        "arithmetic::ArithmeticDecoder::decode_integer"
+      ],
+      "normative_checks": [
+        "T.88 6.5.4 and 6.5.10",
+        "T.88 Annex A and Annex E"
+      ],
+      "source_trace_sha256": "05d26bb3da2a9954462c46ed4cb39d647624a3dd4cfe3f3adc4a56e88bd2ded8",
+      "source_trace_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+      "current_source_exact_error_reproduced": true,
+      "rationale": "Observed IAEX terminal-state divergence at file byte 86: this decoder rejects -76 after seven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
+      "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
+      "expected_pages": [
+        {
+          "index": 0,
+          "file_sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+          "width": 64,
+          "height": 56,
+          "normalized_bitmap_sha256": "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4"
+        }
+      ],
+      "jbig2dec": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "83fb4c32a7c0adcbf69c6dc92489749783b4d57df6692e42cae5133e196ea418",
+          "fatal_count": 1,
+          "warning_count": 4,
+          "error_count": 1
+        },
+        "bitmap_sha256": [
+          "5c55c8f4db4010ba9203d83536d0609856af8c847ac039e37e7dde8fbd574b61"
+        ],
+        "match": false
+      },
+      "system_poppler": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "fc93f76ee55cb059c8c91b852f6749490dfbf9deddb986974ec6288730a7d161",
+          "fatal_count": 0,
+          "warning_count": 0,
+          "error_count": 3
+        },
+        "bitmap_sha256": [
+          "5c55c8f4db4010ba9203d83536d0609856af8c847ac039e37e7dde8fbd574b61"
+        ],
+        "match": false
+      },
+      "hayro": {
+        "reported_category": "huffman_decode_error",
+        "reported_error_sha256": "ef73f29df48dca3f98d7635a2cb1f2ac62babd6d2c6ea9376566446987447bf3",
+        "decoded": false,
+        "bitmap_returned": false,
+        "normative_conformance_credit": false,
+        "scope": "Rejection evidence only; no exposed entropy offset or proof of the same pre-error state."
+      },
+      "normative_approval": false
+    },
+    {
+      "id": "codeStreamTest1_TT7",
+      "classification": "pending_normative_review",
+      "stream_sha256": "afa20c52a9fc0c4b33c867338b4447e0be7d402a814fadf52f414ed4d4f08a82",
+      "runtime_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "observation": "unresolved_arithmetic_export_terminal_state_divergence",
+      "position": {
+        "unit": "bytes",
+        "origin": "arithmetic dictionary entropy body",
+        "before": 19,
+        "after": 19,
+        "body_file_byte": 72,
+        "absolute_file_byte": 91,
+        "original_body_length": 20,
+        "normalized_body_length": 21,
+        "observed_marker_offset": 19,
+        "marker_completion": "Existing normalizer appends the missing AC after the asset's terminal FF.",
+        "run_index_one_based": 12,
+        "preceding_zero_runs": 11,
+        "decoded_negative_run": -5,
+        "candidate_symbols": 3,
+        "native_recovered_unsigned_run": 4294967285,
+        "native_signed_reinterpretation_for_comparison_only": -11
+      },
+      "source_chain": [
+        "symbol_text::decode_symbol_dictionary_arithmetic",
+        "symbol_text::normalized_bounded_arithmetic",
+        "symbol_text::decode_export_runs",
+        "symbol_text::ArithmeticCodec::decode_integer",
+        "arithmetic::ArithmeticDecoder::decode_integer"
+      ],
+      "normative_checks": [
+        "T.88 6.5.4 and 6.5.10",
+        "T.88 Annex A and Annex E"
+      ],
+      "source_trace_sha256": "b1dbb0f363ca6f467c14515d78f848e71270edae807ca0fad9fd8006b58935dd",
+      "source_trace_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+      "current_source_exact_error_reproduced": true,
+      "rationale": "Observed IAEX terminal-state divergence at file byte 91: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
+      "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
+      "expected_pages": [
+        {
+          "index": 0,
+          "file_sha256": "5c5b7942f62f400ec7a87632ceed2cb40da1e8b909fb4cd175f8f7470fbd575e",
+          "width": 64,
+          "height": 56,
+          "normalized_bitmap_sha256": "975e63be32f6dd9c4367dd25ae268cd5701b888717656236c98c31ee8bb35db4"
+        }
+      ],
+      "jbig2dec": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "52f8bcbd6d8f2a55bdf1112eda6c1a36f38cd9c6fd784119a88154ce8c943a74",
+          "fatal_count": 0,
+          "warning_count": 9,
+          "error_count": 0
+        },
+        "bitmap_sha256": [
+          "e02beb6eb96c357cf607cfb3b810492810834f9ea2c5d42f6e7732e447ec94d4"
+        ],
+        "match": false
+      },
+      "system_poppler": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "5f815174891a91078799de6e20ed2ea8211c3c1e791b3722953804fb442e6642",
+          "fatal_count": 0,
+          "warning_count": 0,
+          "error_count": 3
+        },
+        "bitmap_sha256": [
+          "5c55c8f4db4010ba9203d83536d0609856af8c847ac039e37e7dde8fbd574b61"
+        ],
+        "match": false
+      },
+      "hayro": {
+        "reported_category": "huffman_decode_error",
+        "reported_error_sha256": "ef73f29df48dca3f98d7635a2cb1f2ac62babd6d2c6ea9376566446987447bf3",
+        "decoded": false,
+        "bitmap_returned": false,
+        "normative_conformance_credit": false,
+        "scope": "Rejection evidence only; no exposed entropy offset or proof of the same pre-error state."
+      },
+      "normative_approval": false
+    },
+    {
+      "id": "codeStreamTest2_TT6",
+      "classification": "pending_normative_review",
+      "stream_sha256": "e53dbbbc54b71e8f873c767a2e321444c26a245728007e4842c8746933df1bad",
+      "runtime_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
+      "observation": "unresolved_arithmetic_export_terminal_state_divergence",
+      "position": {
+        "unit": "bytes",
+        "origin": "arithmetic dictionary entropy body",
+        "before": 13,
+        "after": 13,
+        "body_file_byte": 72,
+        "absolute_file_byte": 85,
+        "original_body_length": 14,
+        "normalized_body_length": 15,
+        "observed_marker_offset": 13,
+        "marker_completion": "Existing normalizer appends the missing AC after the asset's terminal FF.",
+        "run_index_one_based": 12,
+        "preceding_zero_runs": 11,
+        "decoded_negative_run": -5,
+        "candidate_symbols": 2,
+        "native_recovered_unsigned_run": 4294967288,
+        "native_signed_reinterpretation_for_comparison_only": -8
+      },
+      "source_chain": [
+        "symbol_text::decode_symbol_dictionary_arithmetic",
+        "symbol_text::normalized_bounded_arithmetic",
+        "symbol_text::decode_export_runs",
+        "symbol_text::ArithmeticCodec::decode_integer",
+        "arithmetic::ArithmeticDecoder::decode_integer"
+      ],
+      "normative_checks": [
+        "T.88 6.5.4 and 6.5.10",
+        "T.88 Annex A and Annex E"
+      ],
+      "source_trace_sha256": "863c467991c565f1b8330550dee1c03777c582afdf851473106340f4b6afb81f",
+      "source_trace_revision": "d970ac4dbdb9881347529c600512d040ecd94ffa",
+      "current_source_exact_error_reproduced": true,
+      "rationale": "Observed IAEX terminal-state divergence at file byte 85: this decoder rejects -5 after eleven zero runs; native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker completion remain unresolved; no normative rejection approval.",
+      "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
+      "expected_pages": [
+        {
+          "index": 0,
+          "file_sha256": "86832cb54093ba8095d6dc56d652db0d07e19816964f6ae3e8f73fff93a0f7d6",
+          "width": 37,
+          "height": 8,
+          "normalized_bitmap_sha256": "b4808b8cad01a10e426a955fd02d4d3da6525fb2951681911a4ed91e37131276"
+        }
+      ],
+      "jbig2dec": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "48f47424233ba140b26527ca45651147c7a6e80d3e796ccfbad54416d0b1da73",
+          "fatal_count": 1,
+          "warning_count": 9,
+          "error_count": 1
+        },
+        "bitmap_sha256": [
+          "2c34ce1df23b838c5abf2a7f6437cca3d3067ed509ff25f11df6b11b582b51eb"
+        ],
+        "match": false
+      },
+      "system_poppler": {
+        "exit": 0,
+        "diagnostics": {
+          "present": true,
+          "normalized_sha256": "d56a4395597434ef22a6edf067f87d15a859dc6b3fe563bc9da2212d6657c7a7",
+          "fatal_count": 0,
+          "warning_count": 0,
+          "error_count": 3
+        },
+        "bitmap_sha256": [
+          "2c34ce1df23b838c5abf2a7f6437cca3d3067ed509ff25f11df6b11b582b51eb"
+        ],
+        "match": false
+      },
+      "hayro": {
+        "reported_category": "huffman_decode_error",
+        "reported_error_sha256": "ef73f29df48dca3f98d7635a2cb1f2ac62babd6d2c6ea9376566446987447bf3",
+        "decoded": false,
+        "bitmap_returned": false,
+        "normative_conformance_credit": false,
+        "scope": "Rejection evidence only; no exposed entropy offset or proof of the same pre-error state."
+      },
+      "normative_approval": false
+    }
+  ]
+}
