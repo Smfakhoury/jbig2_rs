@@ -1,8 +1,8 @@
 # Provisional statement-level T.88 and T.6 traceability
 
-P04 is in progress. The ledger maps **111 selected requirement records**
+P04 is in progress. The ledger maps **249 selected requirement records**
 to source contracts, project models, proof support and exact test identities.
-These comprise **102 selected normative-rule records and nine explicit project-
+These comprise **240 selected normative-rule records and nine explicit project-
 profile-policy records**. A policy row uses the standard only as context and
 does not increase the normative-rule count.
 It also inventories all **30 support-matrix features** as a decomposition
@@ -30,7 +30,7 @@ the repository. Ledger titles and scope notes are original paraphrases.
   source links, model/proof support, exact tests, assumptions and unresolved gaps.
   CI uploads these instead of committing constantly regenerated reports.
 
-All 111 records are **provisional**, pending owner normative/model review.
+All 249 records are **provisional**, pending owner normative/model review.
 Twenty-nine feature groups now have partial records, none is unstarted, one
 deferred feature is excluded, and none has an approved complete normative
 decomposition. Starting every coarse feature worklist does **not** mean that
@@ -43,15 +43,15 @@ normative decomposition.
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
 | `functional_contract` | 60 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 25 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `state_preservation` | 163 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
 The mapped areas are packed-bit/word order, selected file/segment organization
 and header fields, Huffman construction/decoding helpers, selected T.6 mode/run/
 framing rules and JBIG2-specific MMR
-exceptions, selected generic-template parameters, arithmetic reset and decision
-contracts, and typical-row copying.
+exceptions, selected generic-template parameters, arithmetic reset contracts,
+selected Annex A/E algorithm and table relations, and typical-row copying.
 
 Important examples:
 
@@ -92,10 +92,88 @@ Important examples:
   See the current audited inventory for remaining runtime/proof substitutions.
   A caller's storage contract is not independent exact-source evidence for
   every transitive kernel it invokes.
+- The executing optimized `Bitmap::fill_black_span` now proves valid-storage
+  success, exact black requested pixels, and preservation of all other stored
+  bits, including dirty padding, with a derived outside-byte frame. This
+  auxiliary primitive result is not yet a complete MMR raster-loop/polarity
+  theorem: the wrapper's weaker storage predicate and the decoder's caller
+  composition remain separate obligations. The polarity record remains
+  `state_preservation`, and all normative records remain provisional.
 
 The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
 implementation data is not by itself proof of a faithful standards translation.
+
+## Selected Annex A/E arithmetic enumeration
+
+This tranche adds **138 provisional normative records**, bringing the arithmetic
+worklist from three records to **141**, without changing runtime, models, proofs,
+coverage floors or trust/attestation metadata. The two existing reset records
+retain their narrow functional classification; the aggregate decision record
+retains state-preservation strength. All 138 additions are **state-preservation**
+records with explicit missing functional relations, not newly proved semantics.
+The original 111 IDs and review states are preserved.
+
+| Consulted source / selected membership | Added records | Accounting boundary |
+|---|---:|---|
+| A.1/A.2 procedure namespaces, history, sign, six magnitude leaves, payload order, three result cases | 17 | Local integer helper and history/magnitude bound macros; no decision-sequence-to-integer contract |
+| A.2 Table A.1, each of its 14 representation rows | 14 | Separate row locators, including negative unit and OOB; no copied encodings or independent table-to-output proof |
+| A.3 fixed length, seed, context, recurrence, iteration count, sentinel removal, return and storage | 8 | Existing pure binary-value/power-of-two models are linked, but production IAID does not promise their output relation |
+| E.3/E.3.1 interface, stream/context loop and register conventions | 6 | Caller sequence/stream agreement and logical code-register interpretation remain gaps |
+| E.3.2 Figure E.15 decision steps | 8 | Lookup, interval subtraction, strict partition, high-code subtraction, fast MPS, both exchange/renormalization paths and return |
+| E.3.2 Figures E.16/E.17 exchange branches | 11 | Both comparisons, old-sense decisions, NMPS/NLPS, switch/no-switch and lower-path interval replacement |
+| E.3.3 Figure E.18 normalization steps | 5 | Refill, both shifts, counter consumption and exit; normalization measure is termination support, not a register recurrence |
+| E.3.4 Figure E.19 input branches | 11 | FF/marker tests and each branch's pointer, code alignment/fill and exact bit count |
+| E.3.5 Figure E.20 initialization steps | 6 | Pointer, code seed, BYTEIN, alignment shift, counter adjustment and initial interval |
+| Decoder-shared E.2.5 estimator rules and each Table E.1 index 0–46 | 52 | Five rule records plus 47 four-field row relations; bounded transitions are not table fidelity |
+
+`T88-ARITHMETIC-INTEGER-*`, `IAID-*`, `DECODE-*`, `EXCHANGE-*`,
+`RENORM-*`, `BYTEIN-*`, `INITDEC-*` and `QE-*` are stable selected membership
+under the arithmetic prefix, not new feature groups or an exhaustive denominator.
+Exact table locators and finite selected membership are regression-tested.
+The ordinary reference checker validates every runtime/model/macro definition,
+postcondition token, source binding and test identity; Cargo discovery and a
+fresh pinned-Verus report validate executable/proof membership. No unchecked
+parallel requirements format or completion flag is introduced.
+
+**Source consultation, 2026-10-21:** the approved shared local T.88 PDF was
+read without modifying the shared assets. Its SHA-256 was
+`dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6`;
+the recorded official package also independently hashed to
+`e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f`.
+Acquisition provenance remains the ledger's
+[official ITU package URL](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items),
+not a new download or a third-party source. Consultation used local text for
+A.1–A.3 (printed pages 89–92), decoder-shared E.2.5/Table E.1 (115–116),
+E.3–E.3.5 (117–122) and E.3.7 (123). Figure A.1 and Figures E.13–E.20
+were also rendered and visually read from PDF pages 102 and 130–134;
+their flowchart branches were **not** inferred from missing extracted text.
+Every new row's exact clause/step/table locator resolves through its standard
+identity to this hash. T.6 was not freshly consulted for this tranche;
+its existing consultation history and records are unchanged. This consultation
+is not owner approval or an independent formal standard-translation review.
+
+The existing integer/IAID scripted tests run callback reference procedures.
+Only the concrete comparison test runs the production integer/IAID helpers
+against those procedures on one existing stream. Many leaf/range/length
+boundaries therefore still lack dedicated production tests. The randomized
+decision oracle repeats the implementation algorithm; the table test repeats a
+project-local constant list; neither is an independent normative specification.
+The linked IAID pure-model lemmas start from an assumed decision sequence and
+are not a production output postcondition. New records state these limitations
+instead of treating test names or bounds lemmas as functional proof.
+
+Selected-section accounting is now substantially finer grained, but remains
+**provisional and partial**. Owner review must check for omissions and confirm
+the paraphrases and contract strengths. Procedure-bank/caller identity,
+initialization/reset timing and cross-clause composition remain open.
+E.3.6 recovery (explicitly not standardized), E.3.8 GB/GR save/restore,
+encoder algorithms and non-normative Annex G are outside this tranche, not
+newly completed features. Other P04 feature worklists retain their existing
+undecomposed scope. The owner PR #47 separation is preserved:
+`--require-reviewed-decomposition` still fails for these unreviewed partial
+records; `--require-complete` still additionally requires functional semantic
+closure. Neither P04 completion nor full P05/conformance is claimed.
 
 ## Initial bounded organization, Huffman and MMR decomposition
 
@@ -143,10 +221,21 @@ Every feature now records its exact selected `requirement_ids` and an explicit
 `remaining_scope` worklist. The checker cross-checks membership in both
 directions, disallows records under `not_started`/`excluded`, and disallows empty
 `partial` features. Incomplete features must retain nonblank remaining scope;
-the excluded encoder retains an explicit policy boundary. A `complete` feature
-would require nonempty, approved, gap-free functional records and no remaining
-scope, but that is still a review declaration, not a proof of exhaustive
-enumeration. No actual feature is marked complete.
+the excluded encoder retains an explicit policy boundary. A `complete`
+decomposition requires nonempty, reviewed records and no remaining enumeration
+scope. It can account explicitly for known semantic gaps and weaker proofs:
+P04's map must represent those honestly rather than require P05 to finish
+before P04 can complete. This is still a review declaration, not a proof of
+exhaustive enumeration. No actual feature is marked complete or newly approved.
+
+The separate `semantic_claims_complete` gate additionally requires every
+record to have functional evidence, no semantic gaps and approved review.
+The existing `--require-complete`, overall report status and legacy
+`normative_decomposition_complete` field retain that stronger meaning.
+`decomposition_review_complete` and `--require-reviewed-decomposition` expose
+the narrower P04 milestone without closing any P05 obligation. A reviewed map
+with known unproved transformations can pass the latter but must fail the
+full gate and retain `semantic_claims_review_required` as its release state.
 
 ## Continued family-specific mapping
 
@@ -339,6 +428,14 @@ checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
+retains the full reviewed-functional, gap-free requirement. The additional
+`--require-reviewed-decomposition` also requires both inputs, but checks only
+the reviewed, exhaustive-enumeration declaration. Neither flag passes for
+the actual provisional ledger today. Known semantic gaps may be accounted
+for by a fully reviewed P04 map, but cannot satisfy the full flag or close
+the corresponding P05 claims.
+
+The current complete-scope gate still
 fails because decomposition, review and semantic gaps remain incomplete. A normal
 reference-check pass is not a release/conformance pass.
 
