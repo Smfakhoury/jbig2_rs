@@ -115,8 +115,13 @@ The subsequent actual scheduled extended run on the seven-target
 `de2fbf3` source also passed, with 566,048,292 executions and actual cache
 restore/save. The later eighth-target source has not yet been observed through
 a scheduled trigger.
-Broader structured/stateful targets, corpus review and minimization remain
-pending. This is not completion of P08.
+Broader structured/stateful target work remains separate. The existing nine
+targets now have an operational generated-corpus lifecycle: complete bounded
+inventories, preserved owned copies, pinned libFuzzer merge evidence, exact
+before/after replay, and source-bound trusted-main-only cache promotion.
+See [the operational lifecycle](fuzz-corpus-lifecycle.md) for limits, failure
+behavior and reproduction. This does not establish source-line coverage
+preservation or complete the remaining P08 readiness work.
 Successful targets now require unambiguous positive final execution counters;
 single-input replay requires exactly one execution. Per-target counts and
 their exact total are reported, while missing/invalid evidence fails closed.

@@ -176,6 +176,7 @@ class WorkflowPolicyTests(unittest.TestCase):
             ("ci.yml", "cargo"): toolchains["cargo_rust_toolchain"],
             ("ci.yml", "distribution"): "${{ matrix.toolchain }}",
             ("coverage.yml", "coverage"): toolchains["coverage"]["rust_toolchain"],
+            ("fuzz.yml", "controls"): toolchains["fuzz_rust_toolchain"],
             ("fuzz.yml", "fuzz"): toolchains["fuzz_rust_toolchain"],
             ("performance.yml", "performance"): toolchains["cargo_rust_toolchain"],
             ("verus.yml", "verify"): toolchains["verus"]["rust_toolchain"],

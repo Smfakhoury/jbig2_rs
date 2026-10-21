@@ -98,6 +98,10 @@ python -B -m unittest discover -s tools/tests -v
 Do not use standards documents, sample software, or conformance assets unless
 their entry in `source-provenance.json` records the required legal approval.
 
+The [generated fuzz corpus lifecycle](docs/fuzz-corpus-lifecycle.md) documents
+bounded validation, owned-copy minimization, exact replay and trusted-main-only
+cache promotion for the existing nine targets.
+
 ## Runtime coverage
 
 The pinned Linux coverage workflow measures ordinary runtime code, excluding
