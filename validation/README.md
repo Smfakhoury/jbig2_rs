@@ -282,13 +282,24 @@ edges, clipping, empty dimensions and maximal origins; bit-loop oracles check
 complete shifted byte/word/tail availability. Coverage exclusions and the
 reviewed floor are unchanged; the separate P06 family work owns floor updates.
 
-`tools/run_semantic_proofs.py` runs all twelve isolated semantic checkers
+`tools/check_arithmetic_decision_proofs.py` checks four compiling wrong
+decision/context mutations against the exact arithmetic decision, checked
+wrapper and lower/upper exchange contracts. Weaker controls retain the prior
+validity/signal guarantees; the exchange controls retain their conditional
+decision relation while omitting only the context outputs. Tests independently
+exercise all 47 probability rows, both MPS values, boundary routes and context
+updates before truncation. The theorem covers successful decisions and context
+steps against the project model, not exact renormalized registers, byte
+consumption or normative entropy-stream equivalence.
+
+`tools/run_semantic_proofs.py` runs all thirteen isolated semantic checkers
 with at most two concurrent children. Each checker retains its pinned verifier,
 selected-target checks, native compilation and strong/weaker solver limits.
 Reports and logs keep their existing names; stale reports are removed before
 launch, and missing/malformed/duplicate/failed evidence fails the aggregate.
-The 50 required contrasts include the six black-span and four operator-bit
-contrasts. Whole-crate verification, the 20-minute job budget, action pins and
+The 54 required contrasts include the six black-span, four operator-bit and
+four arithmetic decision/context contrasts. Whole-crate verification, the
+20-minute job budget, action pins and
 read-only permissions are unchanged. The aggregate report is additional
 orchestration evidence, not a substitute for individual reports.
 

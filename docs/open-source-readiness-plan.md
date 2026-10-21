@@ -22,7 +22,7 @@ integer representation and Qe table-row relations. The total now comprises
 project-profile policies. All records remain provisional; selected arithmetic
 accounting is not owner-reviewed exhaustive enumeration. Starting every feature
 does not establish exhaustive normative enumeration. Eighteen generated
-integration regressions supplement 134 distinct linked non-ignored Cargo test
+integration regressions supplement 147 distinct linked non-ignored Cargo test
 identities. Exact per-feature membership, remaining scope, official source
 consultation identity and policy-row hashes are checked. T.88 hashes were
 rechecked through its official public package; no standard assets were
@@ -110,6 +110,16 @@ independent truth-table tests and four compiled strong/weaker contrasts back
 the claim. The underlying expressions are unchanged apart from pure result
 bindings. Complete raster placement/mask/shift integration and normative
 translation are still not inferred from these helper contracts.
+The arithmetic decision tranche proves successful returned bits and exact next
+probability-context index/MPS against the project Qe-table model and entry
+interval/code. Exchange helpers also specify context updates on error. Four
+compiling strong/weaker contrasts and independent all-47-row/MPS/route tests
+supplement the 1165-obligation whole proof. Native tokens, preconditions and
+existing models are unchanged. The semantic runner now has thirteen groups and
+54 contrasts. Exact renormalized registers, input consumption,
+initialization/refill, caller composition and normative translation remain
+open; the aggregate arithmetic record remains provisional state-preservation
+evidence rather than a complete transition claim.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
