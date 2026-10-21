@@ -91,6 +91,8 @@ Every negative/metamorphic case now names nonempty exact `{target, name}` test
 references. All 29 cases resolve to 38 references and 37 distinct ordinary
 tests; file-only `coverage` entries are no longer accepted. Missing, ignored,
 duplicated or wrong-target references and empty catalogs fail explicitly.
+Failed validation removes any previous output report, preventing stale success
+evidence from being mistaken for the current result.
 
 ```text
 python -B tools/check_test_catalogs.py --discover-tests \

@@ -134,6 +134,7 @@ class TestCatalogTests(unittest.TestCase):
             '{"schema_version":1,"cases":[]}', encoding="utf-8",
         )
         output = self.root / "report.json"
+        output.write_text('{"status":"references_valid"}', encoding="utf-8")
         with patch("check_test_catalogs.ROOT", self.root), patch.object(
             sys, "argv", ["check_test_catalogs", "--output", str(output)],
         ), redirect_stderr(io.StringIO()) as errors:

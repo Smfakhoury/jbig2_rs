@@ -68,6 +68,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     try:
+        arguments.output.unlink(missing_ok=True)
         paths = {kind: ROOT / "validation" / kind / "cases.json" for kind in CATALOGS}
         documents = {kind: load_json(path) for kind, path in paths.items()}
         for document in documents.values():
