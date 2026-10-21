@@ -12,152 +12,212 @@
     {
       "feature": "decoder",
       "support_status": "required",
-      "decomposition": "partial"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-BITS-MSB-FIRST", "T88-WORDS-MSB-FIRST", "T88-SEGMENT-TYPE-FIELD", "T88-SEGMENT-FLAG-FIELDS", "T88-SEGMENT-PAGE-ASSOCIATION", "T88-SEGMENT-KNOWN-LENGTH", "T88-SEGMENT-UNKNOWN-LENGTH"],
+      "remaining_scope": ["Complete segment syntax, payload dispatch and decoder-wide normative enumeration remain open; selected helper contracts do not prove parser output fields."]
     },
     {
       "feature": "encoder",
       "support_status": "deferred",
-      "decomposition": "excluded"
+      "decomposition": "excluded",
+      "requirement_ids": [],
+      "remaining_scope": ["Encoder requirements are excluded only because support-matrix policy explicitly defers encoding."]
     },
     {
       "feature": "standalone_file_organization",
       "support_status": "required",
-      "decomposition": "partial"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-HEADER-SIGNATURE", "T88-HEADER-ORGANIZATION", "T88-HEADER-COUNT-PRESENCE", "T88-HEADER-EXTENDED-DECLARATION", "T88-HEADER-COLOUR-DECLARATION", "T88-HEADER-RESERVED-FLAGS", "T88-HEADER-COUNT-VALUE"],
+      "remaining_scope": ["Complete header-to-body dispatch, document lifecycle and rejection completeness remain unenumerated or unproved."]
     },
     {
       "feature": "sequential_organization",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-SEQUENTIAL-SEGMENT-LAYOUT", "T88-SEQUENTIAL-NUMBER-ORDER"],
+      "remaining_scope": ["Complete D.1 enumeration and byte-to-returned-segment ordering/layout contracts remain open; EOF and lifecycle interactions need separate review."]
     },
     {
       "feature": "random_access_organization",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-RANDOM-HEADER-PAYLOAD-LAYOUT", "T88-RANDOM-EOF-DELIMITER", "T88-RANDOM-NUMBER-ORDER"],
+      "remaining_scope": ["Complete D.2 enumeration, rejection completeness and returned header/payload correspondence contracts remain open."]
     },
     {
       "feature": "embedded_organization",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-EMBEDDED-SEGMENT-LAYOUT"],
+      "remaining_scope": ["Embedding-container order/reassembly responsibilities and complete D.3 enumeration remain open; no PDF-container semantics are claimed."]
     },
     {
       "feature": "pdf_global_and_page_segments",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["PDF-specific separation and reuse of global/page segments need requirement-level decomposition distinct from T.88 embedded storage."]
     },
     {
       "feature": "known_height_pages",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Known-height page information, bounds, completion and output semantics need requirement-level decomposition."]
     },
     {
       "feature": "unknown_height_pages",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Unknown-height page information, stripe accumulation and final-height rules need requirement-level decomposition."]
     },
     {
       "feature": "arithmetic_coding",
       "support_status": "required",
-      "decomposition": "partial"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-ARITHMETIC-RESET-ONE", "T88-ARITHMETIC-RESET-SET", "T88-ARITHMETIC-DECISION"],
+      "remaining_scope": ["Complete arithmetic initialization, renormalization, byte input, transition, integer and IAID obligations remain open; decision equivalence is not proved."]
     },
     {
       "feature": "standard_huffman_tables",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-HUFFMAN-STANDARD-TABLES", "T88-HUFFMAN-PREFIX-MATCH", "T88-HUFFMAN-NORMAL-VALUE", "T88-HUFFMAN-LOWER-VALUE", "T88-HUFFMAN-OOB-VALUE"],
+      "remaining_scope": ["Independent per-table normative review and complete table/caller selection enumeration remain open; prefix selection and whole-decoder value equivalence are unproved."]
     },
     {
       "feature": "custom_huffman_tables",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-HUFFMAN-OOB-FLAG", "T88-HUFFMAN-PREFIX-WIDTH", "T88-HUFFMAN-RANGE-WIDTH", "T88-HUFFMAN-RESERVED-FLAG", "T88-HUFFMAN-SIGNED-BOUNDS", "T88-HUFFMAN-NORMAL-LINES", "T88-HUFFMAN-SPECIAL-LINES", "T88-HUFFMAN-CANONICAL-ASSIGNMENT"],
+      "remaining_scope": ["Complete B.2/B.3 enumeration, encoded-table output relation, canonical prefix assignment theorem and caller selection remain open; shared B.4 helper evidence is recorded under standard_huffman_tables, not independently duplicated here."]
     },
     {
       "feature": "mmr_coding",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-MMR-BINARY-POLARITY", "T88-MMR-BYTE-ALIGNED-PREFIX", "T88-MMR-REQUIRED-EOFB", "T88-MMR-OPTIONAL-EOFB"],
+      "remaining_scope": ["T.6 mode/run/table obligations require separate source consultation and enumeration; 6.2.6 caller policy, complete bitmap pixel semantics and alignment propagation remain open."]
     },
     {
       "feature": "generic_regions",
       "support_status": "required",
-      "decomposition": "partial"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-GENERIC-CONTEXT-SIZE", "T88-GENERIC-SLTP-CONTEXT", "T88-GENERIC-TYPICAL-ROW"],
+      "remaining_scope": ["Remaining template geometry, skip/typical prediction timing, first-row behavior and complete generic raster semantics need decomposition and review."]
     },
     {
       "feature": "generic_refinement_regions",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Refinement template geometry, reference alignment, prediction and raster rules need requirement-level decomposition."]
     },
     {
       "feature": "symbol_dictionaries",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Dictionary imports, dimensions, decoding, exports and context reuse need requirement-level decomposition."]
     },
     {
       "feature": "text_regions",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Text strip/symbol placement, IDs, refinement and composition need requirement-level decomposition."]
     },
     {
       "feature": "pattern_dictionaries",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Pattern dimensions, collective bitmap decoding and pattern extraction need requirement-level decomposition."]
     },
     {
       "feature": "halftone_regions",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Halftone grid, grayscale planes, pattern selection and raster composition need requirement-level decomposition."]
     },
     {
       "feature": "immediate_regions",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Immediate region page effects and lossless variant rules need requirement-level decomposition."]
     },
     {
       "feature": "intermediate_regions",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Intermediate region resource storage, visibility and lifetime rules need requirement-level decomposition."]
     },
     {
       "feature": "refinement_aggregation",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Refinement aggregation inputs, instance counts and decoded output rules need requirement-level decomposition."]
     },
     {
       "feature": "multiple_pages",
       "support_status": "required",
-      "decomposition": "partial"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-DOCUMENT-COUNT-AGREEMENT"],
+      "remaining_scope": ["Page identity, contiguous numbering, lifecycle, ordering and decoded output correspondence remain open beyond parsed page-count agreement."]
     },
     {
       "feature": "global_segments",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Page-independent segment scope, reuse, collisions and global lifetime rules need requirement-level decomposition."]
     },
     {
       "feature": "retention_flags",
       "support_status": "required",
-      "decomposition": "partial"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-SEGMENT-RETENTION-WIRE-ORDER", "T88-SEGMENT-RETENTION-UNUSED-BITS"],
+      "remaining_scope": ["Deferred non-retain/attached-extension semantics and complete lifetime transitions remain open; the 7.2.8 example conflict still requires owner adjudication."]
     },
     {
       "feature": "referred_to_segment_handling",
       "support_status": "required",
-      "decomposition": "partial"
+      "decomposition": "partial",
+      "requirement_ids": ["T88-SEGMENT-REFERENCE-WIDTH", "T88-SEGMENT-REFERENCE-PRECEDENCE"],
+      "remaining_scope": ["Reference resolution, allowed types, cross-page scope, retention interaction and full graph/lifecycle semantics remain open."]
     },
     {
       "feature": "combination_operators",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["All operator truth tables, clipping, default/override selection and composed pixel semantics need requirement-level decomposition."]
     },
     {
       "feature": "striped_pages",
       "support_status": "required",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Stripe ordering, limits, end-of-stripe/end-of-page and final output height need requirement-level decomposition."]
     },
     {
       "feature": "colour_palette",
       "support_status": "unsupported",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["Unsupported colour/palette detection and exact rejection behavior still need requirement-level decomposition; unsupported is not excluded."]
     },
     {
       "feature": "lossy_symbol_substitution_by_decoder",
       "support_status": "prohibited",
-      "decomposition": "not_started"
+      "decomposition": "not_started",
+      "requirement_ids": [],
+      "remaining_scope": ["The prohibited decoder-side lossy substitution policy and its enforcement evidence still need requirement-level decomposition; prohibited is not excluded."]
     }
   ],
   "bindings": {
@@ -172,6 +232,8 @@
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
+    "specs/huffman.rs": "31e058b8efbd0ea5cdc2c7d81c4c21d69b7e40f52a3524dc7f3a61abef686d41",
+    "specs/mmr.rs": "01bface042a7dcdab87aa7bc62694c2867cd84aa2d734891c545fde4c1979d30",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
@@ -180,12 +242,48 @@
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+    "src/huffman.rs": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
+    "src/mmr.rs": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
     "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
-    "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616"
+    "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
+    "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
+    "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652"
   },
   "definitions": {
+    "segment-type": {
+      "kind": "spec", "file": "specs/segments.rs", "module_path": ["spec", "segments"],
+      "name": "segment_type", "role": "Project mapping from recognized segment type numbers to variants."
+    },
+    "segment-be-u32": {
+      "kind": "spec", "file": "specs/segments.rs", "module_path": ["spec", "segments"],
+      "name": "be_u32_at", "role": "Big-endian four-byte value at a segment reader offset."
+    },
+    "huffman-reader-valid": {
+      "kind": "spec", "file": "specs/huffman.rs", "module_path": ["huffman", "huffman_spec"],
+      "name": "reader_valid", "role": "Bit reader bounds only, not correct prefix selection."
+    },
+    "huffman-decoded-value": {
+      "kind": "spec", "file": "specs/huffman.rs", "module_path": ["huffman", "huffman_spec"],
+      "name": "decoded_line_value", "role": "Integer relation for an already selected normal, lower or upper Huffman line."
+    },
+    "bitmap-storage-valid": {
+      "kind": "spec", "file": "specs/bitmap.rs", "module_path": ["spec", "bitmap"],
+      "name": "storage_valid", "role": "Packed bitmap allocation/stride invariant, not a pixel-value relation."
+    },
+    "mmr-storage-valid": {
+      "kind": "spec", "file": "specs/mmr.rs", "module_path": ["mmr", "mmr_spec"],
+      "name": "bitmap_storage_valid", "role": "MMR helper bitmap storage invariant, not black-span pixel correctness."
+    },
+    "mmr-reader-valid": {
+      "kind": "spec", "file": "specs/mmr.rs", "module_path": ["mmr", "mmr_spec"],
+      "name": "reader_valid", "role": "MMR bit reader bounds invariant."
+    },
+    "mmr-exact-eofb": {
+      "kind": "spec", "file": "specs/mmr.rs", "module_path": ["mmr", "mmr_spec"],
+      "name": "exact_eofb", "role": "Project predicate checking the 24-bit MMR end marker at a given bit offset."
+    },
     "retention-wire-bit": {
       "kind": "spec", "file": "specs/segments.rs",
       "module_path": ["spec", "segments"], "name": "retention_bit",
@@ -467,6 +565,469 @@
     }
   },
   "requirements": [
+    {
+      "id": "T88-SEQUENTIAL-SEGMENT-LAYOUT",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "D.1",
+      "title": "Read each sequential segment body immediately after its header",
+      "feature": "sequential_organization",
+      "runtime": ["document::parse_sequential", "document::read_payload"],
+      "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_organization", "name": "sequential_payloads_are_interleaved_with_their_headers"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified parser/helper bodies establish safety and reader bounds; parse_sequential has no postcondition relating returned segment payloads to their input byte spans.",
+      "assumptions": ["The standalone header has already selected the sequential parser; the generated two-page example is not an exhaustive syntax oracle."],
+      "gaps": ["Prove input header/body span correspondence and returned order, not merely safe traversal; complete D.1 enumeration remains open."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEQUENTIAL-NUMBER-ORDER",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "D.1",
+      "title": "Enforce increasing standalone sequential segment numbers",
+      "feature": "sequential_organization",
+      "runtime": ["document::parse_sequential"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "traceability_organization", "name": "both_standalone_organizations_reject_descending_segment_numbers"},
+        {"target": "catalog_contracts", "name": "duplicate_local_wire_numbers_have_exact_order_errors"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The parser body is verified, but no exported relation states increasing returned numbers or exact rejection of non-increasing input.",
+      "assumptions": ["require_local_references is true for standalone sequential parsing; embedded use of the same helper intentionally differs."],
+      "gaps": ["Prove ordering and rejection under the standalone caller condition; bounded duplicate/descending examples do not establish rejection completeness."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-RANDOM-HEADER-PAYLOAD-LAYOUT",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "D.2",
+      "title": "Read random-access headers before the corresponding bodies in header order",
+      "feature": "random_access_organization",
+      "runtime": ["document::parse_random_access", "document::read_payload"],
+      "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_organization", "name": "random_access_payloads_follow_all_headers_in_header_order"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified traversal and bounded payload reads; no returned-vector contract binds each saved header to its body bytes.",
+      "assumptions": ["The file header selects random-access parsing; the generated example uses distinct page dimensions to observe payload order."],
+      "gaps": ["Prove header/body pairing, exact byte offsets and returned order for arbitrary accepted input; full D.2 decomposition remains open."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-RANDOM-EOF-DELIMITER",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "D.2",
+      "title": "Use an end-of-file segment header to terminate the random-access header block",
+      "feature": "random_access_organization",
+      "runtime": ["document::parse_random_access"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "traceability_organization", "name": "random_access_requires_an_end_of_file_header"},
+        {"target": "traceability_organization", "name": "random_access_payloads_follow_all_headers_in_header_order"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The loop is verified for safety, not for the presence, placement or exact error semantics of the EOF delimiter.",
+      "assumptions": ["The generated missing-delimiter case ends immediately after a complete non-EOF header; malformed and truncated delimiters are different cases."],
+      "gaps": ["Prove accepted header blocks end at EOF and missing delimiters fail; enumerate delimiter/body/trailing-data interactions."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-RANDOM-NUMBER-ORDER",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "D.2",
+      "title": "Enforce increasing random-access segment numbers",
+      "feature": "random_access_organization",
+      "runtime": ["document::parse_random_access"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "traceability_organization", "name": "both_standalone_organizations_reject_descending_segment_numbers"},
+        {"target": "catalog_contracts", "name": "duplicate_local_wire_numbers_have_exact_order_errors"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified parser body without an exported number-order or rejection postcondition.",
+      "assumptions": ["This is wire header order, not a promise to expose arbitrary-order page decoding through the API."],
+      "gaps": ["Prove increasing accepted numbers and complete rejection behavior; do not infer arbitrary-access API semantics from D.2 storage support."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-EMBEDDED-SEGMENT-LAYOUT",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "D.3",
+      "title": "Accept header-body segment pairs without a standalone file header or standalone wire-number order",
+      "feature": "embedded_organization",
+      "runtime": ["document::parse_embedded_document", "document::parse_sequential"],
+      "models": ["embedded-metadata"], "proof_macros": [],
+      "tests": [{"target": "traceability_organization", "name": "embedded_segments_need_no_file_header_or_wire_number_order"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified parsing bodies and an auxiliary embedded metadata shape; that shape does not prove byte-level embedded storage or arbitrary container-order reassembly.",
+      "assumptions": ["The embedding application supplies contiguous segment pairs; arbitrary surrounding container bytes and suggested markers are not decoder input."],
+      "gaps": ["Prove pair-to-input correspondence and clarify container reassembly/lifecycle obligations; the internal Sequential metadata label is not a D.3 wire-order restriction."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-TYPE-FIELD",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.3 bits 0-5; 7.3",
+      "title": "Classify recognized segment type numbers using the project type mapping",
+      "feature": "decoder",
+      "runtime": ["segment_header::SegmentType::from_number"],
+      "models": ["segment-type"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "segment_header::tests::every_flag_byte_has_exact_type_page_and_deferred_fields"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper accepts exactly the entries in the local segment_type model; it does not establish that the parser extracts the low six flag bits.",
+      "assumptions": ["The local number-to-variant mapping needs independent review against 7.3; helper input is already an extracted number."],
+      "gaps": ["Prove extraction and caller propagation and review the complete type mapping and reserved-type policy."],
+      "functional_evidence": [{"runtime": "segment_header::SegmentType::from_number", "section": "ensures", "tokens": [
+        "crate::spec::segments::segment_type(number) == Some(segment_type)",
+        "Err(_) => crate::spec::segments::segment_type(number).is_none()"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-FLAG-FIELDS",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.3 bits 0-7",
+      "title": "Separate segment type, page-field size and deferred non-retain flag bits",
+      "feature": "decoder",
+      "runtime": ["segment_header::parse_segment_header"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "segment_header::tests::every_flag_byte_has_exact_type_page_and_deferred_fields"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The parser preserves reader bytes, bounds and successful progress, but does not promise exact returned flag fields.",
+      "assumptions": ["The all-flag-byte regression observes field extraction; deferred retention lifecycle meaning is a separate obligation."],
+      "gaps": ["Add exact parsed flag-field postconditions and caller linkage; attached-extension and deferred-release semantics remain open under retention_flags."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-PAGE-ASSOCIATION",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.6; 7.2.3 bit 6",
+      "title": "Read short or four-byte page associations according to the selected field size",
+      "feature": "decoder",
+      "runtime": ["segment_header::read_page_association"], "models": ["segment-be-u32"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "segment_header::tests::every_flag_byte_has_exact_type_page_and_deferred_fields"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful reads return the exact one-byte or big-endian four-byte value and advance by the selected size; failure preserves reader position.",
+      "assumptions": ["The caller supplies the correct long-field Boolean and a valid reader; helper correctness does not prove that flag extraction."],
+      "gaps": ["Prove parser field propagation and separately decompose zero/global association, page numbering and cross-page reference rules."],
+      "functional_evidence": [{"runtime": "segment_header::read_page_association", "section": "ensures", "tokens": [
+        "Ok(value) => if long {",
+        "final(reader).position == old(reader).position + 4",
+        "value == crate::spec::segments::be_u32_at(old(reader).bytes@, old(reader).position as int,)",
+        "final(reader).position == old(reader).position + 1",
+        "value == old(reader).bytes@[old(reader).position as int] as u32",
+        "Err(_) => final(reader).position == old(reader).position"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-KNOWN-LENGTH",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.7",
+      "title": "Preserve an ordinary segment data length as its known byte count",
+      "feature": "decoder",
+      "runtime": ["segment_header::decode_data_length"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "segment_header::tests::count_and_length_boundaries_preserve_exact_error_values"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "A successful Some length equals the supplied non-sentinel encoded value; other branches constrain the sentinel/type case.",
+      "assumptions": ["The helper receives an already decoded 32-bit field; the contract is branch-conditional, not a complete acceptance theorem."],
+      "gaps": ["Prove field extraction, successful acceptance of every ordinary value and exact payload slicing or truncation behavior."],
+      "functional_evidence": [{"runtime": "segment_header::decode_data_length", "section": "ensures", "tokens": [
+        "Some(value) => encoded != 0xffff_ffffu32 && value == encoded",
+        "Err(_) => encoded == 0xffff_ffffu32 && segment_type != SegmentType::ImmediateGenericRegion"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-SEGMENT-UNKNOWN-LENGTH",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.7",
+      "title": "Restrict the unknown-length sentinel to the immediate generic region type",
+      "feature": "decoder",
+      "runtime": ["segment_header::decode_data_length"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "segment_header::tests::accepts_unknown_length_only_for_immediate_generic_regions"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "A successful None result requires the sentinel and ImmediateGenericRegion; any error requires the sentinel with a different type.",
+      "assumptions": ["This record concerns the header helper only, not discovery of the true body length."],
+      "gaps": ["Prove raw field-to-helper propagation and complete acceptance; decompose arithmetic/MMR terminator detection and row-count validation separately."],
+      "functional_evidence": [{"runtime": "segment_header::decode_data_length", "section": "ensures", "tokens": [
+        "None => encoded == 0xffff_ffffu32 && segment_type == SegmentType::ImmediateGenericRegion",
+        "Err(_) => encoded == 0xffff_ffffu32 && segment_type != SegmentType::ImmediateGenericRegion"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-OOB-FLAG",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2.1 bit 0",
+      "title": "Extract whether a custom Huffman table has an out-of-band line",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::encoded_table_fields"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "huffman::tests::parses_oob_custom_table"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper's first tuple field exactly tests flag bit zero.",
+      "assumptions": ["The helper receives the table flag byte; the linked parser example exercises one present-OOB configuration."],
+      "gaps": ["Prove encoded-table output/line presence and add an exhaustive direct flag-helper oracle; caller timing is not part of this result."],
+      "functional_evidence": [{"runtime": "huffman::encoded_table_fields", "section": "ensures", "tokens": ["out.0 == (flags & 1 != 0)"]}],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-PREFIX-WIDTH",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2.1 bits 1-3",
+      "title": "Interpret the custom-table prefix-size field width with its one-bit bias",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::encoded_table_fields"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "huffman::tests::parses_oob_custom_table"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper's second tuple field is the selected three-bit flag field plus one.",
+      "assumptions": ["The linked custom-table test uses a two-bit prefix-size field; this does not execute every flag combination."],
+      "gaps": ["Prove use of this width throughout encoded line reads and add exhaustive direct width tests; no parser result contract currently carries this relation."],
+      "functional_evidence": [{"runtime": "huffman::encoded_table_fields", "section": "ensures", "tokens": ["out.1 == ((((flags >> 1) & 7) as u16 + 1) as u8)"]}],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-RANGE-WIDTH",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2.1 bits 4-6",
+      "title": "Interpret the custom-table range-size field width with its one-bit bias",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::encoded_table_fields"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::parses_oob_custom_table"},
+        {"target": "lib", "name": "huffman::tests::rejects_invalid_bounds_partition_and_range_length"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper's third tuple field is the selected three-bit flag field plus one.",
+      "assumptions": ["The positive and negative encoded-table examples are bounded observations, not exhaustive field-width coverage."],
+      "gaps": ["Prove correct line-range field consumption and add a direct exhaustive flag oracle; parser output semantics remain unproved."],
+      "functional_evidence": [{"runtime": "huffman::encoded_table_fields", "section": "ensures", "tokens": ["out.2 == ((((flags >> 4) & 7) as u16 + 1) as u8)"]}],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-RESERVED-FLAG",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2.1 bit 7",
+      "title": "Reject a custom-table flag byte with its reserved bit set",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::HuffmanTable::from_encoded"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "huffman::tests::rejects_reserved_flags_and_nonzero_padding"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The parser body is verified for safety; it has no rejection postcondition for reserved flags.",
+      "assumptions": ["Only the reserved-flag part of the linked test backs this requirement; that test's separate zero-padding rule is not attributed to B.2.1."],
+      "gaps": ["Add a typed reserved-bit rejection contract and broader flag combinations; complete malformed-table policy remains open."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-SIGNED-BOUNDS",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2 steps 2-4; B.2.2; B.2.3",
+      "title": "Read signed custom-table lower and exclusive upper bounds",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::HuffmanTable::from_encoded"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::parses_annex_b_example_table"},
+        {"target": "lib", "name": "huffman::tests::rejects_invalid_bounds_partition_and_range_length"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified casts and bounded arithmetic, but no postcondition binds returned table bounds to signed big-endian input fields.",
+      "assumptions": ["The named Annex B example is an existing test, not newly acquired or redistributed official vector content."],
+      "gaps": ["Add independent negative/extreme signed-bound tests and prove field interpretation, bound ordering and output correspondence."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-NORMAL-LINES",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2 steps 4-5",
+      "title": "Advance normal custom-table ranges using each decoded range width",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::HuffmanTable::from_encoded"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::parses_annex_b_example_table"},
+        {"target": "lib", "name": "huffman::tests::rejects_invalid_bounds_partition_and_range_length"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Loop invariants bound the current value and reader; no exported table-line sequence relation proves the B.2 recurrence.",
+      "assumptions": ["Project rejection of a range partition that overshoots the supplied high bound is implementation policy pending normative review."],
+      "gaps": ["Prove the complete decoded line list and termination/partition relation; adjudicate whether the stricter overshoot rejection excludes otherwise permitted tables."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-SPECIAL-LINES",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2 steps 6-10",
+      "title": "Construct custom-table lower, upper and optional out-of-band lines",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::HuffmanTable::from_encoded"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::parses_oob_custom_table"},
+        {"target": "lib", "name": "huffman::tests::parses_annex_b_example_table"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The parser body is verified, without a postcondition for special-line order, bounds, range sizes or conditional presence.",
+      "assumptions": ["The supplied low/high fields and OOB flag are parsed before these lines; selected examples do not cover every special-line combination."],
+      "gaps": ["Prove returned special-line sequence and encoded-bit consumption; add absent/present OOB and extreme lower/upper parser cases."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-CANONICAL-ASSIGNMENT",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.2 step 11; B.3 steps 1-3",
+      "title": "Assign canonical prefixes by length and original table-line order",
+      "feature": "custom_huffman_tables",
+      "runtime": ["huffman::HuffmanTable::from_line_source"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::canonical_assignment_follows_table_order"},
+        {"target": "lib", "name": "huffman::tests::supports_prefixes_longer_than_machine_words"},
+        {"target": "lib", "name": "huffman::tests::rejects_oversubscribed_and_structurally_invalid_tables"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified construction and bounded wide arithmetic do not export a theorem for the entire histogram/first-code/line-order recurrence.",
+      "assumptions": ["The project supports wide prefixes; safety of wide arithmetic helpers is not independent proof of the complete canonical algorithm."],
+      "gaps": ["Prove canonical code assignment, zero-length exclusion and prefix-freedom for accepted tables; independently review invalid-table rejection policy."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-STANDARD-TABLES",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.5; Tables B.1-B.15",
+      "title": "Select and construct the fifteen predefined Huffman tables",
+      "feature": "standard_huffman_tables",
+      "runtime": ["huffman::HuffmanTable::standard", "huffman::standard_lines"],
+      "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::standard_prefixes_match_every_annex_b_table"},
+        {"target": "lib", "name": "huffman::tests::every_line_of_every_standard_table_decodes"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified table selection/construction; neither helper exports equality to an independently reviewed normative table model.",
+      "assumptions": ["The listed tests are existing project tests, not newly imported official content; a consistency test can share implementation data."],
+      "gaps": ["Decompose and independently review each table's entries and caller selectors; tests and B.5 family mapping are not a complete per-table normative enumeration."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-PREFIX-MATCH",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.4 step 1",
+      "title": "Match a Huffman prefix before decoding its selected line",
+      "feature": "standard_huffman_tables",
+      "runtime": ["huffman::HuffmanTable::decode"], "models": ["huffman-reader-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::prefix_lookup_matches_canonical_for_all_standard_prefixes"},
+        {"target": "lib", "name": "huffman::tests::randomized_custom_prefix_lookup_matches_canonical"},
+        {"target": "lib", "name": "huffman::tests::invalid_prefix_and_eof_are_oob_safe"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The decoder preserves bit-reader validity; the contract does not identify the matched line, exact prefix consumption or resulting value.",
+      "assumptions": ["The same decode path is used for standard and custom tables; differential fast/fallback agreement alone is not an independent normative oracle."],
+      "gaps": ["Prove prefix selection and consumption for lookup/fallback paths and compose them with decode_line's value contract."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "huffman::HuffmanTable::decode", "section": "ensures", "tokens": ["huffman_spec::reader_valid(final(reader))"]}]
+    },
+    {
+      "id": "T88-HUFFMAN-NORMAL-VALUE",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.4 steps 2 and 5",
+      "title": "Interpret the suffix of an already selected normal or upper Huffman line",
+      "feature": "standard_huffman_tables",
+      "runtime": ["huffman::decode_line"], "models": ["huffman-decoded-value", "bit-value"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "huffman::tests::every_line_of_every_standard_table_decodes"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "On integer success, the selected line's suffix has exactly range_len bits and the returned value satisfies the local base-plus-offset model for normal/upper lines.",
+      "assumptions": ["The input line has already been selected and the bit reader is valid; decoded_line_value distinguishes lower subtraction from normal/upper addition."],
+      "gaps": ["Independently review the model and prove correct prefix-to-line selection and acceptance/overflow behavior; this is not a whole-Huffman-decoder theorem."],
+      "functional_evidence": [{"runtime": "huffman::decode_line", "section": "ensures", "tokens": [
+        "Ok(HuffmanValue::Integer(value)) =>",
+        "final(reader).bit_position == old(reader).bit_position + line.range_len as usize",
+        "huffman_spec::decoded_line_value(line, crate::spec::readers::bits_value(old(reader).bytes@, old(reader).bit_position as nat, line.range_len as nat,), value,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-LOWER-VALUE",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.4 steps 2 and 4",
+      "title": "Subtract the decoded suffix from an already selected lower-range line's base",
+      "feature": "standard_huffman_tables",
+      "runtime": ["huffman::decode_line"], "models": ["huffman-decoded-value", "bit-value"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::every_line_of_every_standard_table_decodes"},
+        {"target": "lib", "name": "huffman::tests::open_ranges_reject_values_outside_i32"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful integer output satisfies decoded_line_value, whose lower-line branch subtracts the exact consumed suffix from range_low.",
+      "assumptions": ["The selected line is a lower line and the input reader is valid; this success implication does not assert acceptance of every valid lower-line value."],
+      "gaps": ["Review the signed lower-range model independently and prove line selection, error classification and complete success conditions."],
+      "functional_evidence": [{"runtime": "huffman::decode_line", "section": "ensures", "tokens": [
+        "Ok(HuffmanValue::Integer(value)) =>",
+        "final(reader).bit_position == old(reader).bit_position + line.range_len as usize",
+        "huffman_spec::decoded_line_value(line, crate::spec::readers::bits_value(old(reader).bytes@, old(reader).bit_position as nat, line.range_len as nat,), value,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HUFFMAN-OOB-VALUE",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "B.4 step 3",
+      "title": "Return an out-of-band result only for the selected out-of-band line without consuming a suffix",
+      "feature": "standard_huffman_tables",
+      "runtime": ["huffman::decode_line"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::annex_b_table_b_oob_and_fixed_values"},
+        {"target": "lib", "name": "huffman::tests::parses_oob_custom_table"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful OOB output implies an OOB line and unchanged suffix-reader position; the prefix has already been consumed by another helper.",
+      "assumptions": ["The caller selects the appropriate table line; HTOOB/table construction and caller use of OOB are separate obligations."],
+      "gaps": ["Prove table-level OOB presence/selection and caller termination semantics; the contract does not state the converse success guarantee."],
+      "functional_evidence": [{"runtime": "huffman::decode_line", "section": "ensures", "tokens": [
+        "Ok(HuffmanValue::OutOfBand) => line.kind == LineKind::OutOfBand && final(reader).bit_position == old(reader).bit_position"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-MMR-BINARY-POLARITY",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "6.2.6 second exception",
+      "title": "Represent decoded black and white pixels with binary one and zero",
+      "feature": "mmr_coding",
+      "runtime": ["mmr::decode_mmr", "mmr::fill_span"],
+      "models": ["bitmap-storage-valid", "mmr-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::all_white_uses_vertical_zero"},
+        {"target": "lib", "name": "mmr::tests::all_black_uses_zero_white_horizontal_run"},
+        {"target": "lib", "name": "mmr::tests::optimized_span_dispatch_matches_scalar_pixels_and_full_storage"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful MMR output and span filling preserve storage invariants. White/empty span no-ops are stronger auxiliary guarantees, but the general black-span/pixel polarity result is not proved.",
+      "assumptions": ["Only the JBIG2-specific polarity exception is mapped; T.6 mode/run correctness is not inferred from this row."],
+      "gaps": ["Prove complete visible black/white pixel relations, untouched-pixel frames and their composition through the MMR raster loop."],
+      "functional_evidence": [],
+      "invariant_evidence": [
+        {"runtime": "mmr::decode_mmr", "section": "ensures", "tokens": ["Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap)"]},
+        {"runtime": "mmr::fill_span", "section": "ensures", "tokens": ["mmr_spec::bitmap_storage_valid(final(bitmap))", "final(bitmap).data@.len() == old(bitmap).data@.len()"]}
+      ]
+    },
+    {
+      "id": "T88-MMR-BYTE-ALIGNED-PREFIX",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "6.2.6 first exception",
+      "title": "Finish an EOFB-terminated MMR prefix at a byte boundary",
+      "feature": "mmr_coding",
+      "runtime": ["mmr::finish_required_prefix"], "models": ["mmr-reader-valid", "mmr-exact-eofb"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::prefix_decoder_consumes_two_concatenated_eofb_planes"},
+        {"target": "lib", "name": "mmr::tests::prefix_decoder_rejects_nonzero_alignment_padding"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful finishing consumes the 24-bit marker plus at most seven alignment bits and ends at a byte-aligned position.",
+      "assumptions": ["The reader starts at the marker after successful raster decoding; valid reader state is a precondition. Rejecting nonzero alignment padding is stricter project behavior, not claimed as a requirement of the first exception."],
+      "gaps": ["Propagate the exact consumed-byte/alignment relation through decode_mmr_prefix and all callers; separately review whether strict zero-padding rejection is permitted."],
+      "functional_evidence": [{"runtime": "mmr::finish_required_prefix", "section": "ensures", "tokens": [
+        "Ok(()) => old(reader).bit_position as nat + 24 <= final(reader).bit_position as nat",
+        "final(reader).bit_position as nat <= old(reader).bit_position as nat + 31",
+        "final(reader).bit_position % 8 == 0",
+        "mmr_spec::exact_eofb(old(reader).bytes@, old(reader).bit_position as nat,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-MMR-REQUIRED-EOFB",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "6.2.6 third exception",
+      "title": "Require the MMR end marker when the encoded byte count is unknown",
+      "feature": "mmr_coding",
+      "runtime": ["mmr::finish_block"], "models": ["mmr-reader-valid", "mmr-exact-eofb"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::required_eofb_can_start_off_byte_boundary"},
+        {"target": "lib", "name": "mmr::tests::required_eofb_rejects_omission"},
+        {"target": "lib", "name": "mmr::tests::prefix_decoder_rejects_truncated_eofb"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Under Required policy, successful block finishing implies an exact marker at the old bit position and a final position at the end of the bounded input.",
+      "assumptions": ["The caller chooses Required and supplies a valid reader; exact_eofb is a project bit-value predicate, not an independent T.6 correctness theorem."],
+      "gaps": ["Prove correct caller policy for generic/grayscale contexts and propagate the marker result; typed failure/rejection completeness is not specified by this contract."],
+      "functional_evidence": [{"runtime": "mmr::finish_block", "section": "ensures", "tokens": [
+        "EofbPolicy::Required => final(reader).bit_position == old(reader).bytes@.len() * 8",
+        "mmr_spec::exact_eofb(old(reader).bytes@, old(reader).bit_position as nat,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-MMR-OPTIONAL-EOFB",
+      "standard": "ITU-T T.88 (08/2018)", "clause": "6.2.6 third exception and Note 2",
+      "title": "Permit omission of the MMR end marker when the encoded byte count is known",
+      "feature": "mmr_coding",
+      "runtime": ["mmr::finish_block"], "models": ["mmr-reader-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "mmr::tests::optional_eofb_accepts_bounded_remainder"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Under Optional policy, successful finishing leaves the bit position unchanged; the bounded MMR input slice can therefore retain an unexamined remainder.",
+      "assumptions": ["A known byte extent has already bounded the input and the caller selected Optional. Note 2 is explanatory context, not an extra normative obligation."],
+      "gaps": ["Prove policy selection for pattern/symbol/known-length generic callers and full byte-extent consumption; unchanged helper position alone is not whole-block acceptance or byte-alignment proof."],
+      "functional_evidence": [{"runtime": "mmr::finish_block", "section": "ensures", "tokens": [
+        "EofbPolicy::Optional => final(reader).bit_position == old(reader).bit_position"
+      ]}], "invariant_evidence": []
+    },
     {
       "id": "T88-SEGMENT-RETENTION-WIRE-ORDER",
       "standard": "ITU-T T.88 (08/2018)", "clause": "7.2.4",

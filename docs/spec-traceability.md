@@ -1,6 +1,6 @@
 # Provisional statement-level T.88 traceability
 
-P04 is in progress. The ledger maps **20 selected requirement records**
+P04 is in progress. The ledger maps **48 selected requirement records**
 to source contracts, project models, proof support and exact test identities.
 It also inventories all **30 support-matrix features** as a decomposition
 worklist. That worklist is not a count of all normative obligations.
@@ -24,8 +24,8 @@ the repository. Ledger titles and scope notes are original paraphrases.
   source links, model/proof support, exact tests, assumptions and unresolved gaps.
   CI uploads these instead of committing constantly regenerated reports.
 
-All 20 records are **provisional**, pending owner normative/model review.
-Seven feature groups have partial requirement records; 22 remain not started,
+All 48 records are **provisional**, pending owner normative/model review.
+Thirteen feature groups have partial requirement records; 16 remain not started,
 one deferred feature is excluded, and none has an approved complete normative
 decomposition. This tranche does not complete P04.
 
@@ -33,14 +33,15 @@ decomposition. This tranche does not complete P04.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 19 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 1 | Decoder/context invariants, not the requested semantic transformation |
-| `safety_only` | 0 | A verified body without the claimed functional result postcondition |
+| `functional_contract` | 32 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 3 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `safety_only` | 13 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
-The mapped areas are packed-bit/word order, standalone header fields and
-rejection behavior, selected generic-template parameters, arithmetic reset and
-decision contracts, and typical-row copying.
+The mapped areas are packed-bit/word order, selected file/segment organization
+and header fields, Huffman construction/decoding helpers, JBIG2-specific MMR
+exceptions, selected generic-template parameters, arithmetic reset and decision
+contracts, and typical-row copying.
 
 Important examples:
 
@@ -78,19 +79,68 @@ Important examples:
   Typical-prediction timing, caller-loop semantics and the first-row zero edge
   remain separate gaps. Blank construction now also proves zeroed storage as a
   foundation for, not a complete proof of, the first-row caller rule.
-  Ten other runtime/proof divergences remain in the
+  Two runtime/proof divergences remain in the
   full inventory outside this selected ledger.
 
 The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
 implementation data is not by itself proof of a faithful standards translation.
 
+## Bounded organization, Huffman and MMR decomposition
+
+The next P04 tranche adds **28 records** without changing runtime, models,
+proofs or production-proof accounting. It starts six previously unmapped
+feature worklists: sequential, random-access and embedded organization, standard
+and custom Huffman tables, and MMR. It also adds five selected segment-header
+records under the decoder worklist.
+
+| Selected area | New records | Evidence boundary |
+|---|---:|---|
+| D.1/D.2/D.3 organization | 6 | Verified parser bodies, not input-to-returned-segment layout/order theorems |
+| 7.2.3/7.2.6/7.2.7 segment fields | 5 | Four narrow type/page/length helper contracts; flag extraction remains safety-only |
+| B.2/B.3 custom tables | 8 | Three exact flag-field contracts; bound/line parsing and complete canonical assignment remain safety-only |
+| B.4/B.5 shared decoding and predefined tables | 5 | Selected-line integer/OOB contracts and reader validity; no complete prefix-selection or independently checked table theorem |
+| 6.2.6 JBIG2 MMR exceptions | 4 | Finishing/alignment helper contracts and bitmap storage validity; no complete raster/polarity result |
+
+All references in this tranche were checked against the hash-pinned T.88
+document, reacquired from its official public recommendation page through the
+[official package link](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items).
+The package and PDF matched the existing provenance hashes. Only the PDF was
+extracted for consultation; no sample software or conformance payload was used
+or added. No T.6 document was consulted in this tranche, so it does not invent
+T.6 mode/run clause decomposition.
+
+Five new ordinary Cargo tests in `tests/traceability_organization.rs` use
+project-generated segment/page fields to check distinct sequential and
+random-access two-page layouts, missing random-access EOF, descending standalone
+numbers and headerless/non-monotonic embedded input. Existing exact test
+identities back the other rows; the ledger references **67 distinct non-ignored
+Cargo tests** in total. Discovery lists names; executing these tests is a
+separate validation step. Neither operation establishes test adequacy.
+
+The ledger explicitly leaves two newly exposed policy questions open:
+custom-table range-partition overshoot rejection and MMR zero-alignment-padding
+rejection may be stricter than the cited T.88 rule. Existing behavior is not
+changed or granted normative approval here. The prior retention example
+conflict also remains unresolved. B.5 is only a selected family record:
+per-table normative review and complete enumeration are still required.
+
+Every feature now records its exact selected `requirement_ids` and an explicit
+`remaining_scope` worklist. The checker cross-checks membership in both
+directions, disallows records under `not_started`/`excluded`, and disallows empty
+`partial` features. Incomplete features must retain nonblank remaining scope;
+the excluded encoder retains an explicit policy boundary. A `complete` feature
+would require nonempty, approved, gap-free functional records and no remaining
+scope, but that is still a review declaration, not a proof of exhaustive
+enumeration. No actual feature is marked complete.
+
 ## Checks and limits
 
 The checker validates:
 
 1. Schema, exact support-matrix worklist, normative edition/hash identity,
-   unique requirement IDs and explicit partial/provisional states.
+   unique requirement IDs, exact per-feature requirement membership, explicit
+   remaining scope and consistent decomposition/review states.
 2. Hash bindings for every referenced source and module-declaration file.
    A source change invalidates the affected review; no automatic reapproval
    or hash-refresh workflow is provided.
@@ -100,8 +150,11 @@ The checker validates:
    named spec/proof definitions. With a verifier report, exact qualified symbols
    must be present; same-named definitions in other modules do not suffice.
 5. Proof-macro definitions and lexical calls from the recorded runtime body.
-6. Recorded contract fragments in their declared `requires`/`ensures` section.
-   Preconditions cannot satisfy an output-equivalence claim.
+6. Recorded contract fragments in their declared section. Preconditions cannot
+   satisfy output-equivalence or state-preservation claims. Functional evidence
+   cannot be hidden under a weaker strength label. Duplicate runtime, model,
+   test, claim and whitespace-equivalent token evidence is rejected, as are
+   unused or aliased duplicate model/proof definitions.
 7. Test source identities, ordinary test cfgs and non-ignored status.
    `--discover-tests` additionally compiles/lists the exact Cargo targets and
    verifies the names actually exist in compiler discovery.
@@ -145,7 +198,8 @@ reference-check pass is not a release/conformance pass.
 
 ## Next work
 
-Decompose the remaining coding families, organizations and page/resource rules;
+Complete enumeration of the partially mapped organizations/coding families and
+decompose the remaining coding families and page/resource rules;
 extend the ledger with exact table/step mappings and model/contract assessments.
 Keep T.6/MMR obligations and project-only resource policy distinct. Review
 model adequacy, caller obligations and official-vector disagreements, then close

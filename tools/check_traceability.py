@@ -106,6 +106,10 @@ def compact(text):
 
 
 def check_contract(record, section, tokens):
+    if not tokens or any(not compact(token) for token in tokens):
+        raise ValueError(f"empty contract evidence on {record['id']}")
+    if len({compact(token) for token in tokens}) != len(tokens):
+        raise ValueError(f"duplicate contract token on {record['id']}")
     sections = []
     for attribute in record["attributes"]:
         if not re.search(r"\bverus_spec\s*\(", attribute):
@@ -147,6 +151,18 @@ def check(ledger, root, verifier_names=None, discovered=None):
     runtime = runtime_inventory(root)
     tests = test_inventory(root)
     used = set()
+    referenced_definitions = {
+        name for requirement in ledger["requirements"]
+        for name in requirement["models"] + requirement["proof_macros"]
+    }
+    if referenced_definitions != set(ledger["definitions"]):
+        raise ValueError("unused or missing model/proof definitions")
+    definition_identities = [
+        (entry["kind"], entry["file"], tuple(entry["module_path"]), entry["name"])
+        for entry in ledger["definitions"].values()
+    ]
+    if len(definition_identities) != len(set(definition_identities)):
+        raise ValueError("duplicate model/proof definition identity")
     for definition in ledger["definitions"].values():
         used.update(check_definition(root, definition, verifier_names))
     rows = []
@@ -158,6 +174,10 @@ def check(ledger, root, verifier_names=None, discovered=None):
         identifiers.add(identity)
         if requirement["feature"] not in inventory:
             raise ValueError(f"unknown feature: {identity}")
+        for field in ("runtime", "models", "proof_macros", "tests", "functional_evidence", "invariant_evidence"):
+            values = [json.dumps(value, sort_keys=True) for value in requirement[field]]
+            if len(values) != len(set(values)):
+                raise ValueError(f"duplicate {field} evidence: {identity}")
         if requirement["standard"] not in {entry["id"] for entry in ledger["standards"]}:
             raise ValueError(f"unknown normative standard: {identity}")
         for definition in requirement["models"]:
@@ -192,8 +212,12 @@ def check(ledger, root, verifier_names=None, discovered=None):
             raise ValueError(f"functional claim needs explicit postcondition evidence: {identity}")
         if requirement["strength"] == "state_preservation" and not requirement["invariant_evidence"]:
             raise ValueError(f"state claim needs explicit invariant evidence: {identity}")
+        if requirement["strength"] != "functional_contract" and requirement["functional_evidence"]:
+            raise ValueError(f"functional evidence has a weaker strength classification: {identity}")
         if any(claim["section"] != "ensures" for claim in requirement["functional_evidence"]):
             raise ValueError(f"preconditions cannot satisfy a functional result claim: {identity}")
+        if any(claim["section"] != "ensures" for claim in requirement["invariant_evidence"]):
+            raise ValueError(f"preconditions cannot satisfy a state preservation claim: {identity}")
         for claim in requirement["functional_evidence"] + requirement["invariant_evidence"]:
             if claim["runtime"] not in requirement["runtime"]:
                 raise ValueError(f"contract points outside requirement runtime scope: {identity}")
@@ -208,6 +232,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
                 raise ValueError(f"test not present in Cargo discovery: {key}")
         rows.append({
             "id": identity, "clause": requirement["clause"], "title": requirement["title"],
+            "feature": requirement["feature"],
             "strength": requirement["strength"], "review": requirement["review"],
             "runtime": requirement["runtime"], "gaps": requirement["gaps"],
             "scope_of_formal_result": requirement["scope_of_formal_result"],
@@ -229,11 +254,38 @@ def check(ledger, root, verifier_names=None, discovered=None):
         if hashlib.sha256(source_path(root, path).read_bytes()).hexdigest() != expected:
             raise ValueError(f"stale reviewed source binding: {path}")
     mapped_features = {entry["feature"] for entry in ledger["requirements"]}
-    if any(
-        entry["decomposition"] == "complete" and entry["feature"] not in mapped_features
-        for entry in ledger["features"]
-    ):
-        raise ValueError("a declared complete feature has no requirement records")
+    feature_decomposition = []
+    for feature in ledger["features"]:
+        name = feature["feature"]
+        selected = [row for row in rows if row["feature"] == name]
+        expected = {row["id"] for row in selected}
+        state = feature["decomposition"]
+        if state == "complete" and not selected:
+            raise ValueError(f"a declared complete feature has no requirement records: {name}")
+        declared = feature["requirement_ids"]
+        if len(declared) != len(set(declared)) or set(declared) != expected:
+            raise ValueError(f"feature requirement accounting differs from records: {name}")
+        if bool(selected) != (state in {"partial", "complete"}):
+            raise ValueError(f"feature decomposition state disagrees with records: {name}")
+        if state == "complete":
+            if feature["remaining_scope"] or any(
+                row["review"] != "approved" or row["gaps"]
+                or row["strength"] != "functional_contract" for row in selected
+            ):
+                raise ValueError(f"complete feature has unresolved scope or evidence: {name}")
+        elif not feature["remaining_scope"] or any(
+            not note.strip() for note in feature["remaining_scope"]
+        ):
+            raise ValueError(f"unfinished/excluded feature needs explicit remaining scope: {name}")
+        feature_decomposition.append({
+            "feature": name, "support_status": feature["support_status"],
+            "decomposition": state, "requirement_ids": sorted(expected),
+            "requirement_count": len(selected), "remaining_scope": feature["remaining_scope"],
+            "evidence_strength_counts": {
+                strength: sum(row["strength"] == strength for row in selected)
+                for strength in ("functional_contract", "state_preservation", "safety_only", "runtime_divergence")
+            },
+        })
     complete = all(
         entry["decomposition"] in {"complete", "excluded"} for entry in ledger["features"]
     ) and all(
@@ -247,6 +299,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
         "scope_completeness_is_review_declared_not_proved": True,
         "requirements": rows, "requirement_count": len(rows),
         "feature_count": len(features),
+        "feature_decomposition": feature_decomposition,
         "evidence_strength_counts": {
             strength: sum(row["strength"] == strength for row in rows)
             for strength in ("functional_contract", "state_preservation", "safety_only", "runtime_divergence")
@@ -307,6 +360,17 @@ def main():
             clean = lambda value: str(value).replace("|", "\\|").replace("\n", " ")
             table.append("| " + " | ".join(clean(value) for value in (
                 row["id"], row["clause"], row["title"], row["strength"], "; ".join(row["gaps"]),
+            )) + " |")
+        table += [
+            "", "## Feature decomposition accounting", "",
+            "Selected records are not an exhaustive normative denominator. Remaining scope is a worklist, not a completeness certificate.",
+            "", "| Feature | State | Selected records | Remaining scope |",
+            "|---|---|---:|---|",
+        ]
+        for feature in report["feature_decomposition"]:
+            table.append("| " + " | ".join(clean(value) for value in (
+                feature["feature"], feature["decomposition"], feature["requirement_count"],
+                "; ".join(feature["remaining_scope"]),
             )) + " |")
         def link(location, name):
             line = f"#L{location['line']}" if "line" in location else ""

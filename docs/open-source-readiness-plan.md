@@ -9,8 +9,17 @@ are enforced in native CI. Five focused regressions strengthen typed duplicate,
 missing-reference, truncation and repeat-result claims. Catalog linking is not
 semantic or normative approval, and broader P06 coverage goals remain open.
 Exact-source proof gaps are exposed and tracked for P05.
-P04 is in progress with a provisional 20-record statement-level ledger and
+P04 is in progress with a provisional 48-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
+The bounded organization/Huffman/MMR tranche adds 28 selected records, starts
+six previously unmapped feature groups, and enforces exact per-feature
+requirement membership plus explicit remaining scope. Thirteen of 30 worklists
+are partial, 16 not started and one deferred encoder excluded. Five generated
+organization regressions supplement 67 distinct linked non-ignored Cargo test
+identities. T.88 source hashes were rechecked through the official public
+package; no standard assets were committed. T.6 mode/run decomposition, complete
+enumeration and owner review remain open. Stricter Huffman partition and MMR
+padding rejection policies are explicitly unresolved, not newly approved.
 Targeted P05 tranches close the selected batch-reset output-contract gap
 and parsed-document count agreement, with compiled semantic counterexamples
 and weaker proof controls. Parser result contracts now retain parsed cardinality;
@@ -21,8 +30,9 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 19
-functional and one state-preservation record; all 20 remain provisional.
+scalar proof substitute is removed. The current selected ledger has 32
+functional, three state-preservation and 13 safety-only records; all 48 remain
+provisional.
 Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled
@@ -288,6 +298,13 @@ proof strength; assumptions/boundaries; review status; evidence source identity
 Acceptance: every in-scope normative requirement is accounted for, including
 explicitly partial/unproved ones; review confirms the map represents what the
 contracts actually prove. No numerical function count is treated as spec coverage.
+
+Current bounded progress is documented in `docs/spec-traceability.md`.
+Feature-local selected requirement IDs and remaining-scope notes are checked
+against the records, but those worklists are not an exhaustive normative
+denominator. Organization traversal, whole-table canonical assignment, prefix
+selection, T.6/MMR raster semantics and caller-policy composition remain open;
+the new helper links do not complete this acceptance gate.
 
 ### P05 - Close semantic proof and conformance gaps
 

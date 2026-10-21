@@ -48,7 +48,7 @@
       "properties": {
         "runtime": {"$ref": "#/$defs/nonempty"},
         "section": {"enum": ["ensures", "requires"]},
-        "tokens": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}}
+        "tokens": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}}
       }
     },
     "traceability": {
@@ -69,11 +69,13 @@
         "features": {
           "type": "array", "minItems": 1,
           "items": {
-            "type": "object", "required": ["feature", "support_status", "decomposition"],
+            "type": "object", "required": ["feature", "support_status", "decomposition", "requirement_ids", "remaining_scope"],
             "properties": {
               "feature": {"$ref": "#/$defs/nonempty"},
               "support_status": {"enum": ["required", "unsupported", "deferred", "prohibited"]},
-              "decomposition": {"enum": ["not_started", "partial", "complete", "excluded"]}
+              "decomposition": {"enum": ["not_started", "partial", "complete", "excluded"]},
+              "requirement_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^T88-[A-Z0-9-]+$"}},
+              "remaining_scope": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}}
             }
           }
         },
@@ -107,14 +109,14 @@
               "runtime": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
               "models": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
               "proof_macros": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
-              "tests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/traceability_test"}},
+              "tests": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/traceability_test"}},
               "strength": {"enum": ["functional_contract", "state_preservation", "safety_only", "runtime_divergence"]},
               "review": {"enum": ["provisional", "approved"]},
               "scope_of_formal_result": {"$ref": "#/$defs/nonempty"},
               "assumptions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
               "gaps": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
-              "functional_evidence": {"type": "array", "items": {"$ref": "#/$defs/traceability_claim"}},
-              "invariant_evidence": {"type": "array", "items": {"$ref": "#/$defs/traceability_claim"}}
+              "functional_evidence": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/traceability_claim"}},
+              "invariant_evidence": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/traceability_claim"}}
             }
           }
         }
