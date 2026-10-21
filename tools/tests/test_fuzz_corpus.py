@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 import os
@@ -94,12 +95,19 @@ class CorpusInventoryTests(unittest.TestCase):
 
 class CorpusEvidenceTests(unittest.TestCase):
     def test_merge_requires_actual_complete_unambiguous_results_not_final_stats(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary) / "corpus"
-            CorpusInventoryTests().fixture(root)
-            before = collection(root)[TARGETS[0]]
+        with tempfile.TemporaryDirectory() as temporary, patch(
+            "maintain_fuzz_corpus.inventory",
+            side_effect=AssertionError("portable merge-evidence fixtures must not run Linux inventory"),
+        ):
+            directory = Path(temporary).resolve()
+            before = [{
+                "name": f"generated-{suffix}", "bytes": len(contents),
+                "sha256": hashlib.sha256(contents).hexdigest(),
+            } for suffix, contents in (
+                ("a", b"generated-corpus-control-a"), ("b", b"generated-corpus-control-b"),
+            )]
             after = [before[0]]
-            log = Path(temporary) / "merge.log"
+            log = directory / "merge.log"
             log.write_text(merge_log())
             self.assertEqual(merge_evidence(log, before, after)["processed_units"], 2)
             for text in (
@@ -121,8 +129,9 @@ class CorpusEvidenceTests(unittest.TestCase):
 
     def test_exact_replay_checks_paths_completions_and_counts(self):
         with tempfile.TemporaryDirectory() as temporary:
-            log = Path(temporary) / "replay.log"
-            files = [Path(temporary) / "generated-a", Path(temporary) / "generated-b"]
+            directory = Path(temporary).resolve()
+            log = directory / "replay.log"
+            files = [directory / "generated-a", directory / "generated-b"]
             text = "".join(f"Running: {path}\nExecuted {path} in 0 ms\n" for path in files)
             text += "stat::number_of_executed_units: 2\n"
             log.write_text(text)
