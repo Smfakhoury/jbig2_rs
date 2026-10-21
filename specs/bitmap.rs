@@ -116,6 +116,22 @@ pub open spec fn storage_valid(bitmap: &crate::bitmap::Bitmap) -> bool {
                 * (crate::views::bitmap_height(bitmap) as nat)
 }
 
+pub open spec fn region_request_valid(
+    destination: &crate::bitmap::Bitmap,
+    source: &crate::bitmap::Bitmap,
+    source_x: u32,
+    source_y: u32,
+    destination_x: u32,
+    destination_y: u32,
+    width: u32,
+    height: u32,
+) -> bool {
+    &&& source_x as nat + width as nat <= crate::views::bitmap_width(source) as nat
+    &&& source_y as nat + height as nat <= crate::views::bitmap_height(source) as nat
+    &&& destination_x as nat + width as nat <= crate::views::bitmap_width(destination) as nat
+    &&& destination_y as nat + height as nat <= crate::views::bitmap_height(destination) as nat
+}
+
 pub open spec fn zeroed_storage(bitmap: &crate::bitmap::Bitmap) -> bool {
     forall|index: int| 0 <= index < crate::views::bitmap_data(bitmap).len() ==>
         crate::views::bitmap_data(bitmap)[index] == 0

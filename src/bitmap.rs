@@ -1338,6 +1338,15 @@ impl Bitmap {
             final(self).height == old(self).height,
             final(self).stride == old(self).stride,
             final(self).data@.len() == old(self).data@.len(),
+            !crate::spec::bitmap::region_request_valid(
+                old(self), source, source_x, source_y, destination_x, destination_y, width, height,
+            ) ==> matches!(out, Err(MalformedError::IntegerOverflow)),
+            (!crate::spec::bitmap::region_request_valid(
+                old(self), source, source_x, source_y, destination_x, destination_y, width, height,
+            ) || width == 0 || height == 0) ==> final(self).data@ == old(self).data@,
+            (crate::spec::bitmap::region_request_valid(
+                old(self), source, source_x, source_y, destination_x, destination_y, width, height,
+            ) && (width == 0 || height == 0)) ==> out.is_ok(),
     ))]
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn compose_region(
@@ -1351,6 +1360,12 @@ impl Bitmap {
         height: u32,
         operator: CombinationOperator,
     ) -> Result<(), MalformedError> {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(source);
+            crate::views::bitmap_fields(old(self));
+        }
         let Some(source_end_x) = source_x.checked_add(width) else {
             return Err(MalformedError::IntegerOverflow);
         };
@@ -1370,21 +1385,7 @@ impl Bitmap {
         {
             return Err(MalformedError::IntegerOverflow);
         }
-        #[cfg(verus_keep_ghost)]
-        {
-            return self.compose_region_scalar_verified(
-                source,
-                source_x,
-                source_y,
-                destination_x,
-                destination_y,
-                width,
-                height,
-                operator,
-            );
-        }
-        #[cfg(not(verus_keep_ghost))]
-        self.compose_region_chunked(
+        let result = self.compose_region_chunked(
             source,
             source_x,
             source_y,
@@ -1393,118 +1394,13 @@ impl Bitmap {
             width,
             height,
             operator,
-        )
-    }
-
-    #[cfg(verus_keep_ghost)]
-    #[verus_spec(out =>
-        requires
-            crate::spec::bitmap::storage_valid(old(self)),
-            crate::spec::bitmap::storage_valid(source),
-            source_x as nat + width as nat <= source.width as nat,
-            source_y as nat + height as nat <= source.height as nat,
-            destination_x as nat + width as nat <= old(self).width as nat,
-            destination_y as nat + height as nat <= old(self).height as nat,
-        ensures
-            out.is_ok(),
-            crate::spec::bitmap::storage_valid(final(self)),
-            final(self).width == old(self).width,
-            final(self).height == old(self).height,
-            final(self).stride == old(self).stride,
-            final(self).data@.len() == old(self).data@.len(),
-    )]
-    #[allow(clippy::too_many_arguments)]
-    fn compose_region_scalar_verified(
-        &mut self,
-        source: &Self,
-        source_x: u32,
-        source_y: u32,
-        destination_x: u32,
-        destination_y: u32,
-        width: u32,
-        height: u32,
-        operator: CombinationOperator,
-    ) -> Result<(), MalformedError> {
-        proof! {
-            crate::views::bitmap_fields(self);
-            crate::views::bitmap_fields(source);
-        }
-        #[verus_spec(
-            invariant
-                crate::spec::bitmap::storage_valid(self),
-                crate::spec::bitmap::storage_valid(source),
-                self.width == old(self).width,
-                self.height == old(self).height,
-                self.stride == old(self).stride,
-                self.data@.len() == old(self).data@.len(),
-                row <= height,
-                source_x as nat + width as nat <= source.width as nat,
-                source_y as nat + height as nat <= source.height as nat,
-                destination_x as nat + width as nat <= self.width as nat,
-                destination_y as nat + height as nat <= self.height as nat,
-            decreases height - row,
-        )]
-        for row in 0..height {
-            #[verus_spec(
-                invariant
-                    crate::spec::bitmap::storage_valid(self),
-                    crate::spec::bitmap::storage_valid(source),
-                    self.width == old(self).width,
-                    self.height == old(self).height,
-                    self.stride == old(self).stride,
-                    self.data@.len() == old(self).data@.len(),
-                    column <= width,
-                    row < height,
-                    source_x as nat + width as nat <= source.width as nat,
-                    source_y as nat + height as nat <= source.height as nat,
-                    destination_x as nat + width as nat <= self.width as nat,
-                    destination_y as nat + height as nat <= self.height as nat,
-                decreases width - column,
-            )]
-            for column in 0..width {
-                let sx = source_x
-                    .checked_add(column)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let sy = source_y
-                    .checked_add(row)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let dx = destination_x
-                    .checked_add(column)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let dy = destination_y
-                    .checked_add(row)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                proof! {
-                    crate::views::bitmap_fields(source);
-                    crate::views::bitmap_fields(self);
-                    assert(sx < source.width);
-                    assert(sy < source.height);
-                    assert(dx < self.width);
-                    assert(dy < self.height);
-                    reveal(crate::spec::bitmap::coordinates_in_bounds);
-                }
-                let incoming = source.pixel(sx, sy);
-                let current = self.pixel(dx, dy);
-                proof! {
-                    reveal(crate::spec::bitmap::pixel_result);
-                    assert(incoming.is_some());
-                    assert(current.is_some());
-                }
-                let incoming = incoming.ok_or(MalformedError::IntegerOverflow)?;
-                let current = current.ok_or(MalformedError::IntegerOverflow)?;
-                self.set_pixel(dx, dy, operator.apply(current, incoming))?;
-                proof! {
-                    crate::views::bitmap_fields(self);
-                    crate::views::bitmap_fields(old(self));
-                    crate::views::bitmap_fields(source);
-                }
-            }
-        }
+        );
+        #[cfg(verus_keep_ghost)]
         proof! {
             crate::views::bitmap_fields(self);
             crate::views::bitmap_fields(old(self));
         }
-        Ok(())
+        result
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1519,6 +1415,9 @@ impl Bitmap {
             final(self).width == old(self).width,
             final(self).height == old(self).height,
             final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+            (width == 0 || height == 0) ==> final(self).data@ == old(self).data@,
+            (width == 0 || height == 0) ==> out.is_ok(),
     ))]
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn compose_region_chunked(
@@ -1532,6 +1431,11 @@ impl Bitmap {
         height: u32,
         operator: CombinationOperator,
     ) -> Result<(), MalformedError> {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(source);
+        }
         let Some(source_end_x) = source_x.checked_add(width) else {
             return Err(MalformedError::IntegerOverflow);
         };
@@ -1568,7 +1472,10 @@ impl Bitmap {
                 self.width == old(self).width,
                 self.height == old(self).height,
                 self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
                 row <= height,
+                width > 0,
+                height > 0,
                 destination_shift < 8,
                 source_x as nat + width as nat <= source.width as nat,
                 source_y as nat + height as nat <= source.height as nat,
@@ -1634,7 +1541,11 @@ impl Bitmap {
             }
 
             #[cfg_attr(verus_keep_ghost, verus_spec(
-                invariant remaining <= width,
+                invariant
+                    remaining <= width,
+                    self.data@.len() == old(self).data@.len(),
+                    width > 0,
+                    height > 0,
                 decreases remaining,
             ))]
             while remaining >= 64 {
@@ -1664,7 +1575,11 @@ impl Bitmap {
                     .ok_or(MalformedError::IntegerOverflow)?;
             }
             #[cfg_attr(verus_keep_ghost, verus_spec(
-                invariant remaining <= width,
+                invariant
+                    remaining <= width,
+                    self.data@.len() == old(self).data@.len(),
+                    width > 0,
+                    height > 0,
                 decreases remaining,
             ))]
             while remaining >= 8 {
@@ -2618,6 +2533,67 @@ mod tests {
             let actual_result = actual.compose(&source, x, y, operator);
             assert_eq!(actual_result, expected_result, "case {case}");
             assert_eq!(actual, expected, "case {case}");
+        }
+    }
+
+    #[test]
+    fn zero_area_region_requests_succeed_without_changing_storage() {
+        let source = patterned_bitmap(17, 3, 17);
+        let original = patterned_bitmap(25, 4, 29);
+        for operator in [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ] {
+            for (sx, sy, dx, dy, width, height) in [
+                (17, 0, 25, 0, 0, 3),
+                (0, 3, 0, 4, 17, 0),
+                (17, 3, 25, 4, 0, 0),
+                (0, 0, 0, 0, 0, 0),
+            ] {
+                let mut destination = original.clone();
+                destination
+                    .compose_region(&source, sx, sy, dx, dy, width, height, operator)
+                    .expect("valid zero-area request");
+                assert_eq!(destination, original);
+            }
+        }
+    }
+
+    #[test]
+    fn invalid_region_requests_preserve_exact_error_and_all_storage() {
+        let source = patterned_bitmap(17, 3, 17);
+        let original = patterned_bitmap(25, 4, 29);
+        for operator in [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ] {
+            for (sx, sy, dx, dy, width, height) in [
+                (u32::MAX, 0, 0, 0, 1, 1),
+                (0, u32::MAX, 0, 0, 1, 1),
+                (0, 0, u32::MAX, 0, 1, 1),
+                (0, 0, 0, u32::MAX, 1, 1),
+                (18, 0, 0, 0, 0, 1),
+                (0, 4, 0, 0, 1, 0),
+                (0, 0, 26, 0, 0, 1),
+                (0, 0, 0, 5, 1, 0),
+                (17, 0, 0, 0, 1, 1),
+                (0, 3, 0, 0, 1, 1),
+                (0, 0, 25, 0, 1, 1),
+                (0, 0, 0, 4, 1, 1),
+            ] {
+                let mut destination = original.clone();
+                assert!(matches!(
+                    destination.compose_region(&source, sx, sy, dx, dy, width, height, operator),
+                    Err(MalformedError::IntegerOverflow)
+                ));
+                assert_eq!(destination, original);
+            }
         }
     }
 

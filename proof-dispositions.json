@@ -26,16 +26,9 @@
     {
       "id": "bitmap::Bitmap::compose",
       "file": "src/bitmap.rs",
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "status": "runtime-proof-divergence",
       "reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper."
-    },
-    {
-      "id": "bitmap::Bitmap::compose_region",
-      "file": "src/bitmap.rs",
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
-      "status": "runtime-proof-divergence",
-      "reason": "Normal and proof builds select different region-composition paths; exact executing-wrapper verification remains open."
     },
     {
       "id": "decode::PageSink::write_page",
