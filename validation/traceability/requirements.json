@@ -1,16 +1,23 @@
 {
   "schema_version": 1,
-  "review_policy": "Provisional assistant source/normative assessment, not owner approval or a conformance certificate. Source hashes bind the review. Functional contracts relate implementation to project models; translation from T.88 remains a separate review obligation. Feature worklists are not exhaustive requirement counts.",
+  "review_policy": "Provisional assistant source/normative assessment, not owner approval or a conformance certificate. Source hashes bind the review. Functional contracts relate implementation to project models; translation from T.88 and T.6 remains a separate review obligation. Feature worklists are not exhaustive requirement counts.",
   "standards": [
     {
       "id": "ITU-T T.88 (08/2018)",
       "edition": "2.0",
       "document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6"
+    },
+    {
+      "id": "ITU-T T.6 (1988)",
+      "edition": null,
+      "provenance_collection": "normative_references",
+      "document_sha256": "8ccbe2d203e03ee2ac37478d50d2d946bab49dfb45376eb0f773009d183a7767"
     }
   ],
   "source_consultations": [
     {
       "standard": "ITU-T T.88 (08/2018)",
+      "acquisition_kind": "official_package",
       "acquisition_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items",
       "package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
       "document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -33,6 +40,20 @@
         "C.5",
         "D.1-D.4",
         "E.3.2; E.3.7"
+      ]
+    },
+    {
+      "standard": "ITU-T T.6 (1988)",
+      "acquisition_kind": "official_pdf",
+      "acquisition_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items",
+      "document_sha256": "8ccbe2d203e03ee2ac37478d50d2d946bab49dfb45376eb0f773009d183a7767",
+      "clause_families": [
+        "2.2.1-2.2.2",
+        "2.2.3.1-2.2.3.3; Table 1/T.6",
+        "2.2.4; Tables 2/T.6 and 3/T.6",
+        "2.2.5.1-2.2.5.2",
+        "2.3.1 (optional-mode context only)",
+        "2.4.1.1-2.4.1.3"
       ]
     }
   ],
@@ -125,8 +146,15 @@
       "feature": "mmr_coding",
       "support_status": "required",
       "decomposition": "partial",
-      "requirement_ids": ["T88-MMR-BINARY-POLARITY", "T88-MMR-BYTE-ALIGNED-PREFIX", "T88-MMR-REQUIRED-EOFB", "T88-MMR-OPTIONAL-EOFB"],
-      "remaining_scope": ["T.6 mode/run/table obligations require separate source consultation and enumeration; 6.2.6 caller policy, complete bitmap pixel semantics and alignment propagation remain open."]
+      "requirement_ids": [
+        "T88-MMR-BINARY-POLARITY", "T88-MMR-BYTE-ALIGNED-PREFIX", "T88-MMR-REQUIRED-EOFB", "T88-MMR-OPTIONAL-EOFB",
+        "T6-REFERENCE-FIRST-WHITE", "T6-REFERENCE-NEXT-LINE", "T6-REFERENCE-CHANGING-ELEMENTS",
+        "T6-PASS-TRANSITION", "T6-VERTICAL-TRANSITION", "T6-MODE-TABLE-DISPATCH", "T6-HORIZONTAL-PAIR",
+        "T6-WHITE-RUN-LOOKUP", "T6-BLACK-RUN-LOOKUP", "T6-RUN-MAKEUP-SUM", "T6-FIRST-IMAGINARY-WHITE",
+        "T6-LAST-REFERENCE-SENTINELS", "T6-EOFB-MARKER", "T6-EOFB-PADDING",
+        "T6-POLICY-TRUNCATED-HORIZONTAL", "T6-POLICY-RUN-OVERSHOOT", "T6-POLICY-TRUNCATED-EOFB"
+      ],
+      "remaining_scope": ["Selected approved-source T.6 mode/run/framing records are present, not a complete T.6 enumeration. Independent table/geometry review, actual prefix-bit matching, run sums, line/raster pixels and caller propagation remain unproved. Apply T.88 6.2.6 exceptions explicitly; padding, optional EOFB and extension applicability need source-specific review. Typed errors are separately bound project API policy, not fabricated T.6 error requirements."]
     },
     {
       "feature": "generic_regions",
@@ -249,14 +277,14 @@
     }
   ],
   "bindings": {
-    "proofs/production_impl/bitmap.rs": "c00664c898931b40d758528a584a6319c07dcde8f0429f4194a7192e31f7ad38",
+    "proofs/production_impl/bitmap.rs": "4b9b191a4f640e88247a7c69c880f4a996a230d3eb653aa786e231a625951774",
     "proofs/production_impl/document.rs": "be644143f4b507fbf7923af1eadeb051ee6192c94aa99e02d792dc495890646f",
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
-    "specs/bitmap.rs": "a0fe589b114c3b86cccece45ab97f40d39a473617cabbfc42c82c34c062963de",
+    "specs/bitmap.rs": "733cfab97d498390ee6da162341a8a4aff597129aa8f47112ed2f0e323b269cc",
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
     "specs/decode.rs": "270442a6accf85260af0ffdccb76e8c7a1a7f9cbfcc8157d030f9c1e45523860",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
@@ -269,7 +297,7 @@
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
     "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
-    "src/bitmap.rs": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
+    "src/bitmap.rs": "e798d229dfbf8744ba22ff1b5dfa51229fa3418450853a809c272db0408d209a",
     "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
@@ -288,6 +316,22 @@
     "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d"
   },
   "definitions": {
+    "mmr-mode-table-entry": {
+      "kind": "spec", "file": "specs/mmr.rs", "module_path": ["mmr", "mmr_spec"],
+      "name": "mode_code_is_normative", "role": "Membership in the implementation mode array, despite the predicate's name; not independent T.6 table faithfulness."
+    },
+    "mmr-run-table-entry": {
+      "kind": "spec", "file": "specs/mmr.rs", "module_path": ["mmr", "mmr_spec"],
+      "name": "run_code_is_normative", "role": "Membership in the chosen-colour implementation run arrays, not independent verification of T.6 table values."
+    },
+    "mmr-run-key": {
+      "kind": "spec", "file": "specs/mmr.rs", "module_path": ["mmr", "mmr_spec"],
+      "name": "run_key_matches", "role": "Stored run-code bits and length equal supplied lookup key; does not itself link an input bitstream to the key."
+    },
+    "mmr-reference-line-valid": {
+      "kind": "spec", "file": "specs/mmr.rs", "module_path": ["mmr", "mmr_spec"],
+      "name": "reference_line_valid", "role": "Ordered in-width transition sequence ending with two width sentinels; not an exact reference-row pixel relation."
+    },
     "page-flags-match": {
       "kind": "spec", "file": "specs/segments.rs", "module_path": ["spec", "segments"],
       "name": "page_flags_match", "role": "Accepted page flag/striping field values, not all raw page header fields or output pixels."
@@ -689,6 +733,282 @@
     }
   },
   "requirements": [
+    {
+      "id": "T6-REFERENCE-FIRST-WHITE", "standard": "ITU-T T.6 (1988)", "clause": "2.2.1",
+      "title": "Use an imaginary white reference line before decoding the first row", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_bitmap"], "models": ["bitmap-storage-valid", "mmr-reader-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "mmr::tests::all_white_uses_vertical_zero"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful raster decoding returns valid bitmap/reader storage. The exported contract does not state the initial reference line or first-row pixels.",
+      "assumptions": ["T.6's first reference is a coding convention, not a claim that the first decoded image row is white; the linked white-row case observes one resulting path."],
+      "gaps": ["Prove initial white-reference transitions and their relation to the first row's mode interpretation and visible output pixels."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_bitmap", "section": "ensures", "tokens": [
+        "crate::spec::bitmap::storage_valid(&bitmap)", "mmr_spec::reader_valid(&reader)"
+      ]}]
+    },
+    {
+      "id": "T6-REFERENCE-NEXT-LINE", "standard": "ITU-T T.6 (1988)", "clause": "2.2.1",
+      "title": "Use each completed decoded row as the following row's reference", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_bitmap"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::identical_black_rows_update_the_reference_line"},
+        {"target": "lib", "name": "mmr::tests::identical_islands_use_three_vertical_zero_codes"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The raster's successful output is storage-valid, without an exported correspondence between saved reference transitions and the previously decoded row.",
+      "assumptions": ["Executable repeated-row examples exercise reference reuse; valid transition bounds are not an exact pixel-to-transition relation."],
+      "gaps": ["Prove completed-row transition extraction, reference replacement, row ordering and all subsequent row pixel semantics."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_bitmap", "section": "ensures", "tokens": ["crate::spec::bitmap::storage_valid(&bitmap)"]}]
+    },
+    {
+      "id": "T6-REFERENCE-CHANGING-ELEMENTS", "standard": "ITU-T T.6 (1988)", "clause": "2.2.2; 2.2.5.2",
+      "title": "Locate bounded reference changing-element positions for mode decoding", "feature": "mmr_coding",
+      "runtime": ["mmr::reference_elements_from"], "models": ["mmr-reference-line-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "mmr::tests::monotone_reference_cursor_matches_full_scan_exactly"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "For a valid ordered reference sequence and in-range cursor, successful positions satisfy x <= b1 <= b2 <= width and the saved search index remains in range.",
+      "assumptions": ["Reference-line validity is a precondition; the model's width sentinels do not independently identify the first required opposite-colour transition."],
+      "gaps": ["Review the changing-element geometry and prove exact b1/b2 selection, colour parity, initial-position convention and missing-element fallback."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::reference_elements_from", "section": "ensures", "tokens": [
+        "*final(search_start) < transitions@.len()", "Ok((b1, b2)) => x <= b1 <= b2 <= width"
+      ]}]
+    },
+    {
+      "id": "T6-PASS-TRANSITION", "standard": "ITU-T T.6 (1988)", "clause": "2.2.3.1; 2.2.4 step 1",
+      "title": "Advance a pass-mode coding position to the second reference changing element", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_bitmap"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::pass_skips_reference_island"},
+        {"target": "lib", "name": "mmr::tests::incremental_transitions_match_scan_for_normative_modes"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Raster storage validity is proved, not the pass-mode position update, emitted span values or correspondence to the reference elements.",
+      "assumptions": ["The mode and reference pair must already be correctly selected; runtime scan agreement is not a formal T.6 transition theorem."],
+      "gaps": ["Prove the pass position update, colour/span semantics, progress and subsequent mode interpretation against an independent line model."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_bitmap", "section": "ensures", "tokens": ["crate::spec::bitmap::storage_valid(&bitmap)"]}]
+    },
+    {
+      "id": "T6-VERTICAL-TRANSITION", "standard": "ITU-T T.6 (1988)", "clause": "2.2.3.2; 2.2.4 step 2ii; Table 1/T.6",
+      "title": "Interpret vertical mode as a signed displacement from the first reference changing element", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_bitmap"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::island_shift_left_uses_vertical_left_one"},
+        {"target": "lib", "name": "mmr::tests::island_shift_right_uses_vertical_right_one"},
+        {"target": "lib", "name": "mmr::tests::identical_islands_use_three_vertical_zero_codes"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful bitmap storage is valid; the contract does not relate decoded vertical displacement, emitted pixels or the changed coding colour.",
+      "assumptions": ["The base scheme has seven vertical choices. The selected raster examples cover zero and unit displacements, not every signed displacement/boundary combination."],
+      "gaps": ["Prove signed offset interpretation, endpoint/colour transitions and pixel spans for all vertical modes, including row-edge and invalid-transition behavior."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_bitmap", "section": "ensures", "tokens": ["crate::spec::bitmap::storage_valid(&bitmap)"]}]
+    },
+    {
+      "id": "T6-MODE-TABLE-DISPATCH", "standard": "ITU-T T.6 (1988)", "clause": "2.2.3; 2.2.4; Table 1/T.6",
+      "title": "Dispatch the coding-mode prefix through the implementation mode table", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_mode"], "models": ["mmr-reader-valid", "mmr-mode-table-entry"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "mmr::tests::every_mode_table_entry_decodes"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The reader remains valid and successful output has an implementation-table witness with matching mode and consumed length. The postcondition does not state that consumed bits equal that witness's prefix.",
+      "assumptions": ["mode_code_is_normative is a project table-membership predicate despite its name; the table-driven test alone is not an independently transcribed normative oracle."],
+      "gaps": ["Independently review all Table 1 entries, prove input-prefix matching/completeness and propagate returned modes into exact line transitions; extension applicability is separate."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_mode", "section": "ensures", "tokens": [
+        "mmr_spec::reader_valid(final(reader))", "mmr_spec::mode_code_is_normative(code)",
+        "code.mode == mode", "final(reader).bit_position == old(reader).bit_position + code.length as usize"
+      ]}]
+    },
+    {
+      "id": "T6-HORIZONTAL-PAIR", "standard": "ITU-T T.6 (1988)", "clause": "2.2.3.3; 2.2.4 step 2iii",
+      "title": "Decode two successive opposite-colour runs after a horizontal mode", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_bitmap", "mmr::decode_run"], "models": ["bitmap-storage-valid", "mmr-reader-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::all_black_uses_zero_white_horizontal_run"},
+        {"target": "lib", "name": "mmr::tests::horizontal_white_makeup_run_decodes"},
+        {"target": "lib", "name": "mmr::tests::horizontal_black_makeup_run_decodes"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Raster storage and run-reader validity are maintained; the exported contracts do not identify the ordered run pair or resulting horizontal pixel spans.",
+      "assumptions": ["Each selected run must use its proper colour table; bounded run totals do not establish correct paired consumption or coding-position updates."],
+      "gaps": ["Prove horizontal-prefix dispatch, run-colour order, both lengths, endpoint update and exact two-span pixel contents."],
+      "functional_evidence": [],
+      "invariant_evidence": [
+        {"runtime": "mmr::decode_bitmap", "section": "ensures", "tokens": ["crate::spec::bitmap::storage_valid(&bitmap)"]},
+        {"runtime": "mmr::decode_run", "section": "ensures", "tokens": ["mmr_spec::reader_valid(final(reader))"]}
+      ]
+    },
+    {
+      "id": "T6-WHITE-RUN-LOOKUP", "standard": "ITU-T T.6 (1988)", "clause": "2.2.4 step 2iii; Tables 2/T.6 and 3/T.6",
+      "title": "Look up a supplied white-run code key in the white/common implementation tables", "feature": "mmr_coding",
+      "runtime": ["mmr::find_run_code"], "models": ["mmr-run-table-entry", "mmr-run-key"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::every_run_table_entry_decodes_for_its_colour"},
+        {"target": "lib", "name": "mmr::tests::all_normative_run_codes_are_unique_per_colour"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Some output belongs to the selected implementation arrays and has the supplied bits/length key. For this requirement black is false; the helper does not prove every defined key is found.",
+      "assumptions": ["The lookup key has already been gathered correctly. run_code_is_normative only means implementation-array membership, not independent faithfulness to the approved T.6 tables."],
+      "gaps": ["Review every white/common table entry independently, prove lookup completeness and bitstream-to-key equality, then decoded length and terminating/make-up semantics."],
+      "functional_evidence": [{"runtime": "mmr::find_run_code", "section": "ensures", "tokens": [
+        "mmr_spec::run_code_is_normative(black, code)", "mmr_spec::run_key_matches(code, bits, length)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T6-BLACK-RUN-LOOKUP", "standard": "ITU-T T.6 (1988)", "clause": "2.2.4 step 2iii; Tables 2/T.6 and 3/T.6",
+      "title": "Look up a supplied black-run code key in the black/common implementation tables", "feature": "mmr_coding",
+      "runtime": ["mmr::find_run_code"], "models": ["mmr-run-table-entry", "mmr-run-key"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::every_run_table_entry_decodes_for_its_colour"},
+        {"target": "lib", "name": "mmr::tests::all_normative_run_codes_are_unique_per_colour"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Some output is a matching-key member of the selected implementation arrays. For this requirement black is true; table contents and all defined-key acceptance are separate obligations.",
+      "assumptions": ["The same helper handles both colours, but their normative code assignments differ; shared common make-up entries do not imply the terminating arrays are interchangeable."],
+      "gaps": ["Independently review black/common entries and prove colour selection, lookup completeness, actual prefix consumption and code length/value interpretation."],
+      "functional_evidence": [{"runtime": "mmr::find_run_code", "section": "ensures", "tokens": [
+        "mmr_spec::run_code_is_normative(black, code)", "mmr_spec::run_key_matches(code, bits, length)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T6-RUN-MAKEUP-SUM", "standard": "ITU-T T.6 (1988)", "clause": "2.2.4 step 2iii",
+      "title": "Accumulate make-up lengths followed by a terminating run code", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_run"], "models": ["mmr-reader-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::horizontal_white_makeup_run_decodes"},
+        {"target": "lib", "name": "mmr::tests::horizontal_black_makeup_run_decodes"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The reader remains bounded and a successful total is no larger than remaining. No postcondition states that the total is the sum of decoded make-up and terminating lengths.",
+      "assumptions": ["The supplied remaining extent must be the correct row remainder; the two selected examples do not cover repeated long make-up sequences."],
+      "gaps": ["Prove summation, terminating-code completion and exact consumption; add independent repeated-long-make-up cases and all zero/limit boundaries."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_run", "section": "ensures", "tokens": [
+        "mmr_spec::reader_valid(final(reader))", "Ok(total) => total <= remaining"
+      ]}]
+    },
+    {
+      "id": "T6-FIRST-IMAGINARY-WHITE", "standard": "ITU-T T.6 (1988)", "clause": "2.2.5.1",
+      "title": "Handle the imaginary initial white element and zero-length leading white run", "feature": "mmr_coding",
+      "runtime": ["mmr::decode_bitmap"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::all_black_uses_zero_white_horizontal_run"},
+        {"target": "lib", "name": "mmr::tests::zero_length_spans_and_same_x_transitions_match_scan"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Valid output storage does not prove the initial imaginary-element position/colour or preservation of a zero-length leading run.",
+      "assumptions": ["The implementation's zero-based cursor convention must be related explicitly to T.6's imaginary element before the first actual pixel."],
+      "gaps": ["Prove initial-position equivalence, initial colour, zero-length-run treatment and progress without deleting meaningful same-position transitions."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_bitmap", "section": "ensures", "tokens": ["crate::spec::bitmap::storage_valid(&bitmap)"]}]
+    },
+    {
+      "id": "T6-LAST-REFERENCE-SENTINELS", "standard": "ITU-T T.6 (1988)", "clause": "2.2.5.2",
+      "title": "Finish the reference representation with bounded width-position sentinels", "feature": "mmr_coding",
+      "runtime": ["mmr::finish_transition_row"], "models": ["mmr-reference-line-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::incremental_transitions_match_scan_for_random_small_bitmaps"},
+        {"target": "lib", "name": "mmr::tests::monotone_reference_cursor_matches_full_scan_exactly"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Given a valid full-width transition prefix, finishing adds two entries and establishes reference_line_valid, including two terminal width sentinels.",
+      "assumptions": ["Two stored sentinels are an implementation representation of missing reference elements, not a prescribed T.6 allocation layout."],
+      "gaps": ["Prove preservation of all prior transition entries, exact row pixel correspondence, last coding-element completion and caller use of the sentinels."],
+      "functional_evidence": [{"runtime": "mmr::finish_transition_row", "section": "ensures", "tokens": [
+        "mmr_spec::reference_line_valid(final(transitions)@, width)",
+        "final(transitions)@.len() == old(transitions)@.len() + 2"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T6-EOFB-MARKER", "standard": "ITU-T T.6 (1988)", "clause": "2.4.1.1",
+      "title": "Recognize the T.6 end-of-facsimile-block marker when framing requires it", "feature": "mmr_coding",
+      "runtime": ["mmr::finish_block"], "models": ["mmr-exact-eofb", "mmr-reader-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::required_eofb_can_start_off_byte_boundary"},
+        {"target": "lib", "name": "mmr::tests::required_eofb_rejects_omission"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Under Required policy, successful finishing implies exact_eofb at the old bit position and a final position at the bounded input's end.",
+      "assumptions": ["The project exact_eofb predicate reads a 24-bit marker; independent constant/model review remains required. T.88 permits omission in specified known-byte contexts, so Required applicability must not be inferred for every JBIG2 MMR invocation."],
+      "gaps": ["Prove caller framing policy, full acceptance/error conditions and propagation into returned block byte counts; preserve the separately mapped T.88 exceptions."],
+      "functional_evidence": [{"runtime": "mmr::finish_block", "section": "ensures", "tokens": [
+        "EofbPolicy::Required => final(reader).bit_position == old(reader).bytes@.len() * 8",
+        "mmr_spec::exact_eofb(old(reader).bytes@, old(reader).bit_position as nat,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T6-EOFB-PADDING", "standard": "ITU-T T.6 (1988)", "clause": "2.4.1.2",
+      "title": "Check zero-valued padding in T.6 post-EOFB framing", "feature": "mmr_coding",
+      "runtime": ["mmr::finish_block", "mmr::finish_required_prefix"], "models": ["mmr-reader-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::prefix_decoder_rejects_nonzero_alignment_padding"},
+        {"target": "lib", "name": "mmr::tests::required_eofb_can_start_off_byte_boundary"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Finishing preserves reader validity and framing positions, but neither exported contract states that all consumed padding bits are zero.",
+      "assumptions": ["T.6 explicitly specifies zero-valued pad bits after EOFB and permits octet/fixed-block alignment. This record does not automatically settle how T.88's byte-boundary/known-extent exceptions apply to every prefix or optional-EOFB path."],
+      "gaps": ["Prove the actual padding bit values and exact errors; review T.88 applicability and fixed-block versus project octet-only trailing-data behavior before resolving the pending padding-policy question."],
+      "functional_evidence": [],
+      "invariant_evidence": [
+        {"runtime": "mmr::finish_block", "section": "ensures", "tokens": ["mmr_spec::reader_valid(final(reader))"]},
+        {"runtime": "mmr::finish_required_prefix", "section": "ensures", "tokens": ["mmr_spec::reader_valid(final(reader))"]}
+      ]
+    },
+    {
+      "id": "T6-POLICY-TRUNCATED-HORIZONTAL", "standard": "ITU-T T.6 (1988)", "clause": "2.2.3.3; 2.2.4 (syntax context; typed error is project API policy)",
+      "title": "Report truncated horizontal run input with a typed error while preserving bounded reader state", "feature": "mmr_coding",
+      "obligation_kind": "project_profile_policy", "policy_source": "public_api",
+      "policy_row_sha256": "8d9dbb2e932f8f9b0ad7fa522da2e5f942742ca1e6b6fd15d08f43b61049c467",
+      "runtime": ["mmr::decode_run_code"], "models": ["mmr-reader-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "mmr::tests::truncated_horizontal_run_is_rejected"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The reader remains valid and input bytes are unchanged; the contract does not specify the exact UnexpectedEof variant or public error mapping.",
+      "assumptions": ["T.6 defines valid coding syntax, not this Rust error API. The support matrix's approved public API requires typed errors; the selected unit test observes the private MMR/reader error."],
+      "gaps": ["Prove exact typed failure, offset/colour fields, public DecodeError mapping, complete truncation detection and caller recovery; do not count this policy as another normative T.6 rule."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_run_code", "section": "ensures", "tokens": [
+        "mmr_spec::reader_valid(final(reader))", "final(reader).bytes@ == old(reader).bytes@"
+      ]}]
+    },
+    {
+      "id": "T6-POLICY-RUN-OVERSHOOT", "standard": "ITU-T T.6 (1988)", "clause": "2.2.5.2 (line-extent context; typed error is project API policy)",
+      "title": "Reject a run beyond the supplied row remainder with a typed error", "feature": "mmr_coding",
+      "obligation_kind": "project_profile_policy", "policy_source": "public_api",
+      "policy_row_sha256": "8d9dbb2e932f8f9b0ad7fa522da2e5f942742ca1e6b6fd15d08f43b61049c467",
+      "runtime": ["mmr::decode_run"], "models": ["mmr-reader-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "mmr::tests::run_overshoot_is_rejected"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Reader validity and bounded successful totals are proved; the exact RunExceedsRow error, failure consumption and public mapping are not postconditions.",
+      "assumptions": ["The caller supplies the correct row remainder; typed malformed-input handling is approved project API policy, not a prescribed T.6 diagnostic."],
+      "gaps": ["Prove run-sum comparison, exact error classification/consumption and all caller-supplied row-bound relations."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "mmr::decode_run", "section": "ensures", "tokens": [
+        "mmr_spec::reader_valid(final(reader))", "Ok(total) => total <= remaining"
+      ]}]
+    },
+    {
+      "id": "T6-POLICY-TRUNCATED-EOFB", "standard": "ITU-T T.6 (1988)", "clause": "2.4.1.1 (marker context; typed error is project API policy)",
+      "title": "Report missing or truncated required EOFB with a typed framing error", "feature": "mmr_coding",
+      "obligation_kind": "project_profile_policy", "policy_source": "public_api",
+      "policy_row_sha256": "8d9dbb2e932f8f9b0ad7fa522da2e5f942742ca1e6b6fd15d08f43b61049c467",
+      "runtime": ["mmr::finish_block", "mmr::finish_required_prefix"], "models": ["mmr-reader-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "mmr::tests::required_eofb_rejects_omission"},
+        {"target": "lib", "name": "mmr::tests::prefix_decoder_rejects_truncated_eofb"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Reader validity is preserved by the framing helpers; neither contract identifies MissingEofb or proves complete failure classification for absent/truncated markers.",
+      "assumptions": ["The caller's Required/prefix framing policy is appropriate. T.88 Optional cases must not be reclassified as missing-marker errors merely from T.6 framing context."],
+      "gaps": ["Prove exact errors, consumed positions and public mapping for every required-framing truncation; review marker-versus-padding and optional-policy boundaries."],
+      "functional_evidence": [],
+      "invariant_evidence": [
+        {"runtime": "mmr::finish_block", "section": "ensures", "tokens": ["mmr_spec::reader_valid(final(reader))"]},
+        {"runtime": "mmr::finish_required_prefix", "section": "ensures", "tokens": ["mmr_spec::reader_valid(final(reader))"]}
+      ]
+    },
     {
       "id": "T88-PATTERN-COUNT", "standard": "ITU-T T.88 (08/2018)",
       "clause": "6.7.3; 7.4.4.1.4",
@@ -1809,8 +2129,8 @@
       ],
       "strength": "functional_contract", "review": "provisional",
       "scope_of_formal_result": "Successful finishing consumes the 24-bit marker plus at most seven alignment bits and ends at a byte-aligned position.",
-      "assumptions": ["The reader starts at the marker after successful raster decoding; valid reader state is a precondition. Rejecting nonzero alignment padding is stricter project behavior, not claimed as a requirement of the first exception."],
-      "gaps": ["Propagate the exact consumed-byte/alignment relation through decode_mmr_prefix and all callers; separately review whether strict zero-padding rejection is permitted."],
+      "assumptions": ["The reader starts at the marker after successful raster decoding; valid reader state is a precondition. T.88's first exception alone does not state the padding bit value; the separately mapped T.6 2.4.1.2 post-EOFB padding rule requires source-specific applicability review."],
+      "gaps": ["Propagate exact consumed-byte/alignment relations through decode_mmr_prefix and callers; review T.6 zero-valued post-EOFB padding together with T.88 byte-boundary/known-extent exceptions and octet versus fixed-block framing."],
       "functional_evidence": [{"runtime": "mmr::finish_required_prefix", "section": "ensures", "tokens": [
         "Ok(()) => old(reader).bit_position as nat + 24 <= final(reader).bit_position as nat",
         "final(reader).bit_position as nat <= old(reader).bit_position as nat + 31",

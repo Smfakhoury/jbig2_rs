@@ -54,9 +54,9 @@ Native Linux, Windows and macOS CI, Verus and fuzz smoke checks are operational.
 The readiness audit found that earlier proof coverage overstated exact-source
 verification: some same-named functions were conflated and several cfg-selected
 runtime paths differed from proof paths. These are now explicit, hash-bound
-limitations. The current inventory has 607 directly verified functions, 24
-reviewed boundaries, 23 audited forwarders and 2 runtime/proof divergences.
-The latter block a full exact-source proof claim; passing Verus does not alone
+limitations. The current inventory has 608 directly verified functions, 24
+reviewed boundaries, 23 audited forwarders and 1 runtime/proof divergence.
+The latter blocks a full exact-source proof claim; passing Verus does not alone
 establish normative conformance. See [verifier limitations](docs/verifier-limitations.md).
 
 Approved local validation has executed official ITU vectors and independent
