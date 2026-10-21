@@ -231,3 +231,47 @@ padding mismatch; runtime and model now follow the explicit 7.2.4 field rules.
 The conflicting 7.2.8 worked example is documented in
 [spec-traceability.md](spec-traceability.md), with owner adjudication still open.
 Coverage and passing synthetic tests do not resolve that normative-review gap.
+
+## MMR resource, state, framing and bit-reader contracts
+
+The MMR contract tranche adds bounded inline unit tests, not a new encoded
+family, generator, grammar or fuzz target. Static T.6 bitcodes and existing
+first-party all-white/all-black fixtures exercise retained-scratch cleanup,
+release under a smaller memory budget, recovery after both decoding and framing
+errors, and inclusive stream/work/memory limits. Expected requested charges use
+bitmap storage plus two typed `width + 2` vectors; expected actual charges use
+independent safe `Vec<u32>::capacity()` observations, never the scratch's cached
+charge as an oracle. The width-one case distinguishes requested storage from
+the allocator's minimum capacity without forcing an allocation failure.
+
+EOFB tests cover all eight bit alignments, exact prefix consumption and preserved
+suffix bytes, required-versus-optional framing, invalid/truncated markers,
+trailing data and nonzero alignment padding, including reader positions on
+failure. Literal pixel oracles cover vertical displacements of two/three;
+static run cases cover terminating/make-up codes, exact overshoot and truncation
+positions, and zero-pair nonprogress. Exhaustive bounded bit-reader count/offset
+cases use a separate packed-integer value oracle and check exact errors and
+unchanged bytes/positions. The largest new bitmap width is 128 and all new
+allocations are far below 1 MiB.
+
+Direct conversion tests cover every MMR error classification without claiming
+that every variant can be produced by a valid decoder state. Direct native
+reference-search tests also check defensive rejection of short/unordered
+transition slices and invalid cursors; these inputs are not reachable from the
+decoder's valid transition invariant. No production hooks or allocation-failure
+injection are used.
+
+Before refreshing existing whole-file hashes, the complete parsed non-test AST
+(including attributes, proof cfgs, types, constants, macros and bodies) and the
+source-function inventory are compared against the collected main baseline.
+Production/model/proof behavior and coverage scope/exclusions remain unchanged.
+In particular the one explicit `prepare_transition_storage` runtime/proof
+divergence remains: pinned Verus does not support the normal capacity accounting
+through `Vec::capacity` and `Result::unwrap_or`.
+
+Remaining gaps include real allocator failures, unrepresentable slice sizes and
+integer-overflow defenses, unreachable mode/make-up budget guards implied by
+progress and minimum run lengths, and internal span/transition errors excluded
+by valid bitmap/reference invariants. Byte-aligned slices cannot end midway
+through EOFB byte-alignment padding. These are not marked covered, excluded or
+proved merely because adjacent error conversions execute.
