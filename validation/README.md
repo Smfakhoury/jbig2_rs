@@ -209,6 +209,14 @@ The batch kernel proves zero-height success without byte changes. Runtime
 tokens are unchanged; general pixel composition and placement order remain
 scalar-oracle tested rather than formally derived by these frame contracts.
 
+`tools/check_operator_bit_proofs.py` verifies four compiling wrong constant
+byte/word results against the universal per-bit Boolean operator contracts.
+The weaker controls remove only that output relation, preserving the
+independently proved model lemmas. Normal tests exhaust all 65,536 byte pairs
+for each operator and compare every bit against an independent truth table;
+boundary-word pairs supplement the universal u64 proof. This is primitive
+operator semantics, not complete raster or wire-format conformance.
+
 `tools/check_bitmap_chunk_proofs.py` checks four compiling wrong byte-kernel
 implementations: incorrect read/write high-byte shifts, a successful write
 changing its prefix, and an overflowing write changing storage. Exact values
@@ -229,12 +237,12 @@ edges, clipping, empty dimensions and maximal origins; bit-loop oracles check
 complete shifted byte/word/tail availability. Coverage exclusions and the
 reviewed floor are unchanged; the separate P06 family work owns floor updates.
 
-`tools/run_semantic_proofs.py` runs all ten existing isolated semantic checkers
+`tools/run_semantic_proofs.py` runs all eleven isolated semantic checkers
 with at most two concurrent children. Each checker retains its pinned verifier,
 selected-target checks, native compilation and strong/weaker solver limits.
 Reports and logs keep their existing names; stale reports are removed before
 launch, and missing/malformed/duplicate/failed evidence fails the aggregate.
-The 40 required contrasts, whole-crate verification, 20-minute job budget,
+The 44 required contrasts, whole-crate verification, 20-minute job budget,
 action pins and read-only permissions are unchanged. The aggregate report is
 additional orchestration evidence, not a substitute for individual reports.
 

@@ -99,6 +99,13 @@ compiled strong-proof/weaker-control contrasts and expanded scalar/bit-span
 oracles pass. The only native syntax differences are equivalent explicitly
 sequenced checked row operations and a pure result binding. This closes that
 source substitution, not general pixel/operator/caller or normative gaps.
+The next P05 tranche closes the primitive operator output-contract gap:
+every byte/word output bit now equals the existing Boolean model for every
+input pair, bit position and all five operators. Proved bit-vector lemmas,
+independent truth-table tests and four compiled strong/weaker contrasts back
+the claim. The underlying expressions are unchanged apart from pure result
+bindings. Complete raster placement/mask/shift integration and normative
+translation are still not inferred from these helper contracts.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The

@@ -2,6 +2,88 @@ use vstd::prelude::*;
 
 verus! {
 
+pub(super) proof fn byte_operator_semantics(
+    operator: crate::bitmap::CombinationOperator, destination: u8, source: u8, bit: u32,
+)
+    requires bit < 8,
+    ensures crate::spec::bitmap::byte_operator_bit(
+        crate::spec::bitmap::operator_byte(operator, destination, source), bit,
+    ) == crate::spec::bitmap::combine(
+        operator, crate::spec::bitmap::byte_operator_bit(destination, bit),
+        crate::spec::bitmap::byte_operator_bit(source, bit),
+    ),
+{
+    reveal(crate::spec::bitmap::operator_byte);
+    reveal(crate::spec::bitmap::byte_operator_bit);
+    reveal(crate::spec::bitmap::combine);
+    let shift = bit as u8;
+    assert(shift < 8);
+    match operator {
+        crate::bitmap::CombinationOperator::Or => {
+            assert(((((destination | source) >> shift) & 1u8) != 0)
+                == ((((destination >> shift) & 1u8) != 0)
+                    || (((source >> shift) & 1u8) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::And => {
+            assert(((((destination & source) >> shift) & 1u8) != 0)
+                == ((((destination >> shift) & 1u8) != 0)
+                    && (((source >> shift) & 1u8) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::Xor => {
+            assert(((((destination ^ source) >> shift) & 1u8) != 0)
+                == ((((destination >> shift) & 1u8) != 0)
+                    != (((source >> shift) & 1u8) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::Xnor => {
+            assert(shift < 8 ==> (((!(destination ^ source) >> shift) & 1u8) != 0)
+                == ((((destination >> shift) & 1u8) != 0)
+                    == (((source >> shift) & 1u8) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::Replace => {},
+    }
+}
+
+pub(super) proof fn word_operator_semantics(
+    operator: crate::bitmap::CombinationOperator, destination: u64, source: u64, bit: u32,
+)
+    requires bit < 64,
+    ensures crate::spec::bitmap::word_operator_bit(
+        crate::spec::bitmap::operator_word(operator, destination, source), bit,
+    ) == crate::spec::bitmap::combine(
+        operator, crate::spec::bitmap::word_operator_bit(destination, bit),
+        crate::spec::bitmap::word_operator_bit(source, bit),
+    ),
+{
+    reveal(crate::spec::bitmap::operator_word);
+    reveal(crate::spec::bitmap::word_operator_bit);
+    reveal(crate::spec::bitmap::combine);
+    let shift = bit as u64;
+    assert(shift < 64);
+    match operator {
+        crate::bitmap::CombinationOperator::Or => {
+            assert(((((destination | source) >> shift) & 1u64) != 0)
+                == ((((destination >> shift) & 1u64) != 0)
+                    || (((source >> shift) & 1u64) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::And => {
+            assert(((((destination & source) >> shift) & 1u64) != 0)
+                == ((((destination >> shift) & 1u64) != 0)
+                    && (((source >> shift) & 1u64) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::Xor => {
+            assert(((((destination ^ source) >> shift) & 1u64) != 0)
+                == ((((destination >> shift) & 1u64) != 0)
+                    != (((source >> shift) & 1u64) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::Xnor => {
+            assert(shift < 64 ==> (((!(destination ^ source) >> shift) & 1u64) != 0)
+                == ((((destination >> shift) & 1u64) != 0)
+                    == (((source >> shift) & 1u64) != 0))) by (bit_vector);
+        },
+        crate::bitmap::CombinationOperator::Replace => {},
+    }
+}
+
 pub(super) proof fn row_copy_bounds(
     bitmap: &crate::bitmap::Bitmap,
     source: u32,

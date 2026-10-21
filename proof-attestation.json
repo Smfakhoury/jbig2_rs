@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "f30bab75faca88dbec9c4bb1a86f0daf11c9cf77",
+  "source_revision": "54266373ca2e0056f10dc30d5304b615788f4177",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,7 +11,7 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1136,
+    "verified_obligations": 1146,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "b392f4a8daa90e07faa0d8f6954ce565829ee77431786f1fcde6771616f0a04c",
+  "production_proof_coverage_sha256": "cd953a4b8ddd26d9f0c135f4ea1c0cdac86eb76ef435bd37ae9e2d187279a1ec",
   "proof_dispositions_sha256": "ff6dccfa1285d60366ebd00eb5cae45bcd29dc60fd1e408243d4369cd2a4b17b",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. Ordinary bitmap composition now verifies its actual optimized chunked path with the original unconditional success, storage/metadata and outside-clipped-byte frame. The obsolete scalar proof substitute is removed. Four fully proved arithmetic/frame lemmas and stronger shifted-reader availability cover all aligned/unaligned word/byte/tail access paths. Five compiling success/frame mutations fail strong contracts and verify when only the affected relation is removed. Three shifted-reader native bodies are unchanged; equivalent explicit checked-multiply/add sequencing and a pure tail-result binding expose facts hidden by the pinned callback interface while preserving order and exact errors. All other 651 production bodies/attributes are byte-identical; existing model tokens are unchanged with a new equivalent frame predicate. General pixel/operator/caller semantics remain scalar-oracle tested, not newly proved. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention guarantees remain, with existing provisional normative rows unchanged by this tranche. Only MMR capacity accounting remains a runtime/proof substitution, blocked by unsupported pinned standard-library calls; no new assumptions, weaker memory policy or conformance approval are introduced. Broader semantic/caller/conformance gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. Every output bit of all five byte/word combination operators now equals the existing Boolean combination model for all input pairs and valid bit positions. Two bit-vector lemmas prove the model bridge; four compiling constant-output violations fail the per-bit contracts and verify under the original true-only output controls. Native operator expressions are unchanged with pure result bindings around erased proof code; all other 654 production bodies/attributes and all existing model/lemma tokens are unchanged. Four pure definitions and two proved lemmas are added. Exhaustive byte-pair and boundary-word truth tables supplement the universal proof. Placement, mask/shift integration, wire mapping and normative translation remain separate; full raster/pixel correctness is not inferred. Earlier exact composition/storage/frame, reset, metadata, retention and other helper guarantees remain. Only MMR capacity accounting remains a runtime/proof substitution; no new assumptions, weaker memory policy or normative approval are introduced. Broader semantic/caller/conformance gaps still block release claims.",
   "release_gate": "blocked"
 }
