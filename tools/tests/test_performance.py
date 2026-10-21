@@ -1,4 +1,5 @@
 import copy
+import subprocess
 import sys
 import unittest
 from unittest.mock import patch
@@ -8,7 +9,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from run_performance import compare_runs, environment, markdown_report, validate_measurement
+from run_performance import compare_runs, environment, markdown_report, resolve_base, validate_measurement
 from metrics import relative_spread
 
 
@@ -31,6 +32,16 @@ def row(median):
 
 
 class PerformanceReportTests(unittest.TestCase):
+    def test_unavailable_push_baseline_falls_back_to_origin_main(self):
+        with patch("run_performance.subprocess.run", side_effect=[
+            subprocess.CompletedProcess([], 128, "", "unknown revision"),
+            subprocess.CompletedProcess([], 0, "main-sha\n", ""),
+        ]) as run:
+            base, selection = resolve_base("unavailable-sha", Path("."))
+        self.assertEqual(base, "main-sha")
+        self.assertEqual(selection, "requested baseline unavailable; fell back to origin/main")
+        self.assertEqual(run.call_count, 2)
+
     def test_caller_profile_and_compiler_overrides_are_removed(self):
         with patch.dict("os.environ", {
             "CARGO_PROFILE_RELEASE_OPT_LEVEL": "0", "RUSTFLAGS": "--cfg alternate",
