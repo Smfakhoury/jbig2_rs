@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "54266373ca2e0056f10dc30d5304b615788f4177",
+  "source_revision": "f3f347dbce22e7edde44e925158e3b12ee996268",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -11,7 +11,7 @@
   },
   "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/verus-production --cfg verus_keep_ghost --num-threads 4 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1146,
+    "verified_obligations": 1164,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "e9be8dee4420d13cc418f1f0980db0179cc8fd0769bcd2b27e78b2cb693bb3b2",
+  "production_proof_coverage_sha256": "d2df6787929b850282b17716b3e8dc8df40eea947ab57e949be4f666306f4a2f",
   "proof_dispositions_sha256": "a5bac8559baf41a4184cab00072696ebdcb0f81b8f15986fe4c0e9b8ea6f6e14",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. Every output bit of all five byte/word combination operators now equals the existing Boolean combination model for all input pairs and valid bit positions. Two bit-vector lemmas prove the model bridge; four compiling constant-output violations fail the per-bit contracts and verify under the original true-only output controls. Native operator expressions are unchanged with pure result bindings around erased proof code; all other 654 production bodies/attributes and all existing model/lemma tokens are unchanged. Four pure definitions and two proved lemmas are added. Exhaustive byte-pair and boundary-word truth tables supplement the universal proof. Placement, mask/shift integration, wire mapping and normative translation remain separate; full raster/pixel correctness is not inferred. Earlier exact composition/storage/frame, reset, metadata, retention and other helper guarantees remain. Only MMR capacity accounting remains a runtime/proof substitution; no new assumptions, weaker memory policy or normative approval are introduced. Broader semantic/caller/conformance gaps still block release claims.",
+  "note": "Complete inventory is not complete normative correctness. The immutable source revision above merges main d970ac4dbdb9881347529c600512d040ecd94ffa while retaining both the optimized black-span storage/pixel proofs and the universal byte/word operator-bit proofs. The combined proof build compiles and verifies 1164 obligations with zero errors. The mandatory semantic runner retains all twelve checkers and 50 contrasts, including six black-span and four operator-bit contrasts. Bitmap source hashes and the generated production ledger are refreshed for the merged source; disposition identities, statuses and reasons remain unchanged. All 111 normative/project-policy records remain provisional with unchanged evidence-strength classifications. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The black-span theorem is not yet propagated through the MMR wrapper's weaker storage predicate or complete raster loop. General composition pixel semantics, placement/mask/shift integration, wire mapping and normative translation remain separate gaps. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Coverage release goals remain unmet. Release remains blocked.",
   "release_gate": "blocked"
 }

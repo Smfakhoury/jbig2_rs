@@ -92,6 +92,13 @@ Important examples:
   See the current audited inventory for remaining runtime/proof substitutions.
   A caller's storage contract is not independent exact-source evidence for
   every transitive kernel it invokes.
+- The executing optimized `Bitmap::fill_black_span` now proves valid-storage
+  success, exact black requested pixels, and preservation of all other stored
+  bits, including dirty padding, with a derived outside-byte frame. This
+  auxiliary primitive result is not yet a complete MMR raster-loop/polarity
+  theorem: the wrapper's weaker storage predicate and the decoder's caller
+  composition remain separate obligations. The polarity record remains
+  `state_preservation`, and all normative records remain provisional.
 
 The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
@@ -143,10 +150,21 @@ Every feature now records its exact selected `requirement_ids` and an explicit
 `remaining_scope` worklist. The checker cross-checks membership in both
 directions, disallows records under `not_started`/`excluded`, and disallows empty
 `partial` features. Incomplete features must retain nonblank remaining scope;
-the excluded encoder retains an explicit policy boundary. A `complete` feature
-would require nonempty, approved, gap-free functional records and no remaining
-scope, but that is still a review declaration, not a proof of exhaustive
-enumeration. No actual feature is marked complete.
+the excluded encoder retains an explicit policy boundary. A `complete`
+decomposition requires nonempty, reviewed records and no remaining enumeration
+scope. It can account explicitly for known semantic gaps and weaker proofs:
+P04's map must represent those honestly rather than require P05 to finish
+before P04 can complete. This is still a review declaration, not a proof of
+exhaustive enumeration. No actual feature is marked complete or newly approved.
+
+The separate `semantic_claims_complete` gate additionally requires every
+record to have functional evidence, no semantic gaps and approved review.
+The existing `--require-complete`, overall report status and legacy
+`normative_decomposition_complete` field retain that stronger meaning.
+`decomposition_review_complete` and `--require-reviewed-decomposition` expose
+the narrower P04 milestone without closing any P05 obligation. A reviewed map
+with known unproved transformations can pass the latter but must fail the
+full gate and retain `semantic_claims_review_required` as its release state.
 
 ## Continued family-specific mapping
 
@@ -339,6 +357,14 @@ checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
+retains the full reviewed-functional, gap-free requirement. The additional
+`--require-reviewed-decomposition` also requires both inputs, but checks only
+the reviewed, exhaustive-enumeration declaration. Neither flag passes for
+the actual provisional ledger today. Known semantic gaps may be accounted
+for by a fully reviewed P04 map, but cannot satisfy the full flag or close
+the corresponding P05 claims.
+
+The current complete-scope gate still
 fails because decomposition, review and semantic gaps remain incomplete. A normal
 reference-check pass is not a release/conformance pass.
 
