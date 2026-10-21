@@ -114,9 +114,17 @@ fn copy_row_bytes(destination: &mut [u8], source: &[u8]) {
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out.is_some() ==> start as nat + 8 <= bytes@.len(),
+    ensures
+        out.is_some() ==> start as nat + 8 <= bytes@.len(),
+        out.is_some() == (start as nat + 8 <= bytes@.len()),
+        out.is_some() ==> out == Some(crate::spec::bitmap::chunk_value(bytes@, start as int)),
 ))]
 fn read_chunk(bytes: &[u8], start: usize) -> Option<u64> {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(bytes@.len() == bytes.len());
+        assert(bytes@.len() <= usize::MAX);
+    }
     let end = start.checked_add(8)?;
     let chunk = bytes.get(start..end)?;
     let array = [
@@ -145,9 +153,21 @@ fn read_chunk(bytes: &[u8], start: usize) -> Option<u64> {
     ensures
         final(bytes)@.len() == old(bytes)@.len(),
         out ==> start as nat + 8 <= old(bytes)@.len(),
+        out == (start as nat + 8 <= old(bytes)@.len()),
+        out ==> forall|offset: int| 0 <= offset < 8 ==>
+            final(bytes)@[start as int + offset]
+                == crate::spec::bitmap::chunk_byte(value, offset),
+        forall|index: int| 0 <= index < old(bytes)@.len()
+            && (!out || index < start as int || start as int + 8 <= index)
+            ==> final(bytes)@[index] == old(bytes)@[index],
 ))]
 #[allow(clippy::cast_possible_truncation, clippy::ptr_arg)]
 fn write_chunk(bytes: &mut Vec<u8>, start: usize, value: u64) -> bool {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(bytes@.len() == bytes.len());
+        assert(bytes@.len() <= usize::MAX);
+    }
     let Some(end) = start.checked_add(8) else {
         return false;
     };
@@ -2799,6 +2819,63 @@ mod tests {
                     for x in 0..width {
                         assert_eq!(bitmap.pixel(x, y), Some(false));
                     }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn chunk_values_match_independent_big_endian_oracles() {
+        let mut values = vec![0, u64::MAX, 0x0123_4567_89ab_cdef];
+        for offset in 0..8 {
+            for byte in 0..=u8::MAX {
+                values.push(u64::from(byte) << (offset * 8));
+            }
+        }
+        for value in values {
+            let encoded = value.to_be_bytes();
+            for start in 0..=9 {
+                let mut bytes = vec![0xa5; 25];
+                let mut expected = bytes.clone();
+                expected[start..start + 8].copy_from_slice(&encoded);
+                assert!(write_chunk(&mut bytes, start, value));
+                assert_eq!(bytes, expected);
+                assert_eq!(read_chunk(&bytes, start), Some(value));
+                assert_eq!(
+                    read_chunk(&expected, start),
+                    Some(u64::from_be_bytes(encoded)),
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn chunk_access_accepts_exactly_complete_ranges_and_preserves_failed_writes() {
+        for length in 0..=25 {
+            let original: Vec<u8> = (0..length)
+                .map(|index| u8::try_from((index * 37 + 19) % 256).expect("byte"))
+                .collect();
+            for start in (0..=length).chain([usize::MAX - 7, usize::MAX]) {
+                let range = start
+                    .checked_add(8)
+                    .filter(|&end| end <= length)
+                    .map(|end| start..end);
+                let expected_read = range.as_ref().map(|range| {
+                    u64::from_be_bytes(
+                        original[range.clone()]
+                            .try_into()
+                            .expect("exactly eight bytes"),
+                    )
+                });
+                assert_eq!(read_chunk(&original, start), expected_read);
+                for value in [0, u64::MAX, 0x0123_4567_89ab_cdef] {
+                    let mut bytes = original.clone();
+                    let mut expected = original.clone();
+                    if let Some(range) = &range {
+                        expected[range.clone()].copy_from_slice(&value.to_be_bytes());
+                    }
+                    assert_eq!(write_chunk(&mut bytes, start, value), range.is_some());
+                    assert_eq!(bytes, expected);
                 }
             }
         }

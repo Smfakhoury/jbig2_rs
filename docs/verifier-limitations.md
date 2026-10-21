@@ -13,6 +13,11 @@ into an ordinary helper with the same success/error cleanup behavior.
 
 The remaining divergences are ordinary bitmap composition dispatch and MMR
 capacity-based memory accounting.
+Including the latter's executing blocks is rejected by the pinned verifier
+on `Vec::capacity` and `Result::unwrap_or`. This is a standard-library
+specification prerequisite, not a reason to count vector length as capacity,
+add project assumptions or declare the source gap closed. Its runtime body
+and accounting policy remain unchanged.
 The five primitive value/operator bridges now share their verified executing
 bodies. Even where an optimized helper separately
 verifies, a different ghost wrapper is not an exact-source proof of the executing
@@ -52,6 +57,17 @@ all other 654 production bodies/attributes and all bitmap/text models are
 unchanged. General pixel values and overlapping-placement order remain checked
 by the retained scalar oracles, not formally derived here. One obsolete loop
 obligation disappears; this is not a completeness metric.
+
+Packed-byte reads and writes now export exact big-endian values, acceptance
+of exactly the complete eight-byte ranges, unchanged length, and unchanged
+bytes outside successful writes or throughout failed writes. Two pure chunk
+models are added without changing existing bitmap models or executing tokens.
+Four compiling value/frame mutations fail strong contracts and verify when
+only the affected relation is omitted; range, length and other relations stay
+in the controls. Independent standard-library endian oracles cover all 256
+byte values in each of eight positions, plus complete/short/overflowing ranges.
+These contracts are prerequisites for the ordinary composition proof, not a
+closure of that dispatch substitution or its clipping/pixel relation.
 
 `--require-complete` checks that every function is accounted for and reviewed;
 it does not imply that every function is directly proved. The release-level

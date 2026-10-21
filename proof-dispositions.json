@@ -26,7 +26,7 @@
     {
       "id": "bitmap::Bitmap::compose",
       "file": "src/bitmap.rs",
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "status": "runtime-proof-divergence",
       "reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper."
     },
@@ -287,7 +287,7 @@
       "file": "src/mmr.rs",
       "file_sha256": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
       "status": "runtime-proof-divergence",
-      "reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Runtime limit handling is not fully verified."
+      "reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Including them is rejected by pinned Verus on Vec::capacity and Result::unwrap_or. Runtime limit handling remains unverified; replacing capacity with length or adding project assumptions is not closure."
     },
     {
       "id": "symbol_text::SymbolTextError::from",

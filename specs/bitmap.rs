@@ -73,6 +73,32 @@ pub open spec fn set_byte_bit(byte: u8, x: u32, value: bool) -> u8 {
     }
 }
 
+pub open spec fn chunk_byte(value: u64, offset: int) -> u8
+    recommends 0 <= offset < 8,
+{
+    if offset == 0 { (value >> 56) as u8 }
+    else if offset == 1 { (value >> 48) as u8 }
+    else if offset == 2 { (value >> 40) as u8 }
+    else if offset == 3 { (value >> 32) as u8 }
+    else if offset == 4 { (value >> 24) as u8 }
+    else if offset == 5 { (value >> 16) as u8 }
+    else if offset == 6 { (value >> 8) as u8 }
+    else { value as u8 }
+}
+
+pub open spec fn chunk_value(bytes: Seq<u8>, start: int) -> u64
+    recommends 0 <= start && start + 8 <= bytes.len(),
+{
+    ((bytes[start] as u64) << 56)
+        | ((bytes[start + 1] as u64) << 48)
+        | ((bytes[start + 2] as u64) << 40)
+        | ((bytes[start + 3] as u64) << 32)
+        | ((bytes[start + 4] as u64) << 24)
+        | ((bytes[start + 5] as u64) << 16)
+        | ((bytes[start + 6] as u64) << 8)
+        | bytes[start + 7] as u64
+}
+
 pub open spec fn stored_pixel(
     bitmap: &crate::bitmap::Bitmap,
     x: u32,

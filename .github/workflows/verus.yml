@@ -100,6 +100,11 @@ jobs:
           python -B tools/check_text_batch_proofs.py
           --verus-executable verus-x86-linux/verus
           --output target/traceability/text-batch-proof-sensitivity.json
+      - name: Check packed-byte kernel value and frame proof sensitivity
+        run: >-
+          python -B tools/check_bitmap_chunk_proofs.py
+          --verus-executable verus-x86-linux/verus
+          --output target/traceability/bitmap-chunk-proof-sensitivity.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
