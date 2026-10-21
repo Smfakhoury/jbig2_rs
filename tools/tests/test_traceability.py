@@ -12,7 +12,7 @@ from jsonschema import ValidationError
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_traceability import check, policy_row_hash, runtime_inventory
+from check_traceability import check, local_document_checks, policy_row_hash, runtime_inventory
 from evidence import load_json, validate
 from rust_tests import test_inventory as inventory_tests
 
@@ -54,6 +54,7 @@ class TraceabilityTests(unittest.TestCase):
         self.standard = {"id": "ITU-T T.88 (08/2018)", "edition": "2.0", "document_sha256": "a" * 64}
         self.consultation = {
             "standard": self.standard["id"],
+            "acquisition_kind": "official_package",
             "acquisition_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items",
             "package_sha256": "b" * 64, "document_sha256": self.standard["document_sha256"],
             "clause_families": ["5.4 (synthetic fixture)"],
@@ -130,6 +131,31 @@ class TraceabilityTests(unittest.TestCase):
             self.names if names is None else names,
             self.discovered if discovered is None else discovered,
         )
+
+    def with_reference_standard(self):
+        ledger = copy.deepcopy(self.ledger)
+        reference = {
+            "id": "ITU-T T.6 (1988)", "document_sha256": "c" * 64,
+            "source_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items",
+        }
+        provenance = load_json(self.root / "source-provenance.json")
+        provenance["normative_references"] = [reference]
+        self.write_json("source-provenance.json", provenance)
+        ledger["standards"].append({
+            "id": reference["id"], "edition": None,
+            "provenance_collection": "normative_references",
+            "document_sha256": reference["document_sha256"],
+        })
+        ledger["source_consultations"].append({
+            "standard": reference["id"], "acquisition_kind": "official_pdf",
+            "acquisition_url": reference["source_url"],
+            "document_sha256": reference["document_sha256"], "clause_families": ["2.2.1"],
+        })
+        requirement = copy.deepcopy(ledger["requirements"][0])
+        requirement.update(id="T6-FIXTURE", standard=reference["id"], clause="2.2.1")
+        ledger["requirements"].append(requirement)
+        ledger["features"][0]["requirement_ids"].append(requirement["id"])
+        return ledger
 
     def test_links_are_valid_without_claiming_scope_or_owner_approval(self):
         validate(self.ledger, "traceability")
@@ -538,10 +564,167 @@ class TraceabilityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "cannot hide a project policy"):
             self.run_check(ledger)
 
+    def test_direct_reference_pdf_preserves_missing_edition_and_source_namespace(self):
+        ledger = self.with_reference_standard()
+        validate(ledger, "traceability")
+        report = self.run_check(ledger)
+        self.assertIsNone(report["standards"][1]["edition"])
+        self.assertEqual(report["standards"][1]["provenance_collection"], "normative_references")
+        self.assertEqual(report["requirements"][1]["standard"], "ITU-T T.6 (1988)")
+        self.assertNotIn("package_sha256", report["source_consultations"][1])
+
+    def test_reference_cannot_silently_resolve_from_another_collection(self):
+        ledger = self.with_reference_standard()
+        del ledger["standards"][1]["provenance_collection"]
+        with self.assertRaisesRegex(ValueError, "provenance collection differs"):
+            self.run_check(ledger)
+
+    def test_reference_edition_cannot_be_invented_from_the_year(self):
+        for edition in ("1988", "1.0", "2.0"):
+            ledger = self.with_reference_standard()
+            ledger["standards"][1]["edition"] = edition
+            with self.subTest(edition=edition), self.assertRaisesRegex(ValueError, "normative edition differs"):
+                self.run_check(ledger)
+
+    def test_ambiguous_cross_collection_identity_is_rejected(self):
+        ledger = self.with_reference_standard()
+        provenance = load_json(self.root / "source-provenance.json")
+        provenance["normative_documents"].append(copy.deepcopy(provenance["normative_references"][0]))
+        self.write_json("source-provenance.json", provenance)
+        with self.assertRaisesRegex(ValueError, "ambiguous normative provenance"):
+            self.run_check(ledger)
+
+    def test_reference_requires_an_approved_document_hash_not_only_metadata(self):
+        ledger = self.with_reference_standard()
+        provenance = load_json(self.root / "source-provenance.json")
+        del provenance["normative_references"][0]["document_sha256"]
+        self.write_json("source-provenance.json", provenance)
+        with self.assertRaisesRegex(ValueError, "no approved document identity"):
+            self.run_check(ledger)
+
+    def test_reference_cannot_reuse_another_standards_hash_or_prefix(self):
+        ledger = self.with_reference_standard()
+        ledger["standards"][1]["document_sha256"] = self.standard["document_sha256"]
+        with self.assertRaisesRegex(ValueError, "normative document identity differs"):
+            self.run_check(ledger)
+        ledger = self.with_reference_standard()
+        ledger["requirements"][1]["standard"] = self.standard["id"]
+        with self.assertRaisesRegex(ValueError, "prefix differs from normative source"):
+            self.run_check(ledger)
+
+    def test_direct_pdf_cannot_invent_a_package_or_use_an_unrecorded_url(self):
+        ledger = self.with_reference_standard()
+        ledger["source_consultations"][1]["package_sha256"] = "b" * 64
+        with self.assertRaises(ValidationError):
+            validate(ledger, "traceability")
+        with self.assertRaisesRegex(ValueError, "cannot invent a package"):
+            self.run_check(ledger)
+        ledger = self.with_reference_standard()
+        ledger["source_consultations"][1]["acquisition_url"] += "&unrecorded=1"
+        with self.assertRaisesRegex(ValueError, "URL differs from recorded provenance"):
+            self.run_check(ledger)
+
+    def test_direct_reference_cannot_masquerade_as_the_other_standards_package(self):
+        ledger = self.with_reference_standard()
+        ledger["source_consultations"][1].update(
+            acquisition_kind="official_package", package_sha256=self.consultation["package_sha256"],
+            acquisition_url=self.consultation["acquisition_url"],
+        )
+        with self.assertRaisesRegex(ValueError, "package_sha256 differs from provenance"):
+            self.run_check(ledger)
+
+    def test_missing_reference_edition_or_acquisition_kind_is_not_guessed(self):
+        ledger = self.with_reference_standard()
+        del ledger["standards"][1]["edition"]
+        with self.assertRaises(ValidationError):
+            validate(ledger, "traceability")
+        ledger = self.with_reference_standard()
+        del ledger["source_consultations"][1]["acquisition_kind"]
+        with self.assertRaises(ValidationError):
+            validate(ledger, "traceability")
+
+    def test_local_document_hashes_are_named_and_not_inferred_from_the_first_standard(self):
+        ledger = self.with_reference_standard()
+        self.write("fixture-t88.pdf", "synthetic first document")
+        self.write("fixture-t6.pdf", "synthetic reference document")
+        for standard, path in zip(ledger["standards"], ("fixture-t88.pdf", "fixture-t6.pdf")):
+            standard["document_sha256"] = hashlib.sha256((self.root / path).read_bytes()).hexdigest()
+        t6 = f"ITU-T T.6 (1988)={self.root / 'fixture-t6.pdf'}"
+        checks = local_document_checks(ledger, standard_documents=[t6])
+        self.assertEqual(checks, {self.standard["id"]: False, "ITU-T T.6 (1988)": True})
+        self.assertFalse(all(checks.values()))
+        checks = local_document_checks(ledger, self.root / "fixture-t88.pdf", [t6])
+        self.assertTrue(all(checks.values()))
+        with self.assertRaisesRegex(ValueError, "hash mismatch: ITU-T T.6"):
+            local_document_checks(ledger, standard_documents=[
+                f"ITU-T T.6 (1988)={self.root / 'fixture-t88.pdf'}",
+            ])
+
+    def test_named_local_documents_reject_duplicates_unknown_ids_and_missing_names(self):
+        for selection in ("missing separator", "=fixture.pdf", "ITU-T T.6 (1988)="):
+            with self.subTest(selection=selection), self.assertRaisesRegex(ValueError, "needs STANDARD_ID=PATH"):
+                local_document_checks(self.ledger, standard_documents=[selection])
+        with self.assertRaisesRegex(ValueError, "unknown local normative document"):
+            local_document_checks(self.ledger, standard_documents=["unknown=fixture.pdf"])
+        ledger = copy.deepcopy(self.ledger)
+        self.write("fixture.pdf", "synthetic document")
+        path = self.root / "fixture.pdf"
+        ledger["standards"][0]["document_sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
+        selection = f"{self.standard['id']}={path}"
+        with self.assertRaisesRegex(ValueError, "duplicate local normative document"):
+            local_document_checks(ledger, path, [selection])
+
+    def test_typed_error_policy_has_a_separate_approved_public_api_binding(self):
+        matrix = load_json(self.root / "support-matrix.json")
+        matrix["public_api"] = {
+            "status": "approved",
+            "requirements": ["Typed malformed, unsupported, resource-limit, input/output, and allocation errors."],
+        }
+        self.write_json("support-matrix.json", matrix)
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"][0].update(
+            obligation_kind="project_profile_policy", policy_source="public_api",
+            policy_row_sha256=policy_row_hash(matrix["public_api"]),
+        )
+        validate(ledger, "traceability")
+        report = self.run_check(ledger)
+        self.assertEqual(report["requirements"][0]["policy_source"], "public_api")
+        matrix["public_api"]["requirements"].append("Changed policy scope.")
+        self.write_json("support-matrix.json", matrix)
+        with self.assertRaisesRegex(ValueError, "stale or missing project policy"):
+            self.run_check(ledger)
+        matrix["public_api"]["status"] = "pending"
+        self.write_json("support-matrix.json", matrix)
+        with self.assertRaisesRegex(ValueError, "no approved public API basis"):
+            self.run_check(ledger)
+
+    def test_public_api_policy_cannot_omit_the_typed_error_basis_or_change_selector(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"][0].update(
+            obligation_kind="project_profile_policy", policy_source="public_api", policy_row_sha256="c" * 64,
+        )
+        self.write_json("support-matrix.json", {
+            "rows": [{"feature": "decoder", "status": "required"}],
+            "public_api": {"status": "approved", "requirements": ["Unrelated API policy."]},
+        })
+        with self.assertRaisesRegex(ValueError, "no approved public API basis"):
+            self.run_check(ledger)
+        ledger["requirements"][0]["policy_source"] = "unrecorded"
+        with self.assertRaisesRegex(ValueError, "unknown project policy source"):
+            self.run_check(ledger)
+
+    def test_policy_selector_cannot_be_hidden_on_a_normative_record(self):
+        ledger = copy.deepcopy(self.ledger)
+        ledger["requirements"][0]["policy_source"] = "public_api"
+        with self.assertRaises(ValidationError):
+            validate(ledger, "traceability")
+        with self.assertRaisesRegex(ValueError, "cannot hide a project policy"):
+            self.run_check(ledger)
+
     def test_checked_repository_ledger_is_schema_valid_and_provisional(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         validate(ledger, "traceability")
-        self.assertEqual(len(ledger["requirements"]), 94)
+        self.assertEqual(len(ledger["requirements"]), 111)
         self.assertTrue(all(entry["review"] == "provisional" for entry in ledger["requirements"]))
 
     def test_repository_feature_accounting_is_exact_but_still_incomplete(self):
@@ -578,13 +761,27 @@ class TraceabilityTests(unittest.TestCase):
         self.assertTrue(all(feature["decomposition"] != "complete" for feature in ledger["features"]))
         self.assertTrue(all(feature["remaining_scope"] for feature in ledger["features"]))
         policy = [row for row in ledger["requirements"] if row.get("obligation_kind") == "project_profile_policy"]
-        self.assertEqual(len(policy), 6)
+        self.assertEqual(len(policy), 9)
         self.assertEqual({row["feature"] for row in policy}, {
-            "pdf_global_and_page_segments", "colour_palette", "lossy_symbol_substitution_by_decoder",
+            "pdf_global_and_page_segments", "colour_palette", "lossy_symbol_substitution_by_decoder", "mmr_coding",
         })
         for row in policy:
             self.assertTrue(row["policy_row_sha256"])
             self.assertTrue(row["gaps"])
+
+    def test_repository_t6_source_and_records_are_distinct_and_provisional(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        standard = next(entry for entry in ledger["standards"] if entry["id"] == "ITU-T T.6 (1988)")
+        self.assertIsNone(standard["edition"])
+        self.assertEqual(standard["provenance_collection"], "normative_references")
+        self.assertEqual(standard["document_sha256"], "8ccbe2d203e03ee2ac37478d50d2d946bab49dfb45376eb0f773009d183a7767")
+        consultation = next(entry for entry in ledger["source_consultations"] if entry["standard"] == standard["id"])
+        self.assertEqual(consultation["acquisition_kind"], "official_pdf")
+        self.assertNotIn("package_sha256", consultation)
+        rows = [row for row in ledger["requirements"] if row["id"].startswith("T6-")]
+        self.assertEqual(len(rows), 17)
+        self.assertTrue(all(row["standard"] == standard["id"] and row["review"] == "provisional" and row["gaps"] for row in rows))
+        self.assertEqual(sum(row.get("obligation_kind") == "project_profile_policy" for row in rows), 3)
 
     def test_new_page_records_do_not_claim_transitive_kernel_or_pixel_equivalence(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
