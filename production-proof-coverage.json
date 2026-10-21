@@ -320,7 +320,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::pixel_mask"
       ]
@@ -331,7 +331,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::CombinationOperator::apply"
       ]
@@ -342,7 +342,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::CombinationOperator::apply_byte"
       ]
@@ -353,7 +353,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::CombinationOperator::apply_chunk"
       ]
@@ -364,7 +364,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::copy_row_bytes"
       ]
@@ -375,7 +375,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_chunk"
       ]
@@ -386,7 +386,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::write_chunk"
       ]
@@ -397,7 +397,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_shifted_byte"
       ]
@@ -408,7 +408,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_shifted_tail"
       ]
@@ -419,7 +419,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_shifted_chunk"
       ]
@@ -430,7 +430,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::checked_bitmap_layout"
       ]
@@ -441,7 +441,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::blank"
       ]
@@ -452,7 +452,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::filled"
       ]
@@ -463,7 +463,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::width"
       ]
@@ -474,7 +474,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::height"
       ]
@@ -485,7 +485,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::stride"
       ]
@@ -496,7 +496,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::bytes"
       ]
@@ -507,7 +507,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::pixel"
       ]
@@ -518,7 +518,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::fill_black_span"
       ]
@@ -529,7 +529,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::copy_row"
       ]
@@ -540,7 +540,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::copy_prefix_from"
       ]
@@ -551,7 +551,7 @@
       "visibility": "pub(crate)",
       "status": "runtime-proof-divergence",
       "disposition_reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper.",
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": []
     },
     {
@@ -560,7 +560,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_chunked"
       ]
@@ -571,7 +571,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_region"
       ]
@@ -582,7 +582,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_region_chunked"
       ]
@@ -593,7 +593,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_row_blit_chunked"
       ]
@@ -604,7 +604,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_aligned_row_chunked"
       ]
@@ -615,7 +615,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_row_batch_chunked"
       ]
@@ -626,7 +626,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::set_pixel"
       ]
@@ -637,7 +637,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e0f1a7a39370c0e836118b8e11c4c345f752c930f44d4b47aa0c45a6f920e117",
+      "file_sha256": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
       "verus_functions": [
         "jbig2_rs_production::bitmap::enforce_limit"
       ]
@@ -5195,7 +5195,7 @@
       "file": "src/mmr.rs",
       "visibility": "private",
       "status": "runtime-proof-divergence",
-      "disposition_reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Runtime limit handling is not fully verified.",
+      "disposition_reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Including them is rejected by pinned Verus on Vec::capacity and Result::unwrap_or. Runtime limit handling remains unverified; replacing capacity with length or adding project assumptions is not closure.",
       "file_sha256": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
       "verus_functions": []
     },
