@@ -168,7 +168,7 @@ python tools/audit_production_coverage.py \
   --require-complete --require-exact
 ```
 
-The exact-source release gate currently fails on the 5 explicitly recorded
+The exact-source release gate currently fails on the 4 explicitly recorded
 runtime/proof divergences. Routine CI checks the reviewed inventory, not a claim
 that every executing body has been proved. New or changed gaps fail the
 inventory checks. `update_proof_dispositions.py --output NEW_FILE` creates
@@ -183,6 +183,14 @@ standard-library assumption. All byte/Boolean values and 25 operator pairs are
 tested; u32 boundaries and deterministic samples supplement its universal proof.
 `tools/check_value_bridge_proofs.py` requires each of five compiling wrong
 results to fail its strong contract while the selected weaker control verifies.
+
+`tools/check_mmr_span_proofs.py` similarly checks three invalid/white/empty
+span mutations against the exact executing MMR wrapper. Its weaker controls
+retain storage and typed-error guarantees but omit only the byte no-op
+relation. Runtime tests compare black/white spans with a scalar pixel oracle
+across byte/word boundaries, other rows and padding, and check exact invalid
+errors with full non-mutation. Formal black-span pixel behavior remains open;
+the newly direct proof covers storage/frame and the stated no-op subsets.
 
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized

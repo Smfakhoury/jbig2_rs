@@ -26,14 +26,14 @@
     {
       "id": "bitmap::Bitmap::compose",
       "file": "src/bitmap.rs",
-      "file_sha256": "f2c68d357d44f9eca86c17ea2b44c20f4e6a04446076d028470e271b3c48ec7b",
+      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
       "status": "runtime-proof-divergence",
       "reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper."
     },
     {
       "id": "bitmap::Bitmap::compose_region",
       "file": "src/bitmap.rs",
-      "file_sha256": "f2c68d357d44f9eca86c17ea2b44c20f4e6a04446076d028470e271b3c48ec7b",
+      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
       "status": "runtime-proof-divergence",
       "reason": "Normal and proof builds select different region-composition paths; exact executing-wrapper verification remains open."
     },
@@ -278,30 +278,23 @@
     {
       "id": "mmr::MmrError::from",
       "file": "src/mmr.rs",
-      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
+      "file_sha256": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "mmr::DecodeError::from",
       "file": "src/mmr.rs",
-      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
+      "file_sha256": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     },
     {
       "id": "mmr::prepare_transition_storage",
       "file": "src/mmr.rs",
-      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
+      "file_sha256": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
       "status": "runtime-proof-divergence",
       "reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Runtime limit handling is not fully verified."
-    },
-    {
-      "id": "mmr::fill_span",
-      "file": "src/mmr.rs",
-      "file_sha256": "1dc3b219df5033f3c379ae5c70eb7580c6e600ba0310ac6cf327c3375ba8869a",
-      "status": "runtime-proof-divergence",
-      "reason": "Normal builds call the optimized span filler; proof builds execute a different loop. Exact runtime span-dispatch verification remains open."
     },
     {
       "id": "symbol_text::SymbolTextError::from",
