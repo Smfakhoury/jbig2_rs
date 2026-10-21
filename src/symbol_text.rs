@@ -51,59 +51,33 @@ mod symbol_text_proofs;
     ensures out as int == value as int,
 ))]
 fn widen_u32_i64(value: u32) -> i64 {
-    #[cfg(verus_keep_ghost)]
-    {
-        value as i64
-    }
-    #[cfg(not(verus_keep_ghost))]
-    {
-        i64::from(value)
-    }
+    i64::from(value)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures out as int == value as int,
 ))]
 fn widen_u8_i64(value: u8) -> i64 {
-    #[cfg(verus_keep_ghost)]
-    {
-        value as i64
-    }
-    #[cfg(not(verus_keep_ghost))]
-    {
-        i64::from(value)
-    }
+    i64::from(value)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures out as int == value as int,
 ))]
 fn widen_u8_i32(value: u8) -> i32 {
-    #[cfg(verus_keep_ghost)]
-    {
-        value as i32
-    }
-    #[cfg(not(verus_keep_ghost))]
-    {
-        i32::from(value)
-    }
+    i32::from(value)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures out == if value { 1i64 } else { 0i64 },
 ))]
+// The pinned verifier needs the explicit Boolean relation instead of From<bool>.
+#[allow(clippy::bool_to_int_with_if)]
 fn widen_bool_i64(value: bool) -> i64 {
-    #[cfg(verus_keep_ghost)]
-    {
-        if value {
-            1
-        } else {
-            0
-        }
-    }
-    #[cfg(not(verus_keep_ghost))]
-    {
-        i64::from(value)
+    if value {
+        1
+    } else {
+        0
     }
 }
 
@@ -5809,6 +5783,40 @@ mod tests {
     use super::*;
     use std::hint::black_box;
     use std::time::{Duration, Instant};
+
+    #[test]
+    fn lossless_byte_and_boolean_bridges_match_standard_conversions() {
+        for value in 0..=u8::MAX {
+            assert_eq!(widen_u8_i64(value), i64::from(value));
+            assert_eq!(widen_u8_i32(value), i32::from(value));
+        }
+        for value in [false, true] {
+            assert_eq!(widen_bool_i64(value), i64::from(value));
+        }
+    }
+
+    #[test]
+    fn full_u32_widening_matches_standard_conversion() {
+        for value in [
+            0,
+            1,
+            255,
+            256,
+            65_535,
+            65_536,
+            0x7fff_ffff,
+            1_u32 << 31,
+            u32::MAX - 1,
+            u32::MAX,
+        ] {
+            assert_eq!(widen_u32_i64(value), i64::from(value));
+        }
+        let mut value = 0x1020_3040_u32;
+        for _ in 0..4096 {
+            value = value.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+            assert_eq!(widen_u32_i64(value), i64::from(value));
+        }
+    }
 
     fn scalar_compose_placement_oracle(
         destination: &mut Bitmap,
