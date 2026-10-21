@@ -2,6 +2,15 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-STRUCTURED-CODEC-FAMILIES",
+      "surface": "generated MMR pattern/halftone and Huffman collective-dictionary/text documents",
+      "expected": "exact typed flag, reference, trailing-data and fourteen resource-limit errors; every truncated prefix is malformed or independently checked complete output; subsequent context decode recovers",
+      "tests": [
+        {"target": "fuzz_codec_families", "name": "halftone_family_matches_literal_pixels_errors_limits_and_boundaries"},
+        {"target": "fuzz_codec_families", "name": "huffman_text_family_matches_literal_pixels_errors_limits_and_boundaries"}
+      ]
+    },
+    {
       "id": "NEG-PUBLIC-READER-FAILURE",
       "surface": "bounded reader acquisition",
       "expected": "preserved typed I/O error and no sink calls, including after a complete valid input prefix",

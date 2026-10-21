@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "status": "measured_nonregression_release_goals_unmet",
+  "base_revision": "b56cbe74ab13cb8eb03339cf6b8d1c7e76f2d12a",
+  "source_revision": "f338287afe3e6026fe0104436ec4c25c5f726f5a",
+  "source_sha256": "38efe199f08091769efd85bc53cc111e47711d640cf7a70a203454c0e30fefd4",
+  "before_test_source_sha256": "470e0f1d77b290278cc1a7385267932c3f3b87dc985349ea79339f15aafbfde2",
+  "test_source_sha256": "72e7e4437e6c176405a01380d6959f063c87d17b64d79e3811dd298c8cc77cba",
+  "production_sources_modified": false,
+  "coverage_scope_policy_modified": false,
+  "runtime_source_coordinate_denominators_identical": true,
+  "previously_covered_source_coordinates_lost": 0,
+  "new_test_driver_mappings": [
+    "tests/fuzz_codec_families.rs",
+    "tests/support/codec_scenarios.rs"
+  ],
+  "toolchain": {
+    "rust_toolchain": "nightly-2026-10-12",
+    "cargo_llvm_cov_version": "0.9.1",
+    "component": "llvm-tools-preview",
+    "rustc": "rustc 1.101.0-nightly (080cc2714 2026-10-11)"
+  },
+  "totals": {
+    "lines": {"before": 9830, "after": 10022, "count": 12617, "new": 192},
+    "regions": {"before": 9478, "after": 9667, "count": 12931, "new": 189},
+    "branches": {"before": 1747, "after": 1785, "count": 2640, "new": 38}
+  },
+  "per_file_gains": {
+    "src/bitmap.rs": {"lines": 0, "regions": 0, "branches": 1},
+    "src/decode.rs": {"lines": 5, "regions": 13, "branches": 0},
+    "src/document.rs": {"lines": 7, "regions": 5, "branches": 3},
+    "src/halftone.rs": {"lines": 57, "regions": 49, "branches": 8},
+    "src/huffman.rs": {"lines": 7, "regions": 7, "branches": 2},
+    "src/mmr.rs": {"lines": 1, "regions": 1, "branches": 0},
+    "src/segment_data.rs": {"lines": 2, "regions": 2, "branches": 0},
+    "src/segment_header.rs": {"lines": 0, "regions": 1, "branches": 0},
+    "src/symbol_text.rs": {"lines": 113, "regions": 111, "branches": 24}
+  },
+  "family_measurement": {
+    "method": "Collect each named ordinary family test separately with the same pinned branch instrumentation. Mask runtime sources using coverage_report.runtime_sources and active_region; merge all instantiations at identical source coordinates and branch outcome indices. Subtract baseline covered-coordinate sets before taking family unions. Digests are SHA-256 of UTF-8 compact JSON sorted unique tuples: [relative_file,line] or [relative_file,start_line,start_column,end_line,end_column] with an additional outcome index (0=true,1=false) for branches. Every per-family covered coordinate is present in the complete after run. Complete before/after coordinate denominators match exactly, and no covered baseline coordinate is lost.",
+    "halftone": {
+      "test": "halftone_family_matches_literal_pixels_errors_limits_and_boundaries",
+      "lines": {"new": 67, "source_coordinate_sha256": "334c9dcb518d1cdf91a04466b2d9c826e953e6e19d41e2b784033cbfb99231d7"},
+      "regions": {"new": 63, "source_coordinate_sha256": "39d0939a1e6a3d6a301ca80dca6a715544e024991f7207e887f510ee4a7d6b5f"},
+      "branches": {"new": 11, "source_coordinate_sha256": "52bdb1355f14970f6ad22c7c18f71aa9533a0381ccb802fc7f466b0797211110"}
+    },
+    "huffman_dictionary_text": {
+      "test": "huffman_text_family_matches_literal_pixels_errors_limits_and_boundaries",
+      "lines": {"new": 133, "source_coordinate_sha256": "1c6d1b8901b0c7c7340dc7c84c639b1905db07ddecc404a2bbac0f7255427785"},
+      "regions": {"new": 132, "source_coordinate_sha256": "5d4912310283e8528291c1ed5a2c13f8bf1f745a2ca0be7fe6bf03d15d7aa53e"},
+      "branches": {"new": 27, "source_coordinate_sha256": "1d95d1401b70add38a4222b22b632e642b176b5529557ffb4ec54ce29fa76280"}
+    },
+    "union": {
+      "lines": {"new": 192, "family_overlap": 8, "source_coordinate_sha256": "b379e172f3416a337f312dc7d7bf62a94259897e6e4b04345bdf11827fe2e105"},
+      "regions": {"new": 189, "family_overlap": 6, "source_coordinate_sha256": "23adce8543b3359eaa71cd9b2962b04ca819914953f796324572bf2f85617843"},
+      "branches": {"new": 37, "family_overlap": 1, "source_coordinate_sha256": "a28e87922c3c3d66c5805b646f1078b51d22b8d5b467e58e05c214b53fbb5def"}
+    },
+    "additional_shared_seed_and_control_branch_outcomes": [
+      ["src/bitmap.rs", 2006, 20, 2006, 42, 1]
+    ]
+  },
+  "raw_reports_sha256": {
+    "before": {
+      "json": "2893b36c5ab6302f5cd0632f36e7a39e5acf292a75970519eac711b804f97455",
+      "lcov": "c694f20f9e2684cc37d39e4614634ce2c19e4c2148da7cdd9d9fd2ff41d5f1f6"
+    },
+    "after": {
+      "json": "e49e39a5316115c6c08b1e4b720d6842909d067834b1ffec5c9f2a4b30dee007",
+      "lcov": "0e3df6b6aea8eaa665b138bba3e5c1a61378dfa4a46de0aa1dda94f0ffb822af"
+    },
+    "halftone": {
+      "json": "5cacf527e00ce2c6aa64875044149ed1f73a2d1e6c546261d812691822d2e7d8",
+      "lcov": "c4843cdab07dd7febbf0edca1c7569e786668ff7fc7e477406a6345a291fabb7"
+    },
+    "huffman_dictionary_text": {
+      "json": "a2c965ae95923f1134f7bd4883dfe27956e87294712da9a84ed44a2762aacc1f",
+      "lcov": "2f703500e65da870b962ba21d04fb22a06a973b5054255e5650132aab221cac8"
+    }
+  },
+  "validation": {
+    "msrv": "1.89.0",
+    "ordinary_correctness_tests_before": 266,
+    "ordinary_correctness_tests_after": 271,
+    "ignored_microbenchmarks": 14,
+    "python_tooling_tests": 182,
+    "strict_clippy_all_targets_all_features": "passed",
+    "package_inventory_and_verified_archive": "passed",
+    "runtime_provenance_workflow_catalog_checks": "passed",
+    "proposed_release_goals_met": false
+  },
+  "fuzz": {
+    "source_revision": "f338287afe3e6026fe0104436ec4c25c5f726f5a",
+    "source_sha256": "689e049f3a872674bb8591dd71d69e084f8e99407bd30d9a613e5fa0de78c57e",
+    "profile": "smoke",
+    "target_count": 9,
+    "per_target_seconds": 60,
+    "per_input_timeout_seconds": 5,
+    "rss_limit_mb": 1024,
+    "max_input_bytes": 16384,
+    "structured_codec_manifest_seeds": 60,
+    "target_executions": {
+      "file_header_arbitrary": 32869191,
+      "file_header_structured": 8377008,
+      "document_arbitrary": 2434535,
+      "arithmetic": 1055835,
+      "huffman": 6836179,
+      "mmr": 3011566,
+      "generic_region": 977824,
+      "document_context_structured": 2360,
+      "codec_families_structured": 22431
+    },
+    "total_executions": 55586929,
+    "raw_positive_final_counters_verified": true,
+    "new_target_single_input_replay_executions": 1,
+    "real_failure_capture_and_replay_controls": "passed",
+    "production_findings": 0,
+    "trusted_cache_read_or_write": false,
+    "report_sha256": "f4dba19bd53fb1712a8dc6ee0d690d9d4fb60a09faa74d586e61af5cfc89c877",
+    "note": "Local source-bound measurements, not proof of scheduled deployment, trusted-main cache use, unique cases, normative conformance or release readiness."
+  },
+  "remaining_gaps": [
+    "Arithmetic symbol dictionaries and text",
+    "Aggregate and single-instance refinement",
+    "Arithmetic and skip halftone",
+    "Deeper imported dictionaries and arbitrary custom Huffman tables",
+    "Structured codec nesting-limit rejection",
+    "Corpus minimization and normative conformance review"
+  ]
+}

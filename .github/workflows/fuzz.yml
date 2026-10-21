@@ -37,9 +37,9 @@ jobs:
         if: env.TRUSTED_CORPUS == 'true'
         with:
           path: target/fuzz-corpus
-          key: fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs', 'tests/support/context_scenarios.rs', 'benchmarks/generated.rs') }}-${{ github.run_id }}
+          key: fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs', 'tests/support/context_scenarios.rs', 'benchmarks/generated.rs', 'tests/support/codec_scenarios.rs') }}-${{ github.run_id }}
           restore-keys: |
-            fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs', 'tests/support/context_scenarios.rs', 'benchmarks/generated.rs') }}-
+            fuzz-generated-v1-${{ runner.os }}-${{ hashFiles('examples/fuzz_seeds.rs', 'tools/distribution_consumer.rs', 'tests/support/context_scenarios.rs', 'benchmarks/generated.rs', 'tests/support/codec_scenarios.rs') }}-
       - name: Validate failure capture and single-input replay
         run: python -B tools/check_fuzz_controls.py --output-dir target/fuzz-controls
       - name: Run all bounded fuzz targets

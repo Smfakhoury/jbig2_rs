@@ -2,6 +2,18 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-STRUCTURED-CODEC-FAMILIES",
+      "transformation": "generated dictionaries and regions across sequential/random-access, embedded nonempty reusable globals, reader/sink and reused context APIs; all codec operators, corners, transposition, raw/MMR collectives and Gray-plane depths zero through two",
+      "invariant": "independent scalar literal pixels, exact dimensions/stride/packed bytes/zero padding; typed failures and recovery; no fresh-versus-reused agreement is used as the pixel oracle",
+      "tests": [
+        {"target": "fuzz_codec_families", "name": "halftone_family_matches_literal_pixels_errors_limits_and_boundaries"},
+        {"target": "fuzz_codec_families", "name": "huffman_text_family_matches_literal_pixels_errors_limits_and_boundaries"},
+        {"target": "fuzz_codec_families", "name": "tiny_generated_families_have_literal_packed_oracles"},
+        {"target": "fuzz_codec_families", "name": "generated_codec_grammar_is_zero_padded_and_has_a_bounded_suffix"},
+        {"target": "fuzz_codec_families", "name": "canonical_codec_seed_manifest_executes_all_sixty_structured_seeds"}
+      ]
+    },
+    {
       "id": "META-STRUCTURED-CONTEXT-SEQUENCES",
       "transformation": "bounded generated white/transition MMR shapes and input-driven context operations with malformed/limit calls and scratch release",
       "invariant": "known packed pixels including padding, complete fresh/reused output and typed-error parity, recovery after every operation",
