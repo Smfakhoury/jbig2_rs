@@ -9,21 +9,26 @@ are enforced in native CI. Five focused regressions strengthen typed duplicate,
 missing-reference, truncation and repeat-result claims. Catalog linking is not
 semantic or normative approval, and broader P06 coverage goals remain open.
 Exact-source proof gaps are exposed and tracked for P05.
-P04 is in progress with a provisional 94-record statement-level ledger and
+P04 is in progress with a provisional 111-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
 The initial organization/Huffman/MMR tranche added 28 selected records. The
 follow-up adds 46 across the 16 previously unstarted worklists. Twenty-nine of
 30 worklists are now partial, none unstarted and one deferred encoder excluded;
-none is complete. The 94 records comprise 88 selected normative rules and six
+none is complete. A concrete T.6 source tranche adds 17 records after the
+94-record stage; the total now comprises 102 selected normative rules and nine
 separately counted, hash-bound project-profile policies. Starting every feature
 does not establish exhaustive normative enumeration. Eighteen generated
-integration regressions supplement 118 distinct linked non-ignored Cargo test
+integration regressions supplement 134 distinct linked non-ignored Cargo test
 identities. Exact per-feature membership, remaining scope, official source
 consultation identity and policy-row hashes are checked. T.88 hashes were
 rechecked through its official public package; no standard assets were
-committed. T.6 mode/run decomposition, any actual PDF normative claim,
-independent translation review and complete enumeration remain open. Stricter
-Huffman partition/MMR padding rejection and the retention example conflict
+committed. The recorded T.6 direct PDF returned HTTP 200 and matched its distinct
+approved reference hash; no separate edition or package metadata is invented.
+Selected mode/run/framing records preserve their safety/state/lookup limits,
+with typed-error policy separately hash-bound to the approved public API.
+Full T.6 line/pixel/table-translation proofs, any actual PDF normative claim,
+independent translation review and complete enumeration remain open.
+Huffman partition rejection, T.6/T.88 padding applicability and the retention example conflict
 still need owner adjudication, not silent approval.
 Targeted P05 tranches close the selected batch-reset output-contract gap
 and parsed-document count agreement, with compiled semantic counterexamples
@@ -35,8 +40,8 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 56
-functional, 12 state-preservation and 26 safety-only records; all 94 remain
+scalar proof substitute is removed. The current selected ledger has 60
+functional, 25 state-preservation and 26 safety-only records; all 111 remain
 provisional.
 Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
