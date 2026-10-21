@@ -2263,29 +2263,22 @@ fn same_combination_operator(
     left: crate::bitmap::CombinationOperator,
     right: crate::bitmap::CombinationOperator,
 ) -> bool {
-    #[cfg(verus_keep_ghost)]
-    {
-        match left {
-            crate::bitmap::CombinationOperator::Or => {
-                matches!(right, crate::bitmap::CombinationOperator::Or)
-            }
-            crate::bitmap::CombinationOperator::And => {
-                matches!(right, crate::bitmap::CombinationOperator::And)
-            }
-            crate::bitmap::CombinationOperator::Xor => {
-                matches!(right, crate::bitmap::CombinationOperator::Xor)
-            }
-            crate::bitmap::CombinationOperator::Xnor => {
-                matches!(right, crate::bitmap::CombinationOperator::Xnor)
-            }
-            crate::bitmap::CombinationOperator::Replace => {
-                matches!(right, crate::bitmap::CombinationOperator::Replace)
-            }
+    match left {
+        crate::bitmap::CombinationOperator::Or => {
+            matches!(right, crate::bitmap::CombinationOperator::Or)
         }
-    }
-    #[cfg(not(verus_keep_ghost))]
-    {
-        left == right
+        crate::bitmap::CombinationOperator::And => {
+            matches!(right, crate::bitmap::CombinationOperator::And)
+        }
+        crate::bitmap::CombinationOperator::Xor => {
+            matches!(right, crate::bitmap::CombinationOperator::Xor)
+        }
+        crate::bitmap::CombinationOperator::Xnor => {
+            matches!(right, crate::bitmap::CombinationOperator::Xnor)
+        }
+        crate::bitmap::CombinationOperator::Replace => {
+            matches!(right, crate::bitmap::CombinationOperator::Replace)
+        }
     }
 }
 
@@ -3024,6 +3017,22 @@ fn bitmap_byte_len(bitmap: &Bitmap) -> Result<u64, DecodeError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn all_combination_operator_pairs_match_derived_equality() {
+        let operators = [
+            CombinationOperator::Or,
+            CombinationOperator::And,
+            CombinationOperator::Xor,
+            CombinationOperator::Xnor,
+            CombinationOperator::Replace,
+        ];
+        for left in operators {
+            for right in operators {
+                assert_eq!(same_combination_operator(left, right), left == right);
+            }
+        }
+    }
 
     const SIGNATURE: [u8; 8] = [0x97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A];
 

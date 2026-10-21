@@ -168,11 +168,21 @@ python tools/audit_production_coverage.py \
   --require-complete --require-exact
 ```
 
-The exact-source release gate currently fails on the 10 explicitly recorded
+The exact-source release gate currently fails on the 5 explicitly recorded
 runtime/proof divergences. Routine CI checks the reviewed inventory, not a claim
 that every executing body has been proved. New or changed gaps fail the
 inventory checks. `update_proof_dispositions.py --output NEW_FILE` creates
 unreviewed proposals only and cannot overwrite the reviewed disposition file.
+
+The five value/operator bridges share exact executing/proof bodies and export
+lossless-value or operator-equality postconditions. Three integer conversions
+retain `From`; Boolean conversion and enum equality use equivalent explicit
+bodies supported by the pinned verifier. The Boolean helper has one narrowly
+documented Clippy exception rather than a proof-only implementation or a new
+standard-library assumption. All byte/Boolean values and 25 operator pairs are
+tested; u32 boundaries and deterministic samples supplement its universal proof.
+`tools/check_value_bridge_proofs.py` requires each of five compiling wrong
+results to fail its strong contract while the selected weaker control verifies.
 
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized

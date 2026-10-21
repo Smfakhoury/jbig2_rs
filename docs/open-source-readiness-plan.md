@@ -27,8 +27,16 @@ Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled
 bitmap counterexamples check those semantic guarantees.
-Caller timing/first-row semantics, other semantic gaps and 10 runtime/proof
+Caller timing/first-row semantics, other semantic gaps and 5 runtime/proof
 substitutions remain open.
+Five small value/operator bridge substitutions are closed with shared
+executing/proof bodies and exact output contracts. Three integer widenings
+retain their ordinary `From` calls; Boolean conversion and operator equality
+use equivalent explicit `if`/`match` bodies because the pinned standard-trait
+contracts are insufficient. Exhaustive small-domain tests, bounded u32
+samples and five compiling strong-proof/weaker-control contrasts supplement
+the full pinned verification. No caller or normative conformance gap is
+inferred closed by these helper-level results.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
