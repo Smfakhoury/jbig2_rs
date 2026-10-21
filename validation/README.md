@@ -189,8 +189,22 @@ span mutations against the exact executing MMR wrapper. Its weaker controls
 retain storage and typed-error guarantees but omit only the byte no-op
 relation. Runtime tests compare black/white spans with a scalar pixel oracle
 across byte/word boundaries, other rows and padding, and check exact invalid
-errors with full non-mutation. Formal black-span pixel behavior remains open;
-the newly direct proof covers storage/frame and the stated no-op subsets.
+errors with full non-mutation. These wrapper checks cover storage/frame and
+the stated no-op subsets; the separate primitive theorem below does not by
+itself establish complete MMR raster-loop semantics.
+
+`tools/check_black_span_proofs.py` checks six compiling output mutations of
+the exact optimized `Bitmap::fill_black_span`: cleared requested head/word
+bits, cleared untouched head bits, changed prefix/padding bits and an erroneous
+valid-span failure. For valid bitmap storage the strong contract states success,
+exact effects on every storage bit, the visible-pixel relation and the
+outside-byte frame. Controls omit only the new semantic result or new success
+guarantee and retain the old bounds, metadata/length and empty no-op/success
+contracts. No storage-validity precondition is added. Fully proved mask and
+step lemmas connect the native first-mask/word/byte/tail algorithm to these
+postconditions; its erased runtime tokens are unchanged. Exhaustive bounded
+scalar comparisons additionally test arbitrary dirty padding and exact bounds
+errors, without introducing a new encoded-input family.
 
 `tools/check_region_dispatch_proofs.py` checks the optimized source-offset
 composition wrapper with three overflow/zero-area mutations. Each compiles as
@@ -229,13 +243,14 @@ edges, clipping, empty dimensions and maximal origins; bit-loop oracles check
 complete shifted byte/word/tail availability. Coverage exclusions and the
 reviewed floor are unchanged; the separate P06 family work owns floor updates.
 
-`tools/run_semantic_proofs.py` runs all ten existing isolated semantic checkers
+`tools/run_semantic_proofs.py` runs all eleven isolated semantic checkers
 with at most two concurrent children. Each checker retains its pinned verifier,
 selected-target checks, native compilation and strong/weaker solver limits.
 Reports and logs keep their existing names; stale reports are removed before
 launch, and missing/malformed/duplicate/failed evidence fails the aggregate.
-The 40 required contrasts, whole-crate verification, 20-minute job budget,
-action pins and read-only permissions are unchanged. The aggregate report is
+The 46 required contrasts include the six black-span contrasts. Whole-crate
+verification, the 20-minute job budget, action pins and read-only permissions
+are unchanged. The aggregate report is
 additional orchestration evidence, not a substitute for individual reports.
 
 `validation/differential/run_oracles.py` runs pinned external executables as

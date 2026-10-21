@@ -45,10 +45,10 @@ class SemanticOrchestrationTests(unittest.TestCase):
         Path(command[-1]).write_text(json.dumps(evidence()))
         return SimpleNamespace(returncode=0)
 
-    def test_manifest_keeps_all_ten_checkers_and_forty_contrasts(self):
-        self.assertEqual(len(runner.CHECKS), 10)
-        self.assertEqual(len({row[0] for row in runner.CHECKS}), 10)
-        self.assertEqual(sum(row[2] for row in runner.CHECKS), 40)
+    def test_manifest_keeps_all_eleven_checkers_and_forty_six_contrasts(self):
+        self.assertEqual(len(runner.CHECKS), 11)
+        self.assertEqual(len({row[0] for row in runner.CHECKS}), 11)
+        self.assertEqual(sum(row[2] for row in runner.CHECKS), 46)
         self.assertTrue(all((TOOLS / row[1]).is_file() for row in runner.CHECKS))
 
     def test_actual_work_overlaps_but_never_exceeds_two_children(self):

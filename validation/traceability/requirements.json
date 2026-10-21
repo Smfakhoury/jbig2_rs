@@ -277,14 +277,14 @@
     }
   ],
   "bindings": {
-    "proofs/production_impl/bitmap.rs": "4b9b191a4f640e88247a7c69c880f4a996a230d3eb653aa786e231a625951774",
+    "proofs/production_impl/bitmap.rs": "5b344e6374e04c0a3d6d86084cc01c0b98a0d72cadd63fb820c9665d03715303",
     "proofs/production_impl/document.rs": "be644143f4b507fbf7923af1eadeb051ee6192c94aa99e02d792dc495890646f",
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
-    "specs/bitmap.rs": "733cfab97d498390ee6da162341a8a4aff597129aa8f47112ed2f0e323b269cc",
+    "specs/bitmap.rs": "8fbf960945eb6c56a63348e379a96852a3279a4fd6bab26c70f9d6e5a4889fbc",
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
     "specs/decode.rs": "270442a6accf85260af0ffdccb76e8c7a1a7f9cbfcc8157d030f9c1e45523860",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
@@ -297,7 +297,7 @@
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
     "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
-    "src/bitmap.rs": "e798d229dfbf8744ba22ff1b5dfa51229fa3418450853a809c272db0408d209a",
+    "src/bitmap.rs": "f764dd85bb7ffb52b043f2bbd31158f6f784b6595cc0378936383cfc74caaac7",
     "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
@@ -2108,9 +2108,9 @@
         {"target": "lib", "name": "mmr::tests::optimized_span_dispatch_matches_scalar_pixels_and_full_storage"}
       ],
       "strength": "state_preservation", "review": "provisional",
-      "scope_of_formal_result": "Successful MMR output and span filling preserve storage invariants. White/empty span no-ops are stronger auxiliary guarantees, but the general black-span/pixel polarity result is not proved.",
+      "scope_of_formal_result": "Successful MMR output and span filling preserve storage invariants. White/empty span no-ops are stronger auxiliary guarantees. The optimized Bitmap::fill_black_span primitive separately proves valid-storage success and exact effects on all stored bits, visible pixels and outside-span bytes; that result is not yet propagated through the wrapper's weaker storage predicate and the complete MMR raster loop.",
       "assumptions": ["Only the JBIG2-specific polarity exception is mapped; T.6 mode/run correctness is not inferred from this row."],
-      "gaps": ["Prove complete visible black/white pixel relations, untouched-pixel frames and their composition through the MMR raster loop."],
+      "gaps": ["Propagate the proved primitive black-span pixel/storage relation through the MMR wrapper's weaker storage predicate and complete raster loop; prove complete decoded black/white polarity and caller composition."],
       "functional_evidence": [],
       "invariant_evidence": [
         {"runtime": "mmr::decode_mmr", "section": "ensures", "tokens": ["Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap)"]},
