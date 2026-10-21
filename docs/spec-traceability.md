@@ -1,7 +1,10 @@
 # Provisional statement-level T.88 traceability
 
-P04 is in progress. The ledger maps **48 selected requirement records**
+P04 is in progress. The ledger maps **94 selected requirement records**
 to source contracts, project models, proof support and exact test identities.
+These comprise **88 selected normative-rule records and six explicit project-
+profile-policy records**. A policy row uses the standard only as context and
+does not increase the normative-rule count.
 It also inventories all **30 support-matrix features** as a decomposition
 worklist. That worklist is not a count of all normative obligations.
 
@@ -24,18 +27,21 @@ the repository. Ledger titles and scope notes are original paraphrases.
   source links, model/proof support, exact tests, assumptions and unresolved gaps.
   CI uploads these instead of committing constantly regenerated reports.
 
-All 48 records are **provisional**, pending owner normative/model review.
-Thirteen feature groups have partial requirement records; 16 remain not started,
-one deferred feature is excluded, and none has an approved complete normative
-decomposition. This tranche does not complete P04.
+All 94 records are **provisional**, pending owner normative/model review.
+Twenty-nine feature groups now have partial records, none is unstarted, one
+deferred feature is excluded, and none has an approved complete normative
+decomposition. Starting every coarse feature worklist does **not** mean that
+every normative requirement has been enumerated. This work does not complete
+P04. Three worklists contain only project-policy records, not a completed
+normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 32 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 3 | Decoder/context/storage invariants, not the requested semantic transformation |
-| `safety_only` | 13 | A verified body without the claimed functional result postcondition |
+| `functional_contract` | 56 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 12 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
 The mapped areas are packed-bit/word order, selected file/segment organization
@@ -79,16 +85,17 @@ Important examples:
   Typical-prediction timing, caller-loop semantics and the first-row zero edge
   remain separate gaps. Blank construction now also proves zeroed storage as a
   foundation for, not a complete proof of, the first-row caller rule.
-  Two runtime/proof divergences remain in the
-  full inventory outside this selected ledger.
+  See the current audited inventory for remaining runtime/proof substitutions.
+  A caller's storage contract is not independent exact-source evidence for
+  every transitive kernel it invokes.
 
 The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
 implementation data is not by itself proof of a faithful standards translation.
 
-## Bounded organization, Huffman and MMR decomposition
+## Initial bounded organization, Huffman and MMR decomposition
 
-The next P04 tranche adds **28 records** without changing runtime, models,
+The initial bounded P04 tranche added **28 records** without changing runtime, models,
 proofs or production-proof accounting. It starts six previously unmapped
 feature worklists: sequential, random-access and embedded organization, standard
 and custom Huffman tables, and MMR. It also adds five selected segment-header
@@ -110,12 +117,13 @@ extracted for consultation; no sample software or conformance payload was used
 or added. No T.6 document was consulted in this tranche, so it does not invent
 T.6 mode/run clause decomposition.
 
-Five new ordinary Cargo tests in `tests/traceability_organization.rs` use
+Five ordinary Cargo tests added in `tests/traceability_organization.rs` use
 project-generated segment/page fields to check distinct sequential and
 random-access two-page layouts, missing random-access EOF, descending standalone
 numbers and headerless/non-monotonic embedded input. Existing exact test
-identities back the other rows; the ledger references **67 distinct non-ignored
-Cargo tests** in total. Discovery lists names; executing these tests is a
+identities backed the other rows; that first tranche referenced 67 distinct
+non-ignored Cargo tests. The expanded ledger now references **118**. Discovery
+lists names; executing these tests is a
 separate validation step. Neither operation establishes test adequacy.
 
 The ledger explicitly leaves two newly exposed policy questions open:
@@ -134,13 +142,77 @@ would require nonempty, approved, gap-free functional records and no remaining
 scope, but that is still a review declaration, not a proof of exhaustive
 enumeration. No actual feature is marked complete.
 
+## Continued family-specific mapping
+
+The follow-up adds **46 records** across the 16 worklists that previously had
+no records. They are not feature-label placeholders: each has a clause/context,
+exact runtime/test identities, a scoped contract assessment, assumptions and
+unresolved obligations.
+
+| Worklist | Added records | Selected obligations and boundary |
+|---|---:|---|
+| Known-height pages | 3 | Dimensions/resolutions remain safety-only; default-pixel flag interpretation is proved, initialization pixels are not |
+| Unknown-height pages | 2 | Sentinel interpretation remains unproved; successful unknown-height metadata requires striping |
+| Striped pages | 3 | Exact end-row field helper; row progression/max-size and final-height lifecycle results remain unproved |
+| Generic refinement | 4 | Context-size/SLTP lookups; adaptive geometry and reference-neighbourhood prediction remain open |
+| Symbol dictionaries | 4 | Selected flags/export count, bounded class state and export assembly; complete run/order/pixel semantics remain open |
+| Text regions | 4 | Selected flags/current-state placement/checked ID; clipped raster and full strip recurrences remain open |
+| Pattern dictionaries | 3 | Count and collective-width helpers; per-pattern output pixels/order remain unproved |
+| Halftone regions | 5 | Grid/depth/nonintersection helpers; executing Gray-plane reconstruction and rendering have storage-only contracts |
+| Immediate regions | 3 | Caller storage plus sealed-stripe guard; not a kernel-equivalence or composed-pixel theorem |
+| Intermediate regions | 2 | Auxiliary storage validity and permission checking; exact buffer identity/lifetime remain open |
+| Refinement aggregation | 2 | Mode flag and shared multi-instance text-refinement geometry; count-one dispatch/parameters and aggregate pixels remain open |
+| Global segments | 2 | Page association and reference scope checks; no complete global-resource/lifetime theorem |
+| Combination operators | 3 | Boolean operator, wire-code helper and page override guard; packed/caller pixel semantics remain separate |
+| Colour profile rejection | 2 policy | Typed page/palette rejection, not colour decoding conformance |
+| No lossy decoder substitution | 2 policy | Exact checked-ID and bitmap-clone helper results, not end-to-end symbol selection/rendering |
+| Globals-backed embedded API | 2 policy | Reusable resource API and embedded metadata shape, not PDF container semantics |
+
+Thirteen additional generated public-API tests in
+`tests/traceability_semantics.rs` check page fields/default pixels, all operator
+codes against a Boolean oracle, override permission, clipped page effects,
+intermediate non-page effects/permissions, stripe errors/final height, global
+scope and typed colour exclusion. The complete ledger links 90 library tests,
+nine `spec_header`, one `catalog_contracts`, five `traceability_organization`
+and 13 `traceability_semantics` tests, all ordinary and non-ignored.
+
+The checker now distinguishes `normative_rule` from `project_profile_policy`.
+Policy evidence must name an existing explicit support-matrix policy and match
+the hash of that exact feature row; changing its note, failure policy or scope
+invalidates the policy evidence. Policy rows remain visible in both generated
+views, separately counted from normative rules. Informative 0.2 is not promoted
+to a new normative prohibition, and a reusable globals API is not presented as
+a PDF-standard requirement.
+
+`source_consultations` retains the exact official acquisition URL, approved
+package/PDF hashes and consulted clause families even after local source
+intermediates are removed. The checker rejects missing/duplicate consultations,
+stale identities, nonofficial URLs and URLs naming another publication/package.
+It checks recorded identity, not whether a human translation is correct or
+every clause has been enumerated. No document contents are stored in the ledger.
+
+Immediate-region records deliberately reference unchanged caller storage
+contracts, not a scalar composition substitute or a claim that all transitive
+kernels are source-identical. See the current audited inventory for remaining
+substitutions. The new mappings do not use `compose_scalar_verified` as evidence
+and do not infer visible-pixel correctness from storage preservation.
+
+Owner adjudication is still needed for the retention worked-example conflict,
+custom Huffman overshoot rejection and stricter MMR zero-padding rejection.
+Independent model/diagram/table review, complete clause enumeration and
+functional caller/raster composition remain unresolved. T.6 decomposition and
+any actual PDF-container normative claim need appropriate separately consulted
+approved source evidence. These are real boundaries, not closed by having
+started every feature worklist.
+
 ## Checks and limits
 
 The checker validates:
 
 1. Schema, exact support-matrix worklist, normative edition/hash identity,
    unique requirement IDs, exact per-feature requirement membership, explicit
-   remaining scope and consistent decomposition/review states.
+   remaining scope and consistent decomposition/review states; source
+   consultation identity and separate hash-bound policy accounting.
 2. Hash bindings for every referenced source and module-declaration file.
    A source change invalidates the affected review; no automatic reapproval
    or hash-refresh workflow is provided.
@@ -154,7 +226,10 @@ The checker validates:
    satisfy output-equivalence or state-preservation claims. Functional evidence
    cannot be hidden under a weaker strength label. Duplicate runtime, model,
    test, claim and whitespace-equivalent token evidence is rejected, as are
-   unused or aliased duplicate model/proof definitions.
+   unused or aliased duplicate model/proof definitions. Commented-out clauses
+   and bare `true` cannot replace genuine functional/state evidence after
+   source hashes are refreshed. Evidence must come from the actual
+   ghost-conditioned `verus_spec` attribute, not matching text in documentation.
 7. Test source identities, ordinary test cfgs and non-ignored status.
    `--discover-tests` additionally compiles/lists the exact Cargo targets and
    verifies the names actually exist in compiler discovery.

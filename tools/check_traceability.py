@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
+from urllib.parse import parse_qs, urlsplit
 
 from jsonschema import ValidationError
 
@@ -105,14 +106,37 @@ def compact(text):
     return re.sub(r"\s+", "", text)
 
 
+def policy_row_hash(row):
+    return hashlib.sha256(json.dumps(
+        row, sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")).hexdigest()
+
+
 def check_contract(record, section, tokens):
     if not tokens or any(not compact(token) for token in tokens):
         raise ValueError(f"empty contract evidence on {record['id']}")
+    if any(compact(token).strip("()") == "true" for token in tokens):
+        raise ValueError(f"tautological contract evidence on {record['id']}")
     if len({compact(token) for token in tokens}) != len(tokens):
         raise ValueError(f"duplicate contract token on {record['id']}")
     sections = []
     for attribute in record["attributes"]:
-        if not re.search(r"\bverus_spec\s*\(", attribute):
+        source = attribute.encode("utf-8")
+        masked = bytearray(source)
+        pending = [parse(source + b"\nfn traceability_attribute_probe() {}")]
+        while pending:
+            node = pending.pop()
+            if node.type in {"line_comment", "block_comment"}:
+                for index in range(node.start_byte, min(node.end_byte, len(masked))):
+                    if masked[index] not in (10, 13):
+                        masked[index] = 32
+            else:
+                pending.extend(node.named_children)
+        attribute = masked.decode("utf-8")
+        if not re.match(
+            r"^\s*#\[\s*cfg_attr\s*\(\s*verus_keep_ghost\s*,\s*verus_spec\s*\(",
+            attribute,
+        ):
             continue
         start = re.search(rf"\b{section}\b", attribute)
         if start:
@@ -135,6 +159,36 @@ def check(ledger, root, verifier_names=None, discovered=None):
             raise ValueError("normative document identity differs from provenance")
         if documents[standard["id"]]["edition"] != standard["edition"]:
             raise ValueError("normative edition differs from provenance")
+    consultations = ledger["source_consultations"]
+    consulted = {entry["standard"] for entry in consultations}
+    if len(consulted) != len(consultations) or consulted != {
+        entry["id"] for entry in ledger["standards"]
+    }:
+        raise ValueError("source consultations must cover the exact normative standards once")
+    for consultation in consultations:
+        document = documents[consultation["standard"]]
+        families = consultation["clause_families"]
+        if (
+            not families or any(not compact(family) for family in families)
+            or len({compact(family) for family in families}) != len(families)
+        ):
+            raise ValueError("source consultation needs nonempty distinct clause families")
+        for field in ("document_sha256", "package_sha256"):
+            if consultation[field] != document[field]:
+                raise ValueError(f"source consultation {field} differs from provenance")
+        url = urlsplit(consultation["acquisition_url"])
+        if (
+            url.scheme != "https" or url.hostname != "www.itu.int"
+            or url.hostname != urlsplit(document["source_url"]).hostname
+            or url.path != "/rec/dologin_pub.asp"
+            or url.username is not None or url.password is not None or url.fragment
+        ):
+            raise ValueError("source consultation is not the recorded official publication host")
+        publication = urlsplit(document["source_url"]).path.rstrip("/").split("/")[-2]
+        if parse_qs(url.query) != {
+            "lang": ["e"], "id": [publication + "!!SOFT-ZST-E"], "type": ["items"],
+        }:
+            raise ValueError("source consultation URL identifies a different publication/package")
     features = {entry["feature"]: entry for entry in matrix["rows"]}
     if len(features) != len(matrix["rows"]):
         raise ValueError("duplicate support-matrix feature")
@@ -174,6 +228,15 @@ def check(ledger, root, verifier_names=None, discovered=None):
         identifiers.add(identity)
         if requirement["feature"] not in inventory:
             raise ValueError(f"unknown feature: {identity}")
+        obligation_kind = requirement.get("obligation_kind", "normative_rule")
+        policy = features[requirement["feature"]]
+        if obligation_kind == "project_profile_policy":
+            if not (policy.get("note") or policy.get("failure")):
+                raise ValueError(f"project policy has no explicit support-matrix basis: {identity}")
+            if requirement.get("policy_row_sha256") != policy_row_hash(policy):
+                raise ValueError(f"stale or missing project policy evidence: {identity}")
+        elif obligation_kind != "normative_rule" or "policy_row_sha256" in requirement:
+            raise ValueError(f"normative evidence cannot hide a project policy binding: {identity}")
         for field in ("runtime", "models", "proof_macros", "tests", "functional_evidence", "invariant_evidence"):
             values = [json.dumps(value, sort_keys=True) for value in requirement[field]]
             if len(values) != len(set(values)):
@@ -233,6 +296,8 @@ def check(ledger, root, verifier_names=None, discovered=None):
         rows.append({
             "id": identity, "clause": requirement["clause"], "title": requirement["title"],
             "feature": requirement["feature"],
+            "obligation_kind": obligation_kind,
+            "policy_row_sha256": requirement.get("policy_row_sha256"),
             "strength": requirement["strength"], "review": requirement["review"],
             "runtime": requirement["runtime"], "gaps": requirement["gaps"],
             "scope_of_formal_result": requirement["scope_of_formal_result"],
@@ -300,6 +365,11 @@ def check(ledger, root, verifier_names=None, discovered=None):
         "requirements": rows, "requirement_count": len(rows),
         "feature_count": len(features),
         "feature_decomposition": feature_decomposition,
+        "source_consultations": consultations,
+        "obligation_kind_counts": {
+            kind: sum(row["obligation_kind"] == kind for row in rows)
+            for kind in ("normative_rule", "project_profile_policy")
+        },
         "evidence_strength_counts": {
             strength: sum(row["strength"] == strength for row in rows)
             for strength in ("functional_contract", "state_preservation", "safety_only", "runtime_divergence")
@@ -353,14 +423,27 @@ def main():
         table = [
             "# Provisional normative traceability", "",
             f"Status: **{report['status']}**. No full-conformance or complete-proof claim.", "",
-            "| Requirement | Clause | Scope | Evidence strength | Open gaps |",
-            "|---|---|---|---|---|",
+            "| Requirement | Clause/context | Basis | Scope | Evidence strength | Open gaps |",
+            "|---|---|---|---|---|---|",
         ]
         for row in report["requirements"]:
             clean = lambda value: str(value).replace("|", "\\|").replace("\n", " ")
             table.append("| " + " | ".join(clean(value) for value in (
-                row["id"], row["clause"], row["title"], row["strength"], "; ".join(row["gaps"]),
+                row["id"], row["clause"], row["obligation_kind"], row["title"],
+                row["strength"], "; ".join(row["gaps"]),
             )) + " |")
+        table += ["", "## Consulted source identity", ""]
+        for consultation in report["source_consultations"]:
+            table += [
+                f"- {consultation['standard']}: {consultation['acquisition_url']}",
+                f"  Package SHA-256: `{consultation['package_sha256']}`.",
+                f"  Document SHA-256: `{consultation['document_sha256']}`.",
+                "  Consulted clause families: " + "; ".join(consultation["clause_families"]) + ".",
+            ]
+        table += [
+            "", "Acquisition identity and declared consultation scope are checked, not independent proof of translation or owner approval.",
+            "Project-profile policy rows use T.88 only as context; their policy-row hashes are checked separately and they do not increase the normative-rule count.",
+        ]
         table += [
             "", "## Feature decomposition accounting", "",
             "Selected records are not an exhaustive normative denominator. Remaining scope is a worklist, not a completeness certificate.",
@@ -379,6 +462,7 @@ def main():
             table += [
                 "", f"## {row['id']}: {row['title']}", "",
                 f"Clause: {row['clause']}; review: {row['review']}; strength: {row['strength']}.",
+                f"Obligation basis: {row['obligation_kind']}.",
                 "", row["scope_of_formal_result"], "",
                 "Runtime: " + ", ".join(link(item, item["name"]) for item in row["runtime_locations"]),
                 "Models (definitions, not independent correctness theorems): "
@@ -389,6 +473,11 @@ def main():
                 "Assumptions: " + "; ".join(row["assumptions"]),
                 "Open gaps: " + ("; ".join(row["gaps"]) or "none within this recorded property scope; owner review pending"),
             ]
+            if row["obligation_kind"] == "project_profile_policy":
+                table.append(
+                    f"Policy basis: `support-matrix.json` feature `{row['feature']}`, "
+                    f"reviewed row SHA-256 `{row['policy_row_sha256']}`."
+                )
         table += ["", report["note"]]
         arguments.output.with_suffix(".md").write_text("\n".join(table) + "\n", encoding="utf-8")
         print(json.dumps({key: report[key] for key in (

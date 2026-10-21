@@ -9,17 +9,22 @@ are enforced in native CI. Five focused regressions strengthen typed duplicate,
 missing-reference, truncation and repeat-result claims. Catalog linking is not
 semantic or normative approval, and broader P06 coverage goals remain open.
 Exact-source proof gaps are exposed and tracked for P05.
-P04 is in progress with a provisional 48-record statement-level ledger and
+P04 is in progress with a provisional 94-record statement-level ledger and
 reference-integrity CI; no complete normative decomposition is claimed.
-The bounded organization/Huffman/MMR tranche adds 28 selected records, starts
-six previously unmapped feature groups, and enforces exact per-feature
-requirement membership plus explicit remaining scope. Thirteen of 30 worklists
-are partial, 16 not started and one deferred encoder excluded. Five generated
-organization regressions supplement 67 distinct linked non-ignored Cargo test
-identities. T.88 source hashes were rechecked through the official public
-package; no standard assets were committed. T.6 mode/run decomposition, complete
-enumeration and owner review remain open. Stricter Huffman partition and MMR
-padding rejection policies are explicitly unresolved, not newly approved.
+The initial organization/Huffman/MMR tranche added 28 selected records. The
+follow-up adds 46 across the 16 previously unstarted worklists. Twenty-nine of
+30 worklists are now partial, none unstarted and one deferred encoder excluded;
+none is complete. The 94 records comprise 88 selected normative rules and six
+separately counted, hash-bound project-profile policies. Starting every feature
+does not establish exhaustive normative enumeration. Eighteen generated
+integration regressions supplement 118 distinct linked non-ignored Cargo test
+identities. Exact per-feature membership, remaining scope, official source
+consultation identity and policy-row hashes are checked. T.88 hashes were
+rechecked through its official public package; no standard assets were
+committed. T.6 mode/run decomposition, any actual PDF normative claim,
+independent translation review and complete enumeration remain open. Stricter
+Huffman partition/MMR padding rejection and the retention example conflict
+still need owner adjudication, not silent approval.
 Targeted P05 tranches close the selected batch-reset output-contract gap
 and parsed-document count agreement, with compiled semantic counterexamples
 and weaker proof controls. Parser result contracts now retain parsed cardinality;
@@ -30,15 +35,15 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 32
-functional, three state-preservation and 13 safety-only records; all 48 remain
+scalar proof substitute is removed. The current selected ledger has 56
+functional, 12 state-preservation and 26 safety-only records; all 94 remain
 provisional.
 Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled
 bitmap counterexamples check those semantic guarantees.
-Caller timing/first-row semantics, other semantic gaps and 2 runtime/proof
-substitutions remain open.
+Caller timing/first-row semantics and other semantic gaps remain open; see the
+current audited inventory for remaining runtime/proof substitutions.
 Five small value/operator bridge substitutions are closed with shared
 executing/proof bodies and exact output contracts. Three integer widenings
 retain their ordinary `From` calls; Boolean conversion and operator equality
@@ -67,14 +72,14 @@ empty/zero-height success/no-op guarantees. Four compiling mutations fail the
 strong clearing/no-op contracts and verify when only the affected relation is
 removed. Both changed declarations have identical erased runtime tokens;
 pixel values and placement order remain scalar-oracle tested, not newly proved.
-Ordinary bitmap composition and MMR capacity accounting remain the two explicit
-source substitutions.
+See the current audited inventory for remaining source substitutions; this
+text-placement result does not itself close another kernel's exact-source gap.
 The next P05 prerequisite proves exact big-endian packed-byte read/write
 values, complete range acceptance, failed-write non-mutation and outside-span
 byte frames. Executing tokens and all existing bitmap models are unchanged;
 four compiling semantic contrasts and independent endian/range oracles check
-the stronger contracts. This does not reduce the two source substitutions or
-prove complete composition. An executing MMR accounting probe identifies
+the stronger contracts. This does not by itself close remaining audited source
+substitutions or prove complete composition. An executing MMR accounting probe identifies
 unsupported pinned `Vec::capacity`/`Result::unwrap_or` calls; its edits were
 restored. Reviewed library specification/toolchain support is needed, without
 substituting length for capacity or introducing project assumptions.

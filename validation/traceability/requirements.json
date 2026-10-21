@@ -8,6 +8,34 @@
       "document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6"
     }
   ],
+  "source_consultations": [
+    {
+      "standard": "ITU-T T.88 (08/2018)",
+      "acquisition_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items",
+      "package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
+      "document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
+      "clause_families": [
+        "0.2 (informative context for project policy only)",
+        "4.3; 5.6",
+        "6.2.6",
+        "6.3.5.3-6.3.5.6",
+        "6.4.5-6.4.11; Table 12",
+        "6.5.5; 6.5.8.2; 6.5.10",
+        "6.6.5-6.6.5.2",
+        "6.7.3; 6.7.5",
+        "7.2.3-7.2.8",
+        "7.3.1-7.3.2",
+        "7.4.1.5; 7.4.2.1.1; 7.4.3.1.1",
+        "7.4.7.3",
+        "7.4.8-7.4.10; 7.4.16",
+        "8.1-8.2",
+        "B.2-B.5",
+        "C.5",
+        "D.1-D.4",
+        "E.3.2; E.3.7"
+      ]
+    }
+  ],
   "features": [
     {
       "feature": "decoder",
@@ -54,23 +82,23 @@
     {
       "feature": "pdf_global_and_page_segments",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["PDF-specific separation and reuse of global/page segments need requirement-level decomposition distinct from T.88 embedded storage."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-PROFILE-REUSABLE-GLOBALS", "T88-PROFILE-EMBEDDED-GLOBAL-METADATA"],
+      "remaining_scope": ["These are explicitly project API-policy records, not PDF container requirements. Global/page reassembly, lifetime and output equivalence remain open; no approved PDF-container normative source has been consulted."]
     },
     {
       "feature": "known_height_pages",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Known-height page information, bounds, completion and output semantics need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-PAGE-KNOWN-DIMENSIONS", "T88-PAGE-DEFAULT-PIXEL", "T88-PAGE-RESOLUTION-FIELDS"],
+      "remaining_scope": ["Complete page information and lifecycle enumeration remains open. Raw dimension/resolution-to-output relations, page initialization pixels, limit-policy separation and completion require independent proofs/review."]
     },
     {
       "feature": "unknown_height_pages",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Unknown-height page information, stripe accumulation and final-height rules need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-PAGE-UNKNOWN-HEIGHT-SENTINEL", "T88-PAGE-UNKNOWN-HEIGHT-STRIPING"],
+      "remaining_scope": ["Sentinel parsing and exact rejection completeness remain unproved; full unknown-height page/stripe lifecycle, allocation strategy and output correspondence are not exhaustively enumerated."]
     },
     {
       "feature": "arithmetic_coding",
@@ -110,58 +138,58 @@
     {
       "feature": "generic_refinement_regions",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Refinement template geometry, reference alignment, prediction and raster rules need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-REFINEMENT-CONTEXT-SIZE", "T88-REFINEMENT-SLTP-CONTEXT", "T88-REFINEMENT-ADAPTIVE-PIXELS", "T88-REFINEMENT-TYPICAL-PREDICTION"],
+      "remaining_scope": ["Diagram-to-gather-order review, adaptive/reference alignment, edge pixels, prediction timing, arithmetic state and complete refinement raster/reference selection semantics remain open."]
     },
     {
       "feature": "symbol_dictionaries",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Dictionary imports, dimensions, decoding, exports and context reuse need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-DICTIONARY-CODING-FLAGS", "T88-DICTIONARY-HEIGHT-CLASS-STATE", "T88-DICTIONARY-EXPORT-COUNT", "T88-DICTIONARY-EXPORT-ORDER"],
+      "remaining_scope": ["Remaining flags/table selection, imports, height/width recurrences, collective/direct/refined bitmap semantics, export-run interpretation and context save/restore still need complete decomposition and output proofs."]
     },
     {
       "feature": "text_regions",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Text strip/symbol placement, IDs, refinement and composition need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-TEXT-CODING-FLAGS", "T88-TEXT-INSTANCE-COORDINATES", "T88-TEXT-SYMBOL-ID", "T88-TEXT-CLIPPED-COMPOSITION"],
+      "remaining_scope": ["Full flag fields, strip-delta recurrences, entropy/ID consumption, instance order, refinement selection and composed visible pixels remain open; a current-state placement theorem is not a whole text-region theorem."]
     },
     {
       "feature": "pattern_dictionaries",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Pattern dimensions, collective bitmap decoding and pattern extraction need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-PATTERN-COUNT", "T88-PATTERN-COLLECTIVE-WIDTH", "T88-PATTERN-EXTRACTION"],
+      "remaining_scope": ["Complete header/flag and generic-parameter enumeration, collective bitmap decoding and per-pattern count/order/pixel extraction theorems remain open."]
     },
     {
       "feature": "halftone_regions",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Halftone grid, grayscale planes, pattern selection and raster composition need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-HALFTONE-GRID-COORDINATES", "T88-HALFTONE-GRAY-DEPTH", "T88-HALFTONE-GRAY-RECONSTRUCTION", "T88-HALFTONE-SKIP-BOUNDARY", "T88-HALFTONE-RENDER-ORDER"],
+      "remaining_scope": ["Complete header/parameter and bitplane enumeration, full mask/index values, pattern lookup, pixel combination and row-major rendering semantics remain open despite exact grid/depth/boundary helper contracts."]
     },
     {
       "feature": "immediate_regions",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Immediate region page effects and lossless variant rules need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-IMMEDIATE-DIRECT-PAGE", "T88-IMMEDIATE-CLIPPED-PAGE", "T88-IMMEDIATE-SEALED-STRIPE"],
+      "remaining_scope": ["Visible page composition, direct/refinement distinctions, lossless-type constraints and complete dispatch/caller propagation remain open. Sealed-stripe guard evidence does not prove all page-write bounds."]
     },
     {
       "feature": "intermediate_regions",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Intermediate region resource storage, visibility and lifetime rules need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-INTERMEDIATE-AUXILIARY-STORAGE", "T88-INTERMEDIATE-AUXILIARY-PERMISSION"],
+      "remaining_scope": ["Buffer bitmap identity, non-page-effect theorem, refinement reassociation, lifetime/discard rules and complete type/caller dispatch remain open."]
     },
     {
       "feature": "refinement_aggregation",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Refinement aggregation inputs, instance counts and decoded output rules need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-AGGREGATION-MODE-FLAG", "T88-AGGREGATION-TEXT-REFINEMENT-GEOMETRY"],
+      "remaining_scope": ["Aggregation instance-count decoding, single-versus-multiple dispatch, Table 17 parameter propagation and aggregate bitmap outputs remain open; shared text-refinement geometry does not prove the dictionary's count-one path."]
     },
     {
       "feature": "multiple_pages",
@@ -173,9 +201,9 @@
     {
       "feature": "global_segments",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Page-independent segment scope, reuse, collisions and global lifetime rules need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-GLOBAL-PAGE-ASSOCIATION", "T88-GLOBAL-REFERENCE-SCOPE"],
+      "remaining_scope": ["Full allowed-type/reference scope, global import resolution, collisions and retention/lifetime semantics require complete enumeration and exported functional proofs."]
     },
     {
       "feature": "retention_flags",
@@ -194,30 +222,30 @@
     {
       "feature": "combination_operators",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["All operator truth tables, clipping, default/override selection and composed pixel semantics need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-COMBINATION-BOOLEAN-RESULT", "T88-COMBINATION-WIRE-CODE", "T88-COMBINATION-PAGE-OVERRIDE"],
+      "remaining_scope": ["Packed byte/word operator output contracts, full page/region field propagation, refinement-specific operator restrictions and complete composed-pixel semantics remain open."]
     },
     {
       "feature": "striped_pages",
       "support_status": "required",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Stripe ordering, limits, end-of-stripe/end-of-page and final output height need requirement-level decomposition."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-STRIPE-END-ROW-FIELD", "T88-STRIPE-END-ROW-ORDER", "T88-STRIPE-FINAL-PAGE-HEIGHT"],
+      "remaining_scope": ["Full striping-bit/max-size field enumeration, earlier-write/later-write constraints, exact lifecycle errors and decoded final-height propagation remain open."]
     },
     {
       "feature": "colour_palette",
       "support_status": "unsupported",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["Unsupported colour/palette detection and exact rejection behavior still need requirement-level decomposition; unsupported is not excluded."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-PROFILE-COLOUR-PAGE-REJECTION", "T88-PROFILE-PALETTE-REJECTION"],
+      "remaining_scope": ["These rows trace project-profile typed rejection, not T.88's colour decoding procedure. Complete colour declaration/segment detection and rejection proofs remain open; unsupported is not excluded."]
     },
     {
       "feature": "lossy_symbol_substitution_by_decoder",
       "support_status": "prohibited",
-      "decomposition": "not_started",
-      "requirement_ids": [],
-      "remaining_scope": ["The prohibited decoder-side lossy substitution policy and its enforcement evidence still need requirement-level decomposition; prohibited is not excluded."]
+      "decomposition": "partial",
+      "requirement_ids": ["T88-PROFILE-SYMBOL-ID-PRESERVATION", "T88-PROFILE-SYMBOL-BITMAP-COPY"],
+      "remaining_scope": ["This is a project prohibition contextualized by informative 0.2, not a newly invented normative clause. End-to-end encoded-symbol identity/refinement/rendering and independent no-substitution tests remain open."]
     }
   ],
   "bindings": {
@@ -230,28 +258,124 @@
     "specs/arithmetic.rs": "b0478025bdc96d9f4f929b2084bdf7f744bd1df17a739f41f2b2eb745e5eedc5",
     "specs/bitmap.rs": "a0fe589b114c3b86cccece45ab97f40d39a473617cabbfc42c82c34c062963de",
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
+    "specs/decode.rs": "270442a6accf85260af0ffdccb76e8c7a1a7f9cbfcc8157d030f9c1e45523860",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
     "specs/huffman.rs": "31e058b8efbd0ea5cdc2c7d81c4c21d69b7e40f52a3524dc7f3a61abef686d41",
+    "specs/halftone.rs": "cb4458bb7b22c97d3f9838b6609576b63997f5cf1c794864dadd37fa8774aa37",
     "specs/mmr.rs": "01bface042a7dcdab87aa7bc62694c2867cd84aa2d734891c545fde4c1979d30",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
+    "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
     "src/arithmetic.rs": "e1a3e5830fb6ae6847afdd92973477100b3c1decdd164a30fedbd795b16c188a",
     "src/bitmap.rs": "c0ab3ec7266202dd302021a553125c1b5d034b3b31aa3fc27322830e5f9fa851",
+    "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
     "src/huffman.rs": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
+    "src/halftone.rs": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/mmr.rs": "967267a81ed6390f9878458e5cde348751901cf70b29cb0802280aebe84f9bec",
     "src/reader.rs": "b108108387073a07b0dc490d542f279d2cb6c717e0fc80464c22f29c55c5d909",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
+    "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
+    "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
-    "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652"
+    "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
+    "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d"
   },
   "definitions": {
+    "page-flags-match": {
+      "kind": "spec", "file": "specs/segments.rs", "module_path": ["spec", "segments"],
+      "name": "page_flags_match", "role": "Accepted page flag/striping field values, not all raw page header fields or output pixels."
+    },
+    "refinement-context-bits": {
+      "kind": "spec", "file": "specs/generic_region.rs", "module_path": ["generic_region", "generic_region_spec"],
+      "name": "refinement_context_bits", "role": "Project template context sizes, not a geometric template-translation theorem."
+    },
+    "refinement-sltp-context": {
+      "kind": "spec", "file": "specs/generic_region.rs", "module_path": ["generic_region", "generic_region_spec"],
+      "name": "refinement_sltp_context", "role": "SLTP index in the project's chosen refinement gather order."
+    },
+    "dictionary-config-safe": {
+      "kind": "spec", "file": "specs/symbol_text.rs", "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "dictionary_config_safe", "role": "Reserved high flags plus Huffman/refinement-aggregation flag correspondence only."
+    },
+    "dictionary-state-valid": {
+      "kind": "spec", "file": "specs/symbol_text.rs", "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "dictionary_state_valid", "role": "Decoded-symbol count and width bounds, not height-class recurrences."
+    },
+    "export-indices-valid": {
+      "kind": "spec", "file": "specs/symbol_text.rs", "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "export_indices_valid", "role": "Each export index is below candidate count; does not specify run interpretation/order."
+    },
+    "symbol-bitmaps-valid": {
+      "kind": "spec", "file": "specs/symbol_text.rs", "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "bitmaps_valid", "role": "Storage validity of symbol bitmap sequences."
+    },
+    "text-config-safe": {
+      "kind": "spec", "file": "specs/symbol_text.rs", "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "text_config_safe", "role": "Selected coding/refinement fields, table presence and strip-size validity, not every flag's exact value."
+    },
+    "text-current-placement": {
+      "kind": "spec", "file": "specs/symbol_text.rs", "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "placement_for_current", "role": "Current-state symbol placement with transposition and reference corner."
+    },
+    "text-floor-half": {
+      "kind": "spec", "file": "specs/symbol_text.rs", "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "floor_half", "role": "Mathematical integer floor division for shared text-refinement geometry."
+    },
+    "pattern-count": {
+      "kind": "spec", "file": "specs/halftone.rs", "module_path": ["halftone", "halftone_spec"],
+      "name": "pattern_count", "role": "One more than the decoded maximum pattern index."
+    },
+    "pattern-bitmaps-valid": {
+      "kind": "spec", "file": "specs/halftone.rs", "module_path": ["halftone", "halftone_spec"],
+      "name": "bitmaps_valid", "role": "Storage validity of extracted patterns, not exact extracted pixels."
+    },
+    "halftone-gray-depth": {
+      "kind": "spec", "file": "specs/halftone.rs", "module_path": ["halftone", "halftone_spec"],
+      "name": "gray_depth_expected", "role": "Project expected minimum bit depth for the pattern count."
+    },
+    "halftone-grid-x": {
+      "kind": "spec", "file": "specs/halftone.rs", "module_path": ["halftone", "halftone_spec"],
+      "name": "grid_x_fixed", "role": "Signed fixed-point horizontal grid coordinate."
+    },
+    "halftone-grid-y": {
+      "kind": "spec", "file": "specs/halftone.rs", "module_path": ["halftone", "halftone_spec"],
+      "name": "grid_y_fixed", "role": "Signed fixed-point vertical grid coordinate."
+    },
+    "halftone-fixed-pixel": {
+      "kind": "spec", "file": "specs/halftone.rs", "module_path": ["halftone", "halftone_spec"],
+      "name": "fixed_pixel", "role": "Arithmetic right shift of an eight-fractional-bit signed coordinate."
+    },
+    "halftone-outside": {
+      "kind": "spec", "file": "specs/halftone.rs", "module_path": ["halftone", "halftone_spec"],
+      "name": "wholly_outside", "role": "Half-open pattern/region nonintersection predicate."
+    },
+    "region-buffers-valid": {
+      "kind": "spec", "file": "specs/decode.rs", "module_path": ["decode", "decode_spec"],
+      "name": "region_buffers_valid", "role": "Storage validity of retained region buffers."
+    },
+    "runtime-pages-valid": {
+      "kind": "spec", "file": "specs/decode.rs", "module_path": ["decode", "decode_spec"],
+      "name": "runtime_pages_valid", "role": "Storage validity of runtime page buffers, not composed pixels or transitive kernel equivalence."
+    },
+    "region-intersects-page": {
+      "kind": "spec", "file": "specs/decode.rs", "module_path": ["decode", "decode_spec"],
+      "name": "region_intersects_page", "role": "Whether nonempty region geometry intersects the finite page."
+    },
+    "bitmap-combine": {
+      "kind": "spec", "file": "specs/bitmap.rs", "module_path": ["spec", "bitmap"],
+      "name": "combine", "role": "Boolean result of the five binary composition operators."
+    },
+    "segment-combination-operator": {
+      "kind": "spec", "file": "specs/segments.rs", "module_path": ["spec", "segments"],
+      "name": "combination_operator", "role": "Recognized wire operator codes and optional Replace permission."
+    },
     "segment-type": {
       "kind": "spec", "file": "specs/segments.rs", "module_path": ["spec", "segments"],
       "name": "segment_type", "role": "Project mapping from recognized segment type numbers to variants."
@@ -565,6 +689,707 @@
     }
   },
   "requirements": [
+    {
+      "id": "T88-PATTERN-COUNT", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.7.3; 7.4.4.1.4",
+      "title": "Derive the number of patterns from the maximum pattern index", "feature": "pattern_dictionaries",
+      "runtime": ["halftone::PatternDictionaryHeader::pattern_count"], "models": ["pattern-count"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "halftone::tests::parses_pattern_header_and_rejects_invalid_flags_and_sizes"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper equals pattern_count, whose definition is decoded gray_max plus one in an unbounded natural-number model.",
+      "assumptions": ["The maximum index has already been parsed; this count relation alone does not prove the header bytes or returned dictionary length."],
+      "gaps": ["Prove raw GRAYMAX extraction, output pattern count, index ordering and bounded caller conversion/allocation."],
+      "functional_evidence": [{"runtime": "halftone::PatternDictionaryHeader::pattern_count", "section": "ensures", "tokens": [
+        "out as nat == halftone_spec::pattern_count(self)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PATTERN-COLLECTIVE-WIDTH", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.7.5 step 1",
+      "title": "Compute collective pattern width as count times individual pattern width", "feature": "pattern_dictionaries",
+      "runtime": ["halftone::checked_collective_width"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "halftone::tests::pattern_decode_supplies_normative_generic_parameters"},
+        {"target": "lib", "name": "halftone::tests::parses_pattern_header_and_rejects_invalid_flags_and_sizes"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Some width is exactly the mathematical product and fits u32; None implies the product exceeds u32.",
+      "assumptions": ["Inputs must be the intended decoded count and width; machine representability and project memory limits are not normative pattern limits."],
+      "gaps": ["Propagate the derived count/width and common height into generic decoding and prove collective pixel contents and complete acceptance conditions."],
+      "functional_evidence": [{"runtime": "halftone::checked_collective_width", "section": "ensures", "tokens": [
+        "width as nat == pattern_count as nat * pattern_width as nat",
+        "None => pattern_count as nat * pattern_width as nat > u32::MAX as nat"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PATTERN-EXTRACTION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.7.5 steps 3-4",
+      "title": "Extract consecutive equal-width patterns from the collective bitmap", "feature": "pattern_dictionaries",
+      "runtime": ["halftone::slice_collective_bitmap"], "models": ["pattern-bitmaps-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "halftone::tests::slices_collective_bitmap_without_row_aliasing"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful extraction returns storage-valid pattern bitmaps and valid work state; exact pattern count, dimensions, sequence order and source pixels are not postconditions.",
+      "assumptions": ["Collective storage and work state are valid; the source may have byte/pixel offsets not aligned to pattern boundaries."],
+      "gaps": ["Prove output length, dimensions and each visible pattern pixel's collective source coordinate, including cross-byte boundaries."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "halftone::slice_collective_bitmap", "section": "ensures", "tokens": [
+        "halftone_spec::bitmaps_valid(patterns@)"
+      ]}]
+    },
+    {
+      "id": "T88-HALFTONE-GRID-COORDINATES", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.6.5.1 step 1a i; 6.6.5.2 step 1a i",
+      "title": "Compute signed fixed-point pattern locations using the grid origin and vectors", "feature": "halftone_regions",
+      "runtime": ["halftone::grid_fixed_position", "halftone::fixed_to_pixel"],
+      "models": ["halftone-grid-x", "halftone-grid-y", "halftone-fixed-pixel"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "halftone::tests::grid_math_uses_signed_arithmetic_shift"},
+        {"target": "lib", "name": "halftone::tests::grid_math_extremes_fit_signed_intermediates"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Fixed-point x/y equal their signed project formulas, and fixed_to_pixel equals the arithmetic-shift model.",
+      "assumptions": ["The parsed grid origin/vector and grid coordinates are supplied correctly; model-to-normative arithmetic translation requires independent review."],
+      "gaps": ["Prove signed header field interpretation and propagation into all skip/render calls and their row-major ordering."],
+      "functional_evidence": [
+        {"runtime": "halftone::grid_fixed_position", "section": "ensures", "tokens": [
+          "out.0 as int == halftone_spec::grid_x_fixed(header, grid_x, grid_y)",
+          "out.1 as int == halftone_spec::grid_y_fixed(header, grid_x, grid_y)"
+        ]},
+        {"runtime": "halftone::fixed_to_pixel", "section": "ensures", "tokens": ["out == halftone_spec::fixed_pixel(value)"]}
+      ], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-GRAY-DEPTH", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.6.5 step 3",
+      "title": "Choose the minimum grayscale bit depth for the supplied pattern count", "feature": "halftone_regions",
+      "runtime": ["halftone::gray_bit_depth"], "models": ["halftone-gray-depth"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "halftone::tests::gray_depth_is_exact_at_every_power_of_two"},
+        {"target": "lib", "name": "halftone::tests::one_pattern_uses_no_gray_plane"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful depth equals gray_depth_expected for a count in the representable one-through-2^32 domain; an error implies the count is outside it.",
+      "assumptions": ["The project depth model must be reviewed against the ceiling-log definition; the count must equal the selected dictionary's actual length."],
+      "gaps": ["Prove dictionary count propagation, complete success conditions and exact plane count/consumption in decode_gray_planes."],
+      "functional_evidence": [{"runtime": "halftone::gray_bit_depth", "section": "ensures", "tokens": [
+        "depth == halftone_spec::gray_depth_expected(pattern_count)",
+        "Err(_) => pattern_count == 0 || pattern_count > 4_294_967_296"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-GRAY-RECONSTRUCTION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.6.5 step 4; C.5 steps 1-4",
+      "title": "Reconstruct grayscale values from most-significant-first Gray-coded planes", "feature": "halftone_regions",
+      "runtime": ["halftone::xor_gray_plane_bytes", "halftone::decode_gray_planes"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "halftone::tests::bytewise_gray_xor_matches_scalar_pixels_randomized"},
+        {"target": "lib", "name": "halftone::tests::reconstructs_gray_planes_most_significant_first"},
+        {"target": "lib", "name": "halftone::tests::fixed_gray_extraction_matches_scalar_oracle"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The executing bytewise XOR helper preserves current-plane storage and plane decoding preserves valid state/work. Neither contract promises reconstructed plane pixels or grayscale index values.",
+      "assumptions": ["The scalar Gray-bit helper used by a test oracle is not promoted into a functional theorem for the optimized bytewise runtime path."],
+      "gaps": ["Prove XOR values, most-significant plane order, index bit accumulation and complete coded-plane/returned-index correspondence."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "halftone::xor_gray_plane_bytes", "section": "ensures", "tokens": [
+        "Ok(()) => crate::spec::bitmap::storage_valid(final(current))"
+      ]}]
+    },
+    {
+      "id": "T88-HALFTONE-SKIP-BOUNDARY", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.6.5.1 step 1a ii",
+      "title": "Classify a pattern wholly outside the halftone region using half-open bounds", "feature": "halftone_regions",
+      "runtime": ["halftone::half_open_outside"], "models": ["halftone-outside"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "halftone::tests::skip_mask_obeys_half_open_boundary_rules"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The boundary helper equals wholly_outside, conditional on right/bottom being the exact signed coordinate-plus-pattern extents.",
+      "assumptions": ["The caller must supply those exact extents and the correct grid position; touching a region edge is intentionally distinguished from overlap."],
+      "gaps": ["Independently review the geometric predicate and prove that generate_skip_mask stores exactly this result for every grid cell."],
+      "functional_evidence": [{"runtime": "halftone::half_open_outside", "section": "ensures", "tokens": [
+        "out == halftone_spec::wholly_outside(x, y, pattern_width, pattern_height, region_width, region_height,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-RENDER-ORDER", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.6.5 steps 5-6; 6.6.5.2",
+      "title": "Render selected patterns in grid order with clipped operator application", "feature": "halftone_regions",
+      "runtime": ["halftone::render_clipped_pattern"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "halftone::tests::clipped_replace_rendering_and_order_are_deterministic"},
+        {"target": "lib", "name": "halftone::tests::clipped_pattern_rendering_exhaustively_matches_scalar_oracle"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The helper preserves destination storage, not clipped pattern pixel values, the selected pattern index or the caller's row-major iteration order.",
+      "assumptions": ["Pattern/destination storage is valid; determinism and bounded scalar agreement do not constitute a formal whole-halftone result."],
+      "gaps": ["Prove pattern lookup, exact clipped/operator pixels, outside frames and sequential overlap effects through decode_halftone_region."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "halftone::render_clipped_pattern", "section": "ensures", "tokens": [
+        "crate::spec::bitmap::storage_valid(final(destination))"
+      ]}]
+    },
+    {
+      "id": "T88-IMMEDIATE-DIRECT-PAGE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "8.2 step 5a",
+      "title": "Combine an immediate direct region bitmap into its page buffer", "feature": "immediate_regions",
+      "runtime": ["decode::compose_immediate"], "models": ["runtime-pages-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "decode::tests::direct_page_matches_intermediate_compose_oracle"},
+        {"target": "traceability_semantics", "name": "all_region_operator_codes_match_a_boolean_pixel_oracle"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The caller preserves storage validity of its page buffers. This is not a composed-pixel result or exact-source equivalence theorem for any called bitmap kernel.",
+      "assumptions": ["Consult the current audited inventory for transitive executing/proof-body substitutions in bitmap composition. The caller's storage contract does not independently discharge that boundary."],
+      "gaps": ["Prove page pixels/operator effects, caller region association and immediate-type dispatch; any remaining transitive exact-source boundary must be closed separately."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "decode::compose_immediate", "section": "ensures", "tokens": [
+        "decode_spec::runtime_pages_valid(final(pages))"
+      ]}]
+    },
+    {
+      "id": "T88-IMMEDIATE-CLIPPED-PAGE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "5.6; 8.2 step 5a",
+      "title": "Restrict an immediate region's observable page effect to its page intersection", "feature": "immediate_regions",
+      "runtime": ["decode::compose_immediate_on_page"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "traceability_semantics", "name": "immediate_regions_only_modify_their_page_intersection"},
+        {"target": "lib", "name": "bitmap::tests::composition_clips_and_applies_operators"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "The page caller preserves its bitmap storage. Runtime tests observe clipped pixels, but no caller postcondition specifies the page intersection, pixel values or exterior frame.",
+      "assumptions": ["This is a scoped finite-page effect, not permission to accept every geometry. Consult the current audited inventory for transitive kernel source substitutions; no removed scalar helper is used as exact-source evidence."],
+      "gaps": ["Prove exact clipped coordinates, composed pixels, unchanged outside pixels and acceptance/error boundaries, independently of caller storage validity."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "decode::compose_immediate_on_page", "section": "ensures", "tokens": [
+        "crate::spec::bitmap::storage_valid(&final(page).bitmap)"
+      ]}]
+    },
+    {
+      "id": "T88-IMMEDIATE-SEALED-STRIPE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.10; 8.2",
+      "title": "Prevent a later intersecting region from writing at or above an already sealed stripe end row", "feature": "immediate_regions",
+      "runtime": ["decode::checked_page_write_state"], "models": ["region-intersects-page"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "decode::tests::rejects_region_that_modifies_a_sealed_stripe"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "For successful intersecting requests with a prior sealed row, region_y exceeds that row. Nonintersecting success preserves the prior open-stripe maximum marker.",
+      "assumptions": ["The caller supplies correct geometry and saved stripe state; this is a guard contract, not a theorem for all page pixel writes."],
+      "gaps": ["Prove caller propagation, exact error behavior and the complementary rule preventing earlier segments from modifying below a later stripe end row."],
+      "functional_evidence": [{"runtime": "decode::checked_page_write_state", "section": "ensures", "tokens": [
+        "Some(sealed) => region_y > sealed", "next_open == open_stripe_max_row"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-INTERMEDIATE-AUXILIARY-STORAGE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "8.2 step 5b",
+      "title": "Retain an intermediate direct bitmap in auxiliary storage rather than draw it immediately", "feature": "intermediate_regions",
+      "runtime": ["decode::insert_buffer"], "models": ["region-buffers-valid"], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "intermediate_buffers_do_not_draw_on_the_page"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful insertion preserves region_buffers_valid; it does not promise bitmap identity, buffer-key association or absence of page mutation by the entire dispatch path.",
+      "assumptions": ["Input buffers and the inserted bitmap are storage-valid; the generated black intermediate bitmap is observed not to alter a white final page."],
+      "gaps": ["Prove exact buffer contents/segment association and full dispatch non-page effect, then refinement reassociation and eventual discard/lifetime semantics."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "decode::insert_buffer", "section": "ensures", "tokens": [
+        "Ok(()) => decode_spec::region_buffers_valid(final(buffers))"
+      ]}]
+    },
+    {
+      "id": "T88-INTERMEDIATE-AUXILIARY-PERMISSION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.5 bit 5; 8.2 step 5b",
+      "title": "Respect the page's declaration that auxiliary-buffer regions may occur", "feature": "intermediate_regions",
+      "runtime": ["decode::require_auxiliary_page_state"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "intermediate_regions_require_page_auxiliary_permission"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The verified guard has no postcondition for auxiliary permission or its exact InvalidPageState rejection.",
+      "assumptions": ["The page flag has already been propagated into auxiliary_allowed; this requirement does not cover every segment that may require an auxiliary buffer."],
+      "gaps": ["Prove permission/rejection equivalence, raw page-flag propagation and complete guarded dispatch for all intermediate/refinement types."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-AGGREGATION-MODE-FLAG", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.2.1.1 bit 1; 6.5.8.2",
+      "title": "Interpret the dictionary refinement/aggregation mode flag", "feature": "refinement_aggregation",
+      "runtime": ["symbol_text::parse_symbol_dictionary_flags"], "models": ["dictionary-config-safe"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::validates_symbol_dictionary_flags"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful dictionary_config_safe relates config.refinement_aggregation to input flag bit 1; it does not prove any downstream aggregation branch.",
+      "assumptions": ["The field is supplied as a parsed flag word; the standard distinguishes direct-coded and refinement/aggregate-coded symbol paths."],
+      "gaps": ["Prove field extraction, instance-count decoding, count-one/count-many dispatch and all aggregation parameter/output relations."],
+      "functional_evidence": [{"runtime": "symbol_text::parse_symbol_dictionary_flags", "section": "ensures", "tokens": [
+        "Ok(config) => symbol_text_spec::dictionary_config_safe(flags, config)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-AGGREGATION-TEXT-REFINEMENT-GEOMETRY", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.5.8.2 step 2; 6.4.11 step 6; Table 12",
+      "title": "Compute shared text-refinement dimensions and floor-half reference offsets", "feature": "refinement_aggregation",
+      "runtime": ["symbol_text::refinement_geometry"], "models": ["text-floor-half"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::refinement_geometry_uses_mathematical_floor"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful geometry uses base-plus-delta dimensions and floor-half(delta)+offset reference displacement, with project dimension bounds.",
+      "assumptions": ["This is the shared text-refinement geometry relevant to multi-instance aggregation; the dictionary's count-one path has different parameters and is not established here."],
+      "gaps": ["Review Table 12/model arithmetic and prove Table 17 caller propagation, count-dependent dispatch and actual refined/aggregate pixels."],
+      "functional_evidence": [{"runtime": "symbol_text::refinement_geometry", "section": "ensures", "tokens": [
+        "geometry.width as int == base_width as int + delta_width as int",
+        "geometry.height as int == base_height as int + delta_height as int",
+        "geometry.reference_dx as int == symbol_text_spec::floor_half(delta_width as int) + delta_x as int",
+        "geometry.reference_dy as int == symbol_text_spec::floor_half(delta_height as int) + delta_y as int"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-GLOBAL-PAGE-ASSOCIATION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.2.6; 7.3.2",
+      "title": "Distinguish permitted page-independent resources from segment types that require a page", "feature": "global_segments",
+      "runtime": ["document::validate_page_association"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "traceability_semantics", "name": "region_segments_cannot_be_page_independent_resources"},
+        {"target": "lib", "name": "document::tests::embedded_page_resolves_reusable_globals_explicitly"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The association validator is verified for safety without a postcondition characterizing allowed page-zero types.",
+      "assumptions": ["T.88 page-independent association is not itself a PDF global-container definition; the project API supplies that reuse policy separately."],
+      "gaps": ["Prove exact allowed-type/page-association conditions and all typed rejection cases, including EOF association and every region/boundary type."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-GLOBAL-REFERENCE-SCOPE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.3.2",
+      "title": "Forbid page-independent resources from referring to page-scoped segments", "feature": "global_segments",
+      "runtime": ["document::validate_reference_links"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "page_independent_resources_cannot_refer_to_page_scoped_resources"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The helper verifies bounded index use conditional on valid index entries, but exports no complete scope/resolution postcondition.",
+      "assumptions": ["The generated case uses dictionary resources and a real page-associated target; target existence and lifetime are separate constraints."],
+      "gaps": ["Prove page-zero/same-page/cross-page reference rules, successful global import lookup, complete errors and interaction with allowed reference types."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-COMBINATION-BOOLEAN-RESULT", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "4.3",
+      "title": "Apply the five combination operators to two binary pixel values", "feature": "combination_operators",
+      "runtime": ["bitmap::CombinationOperator::apply"], "models": ["bitmap-combine"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "bitmap::tests::every_combination_operator_matches_boolean_definition"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The Boolean helper equals the project combine model for its two pixel inputs and operator.",
+      "assumptions": ["Boolean truth-table correctness does not establish the packed-byte/chunk implementations or every raster caller."],
+      "gaps": ["Review the model independently and prove packed operator values and composition through clipping, frame and page-state relations."],
+      "functional_evidence": [{"runtime": "bitmap::CombinationOperator::apply", "section": "ensures", "tokens": [
+        "out == crate::spec::bitmap::combine(self, destination, source)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-COMBINATION-WIRE-CODE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.1.5 bits 0-2; 7.4.8.5 bits 3-4",
+      "title": "Interpret recognized wire combination-operator codes with context-specific Replace permission", "feature": "combination_operators",
+      "runtime": ["segment_data::parse_combination_operator"], "models": ["segment-combination-operator"], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "all_region_operator_codes_match_a_boolean_pixel_oracle"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Success matches the local encoded-code/Replace-permission model; errors imply no permitted model entry.",
+      "assumptions": ["The caller extracts the correct flag bits and chooses the proper Replace permission; the end-to-end oracle checks ordinary region codes, not every malformed flag combination."],
+      "gaps": ["Prove field extraction and caller permission propagation, all reserved-code errors and refinement/colour-specific restrictions."],
+      "functional_evidence": [{"runtime": "segment_data::parse_combination_operator", "section": "ensures", "tokens": [
+        "crate::spec::segments::combination_operator(encoded, replace_allowed) == Some(operator)",
+        "crate::spec::segments::combination_operator(encoded, replace_allowed).is_none()"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-COMBINATION-PAGE-OVERRIDE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.5 bit 6",
+      "title": "Gate a direct region's nondefault operator on the page override permission", "feature": "combination_operators",
+      "runtime": ["decode::check_combination_operator"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "direct_region_operator_override_requires_the_page_flag"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Success implies override permission, equal operators or the refinement exception; an error implies all three alternatives fail.",
+      "assumptions": ["The caller must supply correct page/region operators and the refinement Boolean; the direct-region test sets refinement false."],
+      "gaps": ["Prove flag propagation, complete acceptance and typed errors; separately review and prove every special refinement operator rule."],
+      "functional_evidence": [{"runtime": "decode::check_combination_operator", "section": "ensures", "tokens": [
+        "combination_override || region_operator == page_operator || refinement",
+        "!combination_override && region_operator != page_operator && !refinement"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PROFILE-COLOUR-PAGE-REJECTION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.5 bit 7 (syntax context; rejection is project policy)",
+      "title": "Reject a coloured-page declaration with the profile's typed unsupported error", "feature": "colour_palette",
+      "obligation_kind": "project_profile_policy", "policy_row_sha256": "62ced19cb640299c3f9cf1de1bf447145218ecc5f6847fa2b27d7ae91cfde549",
+      "runtime": ["segment_data::parse_page_information"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "coloured_page_rejection_is_a_typed_profile_policy"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Safe parser execution and successful uncoloured flags do not specify the exact Unsupported(Colour) error for coloured input.",
+      "assumptions": ["Typed rejection is the support-matrix profile policy, not a requirement that a full T.88 colour decoder reject supported syntax."],
+      "gaps": ["Prove exact profile rejection and complete detection of all colour declarations; do not infer T.88 colour conformance from this exclusion."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PROFILE-PALETTE-REJECTION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.3; 7.4.16 (syntax context; rejection is project policy)",
+      "title": "Reject a colour-palette segment with the profile's typed unsupported error", "feature": "colour_palette",
+      "obligation_kind": "project_profile_policy", "policy_row_sha256": "62ced19cb640299c3f9cf1de1bf447145218ecc5f6847fa2b27d7ae91cfde549",
+      "runtime": ["document::parse_known_segment_data"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "palette_segment_rejection_is_a_typed_profile_policy"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The verified dispatch body has no typed palette-rejection postcondition; no palette component/colour decoding correctness is claimed.",
+      "assumptions": ["The project deliberately excludes palette decoding; T.88 defines a decoding procedure rather than this profile's unsupported error."],
+      "gaps": ["Prove exact dispatch/type/error propagation and all profile entry points; supporting colour would require a separately approved scope and complete 6.8/7.4.16 decomposition."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PROFILE-SYMBOL-ID-PRESERVATION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "0.2 (informative context); 6.4.10 (index decoding context)",
+      "title": "Preserve the supplied symbol ID instead of substituting a different decoded ID", "feature": "lossy_symbol_substitution_by_decoder",
+      "obligation_kind": "project_profile_policy", "policy_row_sha256": "4cfe363f77d12f62f57222bd6bd76222e3333e94f85c9a8bc0d25b77b1f0fdee",
+      "runtime": ["symbol_text::checked_symbol_id"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::rejects_unused_fixed_length_symbol_ids"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "A successful checked ID is exactly the input ID and within the supplied extent. This narrow helper fact does not prove lookup/decoded text never substitutes a different symbol bitmap.",
+      "assumptions": ["The no-lossy-substitution rule is the project prohibition; informative 0.2 is context, not an invented independent normative clause. The linked test exercises exact invalid-ID rejection only."],
+      "gaps": ["Prove encoded-ID extraction, lookup identity, refinement selection and final rendered pixels; add independent positive no-substitution end-to-end cases."],
+      "functional_evidence": [{"runtime": "symbol_text::checked_symbol_id", "section": "ensures", "tokens": [
+        "Ok(value) => value == id && value < available_symbols"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PROFILE-SYMBOL-BITMAP-COPY", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "0.2 (informative context); 6.4.11; 6.5.10 (bitmap identity context)",
+      "title": "Clone a selected symbol bitmap without changing its stored bytes or geometry", "feature": "lossy_symbol_substitution_by_decoder",
+      "obligation_kind": "project_profile_policy", "policy_row_sha256": "4cfe363f77d12f62f57222bd6bd76222e3333e94f85c9a8bc0d25b77b1f0fdee",
+      "runtime": ["symbol_text::clone_bitmap"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::exported_symbols_match_exact_clone_oracle"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful cloning preserves width, height, stride and the complete stored byte sequence exactly.",
+      "assumptions": ["Source storage is valid and source selection is already correct; the linked clone oracle shares this helper and does not independently establish its content relation."],
+      "gaps": ["Prove upstream symbol selection and all no-clone/refinement/rendering paths preserve encoded semantics; add an independent clone-content oracle and no-substitution pipeline tests."],
+      "functional_evidence": [{"runtime": "symbol_text::clone_bitmap", "section": "ensures", "tokens": [
+        "bitmap.width == source.width", "bitmap.height == source.height", "bitmap.stride == source.stride",
+        "bitmap.data@ == source.data@"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PROFILE-REUSABLE-GLOBALS", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.3; 7.3.2 (embedded/resource context; reusable API is project policy)",
+      "title": "Provide reusable immutable global resources to embedded page decoding", "feature": "pdf_global_and_page_segments",
+      "obligation_kind": "project_profile_policy", "policy_row_sha256": "33c17129a443d3d72fff0d5161ee3f17a001ca6320ac29c97816a2edece14a5c",
+      "runtime": ["document::Decoder::parse_globals"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "decode::tests::embedded_halftone_uses_reusable_global_pattern_dictionary"},
+        {"target": "lib", "name": "decode::tests::embedded_text_uses_reusable_global_symbol_dictionary"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Global parsing is verified for safe execution without an exported theorem for retained semantic contents, immutability across calls or decoded-page equivalence.",
+      "assumptions": ["The support matrix requires a reusable immutable API. T.88 D.3 does not define PDF container reassembly; no PDF standards document has been acquired or cited as normative evidence."],
+      "gaps": ["Prove resource contents/count/type/import relations and repeated-call output equivalence; separately review container responsibilities and any future PDF normative source."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PROFILE-EMBEDDED-GLOBAL-METADATA", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "D.3 (embedded context; metadata API shape is project policy)",
+      "title": "Keep globals-backed embedded inspection free of a standalone page declaration", "feature": "pdf_global_and_page_segments",
+      "obligation_kind": "project_profile_policy", "policy_row_sha256": "33c17129a443d3d72fff0d5161ee3f17a001ca6320ac29c97816a2edece14a5c",
+      "runtime": ["document::Decoder::inspect_embedded_with_globals"], "models": ["embedded-metadata"], "proof_macros": [],
+      "tests": [{"target": "spec_header", "name": "embedded_inspection_metadata_has_no_standalone_declaration"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful inspection satisfies embedded_metadata: project Sequential organization metadata and no standalone declared count.",
+      "assumptions": ["Sequential is an internal API metadata convention, not a D.3 storage-order requirement or a PDF conformance claim."],
+      "gaps": ["Prove global/page resource semantics and output correspondence independently; auxiliary metadata shape cannot stand in for complete embedded or PDF decoding."],
+      "functional_evidence": [{"runtime": "document::Decoder::inspect_embedded_with_globals", "section": "ensures", "tokens": [
+        "Ok(info) => document_spec::embedded_metadata(&info)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PAGE-KNOWN-DIMENSIONS", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.1-7.4.8.2; 8.2 step 2",
+      "title": "Interpret known page width and height as the page bitmap dimensions", "feature": "known_height_pages",
+      "runtime": ["segment_data::parse_page_information"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "known_dimensions_and_resolution_preserve_page_fields"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The parser proves accepted dimensions satisfy project limits, but not that width/height equal the input four-byte fields.",
+      "assumptions": ["Project resource bounds are not normative dimension constants; the generated test uses a known non-square page."],
+      "gaps": ["Prove byte-to-field equality and page-buffer dimension propagation; enumerate zero/extreme dimension acceptance separately from resource policy."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PAGE-DEFAULT-PIXEL", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.5 bit 2; 8.2 step 3",
+      "title": "Interpret the page default-pixel flag before initializing the page", "feature": "known_height_pages",
+      "runtime": ["segment_data::parse_page_information"], "models": ["page-flags-match"], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "page_default_pixel_initializes_the_complete_page"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "On success page_flags_match relates info.default_pixel to input flag bit 2; this is a field contract, not a theorem that all initial page pixels have that value.",
+      "assumptions": ["Successful parsing provides the required 19-byte payload; the generated no-region page test observes the later initialization effect."],
+      "gaps": ["Prove flag-to-page-allocation pixel propagation for both default values and all heights; retain separate colour/transparency restrictions."],
+      "functional_evidence": [{"runtime": "segment_data::parse_page_information", "section": "ensures", "tokens": [
+        "crate::spec::segments::page_flags_match(info, payload@[16], ((payload@[17] as u16) << 8) | payload@[18] as u16,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PAGE-RESOLUTION-FIELDS", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.3-7.4.8.4",
+      "title": "Preserve encoded horizontal and vertical page resolutions", "feature": "known_height_pages",
+      "runtime": ["segment_data::parse_page_information"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "known_dimensions_and_resolution_preserve_page_fields"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified bounded parsing does not export equality for the two resolution fields.",
+      "assumptions": ["Resolution is metadata in pixels per metre; it is not a request to resample bitmap output."],
+      "gaps": ["Prove exact unsigned field values and zero-as-unknown interpretation through PageInfo; add zero/extreme-resolution tests."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PAGE-UNKNOWN-HEIGHT-SENTINEL", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.2",
+      "title": "Interpret the unknown-height sentinel without treating it as a fixed bitmap height", "feature": "unknown_height_pages",
+      "runtime": ["segment_data::parse_page_information"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "segment_data::tests::unknown_height_requires_striping"},
+        {"target": "traceability_semantics", "name": "unknown_height_uses_the_last_inclusive_stripe_row"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The postcondition distinguishes Some/None output shapes but does not relate None to the raw all-ones height field.",
+      "assumptions": ["Only header sentinel interpretation is selected here; final height is separately tracked under striped_pages."],
+      "gaps": ["Prove the exact encoded sentinel/None equivalence and known-value branch, including rejection/resource boundaries."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-PAGE-UNKNOWN-HEIGHT-STRIPING", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.6",
+      "title": "Require striping in successful unknown-height page information", "feature": "unknown_height_pages",
+      "runtime": ["segment_data::parse_page_information"], "models": ["page-flags-match"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "segment_data::tests::unknown_height_requires_striping"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "On success, None height implies info.striped; page_flags_match independently relates striped to the high bit of the striping field.",
+      "assumptions": ["The separate sentinel-to-None relation is not proved by this success implication; width bounds in the same branch are project policy."],
+      "gaps": ["Prove exact UnknownHeightWithoutStriping rejection and compose this implication with sentinel parsing and later lifecycle rules."],
+      "functional_evidence": [{"runtime": "segment_data::parse_page_information", "section": "ensures", "tokens": [
+        "None => info.width <= limits.max_width && info.striped",
+        "crate::spec::segments::page_flags_match(info, payload@[16], ((payload@[17] as u16) << 8) | payload@[18] as u16,)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-STRIPE-END-ROW-FIELD", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.10",
+      "title": "Decode the four-byte inclusive end-row coordinate of a stripe", "feature": "striped_pages",
+      "runtime": ["segment_data::parse_end_of_stripe"], "models": ["segment-be-u32"], "proof_macros": [],
+      "tests": [
+        {"target": "traceability_semantics", "name": "unknown_height_uses_the_last_inclusive_stripe_row"},
+        {"target": "lib", "name": "segment_data::tests::fixed_size_segments_reject_wrong_lengths"}
+      ],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful parsing requires exactly four bytes and returns their project big-endian value.",
+      "assumptions": ["The helper does not validate page ownership, row progression or the semantic effect of sealing an inclusive row."],
+      "gaps": ["Propagate the parsed coordinate into page state and prove complete malformed-length rejection; ordering and final-height relations remain separate."],
+      "functional_evidence": [{"runtime": "segment_data::parse_end_of_stripe", "section": "ensures", "tokens": [
+        "payload@.len() == 4", "value == crate::spec::segments::be_u32_at(payload@, 0)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-STRIPE-END-ROW-ORDER", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.8.6; 7.4.10",
+      "title": "Advance stripe end rows while respecting the declared maximum stripe size", "feature": "striped_pages",
+      "runtime": ["document::PageState::add_stripe"], "models": [], "proof_macros": [],
+      "tests": [{"target": "traceability_semantics", "name": "stripe_rows_are_strictly_increasing_and_bounded"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The verified helper exports no accepted-row progression, maximum-distance or exact error postcondition.",
+      "assumptions": ["The supplied PageInformation is already parsed; tests distinguish descending/equal rows and an excessive later stripe distance."],
+      "gaps": ["Prove ordering, first/later stripe distance conventions, declared-height bounds and unchanged state on error; complete lifecycle enumeration remains open."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-STRIPE-FINAL-PAGE-HEIGHT", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.9; 7.4.10; 8.2 step 2",
+      "title": "Resolve an initially unknown page height from its last inclusive stripe end row", "feature": "striped_pages",
+      "runtime": ["document::PageState::finish", "document::PageState::into_public"], "models": [], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "document::tests::finalizes_unknown_height_from_stripe"},
+        {"target": "traceability_semantics", "name": "unknown_height_uses_the_last_inclusive_stripe_row"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Both helpers are verified for safe execution, but expose no final-height/last-row relation or page-completion theorem.",
+      "assumptions": ["The expected height is a row count rather than a last-row index; a required last stripe must precede end of page."],
+      "gaps": ["Prove height equals final end row plus one, checked-overflow behavior and at-least-one-stripe/exactly-one-end-page rules through decoded output."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-REFINEMENT-CONTEXT-SIZE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.3.5.3; Figures 12-13",
+      "title": "Choose the refinement context size associated with each template", "feature": "generic_refinement_regions",
+      "runtime": ["generic_region::RefinementTemplate::context_bits"],
+      "models": ["refinement-context-bits"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "generic_region::tests::refinement_templates_and_sltp_indices_are_exact"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper equals the project refinement_context_bits lookup and returns a value between 10 and 13.",
+      "assumptions": ["The two template model entries need independent diagram/count review; this does not prove the context gather uses the prescribed pixels."],
+      "gaps": ["Prove template flag-to-selection propagation, complete geometry and reference/target gather correctness."],
+      "functional_evidence": [{"runtime": "generic_region::RefinementTemplate::context_bits", "section": "ensures", "tokens": [
+        "out as nat == generic_region_spec::refinement_context_bits(self)", "10 <= out <= 13"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-REFINEMENT-SLTP-CONTEXT", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.3.5.6 step 3b; Figures 14-15",
+      "title": "Select the refinement typical-prediction context in the chosen gather order", "feature": "generic_refinement_regions",
+      "runtime": ["generic_region::RefinementTemplate::sltp_context"],
+      "models": ["refinement-sltp-context", "refinement-context-bits"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "generic_region::tests::refinement_templates_and_sltp_indices_are_exact"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "The helper equals the local refinement_sltp_context lookup and its result fits the template's context space.",
+      "assumptions": ["Gather order is not universally standardized; these numeric indices are project-specific, not direct normative constants."],
+      "gaps": ["Review the figure-to-gather-order bridge and prove SLTP decode timing, LTP updates and caller context selection."],
+      "functional_evidence": [{"runtime": "generic_region::RefinementTemplate::sltp_context", "section": "ensures", "tokens": [
+        "out as nat == generic_region_spec::refinement_sltp_context(self)",
+        "(out as nat) < generic_region_spec::pow2(generic_region_spec::refinement_context_bits(self),)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-REFINEMENT-ADAPTIVE-PIXELS", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.3.5.3-6.3.5.4; 7.4.7.3",
+      "title": "Interpret the refinement adaptive pixels and their target/reference roles", "feature": "generic_refinement_regions",
+      "runtime": ["generic_region::parse_refinement_region_header", "generic_region::refinement_adaptive_offset"],
+      "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "generic_region::tests::parses_refinement_headers_and_nominal_adaptive_pixels"}],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "Verified parsing and offset selection do not export the adaptive coordinates, signed-byte interpretation or target/reference geometry relation.",
+      "assumptions": ["Only the adaptive template uses the two fields; legal target history and reference-coordinate ranges require separate review."],
+      "gaps": ["Prove exact signed fields, omitted-field behavior, geometric restrictions and propagation into context gathering."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-REFINEMENT-TYPICAL-PREDICTION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.3.5.5; 6.3.5.6 step 3d",
+      "title": "Predict a refinement pixel only when its reference neighbourhood permits it", "feature": "generic_refinement_regions",
+      "runtime": ["generic_region::refinement_prediction", "generic_region::decode_arithmetic_refinement"],
+      "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::specialized_refinement_kernels_match_scalar_oracle_randomized"},
+        {"target": "lib", "name": "generic_region::tests::bounded_refinement_uses_shared_arithmetic_decoder"}
+      ],
+      "strength": "safety_only", "review": "provisional",
+      "scope_of_formal_result": "The prediction helper has valid-storage preconditions but no prediction-result contract. Raster success promises valid storage, not the nine-pixel predicate or predicted output value.",
+      "assumptions": ["Randomized scalar-oracle agreement is runtime evidence, not independent proof of the reference neighbourhood or image-edge conventions."],
+      "gaps": ["Prove uniform-neighbourhood detection, predicted value, reference alignment, border behavior and conditional caller use under LTP."],
+      "functional_evidence": [], "invariant_evidence": []
+    },
+    {
+      "id": "T88-DICTIONARY-CODING-FLAGS", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.2.1.1 bit 0 and bits 13-15",
+      "title": "Interpret the dictionary entropy-coding mode and reject reserved high flags", "feature": "symbol_dictionaries",
+      "runtime": ["symbol_text::parse_symbol_dictionary_flags"], "models": ["dictionary-config-safe"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::validates_symbol_dictionary_flags"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful configuration satisfies dictionary_config_safe: selected coding/aggregation flag correspondence and zero reserved high flags, not every dictionary flag.",
+      "assumptions": ["The model covers selected flags only, not the complete parser; aggregation bit 1 is traced separately."],
+      "gaps": ["Prove all remaining flags, table choices, field extraction and exact invalid-flag rejection/acceptance conditions."],
+      "functional_evidence": [{"runtime": "symbol_text::parse_symbol_dictionary_flags", "section": "ensures", "tokens": [
+        "Ok(config) => symbol_text_spec::dictionary_config_safe(flags, config)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-DICTIONARY-HEIGHT-CLASS-STATE", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.5.5 step 4; 6.5.6-6.5.7",
+      "title": "Accumulate symbol dimensions and decoded counts within a dictionary height class", "feature": "symbol_dictionaries",
+      "runtime": ["symbol_text::DictionaryClassState::add_symbol"], "models": ["dictionary-state-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::checks_cumulative_dictionary_dimensions_and_counts"}],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful addition preserves dictionary_state_valid, advances decoded count and respects project resource bounds; it does not export the prescribed dimension-delta recurrences.",
+      "assumptions": ["The input dictionary state is valid; resource work/width limits are project constraints rather than normative constants."],
+      "gaps": ["Prove height/width/total-width recurrences, negative-delta behavior, OOB height-class closure and full bitmap correspondence."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "symbol_text::DictionaryClassState::add_symbol", "section": "ensures", "tokens": [
+        "symbol_text_spec::dictionary_state_valid(final(self))",
+        "final(self).decoded_symbols == old(self).decoded_symbols + 1"
+      ]}]
+    },
+    {
+      "id": "T88-DICTIONARY-EXPORT-COUNT", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.5.10; 7.4.2.1.4",
+      "title": "Return the declared number of in-range dictionary export indices", "feature": "symbol_dictionaries",
+      "runtime": ["symbol_text::decode_export_runs"], "models": ["export-indices-valid"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::decodes_export_runs_including_zero_length_toggles"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful output has exactly expected_exports entries, each below total_candidates. This does not establish the alternating run-bit interpretation or chosen index order.",
+      "assumptions": ["The caller supplies valid codec state, declared count and candidate extent; codec/work preconditions remain conditional boundaries."],
+      "gaps": ["Prove EXFLAGS run interpretation, zero-run toggles and index order, then link expected_exports to the raw count field and actual exported bitmaps."],
+      "functional_evidence": [{"runtime": "symbol_text::decode_export_runs", "section": "ensures", "tokens": [
+        "exported@.len() == expected_exports",
+        "symbol_text_spec::export_indices_valid(exported@, total_candidates)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-DICTIONARY-EXPORT-ORDER", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.5.10 step 8",
+      "title": "Assemble exports in the selected order over imported then new symbols", "feature": "symbol_dictionaries",
+      "runtime": ["symbol_text::assemble_exported_symbols"], "models": ["symbol-bitmaps-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::exported_symbols_match_exact_clone_oracle"},
+        {"target": "lib", "name": "symbol_text::tests::sparse_new_exports_preserve_scalar_order"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful assembly preserves output storage validity and output index-list length; it does not export equality between each bitmap and its selected imported/new candidate.",
+      "assumptions": ["Input codebook/bitmaps and all indices are valid; one linked test uses the clone helper in its oracle and is not an independent clone-content proof."],
+      "gaps": ["Prove exact candidate selection, sequence order, dimensions and complete bitmap bytes at every output index."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "symbol_text::assemble_exported_symbols", "section": "ensures", "tokens": [
+        "exported@.len() == exported_indices@.len()", "symbol_text_spec::bitmaps_valid(exported@)"
+      ]}]
+    },
+    {
+      "id": "T88-TEXT-CODING-FLAGS", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.3.1.1",
+      "title": "Interpret selected text coding/refinement fields with a valid strip size", "feature": "text_regions",
+      "runtime": ["symbol_text::parse_text_region_flags"], "models": ["text-config-safe"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::validates_text_flags_and_signed_offset"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "text_config_safe relates Huffman/refinement fields and table presence and restricts strip size to its valid set; it does not promise the exact encoded strip size or signed spacing offset.",
+      "assumptions": ["The helper also enforces the project's colour exclusion; the linked test observes more fields than this narrow model proves."],
+      "gaps": ["Prove every text flag/strip-size/offset value, reference corner and operator selection plus complete error conditions."],
+      "functional_evidence": [{"runtime": "symbol_text::parse_text_region_flags", "section": "ensures", "tokens": [
+        "symbol_text_spec::text_config_safe(flags, huffman_flags, colour_extension, config)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-TEXT-INSTANCE-COORDINATES", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.4.5 step 3c; 6.4.7-6.4.9",
+      "title": "Compute the current symbol's physical placement from strip coordinates and reference corner", "feature": "text_regions",
+      "runtime": ["symbol_text::TextRegionState::place_current"], "models": ["text-current-placement"], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::computes_strip_placement_and_reference_corners"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful current-state placement satisfies the project placement_for_current relation to old strip state, within-strip T, bitmap dimensions, transposition and reference corner.",
+      "assumptions": ["text_state_valid is a precondition; old strip coordinates are supplied, not proved to equal all prior entropy-decoded deltas."],
+      "gaps": ["Independently review the coordinate model and compose it with first/subsequent strip updates, decoded deltas, instance count and rendering order."],
+      "functional_evidence": [{"runtime": "symbol_text::TextRegionState::place_current", "section": "ensures", "tokens": [
+        "symbol_text_spec::placement_for_current(old(self), within_strip_t, width, height, placement)"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-TEXT-SYMBOL-ID", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.4.10",
+      "title": "Preserve an accepted symbol index while rejecting indices outside the supplied codebook extent", "feature": "text_regions",
+      "runtime": ["symbol_text::checked_symbol_id"], "models": [], "proof_macros": [],
+      "tests": [{"target": "lib", "name": "symbol_text::tests::rejects_unused_fixed_length_symbol_ids"}],
+      "strength": "functional_contract", "review": "provisional",
+      "scope_of_formal_result": "Successful output equals id and is below available_symbols; an error implies an out-of-range id. This is not the IAID/Huffman bit-to-index decoding theorem.",
+      "assumptions": ["The supplied extent must describe the actual codebook; the linked unit regression checks one exact invalid index, not all valid indices."],
+      "gaps": ["Prove entropy bit consumption, codebook-length propagation and bitmap lookup identity; add independent successful-index cases."],
+      "functional_evidence": [{"runtime": "symbol_text::checked_symbol_id", "section": "ensures", "tokens": [
+        "Ok(value) => value == id && value < available_symbols", "Err(_) => id >= available_symbols"
+      ]}], "invariant_evidence": []
+    },
+    {
+      "id": "T88-TEXT-CLIPPED-COMPOSITION", "standard": "ITU-T T.88 (08/2018)",
+      "clause": "6.4.5 steps 3c viii-x",
+      "title": "Clip symbol instances to the text region and combine their visible pixels", "feature": "text_regions",
+      "runtime": ["symbol_text::compose_placement"], "models": ["bitmap-storage-valid"], "proof_macros": [],
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::clipped_symbol_placement_matches_scalar_oracle"},
+        {"target": "lib", "name": "symbol_text::tests::randomized_placement_batches_match_scalar_oracle"}
+      ],
+      "strength": "state_preservation", "review": "provisional",
+      "scope_of_formal_result": "Successful placement preserves destination storage, dimensions and bounded accounting; it does not state visible pixel values, clipping frames or instance order.",
+      "assumptions": ["Both bitmaps have valid storage and the initial work count is bounded; scalar-oracle comparisons are executable evidence, not formal pixel equivalence."],
+      "gaps": ["Prove clipped pixels, unchanged exterior pixels, operator application and ordered composition through batch dispatch and text decoding."],
+      "functional_evidence": [],
+      "invariant_evidence": [{"runtime": "symbol_text::compose_placement", "section": "ensures", "tokens": [
+        "crate::spec::bitmap::storage_valid(final(destination))",
+        "crate::views::bitmap_width(final(destination)) == crate::views::bitmap_width(old(destination))"
+      ]}]
+    },
     {
       "id": "T88-SEQUENTIAL-SEGMENT-LAYOUT",
       "standard": "ITU-T T.88 (08/2018)", "clause": "D.1",
