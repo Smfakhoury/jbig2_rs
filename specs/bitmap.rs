@@ -178,6 +178,44 @@ pub open spec fn storage_valid(bitmap: &crate::bitmap::Bitmap) -> bool {
                 * (crate::views::bitmap_height(bitmap) as nat)
 }
 
+pub open spec fn black_span_bits(
+    before: Seq<u8>,
+    after: Seq<u8>,
+    row_start: int,
+    start: u32,
+    end: u32,
+) -> bool {
+    &&& after.len() == before.len()
+    &&& forall|index: int, bit: u32| 0 <= index < before.len() && bit < 8 ==>
+        #[trigger] byte_bit(after[index], bit)
+            == (row_start <= index
+                && start as int <= (index - row_start) * 8 + bit as int
+                && (index - row_start) * 8 + (bit as int) < end as int
+                || byte_bit(before[index], bit))
+}
+
+pub open spec fn black_span_result(
+    before: &crate::bitmap::Bitmap,
+    after: &crate::bitmap::Bitmap,
+    row: u32,
+    start: u32,
+    end: u32,
+) -> bool {
+    &&& black_span_bits(
+        crate::views::bitmap_data(before), crate::views::bitmap_data(after),
+        row as int * crate::views::bitmap_stride(before) as int, start, end,
+    )
+    &&& forall|index: int| 0 <= index < crate::views::bitmap_data(before).len()
+        && (start == end
+            || index < row as int * crate::views::bitmap_stride(before) as int + start as int / 8
+            || row as int * crate::views::bitmap_stride(before) as int + (end as int + 7) / 8 <= index)
+        ==> crate::views::bitmap_data(after)[index] == crate::views::bitmap_data(before)[index]
+    &&& forall|x: u32, y: u32|
+        coordinates_in_bounds(crate::views::bitmap_width(before), crate::views::bitmap_height(before), x, y)
+        ==> stored_pixel(after, x, y)
+            == (y == row && start <= x < end || stored_pixel(before, x, y))
+}
+
 pub open spec fn region_request_valid(
     destination: &crate::bitmap::Bitmap,
     source: &crate::bitmap::Bitmap,

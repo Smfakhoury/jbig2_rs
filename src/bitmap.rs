@@ -614,6 +614,9 @@ impl Bitmap {
             final(self).data@.len() == old(self).data@.len(),
             start == end ==> final(self).data@ == old(self).data@,
             start == end ==> out.is_ok(),
+            crate::spec::bitmap::storage_valid(old(self)) ==> out.is_ok(),
+            crate::spec::bitmap::storage_valid(old(self)) ==>
+                crate::spec::bitmap::black_span_result(old(self), final(self), row, start, end),
     ))]
     pub(crate) fn fill_black_span(
         &mut self,
@@ -621,12 +624,16 @@ impl Bitmap {
         start: u32,
         end: u32,
     ) -> Result<(), MalformedError> {
+        #[cfg(verus_keep_ghost)]
+        production_black_span_init!(self, row, start, end, original, valid);
         if start > end || end > self.width || row >= self.height {
             return Err(MalformedError::IntegerOverflow);
         }
         if start == end {
             return Ok(());
         }
+        #[cfg(verus_keep_ghost)]
+        production_black_span_bounds!(self, row, end, valid);
         let row_start = usize::try_from(row)
             .map_err(|_error| MalformedError::IntegerOverflow)?
             .checked_mul(self.stride)
@@ -644,59 +651,79 @@ impl Bitmap {
             .get_mut(first_index)
             .ok_or(MalformedError::IntegerOverflow)?;
         *first |= first_mask;
+        #[cfg(verus_keep_ghost)]
+        production_black_span_first!(self, valid, original, row_start, start, first_bits);
 
         let mut x = start + first_bits;
         let mut index = first_index
             .checked_add(1)
             .ok_or(MalformedError::IntegerOverflow)?;
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                start < x <= end,
-                end <= self.width,
-                self.width == old(self).width,
-                self.height == old(self).height,
-                self.stride == old(self).stride,
-                self.data@.len() == old(self).data@.len(),
+        #[cfg_attr(verus_keep_ghost, verus_spec(invariant
+                start < x <= end, end <= self.width,
+                self.width == old(self).width, self.height == old(self).height, self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(), self.data@.len() <= usize::MAX,
+                valid == crate::spec::bitmap::storage_valid(old(self)), original == old(self).data@,
+                row_start as int == row as int * self.stride as int,
+                index as int == row_start as int + (x as int + 7) / 8, x < end ==> x % 8 == 0,
+                valid ==> row_start as int + (end as int + 7) / 8 <= self.data@.len(),
+                valid ==> crate::spec::bitmap::black_span_bits(original, self.data@, row_start as int, start, x),
             decreases end - x,
         ))]
         while end - x >= 64 {
+            #[cfg(verus_keep_ghost)]
+            production_black_span_access!(self, index, row_start, x, 8, valid, before);
             if !write_chunk(&mut self.data, index, u64::MAX) {
                 return Err(MalformedError::IntegerOverflow);
             }
+            #[cfg(verus_keep_ghost)]
+            production_black_span_word!(self, valid, original, before, row_start, start, x, index);
             x += 64;
             index = index
                 .checked_add(8)
                 .ok_or(MalformedError::IntegerOverflow)?;
         }
-        #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant
-                start < x <= end,
-                end <= self.width,
-                self.width == old(self).width,
-                self.height == old(self).height,
-                self.stride == old(self).stride,
-                self.data@.len() == old(self).data@.len(),
+        #[cfg_attr(verus_keep_ghost, verus_spec(invariant
+                start < x <= end, end <= self.width,
+                self.width == old(self).width, self.height == old(self).height, self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(), self.data@.len() <= usize::MAX,
+                valid == crate::spec::bitmap::storage_valid(old(self)), original == old(self).data@,
+                row_start as int == row as int * self.stride as int,
+                index as int == row_start as int + (x as int + 7) / 8, x < end ==> x % 8 == 0,
+                valid ==> row_start as int + (end as int + 7) / 8 <= self.data@.len(),
+                valid ==> crate::spec::bitmap::black_span_bits(original, self.data@, row_start as int, start, x),
             decreases end - x,
         ))]
         while end - x >= 8 {
+            #[cfg(verus_keep_ghost)]
+            production_black_span_access!(self, index, row_start, x, 1, valid, before);
             let byte = self
                 .data
                 .get_mut(index)
                 .ok_or(MalformedError::IntegerOverflow)?;
             *byte = 0xFF;
+            #[cfg(verus_keep_ghost)]
+            production_black_span_byte!(self, valid, original, before, row_start, start, x);
             x += 8;
             index = index
                 .checked_add(1)
                 .ok_or(MalformedError::IntegerOverflow)?;
         }
         if x < end {
+            #[cfg(verus_keep_ghost)]
+            proof_decl! { let ghost before = self.data@; }
             let mask = 0xFF_u8 << (8 - (end - x));
             let byte = self
                 .data
                 .get_mut(index)
                 .ok_or(MalformedError::IntegerOverflow)?;
             *byte |= mask;
+            #[cfg(verus_keep_ghost)]
+            production_black_span_tail!(
+                self, original, before, row_start, start, x, end, index, mask
+            );
         }
+        #[cfg(verus_keep_ghost)]
+        production_black_span_result!(self, valid, row, start, end);
         Ok(())
     }
 
@@ -3184,6 +3211,35 @@ mod tests {
                 Err(MalformedError::IntegerOverflow)
             ));
             assert_eq!(bitmap, original);
+        }
+    }
+
+    #[test]
+    fn black_spans_preserve_arbitrary_padding_and_bounds_errors() {
+        for width in [1_u32, 7, 9, 65, 73, 129, 137] {
+            for seed in [0_u8, 0xFF, 0xA5, 0x5A] {
+                let mut original = patterned_bitmap(width, 3, u64::from(width));
+                original.data.fill(seed);
+                for row in 0..3 {
+                    for start in 0..=width {
+                        for end in start..=width {
+                            let mut actual = original.clone();
+                            let mut expected = original.clone();
+                            actual.fill_black_span(row, start, end).unwrap();
+                            scalar_fill_black_span(&mut expected, row, start, end).unwrap();
+                            assert_eq!(actual, expected, "{width}: {row}, {start}..{end}, {seed}");
+                        }
+                    }
+                }
+                for (row, start, end) in [(3, 0, 0), (0, 1, 0), (0, 0, width + 1)] {
+                    let mut actual = original.clone();
+                    assert_eq!(
+                        actual.fill_black_span(row, start, end),
+                        Err(MalformedError::IntegerOverflow),
+                    );
+                    assert_eq!(actual, original);
+                }
+            }
         }
     }
 

@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1146 obligations with zero errors and zero native
+Pinned Verus verifies 1164 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -29,10 +29,48 @@ stored length and proves successful empty spans are no-ops. The wrapper proves
 storage/metadata preservation, exact invalid-bound errors and unchanged bytes
 for invalid, white and empty spans. Three compiling mutations violate those
 no-op guarantees and fail the stronger proof while storage/error-only controls
-verify. Exhaustive bounded pixel/storage oracle tests check black spans, but
-this tranche does not formally establish their pixel relation, complete MMR
-decoding or T.88 conformance. The changed obligation count reflects removal of
+verify. The later primitive algebra closure described below establishes the
+black-span pixel relation, not complete MMR decoding or T.88 conformance.
+The changed obligation count in the dispatch tranche reflected removal of
 the obsolete proof path, not a completeness metric.
+
+`Bitmap::fill_black_span` now proves valid-storage success and an exact relation
+for every bit of every stored byte: requested row bits become one; every other
+bit is preserved, including other rows, unused bits in boundary bytes and
+arbitrary pre-existing padding. Derived postconditions expose all visible
+pixels and exact unchanged bytes outside the affected byte interval. Existing
+bounds preconditions and unconditional metadata/length/empty-span guarantees
+are retained; storage validity is a condition on the new guarantees, not a
+stronger precondition.
+
+Five fully proved helpers establish partial-byte masks, aligned byte/word
+steps, byte extensionality and the storage-to-visible-pixel bridge. The
+executing first-mask/word/byte/tail algorithm and its native tokens are
+unchanged. Six compiling output mutations distinguish requested head/word
+bits, untouched boundary/prefix bits, dirty padding and valid-span success
+from weaker controls retaining all prior guarantees. The mandatory semantic
+runner includes these contrasts. Independent scalar storage oracles now also
+exercise arbitrary dirty padding. No MMR caller/polarity row is upgraded:
+the wrapper's weaker storage predicate and complete raster-loop composition
+remain separate obligations, as do general bitmap composition pixel
+semantics and the unchanged capacity-accounting source gap. Primitive
+byte/word operator semantics are proved independently below.
+
+Before the black-span source-binding refresh, all 656 production declarations were
+compared with base `d1bf46914c6d7e57177b7c02087cca2555794b52`: only
+`Bitmap::fill_black_span` changes, with identical erased native tokens; the
+other 655 bodies/attributes are byte-identical. All 27 existing bitmap model
+definitions, 11 existing shared proof helpers and existing production proof
+macros are unchanged. There are no bitmap dispositions to relabel; disposition
+identities, reasons and statuses remain unchanged. The three existing bitmap
+ledger file bindings are refreshed only after this review; no normative
+strength/review classification changes.
+
+Merging the later operator-bit proofs retains both sets of bitmap models,
+helpers and production contracts. The combined source verifies 1164 obligations;
+all twelve mandatory semantic checkers cover 50 contrasts. Bitmap source
+bindings are refreshed for this combined source without relabeling dispositions
+or upgrading normative evidence.
 
 Source-offset region composition now also verifies the executing chunked
 dispatcher rather than a scalar proof substitute. Its existing storage,
