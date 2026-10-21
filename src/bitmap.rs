@@ -64,29 +64,67 @@ impl CombinationOperator {
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures true,
+        ensures forall|bit: u32| bit < 8 ==>
+            crate::spec::bitmap::byte_operator_bit(out, bit)
+                == crate::spec::bitmap::combine(
+                    self, crate::spec::bitmap::byte_operator_bit(destination, bit),
+                    crate::spec::bitmap::byte_operator_bit(source, bit),
+                ),
     ))]
     const fn apply_byte(self, destination: u8, source: u8) -> u8 {
-        match self {
+        let result = match self {
             Self::Or => destination | source,
             Self::And => destination & source,
             Self::Xor => destination ^ source,
             Self::Xnor => !(destination ^ source),
             Self::Replace => source,
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(crate::spec::bitmap::operator_byte);
+            assert(result == crate::spec::bitmap::operator_byte(self, destination, source));
+            assert forall|bit: u32| bit < 8 implies
+                crate::spec::bitmap::byte_operator_bit(result, bit)
+                    == crate::spec::bitmap::combine(
+                        self, crate::spec::bitmap::byte_operator_bit(destination, bit),
+                        crate::spec::bitmap::byte_operator_bit(source, bit),
+                    ) by {
+                bitmap_shared::byte_operator_semantics(self, destination, source, bit);
+            }
         }
+        result
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures true,
+        ensures forall|bit: u32| bit < 64 ==>
+            crate::spec::bitmap::word_operator_bit(out, bit)
+                == crate::spec::bitmap::combine(
+                    self, crate::spec::bitmap::word_operator_bit(destination, bit),
+                    crate::spec::bitmap::word_operator_bit(source, bit),
+                ),
     ))]
     const fn apply_chunk(self, destination: u64, source: u64) -> u64 {
-        match self {
+        let result = match self {
             Self::Or => destination | source,
             Self::And => destination & source,
             Self::Xor => destination ^ source,
             Self::Xnor => !(destination ^ source),
             Self::Replace => source,
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(crate::spec::bitmap::operator_word);
+            assert(result == crate::spec::bitmap::operator_word(self, destination, source));
+            assert forall|bit: u32| bit < 64 implies
+                crate::spec::bitmap::word_operator_bit(result, bit)
+                    == crate::spec::bitmap::combine(
+                        self, crate::spec::bitmap::word_operator_bit(destination, bit),
+                        crate::spec::bitmap::word_operator_bit(source, bit),
+                    ) by {
+                bitmap_shared::word_operator_semantics(self, destination, source, bit);
+            }
         }
+        result
     }
 }
 
@@ -2308,6 +2346,57 @@ mod tests {
             }
         }
         bitmap
+    }
+
+    const OPERATOR_TRUTHS: [(CombinationOperator, [bool; 4]); 5] = [
+        (CombinationOperator::Or, [false, true, true, true]),
+        (CombinationOperator::And, [false, false, false, true]),
+        (CombinationOperator::Xor, [false, true, true, false]),
+        (CombinationOperator::Xnor, [true, false, false, true]),
+        (CombinationOperator::Replace, [false, true, false, true]),
+    ];
+
+    #[test]
+    fn byte_operators_match_all_independent_boolean_truth_tables() {
+        for (operator, table) in OPERATOR_TRUTHS {
+            for destination in 0..=u8::MAX {
+                for source in 0..=u8::MAX {
+                    let mut expected = 0;
+                    for bit in 0..8 {
+                        let index = 2 * usize::from((destination >> bit) & 1)
+                            + usize::from((source >> bit) & 1);
+                        if table[index] {
+                            expected |= 1 << bit;
+                        }
+                    }
+                    assert_eq!(operator.apply_byte(destination, source), expected);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn word_operators_match_independent_truth_tables_at_every_bit() {
+        let mut values = vec![0, u64::MAX, 0x0123_4567_89ab_cdef, 0xaaaa_aaaa_aaaa_aaaa];
+        for bit in 0..64 {
+            values.push(1_u64 << bit);
+            values.push(!(1_u64 << bit));
+        }
+        for (operator, table) in OPERATOR_TRUTHS {
+            for &destination in &values {
+                for &source in &values {
+                    let mut expected = 0;
+                    for bit in 0..64 {
+                        let index = 2 * usize::try_from((destination >> bit) & 1).unwrap()
+                            + usize::try_from((source >> bit) & 1).unwrap();
+                        if table[index] {
+                            expected |= 1_u64 << bit;
+                        }
+                    }
+                    assert_eq!(operator.apply_chunk(destination, source), expected);
+                }
+            }
+        }
     }
 
     #[test]
