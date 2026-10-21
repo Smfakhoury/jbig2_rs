@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "source": "src/*.rs",
-  "verus_verified_obligations": 1139,
+  "verus_verified_obligations": 1136,
   "native_assumptions": [],
   "counts": {
-    "verified": 605,
+    "verified": 606,
     "reviewed-verifier-limitation": 24,
     "audited-forwarder": 23,
-    "runtime-proof-divergence": 4,
+    "runtime-proof-divergence": 3,
     "native-assumption": 0,
     "incomplete": 0
   },
@@ -320,7 +320,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::pixel_mask"
       ]
@@ -331,7 +331,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::CombinationOperator::apply"
       ]
@@ -342,7 +342,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::CombinationOperator::apply_byte"
       ]
@@ -353,7 +353,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::CombinationOperator::apply_chunk"
       ]
@@ -364,7 +364,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::copy_row_bytes"
       ]
@@ -375,7 +375,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_chunk"
       ]
@@ -386,7 +386,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::write_chunk"
       ]
@@ -397,7 +397,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_shifted_byte"
       ]
@@ -408,7 +408,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_shifted_tail"
       ]
@@ -419,7 +419,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::read_shifted_chunk"
       ]
@@ -430,7 +430,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::checked_bitmap_layout"
       ]
@@ -441,7 +441,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::blank"
       ]
@@ -452,7 +452,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::filled"
       ]
@@ -463,7 +463,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::width"
       ]
@@ -474,7 +474,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::height"
       ]
@@ -485,7 +485,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::stride"
       ]
@@ -496,7 +496,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::bytes"
       ]
@@ -507,7 +507,7 @@
       "visibility": "pub",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::pixel"
       ]
@@ -518,7 +518,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::fill_black_span"
       ]
@@ -529,7 +529,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::copy_row"
       ]
@@ -540,7 +540,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::copy_prefix_from"
       ]
@@ -551,7 +551,7 @@
       "visibility": "pub(crate)",
       "status": "runtime-proof-divergence",
       "disposition_reason": "Normal and proof builds select different composition paths. Kernel proofs do not establish verification of this executing wrapper.",
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": []
     },
     {
@@ -560,7 +560,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_chunked"
       ]
@@ -569,10 +569,12 @@
       "id": "bitmap::Bitmap::compose_region",
       "file": "src/bitmap.rs",
       "visibility": "pub(crate)",
-      "status": "runtime-proof-divergence",
-      "disposition_reason": "Normal and proof builds select different region-composition paths; exact executing-wrapper verification remains open.",
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
-      "verus_functions": []
+      "status": "verified",
+      "disposition_reason": null,
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
+      "verus_functions": [
+        "jbig2_rs_production::bitmap::Bitmap::compose_region"
+      ]
     },
     {
       "id": "bitmap::Bitmap::compose_region_chunked",
@@ -580,7 +582,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_region_chunked"
       ]
@@ -591,7 +593,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_row_blit_chunked"
       ]
@@ -602,7 +604,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_aligned_row_chunked"
       ]
@@ -613,7 +615,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::compose_row_batch_chunked"
       ]
@@ -624,7 +626,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::Bitmap::set_pixel"
       ]
@@ -635,7 +637,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e9fe1b74f776d10619a2f1d09b0dd5f088514082a6dd8920e97f8a9069863a50",
+      "file_sha256": "2e2db0fa87cbcf9567a6f34cf0754d4fafc5d623db7580a4b8a7ba17496bb273",
       "verus_functions": [
         "jbig2_rs_production::bitmap::enforce_limit"
       ]

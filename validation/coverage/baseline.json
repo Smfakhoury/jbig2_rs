@@ -2,9 +2,9 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only floor after exact executing MMR span storage/no-op proofs and focused invalid-span regressions. Normal runtime tokens, metric denominators and existing exclusions are unchanged; all global/per-file fractions remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
-  "source_revision": "afeaa8219dc4fb4089bf9e74a54a2596ffc781a1",
-  "source_sha256": "d50c7d2fec40e9c6057599e5d759f497de9b94203003c5533d5e498fe3f4686b",
+  "policy": "Upward-only floor after exact executing source-offset dispatch storage/no-op proofs and invalid/zero-area regressions. A pure wrapper result binding adds one covered line/region; kernel runtime tokens and exclusions are unchanged. All global/per-file fractions remain nondecreasing. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "823ded0b23a9b8717042400eb5ae251910b9a748",
+  "source_sha256": "b82e5266a95807180c66c96812376a6bf55955586ab40b85b661fb1a0a2f4b8d",
   "test_source_sha256": "470e0f1d77b290278cc1a7385267932c3f3b87dc985349ea79339f15aafbfde2",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
@@ -14,13 +14,13 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 9824, "count": 12616},
-    "regions": {"covered": 9472, "count": 12930},
-    "branches": {"covered": 1739, "count": 2640}
+    "lines": {"covered": 9830, "count": 12617},
+    "regions": {"covered": 9478, "count": 12931},
+    "branches": {"covered": 1747, "count": 2640}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
-    "src/bitmap.rs": {"lines": {"covered": 888, "count": 968}, "regions": {"covered": 808, "count": 1037}, "branches": {"covered": 153, "count": 188}},
+    "src/bitmap.rs": {"lines": {"covered": 894, "count": 969}, "regions": {"covered": 814, "count": 1038}, "branches": {"covered": 161, "count": 188}},
     "src/decode.rs": {"lines": {"covered": 1047, "count": 1396}, "regions": {"covered": 880, "count": 1336}, "branches": {"covered": 135, "count": 230}},
     "src/document.rs": {"lines": {"covered": 918, "count": 1168}, "regions": {"covered": 899, "count": 1131}, "branches": {"covered": 207, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
