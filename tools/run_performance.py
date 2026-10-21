@@ -42,6 +42,25 @@ def runtime_identity(root: Path) -> str:
     return digest(root, names + ["Cargo.toml", "Cargo.lock"])
 
 
+def resolve_base(reference: str, root: Path) -> tuple[str, str | None]:
+    selection = None
+    if not reference or set(reference) == {"0"}:
+        reference = "origin/main"
+        selection = "first-push baseline explicitly resolved to origin/main"
+    command = ["git", "rev-parse", "--verify", "--end-of-options", reference + "^{commit}"]
+    process = subprocess.run(command, cwd=root, text=True, capture_output=True, check=False)
+    if process.returncode:
+        if reference == "origin/main":
+            process.check_returncode()
+        selection = "requested baseline unavailable; fell back to origin/main"
+        process = subprocess.run(
+            ["git", "rev-parse", "--verify", "--end-of-options", "origin/main^{commit}"],
+            cwd=root, text=True, capture_output=True, check=False,
+        )
+        process.check_returncode()
+    return process.stdout.strip(), selection
+
+
 def validate_measurement(report: dict, iterations: int, selected: list[str]) -> dict:
     if report["schema_version"] != 1 or report["iterations"] != iterations:
         raise ValueError("unexpected performance report schema or sample count")
@@ -169,14 +188,9 @@ def comparison(arguments, root=ROOT):
         selected = [arguments.case] if arguments.case else list(CASES)
         if arguments.iterations not in range(20, 201) or arguments.pairs not in range(3, 8):
             raise ValueError("iterations must be 20..200 and paired runs 3..7")
-        reference = arguments.base_ref
-        if not reference or set(reference) == {"0"}:
-            reference = "origin/main"
-            result["baseline_selection"] = "first-push baseline explicitly resolved to origin/main"
-        base = subprocess.run(
-            ["git", "rev-parse", "--verify", "--end-of-options", reference + "^{commit}"],
-            cwd=root, text=True, capture_output=True, check=True,
-        ).stdout.strip()
+        base, baseline_selection = resolve_base(arguments.base_ref, root)
+        if baseline_selection:
+            result["baseline_selection"] = baseline_selection
         head = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, text=True, capture_output=True, check=True,
         ).stdout.strip()
