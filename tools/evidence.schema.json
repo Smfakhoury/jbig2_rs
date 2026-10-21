@@ -61,7 +61,9 @@
           "items": {
             "type": "object", "required": ["id", "edition", "document_sha256"],
             "properties": {
-              "id": {"$ref": "#/$defs/nonempty"}, "edition": {"$ref": "#/$defs/nonempty"},
+              "id": {"$ref": "#/$defs/nonempty"},
+              "edition": {"anyOf": [{"$ref": "#/$defs/nonempty"}, {"type": "null"}]},
+              "provenance_collection": {"enum": ["normative_documents", "normative_references"]},
               "document_sha256": {"$ref": "#/$defs/sha256"}
             }
           }
@@ -70,9 +72,15 @@
           "type": "array", "minItems": 1,
           "items": {
             "type": "object", "additionalProperties": false,
-            "required": ["standard", "acquisition_url", "package_sha256", "document_sha256", "clause_families"],
+            "required": ["standard", "acquisition_kind", "acquisition_url", "document_sha256", "clause_families"],
+            "allOf": [{
+              "if": {"properties": {"acquisition_kind": {"const": "official_package"}}},
+              "then": {"required": ["package_sha256"]},
+              "else": {"not": {"required": ["package_sha256"]}}
+            }],
             "properties": {
               "standard": {"$ref": "#/$defs/nonempty"},
+              "acquisition_kind": {"enum": ["official_package", "official_pdf"]},
               "acquisition_url": {"type": "string", "pattern": "^https://www\\.itu\\.int/rec/dologin_pub\\.asp\\?"},
               "package_sha256": {"$ref": "#/$defs/sha256"},
               "document_sha256": {"$ref": "#/$defs/sha256"},
@@ -88,7 +96,7 @@
               "feature": {"$ref": "#/$defs/nonempty"},
               "support_status": {"enum": ["required", "unsupported", "deferred", "prohibited"]},
               "decomposition": {"enum": ["not_started", "partial", "complete", "excluded"]},
-              "requirement_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^T88-[A-Z0-9-]+$"}},
+              "requirement_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^T(?:88|6)-[A-Z0-9-]+$"}},
               "remaining_scope": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}}
             }
           }
@@ -118,15 +126,16 @@
             "allOf": [{
               "if": {"required": ["obligation_kind"], "properties": {"obligation_kind": {"const": "project_profile_policy"}}},
               "then": {"required": ["policy_row_sha256"]},
-              "else": {"not": {"required": ["policy_row_sha256"]}}
+              "else": {"not": {"anyOf": [{"required": ["policy_row_sha256"]}, {"required": ["policy_source"]}]}}
             }],
             "properties": {
-              "id": {"type": "string", "pattern": "^T88-[A-Z0-9-]+$"},
+              "id": {"type": "string", "pattern": "^T(?:88|6)-[A-Z0-9-]+$"},
               "standard": {"$ref": "#/$defs/nonempty"},
               "clause": {"$ref": "#/$defs/nonempty"}, "title": {"$ref": "#/$defs/nonempty"},
               "feature": {"$ref": "#/$defs/nonempty"},
               "obligation_kind": {"enum": ["normative_rule", "project_profile_policy"]},
               "policy_row_sha256": {"$ref": "#/$defs/sha256"},
+              "policy_source": {"enum": ["feature_row", "public_api"]},
               "runtime": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
               "models": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
               "proof_macros": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},

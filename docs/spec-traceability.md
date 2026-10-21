@@ -1,15 +1,18 @@
-# Provisional statement-level T.88 traceability
+# Provisional statement-level T.88 and T.6 traceability
 
-P04 is in progress. The ledger maps **94 selected requirement records**
+P04 is in progress. The ledger maps **111 selected requirement records**
 to source contracts, project models, proof support and exact test identities.
-These comprise **88 selected normative-rule records and six explicit project-
+These comprise **102 selected normative-rule records and nine explicit project-
 profile-policy records**. A policy row uses the standard only as context and
 does not increase the normative-rule count.
 It also inventories all **30 support-matrix features** as a decomposition
 worklist. That worklist is not a count of all normative obligations.
 
-The source is ITU-T T.88 (08/2018), edition 2.0, identified by the document hash
-already in `source-provenance.json`. The approved document was consulted locally.
+The sources are ITU-T T.88 (08/2018), edition 2.0, and the separately recorded
+ITU-T T.6 (1988) normative reference. Their distinct document hashes are already
+in `source-provenance.json`. T.6's reference has no separate edition field;
+the ledger records `edition: null`, not an invented edition or a reused T.88
+value. Both approved documents were consulted locally.
 No standards text, diagrams, sample software or official vectors are added to
 the repository. Ledger titles and scope notes are original paraphrases.
 
@@ -27,7 +30,7 @@ the repository. Ledger titles and scope notes are original paraphrases.
   source links, model/proof support, exact tests, assumptions and unresolved gaps.
   CI uploads these instead of committing constantly regenerated reports.
 
-All 94 records are **provisional**, pending owner normative/model review.
+All 111 records are **provisional**, pending owner normative/model review.
 Twenty-nine feature groups now have partial records, none is unstarted, one
 deferred feature is excluded, and none has an approved complete normative
 decomposition. Starting every coarse feature worklist does **not** mean that
@@ -39,13 +42,14 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 56 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 12 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 60 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 25 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
 The mapped areas are packed-bit/word order, selected file/segment organization
-and header fields, Huffman construction/decoding helpers, JBIG2-specific MMR
+and header fields, Huffman construction/decoding helpers, selected T.6 mode/run/
+framing rules and JBIG2-specific MMR
 exceptions, selected generic-template parameters, arithmetic reset and decision
 contracts, and typical-row copying.
 
@@ -122,14 +126,16 @@ project-generated segment/page fields to check distinct sequential and
 random-access two-page layouts, missing random-access EOF, descending standalone
 numbers and headerless/non-monotonic embedded input. Existing exact test
 identities backed the other rows; that first tranche referenced 67 distinct
-non-ignored Cargo tests. The expanded ledger now references **118**. Discovery
+non-ignored Cargo tests. The current ledger now references **134**. Discovery
 lists names; executing these tests is a
 separate validation step. Neither operation establishes test adequacy.
 
-The ledger explicitly leaves two newly exposed policy questions open:
-custom-table range-partition overshoot rejection and MMR zero-alignment-padding
-rejection may be stricter than the cited T.88 rule. Existing behavior is not
-changed or granted normative approval here. The prior retention example
+The ledger explicitly leaves custom-table range-partition overshoot rejection
+and T.6/T.88 padding applicability open. The later approved T.6 consultation
+establishes that its post-EOFB pad format uses zero bits; whether every T.88
+prefix/known-extent case inherits that rule still needs review, as does fixed-
+block versus octet-only framing. Existing behavior is not changed or granted
+normative approval here. The prior retention example
 conflict also remains unresolved. B.5 is only a selected family record:
 per-table normative review and complete enumeration are still required.
 
@@ -144,7 +150,7 @@ enumeration. No actual feature is marked complete.
 
 ## Continued family-specific mapping
 
-The follow-up adds **46 records** across the 16 worklists that previously had
+The second bounded tranche added **46 records** across the 16 worklists that previously had
 no records. They are not feature-label placeholders: each has a clause/context,
 exact runtime/test identities, a scoped contract assessment, assumptions and
 unresolved obligations.
@@ -172,13 +178,17 @@ Thirteen additional generated public-API tests in
 `tests/traceability_semantics.rs` check page fields/default pixels, all operator
 codes against a Boolean oracle, override permission, clipped page effects,
 intermediate non-page effects/permissions, stripe errors/final height, global
-scope and typed colour exclusion. The complete ledger links 90 library tests,
+scope and typed colour exclusion. At that stage the ledger linked 90 library tests,
 nine `spec_header`, one `catalog_contracts`, five `traceability_organization`
-and 13 `traceability_semantics` tests, all ordinary and non-ignored.
+and 13 `traceability_semantics` tests at that 94-record stage, all ordinary and
+non-ignored. The T.6 extension below adds 16 existing library-test identities.
 
 The checker now distinguishes `normative_rule` from `project_profile_policy`.
 Policy evidence must name an existing explicit support-matrix policy and match
-the hash of that exact feature row; changing its note, failure policy or scope
+its hash. The six feature policies bind their exact feature rows; the three
+T.6-context typed-error policies explicitly select and hash the approved
+`public_api` section containing the typed-errors requirement. Changing the
+selected policy note, failure policy, approval or scope
 invalidates the policy evidence. Policy rows remain visible in both generated
 views, separately counted from normative rules. Informative 0.2 is not promoted
 to a new normative prohibition, and a reusable globals API is not presented as
@@ -198,12 +208,59 @@ substitutions. The new mappings do not use `compose_scalar_verified` as evidence
 and do not infer visible-pixel correctness from storage preservation.
 
 Owner adjudication is still needed for the retention worked-example conflict,
-custom Huffman overshoot rejection and stricter MMR zero-padding rejection.
+custom Huffman overshoot rejection and T.6/T.88 padding applicability.
 Independent model/diagram/table review, complete clause enumeration and
-functional caller/raster composition remain unresolved. T.6 decomposition and
-any actual PDF-container normative claim need appropriate separately consulted
-approved source evidence. These are real boundaries, not closed by having
+functional caller/raster composition remain unresolved. T.6 now has separately
+consulted approved source evidence and selected records, but its complete
+decomposition remains open. Any actual PDF-container normative claim still
+needs its own approved source. These are real boundaries, not closed by having
 started every feature worklist.
+
+## Approved T.6 MMR source and bounded decomposition
+
+The concrete T.6 prerequisite used **only the recorded official acquisition**:
+
+```text
+https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items
+SHA-256: 8ccbe2d203e03ee2ac37478d50d2d946bab49dfb45376eb0f773009d183a7767
+```
+
+It returned HTTP 200 at that exact URL and matched the approved
+`normative_references` document hash. No fallback or new permission was used.
+No package identity is invented for this direct PDF, and no T.88 hash or edition
+is reused. The checker resolves the explicitly selected provenance collection,
+rejects ambiguous/missing identities, and treats an unrecorded edition as
+explicit `null`. Generated rows now identify their standard so T.6 clause 2.x
+cannot be mistaken for T.88.
+
+Seventeen records are added: **14 selected T.6 rules and three separately
+hash-bound project typed-error policies**. Consulted families are 2.2.1–2.2.2,
+2.2.3.1–2.2.3.3/Table 1, 2.2.4/Tables 2–3, 2.2.5.1–2.2.5.2, 2.3.1 (optional-
+mode context only) and 2.4.1.1–2.4.1.3. No table entries, diagrams, bit vectors
+or standards prose are added.
+
+| Selected obligation | Boundary actually established |
+|---|---|
+| Initial white reference and previous-row reuse | Raster storage/reader invariants, not reference pixel equivalence |
+| Changing elements and pass/vertical/horizontal transitions | Bounded reference positions and safe raster state, not an exact line-transition theorem |
+| Mode prefix dispatch | Implementation-table witness and consumed length, not equality to the actual consumed prefix bits |
+| White/black run lookup | Matching supplied key and membership in implementation arrays; no independent T.6 table-translation proof |
+| Make-up/terminating accumulation and initial imaginary white run | Reader/row bounds and storage, not run summation or initial-position equivalence |
+| Terminal reference sentinels | Valid width-sentinel representation and two added entries, not preservation of all earlier transitions or full row pixels |
+| Required EOFB | Exact local marker predicate on successful required framing; T.88 omission exceptions remain explicit |
+| Post-EOFB padding | Reader/framing invariants; zero-padding values and T.88/fixed-block applicability remain open |
+| Truncated runs, row overshoot and required-marker truncation | Executable private typed-error regressions and bounded reader state, not T.6-mandated Rust diagnostics or a proved public-error mapping |
+
+The names `mode_code_is_normative` and `run_code_is_normative` denote project
+array-membership predicates. Naming does not make those arrays independently
+faithful to T.6. Ordinary table-driven tests can share the implementation tables;
+the ledger records that limitation rather than promoting them to a normative
+oracle. All new records remain provisional with explicit gaps.
+
+There are now **134 linked ordinary non-ignored tests**: 106 library, nine
+`spec_header`, one `catalog_contracts`, five `traceability_organization` and
+13 `traceability_semantics`. The T.6 tranche adds no production source, proof,
+table data or official test assets.
 
 ## Checks and limits
 
@@ -256,10 +313,24 @@ python -B tools/check_traceability.py --verus-json verus-production.json \
   --discover-tests --output target/traceability/combined-report.json
 ```
 
-An approved local normative document can additionally be hash-checked with
-`--standard-pdf /path/to/approved-document.pdf`. Its absence in CI is reported
-explicitly; provenance identity is still checked. The checker does not acquire
-or redistribute documents.
+Approved local normative documents can additionally be hash-checked by explicit
+identity, for example:
+
+```text
+python -B tools/check_traceability.py --discover-tests \
+  --standard-document 'ITU-T T.6 (1988)=/path/to/approved-t6.pdf' \
+  --output target/traceability/t6-report.json
+```
+
+Repeat `--standard-document STANDARD_ID=PATH` for each available document.
+`--standard-pdf /path/to/approved-document.pdf` retains its legacy meaning:
+the first declared standard, not an inferred PDF identity. Unknown/duplicate
+selections and cross-standard hash substitutions fail. Reports expose
+`normative_document_hash_checks` separately for each standard; the aggregate
+`normative_document_hash_checked` is true only when **all** declared documents
+were checked in that invocation. A T.6-only check does not claim the deleted
+T.88 local copy was rechecked. Absence in CI is explicit; provenance identity
+is still checked. The checker does not acquire or redistribute documents.
 
 A supplied successful Verus report is not inherently fresh just because it was
 loaded: the caller must run the pinned verifier on the same source. Verus CI

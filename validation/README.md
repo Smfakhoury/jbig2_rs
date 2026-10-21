@@ -168,8 +168,8 @@ python tools/audit_production_coverage.py \
   --require-complete --require-exact
 ```
 
-The exact-source release gate currently fails on the 2 explicitly recorded
-runtime/proof divergences. Routine CI checks the reviewed inventory, not a claim
+The exact-source release gate currently fails on the remaining explicitly
+recorded MMR capacity-accounting divergence. Routine CI checks the reviewed inventory, not a claim
 that every executing body has been proved. New or changed gaps fail the
 inventory checks. `update_proof_dispositions.py --output NEW_FILE` creates
 unreviewed proposals only and cannot overwrite the reviewed disposition file.
@@ -217,6 +217,26 @@ retain complete range acceptance, length and unaffected value/frame relations.
 Ordinary tests use independent `to_be_bytes`/`from_be_bytes` oracles and compare
 all storage around complete, short and overflowing accesses. These are helper
 contracts, not a complete composition or release proof.
+
+`tools/check_bitmap_compose_proofs.py` checks the actual optimized ordinary
+composition dispatcher. Four out-of-frame byte mutations and a wrong typed
+error compile but fail the original frame/success contract; controls remove
+only the affected relation while retaining storage/metadata and the other
+guarantee. The full proof verifies all aligned/unaligned access arithmetic and
+the outside-clipped-byte frame, not complete pixel/operator equivalence.
+Expanded independent scalar oracles compare all packed storage across word
+edges, clipping, empty dimensions and maximal origins; bit-loop oracles check
+complete shifted byte/word/tail availability. Coverage exclusions and the
+reviewed floor are unchanged; the separate P06 family work owns floor updates.
+
+`tools/run_semantic_proofs.py` runs all ten existing isolated semantic checkers
+with at most two concurrent children. Each checker retains its pinned verifier,
+selected-target checks, native compilation and strong/weaker solver limits.
+Reports and logs keep their existing names; stale reports are removed before
+launch, and missing/malformed/duplicate/failed evidence fails the aggregate.
+The 40 required contrasts, whole-crate verification, 20-minute job budget,
+action pins and read-only permissions are unchanged. The aggregate report is
+additional orchestration evidence, not a substitute for individual reports.
 
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized

@@ -337,4 +337,23 @@ pub open spec fn compose_byte_may_change(
         ) as int
 }
 
+pub open spec fn compose_frame(
+    before: Seq<u8>,
+    after: Seq<u8>,
+    stride: usize,
+    destination_width: u32,
+    destination_height: u32,
+    source_width: u32,
+    source_height: u32,
+    x: u32,
+    y: u32,
+) -> bool {
+    before.len() == after.len()
+        && forall|index: int| 0 <= index < before.len()
+            && !compose_byte_may_change(
+                index, stride, destination_width, destination_height,
+                source_width, source_height, x, y,
+            ) ==> after[index] == before[index]
+}
+
 }

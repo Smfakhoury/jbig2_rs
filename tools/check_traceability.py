@@ -112,6 +112,56 @@ def policy_row_hash(row):
     ).encode("utf-8")).hexdigest()
 
 
+def resolve_standards(ledger, provenance):
+    if len({entry["id"] for entry in ledger["standards"]}) != len(ledger["standards"]):
+        raise ValueError("duplicate normative standard identity")
+    documents = {}
+    for standard in ledger["standards"]:
+        candidates = [
+            (collection, entry)
+            for collection in ("normative_documents", "normative_references")
+            for entry in provenance.get(collection, [])
+            if entry["id"] == standard["id"]
+        ]
+        if len(candidates) != 1:
+            raise ValueError(f"missing or ambiguous normative provenance: {standard['id']}")
+        collection, document = candidates[0]
+        if collection != standard.get("provenance_collection", "normative_documents"):
+            raise ValueError(f"normative provenance collection differs: {standard['id']}")
+        if not document.get("document_sha256"):
+            raise ValueError(f"normative source has no approved document identity: {standard['id']}")
+        if document["document_sha256"] != standard["document_sha256"]:
+            raise ValueError("normative document identity differs from provenance")
+        if document.get("edition") != standard["edition"]:
+            raise ValueError("normative edition differs from provenance")
+        documents[standard["id"]] = document
+    return documents
+
+
+def local_document_checks(ledger, standard_pdf=None, standard_documents=()):
+    hashes = {standard["id"]: standard["document_sha256"] for standard in ledger["standards"]}
+    checks = dict.fromkeys(hashes, False)
+    selections = []
+    if standard_pdf is not None:
+        selections.append((ledger["standards"][0]["id"], Path(standard_pdf)))
+    for selection in standard_documents:
+        identity, separator, path = selection.partition("=")
+        if not separator or not identity or not path:
+            raise ValueError("--standard-document needs STANDARD_ID=PATH")
+        selections.append((identity, Path(path)))
+    seen = set()
+    for identity, path in selections:
+        if identity not in hashes:
+            raise ValueError(f"unknown local normative document identity: {identity}")
+        if identity in seen:
+            raise ValueError(f"duplicate local normative document selection: {identity}")
+        seen.add(identity)
+        if hashlib.sha256(path.read_bytes()).hexdigest() != hashes[identity]:
+            raise ValueError(f"local normative document hash mismatch: {identity}")
+        checks[identity] = True
+    return checks
+
+
 def check_contract(record, section, tokens):
     if not tokens or any(not compact(token) for token in tokens):
         raise ValueError(f"empty contract evidence on {record['id']}")
@@ -151,14 +201,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
     root = root.resolve()
     matrix = load_json(root / "support-matrix.json")
     provenance = load_json(root / "source-provenance.json")
-    documents = {entry["id"]: entry for entry in provenance["normative_documents"]}
-    if len({entry["id"] for entry in ledger["standards"]}) != len(ledger["standards"]):
-        raise ValueError("duplicate normative standard identity")
-    for standard in ledger["standards"]:
-        if documents[standard["id"]]["document_sha256"] != standard["document_sha256"]:
-            raise ValueError("normative document identity differs from provenance")
-        if documents[standard["id"]]["edition"] != standard["edition"]:
-            raise ValueError("normative edition differs from provenance")
+    documents = resolve_standards(ledger, provenance)
     consultations = ledger["source_consultations"]
     consulted = {entry["standard"] for entry in consultations}
     if len(consulted) != len(consultations) or consulted != {
@@ -173,9 +216,8 @@ def check(ledger, root, verifier_names=None, discovered=None):
             or len({compact(family) for family in families}) != len(families)
         ):
             raise ValueError("source consultation needs nonempty distinct clause families")
-        for field in ("document_sha256", "package_sha256"):
-            if consultation[field] != document[field]:
-                raise ValueError(f"source consultation {field} differs from provenance")
+        if consultation["document_sha256"] != document["document_sha256"]:
+            raise ValueError("source consultation document_sha256 differs from provenance")
         url = urlsplit(consultation["acquisition_url"])
         if (
             url.scheme != "https" or url.hostname != "www.itu.int"
@@ -184,11 +226,21 @@ def check(ledger, root, verifier_names=None, discovered=None):
             or url.username is not None or url.password is not None or url.fragment
         ):
             raise ValueError("source consultation is not the recorded official publication host")
-        publication = urlsplit(document["source_url"]).path.rstrip("/").split("/")[-2]
-        if parse_qs(url.query) != {
-            "lang": ["e"], "id": [publication + "!!SOFT-ZST-E"], "type": ["items"],
-        }:
-            raise ValueError("source consultation URL identifies a different publication/package")
+        if consultation["acquisition_kind"] == "official_package":
+            if not document.get("package_sha256") or consultation.get("package_sha256") != document["package_sha256"]:
+                raise ValueError("source consultation package_sha256 differs from provenance")
+            publication = urlsplit(document["source_url"]).path.rstrip("/").split("/")[-2]
+            if parse_qs(url.query) != {
+                "lang": ["e"], "id": [publication + "!!SOFT-ZST-E"], "type": ["items"],
+            }:
+                raise ValueError("source consultation URL identifies a different publication/package")
+        elif consultation["acquisition_kind"] == "official_pdf":
+            if "package_sha256" in consultation:
+                raise ValueError("direct PDF consultation cannot invent a package identity")
+            if consultation["acquisition_url"] != document["source_url"]:
+                raise ValueError("direct PDF consultation URL differs from recorded provenance")
+        else:
+            raise ValueError("unsupported source consultation acquisition kind")
     features = {entry["feature"]: entry for entry in matrix["rows"]}
     if len(features) != len(matrix["rows"]):
         raise ValueError("duplicate support-matrix feature")
@@ -231,11 +283,22 @@ def check(ledger, root, verifier_names=None, discovered=None):
         obligation_kind = requirement.get("obligation_kind", "normative_rule")
         policy = features[requirement["feature"]]
         if obligation_kind == "project_profile_policy":
-            if not (policy.get("note") or policy.get("failure")):
-                raise ValueError(f"project policy has no explicit support-matrix basis: {identity}")
+            policy_source = requirement.get("policy_source", "feature_row")
+            if policy_source == "feature_row":
+                if not (policy.get("note") or policy.get("failure")):
+                    raise ValueError(f"project policy has no explicit support-matrix basis: {identity}")
+            elif policy_source == "public_api":
+                policy = matrix.get("public_api", {})
+                if policy.get("status") != "approved" or (
+                    "Typed malformed, unsupported, resource-limit, input/output, and allocation errors."
+                    not in policy.get("requirements", [])
+                ):
+                    raise ValueError(f"project error policy has no approved public API basis: {identity}")
+            else:
+                raise ValueError(f"unknown project policy source: {identity}")
             if requirement.get("policy_row_sha256") != policy_row_hash(policy):
                 raise ValueError(f"stale or missing project policy evidence: {identity}")
-        elif obligation_kind != "normative_rule" or "policy_row_sha256" in requirement:
+        elif obligation_kind != "normative_rule" or "policy_row_sha256" in requirement or "policy_source" in requirement:
             raise ValueError(f"normative evidence cannot hide a project policy binding: {identity}")
         for field in ("runtime", "models", "proof_macros", "tests", "functional_evidence", "invariant_evidence"):
             values = [json.dumps(value, sort_keys=True) for value in requirement[field]]
@@ -243,6 +306,8 @@ def check(ledger, root, verifier_names=None, discovered=None):
                 raise ValueError(f"duplicate {field} evidence: {identity}")
         if requirement["standard"] not in {entry["id"] for entry in ledger["standards"]}:
             raise ValueError(f"unknown normative standard: {identity}")
+        if identity.startswith("T6-") != (requirement["standard"] == "ITU-T T.6 (1988)"):
+            raise ValueError(f"requirement prefix differs from normative source: {identity}")
         for definition in requirement["models"]:
             if ledger["definitions"][definition]["kind"] != "spec":
                 raise ValueError(f"model reference is not a spec definition: {identity}")
@@ -295,9 +360,11 @@ def check(ledger, root, verifier_names=None, discovered=None):
                 raise ValueError(f"test not present in Cargo discovery: {key}")
         rows.append({
             "id": identity, "clause": requirement["clause"], "title": requirement["title"],
+            "standard": requirement["standard"],
             "feature": requirement["feature"],
             "obligation_kind": obligation_kind,
             "policy_row_sha256": requirement.get("policy_row_sha256"),
+            "policy_source": requirement.get("policy_source", "feature_row") if obligation_kind == "project_profile_policy" else None,
             "strength": requirement["strength"], "review": requirement["review"],
             "runtime": requirement["runtime"], "gaps": requirement["gaps"],
             "scope_of_formal_result": requirement["scope_of_formal_result"],
@@ -365,6 +432,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
         "requirements": rows, "requirement_count": len(rows),
         "feature_count": len(features),
         "feature_decomposition": feature_decomposition,
+        "standards": ledger["standards"],
         "source_consultations": consultations,
         "obligation_kind_counts": {
             kind: sum(row["obligation_kind"] == kind for row in rows)
@@ -397,7 +465,11 @@ def main():
     parser.add_argument("--ledger", type=Path, default=ROOT / "validation/traceability/requirements.json")
     parser.add_argument("--verus-json", type=Path)
     parser.add_argument("--discover-tests", action="store_true")
-    parser.add_argument("--standard-pdf", type=Path)
+    parser.add_argument("--standard-pdf", type=Path, help="Legacy hash check for the first declared standard.")
+    parser.add_argument(
+        "--standard-document", action="append", default=[], metavar="STANDARD_ID=PATH",
+        help="Hash-check a named declared standard; repeat for multiple local documents.",
+    )
     parser.add_argument("--require-complete", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
@@ -413,36 +485,38 @@ def main():
         ).stdout.strip()
         report["source_revision"] = revision
         report["ledger_sha256"] = hashlib.sha256(arguments.ledger.read_bytes()).hexdigest()
-        report["normative_document_hash_checked"] = False
-        if arguments.standard_pdf:
-            if hashlib.sha256(arguments.standard_pdf.read_bytes()).hexdigest() != ledger["standards"][0]["document_sha256"]:
-                raise ValueError("local normative document hash mismatch")
-            report["normative_document_hash_checked"] = True
+        report["normative_document_hash_checks"] = local_document_checks(
+            ledger, arguments.standard_pdf, arguments.standard_document,
+        )
+        report["normative_document_hash_checked"] = all(report["normative_document_hash_checks"].values())
         arguments.output.parent.mkdir(parents=True, exist_ok=True)
         arguments.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         table = [
             "# Provisional normative traceability", "",
             f"Status: **{report['status']}**. No full-conformance or complete-proof claim.", "",
-            "| Requirement | Clause/context | Basis | Scope | Evidence strength | Open gaps |",
-            "|---|---|---|---|---|---|",
+            "| Requirement | Standard | Clause/context | Basis | Scope | Evidence strength | Open gaps |",
+            "|---|---|---|---|---|---|---|",
         ]
         for row in report["requirements"]:
             clean = lambda value: str(value).replace("|", "\\|").replace("\n", " ")
             table.append("| " + " | ".join(clean(value) for value in (
-                row["id"], row["clause"], row["obligation_kind"], row["title"],
+                row["id"], row["standard"], row["clause"], row["obligation_kind"], row["title"],
                 row["strength"], "; ".join(row["gaps"]),
             )) + " |")
         table += ["", "## Consulted source identity", ""]
         for consultation in report["source_consultations"]:
             table += [
                 f"- {consultation['standard']}: {consultation['acquisition_url']}",
-                f"  Package SHA-256: `{consultation['package_sha256']}`.",
                 f"  Document SHA-256: `{consultation['document_sha256']}`.",
                 "  Consulted clause families: " + "; ".join(consultation["clause_families"]) + ".",
             ]
+            if consultation["acquisition_kind"] == "official_package":
+                table.append(f"  Package SHA-256: `{consultation['package_sha256']}`.")
+            else:
+                table.append("  Direct official PDF; no package identity is recorded.")
         table += [
             "", "Acquisition identity and declared consultation scope are checked, not independent proof of translation or owner approval.",
-            "Project-profile policy rows use T.88 only as context; their policy-row hashes are checked separately and they do not increase the normative-rule count.",
+            "Project-profile policy rows use their cited standard only as context; selected feature/API policy hashes are checked separately and do not increase the normative-rule count.",
         ]
         table += [
             "", "## Feature decomposition accounting", "",
@@ -461,6 +535,7 @@ def main():
         for row in report["requirements"]:
             table += [
                 "", f"## {row['id']}: {row['title']}", "",
+                f"Standard: {row['standard']}.",
                 f"Clause: {row['clause']}; review: {row['review']}; strength: {row['strength']}.",
                 f"Obligation basis: {row['obligation_kind']}.",
                 "", row["scope_of_formal_result"], "",
@@ -475,14 +550,14 @@ def main():
             ]
             if row["obligation_kind"] == "project_profile_policy":
                 table.append(
-                    f"Policy basis: `support-matrix.json` feature `{row['feature']}`, "
-                    f"reviewed row SHA-256 `{row['policy_row_sha256']}`."
+                    f"Policy basis: `support-matrix.json` {row['policy_source']} "
+                    f"(feature `{row['feature']}`), reviewed source SHA-256 `{row['policy_row_sha256']}`."
                 )
         table += ["", report["note"]]
         arguments.output.with_suffix(".md").write_text("\n".join(table) + "\n", encoding="utf-8")
         print(json.dumps({key: report[key] for key in (
             "status", "requirement_count", "feature_count", "verifier_report_checked",
-            "cargo_test_discovery_checked", "normative_document_hash_checked",
+            "cargo_test_discovery_checked", "normative_document_hash_checked", "normative_document_hash_checks",
         )}, indent=2))
         if arguments.require_complete and not report["normative_decomposition_complete"]:
             raise ValueError("normative decomposition and approval remain incomplete")
