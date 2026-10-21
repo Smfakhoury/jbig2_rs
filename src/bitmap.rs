@@ -196,9 +196,17 @@ fn write_chunk(bytes: &mut Vec<u8>, start: usize, value: u64) -> bool {
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out.is_some() ==> (byte_index as nat) < bytes@.len(),
+    ensures
+        out.is_some() ==> (byte_index as nat) < bytes@.len(),
+        (shift < 8 && byte_index as nat + if shift == 0 { 1nat } else { 2nat }
+            <= bytes@.len()) ==> out.is_some(),
 ))]
 fn read_shifted_byte(bytes: &[u8], byte_index: usize, shift: u32) -> Option<u8> {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(bytes@.len() == bytes.len());
+        assert(bytes@.len() <= usize::MAX);
+    }
     let first = *bytes.get(byte_index)?;
     if shift == 0 {
         return Some(first);
@@ -212,9 +220,19 @@ fn read_shifted_byte(bytes: &[u8], byte_index: usize, shift: u32) -> Option<u8> 
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out.is_some() ==> (byte_index as nat) < bytes@.len(),
+    ensures
+        out.is_some() ==> (byte_index as nat) < bytes@.len(),
+        (shift < 8 && 0 < bit_count <= 8
+            && byte_index as nat + if shift == 0 || bit_count <= 8 - shift {
+                1nat
+            } else { 2nat } <= bytes@.len()) ==> out.is_some(),
 ))]
 fn read_shifted_tail(bytes: &[u8], byte_index: usize, shift: u32, bit_count: u32) -> Option<u8> {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(bytes@.len() == bytes.len());
+        assert(bytes@.len() <= usize::MAX);
+    }
     let first = *bytes.get(byte_index)?;
     if shift == 0 {
         return Some(first);
@@ -232,9 +250,17 @@ fn read_shifted_tail(bytes: &[u8], byte_index: usize, shift: u32, bit_count: u32
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out.is_some() ==> byte_index as nat + 8 <= bytes@.len(),
+    ensures
+        out.is_some() ==> byte_index as nat + 8 <= bytes@.len(),
+        (shift < 8 && byte_index as nat + if shift == 0 { 8nat } else { 9nat }
+            <= bytes@.len()) ==> out.is_some(),
 ))]
 fn read_shifted_chunk(bytes: &[u8], byte_index: usize, shift: u32) -> Option<u64> {
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(bytes@.len() == bytes.len());
+        assert(bytes@.len() <= usize::MAX);
+    }
     let first = read_chunk(bytes, byte_index)?;
     if shift == 0 {
         return Some(first);
@@ -636,266 +662,6 @@ impl Bitmap {
         Ok(())
     }
 
-    #[cfg(verus_keep_ghost)]
-    #[verus_spec(out =>
-        requires
-            crate::spec::bitmap::storage_valid(old(self)),
-            crate::spec::bitmap::storage_valid(source),
-        ensures
-            out.is_ok(),
-            crate::spec::bitmap::storage_valid(final(self)),
-            final(self).width == old(self).width,
-            final(self).height == old(self).height,
-            final(self).stride == old(self).stride,
-            final(self).data@.len() == old(self).data@.len(),
-            forall|index: int|
-                0 <= index < old(self).data@.len()
-                && !crate::spec::bitmap::compose_byte_may_change(
-                    index,
-                    old(self).stride,
-                    old(self).width,
-                    old(self).height,
-                    source.width,
-                    source.height,
-                    x,
-                    y,
-                )
-                ==> final(self).data@[index] == old(self).data@[index],
-    )]
-    #[allow(clippy::too_many_lines)]
-    fn compose_scalar_verified(
-        &mut self,
-        source: &Self,
-        x: u32,
-        y: u32,
-        operator: CombinationOperator,
-    ) -> Result<(), MalformedError> {
-        proof! {
-            crate::views::bitmap_fields(self);
-            crate::views::bitmap_fields(source);
-        }
-        proof_decl! {
-            let ghost original_data = self.data@;
-        }
-        let width = source.width.min(self.width.saturating_sub(x));
-        let height = source.height.min(self.height.saturating_sub(y));
-        production_bitmap_clipped_bounds!(self, source, x, y);
-        proof! {
-            reveal(crate::spec::bitmap::clipped_width);
-            reveal(crate::spec::bitmap::clipped_height);
-            assert(width as nat == crate::spec::bitmap::clipped_width(
-                self.width,
-                source.width,
-                x,
-            ));
-            assert(height as nat == crate::spec::bitmap::clipped_height(
-                self.height,
-                source.height,
-                y,
-            ));
-            assert(x as nat + width as nat <= if x <= self.width {
-                self.width as nat
-            } else {
-                x as nat
-            });
-            assert(y as nat + height as nat <= if y <= self.height {
-                self.height as nat
-            } else {
-                y as nat
-            });
-        }
-        #[verus_spec(
-            invariant
-                crate::spec::bitmap::storage_valid(self),
-                crate::spec::bitmap::storage_valid(source),
-                self.width == old(self).width,
-                self.height == old(self).height,
-                self.stride == old(self).stride,
-                self.data@.len() == original_data.len(),
-                forall|index: int|
-                    0 <= index < original_data.len()
-                    && !crate::spec::bitmap::compose_byte_may_change(
-                        index,
-                        self.stride,
-                        self.width,
-                        self.height,
-                        source.width,
-                        source.height,
-                        x,
-                        y,
-                    )
-                    ==> self.data@[index] == original_data[index],
-                source_y <= height,
-                height <= source.height,
-                width <= source.width,
-                height > 0 ==> y < self.height,
-                width > 0 ==> x < self.width,
-                height > 0 ==> y as nat + height as nat <= self.height as nat,
-                width > 0 ==> x as nat + width as nat <= self.width as nat,
-            decreases height - source_y,
-        )]
-        for source_y in 0..height {
-            let destination_y = y
-                .checked_add(source_y)
-                .ok_or(MalformedError::IntegerOverflow)?;
-            #[verus_spec(
-                invariant
-                    crate::spec::bitmap::storage_valid(self),
-                    crate::spec::bitmap::storage_valid(source),
-                    self.width == old(self).width,
-                    self.height == old(self).height,
-                    self.stride == old(self).stride,
-                    self.data@.len() == original_data.len(),
-                    forall|index: int|
-                        0 <= index < original_data.len()
-                        && !crate::spec::bitmap::compose_byte_may_change(
-                            index,
-                            self.stride,
-                            self.width,
-                            self.height,
-                            source.width,
-                            source.height,
-                            x,
-                            y,
-                        )
-                        ==> self.data@[index] == original_data[index],
-                    source_x <= width,
-                    source_y < height,
-                    height <= source.height,
-                    width <= source.width,
-                    height > 0 ==> y as nat + height as nat <= self.height as nat,
-                    width > 0 ==> x as nat + width as nat <= self.width as nat,
-                    destination_y as nat == y as nat + source_y as nat,
-                decreases width - source_x,
-            )]
-            for source_x in 0..width {
-                proof! {
-                    crate::views::bitmap_fields(source);
-                    crate::views::bitmap_fields(self);
-                    assert(source_x < width);
-                    assert(source_y < height);
-                    assert(source_x < source.width);
-                    assert(source_y < source.height);
-                    assert((x as nat) + (source_x as nat) < self.width as nat);
-                    assert((y as nat) + (source_y as nat) < self.height as nat);
-                }
-                let destination_x = x
-                    .checked_add(source_x)
-                    .ok_or(MalformedError::IntegerOverflow)?;
-                let source_pixel = source.pixel(source_x, source_y);
-                let destination_pixel = self.pixel(destination_x, destination_y);
-                proof! {
-                    reveal(crate::spec::bitmap::pixel_result);
-                    reveal(crate::spec::bitmap::coordinates_in_bounds);
-                    assert(source_pixel.is_some());
-                    assert(destination_pixel.is_some());
-                }
-                let source_value = source_pixel.ok_or(MalformedError::IntegerOverflow)?;
-                let destination_value = destination_pixel.ok_or(MalformedError::IntegerOverflow)?;
-                proof_decl! {
-                    let ghost before_data = self.data@;
-                }
-                self.set_pixel(
-                    destination_x,
-                    destination_y,
-                    operator.apply(destination_value, source_value),
-                )?;
-                proof! {
-                    crate::views::bitmap_fields(self);
-                    crate::views::bitmap_fields(old(self));
-                    assert forall|index: int|
-                        0 <= index < original_data.len()
-                        && !crate::spec::bitmap::compose_byte_may_change(
-                            index,
-                            self.stride,
-                            self.width,
-                            self.height,
-                            source.width,
-                            source.height,
-                            x,
-                            y,
-                        )
-                    implies self.data@[index] == original_data[index] by {
-                        let changed = crate::spec::bitmap::byte_index(
-                            self.stride,
-                            destination_x,
-                            destination_y,
-                        ) as int;
-                        if index == changed {
-                            reveal(crate::spec::bitmap::compose_byte_may_change);
-                            assert(
-                                crate::spec::bitmap::compose_byte_may_change(
-                                    index,
-                                    self.stride,
-                                    self.width,
-                                    self.height,
-                                    source.width,
-                                    source.height,
-                                    x,
-                                    y,
-                                )
-                            ) by {
-                                let sx = source_x as int;
-                                let sy = source_y as int;
-                                assert(destination_x as int == x as int + sx);
-                                assert(destination_y as int == y as int + sy);
-                                reveal(crate::spec::bitmap::clipped_width);
-                                reveal(crate::spec::bitmap::clipped_height);
-                                assert((source_x as nat)
-                                    < crate::spec::bitmap::clipped_width(
-                                        self.width,
-                                        source.width,
-                                        x,
-                                    ));
-                                assert((source_y as nat)
-                                    < crate::spec::bitmap::clipped_height(
-                                        self.height,
-                                        source.height,
-                                        y,
-                                    ));
-                                assert(exists|candidate_x: int, candidate_y: int|
-                                    0 <= candidate_x
-                                        < crate::spec::bitmap::clipped_width(
-                                            self.width,
-                                            source.width,
-                                            x,
-                                        )
-                                    && 0 <= candidate_y
-                                        < crate::spec::bitmap::clipped_height(
-                                            self.height,
-                                            source.height,
-                                            y,
-                                        )
-                                    && index
-                                        == #[trigger] crate::spec::bitmap::byte_index(
-                                            self.stride,
-                                            (x as int + candidate_x) as u32,
-                                            (y as int + candidate_y) as u32,
-                                        ) as int
-                                ) by {
-                                    assert(index
-                                        == crate::spec::bitmap::byte_index(
-                                            self.stride,
-                                            (x as int + sx) as u32,
-                                            (y as int + sy) as u32,
-                                        ) as int);
-                                }
-                            }
-                        } else {
-                            assert(self.data@[index] == before_data[index]);
-                            assert(before_data[index] == original_data[index]);
-                        }
-                    }
-                }
-            }
-        }
-        proof! {
-            crate::views::bitmap_fields(self);
-            crate::views::bitmap_fields(old(self));
-        }
-        Ok(())
-    }
-
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires
             crate::spec::bitmap::storage_valid(old(self)),
@@ -1042,18 +808,16 @@ impl Bitmap {
         y: u32,
         operator: CombinationOperator,
     ) -> Result<(), MalformedError> {
+        let result = self.compose_chunked(source, x, y, operator);
         #[cfg(verus_keep_ghost)]
-        {
-            let result = self.compose_scalar_verified(source, x, y, operator);
-            proof! {
-                crate::views::bitmap_fields(self);
-                crate::views::bitmap_fields(old(self));
-                crate::views::bitmap_fields(source);
-            }
-            return result;
+        proof! {
+            crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(old(self));
+            crate::views::bitmap_fields(source);
+            reveal(crate::spec::bitmap::compose_frame);
+            reveal(crate::spec::bitmap::storage_valid);
         }
-        #[cfg(not(verus_keep_ghost))]
-        self.compose_chunked(source, x, y, operator)
+        result
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1064,6 +828,13 @@ impl Bitmap {
             final(self).width == old(self).width,
             final(self).height == old(self).height,
             final(self).stride == old(self).stride,
+            final(self).data@.len() == old(self).data@.len(),
+            out.is_ok(),
+            crate::spec::bitmap::compose_frame(
+                old(self).data@, final(self).data@,
+                old(self).stride, old(self).width, old(self).height,
+                source.width, source.height, x, y,
+            ),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::too_many_lines)]
@@ -1077,8 +848,17 @@ impl Bitmap {
         #[cfg(verus_keep_ghost)]
         proof! {
             crate::views::bitmap_fields(self);
+            crate::views::bitmap_fields(old(self));
             crate::views::bitmap_fields(source);
+            assert(self.data@.len() == self.data.len());
+            assert(source.data@.len() == source.data.len());
+            assert(self.data@.len() <= usize::MAX);
+            assert(source.data@.len() <= usize::MAX);
+            assert(u32::MAX as nat <= usize::MAX) by (compute);
+            reveal(crate::spec::bitmap::compose_frame);
         }
+        #[cfg(verus_keep_ghost)]
+        proof_decl! { let ghost original_data = self.data@; }
         let width = source.width.min(self.width.saturating_sub(x));
         let height = source.height.min(self.height.saturating_sub(y));
         #[cfg(verus_keep_ghost)]
@@ -1132,7 +912,23 @@ impl Bitmap {
                 self.width == old(self).width,
                 self.height == old(self).height,
                 self.stride == old(self).stride,
+                self.data@.len() == old(self).data@.len(),
+                crate::spec::bitmap::storage_valid(self),
                 source_y <= height,
+                width > 0,
+                width as nat == crate::spec::bitmap::clipped_width(self.width, source.width, x),
+                height as nat == crate::spec::bitmap::clipped_height(self.height, source.height, y),
+                crate::spec::bitmap::compose_frame(
+                    original_data, self.data@, self.stride, self.width, self.height,
+                    source.width, source.height, x, y,
+                ),
+                self.data@.len() <= usize::MAX,
+                source.data@.len() <= usize::MAX,
+                destination_column as int == x as int / 8,
+                destination_shift == x % 8,
+                width_usize == width,
+                full_bytes as int == width as int / 8,
+                tail_bits == width % 8,
                 height <= source.height,
                 width <= source.width,
                 destination_shift < 8,
@@ -1144,6 +940,21 @@ impl Bitmap {
             decreases height - source_y,
         ))]
         for source_y in 0..height {
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                crate::views::bitmap_fields(source);
+                reveal(crate::spec::bitmap::storage_valid);
+                reveal(crate::spec::bitmap::stride_for_width);
+                assert(u32::MAX as nat <= usize::MAX) by (compute);
+                bitmap_shared::row_copy_bounds(source, source_y, source_y);
+                let dy = (y as int + source_y as int) as u32;
+                bitmap_shared::row_copy_bounds(self, dy, dy);
+                bitmap_shared::packed_span_bounds(source.width, source.stride, 0, width);
+                bitmap_shared::packed_span_bounds(self.width, self.stride, x, width);
+                vstd::arithmetic::div_mod::lemma_fundamental_div_mod(width as int, 8);
+                vstd::arithmetic::div_mod::lemma_mod_bound(width as int, 8);
+            }
             let source_row = usize::try_from(source_y)
                 .map_err(|_error| MalformedError::IntegerOverflow)?
                 .checked_mul(source.stride)
@@ -1154,13 +965,47 @@ impl Bitmap {
             )
             .map_err(|_error| MalformedError::IntegerOverflow)?
             .checked_mul(self.stride)
-            .and_then(|offset| offset.checked_add(destination_column))
             .ok_or(MalformedError::IntegerOverflow)?;
+            let destination_row = destination_row
+                .checked_add(destination_column)
+                .ok_or(MalformedError::IntegerOverflow)?;
 
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(source_row as nat + source.stride as nat <= source.data@.len());
+                assert(destination_row as int
+                    == (y as int + source_y as int) * self.stride as int + x as int / 8);
+                assert((y as int + source_y as int) * self.stride as int
+                    + self.stride as int <= self.data@.len());
+                assert(source_row < source.data@.len());
+                assert(destination_row < self.data@.len());
+            }
             if destination_shift == 0 {
                 let mut byte = 0_usize;
                 #[cfg_attr(verus_keep_ghost, verus_spec(
-                    invariant byte <= full_bytes,
+                    invariant
+                        byte <= full_bytes,
+                        self.width == old(self).width,
+                        self.height == old(self).height,
+                        self.stride == old(self).stride,
+                        self.data@.len() == old(self).data@.len(),
+                        self.data@.len() <= usize::MAX,
+                        source.data@.len() <= usize::MAX,
+                        full_bytes as int == width as int / 8,
+                        tail_bits == width % 8,
+                        source_row as nat + full_bytes as nat
+                            + if tail_bits > 0 { 1nat } else { 0nat } <= source.data@.len(),
+                        destination_row as nat + full_bytes as nat
+                            + if tail_bits > 0 { 1nat } else { 0nat } <= self.data@.len(),
+                        x % 8 == 0,
+                        destination_row as int == (y as int + source_y as int)
+                            * self.stride as int + x as int / 8,
+                        width as nat == crate::spec::bitmap::clipped_width(self.width, source.width, x),
+                        source_y < crate::spec::bitmap::clipped_height(self.height, source.height, y),
+                        crate::spec::bitmap::compose_frame(
+                            original_data, self.data@, self.stride, self.width, self.height,
+                            source.width, source.height, x, y,
+                        ),
                     decreases full_bytes - byte,
                 ))]
                 while full_bytes - byte >= 8 {
@@ -1174,6 +1019,8 @@ impl Bitmap {
                         .ok_or(MalformedError::IntegerOverflow)?;
                     let destination_chunk = read_chunk(&self.data, destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
+                    #[cfg(verus_keep_ghost)]
+                    proof_decl! { let ghost before_write_data = self.data@; }
                     if !write_chunk(
                         &mut self.data,
                         destination_index,
@@ -1181,10 +1028,44 @@ impl Bitmap {
                     ) {
                         return Err(MalformedError::IntegerOverflow);
                     }
+                    #[cfg(verus_keep_ghost)]
+                    production_bitmap_compose_frame!(
+                        self,
+                        source,
+                        x,
+                        y,
+                        source_y,
+                        destination_index,
+                        8,
+                        before_write_data,
+                        original_data
+                    );
                     byte = byte.checked_add(8).ok_or(MalformedError::IntegerOverflow)?;
                 }
                 #[cfg_attr(verus_keep_ghost, verus_spec(
-                    invariant byte <= full_bytes,
+                    invariant
+                        byte <= full_bytes,
+                        self.width == old(self).width,
+                        self.height == old(self).height,
+                        self.stride == old(self).stride,
+                        self.data@.len() == old(self).data@.len(),
+                        self.data@.len() <= usize::MAX,
+                        source.data@.len() <= usize::MAX,
+                        full_bytes as int == width as int / 8,
+                        tail_bits == width % 8,
+                        x % 8 == 0,
+                        destination_row as int == (y as int + source_y as int)
+                            * self.stride as int + x as int / 8,
+                        width as nat == crate::spec::bitmap::clipped_width(self.width, source.width, x),
+                        source_y < crate::spec::bitmap::clipped_height(self.height, source.height, y),
+                        crate::spec::bitmap::compose_frame(
+                            original_data, self.data@, self.stride, self.width, self.height,
+                            source.width, source.height, x, y,
+                        ),
+                        source_row as nat + full_bytes as nat
+                            + if tail_bits > 0 { 1nat } else { 0nat } <= source.data@.len(),
+                        destination_row as nat + full_bytes as nat
+                            + if tail_bits > 0 { 1nat } else { 0nat } <= self.data@.len(),
                     decreases full_bytes - byte,
                 ))]
                 while byte < full_bytes {
@@ -1202,11 +1083,25 @@ impl Bitmap {
                         .data
                         .get(destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
+                    #[cfg(verus_keep_ghost)]
+                    proof_decl! { let ghost before_write_data = self.data@; }
                     let destination_byte = self
                         .data
                         .get_mut(destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
                     *destination_byte = operator.apply_byte(destination_value, source_value);
+                    #[cfg(verus_keep_ghost)]
+                    production_bitmap_compose_frame!(
+                        self,
+                        source,
+                        x,
+                        y,
+                        source_y,
+                        destination_index,
+                        1,
+                        before_write_data,
+                        original_data
+                    );
                     byte = byte.checked_add(1).ok_or(MalformedError::IntegerOverflow)?;
                 }
                 if tail_bits != 0 {
@@ -1226,11 +1121,25 @@ impl Bitmap {
                         .get(destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
                     let combined = operator.apply_byte(destination_value, source_value);
+                    #[cfg(verus_keep_ghost)]
+                    proof_decl! { let ghost before_write_data = self.data@; }
                     let destination_byte = self
                         .data
                         .get_mut(destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
                     *destination_byte = (destination_value & !mask) | (combined & mask);
+                    #[cfg(verus_keep_ghost)]
+                    production_bitmap_compose_frame!(
+                        self,
+                        source,
+                        x,
+                        y,
+                        source_y,
+                        destination_index,
+                        1,
+                        before_write_data,
+                        original_data
+                    );
                 }
             } else {
                 let head_bits = width.min(8 - destination_shift);
@@ -1246,21 +1155,74 @@ impl Bitmap {
                     .ok_or(MalformedError::IntegerOverflow)?
                     >> destination_shift;
                 let combined = operator.apply_byte(destination_value, source_value);
+                #[cfg(verus_keep_ghost)]
+                proof_decl! { let ghost before_write_data = self.data@; }
                 let destination_byte = self
                     .data
                     .get_mut(destination_row)
                     .ok_or(MalformedError::IntegerOverflow)?;
                 *destination_byte = (destination_value & !head_mask) | (combined & head_mask);
+                #[cfg(verus_keep_ghost)]
+                production_bitmap_compose_frame!(
+                    self,
+                    source,
+                    x,
+                    y,
+                    source_y,
+                    destination_row,
+                    1,
+                    before_write_data,
+                    original_data
+                );
 
                 let mut source_bit = head_bits;
                 let mut destination_index = destination_row
                     .checked_add(1)
                     .ok_or(MalformedError::IntegerOverflow)?;
                 #[cfg_attr(verus_keep_ghost, verus_spec(
-                    invariant head_bits <= source_bit <= width,
+                    invariant
+                        head_bits <= source_bit <= width,
+                        (source_bit as int - head_bits as int) % 8 == 0,
+                        destination_index as int == destination_row as int + 1
+                            + (source_bit as int - head_bits as int) / 8,
+                        destination_index as int <= (y as int + source_y as int)
+                            * self.stride as int + self.stride as int,
+                        self.width == old(self).width,
+                        self.height == old(self).height,
+                        self.stride == old(self).stride,
+                        self.data@.len() == old(self).data@.len(),
+                        self.data@.len() <= usize::MAX,
+                        source.data@.len() <= usize::MAX,
+                        self.stride as int == (self.width as int + 7) / 8,
+                        source.stride as int == (source.width as int + 7) / 8,
+                        width as nat == crate::spec::bitmap::clipped_width(self.width, source.width, x),
+                        source_y < crate::spec::bitmap::clipped_height(self.height, source.height, y),
+                        crate::spec::bitmap::compose_frame(
+                            original_data, self.data@, self.stride, self.width, self.height,
+                            source.width, source.height, x, y,
+                        ),
+                        source_row as nat + source.stride as nat <= source.data@.len(),
+                        destination_row as int == (y as int + source_y as int)
+                            * self.stride as int + x as int / 8,
+                        (y as int + source_y as int) * self.stride as int
+                            + self.stride as int <= self.data@.len(),
+                        width <= source.width,
+                        x as nat + width as nat <= self.width as nat,
+                        0 < destination_shift < 8,
+                        destination_shift == x % 8,
+                        head_bits as int == if width <= 8 - destination_shift {
+                            width as int
+                        } else { 8 - destination_shift },
                     decreases width - source_bit,
                 ))]
                 while width - source_bit >= 64 {
+                    #[cfg(verus_keep_ghost)]
+                    proof! {
+                        bitmap_shared::aligned_byte_position(x, head_bits, width, source_bit);
+                        bitmap_shared::packed_span_bounds(source.width, source.stride, source_bit, 64);
+                        let destination_bit = (x as int + source_bit as int) as u32;
+                        bitmap_shared::packed_span_bounds(self.width, self.stride, destination_bit, 64);
+                    }
                     let source_byte = source_row
                         .checked_add(
                             usize::try_from(source_bit / 8)
@@ -1272,6 +1234,8 @@ impl Bitmap {
                         .ok_or(MalformedError::IntegerOverflow)?;
                     let destination_chunk = read_chunk(&self.data, destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
+                    #[cfg(verus_keep_ghost)]
+                    proof_decl! { let ghost before_write_data = self.data@; }
                     if !write_chunk(
                         &mut self.data,
                         destination_index,
@@ -1279,6 +1243,18 @@ impl Bitmap {
                     ) {
                         return Err(MalformedError::IntegerOverflow);
                     }
+                    #[cfg(verus_keep_ghost)]
+                    production_bitmap_compose_frame!(
+                        self,
+                        source,
+                        x,
+                        y,
+                        source_y,
+                        destination_index,
+                        8,
+                        before_write_data,
+                        original_data
+                    );
                     source_bit = source_bit
                         .checked_add(64)
                         .ok_or(MalformedError::IntegerOverflow)?;
@@ -1287,10 +1263,49 @@ impl Bitmap {
                         .ok_or(MalformedError::IntegerOverflow)?;
                 }
                 #[cfg_attr(verus_keep_ghost, verus_spec(
-                    invariant head_bits <= source_bit <= width,
+                    invariant
+                        head_bits <= source_bit <= width,
+                        (source_bit as int - head_bits as int) % 8 == 0,
+                        destination_index as int == destination_row as int + 1
+                            + (source_bit as int - head_bits as int) / 8,
+                        destination_index as int <= (y as int + source_y as int)
+                            * self.stride as int + self.stride as int,
+                        self.width == old(self).width,
+                        self.height == old(self).height,
+                        self.stride == old(self).stride,
+                        self.data@.len() == old(self).data@.len(),
+                        self.data@.len() <= usize::MAX,
+                        source.data@.len() <= usize::MAX,
+                        self.stride as int == (self.width as int + 7) / 8,
+                        source.stride as int == (source.width as int + 7) / 8,
+                        width as nat == crate::spec::bitmap::clipped_width(self.width, source.width, x),
+                        source_y < crate::spec::bitmap::clipped_height(self.height, source.height, y),
+                        crate::spec::bitmap::compose_frame(
+                            original_data, self.data@, self.stride, self.width, self.height,
+                            source.width, source.height, x, y,
+                        ),
+                        source_row as nat + source.stride as nat <= source.data@.len(),
+                        destination_row as int == (y as int + source_y as int)
+                            * self.stride as int + x as int / 8,
+                        (y as int + source_y as int) * self.stride as int
+                            + self.stride as int <= self.data@.len(),
+                        width <= source.width,
+                        x as nat + width as nat <= self.width as nat,
+                        0 < destination_shift < 8,
+                        destination_shift == x % 8,
+                        head_bits as int == if width <= 8 - destination_shift {
+                            width as int
+                        } else { 8 - destination_shift },
                     decreases width - source_bit,
                 ))]
                 while width - source_bit >= 8 {
+                    #[cfg(verus_keep_ghost)]
+                    proof! {
+                        bitmap_shared::aligned_byte_position(x, head_bits, width, source_bit);
+                        bitmap_shared::packed_span_bounds(source.width, source.stride, source_bit, 8);
+                        let destination_bit = (x as int + source_bit as int) as u32;
+                        bitmap_shared::packed_span_bounds(self.width, self.stride, destination_bit, 8);
+                    }
                     let source_byte = source_row
                         .checked_add(
                             usize::try_from(source_bit / 8)
@@ -1303,11 +1318,25 @@ impl Bitmap {
                         .data
                         .get(destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
+                    #[cfg(verus_keep_ghost)]
+                    proof_decl! { let ghost before_write_data = self.data@; }
                     let destination_byte = self
                         .data
                         .get_mut(destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
                     *destination_byte = operator.apply_byte(destination_value, source_value);
+                    #[cfg(verus_keep_ghost)]
+                    production_bitmap_compose_frame!(
+                        self,
+                        source,
+                        x,
+                        y,
+                        source_y,
+                        destination_index,
+                        1,
+                        before_write_data,
+                        original_data
+                    );
                     source_bit = source_bit
                         .checked_add(8)
                         .ok_or(MalformedError::IntegerOverflow)?;
@@ -1317,6 +1346,13 @@ impl Bitmap {
                 }
                 let remaining = width - source_bit;
                 if remaining != 0 {
+                    #[cfg(verus_keep_ghost)]
+                    proof! {
+                        bitmap_shared::aligned_byte_position(x, head_bits, width, source_bit);
+                        bitmap_shared::packed_span_bounds(source.width, source.stride, source_bit, remaining);
+                        let destination_bit = (x as int + source_bit as int) as u32;
+                        bitmap_shared::packed_span_bounds(self.width, self.stride, destination_bit, remaining);
+                    }
                     let source_byte = source_row
                         .checked_add(
                             usize::try_from(source_bit / 8)
@@ -1332,12 +1368,32 @@ impl Bitmap {
                         .ok_or(MalformedError::IntegerOverflow)?;
                     let mask = 0xFF_u8 << (8 - remaining);
                     let combined = operator.apply_byte(destination_value, source_value);
+                    #[cfg(verus_keep_ghost)]
+                    proof_decl! { let ghost before_write_data = self.data@; }
                     let destination_byte = self
                         .data
                         .get_mut(destination_index)
                         .ok_or(MalformedError::IntegerOverflow)?;
                     *destination_byte = (destination_value & !mask) | (combined & mask);
+                    #[cfg(verus_keep_ghost)]
+                    production_bitmap_compose_frame!(
+                        self,
+                        source,
+                        x,
+                        y,
+                        source_y,
+                        destination_index,
+                        1,
+                        before_write_data,
+                        original_data
+                    );
                 }
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(self);
+                crate::views::bitmap_fields(old(self));
+                reveal(crate::spec::bitmap::storage_valid);
             }
         }
         #[cfg(verus_keep_ghost)]
@@ -2430,6 +2486,110 @@ mod tests {
             Err(MalformedError::IntegerOverflow)
         ));
         assert_eq!(bitmap.bytes(), before);
+    }
+
+    #[test]
+    fn completely_clipped_compositions_preserve_every_stored_byte() {
+        for (source_width, source_height) in [(0, 3), (9, 0), (9, 3)] {
+            let source = patterned_bitmap(source_width, source_height, 17);
+            for (width, height) in [(0, 3), (17, 0), (17, 3)] {
+                let original = patterned_bitmap(width, height, 29);
+                for (x, y) in [
+                    (0, 0),
+                    (width, 0),
+                    (0, height),
+                    (u32::MAX, 0),
+                    (0, u32::MAX),
+                    (u32::MAX, u32::MAX),
+                ] {
+                    if source_width != 0 && source_height != 0 && x < width && y < height {
+                        continue;
+                    }
+                    for operator in [
+                        CombinationOperator::Or,
+                        CombinationOperator::And,
+                        CombinationOperator::Xor,
+                        CombinationOperator::Xnor,
+                        CombinationOperator::Replace,
+                    ] {
+                        let mut actual = original.clone();
+                        actual.compose(&source, x, y, operator).unwrap();
+                        assert_eq!(actual, original);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn clipped_composition_word_edges_match_scalar_pixels_and_full_storage() {
+        for width in [7, 8, 9, 63, 64, 65, 127, 128, 129] {
+            let source = patterned_bitmap(width + 1, 4, 17);
+            let original = patterned_bitmap(width, 3, 29);
+            for x in [0, 1, 7, 8, 9, 63, 64, 65, width - 1, width, u32::MAX] {
+                for y in [0, 1, 2, 3, u32::MAX] {
+                    for operator in [
+                        CombinationOperator::Or,
+                        CombinationOperator::And,
+                        CombinationOperator::Xor,
+                        CombinationOperator::Xnor,
+                        CombinationOperator::Replace,
+                    ] {
+                        let mut expected = original.clone();
+                        scalar_compose(&mut expected, &source, x, y, operator).unwrap();
+                        let mut actual = original.clone();
+                        actual.compose(&source, x, y, operator).unwrap();
+                        assert_eq!(
+                            actual, expected,
+                            "width {width}, x {x}, y {y}, {operator:?}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn shifted_reads_accept_exactly_available_valid_bit_spans() {
+        for length in 0..=18 {
+            let bytes: Vec<u8> = (0..length)
+                .map(|index| u8::try_from((index * 37 + 19) % 256).unwrap())
+                .collect();
+            let scalar = |start: usize, shift: u32, count: u32| -> Option<u64> {
+                if shift >= 8 {
+                    return None;
+                }
+                let first = start
+                    .checked_mul(8)?
+                    .checked_add(usize::try_from(shift).unwrap())?;
+                let mut result = 0;
+                for bit in 0..count {
+                    let position = first.checked_add(usize::try_from(bit).unwrap())?;
+                    let byte = bytes.get(position / 8)?;
+                    result = (result << 1) | u64::from((byte >> (7 - position % 8)) & 1);
+                }
+                Some(result)
+            };
+            for start in (0..=length).chain([usize::MAX]) {
+                for shift in 0..=8 {
+                    assert_eq!(
+                        read_shifted_byte(&bytes, start, shift).map(u64::from),
+                        scalar(start, shift, 8)
+                    );
+                    assert_eq!(
+                        read_shifted_chunk(&bytes, start, shift),
+                        scalar(start, shift, 64)
+                    );
+                    for count in 1..=8 {
+                        assert_eq!(
+                            read_shifted_tail(&bytes, start, shift, count)
+                                .map(|value| u64::from(value >> (8 - count))),
+                            scalar(start, shift, count),
+                        );
+                    }
+                }
+            }
+        }
     }
 
     #[test]
