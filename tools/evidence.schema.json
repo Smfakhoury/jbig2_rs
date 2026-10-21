@@ -48,12 +48,12 @@
       "properties": {
         "runtime": {"$ref": "#/$defs/nonempty"},
         "section": {"enum": ["ensures", "requires"]},
-        "tokens": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}}
+        "tokens": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}}
       }
     },
     "traceability": {
       "allOf": [{"$ref": "#/$defs/versioned"}],
-      "required": ["review_policy", "standards", "features", "definitions", "bindings", "requirements"],
+      "required": ["review_policy", "standards", "source_consultations", "features", "definitions", "bindings", "requirements"],
       "properties": {
         "review_policy": {"$ref": "#/$defs/nonempty"},
         "standards": {
@@ -66,14 +66,30 @@
             }
           }
         },
+        "source_consultations": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["standard", "acquisition_url", "package_sha256", "document_sha256", "clause_families"],
+            "properties": {
+              "standard": {"$ref": "#/$defs/nonempty"},
+              "acquisition_url": {"type": "string", "pattern": "^https://www\\.itu\\.int/rec/dologin_pub\\.asp\\?"},
+              "package_sha256": {"$ref": "#/$defs/sha256"},
+              "document_sha256": {"$ref": "#/$defs/sha256"},
+              "clause_families": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}}
+            }
+          }
+        },
         "features": {
           "type": "array", "minItems": 1,
           "items": {
-            "type": "object", "required": ["feature", "support_status", "decomposition"],
+            "type": "object", "required": ["feature", "support_status", "decomposition", "requirement_ids", "remaining_scope"],
             "properties": {
               "feature": {"$ref": "#/$defs/nonempty"},
               "support_status": {"enum": ["required", "unsupported", "deferred", "prohibited"]},
-              "decomposition": {"enum": ["not_started", "partial", "complete", "excluded"]}
+              "decomposition": {"enum": ["not_started", "partial", "complete", "excluded"]},
+              "requirement_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^T88-[A-Z0-9-]+$"}},
+              "remaining_scope": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}}
             }
           }
         },
@@ -99,22 +115,29 @@
           "items": {
             "type": "object",
             "required": ["id", "standard", "clause", "title", "feature", "runtime", "models", "proof_macros", "tests", "strength", "review", "scope_of_formal_result", "assumptions", "gaps", "functional_evidence", "invariant_evidence"],
+            "allOf": [{
+              "if": {"required": ["obligation_kind"], "properties": {"obligation_kind": {"const": "project_profile_policy"}}},
+              "then": {"required": ["policy_row_sha256"]},
+              "else": {"not": {"required": ["policy_row_sha256"]}}
+            }],
             "properties": {
               "id": {"type": "string", "pattern": "^T88-[A-Z0-9-]+$"},
               "standard": {"$ref": "#/$defs/nonempty"},
               "clause": {"$ref": "#/$defs/nonempty"}, "title": {"$ref": "#/$defs/nonempty"},
               "feature": {"$ref": "#/$defs/nonempty"},
+              "obligation_kind": {"enum": ["normative_rule", "project_profile_policy"]},
+              "policy_row_sha256": {"$ref": "#/$defs/sha256"},
               "runtime": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
               "models": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
               "proof_macros": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonempty"}},
-              "tests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/traceability_test"}},
+              "tests": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/traceability_test"}},
               "strength": {"enum": ["functional_contract", "state_preservation", "safety_only", "runtime_divergence"]},
               "review": {"enum": ["provisional", "approved"]},
               "scope_of_formal_result": {"$ref": "#/$defs/nonempty"},
               "assumptions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/nonempty"}},
               "gaps": {"type": "array", "items": {"$ref": "#/$defs/nonempty"}},
-              "functional_evidence": {"type": "array", "items": {"$ref": "#/$defs/traceability_claim"}},
-              "invariant_evidence": {"type": "array", "items": {"$ref": "#/$defs/traceability_claim"}}
+              "functional_evidence": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/traceability_claim"}},
+              "invariant_evidence": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/traceability_claim"}}
             }
           }
         }
