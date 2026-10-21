@@ -2,6 +2,16 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-STRUCTURED-CONTEXT-SEQUENCES",
+      "transformation": "bounded generated white/transition MMR shapes and input-driven context operations with malformed/limit calls and scratch release",
+      "invariant": "known packed pixels including padding, complete fresh/reused output and typed-error parity, recovery after every operation",
+      "tests": [
+        {"target": "fuzz_context", "name": "generated_shapes_match_known_pixels_through_context_reuse"},
+        {"target": "fuzz_context", "name": "every_state_operation_recovers_after_errors_and_scratch_release"},
+        {"target": "fuzz_context", "name": "short_and_oversized_control_programs_remain_bounded"}
+      ]
+    },
+    {
       "id": "META-HEADER-RETENTION-WIDTH-ROUNDTRIP",
       "transformation": "encode generated references across short/long counts, reference-width boundaries and both page field sizes",
       "invariant": "exact reference values, forward wire-order flags, page values, header length and payload boundary",

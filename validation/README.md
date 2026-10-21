@@ -126,7 +126,8 @@ runs all baseline coverage checks without a changed-line comparison.
 
 ## Bounded fuzz campaigns and replay
 
-The Linux runner retains all seven pinned cargo-fuzz targets:
+The Linux runner retains the original seven pinned cargo-fuzz targets and adds
+`document_context_structured`, for eight targets in each complete campaign:
 
 ```text
 python -B tools/run_fuzz.py run --profile smoke \
@@ -191,3 +192,26 @@ the scheduled trigger itself has fired.
 P08 remains incomplete: coverage-driven structured/stateful targets,
 regression-corpus review and periodic minimization are still pending. These
 bounded campaigns do not replace unit tests, proof checking or normative review.
+
+### Structured context sequences
+
+`document_context_structured` interprets two zero-padded four-byte shape
+controls, followed by at most eight opcode/u16 argument triples. Shapes are
+bounded to 128 by 16 pixels and three pages, with white or transition-heavy MMR
+using the existing project-generated benchmark fixture. Up to 256 further
+bytes may be used as arbitrary malformed input. Decoder limits independently
+bound streams, dimensions, pages, segments, symbols, references, memory and work.
+
+Operations exercise fresh/reused standalone and embedded decoding, inspection,
+empty validated globals, reader/sink output, truncation/bit changes, typed width
+rejection, and explicit scratch release. Every operation is followed by a valid
+decode and known packed-pixel checks including padding. Fresh/reused errors are
+compared by typed variant and all associated fields, not formatted strings.
+Nonempty symbol globals and other coding families are not covered by this target.
+
+The same program runs as three ordinary `fuzz_context` tests over all 256 width
+controls, every opcode, short/long control inputs and recovery paths. Generated
+seeds execute the program before being written. Harness source identities and
+trusted cache keys include both the scenario source and shared MMR generator.
+The new fixture hash selects a separate corpus namespace; existing cache entries
+are not deleted and PR cache isolation is unchanged.

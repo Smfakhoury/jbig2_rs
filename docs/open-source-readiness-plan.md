@@ -41,6 +41,10 @@ pending. This is not completion of P08.
 Successful targets now require unambiguous positive final execution counters;
 single-input replay requires exactly one execution. Per-target counts and
 their exact total are reported, while missing/invalid evidence fails closed.
+An eighth structured context target reuses generated MMR shapes and ordinary
+regressions to check full packed pixels, fresh/reused results and typed errors,
+recovery after malformed/limit calls, globals inspection and scratch release.
+It does not close structured symbol/text, refinement or halftone target gaps.
 The initial P09 lane adds eight correctness-gated generated base/head cases
 with paired raw median/p95 samples and explicit spread classifications. Hosted
 informational runs and real slowdown/output-corruption controls have been

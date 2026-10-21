@@ -93,6 +93,31 @@ class RuntimeCoverageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "outside runtime"):
             self.report()
 
+    def test_shared_generated_fixture_is_excluded_and_fingerprinted(self):
+        before = fingerprint_test_sources(self.root)
+        fixture = self.root / "benchmarks/generated.rs"
+        fixture.parent.mkdir()
+        fixture.write_text("pub fn generate() {}\n", encoding="utf-8")
+        self.document["data"][0]["functions"].append({
+            "name": "generated_fixture", "filenames": [str(fixture)],
+            "regions": [[1, 1, 1, 21, 999, 0, 0, 0]], "branches": [],
+        })
+        report = self.report()
+        self.assertEqual(report["totals"]["lines"], ratio(6, 7))
+        self.assertIn("benchmarks/generated.rs", report["excluded_integration_test_sources"])
+        added = fingerprint_test_sources(self.root)
+        self.assertNotEqual(before, added)
+        fixture.write_text("pub fn changed() {}\n", encoding="utf-8")
+        self.assertNotEqual(added, fingerprint_test_sources(self.root))
+
+    def test_other_benchmark_sources_are_not_test_fixture_exclusions(self):
+        self.document["data"][0]["functions"].append({
+            "name": "unknown_benchmark", "filenames": [str(self.root / "benchmarks/other.rs")],
+            "regions": [[1, 1, 1, 18, 999, 0, 0, 0]], "branches": [],
+        })
+        with self.assertRaisesRegex(ValueError, "outside runtime"):
+            self.report()
+
     def test_test_driver_fingerprint_detects_edits_outside_runtime_source(self):
         before = fingerprint_test_sources(self.root)
         directory = self.root / "tests"

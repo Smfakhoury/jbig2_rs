@@ -60,5 +60,12 @@ test = false
 doc = false
 bench = false
 
+[[bin]]
+name = "document_context_structured"
+path = "fuzz_targets/document_context_structured.rs"
+test = false
+doc = false
+bench = false
+
 [workspace]
 members = ["."]
