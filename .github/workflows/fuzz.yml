@@ -48,6 +48,9 @@ jobs:
     needs: controls
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    concurrency:
+      group: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && github.event.repository.default_branch == 'main' && format('fuzz-generated-v2-trusted-{0}-main', github.repository) || format('fuzz-generated-v2-untrusted-{0}-{1}-{2}', github.repository, github.run_id, github.run_attempt) }}
+      cancel-in-progress: false
     env:
       PROFILE: ${{ github.event_name == 'schedule' && 'extended' || inputs.profile || 'smoke' }}
       TRUSTED_CORPUS: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && github.event.repository.default_branch == 'main' }}

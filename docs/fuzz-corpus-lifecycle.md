@@ -156,3 +156,31 @@ entire existing source identity, including decoder/harness/fixture/manifests,
 toolchain configuration, runner, maintenance, control-copy script and workflow.
 There is no fallback to a different source identity or the former cache scheme.
 Artifacts retain reports, corpora and diagnostics on success or failure.
+
+### Serialize trusted cache producers
+
+The `fuzz` job uses a repository/main-specific concurrency group for exactly the
+same trusted predicate as the cache steps. The group is independent of source
+SHA, run ID, attempt and profile: scheduled and manual main producers cannot
+restore the same prior cache concurrently and later overwrite one another's
+feedback. The lock covers checkout through cache save and artifact upload, not
+only minimization. `cancel-in-progress: false` protects the running producer.
+The controls job remains independent.
+
+Every untrusted run uses a distinct repository/run-ID/attempt fallback group.
+PRs, pushes and nondefault-branch dispatches cannot join, queue behind, or cancel
+the trusted group, including when rerun. The job expression uses only `github`
+context, not unavailable job-concurrency `env` or `steps` context. The workflow
+policy checker rejects changed trust/group/cancellation behavior or moving the
+lock outside the producer job.
+
+GitHub's default concurrency queue is bounded (one running and one pending job
+per group): an additional producer may replace an already pending producer.
+Canceled pending jobs have not restored or saved a corpus. Ordering follows
+when jobs start waiting, not workflow dispatch order; independent controls can
+finish in either order. See [GitHub's concurrency
+documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+Parent-owned paired same-SHA trusted runs must still verify actual queued/running
+transitions and all nine restored/promoted inventories after merge; local policy
+tests are not hosted cache-lineage evidence. The existing execution budgets are
+unchanged.
