@@ -68,9 +68,17 @@ strength/review classification changes.
 
 Merging the later operator-bit proofs retains both sets of bitmap models,
 helpers and production contracts. The combined source verifies 1164 obligations;
-all twelve mandatory semantic checkers cover 50 contrasts. Bitmap source
+all mandatory semantic checkers retain their complete configured contrasts. Bitmap source
 bindings are refreshed for this combined source without relabeling dispositions
 or upgrading normative evidence.
+
+P05 CI scheduling separates whole-crate verification from an independently
+bounded job per semantic group (at most four concurrent groups). The stable
+`verify` collector fails unless whole verification and every current group
+succeed with matching source, tool and run/attempt identities. The local
+default remains all groups with two workers. This changes orchestration only:
+whole-crate obligations, native behavior, project assumptions, the remaining
+MMR capacity gap and provisional normative classifications are not upgraded.
 
 Source-offset region composition now also verifies the executing chunked
 dispatcher rather than a scalar proof substitute. Its existing storage,

@@ -87,7 +87,7 @@ unapproved entries; invoking it without a package list is an error.
 
 ## Workflow action policy
 
-All 26 action references across the five workflows use full immutable commit
+All 38 action references across the five workflows use full immutable commit
 SHAs, with comments retaining their upstream moving-ref names. Revisions were
 resolved from the existing official action repositories; a pinned revision is
 not an independent approval of upstream code.
@@ -251,15 +251,51 @@ edges, clipping, empty dimensions and maximal origins; bit-loop oracles check
 complete shifted byte/word/tail availability. Coverage exclusions and the
 reviewed floor are unchanged; the separate P06 family work owns floor updates.
 
-`tools/run_semantic_proofs.py` runs all twelve isolated semantic checkers
-with at most two concurrent children. Each checker retains its pinned verifier,
-selected-target checks, native compilation and strong/weaker solver limits.
-Reports and logs keep their existing names; stale reports are removed before
-launch, and missing/malformed/duplicate/failed evidence fails the aggregate.
-The 50 required contrasts include the six black-span and four operator-bit
-contrasts. Whole-crate verification, the 20-minute job budget, action pins and
-read-only permissions are unchanged. The aggregate report is additional
-orchestration evidence, not a substitute for individual reports.
+`tools/run_semantic_proofs.py` still runs all configured isolated semantic
+checkers locally with at most two concurrent children by default. `--only ID`
+runs one complete known group with one child; unknown IDs fail. Each checker
+retains its pinned verifier, selected-target checks, native compilation and
+strong/weaker solver limits. Group IDs and required contrast counts come
+solely from `CHECKS`; future groups need no workflow or collector list update.
+
+P05 CI uses three job definitions, each capped at 20 minutes:
+
+* `whole` verifies and compiles the whole crate, checks the exact production
+  inventory diff and traceability, seals its outputs, and emits `--matrix`
+  directly from the complete current `CHECKS` manifest.
+* `semantic` needs `whole` and runs `--only` for each dynamically selected group
+  on independent runners, with `fail-fast: false` and `max-parallel: 4`.
+  Its Python/Rust/Verus pins and archive checksum match `whole` exactly.
+* The stable required job `verify` runs with `if: always()` and needs both
+  upstream jobs. A full-SHA-pinned official `actions/download-artifact`
+  downloads actual artifacts from the current run/attempt without merging
+  their directories. No cross-run token or repository selector is supplied.
+  `--aggregate` requires both job results to be `success`, the exact complete
+  set of groups and case counts, passing native/strong/weaker/baseline results,
+  exact case/target identities, report/log/checker hashes, current complete
+  source/tool manifests, whole success/native compilation, exact inventory
+  bytes and verifier-backed traceability. Missing, stale, duplicate, skipped,
+  cancelled, malformed or failed evidence fails closed.
+
+Partial artifact names include run ID, run attempt and group (`whole` is
+reserved). Only the collector uploads `verus-bootstrap-log`, once; its
+canonical layout retains `verus-production.json`,
+`production-proof-coverage-ci.json` and `target/traceability/` including every
+individual report/log and `semantic-proof-summary.json`. Every job uploads
+available diagnostics with `always()`; partials remain available on failure.
+Rerun the **entire workflow**, not only failed jobs: a new attempt must produce
+its own complete evidence set. Local `--aggregate` likewise requires genuine
+whole and all-group evidence, never a successful subset. Schema-v1 summaries
+predating source/run bindings are intentionally incompatible.
+
+The official download-action v7.0.0 tag resolves to
+`37930b1c2abaa49bbe596cd826c3c89aef350131` (official GitHub tag metadata).
+The workflow-policy tests protect the stable collector, dynamic matrix,
+bounded parallelism, matching tool setup and immutable artifact names.
+No branch settings, runtime/proof source, proof dispositions, trust assumptions,
+coverage floors or owner-controlled P10 release settings change. The aggregate
+is orchestration evidence, not a substitute for individual proofs or a timing
+claim.
 
 `validation/differential/run_oracles.py` runs pinned external executables as
 black-box processes. It records only versions, binary and normalized

@@ -179,9 +179,37 @@ class WorkflowPolicyTests(unittest.TestCase):
             ("fuzz.yml", "controls"): toolchains["fuzz_rust_toolchain"],
             ("fuzz.yml", "fuzz"): toolchains["fuzz_rust_toolchain"],
             ("performance.yml", "performance"): toolchains["cargo_rust_toolchain"],
-            ("verus.yml", "verify"): toolchains["verus"]["rust_toolchain"],
+            ("verus.yml", "whole"): toolchains["verus"]["rust_toolchain"],
+            ("verus.yml", "semantic"): toolchains["verus"]["rust_toolchain"],
         })
         check_updates(load_workflow((root / ".github/dependabot.yml").read_text()))
+
+    def test_verus_stable_collector_and_bounded_dynamic_shards_are_policy_protected(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        self.assertTrue(check_workflow(actual, "verus.yml"))
+        mutations = [
+            lambda j: j["verify"].pop("if"),
+            lambda j: j["verify"].update(needs=["semantic"]),
+            lambda j: j["verify"].update(name="renamed"),
+            lambda j: j["whole"].update(**{"timeout-minutes": "21"}),
+            lambda j: j["semantic"]["strategy"].update(**{"fail-fast": "true"}),
+            lambda j: j["semantic"]["strategy"].update(**{"max-parallel": "8"}),
+            lambda j: j["semantic"]["strategy"].update(matrix={"group": ["reset"]}),
+            lambda j: j["whole"].pop("outputs"),
+            lambda j: j["semantic"]["steps"][3]["with"].update(toolchain="1.89.0"),
+            lambda j: j["whole"]["steps"][7].update(run="echo skipped"),
+            lambda j: j["verify"]["steps"][3]["with"].update(**{"merge-multiple": "true"}),
+            lambda j: j["verify"]["steps"][3]["with"].update(**{"run-id": "previous"}),
+            lambda j: j["verify"]["steps"][4].update(run="true"),
+            lambda j: j["verify"]["steps"][4].update(**{"if": "false"}),
+            lambda j: j["whole"]["steps"][-1]["with"].update(name="verus-bootstrap-log"),
+            lambda j: j["semantic"]["steps"][-1].pop("if"),
+        ]
+        for mutate in mutations:
+            document = copy.deepcopy(actual)
+            mutate(document["jobs"])
+            with self.subTest(mutate=mutate), self.assertRaises(ValueError):
+                check_workflow(document, "verus.yml")
 
     def test_cli_failure_removes_prior_success_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:

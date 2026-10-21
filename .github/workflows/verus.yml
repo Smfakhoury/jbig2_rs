@@ -8,9 +8,11 @@ permissions:
   contents: read
 
 jobs:
-  verify:
+  whole:
     timeout-minutes: 20
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.groups.outputs.matrix }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
@@ -60,16 +62,93 @@ jobs:
           python tools/check_traceability.py \
             --verus-json verus-production.json \
             --output target/traceability/verifier-report.json
-      - name: Check all semantic proof contrasts with two isolated workers
+      - name: Stage whole-crate outputs including failed diagnostics
+        if: always()
+        run: |
+          mkdir -p target/semantic-ci/whole
+          for path in verus-production.json production-proof-coverage-ci.json target/traceability target/verus-production; do
+            if [ -e "$path" ]; then cp -r --parents "$path" target/semantic-ci/whole/; fi
+          done
+      - name: Seal whole-crate evidence and enumerate every semantic group
+        id: groups
+        run: |
+          python -B tools/run_semantic_proofs.py --seal-whole target/semantic-ci/whole
+          echo "matrix=$(python -B tools/run_semantic_proofs.py --matrix)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-whole
+          path: target/semantic-ci/whole/
+
+  semantic:
+    needs: whole
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJSON(needs.whole.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install audit dependencies
+        run: python -m pip install -r tools/requirements.txt
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.98.1
+      - run: python tools/verify_provenance.py
+      - run: python tools/audit_runtime.py
+      - name: Download pinned Verus
+        run: |
+          curl --fail --location --output verus.zip \
+            https://github.com/verus-lang/verus/releases/download/release/0.2026.10.04.426d8b0/verus-0.2026.10.04.426d8b0-x86-linux.zip
+          echo "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0  verus.zip" |
+            sha256sum --check
+          unzip -q verus.zip
+      - name: Check exactly one complete semantic group
+        env:
+          SEMANTIC_GROUP: ${{ matrix.group }}
         run: >-
           python -B tools/run_semantic_proofs.py
+          --only "$SEMANTIC_GROUP"
           --verus-executable verus-x86-linux/verus
-          --output-dir target/traceability
+          --output-dir "target/semantic-ci/group/target/traceability"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.group }}
+          path: target/semantic-ci/group/
+
+  verify:
+    if: always()
+    needs: [whole, semantic]
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+      - name: Install audit dependencies
+        run: python -m pip install -r tools/requirements.txt
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-*
+          path: target/semantic-inputs
+          merge-multiple: false
+      - name: Require successful jobs and exact complete same-run evidence
+        env:
+          WHOLE_RESULT: ${{ needs.whole.result }}
+          SEMANTIC_RESULT: ${{ needs.semantic.result }}
+        run: >-
+          python -B tools/run_semantic_proofs.py
+          --aggregate target/semantic-inputs
+          --whole-result "$WHOLE_RESULT" --semantic-result "$SEMANTIC_RESULT"
+          --output-dir target/semantic-canonical
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: verus-bootstrap-log
-          path: |
-            verus-production.json
-            production-proof-coverage-ci.json
-            target/traceability/
+          path: target/semantic-canonical/
