@@ -1927,6 +1927,8 @@ impl Bitmap {
             final(self).height == old(self).height,
             final(self).stride == old(self).stride,
             final(self).data@.len() == old(self).data@.len(),
+            height == 0 ==> final(self).data@ == old(self).data@,
+            height == 0 ==> out.is_ok(),
     ))]
     pub(crate) fn compose_row_batch_chunked(
         &mut self,
@@ -1943,6 +1945,7 @@ impl Bitmap {
                 self.height == old(self).height,
                 self.stride == old(self).stride,
                 self.data@.len() == old(self).data@.len(),
+                height == 0 ==> self.data@ == old(self).data@,
             decreases height - row,
         ))]
         for row in 0..height {
@@ -1962,6 +1965,7 @@ impl Bitmap {
                     self.height == old(self).height,
                     self.stride == old(self).stride,
                     self.data@.len() == old(self).data@.len(),
+                    height > 0,
                 decreases blits@.len() - blit_index,
             ))]
             while blit_index < blits.len() {
