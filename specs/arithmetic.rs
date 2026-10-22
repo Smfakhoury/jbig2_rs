@@ -342,6 +342,36 @@ pub(crate) open spec fn error_for_signal(
     }
 }
 
+pub(crate) open spec fn integer_history_step(previous: u16, decision: u8) -> u16
+    recommends previous <= 511, decision <= 1,
+{
+    let shifted = (previous as nat * 2 + decision as nat) as u16;
+    if previous < 256 { shifted } else { (shifted & 511) | 256 }
+}
+
+pub(crate) open spec fn context_after_decision(
+    decoder: &super::ArithmeticDecoder, context: super::ArithmeticContext,
+) -> super::ArithmeticContext
+    recommends decoder_valid(decoder), context_valid(context),
+{
+    super::ArithmeticContext {
+        state_index: entry_index(decoder.interval, decoder.code, context.state_index),
+        mps: entry_mps(decoder.interval, decoder.code, context.state_index, context.mps),
+    }
+}
+
+pub(crate) open spec fn integer_bit_state(
+    decoder: &super::ArithmeticDecoder,
+    contexts: Seq<super::ArithmeticContext>,
+    previous: u16,
+) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
+    recommends decoder_valid(decoder), previous <= 511,
+        contexts.len() == 512,
+        forall|index: int| 0 <= index < contexts.len() ==> context_valid(contexts[index]),
+{
+    decision_state(decoder, contexts[(previous & 511) as int])
+}
+
 pub(crate) open spec fn decoder_marker(
     decoder: &super::ArithmeticDecoder,
 ) -> Option<super::ArithmeticMarker> {
