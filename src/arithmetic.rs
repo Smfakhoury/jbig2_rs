@@ -1154,6 +1154,14 @@ impl<'a> ArithmeticDecoder<'a> {
                 Ok(()) => arithmetic_spec::decoder_valid(final(self)),
                 Err(_) => true,
             },
+            final(self).bytes@ == old(self).bytes@,
+            out.is_ok() == (arithmetic_spec::normalized_state(old(self)).0 == 0),
+            final(self).interval == arithmetic_spec::normalized_state(old(self)).1,
+            final(self).byte_position == arithmetic_spec::normalized_state(old(self)).2,
+            final(self).current_byte == arithmetic_spec::normalized_state(old(self)).3,
+            final(self).code == arithmetic_spec::normalized_state(old(self)).4,
+            final(self).bit_count == arithmetic_spec::normalized_state(old(self)).5,
+            final(self).marker == arithmetic_spec::normalized_state(old(self)).6,
     ))]
     fn renormalize(&mut self) -> Result<(), ArithmeticError> {
         let signal = self.renormalize_signal();
@@ -1171,6 +1179,14 @@ impl<'a> ArithmeticDecoder<'a> {
             out == 0 || out == RASTER_SIGNAL_EOF || out == RASTER_SIGNAL_OVERFLOW,
             arithmetic_spec::decoder_state_valid(final(self)),
             out == 0 ==> arithmetic_spec::decoder_valid(final(self)),
+            final(self).bytes@ == old(self).bytes@,
+            out == arithmetic_spec::normalized_state(old(self)).0,
+            final(self).interval == arithmetic_spec::normalized_state(old(self)).1,
+            final(self).byte_position == arithmetic_spec::normalized_state(old(self)).2,
+            final(self).current_byte == arithmetic_spec::normalized_state(old(self)).3,
+            final(self).code == arithmetic_spec::normalized_state(old(self)).4,
+            final(self).bit_count == arithmetic_spec::normalized_state(old(self)).5,
+            final(self).marker == arithmetic_spec::normalized_state(old(self)).6,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline]
@@ -1178,7 +1194,13 @@ impl<'a> ArithmeticDecoder<'a> {
         #[cfg(verus_keep_ghost)]
         production_reveal_decoder_valid!();
         #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant arithmetic_spec::decoder_state_valid(self),
+            invariant
+                arithmetic_spec::decoder_state_valid(self),
+                arithmetic_spec::decoder_state_valid(old(self)),
+                self.bytes@ == old(self).bytes@,
+                self.bytes == old(self).bytes,
+                arithmetic_spec::normalized_state(old(self))
+                    == arithmetic_spec::normalized_state(self),
             decreases arithmetic_spec::renormalization_steps(
                 self.interval as nat,
             ),
@@ -1187,6 +1209,7 @@ impl<'a> ArithmeticDecoder<'a> {
             #[cfg(verus_keep_ghost)]
             proof_decl! {
                 let ghost previous_interval = self.interval;
+                let ghost before = *self;
             }
             if self.bit_count == 0 {
                 let signal = self.byte_in_signal();
@@ -1214,6 +1237,11 @@ impl<'a> ArithmeticDecoder<'a> {
             self.bit_count -= 1;
             #[cfg(verus_keep_ghost)]
             proof! {
+                reveal_with_fuel(arithmetic_spec::normalized_state, 1);
+                assert(
+                    arithmetic_spec::normalized_state(&before)
+                        == arithmetic_spec::normalized_state(self)
+                );
                 assert(self.interval == previous_interval * 2);
                 reveal(arithmetic_spec::renormalization_steps);
                 assert(
@@ -1236,6 +1264,7 @@ impl<'a> ArithmeticDecoder<'a> {
             final(self).interval == old(self).interval,
             final(self).byte_position == old(self).byte_position
                 || final(self).byte_position == old(self).byte_position + 1,
+            final(self).bytes == old(self).bytes,
             out.is_ok() == (arithmetic_spec::refill_step(old(self)).0 == 0),
             final(self).byte_position == arithmetic_spec::refill_step(old(self)).1,
             final(self).current_byte == arithmetic_spec::refill_step(old(self)).2,
@@ -1269,6 +1298,7 @@ impl<'a> ArithmeticDecoder<'a> {
             final(self).interval == old(self).interval,
             final(self).byte_position == old(self).byte_position
                 || final(self).byte_position == old(self).byte_position + 1,
+            final(self).bytes == old(self).bytes,
             out == arithmetic_spec::refill_step(old(self)).0,
             final(self).byte_position == arithmetic_spec::refill_step(old(self)).1,
             final(self).current_byte == arithmetic_spec::refill_step(old(self)).2,
@@ -2148,6 +2178,167 @@ mod tests {
         assert_eq!(decoder.interval, 0x8000);
         assert_eq!(decoder.code, 12);
         assert_eq!(decoder.bit_count, 1);
+    }
+
+    fn normalization_numeric_oracle<'a>(
+        initial: &ArithmeticDecoder<'a>,
+    ) -> (u8, ArithmeticDecoder<'a>) {
+        let mut expected = refill_fixture(
+            initial.bytes,
+            initial.byte_position,
+            initial.code,
+            initial.bit_count,
+            initial.marker,
+        );
+        expected.interval = initial.interval;
+        let shifts = initial.interval.leading_zeros().saturating_sub(16);
+        for shift in 0..shifts {
+            if expected.bit_count == 0 {
+                let Some(&next) = expected.bytes.get(expected.byte_position + 1) else {
+                    return (RASTER_SIGNAL_EOF, expected);
+                };
+                let marker = expected.current_byte == 255 && next >= 144;
+                let stuffed = expected.current_byte == 255 && !marker;
+                let increment = if marker {
+                    65_280
+                } else {
+                    u64::from(next) * if stuffed { 512 } else { 256 }
+                };
+                if !marker {
+                    expected.byte_position += 1;
+                    expected.current_byte = next;
+                }
+                let sum = u64::from(expected.code) + increment;
+                if sum > u64::from(u32::MAX) {
+                    return (RASTER_SIGNAL_OVERFLOW, expected);
+                }
+                expected.code = u32::try_from(sum).unwrap();
+                expected.bit_count = if stuffed { 7 } else { 8 };
+                if marker {
+                    expected.marker = Some(ArithmeticMarker {
+                        offset: expected.byte_position,
+                        code: next,
+                    });
+                }
+            }
+            expected.interval = initial.interval << (shift + 1);
+            let product = u64::from(expected.code) * 2;
+            if product > u64::from(u32::MAX) {
+                return (RASTER_SIGNAL_OVERFLOW, expected);
+            }
+            expected.code = u32::try_from(product).unwrap();
+            expected.bit_count -= 1;
+        }
+        (0, expected)
+    }
+
+    fn assert_normalization_matches_numeric_oracle(initial: ArithmeticDecoder<'_>) {
+        let (signal, expected) = normalization_numeric_oracle(&initial);
+        let mut actual = refill_fixture(
+            initial.bytes,
+            initial.byte_position,
+            initial.code,
+            initial.bit_count,
+            initial.marker,
+        );
+        actual.interval = initial.interval;
+        assert_eq!(actual.renormalize_signal(), signal);
+        assert_decoder_state_eq(&actual, &expected);
+        assert!(std::ptr::eq(actual.bytes.as_ptr(), initial.bytes.as_ptr()));
+
+        let mut checked = initial;
+        match (signal, checked.renormalize()) {
+            (0, Ok(()))
+            | (
+                RASTER_SIGNAL_OVERFLOW,
+                Err(ArithmeticError::Malformed(MalformedError::IntegerOverflow)),
+            ) => {}
+            (
+                RASTER_SIGNAL_EOF,
+                Err(ArithmeticError::Malformed(MalformedError::UnexpectedEof {
+                    offset,
+                    needed,
+                    remaining,
+                })),
+            ) => {
+                assert_eq!(offset, u64::try_from(expected.byte_position + 1).unwrap());
+                assert_eq!((needed, remaining), (1, 0));
+            }
+            (_, result) => panic!("wrong normalization result for signal {signal}: {result:?}"),
+        }
+        assert_decoder_state_eq(&checked, &expected);
+        assert!(std::ptr::eq(
+            checked.bytes.as_ptr(),
+            expected.bytes.as_ptr()
+        ));
+    }
+
+    #[test]
+    fn normalization_no_refill_matches_closed_form_and_exact_shift_boundaries() {
+        let bytes = [0xff, 0xac];
+        let marker = Some(ArithmeticMarker {
+            offset: 0,
+            code: 0xac,
+        });
+        for interval in 128_u32..=0xffff {
+            let shifts = interval.leading_zeros().saturating_sub(16);
+            let available = u8::try_from(shifts).unwrap();
+            let maximum = u32::MAX >> shifts;
+            for bit_count in [available, 8] {
+                for code in [0, 1, maximum, maximum.saturating_add(1), u32::MAX] {
+                    let mut initial = refill_fixture(&bytes, 0, code, bit_count, marker);
+                    initial.interval = interval;
+                    if code <= maximum {
+                        let mut actual = refill_fixture(&bytes, 0, code, bit_count, marker);
+                        actual.interval = interval;
+                        actual.renormalize().unwrap();
+                        assert_eq!(actual.interval, interval << shifts);
+                        assert_eq!(actual.code, code << shifts);
+                        assert_eq!(actual.bit_count, bit_count - available);
+                        assert_eq!(actual.byte_position, 0);
+                        assert_eq!(actual.current_byte, 0xff);
+                        assert_eq!(actual.marker, marker);
+                    }
+                    assert_normalization_matches_numeric_oracle(initial);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle() {
+        for first in 0_u8..=u8::MAX {
+            for next in 0_u8..=u8::MAX {
+                let bytes = [first, next, 0x55];
+                let marker = (first == 255 && next >= 144).then_some(ArithmeticMarker {
+                    offset: 0,
+                    code: next,
+                });
+                for interval in [1, 255, 0x4000, 0x7fff, MIN_INTERVAL] {
+                    for bit_count in [0, 1, 8] {
+                        for code in [0, u32::MAX / 2, u32::MAX] {
+                            let mut initial = refill_fixture(&bytes, 0, code, bit_count, marker);
+                            initial.interval = interval;
+                            assert_normalization_matches_numeric_oracle(initial);
+                        }
+                    }
+                }
+            }
+        }
+        for bytes in [&[0_u8][..], &[0xff][..], &[0, 1][..], &[0xff, 0x8f][..]] {
+            for position in 0..bytes.len() {
+                for interval in [1, 0x4000, MIN_INTERVAL] {
+                    for bit_count in [0, 1, 8] {
+                        for code in [0, u32::MAX / 2, u32::MAX] {
+                            let mut initial =
+                                refill_fixture(bytes, position, code, bit_count, None);
+                            initial.interval = interval;
+                            assert_normalization_matches_numeric_oracle(initial);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     #[test]

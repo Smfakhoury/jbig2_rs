@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1170 obligations with zero errors and zero native
+Pinned Verus verifies 1171 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The fifteen logical semantic groups remain complete: four deterministic
+The sixteen logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all fifteen independently
-hashed report/log pairs and all 66 actual compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all sixteen independently
+hashed report/log pairs and all 72 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,24 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+The normalization follow-up specifies the exact result signal/acceptance and
+every interval/input-position/current-byte/code/count/marker field, including
+EOF, refill overflow and interval-before-code-overflow side effects. It
+preserves the input reference and bytes without strengthening caller
+preconditions. A recursive project model composes the existing refill model
+with native doubling/counter semantics; the loop keeps its existing decreasing
+normalization measure. All 17 native token streams and all 656 production
+preconditions match merged main.
+
+Closed-form shift-count and wide-arithmetic numeric tests cover every byte
+pair, normalized no-op inputs, real markers, stuffing, EOF and partial
+overflow through both helpers. Six actual native-compiling mutants violate
+individual output relations and verify under controls that omit only affected
+postconditions while retaining input/state/loop guarantees. These are project
+helper results, not normative register interpretation or a full entropy-stream
+theorem. Six selected rows have functional evidence but all 249 records remain
+provisional; the capacity-accounting divergence remains unchanged.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable

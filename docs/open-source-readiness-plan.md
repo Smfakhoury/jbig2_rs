@@ -11,7 +11,7 @@ support without changing their logical module ownership; traceability binds
 the full literal-include closure. An auditor index records notation bridges
 and independent table-review obligations, and MMR membership predicates no
 longer call themselves normative. Cargo verification and compilation prove
-1170 project obligations with zero errors; this does not close provisional
+1171 project obligations with zero errors; this does not close provisional
 normative review or the upstream capacity-getter prerequisite. All native
 source token streams match the owner-merged main revision `64465a7`.
 The explicit verifier-manifest argument is a deliberate packaging boundary;
@@ -61,9 +61,16 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 60
-functional, 163 state-preservation and 26 safety-only records; all 249 remain
+scalar proof substitute is removed. The current selected ledger has 66
+functional, 157 state-preservation and 26 safety-only records; all 249 remain
 provisional.
+The exact normalization follow-up raises the functional total from 60 to 66:
+one low-input register row and five selected E.3.3 rows now reference complete
+project output-state contracts, including refill and partial error ordering.
+These functional counts are not normative approvals. Existing caller
+preconditions and all native executing tokens
+are unchanged; independent register/stream interpretation and complete
+arithmetic conformance remain open.
 Prefix copying now shares the verified packed-byte implementation; successful
 prefix/suffix bytes and unchanged error state are explicit contracts. Blank
 zero-storage and exact height-padding bytes are also proved. Six compiled

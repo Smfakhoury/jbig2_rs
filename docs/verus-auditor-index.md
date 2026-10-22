@@ -48,6 +48,7 @@ Consult each requirement's exact locator in the ledger before judging fidelity.
 | E.3.4 / Figure E.19 BYTEIN branches | `refill_step` tuple order is `(signal, position, current byte, code, count, marker)`; `byte_in_signal` and `byte_in` expose exact project-step relations | Checked byte positioning, marker/EOF classification and partial overflow state are specified. Review source register/marker meaning, branch alignment and callers independently |
 | E.3.2 / Figures E.16–E.17 decision/context exchange; E.2.5 / Table E.1 estimator fields | `entry_decision`, `entry_index`, `entry_mps` read runtime `QE_STATES`; `index` selects a row and `mps` is the context sense. Compare `Qe` → `qe`, `NMPS` → `next_mps`, `NLPS` → `next_lps`, `SWITCH` → `switch_mps` | [`entry_model_equations`](../proofs/model_support/arithmetic.rs) exposes closed-model equations to the production decode proof. It proves consistency with implementation data, **not** an independent Table E.1 translation; exact renormalized registers and caller composition remain separate |
 | E.3.3 / Figure E.18 renormalization | `renormalization_steps` is a decreasing measure over `interval` | Termination support, not the complete register/byte-consumption recurrence or an end-to-end runtime bound |
+| E.3.3 normalization output recurrence | `normalized_state` returns `(signal, interval, position, current byte, code, count, marker)`; it composes the project refill model with mathematical doubling and exact partial-error ordering | Both production helpers expose all output fields and preserved input. Numeric oracles and six compiling output-relation controls supplement the proof; normative register/pointer interpretation and caller composition remain unapproved |
 | T.6 2.2.3 / Table 1 mode lookup | [`mode_code_in_implementation_table`](../specs/mmr.rs) is membership in runtime `MODE_CODES`; successful `decode_mode` has a table witness and consumed length | Not an independent normative table proof or a proof that consumed input bits equal the returned key |
 | T.6 2.2.4 / Tables 2–3 run lookup | `run_code_in_implementation_tables` selects the runtime white/black terminating/make-up arrays and common make-up array; `find_run_code` relates a supplied `(bits, length)` key to a returned entry | Membership and key matching, not independent standard-table correctness or complete run accumulation/raster semantics |
 | T.6 framing and T.88 6.2.6 omission context | MMR `exact_eofb` relates successful required framing to local `EOFB` | Constant/model equality does not independently review standard framing, padding applicability or caller omission policy |
@@ -65,7 +66,7 @@ implementation data and synthetic semantic mutants are not normative oracles.
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  15-group/66-contrast baseline is neither added normative coverage nor a fresh
+  16-group/72-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks

@@ -932,12 +932,23 @@ class TraceabilityTests(unittest.TestCase):
                                  for group, suffixes in groups.items() for suffix in suffixes}
         self.assertEqual(set(rows), original | added)
         self.assertEqual(len(added), 138)
+        functional = {
+            "REGISTER-LOW-INPUT",
+            *(f"RENORM-{suffix}" for suffix in groups["RENORM"]),
+        }
         for name in added:
             with self.subTest(requirement=name):
                 row = rows[name]
                 self.assertEqual(row["review"], "provisional")
-                self.assertEqual(row["strength"], "state_preservation")
-                self.assertEqual(row["functional_evidence"], [])
+                self.assertEqual(
+                    row["strength"],
+                    "functional_contract" if name in functional else "state_preservation",
+                )
+                if name in functional:
+                    self.assertTrue(row["functional_evidence"])
+                    self.assertIn("arithmetic-normalized-state", row["models"])
+                else:
+                    self.assertEqual(row["functional_evidence"], [])
                 self.assertTrue(row["invariant_evidence"])
                 self.assertTrue(row["gaps"])
                 self.assertEqual(row["standard"], "ITU-T T.88 (08/2018)")
