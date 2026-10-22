@@ -628,17 +628,19 @@ impl<'a> ArithmeticDecoder<'a> {
         ensures
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
+            final(self).bytes@ == old(self).bytes@,
+            final(self).bytes == old(self).bytes,
+            final(context).state_index == arithmetic_spec::entry_index(
+                old(self).interval, old(self).code, old(context).state_index,
+            ),
+            final(context).mps == arithmetic_spec::entry_mps(
+                old(self).interval, old(self).code, old(context).state_index, old(context).mps,
+            ),
             match out {
                 Ok(decision) =>
                     decision <= 1
                     && arithmetic_spec::decoder_valid(final(self))
                     && decision == arithmetic_spec::entry_decision(
-                        old(self).interval, old(self).code, old(context).state_index, old(context).mps,
-                    )
-                    && final(context).state_index == arithmetic_spec::entry_index(
-                        old(self).interval, old(self).code, old(context).state_index,
-                    )
-                    && final(context).mps == arithmetic_spec::entry_mps(
                         old(self).interval, old(self).code, old(context).state_index, old(context).mps,
                     ),
                 Err(_) => true,
@@ -666,14 +668,16 @@ impl<'a> ArithmeticDecoder<'a> {
             out <= RASTER_SIGNAL_OVERFLOW,
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
+            final(self).bytes@ == old(self).bytes@,
+            final(self).bytes == old(self).bytes,
             out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
             out <= 1 ==> out == arithmetic_spec::entry_decision(
                 old(self).interval, old(self).code, old(context).state_index, old(context).mps,
             ),
-            out <= 1 ==> final(context).state_index == arithmetic_spec::entry_index(
+            final(context).state_index == arithmetic_spec::entry_index(
                 old(self).interval, old(self).code, old(context).state_index,
             ),
-            out <= 1 ==> final(context).mps == arithmetic_spec::entry_mps(
+            final(context).mps == arithmetic_spec::entry_mps(
                 old(self).interval, old(self).code, old(context).state_index, old(context).mps,
             ),
     ))]
@@ -711,6 +715,12 @@ impl<'a> ArithmeticDecoder<'a> {
             return self.decode_lower_signal(context, state, qe, old_mps);
         }
 
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            let value = self.code;
+            assert(value >= qe << 16) by (bit_vector)
+                requires value >> 16 >= qe, qe <= 0xffff;
+        }
         let Some(code) = self.code.checked_sub(qe << 16) else {
             return RASTER_SIGNAL_OVERFLOW;
         };
@@ -737,6 +747,8 @@ impl<'a> ArithmeticDecoder<'a> {
             out <= RASTER_SIGNAL_OVERFLOW,
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
+            final(self).bytes@ == old(self).bytes@,
+            final(self).bytes == old(self).bytes,
             out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
             final(context).state_index == arithmetic_spec::exchange_index(
                 true, old(self).interval, qe, state.next_mps, state.next_lps,
@@ -796,6 +808,8 @@ impl<'a> ArithmeticDecoder<'a> {
             out <= RASTER_SIGNAL_OVERFLOW,
             arithmetic_spec::decoder_state_valid(final(self)),
             arithmetic_spec::context_valid(*final(context)),
+            final(self).bytes@ == old(self).bytes@,
+            final(self).bytes == old(self).bytes,
             out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
             final(context).state_index == arithmetic_spec::exchange_index(
                 false, old(self).interval, qe, state.next_mps, state.next_lps,
@@ -1155,6 +1169,7 @@ impl<'a> ArithmeticDecoder<'a> {
                 Err(_) => true,
             },
             final(self).bytes@ == old(self).bytes@,
+            final(self).bytes == old(self).bytes,
             out.is_ok() == (arithmetic_spec::normalized_state(old(self)).0 == 0),
             final(self).interval == arithmetic_spec::normalized_state(old(self)).1,
             final(self).byte_position == arithmetic_spec::normalized_state(old(self)).2,
@@ -1180,6 +1195,7 @@ impl<'a> ArithmeticDecoder<'a> {
             arithmetic_spec::decoder_state_valid(final(self)),
             out == 0 ==> arithmetic_spec::decoder_valid(final(self)),
             final(self).bytes@ == old(self).bytes@,
+            final(self).bytes == old(self).bytes,
             out == arithmetic_spec::normalized_state(old(self)).0,
             final(self).interval == arithmetic_spec::normalized_state(old(self)).1,
             final(self).byte_position == arithmetic_spec::normalized_state(old(self)).2,
@@ -1782,6 +1798,168 @@ mod tests {
                         assert_eq!(context.state_index, expected_index);
                         assert_eq!(context.mps, expected_mps);
                     }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn entry_errors_preserve_context_updates_input_and_exact_partial_registers() {
+        let bytes = [0x11];
+        for (index, state) in QE_STATES.iter().copied().enumerate() {
+            let qe = u32::from(state.qe);
+            for old_mps in 0..=1 {
+                for interval in [MIN_INTERVAL, 0xffff] {
+                    for upper in [0, qe - 1, qe, qe + 1] {
+                        for low in [0, 0xffff] {
+                            let code = (upper << 16) | low;
+                            let reduced = interval - qe;
+                            let lower = upper < qe;
+                            let fast = !lower && reduced >= MIN_INTERVAL;
+                            let mps_route = (lower && reduced < qe) || (!lower && reduced >= qe);
+                            let expected_context = ArithmeticContext {
+                                state_index: if fast {
+                                    u8::try_from(index).unwrap()
+                                } else if mps_route {
+                                    state.next_mps
+                                } else {
+                                    state.next_lps
+                                },
+                                mps: if !fast && !mps_route && state.switch_mps {
+                                    1 - old_mps
+                                } else {
+                                    old_mps
+                                },
+                            };
+                            for checked in [false, true] {
+                                let mut decoder = decision_fixture(&bytes, interval, code, 0);
+                                let mut context = ArithmeticContext::from_state(
+                                    u8::try_from(index).unwrap(),
+                                    old_mps,
+                                )
+                                .unwrap();
+                                if checked {
+                                    assert_eq!(
+                                        decoder.decode(&mut context),
+                                        if fast {
+                                            Ok(old_mps)
+                                        } else {
+                                            Err(unexpected_eof(1, 1, 0))
+                                        },
+                                    );
+                                } else {
+                                    assert_eq!(
+                                        decoder.decode_signal(&mut context),
+                                        if fast { old_mps } else { RASTER_SIGNAL_EOF },
+                                    );
+                                }
+                                assert_eq!(context, expected_context);
+                                assert_eq!(decoder.interval, if lower { qe } else { reduced });
+                                let expected_code = if lower {
+                                    u64::from(code)
+                                } else {
+                                    u64::from(code) - u64::from(qe) * 65536
+                                };
+                                assert_eq!(u64::from(decoder.code), expected_code);
+                                assert_eq!(decoder.bit_count, 0);
+                                assert_eq!(decoder.byte_position, 0);
+                                assert_eq!(decoder.current_byte, 0x11);
+                                assert_eq!(decoder.marker, None);
+                                assert_eq!(decoder.bytes, bytes);
+                                assert_eq!(decoder.bytes.as_ptr(), bytes.as_ptr());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn single_context_restore_reset_and_default_cover_every_stored_byte_pair() {
+        for state_index in 0..=u8::MAX {
+            for mps in 0..=u8::MAX {
+                match ArithmeticContext::from_state(state_index, mps) {
+                    Ok(mut context) => {
+                        assert!(state_index < 47 && mps <= 1);
+                        assert_eq!((context.state_index(), context.mps()), (state_index, mps));
+                        context.reset();
+                        assert_eq!(context, ArithmeticContext::default());
+                        context.reset();
+                        assert_eq!((context.state_index(), context.mps()), (0, 0));
+                    }
+                    Err(error) => {
+                        assert!(state_index >= 47 || mps > 1);
+                        assert_eq!(
+                            error,
+                            ArithmeticError::InvalidContextState { state_index, mps },
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn arithmetic_error_adapters_and_formatters_preserve_every_variant_and_field() {
+        use std::fmt::Write as _;
+
+        struct RejectWrites;
+        impl fmt::Write for RejectWrites {
+            fn write_str(&mut self, _: &str) -> fmt::Result {
+                Err(fmt::Error)
+            }
+        }
+
+        for via_from in [false, true] {
+            for (error, expected, message) in [
+                (
+                    ArithmeticError::from(MalformedError::IntegerOverflow),
+                    MalformedError::IntegerOverflow,
+                    "input-derived integer overflow".to_owned(),
+                ),
+                (
+                    ArithmeticError::InvalidContextState {
+                        state_index: u8::MAX,
+                        mps: u8::MAX,
+                    },
+                    MalformedError::InvalidArithmeticContextState {
+                        state_index: u8::MAX,
+                        mps: u8::MAX,
+                    },
+                    "invalid arithmetic context state I=255, MPS=255".to_owned(),
+                ),
+                (
+                    ArithmeticError::InsufficientContexts {
+                        required: usize::MAX,
+                        actual: 0,
+                    },
+                    MalformedError::InsufficientArithmeticContexts {
+                        required: usize::MAX,
+                        actual: 0,
+                    },
+                    format!(
+                        "arithmetic decoding requires {} contexts, but 0 were supplied",
+                        usize::MAX
+                    ),
+                ),
+                (
+                    ArithmeticError::InvalidIaidCodeLength(u8::MAX),
+                    MalformedError::InvalidIaidCodeLength(u8::MAX),
+                    "unsupported IAID code length 255".to_owned(),
+                ),
+            ] {
+                assert_eq!(error.to_string(), message);
+                assert!(std::error::Error::source(&error).is_none());
+                assert!(write!(&mut RejectWrites, "{error}").is_err());
+                let converted = if via_from {
+                    DecodeError::from(error)
+                } else {
+                    error.into_decode()
+                };
+                match converted {
+                    DecodeError::Malformed(actual) => assert_eq!(actual, expected),
+                    other => panic!("unexpected arithmetic error conversion: {other:?}"),
                 }
             }
         }
