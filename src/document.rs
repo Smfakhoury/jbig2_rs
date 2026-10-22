@@ -2163,6 +2163,123 @@ mod tests {
         data
     }
 
+    fn direct_page_info(height: Option<u32>, striped: bool, maximum: u16) -> PageInformation {
+        let mut info = parse_page_information(&page_data(4), &Limits::default()).unwrap();
+        info.width = 13;
+        info.height = height;
+        info.x_resolution = 123;
+        info.y_resolution = 456;
+        info.striped = striped;
+        info.max_stripe_size = maximum;
+        info
+    }
+
+    #[test]
+    fn page_stripe_boundaries_match_wide_policy_and_preserve_rejected_state() {
+        for height in [None, Some(1), Some(4)] {
+            for striped in [false, true] {
+                for maximum in [0, 1, 3, u16::MAX] {
+                    let info = direct_page_info(height, striped, maximum);
+                    for previous in [None, Some(0), Some(2), Some(u32::MAX - 1), Some(u32::MAX)] {
+                        for row in [0, 1, 2, 3, u32::from(u16::MAX), u32::MAX] {
+                            let mut state = PageState::new(info);
+                            state.last_stripe = previous;
+                            let progress = match previous {
+                                Some(before) => {
+                                    row > before
+                                        && u64::from(row) - u64::from(before) <= u64::from(maximum)
+                                }
+                                None => row <= u32::from(maximum),
+                            };
+                            let valid =
+                                striped && progress && height.is_none_or(|height| row < height);
+                            match state.add_stripe(row) {
+                                Ok(()) => {
+                                    assert!(valid);
+                                    assert_eq!(state.last_stripe, Some(row));
+                                }
+                                Err(DecodeError::Malformed(
+                                    MalformedError::InvalidStripeEndRow(actual),
+                                )) => {
+                                    assert!(!valid);
+                                    assert_eq!(actual, row);
+                                    assert_eq!(state.last_stripe, previous);
+                                }
+                                other => panic!("unexpected stripe result: {other:?}"),
+                            }
+                            assert_eq!(state.info, info);
+                            assert!(!state.ended);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn page_finish_and_public_metadata_keep_exact_error_precedence_and_fields() {
+        for height in [None, Some(1), Some(4)] {
+            let info = direct_page_info(height, true, 3);
+            for last in [None, Some(0), Some(3), Some(u32::MAX)] {
+                for ended in [false, true] {
+                    let mut state = PageState::new(info);
+                    state.last_stripe = last;
+                    state.ended = ended;
+                    match state.finish() {
+                        Err(DecodeError::Malformed(MalformedError::DuplicatePageBoundary {
+                            page,
+                            segment_type,
+                        })) => {
+                            assert!(ended);
+                            assert_eq!((page, segment_type), (0, 49));
+                        }
+                        Err(DecodeError::Malformed(MalformedError::InvalidStripeEndRow(row))) => {
+                            assert!(!ended && height.is_none() && last.is_none());
+                            assert_eq!(row, 0);
+                        }
+                        Ok(()) => {
+                            assert!(!ended && (height.is_some() || last.is_some()));
+                            assert!(state.ended);
+                        }
+                        other => panic!("unexpected page finish result: {other:?}"),
+                    }
+                    assert_eq!(state.info, info);
+                    assert_eq!(state.last_stripe, last);
+                    if ended || (height.is_none() && last.is_none()) {
+                        assert_eq!(state.ended, ended);
+                    }
+                }
+                let mut state = PageState::new(info);
+                state.last_stripe = last;
+                match state.into_public(u32::MAX) {
+                    Ok(page) => {
+                        let expected = height
+                            .map(u64::from)
+                            .or_else(|| last.map(|row| u64::from(row) + 1))
+                            .unwrap();
+                        assert!(u32::try_from(expected).is_ok());
+                        assert_eq!(
+                            (page.number, page.width, u64::from(page.height)),
+                            (u32::MAX, 13, expected)
+                        );
+                        assert_eq!(
+                            (page.x_resolution, page.y_resolution, page.striped),
+                            (123, 456, true)
+                        );
+                    }
+                    Err(DecodeError::Malformed(MalformedError::IntegerOverflow)) => {
+                        assert!(height.is_none() && last == Some(u32::MAX));
+                    }
+                    Err(DecodeError::Malformed(MalformedError::InvalidStripeEndRow(row))) => {
+                        assert!(height.is_none() && last.is_none());
+                        assert_eq!(row, 0);
+                    }
+                    other => panic!("unexpected page metadata result: {other:?}"),
+                }
+            }
+        }
+    }
+
     #[test]
     fn inspects_sequential_document() {
         let bytes = valid_sequential_document();

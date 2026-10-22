@@ -2,6 +2,17 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The packed-storage/page-state test tranche adds five direct unit tests without
+entropy fixtures or new coding families. Scalar oracles check raw word windows,
+clipped pixel history, inclusive row-buffer budgets, mutation frames/endian
+flush, stripe progression and exact finish/metadata errors. All 360 native
+tests pass with 14 existing ignored tests. Fresh coverage is 82.38% lines,
+77.46% regions and 72.74% branches: an actual parent-relative gain of 18 lines,
+21 regions and nine branch outcomes, with every denominator and reviewed floor
+unchanged. All 17 native/proof token streams and 656 production declarations,
+attributes, bodies and source starts match the complete decision-state parent.
+Actual unfiltered pinned Cargo proof/compilation remains 1173/0, with no new
+functional or normative claim.
 The complete arithmetic decision-state tranche composes exact normalization
 with fast/upper/lower decision paths and exposes all signal, interval, code,
 counter, input-position/current-byte and marker outputs, plus exact checked

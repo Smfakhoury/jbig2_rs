@@ -93,6 +93,25 @@ arithmetic changes only by two explicit error constructors equivalent to the
 old reviewed conversion. No coded family, entropy encoder, fuzz seed, coverage
 exclusion or policy weakening is introduced.
 
+Five subsequent direct unit tests cover packed-storage/page-state boundaries,
+without any decoder invocation, entropy fixture or new coding family. On
+immutable source `0c7b4680864a5eb5cc3b0a2b95d171a872fbe783`, all 360 native
+tests pass with 14 existing ignored tests. Fresh measured coverage is
+**10,398/12,622 lines (82.38%)**, **10,018/12,933 regions (77.46%)** and
+**1,919/2,638 branch outcomes (72.74%)**. The actual parent-relative gain is
+**18 lines / 21 regions / nine branch outcomes**, with unchanged denominators:
+document gains 6/3/1, shared generic error helpers 3/3/0, and row-ring storage
+9/15/8. Counts are a fresh combined collection, not summed historical deltas.
+
+Tests check inclusive storage budgets, zero/max shapes without huge allocations,
+row-slot mapping, scalar clipped-bit/raw-word windows, clear/copy frames and
+exact big-endian bitmap flush, stripe progress, finish error precedence and
+public metadata. Some direct typed states exercise defensive helper branches
+not reached by validated parser state; they are not represented as valid coded
+streams. Real allocation failures and architecture/invariant-unreachable
+defenses are not manufactured, excluded or counted as covered. The reviewed
+baseline and release goals remain unchanged.
+
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
 It adds **57 covered lines, 50 regions and 19 branch outcomes** over a fresh

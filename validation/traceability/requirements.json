@@ -645,7 +645,7 @@
     "src/arithmetic.rs": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "327d77309b8c641d7e3e2cababdab6fe35a92e36f9762014a5f16ae26a08424e",
-    "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
+    "src/document.rs": "3fd262ee16be836fdf8dba91a43ef294dc2dd55dbbe8865c8af917a68ec1d8d8",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
     "src/halftone.rs": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
