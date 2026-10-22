@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
-  "scope": "Fresh existing official diagnostics on complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
+  "scope": "Fresh existing official diagnostics on packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 369,
-    "passed": 355,
+    "total": 374,
+    "passed": 360,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
-    "scope": "Actual complete pinned ordinary-runtime coverage collection: 355 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from the actual official observations and do not provide normative approval."
+    "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
+    "scope": "Actual complete pinned ordinary-runtime coverage collection: 360 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from the actual official observations and do not provide normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "d7f582d7be551f34c645968efb1a88ce86864f2669035c48aa06bed2b134898d",
-    "review_sha256": "15a6be2a8ebcd9a3511d028844f030c2667ad99f5801a89e8e5bc3e36b5b3965"
+    "results_sha256": "a6840c7e51c70048720cd0ab3f88e2b5fd9c662940344af245b94ba2fe023f9a",
+    "review_sha256": "997839dfb4fe75ba48e3e94f9edb6b4d5208cb7df397a3ef64b7e887b9b3ee2f"
   },
   "community_regressions": {
     "total": 0,

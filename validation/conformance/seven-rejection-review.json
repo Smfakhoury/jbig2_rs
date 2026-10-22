@@ -1,21 +1,21 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "recorded_at": "2026-10-22T18:00:54.573036+00:00",
-  "source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+  "recorded_at": "2026-10-22T18:34:31.886460+00:00",
+  "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
-  "scope": "Same seven existing official diagnoses, freshly executed on immutable complete-arithmetic-decision-state-with-explicit-error-constructors source 3f7b84e2d4de3e4415d127ef821766e1260a23c3. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
+  "scope": "Same seven existing official diagnoses, freshly executed on immutable packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent source 0c7b4680864a5eb5cc3b0a2b95d171a872fbe783. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
     "src/arithmetic.rs": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "327d77309b8c641d7e3e2cababdab6fe35a92e36f9762014a5f16ae26a08424e",
-    "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
+    "src/document.rs": "3fd262ee16be836fdf8dba91a43ef294dc2dd55dbbe8865c8af917a68ec1d8d8",
     "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
-    "src/generic_row_ring.rs": "dd6f05b2fc2deb8d612d826828c8ba2661c6094ba44a7579faacb3dee80c0e11",
+    "src/generic_row_ring.rs": "11f135b71730d44cddc61d44f34b1898e5859bfd3df0d489b7c47debb158827d",
     "src/halftone.rs": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
     "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
@@ -26,8 +26,8 @@
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
     "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f"
   },
-  "ordinary_runtime_source_sha256": "067c12861b40332fc1169cad49eb0026518f564e9e6da4ed8d9254328d71e853",
-  "normal_decoder_sha256": "e00b74fd47d3f05aa14713f267804c41532a1cea1acb3b0ff7a95c08eb21caae",
+  "ordinary_runtime_source_sha256": "a3f38e6a619309cd67130b163273e8c2eab42030feb1bab98d634562a0a58aae",
+  "normal_decoder_sha256": "6394d99d2e344d416d5f3ee2b2c1ac8e81bae2e310c31413959ddf983686441c",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -40,13 +40,13 @@
     "t6_route": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items"
   },
   "diagnosis_origin": {
-    "previous_review_source_revision": "d9c6d5880930ec4a10d0040388056b806834214b",
-    "previous_review_sha256": "3e7986fb89d09dd55840a158cb654a4e094a4faaa413ca7fa63d89dd077868d5",
-    "fresh_execution_source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
-    "fresh_source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+    "previous_review_source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+    "previous_review_sha256": "15a6be2a8ebcd9a3511d028844f030c2667ad99f5801a89e8e5bc3e36b5b3965",
+    "fresh_execution_source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
+    "fresh_source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
     "trace_repeated_for_all_seven_cases": true,
     "diagnostic_patch_sha256": "4f97ced44076a03f6380cd4bd5f65f9fe20e7b3277a601d83a30949400316879",
-    "trace_index_sha256": "89bf1845759125f1ae232abdb313e5e3fdc006e71f470938cd201b966305d7ad",
+    "trace_index_sha256": "4dad9fd93e7d0aaa3ad4c970dace3b7f2471b9e5a5bbe36508316fe5835f02eb",
     "instrumented_source_files_sha256": {
       "src/decode.rs": "d2338d1584ea1deccdb34e08d86f65b7be7d70977a8be83aede4a61a1aef93d2",
       "src/mmr.rs": "403887e0ea57f4fac121df4c41f5117569f29389e9187a1ec03a842a5f79f8af",
@@ -55,7 +55,7 @@
     },
     "unmodified_arithmetic_source_sha256": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "diagnostic_decoder_sha256": "68b7f5821102eabc918c5d494f755cc04634d325f34a20e2f82d7992221c8b9b",
+    "diagnostic_decoder_sha256": "f59a4f077c65f667a01ae39d096359207875ded7ca7002c5cd14ef45dec75742",
     "instrumentation_scope": "Existing logging in an isolated source copy only; parent source/proof/scripts never edited.",
     "fresh_unclassified_execution_sha256": "6a5ad994148574e6e673dfee419df9c8609797a1b7fd26e793725dc00030ba15"
   },
@@ -68,7 +68,7 @@
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
     "source-provenance.json": "98e7b5390912d6d8dce068a851c1afbcd2bedf4856c64cbe9678bc7dcef1bf49",
-    "validation/conformance/expected-differences.json": "bce8bcd8591070601bc6287ad874d4be6ff2611e489f5336089613274726e2f0"
+    "validation/conformance/expected-differences.json": "8fce3958d71323c714f770d58e1c2cc27375dea5b262c0c61b67b071fe2aa4f9"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -96,7 +96,7 @@
     "official_expected_hashes_unchanged_from_prior_native_run": true,
     "scope_limit": "Covered one-bit BI_RGB layouts, not a general BMP parser certification.",
     "fresh_gate_test_count": 32,
-    "fresh_gate_test_log_sha256": "62a40697573d2bfe985eba100798e71ba2e464c4ab964ffeddf11f8a6d44b6e6"
+    "fresh_gate_test_log_sha256": "c42ac1db6e7ca8b2ab3ad631921c482c28b3e5b122e370615361486a9639d3a5"
   },
   "hayro": {
     "crate": "hayro-jbig2",
@@ -109,7 +109,7 @@
       "std",
       "simd"
     ],
-    "binary_sha256": "1a9a0fbdd1be1dc53355d62d143b151251c3e6c8272358678299e00bea30b5cf",
+    "binary_sha256": "d8401509d1f7f40bbb7029cb82b22c72cbe20361dd980a6a203cb964c9165de0",
     "harness_files_sha256": {
       "benchmarks/hayro-comparison/Cargo.toml": "c52af510f56cff89f7e9e9a6fb7031894650961d079686db80c517145580e471",
       "benchmarks/hayro-comparison/Cargo.lock": "ffa4928ea5fb38e7be4ded8a67b44f9ea2fe04adddb4b925e68832778e696e89",
@@ -123,7 +123,7 @@
     "seven_case_normative_passes": 0,
     "two_single_page_controls_have_matching_dimensions_and_fnv64_summary": true,
     "scope_limit": "Wrapper exposes one image and an FNV64 bitmap summary, not full-byte/all-page validation; errors do not establish pre-error entropy equivalence.",
-    "candidate_source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3"
+    "candidate_source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783"
   },
   "native_tool_identities": {
     "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
@@ -155,7 +155,7 @@
     "strict_policy_unchanged": true,
     "blanket_root_cause_claimed_for_seven_cases": false
   },
-  "normal_conformance_results_sha256": "d7f582d7be551f34c645968efb1a88ce86864f2669035c48aa06bed2b134898d",
+  "normal_conformance_results_sha256": "a6840c7e51c70048720cd0ab3f88e2b5fd9c662940344af245b94ba2fe023f9a",
   "release_gate": "blocked",
   "cases": [
     {
@@ -187,9 +187,9 @@
         "T.88 6.5.9 and 6.2.6"
       ],
       "source_trace_sha256": "e6b157debad4281af44889333801e245cc5f2b3a773b787948c0f8de65abd508",
-      "source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+      "source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need an independently anchored text entropy/ID/strip trace, or official attachment-owner clarification, before identifying an unambiguous production correction.",
       "expected_pages": [
         {
@@ -289,9 +289,9 @@
         "T.6 Table 1 and 2.2.5.2"
       ],
       "source_trace_sha256": "14757f8b8d0089aa431cd0d5a3c1ee09c77430f226ea0833a3a2c779a1f496d3",
-      "source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+      "source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Do not extend BMSIZE or synthesize row data. Need independent upstream Huffman field alignment or official asset-owner clarification before assigning normative malformation.",
       "expected_pages": [
         {
@@ -385,9 +385,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b10d665c2180b605627120f1eda641edd91ffc8eec9f6cea24e94741b8d61061",
-      "source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+      "source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -481,9 +481,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "5ea8fb0789178b025c0ccc377afef04eae89851c8c89e19e792636525c707095",
-      "source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+      "source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -577,9 +577,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "05d26bb3da2a9954462c46ed4cb39d647624a3dd4cfe3f3adc4a56e88bd2ded8",
-      "source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+      "source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -673,9 +673,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b1dbb0f363ca6f467c14515d78f848e71270edae807ca0fad9fd8006b58935dd",
-      "source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+      "source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -769,9 +769,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "863c467991c565f1b8330550dee1c03777c582afdf851473106340f4b6afb81f",
-      "source_trace_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+      "source_trace_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh complete-arithmetic-decision-state-with-explicit-error-constructors 3f7b84e execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -831,119 +831,93 @@
     }
   ],
   "source_selection": {
-    "kind": "complete-arithmetic-decision-state-with-explicit-error-constructors",
-    "immutable_source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+    "kind": "packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent",
+    "immutable_source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
     "arithmetic_source_sha256": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
     "arithmetic_spec_sha256": "99c43258e3a9f90c25526125fbe9aae3cf65f12f2b109b5522f687373ee38f5e",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "owner_source_review_sha256": "1043e529f5b8fb351d50b2941d48c1ad1b8b3c9346174d76a07fea93fcb7ec95",
+    "owner_source_review_sha256": "02ca969a58b568bc946a088eab98bf6978788af6a9f5ed99ae66ac448cd4c7e3",
     "owner_source_review": {
-      "native_comparison_revision": "be731b995b684526b449c83f05944188cad94cc6",
-      "source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
-      "native_token_streams_unchanged": false,
-      "native_token_streams_unchanged_file_count": 16,
-      "native_token_streams_equal_after_reviewed_expansion": true,
-      "native_change": {
-        "function": "arithmetic::ArithmeticDecoder::signal_error",
-        "replacements": 2,
-        "before": "MalformedError::IntegerOverflow.into()",
-        "after": "ArithmeticError::Malformed(MalformedError::IntegerOverflow)",
-        "basis": "Expand the unchanged single-expression ArithmeticError::from implementation through Rust's trusted blanket Into implementation; direct numeric and prior-path parity tests cover all signal bytes and cursor boundaries."
-      },
+      "native_comparison_revision": "30721670befaba4a9769e088f20a477eeccf64cb",
+      "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
+      "native_token_streams_unchanged": true,
+      "proof_input_token_streams_unchanged": true,
+      "production_signatures_attributes_bodies_and_source_starts_unchanged": true,
       "caller_preconditions_unchanged": true,
       "strings_retained": true,
-      "ghost_cfg_and_cfg_attr_excluded": true,
       "source_file_count": 17,
       "production_function_count": 656,
-      "reviewed_arithmetic_disposition_bodies_and_attributes_unchanged": true,
       "files": [
         {
           "file": "src/arithmetic.rs",
-          "native_tokens_identical": false,
           "source_sha256": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417"
         },
         {
           "file": "src/bitmap.rs",
-          "native_tokens_identical": true,
           "source_sha256": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17"
         },
         {
           "file": "src/decode.rs",
-          "native_tokens_identical": true,
           "source_sha256": "327d77309b8c641d7e3e2cababdab6fe35a92e36f9762014a5f16ae26a08424e"
         },
         {
           "file": "src/document.rs",
-          "native_tokens_identical": true,
-          "source_sha256": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49"
+          "source_sha256": "3fd262ee16be836fdf8dba91a43ef294dc2dd55dbbe8865c8af917a68ec1d8d8"
         },
         {
           "file": "src/error.rs",
-          "native_tokens_identical": true,
           "source_sha256": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4"
         },
         {
           "file": "src/file_header.rs",
-          "native_tokens_identical": true,
           "source_sha256": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db"
         },
         {
           "file": "src/generic_region.rs",
-          "native_tokens_identical": true,
           "source_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda"
         },
         {
           "file": "src/generic_row_ring.rs",
-          "native_tokens_identical": true,
-          "source_sha256": "dd6f05b2fc2deb8d612d826828c8ba2661c6094ba44a7579faacb3dee80c0e11"
+          "source_sha256": "11f135b71730d44cddc61d44f34b1898e5859bfd3df0d489b7c47debb158827d"
         },
         {
           "file": "src/halftone.rs",
-          "native_tokens_identical": true,
           "source_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648"
         },
         {
           "file": "src/huffman.rs",
-          "native_tokens_identical": true,
           "source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c"
         },
         {
           "file": "src/lib.rs",
-          "native_tokens_identical": true,
           "source_sha256": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019"
         },
         {
           "file": "src/limits.rs",
-          "native_tokens_identical": true,
           "source_sha256": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516"
         },
         {
           "file": "src/mmr.rs",
-          "native_tokens_identical": true,
           "source_sha256": "c6810537f116140b4374e52264b9f7190c775c173e14903271f316220a837290"
         },
         {
           "file": "src/reader.rs",
-          "native_tokens_identical": true,
           "source_sha256": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba"
         },
         {
           "file": "src/segment_data.rs",
-          "native_tokens_identical": true,
           "source_sha256": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a"
         },
         {
           "file": "src/segment_header.rs",
-          "native_tokens_identical": true,
           "source_sha256": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5"
         },
         {
           "file": "src/symbol_text.rs",
-          "native_tokens_identical": true,
           "source_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f"
         }
       ],
-      "scope": "Exact native-token comparison with two explicitly reviewed equivalent constructor expansions; not normative approval."
+      "scope": "Only excluded unit-test modules change; direct packed storage/page-state tests, not new codec families or normative approval."
     }
   },
   "historical_ci_repair": {
@@ -963,15 +937,15 @@
     "execution_gate": "run_itu.py still exits 1 with seven unresolved official cases."
   },
   "refill_source_continuation": {
-    "immutable_source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
-    "source_kind": "complete-arithmetic-decision-state-with-explicit-error-constructors",
+    "immutable_source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
+    "source_kind": "packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent",
     "all_seven_normal_and_logging_executions_repeated": true,
     "source_provenance_unchanged": true,
     "parent_owns_proof_inventory_coverage_metadata": true,
     "official_runner_exit": 1,
     "new_normative_approvals": 0,
-    "normal_build_target": "/workspace/jbig2-normative-local-assets/arithmetic-decision-state-3f7b84e/normal-build",
-    "trace_build_target": "/workspace/jbig2-normative-local-assets/arithmetic-decision-state-3f7b84e/trace-build",
-    "hayro_build_target": "/workspace/jbig2-normative-local-assets/arithmetic-decision-state-3f7b84e/hayro-build"
+    "normal_build_target": "/workspace/jbig2-normative-local-assets/parser-state-coverage-0c7b468/normal-build",
+    "trace_build_target": "/workspace/jbig2-normative-local-assets/parser-state-coverage-0c7b468/trace-build",
+    "hayro_build_target": "/workspace/jbig2-normative-local-assets/parser-state-coverage-0c7b468/hayro-build"
   }
 }

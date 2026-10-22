@@ -673,3 +673,16 @@ with 14 existing ignored tests. Fresh measured coverage is 82.24% lines,
 floors. Seven selected E.3.2 rows gain actual functional project-step evidence;
 all 249 records remain provisional (73 functional / 150 state-preservation /
 26 safety-only), and exhaustive normative review remains incomplete.
+
+## Packed-storage and page-state boundary tests
+
+Five direct tests add no decoder invocation or entropy fixture. Scalar oracles
+cover packed row windows, slots, inclusive memory budgets, clear/copy frames,
+endian bitmap flush, stripe progress, exact finish precedence and metadata
+overflow. All production native/proof tokens and 656 declarations, attributes,
+bodies and source starts match the parent; only excluded unit-test modules
+change. Actual unfiltered pinned proof/compilation remains1173/0; all360native
+tests pass with14existing ignored tests. Fresh coverage is82.38%lines,
+77.46%regions,72.74%branches, an actual parent-relative gain18/21/9 with unchanged
+denominators and floors. Defensive direct states are not valid coded streams;
+allocation/unreachable guards remain unexercised. P04/P05/P06 stay open.
