@@ -342,6 +342,22 @@ pub(crate) open spec fn error_for_signal(
     }
 }
 
+pub(crate) open spec fn decode_error(error: super::ArithmeticError) -> crate::DecodeError {
+    match error {
+        super::ArithmeticError::Malformed(error) => crate::DecodeError::Malformed(error),
+        super::ArithmeticError::InvalidContextState { state_index, mps } =>
+            crate::DecodeError::Malformed(super::MalformedError::InvalidArithmeticContextState {
+                state_index, mps,
+            }),
+        super::ArithmeticError::InsufficientContexts { required, actual } =>
+            crate::DecodeError::Malformed(super::MalformedError::InsufficientArithmeticContexts {
+                required, actual,
+            }),
+        super::ArithmeticError::InvalidIaidCodeLength(length) =>
+            crate::DecodeError::Malformed(super::MalformedError::InvalidIaidCodeLength(length)),
+    }
+}
+
 pub(crate) open spec fn integer_history_step(previous: u16, decision: u8) -> u16
     recommends previous <= 511, decision <= 1,
 {

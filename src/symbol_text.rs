@@ -206,6 +206,7 @@ impl IntegerField {
     /// A stable, dense index used to select independent context storage.
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures out < INTEGER_FIELD_COUNT,
+            out == symbol_text_spec::integer_field_slot(self),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     const fn slot(self) -> usize {
@@ -3194,6 +3195,26 @@ impl ArithmeticCodec<'_> {
             crate::arithmetic::arithmetic_spec::decoder_state_valid(&final(self).decoder),
             symbol_text_spec::integer_contexts_valid(&final(self).integers),
             final(self).iaid@ == old(self).iaid@,
+            final(self).refinement == old(self).refinement,
+            final(self).refinement_work == old(self).refinement_work,
+            out == symbol_text_spec::arithmetic_integer_result(
+                crate::arithmetic::arithmetic_spec::integer_state(
+                    old(self).decoder,
+                    old(self).integers.slots[symbol_text_spec::integer_field_slot(field) as int]@,
+                ).0,
+            ),
+            final(self).decoder == crate::arithmetic::arithmetic_spec::integer_state(
+                old(self).decoder,
+                old(self).integers.slots[symbol_text_spec::integer_field_slot(field) as int]@,
+            ).1,
+            final(self).integers.slots[symbol_text_spec::integer_field_slot(field) as int]@
+                == crate::arithmetic::arithmetic_spec::integer_state(
+                    old(self).decoder,
+                    old(self).integers.slots[symbol_text_spec::integer_field_slot(field) as int]@,
+                ).2,
+            forall|slot: int| 0 <= slot < INTEGER_FIELD_COUNT
+                && slot != symbol_text_spec::integer_field_slot(field) ==>
+                    final(self).integers.slots[slot]@ == old(self).integers.slots[slot]@,
             match out {
                 Ok(_) => crate::arithmetic::arithmetic_spec::decoder_valid(
                     &final(self).decoder
@@ -3203,10 +3224,11 @@ impl ArithmeticCodec<'_> {
     ))]
     fn decode_integer(&mut self, field: IntegerField) -> Result<EntropyInteger, SymbolTextError> {
         let slot = field.slot();
-        match self
-            .decoder
-            .decode_integer(&mut self.integers.slots[slot])?
-        {
+        let decoded = match self.decoder.decode_integer(&mut self.integers.slots[slot]) {
+            Ok(decoded) => decoded,
+            Err(error) => return Err(SymbolTextError::Decode(error.into_decode())),
+        };
+        match decoded {
             ArithmeticInteger::Value(value) => Ok(EntropyInteger::Value(value)),
             ArithmeticInteger::OutOfBand => Ok(EntropyInteger::OutOfBand),
         }
@@ -3220,6 +3242,19 @@ impl ArithmeticCodec<'_> {
             crate::arithmetic::arithmetic_spec::decoder_state_valid(&final(self).decoder),
             symbol_text_spec::arithmetic_contexts_valid(final(self).iaid@),
             final(self).integers.slots@ == old(self).integers.slots@,
+            final(self).refinement == old(self).refinement,
+            final(self).refinement_work == old(self).refinement_work,
+            out == symbol_text_spec::arithmetic_symbol_id_result(
+                crate::arithmetic::arithmetic_spec::iaid_state(
+                    old(self).decoder, old(self).iaid@, request.code_length,
+                ).0,
+            ),
+            final(self).decoder == crate::arithmetic::arithmetic_spec::iaid_state(
+                old(self).decoder, old(self).iaid@, request.code_length,
+            ).1,
+            final(self).iaid@ == crate::arithmetic::arithmetic_spec::iaid_state(
+                old(self).decoder, old(self).iaid@, request.code_length,
+            ).2,
             match out {
                 Ok(_) => crate::arithmetic::arithmetic_spec::decoder_valid(
                     &final(self).decoder
@@ -3228,9 +3263,13 @@ impl ArithmeticCodec<'_> {
             },
     ))]
     fn decode_symbol_id(&mut self, request: SymbolIdRequest) -> Result<u32, SymbolTextError> {
-        Ok(self
+        match self
             .decoder
-            .decode_iaid(request.code_length, &mut self.iaid)?)
+            .decode_iaid(request.code_length, &mut self.iaid)
+        {
+            Ok(value) => Ok(value),
+            Err(error) => Err(SymbolTextError::Decode(error.into_decode())),
+        }
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -5767,6 +5806,197 @@ mod tests {
     use super::*;
     use std::hint::black_box;
     use std::time::{Duration, Instant};
+
+    fn arithmetic_codec_fixture(
+        bytes: &[u8],
+        iaid_count: usize,
+        salt: usize,
+    ) -> ArithmeticCodec<'_> {
+        ArithmeticCodec {
+            decoder: ArithmeticDecoder::new(bytes).expect("arithmetic constructor"),
+            integers: IntegerContexts {
+                slots: std::array::from_fn(|slot| {
+                    std::array::from_fn(|index| {
+                        ArithmeticContext::from_state(
+                            u8::try_from((index * 17 + slot + salt) % 47).unwrap(),
+                            u8::try_from((index / 2 + slot + salt) % 2).unwrap(),
+                        )
+                        .unwrap()
+                    })
+                }),
+            },
+            iaid: (0..iaid_count)
+                .map(|index| {
+                    ArithmeticContext::from_state(
+                        u8::try_from((index * 17 + salt) % 47).unwrap(),
+                        u8::try_from((index / 2 + salt) % 2).unwrap(),
+                    )
+                    .unwrap()
+                })
+                .collect(),
+            refinement: None,
+            refinement_work: 73,
+        }
+    }
+
+    fn assert_arithmetic_forwarding<T: std::fmt::Debug + PartialEq>(
+        actual: Result<T, SymbolTextError>,
+        expected: Result<T, SymbolTextError>,
+    ) -> bool {
+        match (actual, expected) {
+            (Ok(actual), Ok(expected)) => {
+                assert_eq!(actual, expected);
+                true
+            }
+            (
+                Err(SymbolTextError::Decode(DecodeError::Malformed(actual))),
+                Err(SymbolTextError::Decode(DecodeError::Malformed(expected))),
+            ) => {
+                assert_eq!(actual, expected);
+                false
+            }
+            (actual, expected) => {
+                panic!("wrong arithmetic forwarding: {actual:?}, expected {expected:?}")
+            }
+        }
+    }
+
+    fn assert_arithmetic_cursor_and_continuation(
+        actual: &mut ArithmeticDecoder<'_>,
+        expected: &mut ArithmeticDecoder<'_>,
+        success: bool,
+    ) {
+        assert_eq!(actual.byte_position(), expected.byte_position());
+        assert_eq!(actual.marker(), expected.marker());
+        if success {
+            let mut actual_context = ArithmeticContext::new();
+            let mut expected_context = ArithmeticContext::new();
+            for _ in 0..64 {
+                let signal = actual.decode_signal(&mut actual_context);
+                assert_eq!(signal, expected.decode_signal(&mut expected_context));
+                assert_eq!(actual_context, expected_context);
+                assert_eq!(actual.byte_position(), expected.byte_position());
+                assert_eq!(actual.marker(), expected.marker());
+                if signal > 1 {
+                    break;
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn arithmetic_integer_caller_matches_direct_procedure_and_preserves_other_banks() {
+        let fields = [
+            IntegerField::AggregationInstances,
+            IntegerField::HeightDelta,
+            IntegerField::WidthDelta,
+            IntegerField::ExportRun,
+            IntegerField::StripDelta,
+            IntegerField::FirstS,
+            IntegerField::SubsequentS,
+            IntegerField::WithinStripT,
+            IntegerField::RefinementWidth,
+            IntegerField::RefinementHeight,
+            IntegerField::RefinementX,
+            IntegerField::RefinementY,
+            IntegerField::RefinementSize,
+            IntegerField::RefinementIndicator,
+            IntegerField::DictionaryBitmapSize,
+        ];
+        let samples: [&[u8]; 6] = [
+            &[0, 0],
+            &[0xff, 0x90],
+            &[0; 64],
+            &[0x13; 64],
+            &[0xaa; 64],
+            &[0xff, 0x8f, 0, 0],
+        ];
+        let mut outcomes = [0; 2];
+        for (slot, field) in fields.into_iter().enumerate() {
+            assert_eq!(field.slot(), slot);
+            for bytes in samples {
+                for salt in [0, 1, 23, 46] {
+                    let mut actual = arithmetic_codec_fixture(bytes, 7, salt);
+                    let before = actual.integers.slots;
+                    let before_iaid = actual.iaid.clone();
+                    let mut expected_bank = before[slot];
+                    let mut expected_decoder = ArithmeticDecoder::new(bytes).unwrap();
+                    let expected = expected_decoder
+                        .decode_integer(&mut expected_bank)
+                        .map(|value| match value {
+                            ArithmeticInteger::Value(value) => EntropyInteger::Value(value),
+                            ArithmeticInteger::OutOfBand => EntropyInteger::OutOfBand,
+                        })
+                        .map_err(SymbolTextError::from);
+                    let success =
+                        assert_arithmetic_forwarding(actual.decode_integer(field), expected);
+                    outcomes[usize::from(success)] += 1;
+                    assert_eq!(actual.integers.slots[slot], expected_bank);
+                    for (index, bank) in before.iter().enumerate() {
+                        if index != slot {
+                            assert_eq!(actual.integers.slots[index], *bank);
+                        }
+                    }
+                    assert_eq!(actual.iaid, before_iaid);
+                    assert!(actual.refinement.is_none());
+                    assert_eq!(actual.refinement_work, 73);
+                    assert_arithmetic_cursor_and_continuation(
+                        &mut actual.decoder,
+                        &mut expected_decoder,
+                        success,
+                    );
+                }
+            }
+        }
+        assert_eq!(outcomes.iter().sum::<usize>(), 360);
+        assert!(outcomes.into_iter().all(|count| count > 0));
+    }
+
+    #[test]
+    fn arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks() {
+        let samples: [&[u8]; 6] = [
+            &[0, 0],
+            &[0xff, 0x90],
+            &[0; 64],
+            &[0x13; 64],
+            &[0xaa; 64],
+            &[0xff, 0x8f, 0, 0],
+        ];
+        let mut outcomes = [0; 2];
+        for length in 0..=u8::MAX {
+            for count in [0, 1, 2, 3, 4, 16, 32, 35] {
+                for bytes in samples {
+                    let mut actual =
+                        arithmetic_codec_fixture(bytes, count, usize::from(length) % 47);
+                    let before = actual.integers.slots;
+                    let mut expected_bank = actual.iaid.clone();
+                    let mut expected_decoder = ArithmeticDecoder::new(bytes).unwrap();
+                    let expected = expected_decoder
+                        .decode_iaid(length, &mut expected_bank)
+                        .map_err(SymbolTextError::from);
+                    let request = SymbolIdRequest {
+                        available_symbols: 0,
+                        code_length: length,
+                        huffman: false,
+                    };
+                    let success =
+                        assert_arithmetic_forwarding(actual.decode_symbol_id(request), expected);
+                    outcomes[usize::from(success)] += 1;
+                    assert_eq!(actual.iaid, expected_bank);
+                    assert_eq!(actual.integers.slots, before);
+                    assert!(actual.refinement.is_none());
+                    assert_eq!(actual.refinement_work, 73);
+                    assert_arithmetic_cursor_and_continuation(
+                        &mut actual.decoder,
+                        &mut expected_decoder,
+                        success,
+                    );
+                }
+            }
+        }
+        assert_eq!(outcomes.iter().sum::<usize>(), 12_288);
+        assert!(outcomes.into_iter().all(|count| count > 0));
+    }
 
     #[test]
     fn symbol_code_length_is_minimal_at_every_u32_power_boundary() {

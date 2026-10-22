@@ -965,7 +965,18 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertTrue(row["invariant_evidence"])
                 self.assertTrue(row["gaps"])
                 self.assertEqual(row["standard"], "ITU-T T.88 (08/2018)")
-                self.assertTrue(all(name.startswith("arithmetic::") for name in row["runtime"]))
+                callers = {
+                    "symbol_text::IntegerField::slot",
+                    "symbol_text::ArithmeticCodec::decode_integer",
+                    "symbol_text::ArithmeticCodec::decode_symbol_id",
+                } if name in {
+                    "INTEGER-PROCEDURE-BANKS", "IAID-LENGTH", "IAID-STORAGE",
+                } else set()
+                self.assertTrue(callers.issubset(row["runtime"]))
+                self.assertTrue(all(
+                    runtime.startswith("arithmetic::") or runtime in callers
+                    for runtime in row["runtime"]
+                ))
         feature = next(f for f in ledger["features"] if f["feature"] == "arithmetic_coding")
         self.assertEqual(feature["decomposition"], "partial")
         self.assertTrue(feature["remaining_scope"])

@@ -500,7 +500,9 @@ impl From<MalformedError> for ArithmeticError {
 }
 
 impl ArithmeticError {
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == arithmetic_spec::decode_error(self),
+    ))]
     pub(crate) fn into_decode(self) -> DecodeError {
         match self {
             Self::Malformed(error) => DecodeError::Malformed(error),
