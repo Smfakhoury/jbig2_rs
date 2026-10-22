@@ -13,11 +13,30 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 10,266 / 12,622 | 81.33% |
-| Code regions | 9,875 / 12,934 | 76.35% |
-| Branch outcomes | 1,880 / 2,640 | 71.21% |
+| Lines | 10,325 / 12,622 | 81.80% |
+| Code regions | 9,945 / 12,933 | 76.90% |
+| Branch outcomes | 1,908 / 2,638 | 72.33% |
 
-The latest MMR contract floor is bound to immutable test-source commit
+The public reference-contract floor is bound to immutable source
+`ca80b60785acc3c0cdd3ae90e8c430f39c7d2b99`, before its separate evidence
+commit. Six integration tests cover 216 role/cardinality/table/global cases
+and three exact table-error precedence cases. Fresh collection runs
+343 native tests, with the same 14 ignored microbenchmarks excluded.
+All eight targeted runtime mutants compile and are detected by the exact
+selected regression tests.
+
+The comparison collection has exactly the Rust source and test identities of
+the CI parent `33be03f`; its actual totals are 10,294/12,622 lines,
+9,907/12,933 regions and 1,896/2,638 branch outcomes. Exact source-coordinate
+comparison gains **31 lines, 38 regions and 12 branch outcomes**, with no lost
+covered coordinate and every global/per-file denominator unchanged. All floors
+are nondecreasing against current main and the earlier unpublished reference
+candidate; the totals above are a fresh combined measurement, not summed
+branch deltas. Production/model/proof/Cargo inputs are unchanged from the CI
+parent. Positive opaque-payload cases assert inspection metadata only, not
+valid entropy streams, new coding families or normative conformance.
+
+The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
 It adds **57 covered lines, 50 regions and 19 branch outcomes** over a fresh
 `d970ac4` main collection with identical source-coordinate denominators and no
