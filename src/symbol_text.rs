@@ -5769,6 +5769,378 @@ mod tests {
     use std::time::{Duration, Instant};
 
     #[test]
+    fn symbol_code_length_is_minimal_at_every_u32_power_boundary() {
+        let boundaries = (0..u32::BITS).flat_map(|shift| {
+            let power = 1_u32 << shift;
+            [power - 1, power, power + 1]
+        });
+        for count in (0..=65_536).chain(boundaries).chain([u32::MAX]) {
+            let length = symbol_id_code_length(count).expect("bounded code length");
+            let expected = u8::try_from(u32::BITS - count.saturating_sub(1).leading_zeros())
+                .expect("at most 32 bits");
+            assert_eq!(length, expected, "symbol count {count}");
+            assert!((1_u64 << length) >= u64::from(count.max(1)));
+            if length != 0 {
+                assert!((1_u64 << (length - 1)) < u64::from(count));
+            }
+        }
+    }
+
+    #[test]
+    fn packed_symbol_storage_matches_pixels_and_rejects_each_dirty_row() {
+        let limits = Limits::default();
+        for width in 0_u32..=33 {
+            for height in [0_u32, 1, 3] {
+                let stride = usize::try_from(width.div_ceil(8)).unwrap();
+                let length = stride * usize::try_from(height).unwrap();
+                for seed in [0_usize, 0x55, 0xaa, 0xff] {
+                    let mut bytes: Vec<_> = (0..length)
+                        .map(|index| u8::try_from((index * 73 + seed) % 256).unwrap())
+                        .collect();
+                    if width % 8 != 0 {
+                        for row in bytes.chunks_exact_mut(stride) {
+                            row[stride - 1] &= 0xff << (8 - width % 8);
+                        }
+                    }
+                    let expected = bytes.clone();
+                    bytes.extend_from_slice(&[0xff, 0x93]);
+                    let input = bytes.clone();
+                    let bitmap = bitmap_from_packed_bytes(width, height, &bytes, &limits)
+                        .expect("packed storage");
+                    assert_eq!(
+                        (bitmap.width, bitmap.height, bitmap.stride),
+                        (width, height, stride)
+                    );
+                    assert_eq!(bitmap.data, expected);
+                    assert_eq!(bytes, input);
+                    for y in 0..height {
+                        for x in 0..width {
+                            let index = usize::try_from(y).unwrap() * stride
+                                + usize::try_from(x / 8).unwrap();
+                            assert_eq!(
+                                bitmap.pixel(x, y),
+                                Some(expected[index] & (0x80 >> (x % 8)) != 0),
+                            );
+                        }
+                    }
+                    for cut in 0..length {
+                        assert!(matches!(
+                            bitmap_from_packed_bytes(width, height, &bytes[..cut], &limits),
+                            Err(SymbolTextError::Decode(DecodeError::Malformed(
+                                MalformedError::UnexpectedEof {
+                                    offset: 0, needed, remaining,
+                                }
+                            ))) if needed == length as u64 && remaining == cut as u64
+                        ));
+                    }
+                    if width % 8 != 0 {
+                        for y in 0..usize::try_from(height).unwrap() {
+                            let mut dirty = expected.clone();
+                            dirty[(y + 1) * stride - 1] |= 1;
+                            assert!(matches!(
+                                bitmap_from_packed_bytes(width, height, &dirty, &limits),
+                                Err(SymbolTextError::InvalidState(
+                                    "raw collective bitmap has nonzero padding"
+                                ))
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn packed_symbol_limits_are_inclusive_and_precede_payload_checks() {
+        let inclusive = Limits {
+            max_width: 9,
+            max_height: 3,
+            max_pixels_per_page: 27,
+            max_decoder_managed_memory_bytes: 6,
+            ..Limits::default()
+        };
+        let bytes = [0xff, 0x80, 0x33, 0, 0, 0];
+        assert_eq!(
+            bitmap_from_packed_bytes(9, 3, &bytes, &inclusive)
+                .expect("inclusive limits")
+                .data,
+            bytes,
+        );
+        let failures = [
+            (LimitKind::Width, 8, 9),
+            (LimitKind::Height, 2, 3),
+            (LimitKind::PagePixels, 26, 27),
+            (LimitKind::Memory, 5, 6),
+        ];
+        for rejected in 1_u8..16 {
+            let limits = Limits {
+                max_width: 9 - u32::from(rejected & 1 != 0),
+                max_height: 3 - u32::from(rejected & 2 != 0),
+                max_pixels_per_page: 27 - u64::from(rejected & 4 != 0),
+                max_decoder_managed_memory_bytes: 6 - u64::from(rejected & 8 != 0),
+                ..inclusive
+            };
+            let expected = failures
+                .iter()
+                .enumerate()
+                .find(|(index, _)| rejected & (1 << index) != 0)
+                .unwrap()
+                .1;
+            assert!(matches!(
+                bitmap_from_packed_bytes(9, 3, &[], &limits),
+                Err(SymbolTextError::Decode(DecodeError::LimitExceeded(
+                    LimitExceeded { kind, limit, actual }
+                ))) if (kind, limit, actual) == *expected
+            ));
+        }
+        let limits = Limits {
+            max_width: u32::MAX,
+            max_height: u32::MAX,
+            max_pixels_per_page: u64::MAX,
+            max_decoder_managed_memory_bytes: 0,
+            ..Limits::default()
+        };
+        let needed = u64::from(u32::MAX).div_ceil(8) * u64::from(u32::MAX);
+        assert!(matches!(
+            bitmap_from_packed_bytes(u32::MAX, u32::MAX, &[], &limits),
+            Err(SymbolTextError::Decode(DecodeError::LimitExceeded(
+                LimitExceeded { kind: LimitKind::Memory, limit: 0, actual }
+            ))) if actual == needed
+        ));
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn export_run_errors_preserve_classification_work_and_unread_input() {
+        let cases = [
+            (
+                vec![EntropyInteger::Value(1)],
+                1,
+                2,
+                10,
+                0,
+                1,
+                SymbolTextError::InvalidCount("export count exceeds candidate count"),
+            ),
+            (
+                vec![EntropyInteger::Value(-1)],
+                3,
+                0,
+                10,
+                1,
+                0,
+                SymbolTextError::InvalidEntropyValue("negative export run"),
+            ),
+            (
+                vec![EntropyInteger::Value(i64::from(u32::MAX) + 1)],
+                3,
+                0,
+                10,
+                1,
+                0,
+                SymbolTextError::InvalidEntropyValue("negative export run"),
+            ),
+            (
+                vec![EntropyInteger::OutOfBand],
+                3,
+                0,
+                10,
+                1,
+                0,
+                SymbolTextError::UnexpectedOutOfBand("export run"),
+            ),
+            (
+                vec![EntropyInteger::Value(4)],
+                3,
+                0,
+                10,
+                1,
+                0,
+                SymbolTextError::InvalidCount("export run exceeds candidate count"),
+            ),
+            (
+                vec![EntropyInteger::Value(0), EntropyInteger::Value(2)],
+                3,
+                1,
+                10,
+                2,
+                0,
+                SymbolTextError::InvalidCount("too many exported symbols"),
+            ),
+            (
+                vec![EntropyInteger::Value(3)],
+                3,
+                1,
+                10,
+                1,
+                0,
+                SymbolTextError::InvalidCount("exported-symbol popcount mismatch"),
+            ),
+            (
+                vec![
+                    EntropyInteger::Value(1),
+                    EntropyInteger::Value(i64::from(u32::MAX)),
+                ],
+                u32::MAX,
+                0,
+                10,
+                2,
+                0,
+                SymbolTextError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow)),
+            ),
+            (
+                vec![],
+                1,
+                0,
+                10,
+                1,
+                0,
+                SymbolTextError::InvalidState("missing scripted integer"),
+            ),
+            (
+                vec![EntropyInteger::Value(1)],
+                1,
+                0,
+                0,
+                1,
+                1,
+                SymbolTextError::Decode(DecodeError::LimitExceeded(LimitExceeded {
+                    kind: LimitKind::Work,
+                    limit: 0,
+                    actual: 1,
+                })),
+            ),
+        ];
+        for (integers, candidates, expected_exports, max_work_units, work, unread, expected) in
+            cases
+        {
+            let mut codec = SymbolCodec::Scripted(ScriptedCodec {
+                integers: integers.into(),
+                symbol_id: 0,
+            });
+            let mut resources = ResourceTracker {
+                work_units: 0,
+                decoded_bitmap_bytes: 17,
+            };
+            let limits = Limits {
+                max_work_units,
+                ..Limits::default()
+            };
+            let error = decode_export_runs(
+                &mut codec,
+                candidates,
+                expected_exports,
+                &limits,
+                &mut resources,
+            )
+            .expect_err("invalid export run");
+            match (error, expected) {
+                (
+                    SymbolTextError::InvalidCount(actual),
+                    SymbolTextError::InvalidCount(expected),
+                )
+                | (
+                    SymbolTextError::InvalidEntropyValue(actual),
+                    SymbolTextError::InvalidEntropyValue(expected),
+                )
+                | (
+                    SymbolTextError::UnexpectedOutOfBand(actual),
+                    SymbolTextError::UnexpectedOutOfBand(expected),
+                )
+                | (
+                    SymbolTextError::InvalidState(actual),
+                    SymbolTextError::InvalidState(expected),
+                ) => assert_eq!(actual, expected),
+                (
+                    SymbolTextError::Decode(DecodeError::Malformed(actual)),
+                    SymbolTextError::Decode(DecodeError::Malformed(expected)),
+                ) => assert_eq!(actual, expected),
+                (
+                    SymbolTextError::Decode(DecodeError::LimitExceeded(actual)),
+                    SymbolTextError::Decode(DecodeError::LimitExceeded(expected)),
+                ) => assert_eq!(actual, expected),
+                (actual, expected) => {
+                    panic!("wrong export error: {actual:?}, expected {expected:?}")
+                }
+            }
+            assert_eq!(
+                resources,
+                ResourceTracker {
+                    work_units: work,
+                    decoded_bitmap_bytes: 17
+                }
+            );
+            let SymbolCodec::Scripted(scripted) = codec else {
+                panic!("scripted codec")
+            };
+            assert_eq!(scripted.integers.len(), unread);
+        }
+    }
+
+    #[test]
+    fn export_runs_match_every_small_selection_with_exact_work_and_input_frames() {
+        for count in 0_u32..=9 {
+            for selected in 0_u32..(1 << count) {
+                let expected: Vec<_> = (0..count)
+                    .filter(|index| selected & (1 << index) != 0)
+                    .collect();
+                let mut integers = VecDeque::new();
+                let mut flag = false;
+                let mut run = 0;
+                for index in 0..count {
+                    let next = selected & (1 << index) != 0;
+                    if next != flag {
+                        integers.push_back(EntropyInteger::Value(run));
+                        flag = next;
+                        run = 0;
+                    }
+                    run += 1;
+                }
+                if count != 0 {
+                    integers.push_back(EntropyInteger::Value(run));
+                }
+                let work = u64::try_from(integers.len()).unwrap() + 5;
+                integers.push_back(EntropyInteger::Value(-73));
+                let mut codec = SymbolCodec::Scripted(ScriptedCodec {
+                    integers,
+                    symbol_id: 0,
+                });
+                let mut resources = ResourceTracker {
+                    work_units: 5,
+                    decoded_bitmap_bytes: 17,
+                };
+                let limits = Limits {
+                    max_work_units: work,
+                    ..Limits::default()
+                };
+                let result = decode_export_runs(
+                    &mut codec,
+                    count,
+                    selected.count_ones(),
+                    &limits,
+                    &mut resources,
+                )
+                .expect("scalar selection");
+                assert_eq!(result, expected);
+                assert_eq!(
+                    resources,
+                    ResourceTracker {
+                        work_units: work,
+                        decoded_bitmap_bytes: 17
+                    }
+                );
+                let SymbolCodec::Scripted(scripted) = codec else {
+                    panic!("scripted codec")
+                };
+                assert_eq!(
+                    scripted.integers,
+                    VecDeque::from([EntropyInteger::Value(-73)])
+                );
+            }
+        }
+    }
+
+    #[test]
     fn lossless_byte_and_boolean_bridges_match_standard_conversions() {
         for value in 0..=u8::MAX {
             assert_eq!(widen_u8_i64(value), i64::from(value));
