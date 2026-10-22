@@ -185,6 +185,15 @@ prefix lacking optional EOF. Duplicate local wire numbers are rejected as
 
 ## Proof and normative link audits
 
+The Huffman width regressions independently count significant bits for all
+single-bit positions and additional limb patterns at widths 0 through 257.
+They also reject oversubscribed canonical trees at 64/128/192-bit boundaries,
+check neighboring lengths, and retain decoding of valid complete/incomplete
+trees through 255-bit prefixes. Both tests fail on the former zero-offset
+shortcut; runtime and project-model expressions are corrected together.
+These local regressions are not official conformance vectors or a complete
+canonical prefix-freedom theorem.
+
 Proof audits parse Rust syntax and include production functions after test-only
 items, nested modules and path-included runtime modules. Unsupported syntax or
 ambiguous module resolution fails closed. Evidence schemas, duplicate-key
@@ -367,6 +376,14 @@ the executable was built from a pinned source revision. The committed
 `pinned-poppler-results.json` records the exact approved source revision.
 
 ## Runtime coverage comparisons
+
+The Huffman limb-boundary correction is measured on immutable source
+`d4ff9a688bba5b5574c4c119eb3d95fb74efe455`: 10287/12622 lines,
+9900/12933 regions and 1892/2638 branch outcomes. Its upward-only baseline
+refresh retains all prior global/per-file fractions. Removing the incorrect
+guard removes one region and two branch outcomes; source-line scope,
+exclusions and release goals are unchanged. The resulting 81.50% line and
+71.72% branch coverage do not meet the proposed 90%/85% release goals.
 
 The Linux coverage workflow always enforces the reviewed global and per-file
 baseline. Changed-line coverage is informational and compares with the pull

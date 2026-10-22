@@ -2,9 +2,9 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only MMR contract-test refresh, measured on immutable source_revision before this separate evidence commit. Fresh d970ac4 main and test-source collections have identical coordinate denominators and retain every previously covered coordinate; new tests gain 57 lines, 50 regions and 19 branch outcomes. Main already adds two covered bitmap lines/regions and their denominator entries relative to the previous reviewed floor; these are not attributed to this tranche. Complete non-test production ASTs and body/attribute identities are unchanged, as are models, proofs, pins, scope and exclusions. All prior global/per-file fractions remain nondecreasing by exact integer comparison. See mmr-contracts.json. Not release coverage approval; proposed release goals remain unfulfilled.",
-  "source_revision": "8fcd9e93926049492a684e16c7153f26250b7611",
-  "source_sha256": "7c0c2527ae5a117ea30f4f7f5af769675591cabf8cc46d17903374e08d8dfb8a",
+  "policy": "Upward-only refresh measured on the immutable corrected Huffman source_revision before this separate evidence commit. Independent significant-bit and canonical-tree tests reproduce the previous limb-boundary acceptance defect and pass after the one-helper runtime/model correction. The removed zero-offset guard removes one region and two branch outcomes; source-line count, coverage scope, exclusions, pins and release goals are unchanged. All prior global/per-file fractions remain nondecreasing by exact integer comparison. Actual totals include all owner-main updates and are not summed branch deltas or a claim of test-only source identity. Not release coverage approval; proposed release goals remain unfulfilled.",
+  "source_revision": "d4ff9a688bba5b5574c4c119eb3d95fb74efe455",
+  "source_sha256": "4856d93e82d7cb4f295fcdb637e2acd97298420fa4123c9ac0cec2dade35729b",
   "test_source_sha256": "8ed358cceb368d5d35c33057fccb42a37e6e2464f15d92e9bce471e6b166872e",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
@@ -14,13 +14,13 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 10266, "count": 12622},
-    "regions": {"covered": 9875, "count": 12934},
-    "branches": {"covered": 1880, "count": 2640}
+    "lines": {"covered": 10287, "count": 12622},
+    "regions": {"covered": 9900, "count": 12933},
+    "branches": {"covered": 1892, "count": 2638}
   },
   "files": {
     "src/arithmetic.rs": {"lines": {"covered": 274, "count": 340}, "regions": {"covered": 261, "count": 340}, "branches": {"covered": 66, "count": 90}},
-    "src/bitmap.rs": {"lines": {"covered": 899, "count": 974}, "regions": {"covered": 822, "count": 1041}, "branches": {"covered": 163, "count": 188}},
+    "src/bitmap.rs": {"lines": {"covered": 900, "count": 974}, "regions": {"covered": 823, "count": 1041}, "branches": {"covered": 166, "count": 188}},
     "src/decode.rs": {"lines": {"covered": 1092, "count": 1396}, "regions": {"covered": 929, "count": 1336}, "branches": {"covered": 143, "count": 230}},
     "src/document.rs": {"lines": {"covered": 1036, "count": 1168}, "regions": {"covered": 1001, "count": 1131}, "branches": {"covered": 264, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
@@ -28,7 +28,7 @@
     "src/generic_region.rs": {"lines": {"covered": 1644, "count": 2029}, "regions": {"covered": 1947, "count": 2398}, "branches": {"covered": 296, "count": 424}},
     "src/generic_row_ring.rs": {"lines": {"covered": 289, "count": 322}, "regions": {"covered": 292, "count": 371}, "branches": {"covered": 55, "count": 76}},
     "src/halftone.rs": {"lines": {"covered": 864, "count": 1065}, "regions": {"covered": 788, "count": 1061}, "branches": {"covered": 186, "count": 242}},
-    "src/huffman.rs": {"lines": {"covered": 668, "count": 832}, "regions": {"covered": 666, "count": 853}, "branches": {"covered": 156, "count": 234}},
+    "src/huffman.rs": {"lines": {"covered": 688, "count": 832}, "regions": {"covered": 690, "count": 852}, "branches": {"covered": 165, "count": 232}},
     "src/limits.rs": {"lines": {"covered": 22, "count": 22}, "regions": {"covered": 19, "count": 19}, "branches": {"covered": 0, "count": 0}},
     "src/mmr.rs": {"lines": {"covered": 574, "count": 615}, "regions": {"covered": 520, "count": 606}, "branches": {"covered": 136, "count": 150}},
     "src/reader.rs": {"lines": {"covered": 99, "count": 101}, "regions": {"covered": 89, "count": 93}, "branches": {"covered": 10, "count": 12}},

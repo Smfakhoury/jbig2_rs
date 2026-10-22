@@ -259,7 +259,7 @@ impl WideCode {
         if limb < 1 && self.limbs[1] != 0 {
             return false;
         }
-        bit == 0 || self.limbs[limb] >> bit == 0
+        self.limbs[limb] >> bit == 0
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -2467,6 +2467,75 @@ mod tests {
                 }
             )))
         ));
+    }
+
+    #[test]
+    fn wide_code_fit_matches_independent_significant_bit_counts() {
+        let mut cases = vec![
+            WideCode::default(),
+            WideCode {
+                limbs: [u64::MAX; 4],
+            },
+            WideCode {
+                limbs: [0xaaaa_aaaa_aaaa_aaaa, 0x5555_5555_5555_5555, 0, 1],
+            },
+        ];
+        for position in 0..256 {
+            let mut limbs = [0; 4];
+            limbs[position / 64] = 1_u64 << (position % 64);
+            cases.push(WideCode { limbs });
+        }
+        for code in cases {
+            let significant_bits = code
+                .limbs
+                .iter()
+                .enumerate()
+                .filter(|(_, limb)| **limb != 0)
+                .map(|(index, limb)| {
+                    index * 64 + usize::try_from(u64::BITS - limb.leading_zeros()).expect("bits")
+                })
+                .max()
+                .unwrap_or(0);
+            for width in 0..=257 {
+                assert_eq!(
+                    code.fits_in_bits(width),
+                    significant_bits <= width,
+                    "{code:?}, width={width}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn canonical_width_boundaries_reject_oversubscription_and_preserve_valid_codes() {
+        for boundary in [1_u8, 63, 64, 65, 127, 128, 129, 191, 192, 193, 255] {
+            let mut lines: Vec<_> = (1..boundary)
+                .map(|length| HuffmanLine::normal(i32::from(length - 1), length, 0))
+                .collect();
+            for offset in 0..2 {
+                lines.push(HuffmanLine::normal(
+                    i32::from(boundary - 1) + offset,
+                    boundary,
+                    0,
+                ));
+                let table = HuffmanTable::new(&lines, &Limits::default()).expect("valid tree");
+                let last = lines.len() - 1;
+                assert_eq!(
+                    decode_bits(&table, &encoded_line(&table, last, 0)),
+                    HuffmanValue::Integer(i32::try_from(last).expect("small line index"))
+                );
+            }
+            lines.push(HuffmanLine::normal(i32::from(boundary) + 1, boundary, 0));
+            assert!(
+                matches!(
+                    HuffmanTable::new(&lines, &Limits::default()),
+                    Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::Oversubscribed
+                    ))
+                ),
+                "oversubscribed {boundary}-bit tree was accepted"
+            );
+        }
     }
 
     #[test]
