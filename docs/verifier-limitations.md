@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1174 obligations with zero errors and zero native
+Pinned Verus verifies 1177 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The eighteen logical semantic groups remain complete: four deterministic
+The nineteen logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all eighteen independently
-hashed report/log pairs and all 98 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all nineteen independently
+hashed report/log pairs and all 107 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -45,6 +45,33 @@ IAID preflight classification/frame errors. Runtime numeric checks cover all
 512 histories, all 47 probability rows, both MPS values and actual success,
 EOF and overflow outcomes (144,384 cases).
 
+The complete signed-integer entry point now equals `integer_state` for
+result, full decoder and complete context bank. It composes the exact
+single-bit result/state/history, six-leaf selector, finite payload accumulator
+and positive/negative/OOB projection. `decode_integer_bits` exposes all four
+result/decoder/bank/history components of `integer_bits_run`. The selector
+decreases its finite remaining levels, and the native payload loop retains
+its decreasing count; no termination waiver or caller strengthening is added.
+Out-of-domain model guards provide totality, not native transitions.
+
+Nine new compiling controls distinguish positive/negative/OOB corruption,
+final code, unvisited context, partial-error input and payload value/history/
+bank loss. The nine existing history/preflight controls also execute with the
+new complete relations; each weaker control omits only affected redundant
+relations and preserves bounds/validity. Wide numeric and prior-procedure
+comparisons cover 11,280 complete integers and 19,800 payload folds, all six
+leaves and every positive/negative/zero/OOB/EOF/overflow category.
+
+Relative to the symbol/storage parent, native changes are only an equivalent
+explicit magnitude-overflow constructor and a sequential checked multiply/add
+expansion in the payload helper. Sixteen native streams, all 656 preconditions
+and all 48 reviewed boundary bodies/attributes remain unchanged. Fresh whole
+Cargo verification and compilation pass 1177/0; the arithmetic-only debug
+result is not whole-crate acceptance. Twelve selected rows gain functional
+project evidence, all provisional. Caller procedure-bank/storage and fourteen
+Table A.1 representation rows retain state-only strength. Independent normative
+register/table interpretation, reset/caller and complete stream claims remain open.
+
 IAID preflight failures now expose exact supplied-length/required/actual fields
 and unchanged full decoder/context state. Existing validated length/bank facts
 are retained in loop invariants; no caller precondition changes. The 31-bit cap
@@ -62,8 +89,8 @@ sequential checked operations and equivalent explicit overflow constructors;
 the pinned standard closure/conversion contracts hid the needed result relation.
 Sixteen other native streams, all 656 caller preconditions and every reviewed
 boundary body/attribute are unchanged. Full Cargo verification and compilation
-pass 1174/0. Independent caller-length/address-space sufficiency and the signed
-integer procedure remain open, so the two LENGTH/STORAGE records retain their
+passed 1174/0 at that checkpoint. Independent caller-length/address-space
+sufficiency remains open, so the two LENGTH/STORAGE records retain their
 prior strength. Six other IAID rows now have functional project evidence,
 without normative approval.
 
@@ -91,7 +118,7 @@ test justify the expansion. This removes an unexposed result relation without
 adding a local trusted specification. All other native tokens, all 656 caller
 preconditions and all reviewed arithmetic disposition bodies/attributes remain
 unchanged. These theorems do not independently approve normative register/table
-translation, signed integer output semantics or complete entropy streams.
+translation, caller interpretation or complete entropy streams.
 
 The earlier arithmetic error-context follow-up made the entry-point context-index/MPS
 relations unconditional: they hold on errors as well as successful decisions.

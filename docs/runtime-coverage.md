@@ -158,6 +158,25 @@ boundary and weaken the packed-padding check; both are detected by exact tests.
 The thirteen existing controls remain, for fifteen total. These are runtime
 regressions, not independent normative approval or a complete export theorem.
 
+The complete signed-integer tranche compares 11,280 complete procedure states
+and 19,800 payload-fold states with wide numeric/weighted-bit oracles and the
+prior checked procedure. It checks every leaf, positive/negative/zero/OOB/EOF/
+overflow categories, complete decoder/bank state, payload history and input
+borrow. These direct states are not valid coded-stream fixtures.
+On immutable source `d43847b26905656a9b253d9c56fec51bd0906999`, all 371 native
+tests pass with 14 ignored. Fresh actual collection measures
+**10,525/12,626 lines (83.36%)**, **10,152/12,933 regions (78.50%)** and
+**1,997/2,638 branches (75.70%)**. Relative to the symbol/storage parent,
+arithmetic gains eleven covered lines, twenty-one regions and ten branch
+outcomes; all other file metrics are unchanged. The checked-operation expansion
+adds two covered physical/denominator lines. Region/branch denominators, every
+reviewed floor and all exclusions remain unchanged. No new entropy fixture,
+coding family, hook or allocation-failure injection is introduced. All fifteen
+existing runtime mutants compile and are detected; the required semantic
+profile becomes nineteen groups / 107 contrasts in four unchanged shards/jobs.
+Independent normative interpretation, complete caller/stream composition,
+critical uncovered paths and 90%/85% release goals remain open.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant

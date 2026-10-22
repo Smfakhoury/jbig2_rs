@@ -2,6 +2,30 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The complete signed-integer tranche proves the full project seed/sign,
+six-leaf count/offset selection, payload fold, nonnegative/negative/OOB result
+and decoder/context-bank composition, including partial errors. The payload
+helper also exposes its exact final history. Twelve additional selected rows
+now have actual functional contracts: 94 functional / 129 state-preservation /
+26 safety-only, all 249 still provisional. Procedure-bank/storage and all
+fourteen Table A.1 representation rows intentionally remain state-only.
+The required profile is nineteen groups / 107 compiling contrasts in the
+same four shards, with nine new relation-specific controls and all nine
+history/IAID controls rerun against the stronger contracts.
+Actual unfiltered pinned Cargo verification and compilation pass 1177/0.
+Two direct-state tests compare 11,280 complete integers and 19,800 payload
+folds with wide numeric and prior checked procedures, exercising all six
+leaves and positive, negative, zero, OOB, EOF and overflow outcomes.
+All 371 native tests pass with 14 ignored. Fresh actual coverage is
+10,525/12,626 lines (83.36%), 10,152/12,933 regions (78.50%) and 1,997/2,638
+branches (75.70%). Sixteen native streams and all 656 caller preconditions
+are unchanged; arithmetic differs only by equivalent checked-operation and
+typed-error expansions. No new family, encoded stream, trust exception,
+resource policy, CI job, exclusion or publication change is introduced.
+Independent Annex A/Table A.1/Qe interpretation, procedure-bank/caller/reset
+and full-stream composition, seven official positives, capacity integration,
+exhaustive normative review and release coverage goals remain open.
+
 The direct symbol/storage boundary tranche adds five tests without new entropy
 fixtures or coding families. It checks every u32 power boundary for minimal
 symbol code length, 408 packed storage shapes/patterns and their truncations/

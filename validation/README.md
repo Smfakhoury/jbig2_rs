@@ -759,3 +759,31 @@ and are detected, alongside all thirteen existing controls. The required
 semantic profile remains eighteen groups / 98 contrasts in the same four shards.
 Independent review, full semantic composition, official positives, capacity
 integration and release coverage goals remain open.
+
+## Complete project signed-integer composition
+
+`decode_integer` now exposes exact `integer_state` result/full-decoder/full-bank
+equality, composing seed, sign, all six leaf counts/offsets, payload and signed
+value/OOB. The payload helper exposes its complete result/decoder/bank/history
+fold. Nine new compiling contrasts and nine rerun history/preflight controls
+exercise the stronger contracts without weakening validity or bounds.
+The required profile is nineteen groups / 107 contrasts in the same four
+shards and unchanged CI jobs/cap. Twelve selected algorithm rows gain functional
+project evidence; all 249 remain provisional (94 functional / 129 state /
+26 safety). Procedure-bank/storage and fourteen Table A.1 representation rows
+retain state-only strength.
+
+Two direct-state tests compare 11,280 complete integers and 19,800 payload
+folds to wide numeric/weighted-bit and prior checked procedures. All six leaves
+and positive/negative/zero/OOB/EOF/overflow categories execute. All 371 native
+tests pass with 14 ignored; fresh coverage is10,525/12,626lines,
+10,152/12,933regions,1,997/2,638branches. Only arithmetic gains11/21/10; its
+checked-operation expansion adds two covered physical/denominator lines.
+All fifteen existing runtime mutants compile and are detected.
+Fresh whole pinned verification and compilation pass1177/0. Sixteen native
+streams, all656caller preconditions and all48reviewed boundary bodies/attributes
+are unchanged; arithmetic differs only by equivalent checked-operation/error
+constructor expansions. No new encoded stream, family, trust exception,
+resource policy, exclusion or publication change is introduced. Independent
+Annex A/Table A.1/Qe interpretation, caller/reset/stream composition, official
+positive adjudication, capacity integration and coverage goals remain open.
