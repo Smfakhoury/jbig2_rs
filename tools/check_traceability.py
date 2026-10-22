@@ -89,7 +89,9 @@ def module_sources(root, path):
             literal = re.fullmatch(
                 r'include\s*!\s*\(\s*"([^"\\\n]+)"\s*\)', node.text.decode(),
             )
-            if literal is None or Path(literal[1]).is_absolute():
+            if literal is None or (
+                PurePosixPath(literal[1]).is_absolute() or Path(literal[1]).is_absolute()
+            ):
                 raise ValueError("source inclusion requires a literal relative path")
             included = (current.parent / literal[1]).resolve()
             if not included.is_relative_to(root.resolve()) or not included.is_file():

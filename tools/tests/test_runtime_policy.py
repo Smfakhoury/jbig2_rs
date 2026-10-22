@@ -31,11 +31,13 @@ class RuntimeProofPolicyTests(unittest.TestCase):
             with self.subTest(directory=directory):
                 path = self.root / directory / "policy.rs"
                 path.write_text(source)
-                result = self.run_audit()
-                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
-                self.assertIn(expected, result.stderr)
-                self.assertIn(f"{directory}/policy.rs:", result.stderr)
-                path.unlink()
+                try:
+                    result = self.run_audit()
+                    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                    self.assertIn(expected, result.stderr)
+                    self.assertIn(f"{path.relative_to(self.root)}:", result.stderr)
+                finally:
+                    path.unlink()
 
     def test_function_module_and_crate_termination_waivers_are_rejected(self):
         for source in (
