@@ -157,10 +157,10 @@ cache promotion for the existing nine targets.
 ## Runtime coverage
 
 The pinned Linux coverage workflow measures ordinary runtime code, excluding
-inline tests/oracles and ghost items. Its reviewed baseline is **81.50% lines,
-76.55% regions and 71.72% branch outcomes**. CI checks aggregate/per-file
+inline tests/oracles and ghost items. Its ratcheted baseline is **81.80% lines,
+76.90% regions and 72.33% branch outcomes**. CI checks aggregate/per-file
 non-regression; the proposed 90% line / 85% branch release goals remain unmet.
 See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
 uncovered-code artifacts and the remaining P06 test-improvement work. Public
-reader/sink/error regressions and seven isolated mutation checks guard critical
+reader/sink/error regressions and twelve isolated mutation checks guard critical
 failure contracts without changing decoder behavior.

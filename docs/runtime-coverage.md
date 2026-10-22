@@ -13,28 +13,37 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 10,287 / 12,622 | 81.50% |
-| Code regions | 9,900 / 12,933 | 76.55% |
-| Branch outcomes | 1,892 / 2,638 | 71.72% |
+| Lines | 10,325 / 12,622 | 81.80% |
+| Code regions | 9,945 / 12,933 | 76.90% |
+| Branch outcomes | 1,908 / 2,638 | 72.33% |
 
-The table is the retained reviewed floor, not the latest test measurement.
-The error-adapter follow-up measures **10,314/12,622 lines (81.71%)**,
-**9,926/12,933 regions (76.75%)** and **1,897/2,638 branch outcomes (71.91%)**.
-Against its exact normalization parent it gains **19 lines and 18 regions**,
-with **zero branch gain**, no lost covered coordinates and unchanged global/
-per-file denominators. All production declarations, bodies and coordinate
-starts are unchanged; the raw source hash changes because excluded unit tests
-are added to the decode test module. Do not claim raw source-hash equality.
-The reviewed baseline is retained byte-for-byte rather than conflating this
-independent tranche with the separate public-reference ratchet.
+The public reference-contract floor is bound to immutable source
+`ca80b60785acc3c0cdd3ae90e8c430f39c7d2b99`, before its separate evidence
+commit. Six integration tests cover 216 role/cardinality/table/global cases
+and three exact table-error precedence cases. Fresh collection runs
+343 native tests, with the same 14 ignored microbenchmarks excluded.
+All eight targeted runtime mutants compile and are detected by the exact
+selected regression tests.
 
-Four direct typed-error tests cover every generic/symbol/Huffman adapter
-variant, extreme fields, literal reasons and delegated I/O/allocation/limit/
-malformed errors. Seven actual native-compiling mutants are detected using
-exact library or integration selectors. They construct enum values directly:
-no entropy payload, new coding-family fixture, fuzz seed or normative approval
-is added. The source-bound whole proof and 16-group/72-contrast gate remain
-required, and release coverage goals are still unmet.
+The comparison collection has exactly the Rust source and test identities of
+the CI parent `33be03f`; its actual totals are 10,294/12,622 lines,
+9,907/12,933 regions and 1,896/2,638 branch outcomes. Exact source-coordinate
+comparison gains **31 lines, 38 regions and 12 branch outcomes**, with no lost
+covered coordinate and every global/per-file denominator unchanged. All floors
+are nondecreasing against current main and the earlier unpublished reference
+candidate; the totals above are a fresh combined measurement, not summed
+branch deltas. Production/model/proof/Cargo inputs are unchanged from the CI
+parent. Positive opaque-payload cases assert inspection metadata only, not
+valid entropy streams, new coding families or normative conformance.
+
+The independent error-adapter follow-up adds four direct tests for every
+generic/symbol/Huffman adapter variant, extreme fields, literal reasons and
+delegated I/O/allocation/limit/malformed errors. The combined mutation set has
+twelve cases, each requiring a compiled mutant and exact library/integration
+selector. No entropy payload, coding-family fixture, fuzz seed or normative
+approval is added. Fresh combined measurements after owner-main integration
+are recorded below; do not add historical branch deltas or lower the newly
+merged reviewed floor. The 16-group/72-contrast gate remains required.
 
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.

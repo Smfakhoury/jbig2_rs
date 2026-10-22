@@ -71,6 +71,52 @@ MUTATIONS = (
         "target": "lib",
         "test": "decode::tests::error_adapters_preserve_existing_decode_errors",
     },
+    {
+        "id": "reference-table-limit-off-by-one",
+        "file": "src/document.rs",
+        "before": "if table_count > maximum_tables {",
+        "after": "if table_count > maximum_tables + 1 {",
+        "target": "public_envelope",
+        "test": "reference_table_limits_count_tables_not_dictionaries_in_both_header_forms",
+    },
+    {
+        "id": "immediate-region-accepted-as-refinement-reference",
+        "file": "src/document.rs",
+        "before": "Some(kind) => is_intermediate_region(kind),",
+        "after": "Some(_kind) => true,",
+        "target": "public_envelope",
+        "test": "only_intermediate_region_roles_can_supply_explicit_refinement_references",
+    },
+    {
+        "id": "halftone-reference-cardinality-weakened",
+        "file": "src/document.rs",
+        "before": "reference_count == 1\n                && matches!(",
+        "after": "reference_count >= 1\n                && matches!(",
+        "target": "public_envelope",
+        "test": "halftone_and_refinement_reference_cardinality_is_exact",
+    },
+    {
+        "id": "global-reference-type-misclassification",
+        "file": "src/document.rs",
+        "before": "let kind = keyed_get(&state.types, number)?;\n    Some(*kind)",
+        "after": (
+            "let _kind = keyed_get(&state.types, number)?;\n"
+            "    Some(SegmentType::SymbolDictionary)"
+        ),
+        "target": "public_envelope",
+        "test": "global_reference_roles_are_rechecked_without_mutating_shared_state",
+    },
+    {
+        "id": "table-body-error-misclassification",
+        "file": "src/document.rs",
+        "before": "HuffmanError::Decode(error) => error,",
+        "after": (
+            "HuffmanError::Decode(_error) => "
+            "DecodeError::Malformed(MalformedError::IntegerOverflow),"
+        ),
+        "target": "public_envelope",
+        "test": "table_body_errors_precede_reference_role_checks_without_losing_error_fields",
+    },
 )
 
 
@@ -81,6 +127,8 @@ def mutate(source: str, mutation: dict) -> str:
 
 
 def check_mutations(toolchain: str) -> dict:
+    if not MUTATIONS or len({case["id"] for case in MUTATIONS}) != len(MUTATIONS):
+        raise ValueError("missing or duplicate contract mutations")
     results = []
     cargo = ["cargo", f"+{toolchain}"]
     with tempfile.TemporaryDirectory(prefix="jbig2-contract-mutations-") as temporary:
@@ -131,7 +179,7 @@ def check_mutations(toolchain: str) -> dict:
                 path.write_bytes(original)
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
-        "scope": "Targeted public API and typed-error adapter contracts, not exhaustive codec mutation coverage",
+        "scope": "Targeted public API, reference-role and typed-error adapter contracts, not exhaustive codec mutation coverage",
         "runtime_source_modified": False, "mutations": results,
     }
 
