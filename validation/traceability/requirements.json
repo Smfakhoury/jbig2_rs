@@ -440,7 +440,7 @@
     "specs/decode.rs": "270442a6accf85260af0ffdccb76e8c7a1a7f9cbfcc8157d030f9c1e45523860",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
-    "specs/huffman.rs": "31e058b8efbd0ea5cdc2c7d81c4c21d69b7e40f52a3524dc7f3a61abef686d41",
+    "specs/huffman.rs": "a5cf551be0764fe85a88351148f5fc16e5b0bd2414e1d030c42582f7d1a7f7dd",
     "specs/halftone.rs": "cb4458bb7b22c97d3f9838b6609576b63997f5cf1c794864dadd37fa8774aa37",
     "specs/mmr.rs": "01bface042a7dcdab87aa7bc62694c2867cd84aa2d734891c545fde4c1979d30",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
@@ -453,7 +453,7 @@
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
-    "src/huffman.rs": "f1d4df6ed58823e266204fbb8e2e92b8ca243ba4ce657aa316c5e3804577363c",
+    "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
     "src/halftone.rs": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/mmr.rs": "b89b82c480098c224473d18c1743864ef2a155602719a764fd02acd091e80e34",
@@ -2230,7 +2230,9 @@
       "tests": [
         {"target": "lib", "name": "huffman::tests::canonical_assignment_follows_table_order"},
         {"target": "lib", "name": "huffman::tests::supports_prefixes_longer_than_machine_words"},
-        {"target": "lib", "name": "huffman::tests::rejects_oversubscribed_and_structurally_invalid_tables"}
+        {"target": "lib", "name": "huffman::tests::rejects_oversubscribed_and_structurally_invalid_tables"},
+        {"target": "lib", "name": "huffman::tests::wide_code_fit_matches_independent_significant_bit_counts"},
+        {"target": "lib", "name": "huffman::tests::canonical_width_boundaries_reject_oversubscription_and_preserve_valid_codes"}
       ],
       "strength": "safety_only", "review": "provisional",
       "scope_of_formal_result": "Verified construction and bounded wide arithmetic do not export a theorem for the entire histogram/first-code/line-order recurrence.",

@@ -24,8 +24,8 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "ae136c65aa4777576418db8da2dbc814e1ef2df394a501fffa8a8542d50f60ec",
-  "proof_dispositions_sha256": "6b30b159cfb23b61e13978e1ff55b0130d903a7d215cda39a941e01ce91213d9",
+  "production_proof_coverage_sha256": "19fa840570fe4865b040ab90048f78472441b3c7dc2db8eeaaff95e2a6a800fa",
+  "proof_dispositions_sha256": "13b0a5299269e6a4fbfb0f7461b55ee0e94458c16a9a63762aa32f7a0f67be94",
   "duplicate_executable_proof_source": true,
   "note": "Complete inventory is not complete normative correctness. The immutable source revision above retains owner main updates and proves successful arithmetic decisions and exact next probability-context index/MPS against the project Qe-table model. Lower/upper exchange helpers additionally specify context updates on error. Existing preconditions, model definitions and all erased native tokens are unchanged; only four production contracts/proof blocks change, while the other 652 production bodies/attributes are byte-identical. The full proof build compiles and verifies 1165 obligations with zero errors. The mandatory semantic runner includes thirteen checkers and 54 contrasts, adding four real compiling arithmetic strong/weaker controls. Existing arithmetic source bindings are refreshed without changing disposition identities, statuses or reasons. All 249 normative/project-policy records remain provisional with unchanged strength classifications. Exact renormalized registers, byte consumption, initialization/refill, caller composition and faithful normative translation remain separate obligations. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Coverage release goals remain unmet. Release remains blocked.",
   "release_gate": "blocked"
