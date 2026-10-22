@@ -701,3 +701,15 @@ required profile to 17 groups / 92 contrasts in the same four shards.
 All 362 native tests pass with 14 ignored; measured coverage is
 82.42% lines / 77.48% regions / 72.82% branches, with unchanged denominators,
 reviewed floors and release goals. Whole pinned proof/compilation remains1173/0.
+
+## Error diagnostic fidelity
+
+One excluded generic-error unit test checks all local display/source variants,
+extreme fields, delegated I/O message redaction and formatter failures. The
+new thirteenth runtime mutation swallows a formatter failure; it compiles and
+is detected by that exact selector. All twelve existing controls remain.
+Actual integrated collection passes 363 native tests with 14 ignored and
+measures82.62%lines/77.72%regions/72.82%branches. Diagnostic-only gain is25lines/
+30regions/0branches with unchanged denominators/floors. All17native/proof
+streams and656production declarations/source starts match the integer parent.
+No decoding/entropy fixture, family, hook, exclusion or proof-strength change.

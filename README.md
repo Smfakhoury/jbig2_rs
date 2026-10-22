@@ -162,5 +162,5 @@ inline tests/oracles and ghost items. Its ratcheted baseline is **81.96% lines,
 non-regression; the proposed 90% line / 85% branch release goals remain unmet.
 See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
 uncovered-code artifacts and the remaining P06 test-improvement work. Public
-reader/sink/error regressions and twelve isolated mutation checks guard critical
+reader/sink/error regressions and thirteen isolated mutation checks guard critical
 failure contracts without changing decoder behavior.

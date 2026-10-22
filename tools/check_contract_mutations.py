@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that critical public-API regressions detect isolated semantic mutations."""
+"""Check that critical API and diagnostic regressions detect isolated mutations."""
 
 import argparse
 import json
@@ -187,7 +187,7 @@ def check_mutations(toolchain: str) -> dict:
                 path.write_bytes(original)
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
-        "scope": "Targeted public API, reference-role and typed-error adapter contracts, not exhaustive codec mutation coverage",
+        "scope": "Targeted public API, reference-role, typed-error adapter and formatter-failure contracts, not exhaustive codec mutation coverage",
         "runtime_source_modified": False, "mutations": results,
     }
 
