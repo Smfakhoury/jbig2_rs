@@ -29,6 +29,19 @@ pub(super) proof fn entry_model_equations(
     reveal(entry_mps);
 }
 
+pub(super) proof fn decision_model_equations(
+    decoder: &super::ArithmeticDecoder, context: super::ArithmeticContext,
+)
+    requires decoder_valid(decoder), context_valid(context),
+    ensures decision_state(decoder, context) == decision_registers(
+        decoder,
+        super::QE_STATES@[context.state_index as int].qe as u32,
+        entry_decision(decoder.interval, decoder.code, context.state_index, context.mps),
+    ),
+{
+    reveal(decision_state);
+}
+
 pub(crate) proof fn initialization_code_bound(first: u8, next: u8)
     ensures
         (((first as u32) << 16) as nat)

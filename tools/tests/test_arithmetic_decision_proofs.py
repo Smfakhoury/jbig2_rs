@@ -13,8 +13,8 @@ class ArithmeticDecisionProofFixtureTests(unittest.TestCase):
     def setUp(self):
         self.source = (TOOLS.parent / "src/arithmetic.rs").read_text()
 
-    def test_seven_compiling_output_context_mutations_have_unique_sites(self):
-        self.assertEqual(len({case["id"] for case in CASES}), 7)
+    def test_fifteen_compiling_output_context_mutations_have_unique_sites(self):
+        self.assertEqual(len({case["id"] for case in CASES}), 15)
         for case in CASES:
             with self.subTest(case=case["id"]):
                 changed = replace_once(self.source, case["site"], case["replacement"])

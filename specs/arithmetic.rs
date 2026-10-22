@@ -252,6 +252,96 @@ pub(crate) open spec fn normalized_state(
     }
 }
 
+pub(crate) open spec fn exchange_normalization(
+    decoder: &super::ArithmeticDecoder, lower: bool, qe: u32,
+) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
+    recommends decoder_state_valid(decoder), 0 < qe <= 0x5601,
+{
+    normalized_state(&super::ArithmeticDecoder {
+        bytes: decoder.bytes,
+        byte_position: decoder.byte_position,
+        current_byte: decoder.current_byte,
+        code: decoder.code,
+        interval: if lower { qe } else { decoder.interval },
+        bit_count: decoder.bit_count,
+        marker: decoder.marker,
+    })
+}
+
+pub(crate) open spec fn decision_registers(
+    decoder: &super::ArithmeticDecoder, qe: u32, decision: u8,
+) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
+    recommends decoder_valid(decoder), 0 < qe <= 0x5601, decision <= 1,
+{
+    let interval = (decoder.interval as int - qe as int) as u32;
+    let lower = decoder.code >> 16 < qe;
+    let code = if lower {
+        decoder.code
+    } else {
+        (decoder.code as int - (qe << 16) as int) as u32
+    };
+    if !lower && interval >= super::MIN_INTERVAL {
+        (
+            decision, interval, decoder.byte_position, decoder.current_byte,
+            code, decoder.bit_count, decoder.marker,
+        )
+    } else {
+        let normalized = exchange_normalization(&super::ArithmeticDecoder {
+            bytes: decoder.bytes,
+            byte_position: decoder.byte_position,
+            current_byte: decoder.current_byte,
+            code,
+            interval,
+            bit_count: decoder.bit_count,
+            marker: decoder.marker,
+        }, lower, qe);
+        (
+            if normalized.0 == 0 {
+                decision
+            } else {
+                normalized.0
+            },
+            normalized.1, normalized.2, normalized.3, normalized.4,
+            normalized.5, normalized.6,
+        )
+    }
+}
+
+pub(crate) closed spec fn decision_state(
+    decoder: &super::ArithmeticDecoder, context: super::ArithmeticContext,
+) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
+    recommends decoder_valid(decoder), context_valid(context),
+{
+    decision_registers(
+        decoder,
+        super::QE_STATES@[context.state_index as int].qe as u32,
+        entry_decision(decoder.interval, decoder.code, context.state_index, context.mps),
+    )
+}
+
+pub(crate) open spec fn eof_error(
+    offset: usize, needed: usize, remaining: usize,
+) -> super::ArithmeticError {
+    if offset as nat > u64::MAX || needed as nat > u64::MAX || remaining as nat > u64::MAX {
+        super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow)
+    } else {
+        super::ArithmeticError::Malformed(super::MalformedError::UnexpectedEof {
+            offset: offset as u64, needed: needed as u64, remaining: remaining as u64,
+        })
+    }
+}
+
+pub(crate) open spec fn error_for_signal(
+    decoder: &super::ArithmeticDecoder, signal: u8,
+) -> super::ArithmeticError {
+    let next = decoder.byte_position as nat + 1;
+    if signal == super::RASTER_SIGNAL_EOF && next <= usize::MAX {
+        eof_error(next as usize, 1, 0)
+    } else {
+        super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow)
+    }
+}
+
 pub(crate) open spec fn decoder_marker(
     decoder: &super::ArithmeticDecoder,
 ) -> Option<super::ArithmeticMarker> {
