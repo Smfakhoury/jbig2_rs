@@ -1535,6 +1535,26 @@
       ],
       "name": "integer_bit_state",
       "role": "Exact project decision-state tuple for the low-nine-bit history-selected context, with the same representation preconditions."
+    },
+    "arithmetic-iaid-run": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "iaid_run",
+      "role": "Complete finite project IAID prefix/decoder/context transition with partial errors; out-of-domain totality is not native behavior."
+    },
+    "arithmetic-iaid-state": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "iaid_state",
+      "role": "Complete project IAID preflight, finite prefix run, sentinel-cleared result and all decoder/context outputs; 31-bit cap is project policy, not normative approval."
     }
   },
   "requirements": [
@@ -7803,7 +7823,9 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7822,7 +7844,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "Project preflight rejections now specify exact supplied-length/required/actual error fields and unchanged complete decoder/context state. The 31-bit cap is project policy. These rejection contracts do not prove the row's normative caller/history-index/value relation, so its state-preservation classification is intentionally retained.",
+      "scope_of_formal_result": "The complete project IAID entry point now equals iaid_state for result and decoder/context bank, including positive runs and exact preflight rejection. The 31-bit cap remains project policy. The row's stronger normative caller-length/address-space obligation is not independently proved, so its prior state-preservation grade is deliberately retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7831,7 +7853,7 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "No helper contract binds code_length to the caller's SBSYMCODELEN. The implementation's maximum length 31 is a project boundary, not an Annex A limit."
+        "Caller SBSYMCODELEN/bank allocation and independent normative prefix/address-space sufficiency remain unapproved; the project 31-bit cap is not an Annex A limit."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7857,7 +7879,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7868,11 +7893,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7881,9 +7910,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "The return contract does not specify the initial history or the first context index."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -7907,7 +7947,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7918,11 +7961,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7931,9 +7978,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "Validity of supplied contexts does not prove IAID namespace selection or the exact tree node used per decision."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -7957,7 +8015,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7968,11 +8029,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7981,9 +8046,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "The loop has no functional history/decision-sequence invariant; full history retention is not in the return contract."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8007,7 +8083,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8018,11 +8097,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8031,9 +8114,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "A decreasing remaining counter is termination support, not a postcondition of exact decision count, including the zero-length case."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8057,7 +8151,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8068,11 +8165,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8081,9 +8182,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "Checked subtraction avoids underflow but no postcondition connects the output to history minus the code-length sentinel."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8107,7 +8219,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8118,11 +8233,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8131,9 +8250,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "No ensures relation specifies the returned ID, bit order, or its range relative to code_length."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8157,7 +8287,9 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8176,7 +8308,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "Project preflight rejections now specify exact supplied-length/required/actual error fields and unchanged complete decoder/context state. The 31-bit cap is project policy. These rejection contracts do not prove the row's normative caller/history-index/value relation, so its state-preservation classification is intentionally retained.",
+      "scope_of_formal_result": "The complete project IAID entry point now equals iaid_state for result and decoder/context bank, including positive runs and exact preflight rejection. The 31-bit cap remains project policy. The row's stronger normative caller-length/address-space obligation is not independently proved, so its prior state-preservation grade is deliberately retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8185,7 +8317,7 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "The runtime minimum-storage check is not a proved history-index model or a contract of required context count; the 31-bit cap is project policy."
+        "Caller SBSYMCODELEN/bank allocation and independent normative prefix/address-space sufficiency remain unapproved; the project 31-bit cap is not an Annex A limit."
       ],
       "functional_evidence": [],
       "invariant_evidence": [

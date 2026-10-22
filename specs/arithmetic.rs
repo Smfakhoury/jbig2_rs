@@ -372,6 +372,98 @@ pub(crate) open spec fn integer_bit_state(
     decision_state(decoder, contexts[(previous & 511) as int])
 }
 
+pub(crate) open spec fn iaid_run<'a>(
+    decoder: super::ArithmeticDecoder<'a>,
+    contexts: Seq<super::ArithmeticContext>,
+    previous: usize,
+    remaining: u8,
+    required: usize,
+) -> (Result<usize, super::ArithmeticError>, super::ArithmeticDecoder<'a>, Seq<super::ArithmeticContext>)
+    decreases remaining,
+{
+    if remaining == 0 {
+        (Ok(previous), decoder, contexts)
+    } else if previous as int >= contexts.len() {
+        (
+            Err(super::ArithmeticError::InsufficientContexts {
+                required, actual: contexts.len() as usize,
+            }),
+            decoder, contexts,
+        )
+    } else if !decoder_valid(&decoder) || !context_valid(contexts[previous as int]) {
+        // Totality only; the production contract excludes this state.
+        (
+            Err(super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow)),
+            decoder, contexts,
+        )
+    } else {
+        let context = contexts[previous as int];
+        let step = decision_state(&decoder, context);
+        let next_contexts = contexts.update(
+            previous as int, context_after_decision(&decoder, context),
+        );
+        let next_decoder = super::ArithmeticDecoder {
+            bytes: decoder.bytes,
+            byte_position: step.2,
+            current_byte: step.3,
+            code: step.4,
+            interval: step.1,
+            bit_count: step.5,
+            marker: step.6,
+        };
+        if step.0 > 1 {
+            (Err(error_for_signal(&next_decoder, step.0)), next_decoder, next_contexts)
+        } else {
+            let next = previous as nat * 2 + step.0 as nat;
+            if next > usize::MAX {
+                (
+                    Err(super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow)),
+                    next_decoder, next_contexts,
+                )
+            } else {
+                iaid_run(next_decoder, next_contexts, next as usize, (remaining - 1) as u8, required)
+            }
+        }
+    }
+}
+
+pub(crate) open spec fn iaid_state<'a>(
+    decoder: super::ArithmeticDecoder<'a>,
+    contexts: Seq<super::ArithmeticContext>,
+    code_length: u8,
+) -> (Result<u32, super::ArithmeticError>, super::ArithmeticDecoder<'a>, Seq<super::ArithmeticContext>)
+    recommends
+        decoder_valid(&decoder),
+        contexts.len() <= usize::MAX,
+        forall|index: int| 0 <= index < contexts.len() ==> context_valid(contexts[index]),
+{
+    if code_length > super::MAX_IAID_CODE_LENGTH {
+        (Err(super::ArithmeticError::InvalidIaidCodeLength(code_length)), decoder, contexts)
+    } else {
+        let required = 1usize << code_length;
+        if contexts.len() < required {
+            (
+                Err(super::ArithmeticError::InsufficientContexts {
+                    required, actual: contexts.len() as usize,
+                }),
+                decoder, contexts,
+            )
+        } else {
+            let run = iaid_run(decoder, contexts, 1, code_length, required);
+            let result = match run.0 {
+                Err(error) => Err(error),
+                Ok(prefix) =>
+                    if prefix < required || prefix as nat - required as nat > u32::MAX {
+                        Err(super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow))
+                    } else {
+                        Ok((prefix as nat - required as nat) as u32)
+                    },
+            };
+            (result, run.1, run.2)
+        }
+    }
+}
+
 pub(crate) open spec fn decoder_marker(
     decoder: &super::ArithmeticDecoder,
 ) -> Option<super::ArithmeticMarker> {

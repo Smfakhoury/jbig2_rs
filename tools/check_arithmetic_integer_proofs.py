@@ -60,14 +60,24 @@ if context_count < required {
         actual: context_count,
     });
 }"""
+IAID_RESULT = "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0,"
+IAID_CONTEXTS = "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2,"
 
 
 def case(identity, site, replacement, control, weaker="", function="ArithmeticDecoder::decode_integer_bit"):
+    controls = [(control, weaker)]
+    if identity in {
+        "iaid_invalid_length_loses_the_supplied_value",
+        "iaid_insufficient_storage_loses_required_count",
+    }:
+        controls.append((IAID_RESULT, ""))
+    elif identity == "iaid_invalid_length_mutates_context_storage":
+        controls.append((IAID_CONTEXTS, ""))
     return {
         "id": identity, "file": "src/arithmetic.rs", "module": "arithmetic",
         "function": function,
         "site": site, "replacement": replacement,
-        "controls": ((control, weaker),),
+        "controls": tuple(controls),
     }
 
 

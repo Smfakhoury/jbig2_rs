@@ -1051,6 +1051,9 @@ impl<'a> ArithmeticDecoder<'a> {
                 &&& *final(self) == *old(self)
                 &&& final(contexts)@ == old(contexts)@
             },
+            out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0,
+            *final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1,
+            final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::cast_possible_truncation)]
@@ -1084,9 +1087,22 @@ impl<'a> ArithmeticDecoder<'a> {
                     arithmetic_spec::context_valid(contexts@[index]),
                 remaining <= code_length,
                 required <= context_count,
+                arithmetic_spec::iaid_run(*old(self), old(contexts)@, 1, code_length, required)
+                    == arithmetic_spec::iaid_run(*self, contexts@, previous, remaining, required),
             decreases remaining,
         ))]
         while remaining != 0 {
+            #[cfg(verus_keep_ghost)]
+            proof_decl! {
+                let ghost before = *self;
+                let ghost before_contexts = contexts@;
+                let ghost before_previous = previous;
+                let ghost before_remaining = remaining;
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                reveal_with_fuel(arithmetic_spec::iaid_run, 1);
+            }
             if previous >= context_count {
                 return Err(ArithmeticError::InsufficientContexts {
                     required,
@@ -1094,17 +1110,27 @@ impl<'a> ArithmeticDecoder<'a> {
                 });
             }
             let decision = self.decode(&mut contexts[previous])?;
-            previous = previous
+            let shifted = previous
                 .checked_mul(2)
-                .and_then(|partial| partial.checked_add(usize::from(decision)))
-                .ok_or(MalformedError::IntegerOverflow)?;
+                .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
+            previous = shifted
+                .checked_add(usize::from(decision))
+                .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
             remaining -= 1;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(
+                    arithmetic_spec::iaid_run(
+                        before, before_contexts, before_previous, before_remaining, required,
+                    ) == arithmetic_spec::iaid_run(*self, contexts@, previous, remaining, required)
+                );
+            }
         }
         let value = previous
             .checked_sub(required)
-            .ok_or(MalformedError::IntegerOverflow)?;
+            .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
         if value > u32::MAX as usize {
-            return Err(MalformedError::IntegerOverflow.into());
+            return Err(ArithmeticError::Malformed(MalformedError::IntegerOverflow));
         }
         Ok(value as u32)
     }
@@ -2770,6 +2796,136 @@ mod tests {
                 assert_eq!(decoder.bytes.as_ptr(), before.bytes.as_ptr());
             }
         }
+    }
+
+    fn iaid_numeric_oracle<'a>(
+        initial: &ArithmeticDecoder<'a>,
+        contexts: &[ArithmeticContext],
+        code_length: u8,
+    ) -> (
+        Result<u32, ArithmeticError>,
+        ArithmeticDecoder<'a>,
+        Vec<ArithmeticContext>,
+    ) {
+        let mut decoder = refill_fixture(
+            initial.bytes,
+            initial.byte_position,
+            initial.code,
+            initial.bit_count,
+            initial.marker,
+        );
+        decoder.interval = initial.interval;
+        let mut bank = contexts.to_vec();
+        let mut value = 0_u64;
+        for used in 0..code_length {
+            let index = usize::try_from((1_u64 << used) | value).unwrap();
+            assert!(index < bank.len());
+            let (signal, next, context) = decision_numeric_oracle(&decoder, bank[index]);
+            decoder = next;
+            bank[index] = context;
+            if signal > 1 {
+                let error = if signal == RASTER_SIGNAL_EOF {
+                    eof_numeric_error(decoder.byte_position + 1, 1, 0)
+                } else {
+                    assert_eq!(signal, RASTER_SIGNAL_OVERFLOW);
+                    ArithmeticError::Malformed(MalformedError::IntegerOverflow)
+                };
+                return (Err(error), decoder, bank);
+            }
+            value = value * 2 + u64::from(signal);
+        }
+        (Ok(u32::try_from(value).unwrap()), decoder, bank)
+    }
+
+    fn assert_iaid_matches_numeric_and_prior_procedure(
+        mut initial: ArithmeticDecoder<'_>,
+        code_length: u8,
+        contexts: &[ArithmeticContext],
+    ) -> Result<u32, ArithmeticError> {
+        let (expected, decoder, bank) = iaid_numeric_oracle(&initial, contexts, code_length);
+        let mut reference = refill_fixture(
+            initial.bytes,
+            initial.byte_position,
+            initial.code,
+            initial.bit_count,
+            initial.marker,
+        );
+        reference.interval = initial.interval;
+        let mut reference_bank = contexts.to_vec();
+        let prior = decode_iaid_with(code_length, reference_bank.len(), |index| {
+            reference.decode(&mut reference_bank[index])
+        });
+        assert_eq!(prior, expected);
+        assert_decoder_state_eq(&reference, &decoder);
+        assert_eq!(reference_bank, bank);
+        let mut actual_bank = contexts.to_vec();
+        let actual = initial.decode_iaid(code_length, &mut actual_bank);
+        assert_eq!(actual, expected);
+        assert_decoder_state_eq(&initial, &decoder);
+        assert_eq!(initial.bytes.as_ptr(), decoder.bytes.as_ptr());
+        assert_eq!(actual_bank, bank);
+        actual
+    }
+
+    #[test]
+    fn complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure() {
+        let samples: [&[u8]; 5] = [
+            &[0],
+            &[0, 0],
+            &[0; 32],
+            &[0xff, 0x90, 0],
+            &[0x13, 0xff, 0x8f, 0],
+        ];
+        let mut outcomes = [0usize; 4];
+        let mut empty = 0;
+        for code_length in 0..=9 {
+            for extra in [0, 3] {
+                let count = (1_usize << code_length) + extra;
+                let contexts: Vec<_> = (0..count)
+                    .map(|index| {
+                        ArithmeticContext::from_state(
+                            u8::try_from((index + 1) % 47).unwrap(),
+                            u8::try_from((index + 1) % 2).unwrap(),
+                        )
+                        .unwrap()
+                    })
+                    .collect();
+                for bytes in samples {
+                    for position in [0, bytes.len() - 1] {
+                        for code in [0, 0x4000_0000, u32::MAX] {
+                            for count in [0, 1, 8] {
+                                for interval in [MIN_INTERVAL, 0xffff] {
+                                    let mut initial =
+                                        refill_fixture(bytes, position, code, count, None);
+                                    initial.interval = interval;
+                                    match assert_iaid_matches_numeric_and_prior_procedure(
+                                        initial,
+                                        code_length,
+                                        &contexts,
+                                    ) {
+                                        Ok(0) => {
+                                            outcomes[0] += 1;
+                                            empty += usize::from(code_length == 0);
+                                        }
+                                        Ok(_) => outcomes[1] += 1,
+                                        Err(ArithmeticError::Malformed(
+                                            MalformedError::UnexpectedEof { .. },
+                                        )) => outcomes[2] += 1,
+                                        Err(ArithmeticError::Malformed(
+                                            MalformedError::IntegerOverflow,
+                                        )) => outcomes[3] += 1,
+                                        other => panic!("unexpected IAID outcome: {other:?}"),
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(outcomes.iter().sum::<usize>(), 3600);
+        assert!(outcomes.into_iter().all(|count| count > 0));
+        assert!(empty > 0);
     }
 
     fn eof_numeric_error(offset: usize, needed: usize, remaining: usize) -> ArithmeticError {
