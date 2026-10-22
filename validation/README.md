@@ -735,3 +735,27 @@ and compilation pass1174/0 with unchanged preconditions and no new assumptions.
 No entropy fixture, coding family, encoder or fuzz seed is introduced.
 Normative review, complete signed integer/caller/stream composition, official
 positive adjudication, capacity divergence and 90%/85% goals remain open.
+
+## Direct symbol/storage boundary coverage
+
+Five ordinary direct-state tests exercise minimal symbol-code length across
+all u32 power boundaries, raw packed pixels/padding/truncation, inclusive
+dimension/pixel/memory policies and precedence, ten exact export failures,
+and all 1,023 small symbol selections using the existing scripted codec.
+Export work charges, bitmap-byte frames and unread input are asserted.
+The existing export-count requirement links the new exact test identities;
+its partial theorem and all provisional review/strength classifications remain
+unchanged. No new entropy fixture, real entropy-engine execution, coding family,
+refinement/aggregation/custom-family expansion, hook or allocation-failure
+injection is introduced.
+
+All 369 native tests pass with 14 ignored. Fresh actual coverage is
+10,514/12,624lines,10,131/12,933regions,1,987/2,638branches, an actual gain of
+84/80/66 over the complete IAID parent with unchanged denominators/floors.
+All seventeen native/proof streams and 656 production declarations, attributes,
+bodies and source starts match that parent. Fresh whole pinned verification
+and compilation remain1174/0. Two additional actual runtime mutants compile
+and are detected, alongside all thirteen existing controls. The required
+semantic profile remains eighteen groups / 98 contrasts in the same four shards.
+Independent review, full semantic composition, official positives, capacity
+integration and release coverage goals remain open.

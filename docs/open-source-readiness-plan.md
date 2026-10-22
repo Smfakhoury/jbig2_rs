@@ -2,6 +2,24 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The direct symbol/storage boundary tranche adds five tests without new entropy
+fixtures or coding families. It checks every u32 power boundary for minimal
+symbol code length, 408 packed storage shapes/patterns and their truncations/
+dirty rows, inclusive dimension/pixel/memory limits, ten exact export failures,
+and all 1,023 selections of up to nine symbols through the existing scripted
+codec. Work charges, unread input and bitmap-byte frames are explicit.
+Two additional compiling runtime mutants bring the required controls to fifteen.
+Fresh complete collection passes 369 native tests with 14 ignored and measures
+10,514/12,624 lines (83.29%), 10,131/12,933 regions (78.33%) and 1,987/2,638
+branches (75.32%). The actual parent-relative gain is 84 lines / 80 regions /
+66 branch outcomes with unchanged denominators and reviewed floors.
+All 17 native/proof token streams and all 656 production declarations,
+attributes, bodies and source starts match the complete IAID parent.
+Fresh unfiltered Cargo verification and compilation remain 1174/0.
+The selected ledger remains provisional 82/141/26, with no new proof-strength
+or normative approval. The signed integer/caller/stream, capacity, official
+positive, independent-review and 90%/85% release gates remain open.
+
 The complete IAID follow-up exposes the result, full decoder and complete
 context bank of every accepted project IAID run, including zero length and
 partial errors. Six additional selected rows now have functional project

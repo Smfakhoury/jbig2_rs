@@ -137,6 +137,27 @@ The same thirteen compiling runtime controls remain required; the proof profile
 becomes eighteen groups / 98 contrasts without additional CI jobs or shards.
 All reviewed floors, exclusions and release goals remain unchanged.
 
+The direct symbol/storage tranche adds five tests on immutable source
+`3683e4ae949b033d39a3376a85860fa8292694fb`, without any executing production
+change. Fresh combined collection passes 369 native tests with 14 ignored and
+measures **10,514/12,624 lines (83.29%)**, **10,131/12,933 regions (78.33%)** and
+**1,987/2,638 branches (75.32%)**. Against the complete IAID parent, the actual
+gain is **84 lines / 80 regions / 66 branch outcomes**, all in symbol/text;
+every denominator, exclusion and reviewed floor is unchanged.
+
+The tests cover minimal symbol-code length at all u32 power boundaries and
+65,537 consecutive counts; 408 raw packed shapes/patterns with exact visible
+pixels, all stored-row padding positions and truncated lengths; inclusive
+dimension/pixel/memory policies and precedence before data access; ten typed
+export failures; and all 1,023 selections of up to nine symbols with exact
+work charges, unread input and bitmap-byte frames. Export cases use the existing
+scripted codec, not an entropy engine or a generated coded stream. No new coding
+family, refinement/aggregation/custom-family expansion, hook or injected
+allocation failure is added. Two compiling mutants misclassify a code-length
+boundary and weaken the packed-padding check; both are detected by exact tests.
+The thirteen existing controls remain, for fifteen total. These are runtime
+regressions, not independent normative approval or a complete export theorem.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant
@@ -341,10 +362,10 @@ python -B tools/check_contract_mutations.py --toolchain 1.89.0 \
 ```
 
 CI runs the same check with the pinned coverage nightly. It copies source and
-fixtures outside the checkout, uses a fresh offline Cargo home, and tests thirteen
+fixtures outside the checkout, uses a fresh offline Cargo home, and tests fifteen
 single-site mutations covering I/O classification, inclusive limits, sink
 propagation, reference roles/cardinality, error adapter fields and formatter
-failure propagation. For each case the original exact library/integration test
+failure propagation, symbol-code length and packed padding. For each case the original exact library/integration test
 must pass, the mutant must compile, and that exact test must fail. Missing or
 ambiguous mutation sites, compile failures and surviving mutants fail the gate.
 No mutation is written to repository runtime files.

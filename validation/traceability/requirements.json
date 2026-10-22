@@ -655,7 +655,7 @@
     "src/reader.rs": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
-    "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+    "src/symbol_text.rs": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
     "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
@@ -3871,6 +3871,14 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::decodes_export_runs_including_zero_length_toggles"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::export_run_errors_preserve_classification_work_and_unread_input"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::export_runs_match_every_small_selection_with_exact_work_and_input_frames"
         }
       ],
       "strength": "functional_contract",

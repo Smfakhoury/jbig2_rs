@@ -285,56 +285,56 @@
     {
       "id": "symbol_text::SymbolTextError::from",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#2",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#3",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#4",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#5",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#6",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::SymbolTextError::from#7",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "symbol_text::DecodeError::from",
       "file": "src/symbol_text.rs",
-      "file_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+      "file_sha256": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     }
