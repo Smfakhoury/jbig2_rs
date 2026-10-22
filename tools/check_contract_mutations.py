@@ -16,6 +16,14 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "generic-formatter-failure-swallowed",
+        "file": "src/generic_region.rs",
+        "before": 'formatter.write_str("arithmetic region does not end in FF AC")',
+        "after": '{ let _ = formatter.write_str("arithmetic region does not end in FF AC"); Ok(()) }',
+        "target": "lib",
+        "test": "generic_region::tests::diagnostic_variants_preserve_fields_sources_and_formatter_failures",
+    },
+    {
         "id": "io-kind-misclassification",
         "file": "src/error.rs",
         "before": "io::ErrorKind::PermissionDenied => Self::PermissionDenied,",
