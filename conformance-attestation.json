@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
-  "scope": "Fresh existing official diagnostics on packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "5c5fac702de5724d0c40707d3e3498a6848ec38b",
+  "scope": "Fresh existing official diagnostics on integer-single-bit-history-and-iaid-preflight-native-tokens-unchanged 5c5fac7; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 374,
-    "passed": 360,
+    "total": 376,
+    "passed": 362,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
-    "scope": "Actual complete pinned ordinary-runtime coverage collection: 360 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from the actual official observations and do not provide normative approval."
+    "source_revision": "5c5fac702de5724d0c40707d3e3498a6848ec38b",
+    "scope": "Actual complete pinned ordinary-runtime coverage collection: 362 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from official observations and do not provide normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "a6840c7e51c70048720cd0ab3f88e2b5fd9c662940344af245b94ba2fe023f9a",
-    "review_sha256": "997839dfb4fe75ba48e3e94f9edb6b4d5208cb7df397a3ef64b7e887b9b3ee2f"
+    "results_sha256": "9f01d1fb5b5298e24b33edd31cdbe5a7c41100caa623c765f66af45c28278ad0",
+    "review_sha256": "effb1e04c5d906e54f9f2f243e1197edb4ce280ca959a5e6ea9b104e44abff31"
   },
   "community_regressions": {
     "total": 0,
