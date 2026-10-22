@@ -787,3 +787,36 @@ constructor expansions. No new encoded stream, family, trust exception,
 resource policy, exclusion or publication change is introduced. Independent
 Annex A/Table A.1/Qe interpretation, caller/reset/stream composition, official
 positive adjudication, capacity integration and coverage goals remain open.
+
+## Concrete arithmetic caller composition
+
+Both concrete arithmetic codec methods now expose exact value/OOB/error
+projection, full decoder and selected bank, all unselected banks and optional
+refinement/work frames on every outcome. Field identity equals the project
+ordinal, and the error adapter exposes a field-preserving four-variant model.
+Only two equivalent explicit forwarding matches execute differently
+syntactically; all sixteen other native streams, 656 preconditions and
+48 reviewed boundary bodies/attributes are unchanged.
+
+Eight actual compiling contrasts and two direct caller tests cover
+360 integer and 12,288 IAID length/bank cases. Tests compare direct callee
+results/errors/banks, cursor/marker and successful continuation; exact private
+register state is a formal guarantee, not an inferred observation.
+All 373 native tests pass with 14 ignored, and whole pinned verification and
+compilation remain1177/0. Fresh coverage is10,537/12,629lines,
+10,165/12,936regions,1,997/2,638branches; only symbol/text gains12/13/0,
+including three new physical line/region denominator entries from the
+equivalent forwarding expansion. Floors/exclusions and all fifteen real runtime
+controls remain unchanged. The required profile is twenty groups / 115 contrasts
+in the same four shards/jobs.
+
+The original private diagnostic patch no longer matched the equivalent new
+forwarding syntax. A separately hashed logging-only adaptation retains every
+existing diagnostic point and records the exact new patch identity; original
+patch/snapshots, standards, vectors and oracle sources remain untouched.
+Actual normal/logged/native/Hayro observations are rerun, not relabeled, and
+remain2/7/1 with zero rejection credit. Three caller/bank rows gain exact links
+without strength/review upgrades; all249remain provisional94/129/26.
+Normative caller-field/count/SBSYMCODELEN/reset/stream interpretation, official
+positives, capacity integration and coverage goals remain open. No stopped
+refinement/aggregation/custom-family expansion or trust exception is introduced.

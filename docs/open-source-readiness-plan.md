@@ -2,6 +2,29 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The arithmetic caller follow-up now composes integer/IAID results, exact typed
+error projection, complete decoder/selected-bank state and all unselected
+integer/IAID/optional-refinement/work frames on every outcome. Field selection
+equals the project enum ordinal. Eight additional compiling contrasts extend
+the required profile to twenty groups / 115 contrasts in four unchanged shards.
+Actual whole pinned verification and compilation remain 1177/0. Two direct
+caller tests cover 360 integer-field and 12,288 IAID length/bank cases, comparing
+direct callee values/errors/banks, cursor/marker and successful continuation.
+Private register equality is formally proved, not inferred from these public
+observations; no test observer hook is added. All 373 native tests pass with
+14 ignored. Fresh coverage is 10,537/12,629 lines (83.43%), 10,165/12,936
+regions (78.58%) and 1,997/2,638 branches (75.70%). Only symbol/text gains
+12 lines / 13 regions / zero branches; equivalent explicit error forwarding
+adds three physical line/region denominator entries. Sixteen native streams,
+all 656 caller preconditions and 48 reviewed boundary bodies/attributes are
+unchanged. Three bank/caller rows gain accurate links without a strength or
+review upgrade: all 249 remain provisional 94/129/26. The fresh diagnostic
+logger is adapted only around the equivalent forwarding syntax and its exact
+patch hash is recorded; actual normal/logged/oracle observations remain 2/7/1.
+Normative caller-field/SBSYMCODELEN/reset/stream interpretation, seven official
+positives, capacity integration, exhaustive review and release coverage goals
+remain open. No stopped coding-family work or trust exception is introduced.
+
 The complete signed-integer tranche proves the full project seed/sign,
 six-leaf count/offset selection, payload fold, nonnegative/negative/OOB result
 and decoder/context-bank composition, including partial errors. The payload

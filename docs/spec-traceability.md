@@ -153,6 +153,17 @@ contracts. The 31-bit cap is not an Annex A limit; the SBSYMCODELEN caller and
 normative address-space obligations remain open. The two LENGTH/STORAGE rows
 are deliberately **not** upgraded.
 
+The concrete arithmetic codec now exposes exact project value/error forwarding,
+full decoder/selected-bank relations and all other bank/refinement/work frames.
+Its field slot equals the project ordinal, and the arithmetic error adapter
+has an exact field-preserving model. Eight compiling contrasts and 12,648 direct
+caller cases supplement these contracts. This still does not prove that every
+dictionary/text call supplies the normative field or that symbol counts imply
+the supplied SBSYMCODELEN and bank address space. The PROCEDURE-BANKS and two
+IAID LENGTH/STORAGE rows therefore gain links but **retain** state-only strength
+and provisional review. No selected count, normative approval or decomposition
+status changes.
+
 The complete decision-state follow-up gives seven selected E.3.2 records
 functional project-step evidence: interval subtraction, strict code partition,
 upper code subtraction, fast MPS, both exchange/normalization paths and the
@@ -516,8 +527,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All nineteen semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 107 required strong/weaker compiling
+All twenty semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 115 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching

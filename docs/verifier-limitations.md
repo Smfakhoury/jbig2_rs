@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The nineteen logical semantic groups remain complete: four deterministic
+The twenty logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all nineteen independently
-hashed report/log pairs and all 107 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty independently
+hashed report/log pairs and all 115 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -44,6 +44,27 @@ wrong bits, neighboring-context mutation, error-history loss, code loss and
 IAID preflight classification/frame errors. Runtime numeric checks cover all
 512 histories, all 47 probability rows, both MPS values and actual success,
 EOF and overflow outcomes (144,384 cases).
+
+The concrete arithmetic codec now composes integer/IAID result projection,
+full decoder state and selected context-bank equality. Its contracts preserve
+every unselected integer bank, the other integer/IAID namespace, optional
+refinement state and work counter on success and error. `IntegerField::slot`
+equals the project ordinal; `ArithmeticError::into_decode` equals an explicit
+four-variant project error model. Native changes are only two equivalent
+explicit error-forwarding matches replacing the unchanged audited standard
+conversion chain; no caller precondition is strengthened.
+
+Eight actual compiling contrasts target error fields, field identity, values,
+decoder replacement and cross-bank mutation. Two direct caller tests cover
+360 integer and 12,288 IAID length/bank cases, comparing direct callee
+values/errors/complete banks and public cursor/marker/success continuation.
+The exact private decoder-register relation is proved formally, not inferred
+from those observations. Runtime fixtures keep optional refinement absent;
+no observer hook or stopped refinement/aggregation/custom-family work is added.
+Whole Cargo verification/compilation remain 1177/0, with sixteen native streams,
+656 preconditions and 48 reviewed boundary bodies/attributes unchanged.
+Normative call-site field/SBSYMCODELEN/address-space/reset/stream interpretation
+remains separate, so three caller/bank records keep state-only strength.
 
 The complete signed-integer entry point now equals `integer_state` for
 result, full decoder and complete context bank. It composes the exact

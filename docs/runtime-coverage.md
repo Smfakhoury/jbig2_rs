@@ -177,6 +177,24 @@ profile becomes nineteen groups / 107 contrasts in four unchanged shards/jobs.
 Independent normative interpretation, complete caller/stream composition,
 critical uncovered paths and 90%/85% release goals remain open.
 
+The concrete arithmetic caller follow-up adds two direct-state tests:
+360 integer-field cases across all fifteen banks and 12,288 IAID cases across
+every length byte and bounded bank sizes. They compare values and exact typed
+errors through the old conversion chain, full context banks, public cursor/
+marker and successful continuation. Formal contracts, not public observations,
+establish the private decoder-register equality. Optional refinement fixtures
+remain absent, and no observer hook or new coded stream/family is introduced.
+On immutable source `f625744923200267c504f123dd7fe6c2c6f20cc0`, all 373 native
+tests pass with 14 ignored. Fresh actual coverage is
+**10,537/12,629 lines (83.43%)**, **10,165/12,936 regions (78.58%)** and
+**1,997/2,638 branches (75.70%)**. Only symbol/text gains twelve covered lines
+and thirteen regions, with no branch gain. The equivalent explicit forwarding
+adds three physical line/region denominator entries; all branch denominators,
+floors and exclusions are unchanged. All fifteen runtime mutants still compile
+and are detected. The required profile becomes twenty groups / 115 compiling
+contrasts in four unchanged shards/jobs. Normative caller/stream interpretation,
+critical uncovered paths and release coverage goals remain open.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant
