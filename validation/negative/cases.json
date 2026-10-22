@@ -2,6 +2,26 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-PUBLIC-REFERENCE-ROLE-CONTRACT",
+      "surface": "local and immutable-global segment reference roles and cardinalities",
+      "expected": "exact InvalidSegmentReferences consumer numbers for disallowed roles, zero/multiple required references and table counts above four/eight; no page delivery on rejection, shared globals remain unchanged and subsequent decoding recovers; positive controls assert inspection metadata only",
+      "tests": [
+        {"target": "public_envelope", "name": "reference_roles_reject_invalid_consumers_before_page_delivery"},
+        {"target": "public_envelope", "name": "only_intermediate_region_roles_can_supply_explicit_refinement_references"},
+        {"target": "public_envelope", "name": "reference_table_limits_count_tables_not_dictionaries_in_both_header_forms"},
+        {"target": "public_envelope", "name": "halftone_and_refinement_reference_cardinality_is_exact"},
+        {"target": "public_envelope", "name": "global_reference_roles_are_rechecked_without_mutating_shared_state"}
+      ]
+    },
+    {
+      "id": "NEG-PUBLIC-TABLE-ERROR-MAPPING",
+      "surface": "eager custom-table payload validation and reference-check precedence",
+      "expected": "exact payload-relative UnexpectedEof fields, reserved flags and nonzero-padding errors are preserved before invalid table-reference roles; no sink callbacks occur and subsequent decoding recovers",
+      "tests": [
+        {"target": "public_envelope", "name": "table_body_errors_precede_reference_role_checks_without_losing_error_fields"}
+      ]
+    },
+    {
       "id": "NEG-PUBLIC-PROFILE-CONTRACT",
       "surface": "public standalone and embedded profile envelopes",
       "expected": "exact invalid profile segment numbers for placement, duplicate and non-superset declarations; exact u64 expected/actual payload lengths including the maximum count before allocation",

@@ -185,6 +185,22 @@ prefix lacking optional EOF. Duplicate local wire numbers are rejected as
 
 ## Proof and normative link audits
 
+The public reference-contract tranche adds six integration tests and two exact
+negative-catalog entries. It covers 216 local/global role, cardinality and table
+count scenarios plus three eager table-payload error precedence cases. Failure
+checks assert precise typed errors, zero page-sink effects, immutable shared
+globals and recovery through reused contexts. Positive opaque dictionary and
+region payloads assert inspection metadata only, not valid entropy streams or
+pixel conformance. No new codec-family payload, fuzz target or seed is added.
+
+Eight isolated runtime mutation controls check I/O-kind preservation,
+inclusive stream/table limits, page-sink failure propagation, intermediate-only
+refinement references, halftone cardinality, global type classification and
+table-error classification. Every mutant must compile and fail its exact
+selected test after a passing baseline; empty/duplicate sets, ambiguous sites
+and non-test failures are rejected. These are test-sensitivity controls, not
+Verus proofs or exhaustive semantic coverage.
+
 The Huffman width regressions independently count significant bits for all
 single-bit positions and additional limb patterns at widths 0 through 257.
 They also reject oversubscribed canonical trees at 64/128/192-bit boundaries,

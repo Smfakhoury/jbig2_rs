@@ -19,8 +19,19 @@ bare Cargo-Verus success against the ordinary runtime manifest is not proof
 evidence. Exec termination checking remains enabled but is conditional on
 callee termination, not an end-to-end CPU bound.
 
-The negative/metamorphic catalogs now contain 29 fully executable-linked cases
-(38 references to 37 distinct ordinary tests), with no legacy file-only
+The public reference-contract tranche adds six integration tests covering
+216 role/cardinality/table/global scenarios plus three exact table-error
+precedence cases. Actual current-source validation passes 343 native tests
+with 14 existing ignored microbenchmarks and detects all eight compiling
+public-contract mutants. Coverage reaches 10,325/12,622 lines (81.80%),
+9,945/12,933 regions (76.90%) and 1,908/2,638 branch outcomes (72.33%).
+Same-source coordinate comparison gains 31/38/12 with unchanged denominators
+and no lost covered coordinates. The archive/proof/source policy and all
+normative approvals remain unchanged; positive opaque cases check inspection
+metadata only. This is P06 progress, not completion of its release goals.
+
+The negative/metamorphic catalogs now contain 45 fully executable-linked cases
+(73 references to 68 distinct ordinary tests), with no legacy file-only
 exceptions. Strict schema, source/ignored-test checks and real Cargo discovery
 are enforced in native CI. Five focused regressions strengthen typed duplicate,
 missing-reference, truncation and repeat-result claims. Catalog linking is not
