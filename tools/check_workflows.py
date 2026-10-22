@@ -104,6 +104,91 @@ def check_fuzz_producer_serialization(document):
         raise ValueError("fuzz concurrency belongs only to the corpus producer job")
 
 
+def check_verus_sharding(document):
+    jobs = document.get("jobs", {})
+    if set(jobs) != {"whole", "semantic", "verify"} or not all(isinstance(job, dict) for job in jobs.values()):
+        raise ValueError("Verus requires whole, semantic and stable verify collector jobs")
+    whole, semantic, verify = (jobs[name] for name in ("whole", "semantic", "verify"))
+    if any(job.get("timeout-minutes") != "20" for job in jobs.values()):
+        raise ValueError("Verus job caps must remain 20 minutes")
+    if (
+        semantic.get("needs") != "whole"
+        or semantic.get("strategy") != {
+            "fail-fast": "false", "max-parallel": "4",
+            "matrix": "${{ fromJSON(needs.whole.outputs.matrix) }}",
+        }
+        or whole.get("outputs") != {"matrix": "${{ steps.groups.outputs.matrix }}"}
+        or verify.get("if") != "always()" or verify.get("needs") != ["whole", "semantic"]
+        or "name" in verify
+    ):
+        raise ValueError("Verus dynamic complete matrix/stable fail-closed verify contract changed")
+    whole_steps, semantic_steps, verify_steps = (
+        job.get("steps", []) for job in (whole, semantic, verify)
+    )
+    setups = [
+        [{key: step[key] for key in ("uses", "with") if key in step}
+         for step in steps if step.get("uses", "").split("@")[0] in {
+             "actions/checkout", "actions/setup-python", "dtolnay/rust-toolchain",
+         }]
+        for steps in (whole_steps, semantic_steps)
+    ]
+    downloads = [
+        [step for step in steps if step.get("name") == "Download pinned Verus"]
+        for steps in (whole_steps, semantic_steps)
+    ]
+    if setups[0] != setups[1] or len(setups[0]) != 3 or downloads[0] != downloads[1] or len(downloads[0]) != 1:
+        raise ValueError("whole and semantic jobs must use identical pinned tool setup")
+    runs = ["\n".join(step.get("run", "") for step in steps) for steps in (
+        whole_steps, semantic_steps, verify_steps,
+    )]
+    for text in (
+        "--compile", "--num-threads 4", "--rlimit 30", "--require-complete",
+        "diff -u production-proof-coverage.json", "tools/check_traceability.py",
+        "--seal-whole target/semantic-ci/whole", "tools/run_semantic_proofs.py --matrix",
+    ):
+        if text not in runs[0]:
+            raise ValueError(f"whole-crate verification gate missing: {text}")
+    if '--only "$SEMANTIC_GROUP"' not in runs[1] or not any(
+        step.get("env") == {"SEMANTIC_GROUP": "${{ matrix.group }}"} for step in semantic_steps
+    ):
+        raise ValueError("semantic matrix must execute its exact selected group")
+    download = [step for step in verify_steps if step.get("uses", "").startswith("actions/download-artifact@")]
+    if len(download) != 1 or download[0].get("with") != {
+        "pattern": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-*",
+        "path": "target/semantic-inputs", "merge-multiple": "false",
+    } or download[0].get("uses") != "actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131":
+        raise ValueError("collector must download unmerged, pinned, current-run/current-attempt artifacts")
+    if not any(
+        step.get("env") == {
+            "WHOLE_RESULT": "${{ needs.whole.result }}", "SEMANTIC_RESULT": "${{ needs.semantic.result }}",
+        } and all(text in step.get("run", "") for text in (
+            "--aggregate target/semantic-inputs",
+            '--whole-result "$WHOLE_RESULT" --semantic-result "$SEMANTIC_RESULT"',
+            "--output-dir target/semantic-canonical",
+        )) for step in verify_steps
+    ):
+        raise ValueError("collector must check both upstream results and all evidence")
+    uploads = {}
+    for name, steps in (("whole", whole_steps), ("semantic", semantic_steps), ("verify", verify_steps)):
+        matches = [step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@")]
+        if len(matches) != 1 or matches[0].get("if") != "always()":
+            raise ValueError("each Verus job must retain failed diagnostics")
+        uploads[name] = matches[0].get("with")
+        if any(
+            "if" in step for step in steps
+            if step.get("run") and step.get("name") != "Stage whole-crate outputs including failed diagnostics"
+        ):
+            raise ValueError("Verus evidence-producing/collecting steps must not be conditional")
+    if uploads != {
+        "whole": {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-whole",
+                  "path": "target/semantic-ci/whole/"},
+        "semantic": {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.group }}",
+                     "path": "target/semantic-ci/group/"},
+        "verify": {"name": "verus-bootstrap-log", "path": "target/semantic-canonical/"},
+    }:
+        raise ValueError("Verus immutable partial/canonical artifact names or layout changed")
+
+
 def check_workflow(document, name):
     if document.get("permissions") != {"contents": "read"}:
         raise ValueError(f"{name}: workflow must default to contents: read only")
@@ -117,6 +202,8 @@ def check_workflow(document, name):
         raise ValueError(f"{name}: workflow must contain jobs")
     if name in {"fuzz.yml", "fuzz.yaml"}:
         check_fuzz_producer_serialization(document)
+    if name in {"verus.yml", "verus.yaml"}:
+        check_verus_sharding(document)
     actions = []
     for job_name, job in jobs.items():
         if not isinstance(job, dict):
@@ -187,7 +274,7 @@ def main():
             "source_revision": subprocess.run(
                 ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True,
             ).stdout.strip(),
-            "note": "Checks configuration pins, explicit toolchains, read-only permissions, job budgets, fuzz producer serialization/isolation and update configuration. Not upstream code approval, protected-branch enforcement, trigger execution or full readiness evidence.",
+            "note": "Checks configuration pins, explicit toolchains, read-only permissions, job budgets, bounded complete Verus sharding/fail-closed collection, fuzz producer serialization/isolation and update configuration. Not upstream code approval, protected-branch enforcement, trigger execution or full readiness evidence.",
         }
         arguments.output.parent.mkdir(parents=True, exist_ok=True)
         arguments.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
