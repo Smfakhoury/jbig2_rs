@@ -42,8 +42,13 @@ delegated I/O/allocation/limit/malformed errors. The combined mutation set has
 twelve cases, each requiring a compiled mutant and exact library/integration
 selector. No entropy payload, coding-family fixture, fuzz seed or normative
 approval is added. Fresh combined measurements after owner-main integration
-are recorded below; do not add historical branch deltas or lower the newly
-merged reviewed floor. The 16-group/72-contrast gate remains required.
+are **10,345/12,622 lines (81.96%)**, **9,964/12,933 regions (77.04%)** and
+**1,909/2,638 branch outcomes (72.37%)**. The exact normalization parent
+measures 10,326/9,946/1,909 covered coordinates respectively, so this adapter
+tranche adds 19 lines and 18 regions with zero branch gain. All 349 native
+tests and twelve compiling mutation controls pass; denominator and production
+coordinate identities are unchanged. Do not add historical branch deltas or
+lower the merged reviewed floor. The 16-group/72-contrast gate remains required.
 
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
