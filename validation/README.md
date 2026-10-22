@@ -686,3 +686,30 @@ tests pass with14existing ignored tests. Fresh coverage is82.38%lines,
 77.46%regions,72.74%branches, an actual parent-relative gain18/21/9 with unchanged
 denominators and floors. Defensive direct states are not valid coded streams;
 allocation/unreachable guards remain unexercised. P04/P05/P06 stay open.
+
+## Integer history and IAID preflight
+
+The exact single-bit helper now binds returned decision, full decoder/error
+state, selected-context update, unchanged unselected contexts and both successful
+history forms/error history. Two direct-state tests cover 144,384 combinations
+and every IAID length byte with bounded rejected banks, without decoding IAID
+payloads. IAID preflight fields/state are exact project policy, not a normative
+31-bit limit or a positive-value/caller theorem; its rows remain state-only.
+Three history/context rows gain actual functional evidence; all 249 remain
+provisional (76/147/26). Nine actual compiling integer contrasts extend the
+required profile to 17 groups / 92 contrasts in the same four shards.
+All 362 native tests pass with 14 ignored; measured coverage is
+82.42% lines / 77.48% regions / 72.82% branches, with unchanged denominators,
+reviewed floors and release goals. Whole pinned proof/compilation remains1173/0.
+
+## Error diagnostic fidelity
+
+One excluded generic-error unit test checks all local display/source variants,
+extreme fields, delegated I/O message redaction and formatter failures. The
+new thirteenth runtime mutation swallows a formatter failure; it compiles and
+is detected by that exact selector. All twelve existing controls remain.
+Actual integrated collection passes 363 native tests with 14 ignored and
+measures82.62%lines/77.72%regions/72.82%branches. Diagnostic-only gain is25lines/
+30regions/0branches with unchanged denominators/floors. All17native/proof
+streams and656production declarations/source starts match the integer parent.
+No decoding/entropy fixture, family, hook, exclusion or proof-strength change.

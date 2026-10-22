@@ -5277,6 +5277,105 @@ mod tests {
     use std::hint::black_box;
     use std::time::{Duration, Instant};
 
+    #[test]
+    fn diagnostic_variants_preserve_fields_sources_and_formatter_failures() {
+        use std::fmt::Write as _;
+
+        struct RejectWrites;
+        impl fmt::Write for RejectWrites {
+            fn write_str(&mut self, _: &str) -> fmt::Result {
+                Err(fmt::Error)
+            }
+        }
+
+        for (error, message, delegated) in [
+            (
+                GenericRegionError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow)),
+                "malformed JBIG2 input: input-derived integer overflow".to_owned(),
+                true,
+            ),
+            (
+                GenericRegionError::ReservedFlags(u8::MAX),
+                "reserved generic-region flags are set: 0xff".to_owned(),
+                false,
+            ),
+            (
+                GenericRegionError::InvalidFlags(u8::MAX),
+                "invalid generic-region flag combination: 0xff".to_owned(),
+                false,
+            ),
+            (
+                GenericRegionError::InvalidAdaptivePixel {
+                    number: u8::MAX,
+                    x: i32::MIN,
+                    y: i32::MAX,
+                },
+                "adaptive pixel 255 at (-2147483648, 2147483647) is not an earlier target pixel"
+                    .to_owned(),
+                false,
+            ),
+            (
+                GenericRegionError::InvalidSkipDimensions,
+                "generic-region skip bitmap has the wrong dimensions".to_owned(),
+                false,
+            ),
+            (
+                GenericRegionError::InvalidArithmeticTerminator,
+                "arithmetic region does not end in FF AC".to_owned(),
+                false,
+            ),
+            (
+                GenericRegionError::UnexpectedArithmeticMarker {
+                    offset: usize::MAX,
+                    code: 0xfe,
+                },
+                format!("unexpected arithmetic marker FF FE at byte {}", usize::MAX),
+                false,
+            ),
+            (
+                GenericRegionError::RowCountMismatch {
+                    expected: u32::MAX,
+                    actual: 0,
+                },
+                "terminal row count 0 differs from decoded row count 4294967295".to_owned(),
+                false,
+            ),
+            (
+                GenericRegionError::ContextIndex {
+                    index: usize::MAX,
+                    count: 0,
+                },
+                format!(
+                    "context index {} is outside a statistics set of length 0",
+                    usize::MAX
+                ),
+                false,
+            ),
+        ] {
+            assert_eq!(error.to_string(), message);
+            let source = std::error::Error::source(&error);
+            assert_eq!(source.is_some(), delegated);
+            if let Some(source) = source {
+                assert!(matches!(
+                    source.downcast_ref::<DecodeError>(),
+                    Some(DecodeError::Malformed(MalformedError::IntegerOverflow)),
+                ));
+            }
+            assert!(write!(&mut RejectWrites, "{error}").is_err());
+        }
+        let private_message = "private diagnostic message must not escape";
+        let io = std::io::Error::new(std::io::ErrorKind::TimedOut, private_message);
+        let error = GenericRegionError::from(DecodeError::from(io));
+        assert_eq!(error.to_string(), "input/output error: TimedOut");
+        assert!(!error.to_string().contains(private_message));
+        assert!(matches!(
+            std::error::Error::source(&error)
+                .unwrap()
+                .downcast_ref::<DecodeError>(),
+            Some(DecodeError::Io(_)),
+        ));
+    }
+
     fn region_prefix(width: u32, height: u32) -> Vec<u8> {
         let mut bytes = Vec::new();
         bytes.extend_from_slice(&width.to_be_bytes());

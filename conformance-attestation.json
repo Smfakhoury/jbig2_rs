@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
-  "scope": "Fresh existing official diagnostics on packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "dcea356b2e419fb7d5f3395c7c308cdd109328f7",
+  "scope": "Fresh existing official diagnostics on generic-error-diagnostic-unit-tests-native-production-unchanged-relative-to-integer-parent dcea356; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 374,
-    "passed": 360,
+    "total": 377,
+    "passed": 363,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
-    "scope": "Actual complete pinned ordinary-runtime coverage collection: 360 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from the actual official observations and do not provide normative approval."
+    "source_revision": "dcea356b2e419fb7d5f3395c7c308cdd109328f7",
+    "scope": "Actual complete pinned ordinary-runtime coverage collection: 363 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from official observations and do not provide normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "a6840c7e51c70048720cd0ab3f88e2b5fd9c662940344af245b94ba2fe023f9a",
-    "review_sha256": "997839dfb4fe75ba48e3e94f9edb6b4d5208cb7df397a3ef64b7e887b9b3ee2f"
+    "results_sha256": "300c073b62a65a79b050ac8a0b49f7e30cc1fc5cedc6867fce4c5b6a7f10bbe2",
+    "review_sha256": "aba00150ff1aaa1199330ef818b657a34676e3d96acf042783507979d1618a5c"
   },
   "community_regressions": {
     "total": 0,

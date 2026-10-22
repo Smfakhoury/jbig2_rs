@@ -5,21 +5,21 @@
     {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
+      "file_sha256": "934c94576f893c12b416af80df78a058873c9152a8e113a3ea49516bd75a06c7",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
     },
     {
       "id": "arithmetic::ArithmeticError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
+      "file_sha256": "934c94576f893c12b416af80df78a058873c9152a8e113a3ea49516bd75a06c7",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "arithmetic::DecodeError::from",
       "file": "src/arithmetic.rs",
-      "file_sha256": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
+      "file_sha256": "934c94576f893c12b416af80df78a058873c9152a8e113a3ea49516bd75a06c7",
       "status": "audited-forwarder",
       "reason": "One-line trait forwarder to the verified ArithmeticError::into_decode method; reviewed explicitly, not directly verified as a From implementation."
     },
@@ -159,42 +159,42 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
       "status": "reviewed-verifier-limitation",
       "reason": "Standard Display formatting uses formatting machinery not directly verified by pinned Verus; this is not a raster-kernel or fallible-allocation limitation."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
       "status": "reviewed-verifier-limitation",
       "reason": "The standard Error trait source method is not directly verified by pinned Verus; raster algorithms and allocation specifications are accounted for separately."
     },
     {
       "id": "generic_region::GenericRegionError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#2",
       "file": "src/generic_region.rs",
-      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#3",
       "file": "src/generic_region.rs",
-      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::DecodeError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda",
+      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     },

@@ -61,7 +61,7 @@ measures 10,326/9,946/1,909 covered coordinates respectively, so this adapter
 tranche adds 19 lines and 18 regions with zero branch gain. All 349 native
 tests and twelve compiling mutation controls pass; denominator and production
 coordinate identities are unchanged. Do not add historical branch deltas or
-lower the merged reviewed floor. The 16-group/83-contrast gate remains required.
+lower the merged reviewed floor. The 17-group/92-contrast gate remains required.
 
 The arithmetic error-context follow-up adds three direct-state unit tests,
 not encoded streams or a new coding family. They check partial EOF registers,
@@ -111,6 +111,30 @@ not reached by validated parser state; they are not represented as valid coded
 streams. Real allocation failures and architecture/invariant-unreachable
 defenses are not manufactured, excluded or counted as covered. The reviewed
 baseline and release goals remain unchanged.
+
+The integer-history follow-up adds two direct-state tests, not valid encoded
+integer/IAID fixtures. They check 144,384 single-step history/Qe/MPS/outcome
+cases against wide numeric state/history and complete context-bank oracles,
+and every IAID length byte against bounded insufficient-bank cases without
+decoding. On source `5c5fac702de5724d0c40707d3e3498a6848ec38b`, all 362 native
+tests pass with 14 ignored. Fresh coverage is **10,403/12,622 lines (82.42%)**,
+**10,021/12,933 regions (77.48%)**, and **1,921/2,638 branches (72.82%)**.
+The actual parent-relative gain is five lines, three regions and two branch
+outcomes; all denominators, reviewed floors and release goals remain unchanged.
+These tests do not complete integer/IAID folds, caller or normative semantics.
+
+The generic diagnostic follow-up exercises every local error variant's exact
+display fields and source chain, extreme numeric values, redacted delegated I/O
+messages and propagated formatter failures. Its new exact-selector mutant
+swallows a formatter failure: it compiles and the test rejects it, alongside
+all twelve existing controls. After integrating the integer parent, actual
+source `dcea356b2e419fb7d5f3395c7c308cdd109328f7` passes 363 native tests with
+14 ignored. Fresh combined coverage is **10,428/12,622 lines (82.62%)**,
+**10,051/12,933 regions (77.72%)**, and **1,921/2,638 branches (72.82%)**.
+Only diagnostic lines/regions increase over the actual integer parent:
+**25 lines / 30 regions / no branch gain**, with unchanged denominators/floors.
+No decoding, entropy fixture, coded family, production hook or proof claim is
+added by this test-only tranche.
 
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
@@ -303,20 +327,21 @@ python -B tools/check_contract_mutations.py --toolchain 1.89.0 \
 ```
 
 CI runs the same check with the pinned coverage nightly. It copies source and
-fixtures outside the checkout, uses a fresh offline Cargo home, and tests three
-single-site mutations: wrong I/O classification, an inclusive-reader-limit
-off-by-one, and a swallowed sink error. For each case the original selected test
+fixtures outside the checkout, uses a fresh offline Cargo home, and tests thirteen
+single-site mutations covering I/O classification, inclusive limits, sink
+propagation, reference roles/cardinality, error adapter fields and formatter
+failure propagation. For each case the original exact library/integration test
 must pass, the mutant must compile, and that exact test must fail. Missing or
 ambiguous mutation sites, compile failures and surviving mutants fail the gate.
 No mutation is written to repository runtime files.
 
-This is sensitivity evidence for three contracts, not exhaustive codec mutation
-coverage. New catalog cases have exact ordinary Cargo target/name references
-checked against non-ignored `#[test]` functions. The 18 legacy file-only case
-references are an explicit migration backlog, not accepted for new cases.
+This is targeted contract sensitivity, not exhaustive codec mutation coverage.
+All 45 catalog cases have exact executable Cargo target/name references checked
+against non-ignored `#[test]` functions; the old file-only reference backlog is
+closed, not a remaining exception.
 
-Remaining P06 work includes migrating those legacy IDs, broader coding-family
-and all-limit tests, additional generated valid streams, broader mutation
+Remaining P06 work includes broader coding-family/all-limit tests,
+additional generated valid streams, broader mutation
 testing, and review/enforcement of release and changed-line thresholds.
 Coverage is distinct from proof coverage and cannot close P05's known
 runtime/proof divergences.

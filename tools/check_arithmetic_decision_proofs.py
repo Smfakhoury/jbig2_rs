@@ -24,6 +24,7 @@ SIGNAL_POST = SIGNAL_DECISION + "\n" + CONTEXT_POST
 CHECKED_POST = """&& decision == arithmetic_spec::entry_decision(
     old(self).interval, old(self).code, old(context).state_index, old(context).mps,
 )"""
+CHECKED_STATE_DECISION = "&& decision == arithmetic_spec::decision_state(old(self), *old(context)).0"
 FRAME = """final(self).bytes@ == old(self).bytes@,
 final(self).bytes == old(self).bytes,"""
 SIGNAL_FRAME = """out <= RASTER_SIGNAL_OVERFLOW,
@@ -104,7 +105,7 @@ Ok(signal)""",
         "replacement": """let signal = self.decode_signal(context);
 if signal <= 1 {
 Ok(1 - signal)""",
-        "controls": ((CHECKED_POST, ""),),
+        "controls": ((CHECKED_POST, ""), (CHECKED_STATE_DECISION, "")),
     },
 ) + tuple(
     {

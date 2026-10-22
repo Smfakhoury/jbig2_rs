@@ -132,7 +132,7 @@ PR's work. Each workflow also supports manual dispatch for branch preflight.
 The daily extended fuzz campaign and trusted-main corpus producer remain
 unchanged.
 
-The sixteen semantic proof groups and all 83 compiling strong/weaker contrasts
+The seventeen semantic proof groups and all 92 compiling strong/weaker contrasts
 are preserved, but execute in four deterministic, sequential shards rather
 than one separately initialized job per group. Each shard has one worker; at most
 four run concurrently, under the unchanged 20-minute job cap. The stable
@@ -162,5 +162,5 @@ inline tests/oracles and ghost items. Its ratcheted baseline is **81.96% lines,
 non-regression; the proposed 90% line / 85% branch release goals remain unmet.
 See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
 uncovered-code artifacts and the remaining P06 test-improvement work. Public
-reader/sink/error regressions and twelve isolated mutation checks guard critical
+reader/sink/error regressions and thirteen isolated mutation checks guard critical
 failure contracts without changing decoder behavior.

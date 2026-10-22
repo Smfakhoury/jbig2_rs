@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
-  "scope": "Unchanged complete-decision proof inputs with five excluded packed-storage/page-state unit tests; source-bound proof and observations refreshed without new semantic or normative claims",
+  "source_revision": "dcea356b2e419fb7d5f3395c7c308cdd109328f7",
+  "scope": "Unchanged integer/decoder proof program with excluded diagnostic fidelity/source/formatter-failure tests and thirteen critical runtime mutation controls",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/parser-state/whole-build CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/error-diagnostics/whole-build CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1173,
     "verified_production_functions": 608,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "8345d08bbd2af83434bce0e02caff01aa01f84fd6db76bafb7a667137d75cc16",
-  "proof_dispositions_sha256": "67050cad37790bd19830b9dfa3f35da0ccca83b0dd002a45873e70f8c0beb62a",
+  "production_proof_coverage_sha256": "0bcec7e2010296b933957f26d7cd53a54183cac9592ea585d60a7234100d0c1a",
+  "proof_dispositions_sha256": "9d270cb4bb18f1bea3558082342e0d5d9031f558b5c0c68accced81b1ef4b20e",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo verification and compilation prove 1173 project obligations with zero errors and enabled lifetime/erasure checks. This tranche adds only five excluded unit tests for packed storage and page states. All 17 native/proof token streams and 656 production signatures, attributes, bodies and source starts exactly match parent3072167. Existing complete arithmetic step contracts and the 16-group/83-contrast required profile remain unchanged. Inventory remains 608 verified, 24 reviewed limitations, 23 forwarders, one capacity divergence and zero incomplete/native-assumption entries. Tests cover inclusive budgets, zero/max shapes without huge allocations, row slots, scalar clipped/raw windows, copy/clear/flush frames and endian bytes, stripe progress, finish precedence and metadata overflow. No entropy fixture, coded family, decoder invocation, fuzz seed or production hook is added. All 360 native tests pass with 14 existing ignored tests. Actual coverage is 10398/12622 lines, 10018/12933 regions and 1919/2638 branches, with unchanged denominators/floors. Parent-relative gain18/21/9 consists of document6/3/1, generic error helpers3/3/0 and row ring9/15/8. Unreachable allocation/architecture/invariant defenses remain in the denominator, not counted covered. Twelve runtime mutants compile and are detected. All 249 selected records remain provisional73/150/26. Actual approved normal/logging/native/Hayro refresh remains2/7/1 with zero rejection credit. No runtime/model/precondition/assumption/memory-policy/exclusion/pin/standard-asset/publication/CI-job change. Normative review, upstream capacity and 90/85 release coverage remain open.",
+  "note": "Fresh actual integrated Cargo verification and compilation pass1173/0 with lifetime/erasure checks enabled. Relative to integer parentdfcbbdc, all17native/proof token streams and656production declarations,attributes,bodies and source-coordinate starts are unchanged; reviewed generic-error boundaries are unchanged before rebinding file hashes. The new excluded unit test checks every GenericRegionError display/source variant, extreme fields, exact delegated classification, private I/O message redaction and formatter failure propagation. A thirteenth actual compiled runtime mutant swallows a formatter failure and is detected by that exact test; all twelve existing controls remain. No decoding,entropy payload,family,encoder,seed,production hook,allocation-failure injection or exclusion is added. After normal parent integration, all363native tests pass with14ignored. Fresh combined coverage is10428/12622lines,10051/12933regions,1921/2638branches; all denominators/floors remain unchanged. Diagnostic-only parent-relative gain is25lines/30regions/0branches, not summed historical deltas. The unchanged required proof profile remains17groups92contrasts/fourshards with unchanged CI jobs/cap. All249selected records remain provisional76/147/26; no normative/proof strength is upgraded by diagnostic execution. Actual approved normal/logging/native/Hayro observations remain2/7/1 and zero rejection credit. Inventory608verified/24limitations/23forwarders/1capacitydivergence/0incomplete/0nativeassumptions remains. No runtime,model,precondition,public API,memory policy,pin,standard asset or publication change. Full integer/IAID/caller/stream semantics,independent normative review,upstream capacity and90/85release goals stay open.",
   "release_gate": "blocked"
 }

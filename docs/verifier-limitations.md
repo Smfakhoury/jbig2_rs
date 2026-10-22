@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The sixteen logical semantic groups remain complete: four deterministic
+The seventeen logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all sixteen independently
-hashed report/log pairs and all 83 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all seventeen independently
+hashed report/log pairs and all 92 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -35,7 +35,24 @@ the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
 
-Complete project decision-state composition now exposes every signal, interval,
+The single integer-bit helper now exposes the exact returned decision, growing
+or rolling nine-bit history, error-history frame, complete decoder/error state,
+exact selected-context update and unchanged unselected contexts. The checked
+decision wrapper additionally exposes its already proved state-model result
+bit directly. Nine compiling strong/weaker controls distinguish history loss,
+wrong bits, neighboring-context mutation, error-history loss, code loss and
+IAID preflight classification/frame errors. Runtime numeric checks cover all
+512 histories, all 47 probability rows, both MPS values and actual success,
+EOF and overflow outcomes (144,384 cases).
+
+IAID preflight failures now expose exact supplied-length/required/actual fields
+and unchanged full decoder/context state. Existing validated length/bank facts
+are retained in loop invariants; no caller precondition changes. The 31-bit cap
+is project policy, not an Annex A normative limit. Its caller-length binding,
+positive history-index/value fold and complete integer procedure remain open,
+so the two IAID records intentionally retain their prior strength.
+
+Complete project decision-state composition exposes every signal, interval,
 code, counter, byte-position/current-byte and marker result at both entry APIs,
 including fast return and all partial EOF/overflow states. Exchange helpers
 compose interval replacement with the existing exact normalization model.

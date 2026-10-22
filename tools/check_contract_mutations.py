@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that critical public-API regressions detect isolated semantic mutations."""
+"""Check that critical API and diagnostic regressions detect isolated mutations."""
 
 import argparse
 import json
@@ -15,6 +15,14 @@ from check_distribution import isolated_environment, run
 
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
+    {
+        "id": "generic-formatter-failure-swallowed",
+        "file": "src/generic_region.rs",
+        "before": 'formatter.write_str("arithmetic region does not end in FF AC")',
+        "after": '{ let _ = formatter.write_str("arithmetic region does not end in FF AC"); Ok(()) }',
+        "target": "lib",
+        "test": "generic_region::tests::diagnostic_variants_preserve_fields_sources_and_formatter_failures",
+    },
     {
         "id": "io-kind-misclassification",
         "file": "src/error.rs",
@@ -179,7 +187,7 @@ def check_mutations(toolchain: str) -> dict:
                 path.write_bytes(original)
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
-        "scope": "Targeted public API, reference-role and typed-error adapter contracts, not exhaustive codec mutation coverage",
+        "scope": "Targeted public API, reference-role, typed-error adapter and formatter-failure contracts, not exhaustive codec mutation coverage",
         "runtime_source_modified": False, "mutations": results,
     }
 
