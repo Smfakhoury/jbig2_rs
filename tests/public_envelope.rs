@@ -3,8 +3,8 @@
 use std::io::Cursor;
 
 use jbig2_rs::{
-    DecodeError, Decoder, DocumentInfo, LimitExceeded, LimitKind, Limits, MalformedError,
-    Organization, Page, PageSink, UnsupportedFeature,
+    DecodeError, Decoder, DocumentInfo, HuffmanErrorKind, LimitExceeded, LimitKind, Limits,
+    MalformedError, Organization, Page, PageSink, UnsupportedFeature,
 };
 
 #[allow(dead_code)]
@@ -803,6 +803,37 @@ fn embedded_duplicate_numbers_and_cross_page_references_are_exact() {
             page: 1,
         },
     );
+}
+
+#[test]
+fn table_body_errors_precede_reference_role_checks_without_losing_error_fields() {
+    for (payload, expected) in [
+        (
+            Vec::new(),
+            MalformedError::UnexpectedEof {
+                offset: 0,
+                needed: 1,
+                remaining: 0,
+            },
+        ),
+        (
+            vec![0x83, 0, 0, 0, 0, 0, 0, 0, 1],
+            MalformedError::InvalidHuffman(HuffmanErrorKind::ReservedFlags(0x83)),
+        ),
+        (
+            vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 0b1011_1111],
+            MalformedError::InvalidHuffman(HuffmanErrorKind::NonZeroPadding),
+        ),
+    ] {
+        let segments = [
+            page(1, 1, 8, 1),
+            extension(2, 0, 0, &[]),
+            Segment::new(3, 53, 0, payload).retaining_references(&[2]),
+            end(4, 1),
+            eof(5),
+        ];
+        reject(&segments, &expected);
+    }
 }
 
 #[test]
