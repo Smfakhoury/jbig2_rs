@@ -2,6 +2,24 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The complete IAID follow-up exposes the result, full decoder and complete
+context bank of every accepted project IAID run, including zero length and
+partial errors. Six additional selected rows now have functional project
+contracts: 82 functional / 141 state-preservation / 26 safety-only, all 249
+still provisional. The required profile is eighteen groups / 98 contrasts in
+the same four shards. Actual unfiltered pinned Cargo verification and
+compilation pass 1174 obligations with zero errors. All 364 native tests pass
+with 14 existing ignored tests; fresh coverage is 10,430/12,624 lines (82.62%),
+10,051/12,933 regions (77.72%) and 1,921/2,638 branches (72.82%).
+The line denominator grows by two because an opaque checked-operation chain
+is expanded, not because coverage exclusions or scope changed. Sixteen native
+token streams and all 656 caller preconditions are unchanged; arithmetic
+differs only by equivalent sequential checked operations and explicit typed
+overflow constructors. Numeric/state/context and prior-procedure comparisons
+cover 3,600 direct states. The 31-bit project cap, normative caller/bank
+selection, signed integer procedure, independent standards review, seven
+official positives, capacity divergence and 90%/85% goals remain open.
+
 The diagnostic-only follow-up checks every generic error display/source variant,
 extreme fields, delegated classifications, private-message redaction and exact
 formatter-failure propagation. A thirteenth actual compiled runtime mutant

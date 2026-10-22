@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 76 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 147 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 82 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 141 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -134,8 +134,14 @@ and unchanged history on error. Nine actual compiling contrasts and 144,384
 numeric/frame scenarios supplement the proofs. The records remain provisional;
 full integer leaf/payload/sign semantics and normative interpretation stay open.
 IAID preflight rejections now have exact project classification and state frames,
-but the 31-bit cap is not an Annex A limit and no SBSYMCODELEN caller/positive
-value fold is proved. Those two records are deliberately **not** upgraded.
+and the complete IAID follow-up proves the positive prefix/value fold and all
+decoder/context outputs against `iaid_run` and `iaid_state`. Six selected rows
+now link the production result/decoder/bank equalities, covering seed, context,
+history, iteration count, sentinel removal and result. Six additional compiling
+contrasts and 3,600 numeric/state/prior-procedure comparisons supplement these
+contracts. The 31-bit cap is not an Annex A limit; the SBSYMCODELEN caller and
+normative address-space obligations remain open. The two LENGTH/STORAGE rows
+are deliberately **not** upgraded.
 
 The complete decision-state follow-up gives seven selected E.3.2 records
 functional project-step evidence: interval subtraction, strict code partition,
@@ -181,7 +187,7 @@ The original 111 IDs and review states are preserved.
 |---|---:|---|
 | A.1/A.2 procedure namespaces, history, sign, six magnitude leaves, payload order, three result cases | 17 | Local integer helper and history/magnitude bound macros; no decision-sequence-to-integer contract |
 | A.2 Table A.1, each of its 14 representation rows | 14 | Separate row locators, including negative unit and OOB; no copied encodings or independent table-to-output proof |
-| A.3 fixed length, seed, context, recurrence, iteration count, sentinel removal, return and storage | 8 | Existing pure binary-value/power-of-two models are linked, but production IAID does not promise their output relation |
+| A.3 fixed length, seed, context, recurrence, iteration count, sentinel removal, return and storage | 8 | Six rows now link complete project result/decoder/bank contracts; normative caller length and address-space sufficiency remain state-only and unapproved |
 | E.3/E.3.1 interface, stream/context loop and register conventions | 6 | Caller sequence/stream agreement and logical code-register interpretation remain gaps |
 | E.3.2 Figure E.15 decision steps | 8 | Lookup, interval subtraction, strict partition, high-code subtraction, fast MPS, both exchange/renormalization paths and return |
 | E.3.2 Figures E.16/E.17 exchange branches | 11 | Both comparisons, old-sense decisions, NMPS/NLPS, switch/no-switch and lower-path interval replacement |
@@ -217,14 +223,20 @@ its existing consultation history and records are unchanged. This consultation
 is not owner approval or an independent formal standard-translation review.
 
 The existing integer/IAID scripted tests run callback reference procedures.
-Only the concrete comparison test runs the production integer/IAID helpers
-against those procedures on one existing stream. Many leaf/range/length
-boundaries therefore still lack dedicated production tests. The randomized
+The concrete comparison test runs both production helpers on an existing
+stream. The complete IAID test additionally compares 3,600 direct states to
+an independently accumulated numeric value/context-address oracle and the
+prior checked procedure, including zero length, success and partial errors.
+These direct states are not claimed as valid encoded streams. Many signed
+integer leaf/range boundaries still lack dedicated production tests. The randomized
 decision oracle repeats the implementation algorithm; the table test repeats a
 project-local constant list; neither is an independent normative specification.
-The linked IAID pure-model lemmas start from an assumed decision sequence and
-are not a production output postcondition. New records state these limitations
-instead of treating test names or bounds lemmas as functional proof.
+The older IAID pure-model lemmas start from an assumed decision sequence.
+The new production postconditions instead equal the complete `iaid_state`
+model, which composes the exact decision state with each context update.
+Neither this composition nor shared Qe data independently approves normative
+bitstream interpretation. Records distinguish these claims rather than
+treating test names or bounds lemmas as functional proof.
 
 Selected-section accounting is now substantially finer grained, but remains
 **provisional and partial**. Owner review must check for omissions and confirm
@@ -491,8 +503,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All seventeen semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 92 required strong/weaker compiling
+All eighteen semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 98 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching

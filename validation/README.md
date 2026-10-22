@@ -713,3 +713,25 @@ measures82.62%lines/77.72%regions/72.82%branches. Diagnostic-only gain is25lines
 30regions/0branches with unchanged denominators/floors. All17native/proof
 streams and656production declarations/source starts match the integer parent.
 No decoding/entropy fixture, family, hook, exclusion or proof-strength change.
+
+## Complete project IAID composition
+
+The production IAID entry point equals `iaid_state` for result, full decoder
+and complete context bank. The finite `iaid_run` model includes prefix seed,
+context address/update, exact decision state, count/prefix recurrence, sentinel
+removal, zero length and partial typed errors. Six compiling strong/weaker
+contrasts extend the required profile to eighteen groups / 98 contrasts in
+the same four shards. Six selected rows gain functional project evidence;
+all 249 remain provisional (82 functional / 141 state / 26 safety).
+LENGTH/STORAGE remain state-only because project rejection policy does not
+prove normative caller length/address-space sufficiency.
+
+One direct-state test checks 3,600 numeric value/context/state and prior-procedure
+comparisons. All 364 native tests pass with 14 ignored. Fresh actual coverage
+is10,430/12,624lines,10,051/12,933regions,1,921/2,638branches. Two additional covered
+physical lines and denominator lines arise from the equivalent checked-operation
+expansion, not an exclusion or region/branch gain. Whole pinned verification
+and compilation pass1174/0 with unchanged preconditions and no new assumptions.
+No entropy fixture, coding family, encoder or fuzz seed is introduced.
+Normative review, complete signed integer/caller/stream composition, official
+positive adjudication, capacity divergence and 90%/85% goals remain open.

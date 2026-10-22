@@ -123,6 +123,20 @@ The actual parent-relative gain is five lines, three regions and two branch
 outcomes; all denominators, reviewed floors and release goals remain unchanged.
 These tests do not complete integer/IAID folds, caller or normative semantics.
 
+The complete IAID follow-up compares 3,600 direct decoder/context states with
+a numeric value/context-address oracle and the prior checked procedure.
+Zero length, extra bank capacity, nonzero results and partial EOF/overflow are
+included; these are not generated valid encoded streams. Actual collection on
+source `e36a2bb5ff3f690f9ae36de7c1de073346f7f551` passes 364 native tests with
+14 ignored and measures **10,430/12,624 lines (82.62%)**,
+**10,051/12,933 regions (77.72%)**, and **1,921/2,638 branches (72.82%)**.
+The checked multiply/add expansion adds two covered physical lines and two
+denominator lines relative to owner-merged main; it adds no covered region or
+branch outcome. This is not a semantic coverage gain or a new ratified floor.
+The same thirteen compiling runtime controls remain required; the proof profile
+becomes eighteen groups / 98 contrasts without additional CI jobs or shards.
+All reviewed floors, exclusions and release goals remain unchanged.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant
