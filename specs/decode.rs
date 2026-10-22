@@ -125,18 +125,6 @@ pub(super) open spec fn initial_resources_valid(
         && symbol_store_valid(&resources.symbols)
 }
 
-pub(super) proof fn page_fields(page: &crate::decode::Page)
-    ensures
-        page_number(page) == page.number,
-        page_bitmap(page) == &page.bitmap,
-{}
-
-pub(super) proof fn document_fields(document: &crate::decode::DecodedDocument)
-    ensures
-        document_info(document) == &document.info,
-        document_pages(document) == document.pages@,
-{}
-
 pub open spec fn checked_sum_fits(left: u64, right: u64) -> bool {
     left as nat + right as nat <= u64::MAX as nat
 }
@@ -210,3 +198,6 @@ pub(super) open spec fn dispatch_class(segment_type: crate::segment_header::Segm
 }
 
 }
+
+// Preserve the logical owner and private-field access of the model bridges.
+include!("../proofs/model_support/decode.rs");

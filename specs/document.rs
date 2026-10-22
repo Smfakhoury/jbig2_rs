@@ -111,24 +111,6 @@ pub closed spec fn global_bytes(
     globals.bytes@
 }
 
-pub(super) proof fn decoder_fields(decoder: &crate::document::Decoder)
-    ensures decoder_limits(decoder) == decoder.limits,
-{}
-
-pub(super) proof fn document_fields(document: &crate::document::DocumentInfo)
-    ensures
-        document_organization(document) == document.organization,
-        document_declared_page_count(document) == document.declared_page_count,
-        document_segment_count(document) == document.segment_count,
-        document_pages(document) == document.pages@,
-{}
-
-pub(super) proof fn global_fields(globals: &crate::document::GlobalSegments)
-    ensures
-        global_segment_count(globals) == globals.types@.len(),
-        global_bytes(globals) == globals.bytes@,
-{}
-
 pub(crate) open spec fn production_is_intermediate_region(
     segment_type: crate::segment_header::SegmentType,
 ) -> bool {
@@ -533,3 +515,6 @@ pub open spec fn final_height(state: PageState) -> Option<nat> {
 }
 
 }
+
+// Preserve the logical owner and private-field access of the model bridges.
+include!("../proofs/model_support/document.rs");

@@ -990,7 +990,7 @@ fn prepare_transition_storage(
             <= old(reader).bit_position as nat + MAX_MODE_CODE_BITS as nat,
         match out {
             Ok(mode) => exists|code: ModeCode|
-                mmr_spec::mode_code_is_normative(code)
+                mmr_spec::mode_code_in_implementation_table(code)
                 && code.mode == mode
                 && final(reader).bit_position
                     == old(reader).bit_position + code.length as usize,
@@ -1102,7 +1102,7 @@ fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result
             <= old(reader).bit_position as nat + MAX_RUN_CODE_BITS as nat,
         match out {
             Ok(code) =>
-                mmr_spec::run_code_is_normative(black, code)
+                mmr_spec::run_code_in_implementation_tables(black, code)
                 && final(reader).bit_position
                     == old(reader).bit_position + code.length as usize,
             Err(_) => true,
@@ -1145,7 +1145,7 @@ fn decode_run_code(reader: &mut BitReader<'_>, black: bool) -> Result<RunCode, M
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
         Some(code) =>
-            mmr_spec::run_code_is_normative(black, code)
+            mmr_spec::run_code_in_implementation_tables(black, code)
             && mmr_spec::run_key_matches(code, bits, length),
         None => true,
     },
