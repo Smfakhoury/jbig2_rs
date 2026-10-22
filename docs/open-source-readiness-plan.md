@@ -2,6 +2,19 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The integer single-bit follow-up exposes the exact decision, full decoder/error
+step, selected-context update/unselected-bank frame, growing/rolling history
+and unchanged history on errors. Numeric tests cover 144,384 history/Qe/MPS/
+outcome combinations. IAID preflight errors preserve full state and exact
+fields, but no caller-length or positive-value fold is inferred. Its 31-bit
+cap is project policy, so the IAID rows are not relabeled functional.
+Three history/context rows now have actual functional project-step evidence:
+all 249 records remain provisional, with 76 functional / 147 state-preservation /
+26 safety-only. The required profile has seventeen groups / 92 contrasts in
+the existing four shards and unchanged CI jobs/cap. All 362 native tests pass
+with 14 existing ignored tests; fresh measured coverage is 82.42% lines,
+77.48% regions and 72.82% branches, with unchanged denominators and floors.
+All 17 executing token streams and 656 caller preconditions match merged main.
 The packed-storage/page-state test tranche adds five direct unit tests without
 entropy fixtures or new coding families. Scalar oracles check raw word windows,
 clipped pixel history, inclusive row-buffer budgets, mutation frames/endian
@@ -133,8 +146,8 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 73
-functional, 150 state-preservation and 26 safety-only records; all 249 remain
+scalar proof substitute is removed. The current selected ledger has 76
+functional, 147 state-preservation and 26 safety-only records; all 249 remain
 provisional.
 The exact normalization follow-up raises the functional total from 60 to 66:
 one low-input register row and five selected E.3.3 rows now reference complete

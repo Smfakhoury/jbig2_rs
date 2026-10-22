@@ -61,7 +61,7 @@ measures 10,326/9,946/1,909 covered coordinates respectively, so this adapter
 tranche adds 19 lines and 18 regions with zero branch gain. All 349 native
 tests and twelve compiling mutation controls pass; denominator and production
 coordinate identities are unchanged. Do not add historical branch deltas or
-lower the merged reviewed floor. The 16-group/83-contrast gate remains required.
+lower the merged reviewed floor. The 17-group/92-contrast gate remains required.
 
 The arithmetic error-context follow-up adds three direct-state unit tests,
 not encoded streams or a new coding family. They check partial EOF registers,
@@ -111,6 +111,17 @@ not reached by validated parser state; they are not represented as valid coded
 streams. Real allocation failures and architecture/invariant-unreachable
 defenses are not manufactured, excluded or counted as covered. The reviewed
 baseline and release goals remain unchanged.
+
+The integer-history follow-up adds two direct-state tests, not valid encoded
+integer/IAID fixtures. They check 144,384 single-step history/Qe/MPS/outcome
+cases against wide numeric state/history and complete context-bank oracles,
+and every IAID length byte against bounded insufficient-bank cases without
+decoding. On source `5c5fac702de5724d0c40707d3e3498a6848ec38b`, all 362 native
+tests pass with 14 ignored. Fresh coverage is **10,403/12,622 lines (82.42%)**,
+**10,021/12,933 regions (77.48%)**, and **1,921/2,638 branches (72.82%)**.
+The actual parent-relative gain is five lines, three regions and two branch
+outcomes; all denominators, reviewed floors and release goals remain unchanged.
+These tests do not complete integer/IAID folds, caller or normative semantics.
 
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.

@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
-  "scope": "Unchanged complete-decision proof inputs with five excluded packed-storage/page-state unit tests; source-bound proof and observations refreshed without new semantic or normative claims",
+  "source_revision": "5c5fac702de5724d0c40707d3e3498a6848ec38b",
+  "scope": "Exact integer single-bit history/context/decoder state and IAID project preflight error frames, with unchanged executing tokens and caller preconditions",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/parser-state/whole-build CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/integer-contracts/whole-build CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1173,
     "verified_production_functions": 608,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "8345d08bbd2af83434bce0e02caff01aa01f84fd6db76bafb7a667137d75cc16",
-  "proof_dispositions_sha256": "67050cad37790bd19830b9dfa3f35da0ccca83b0dd002a45873e70f8c0beb62a",
+  "production_proof_coverage_sha256": "a630b1f9387a7aa2173e7763e89cd10148902b0356aca134bfc772dd02f97eff",
+  "proof_dispositions_sha256": "0413b513ffabff3414f7b994ec5b3260f100641efab92237e2fd4a01bb0a4635",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo verification and compilation prove 1173 project obligations with zero errors and enabled lifetime/erasure checks. This tranche adds only five excluded unit tests for packed storage and page states. All 17 native/proof token streams and 656 production signatures, attributes, bodies and source starts exactly match parent3072167. Existing complete arithmetic step contracts and the 16-group/83-contrast required profile remain unchanged. Inventory remains 608 verified, 24 reviewed limitations, 23 forwarders, one capacity divergence and zero incomplete/native-assumption entries. Tests cover inclusive budgets, zero/max shapes without huge allocations, row slots, scalar clipped/raw windows, copy/clear/flush frames and endian bytes, stripe progress, finish precedence and metadata overflow. No entropy fixture, coded family, decoder invocation, fuzz seed or production hook is added. All 360 native tests pass with 14 existing ignored tests. Actual coverage is 10398/12622 lines, 10018/12933 regions and 1919/2638 branches, with unchanged denominators/floors. Parent-relative gain18/21/9 consists of document6/3/1, generic error helpers3/3/0 and row ring9/15/8. Unreachable allocation/architecture/invariant defenses remain in the denominator, not counted covered. Twelve runtime mutants compile and are detected. All 249 selected records remain provisional73/150/26. Actual approved normal/logging/native/Hayro refresh remains2/7/1 with zero rejection credit. No runtime/model/precondition/assumption/memory-policy/exclusion/pin/standard-asset/publication/CI-job change. Normative review, upstream capacity and 90/85 release coverage remain open.",
+  "note": "Actual unfiltered pinned Cargo verification and compilation pass1173/0 with lifetime/erasure checks enabled. The integer single-bit helper exposes exact decision, full decoder/error state, selected-context update, unchanged other contexts, successful growing/rolling history and error-history frame. Checked decode explicitly exposes its model result bit. IAID preflight rejections expose exact length/required/actual fields and unchanged complete decoder/context state; validated domain facts are retained in terminating-loop invariants, not added caller preconditions. All17executing token streams and656caller preconditions match owner-mergedmain5f69834; reviewed arithmetic bodies/attributes are unchanged. Nine actual compiling integer/history/IAID strong-weaker contrasts pass, and all15existing decision contrasts still pass. The configured required profile is17groups92contrasts across4shards with unchanged CI jobs/cap. Runtime numeric/frame tests cover all512histories,47Qe rows,2MPS values and3outcomes(144384cases), plus allIAIDlengthbytes with bounded rejected banks and no decoding. All362native tests pass with14ignored; actualcoverage10403/12622lines,10021/12933regions,1921/2638branches, unchanged denominators/floors. Three selected history/context rows now have actual functional evidence: all249remainprovisional76functional/147state/26safety. IAIDlength/storage grades are deliberately retained because31bitcap is project policy and caller/positive fold semantics remain open. Inventory608verified/24limitations/23forwarders/1capacitydivergence/0incomplete/0nativeassumptions is unchanged. Actualapprovednormal/logging/native/Hayroobservations remain2/7/1 with no rejection credit. No native algorithm,public API,memory policy,exclusion,pin,standard asset or publication change. Independent normative review,full integer/IAID/caller/stream semantics,upstream capacity and90/85goals remain open.",
   "release_gate": "blocked"
 }

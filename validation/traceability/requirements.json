@@ -629,7 +629,7 @@
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
-    "specs/arithmetic.rs": "99c43258e3a9f90c25526125fbe9aae3cf65f12f2b109b5522f687373ee38f5e",
+    "specs/arithmetic.rs": "c0aa80438370cb1402a87f09e53ee0fdba48767dc5e7e690e1c2060af8055b4d",
     "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
     "specs/decode.rs": "f00e3a481025c5f1fd5637972d283d43a95f85846a3c7e610d8442ad2bb979fe",
     "specs/document.rs": "937c78bb6796d5e3c179019c5183ff1c848cece68e26b705cae1f5615ec45480",
@@ -642,7 +642,7 @@
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
-    "src/arithmetic.rs": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
+    "src/arithmetic.rs": "934c94576f893c12b416af80df78a058873c9152a8e113a3ea49516bd75a06c7",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "327d77309b8c641d7e3e2cababdab6fe35a92e36f9762014a5f16ae26a08424e",
     "src/document.rs": "3fd262ee16be836fdf8dba91a43ef294dc2dd55dbbe8865c8af917a68ec1d8d8",
@@ -1505,6 +1505,36 @@
       ],
       "name": "error_for_signal",
       "role": "Project signal-to-typed-error mapping including cursor-increment and field-width overflow; not a normative error-policy claim."
+    },
+    "arithmetic-integer-history-step": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "integer_history_step",
+      "role": "Exact project growing/rolling nine-bit history recurrence for one returned decision; full integer/stream interpretation remains separate."
+    },
+    "arithmetic-context-after-decision": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "context_after_decision",
+      "role": "Exact selected probability-context output through the existing project entry models, not independent Qe-table interpretation."
+    },
+    "arithmetic-integer-bit-state": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "integer_bit_state",
+      "role": "Exact project decision-state tuple for the low-nine-bit history-selected context, with the same representation preconditions."
     }
   },
   "requirements": [
@@ -6334,7 +6364,11 @@
       ],
       "models": [
         "decoder-state-valid",
-        "context-valid"
+        "context-valid",
+        "arithmetic-integer-history-step",
+        "arithmetic-context-after-decision",
+        "arithmetic-integer-bit-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [
         "arithmetic-history-index-bounds"
@@ -6347,11 +6381,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production single-bit helper returns the exact project decision, full decoder/error state and selected context update; all unselected contexts remain identical. Successful history follows integer_history_step and failure preserves the old history. This is a single project step, not complete integer leaf/payload/sign semantics or normative approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6359,9 +6397,20 @@
         "Valid supplied contexts are a precondition, not a proof of their procedure identity."
       ],
       "gaps": [
-        "The helper proves history bounds and context validity, not the exact context selected or its old-state decision."
+        "Independent comparison with Annex A history/context interpretation and the normative Qe table remains unapproved.",
+        "Complete integer prefix/leaf/payload/sign and IAID folds, caller policy and entropy-stream semantics remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "section": "ensures",
+          "tokens": [
+            "decision == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous),).0",
+            "*final(previous) == arithmetic_spec::integer_history_step(*old(previous), decision)",
+            "final(contexts)@[(*old(previous) & 511) as int] == arithmetic_spec::context_after_decision(old(self), old(contexts)@[(*old(previous) & 511) as int],)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
@@ -6383,7 +6432,11 @@
       ],
       "models": [
         "decoder-state-valid",
-        "context-valid"
+        "context-valid",
+        "arithmetic-integer-history-step",
+        "arithmetic-context-after-decision",
+        "arithmetic-integer-bit-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [
         "arithmetic-history-index-bounds"
@@ -6396,11 +6449,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production single-bit helper returns the exact project decision, full decoder/error state and selected context update; all unselected contexts remain identical. Successful history follows integer_history_step and failure preserves the old history. This is a single project step, not complete integer leaf/payload/sign semantics or normative approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6408,9 +6465,20 @@
         "Valid supplied contexts are a precondition, not a proof of their procedure identity."
       ],
       "gaps": [
-        "The postcondition bounds history by 511 but does not give its old-history/decision recurrence."
+        "Independent comparison with Annex A history/context interpretation and the normative Qe table remains unapproved.",
+        "Complete integer prefix/leaf/payload/sign and IAID folds, caller policy and entropy-stream semantics remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "section": "ensures",
+          "tokens": [
+            "decision == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous),).0",
+            "*final(previous) == arithmetic_spec::integer_history_step(*old(previous), decision)",
+            "final(contexts)@[(*old(previous) & 511) as int] == arithmetic_spec::context_after_decision(old(self), old(contexts)@[(*old(previous) & 511) as int],)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
@@ -6432,7 +6500,11 @@
       ],
       "models": [
         "decoder-state-valid",
-        "context-valid"
+        "context-valid",
+        "arithmetic-integer-history-step",
+        "arithmetic-context-after-decision",
+        "arithmetic-integer-bit-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [
         "arithmetic-history-index-bounds"
@@ -6445,11 +6517,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production single-bit helper returns the exact project decision, full decoder/error state and selected context update; all unselected contexts remain identical. Successful history follows integer_history_step and failure preserves the old history. This is a single project step, not complete integer leaf/payload/sign semantics or normative approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6457,9 +6533,20 @@
         "Valid supplied contexts are a precondition, not a proof of their procedure identity."
       ],
       "gaps": [
-        "There is no ensures relation for masked history, the leading sentinel, or the decision appended."
+        "Independent comparison with Annex A history/context interpretation and the normative Qe table remains unapproved.",
+        "Complete integer prefix/leaf/payload/sign and IAID folds, caller policy and entropy-stream semantics remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "section": "ensures",
+          "tokens": [
+            "decision == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous),).0",
+            "*final(previous) == arithmetic_spec::integer_history_step(*old(previous), decision)",
+            "final(contexts)@[(*old(previous) & 511) as int] == arithmetic_spec::context_after_decision(old(self), old(contexts)@[(*old(previous) & 511) as int],)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
@@ -7727,11 +7814,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::iaid_preflight_errors_preserve_every_field_without_decoding"
         }
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Project preflight rejections now specify exact supplied-length/required/actual error fields and unchanged complete decoder/context state. The 31-bit cap is project policy. These rejection contracts do not prove the row's normative caller/history-index/value relation, so its state-preservation classification is intentionally retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8077,11 +8168,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::iaid_preflight_errors_preserve_every_field_without_decoding"
         }
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Project preflight rejections now specify exact supplied-length/required/actual error fields and unchanged complete decoder/context state. The 31-bit cap is project policy. These rejection contracts do not prove the row's normative caller/history-index/value relation, so its state-preservation classification is intentionally retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",

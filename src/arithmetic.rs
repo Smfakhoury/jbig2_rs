@@ -642,7 +642,8 @@ impl<'a> ArithmeticDecoder<'a> {
                     && arithmetic_spec::decoder_valid(final(self))
                     && decision == arithmetic_spec::entry_decision(
                         old(self).interval, old(self).code, old(context).state_index, old(context).mps,
-                    ),
+                    )
+                    && decision == arithmetic_spec::decision_state(old(self), *old(context)).0,
                 Err(_) => true,
             },
             out.is_ok() == (arithmetic_spec::decision_state(old(self), *old(context)).0 <= 1),
@@ -1037,6 +1038,19 @@ impl<'a> ArithmeticDecoder<'a> {
                 Ok(_) => arithmetic_spec::decoder_valid(final(self)),
                 Err(_) => true,
             },
+            code_length > MAX_IAID_CODE_LENGTH ==> {
+                &&& out == Err(ArithmeticError::InvalidIaidCodeLength(code_length))
+                &&& *final(self) == *old(self)
+                &&& final(contexts)@ == old(contexts)@
+            },
+            code_length <= MAX_IAID_CODE_LENGTH
+                && old(contexts)@.len() < (1usize << code_length) ==> {
+                &&& out == Err(ArithmeticError::InsufficientContexts {
+                    required: 1usize << code_length, actual: old(contexts)@.len() as usize,
+                })
+                &&& *final(self) == *old(self)
+                &&& final(contexts)@ == old(contexts)@
+            },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::cast_possible_truncation)]
@@ -1062,6 +1076,9 @@ impl<'a> ArithmeticDecoder<'a> {
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 arithmetic_spec::decoder_valid(self),
+                code_length <= MAX_IAID_CODE_LENGTH,
+                required == 1usize << code_length,
+                context_count == old(contexts)@.len(),
                 contexts@.len() == context_count,
                 forall|index: int| 0 <= index < contexts@.len() ==>
                     arithmetic_spec::context_valid(contexts@[index]),
@@ -1106,9 +1123,35 @@ impl<'a> ArithmeticDecoder<'a> {
             match out {
                 Ok(decision) =>
                     decision <= 1
-                    && arithmetic_spec::decoder_valid(final(self)),
-                Err(_) => true,
+                    && arithmetic_spec::decoder_valid(final(self))
+                    && decision == arithmetic_spec::integer_bit_state(
+                        old(self), old(contexts)@, *old(previous),
+                    ).0
+                    && *final(previous) == arithmetic_spec::integer_history_step(*old(previous), decision),
+                Err(error) =>
+                    *final(previous) == *old(previous)
+                    && error == arithmetic_spec::error_for_signal(
+                        final(self), arithmetic_spec::integer_bit_state(
+                            old(self), old(contexts)@, *old(previous),
+                        ).0,
+                    ),
             },
+            out.is_ok() == (arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous)).0 <= 1),
+            final(self).bytes@ == old(self).bytes@,
+            final(self).bytes == old(self).bytes,
+            final(self).interval == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous)).1,
+            final(self).byte_position == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous)).2,
+            final(self).current_byte == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous)).3,
+            final(self).code == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous)).4,
+            final(self).bit_count == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous)).5,
+            final(self).marker == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous)).6,
+            final(contexts)@[( *old(previous) & 511) as int]
+                == arithmetic_spec::context_after_decision(
+                    old(self), old(contexts)@[( *old(previous) & 511) as int],
+                ),
+            forall|index: int| 0 <= index < old(contexts)@.len()
+                && index != (*old(previous) & 511) as int ==>
+                    final(contexts)@[index] == old(contexts)@[index],
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn decode_integer_bit(
@@ -2617,6 +2660,116 @@ mod tests {
             }
         }
         assert!(outcomes.into_iter().all(|count| count > 0));
+    }
+
+    fn patterned_integer_contexts() -> [ArithmeticContext; INTEGER_CONTEXT_COUNT] {
+        let mut contexts = [ArithmeticContext::new(); INTEGER_CONTEXT_COUNT];
+        for (index, context) in contexts.iter_mut().enumerate() {
+            *context = ArithmeticContext::from_state(
+                u8::try_from(index % 47).unwrap(),
+                u8::try_from(index % 2).unwrap(),
+            )
+            .unwrap();
+        }
+        contexts
+    }
+
+    fn assert_integer_bit_matches_numeric_oracle(
+        mut decoder: ArithmeticDecoder<'_>,
+        prior: u16,
+        mut contexts: [ArithmeticContext; INTEGER_CONTEXT_COUNT],
+    ) -> u8 {
+        let index = usize::from(prior);
+        let before = contexts;
+        let (signal, expected_decoder, expected_context) =
+            decision_numeric_oracle(&decoder, before[index]);
+        let mut expected_contexts = before;
+        expected_contexts[index] = expected_context;
+        let mut previous = prior;
+        let result = decoder.decode_integer_bit(&mut previous, &mut contexts);
+        if signal <= 1 {
+            assert_eq!(result, Ok(signal));
+            let wide = u32::from(prior) * 2 + u32::from(signal);
+            let expected = if prior < 256 {
+                u16::try_from(wide).unwrap()
+            } else {
+                256 + u16::try_from(wide % 256).unwrap()
+            };
+            assert_eq!(previous, expected);
+        } else {
+            let expected = if signal == RASTER_SIGNAL_EOF {
+                eof_numeric_error(expected_decoder.byte_position + 1, 1, 0)
+            } else {
+                assert_eq!(signal, RASTER_SIGNAL_OVERFLOW);
+                ArithmeticError::Malformed(MalformedError::IntegerOverflow)
+            };
+            assert_eq!(result, Err(expected));
+            assert_eq!(previous, prior);
+        }
+        assert_eq!(contexts, expected_contexts);
+        assert_decoder_state_eq(&decoder, &expected_decoder);
+        assert_eq!(decoder.bytes.as_ptr(), expected_decoder.bytes.as_ptr());
+        signal
+    }
+
+    #[test]
+    fn integer_bit_history_and_context_frames_match_every_history_and_probability_row() {
+        let base = patterned_integer_contexts();
+        let cases: [(&[u8], u32, u8); 3] =
+            [(&[0, 0, 0, 0], 0, 8), (&[0], 0, 0), (&[0, 0], u32::MAX, 8)];
+        let mut outcomes = [0usize; 3];
+        for prior in 0..512_u16 {
+            for state_index in 0..47 {
+                for mps in 0..=1 {
+                    for (bytes, code, count) in cases {
+                        let mut contexts = base;
+                        contexts[usize::from(prior)] =
+                            ArithmeticContext::from_state(state_index, mps).unwrap();
+                        let decoder = decision_fixture(bytes, MIN_INTERVAL, code, count);
+                        let signal =
+                            assert_integer_bit_matches_numeric_oracle(decoder, prior, contexts);
+                        let outcome = if signal <= 1 {
+                            0
+                        } else if signal == RASTER_SIGNAL_EOF {
+                            1
+                        } else {
+                            2
+                        };
+                        outcomes[outcome] += 1;
+                    }
+                }
+            }
+        }
+        assert_eq!(outcomes.iter().sum::<usize>(), 512 * 47 * 2 * 3);
+        assert!(outcomes.into_iter().all(|count| count > 0));
+    }
+
+    #[test]
+    fn iaid_preflight_errors_preserve_every_field_without_decoding() {
+        let bytes = [0x13];
+        for code_length in 0..=u8::MAX {
+            let required = (code_length <= MAX_IAID_CODE_LENGTH).then(|| 1_u64 << code_length);
+            for count in [0, 1, 2, 3, 7, 31, 511] {
+                if required.is_some_and(|required| count as u64 >= required) {
+                    continue;
+                }
+                let mut contexts = vec![ArithmeticContext::from_state(1, 1).unwrap(); count];
+                let before_contexts = contexts.clone();
+                let mut decoder = decision_fixture(&bytes, MIN_INTERVAL, u32::MAX, 8);
+                let before = decision_fixture(&bytes, MIN_INTERVAL, u32::MAX, 8);
+                let error = match required {
+                    Some(required) => ArithmeticError::InsufficientContexts {
+                        required: usize::try_from(required).unwrap(),
+                        actual: count,
+                    },
+                    None => ArithmeticError::InvalidIaidCodeLength(code_length),
+                };
+                assert_eq!(decoder.decode_iaid(code_length, &mut contexts), Err(error));
+                assert_eq!(contexts, before_contexts);
+                assert_decoder_state_eq(&decoder, &before);
+                assert_eq!(decoder.bytes.as_ptr(), before.bytes.as_ptr());
+            }
+        }
     }
 
     fn eof_numeric_error(offset: usize, needed: usize, remaining: usize) -> ArithmeticError {

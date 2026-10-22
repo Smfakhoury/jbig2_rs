@@ -36,6 +36,7 @@ CHECKS = (
     ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
     ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
     ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
