@@ -1211,6 +1211,12 @@ impl<'a> ArithmeticDecoder<'a> {
             final(self).interval == old(self).interval,
             final(self).byte_position == old(self).byte_position
                 || final(self).byte_position == old(self).byte_position + 1,
+            out.is_ok() == (arithmetic_spec::refill_step(old(self)).0 == 0),
+            final(self).byte_position == arithmetic_spec::refill_step(old(self)).1,
+            final(self).current_byte == arithmetic_spec::refill_step(old(self)).2,
+            final(self).code == arithmetic_spec::refill_step(old(self)).3,
+            final(self).bit_count == arithmetic_spec::refill_step(old(self)).4,
+            final(self).marker == arithmetic_spec::refill_step(old(self)).5,
             match out {
                 Ok(()) =>
                     old(self).byte_position + 1 < old(self).bytes@.len()
@@ -1238,6 +1244,12 @@ impl<'a> ArithmeticDecoder<'a> {
             final(self).interval == old(self).interval,
             final(self).byte_position == old(self).byte_position
                 || final(self).byte_position == old(self).byte_position + 1,
+            out == arithmetic_spec::refill_step(old(self)).0,
+            final(self).byte_position == arithmetic_spec::refill_step(old(self)).1,
+            final(self).current_byte == arithmetic_spec::refill_step(old(self)).2,
+            final(self).code == arithmetic_spec::refill_step(old(self)).3,
+            final(self).bit_count == arithmetic_spec::refill_step(old(self)).4,
+            final(self).marker == arithmetic_spec::refill_step(old(self)).5,
             out == 0 ==>
                     old(self).byte_position + 1 < old(self).bytes@.len()
                     && final(self).bit_count >= 7
@@ -1407,6 +1419,154 @@ mod tests {
         assert_eq!(left.interval, right.interval);
         assert_eq!(left.bit_count, right.bit_count);
         assert_eq!(left.marker, right.marker);
+    }
+
+    fn refill_fixture(
+        bytes: &[u8],
+        position: usize,
+        code: u32,
+        bit_count: u8,
+        marker: Option<ArithmeticMarker>,
+    ) -> ArithmeticDecoder<'_> {
+        ArithmeticDecoder {
+            bytes,
+            byte_position: position,
+            current_byte: bytes[position],
+            code,
+            interval: MIN_INTERVAL,
+            bit_count,
+            marker,
+        }
+    }
+
+    fn assert_refill_matches_numeric_oracle(
+        bytes: &[u8],
+        position: usize,
+        code: u32,
+        bit_count: u8,
+        marker: Option<ArithmeticMarker>,
+    ) {
+        let mut expected = refill_fixture(bytes, position, code, bit_count, marker);
+        let signal = if let Some(&next) = bytes.get(position + 1) {
+            let marker_byte = bytes[position] == 0xff && next >= 0x90;
+            let stuffed = bytes[position] == 0xff && !marker_byte;
+            let increment = if marker_byte {
+                65_280
+            } else {
+                u64::from(next) * if stuffed { 512 } else { 256 }
+            };
+            if !marker_byte {
+                expected.byte_position += 1;
+                expected.current_byte = next;
+            }
+            if let Ok(sum) = u32::try_from(u64::from(code) + increment) {
+                expected.code = sum;
+                expected.bit_count = if stuffed { 7 } else { 8 };
+                if marker_byte {
+                    expected.marker = Some(ArithmeticMarker {
+                        offset: position,
+                        code: next,
+                    });
+                }
+                0
+            } else {
+                RASTER_SIGNAL_OVERFLOW
+            }
+        } else {
+            RASTER_SIGNAL_EOF
+        };
+        let mut actual = refill_fixture(bytes, position, code, bit_count, marker);
+        assert_eq!(actual.byte_in_signal(), signal);
+        assert_decoder_state_eq(&actual, &expected);
+        assert_eq!(actual.bytes, bytes);
+
+        let mut checked = refill_fixture(bytes, position, code, bit_count, marker);
+        match (signal, checked.byte_in()) {
+            (0, Ok(()))
+            | (
+                RASTER_SIGNAL_OVERFLOW,
+                Err(ArithmeticError::Malformed(MalformedError::IntegerOverflow)),
+            ) => {}
+            (
+                RASTER_SIGNAL_EOF,
+                Err(ArithmeticError::Malformed(MalformedError::UnexpectedEof {
+                    offset,
+                    needed,
+                    remaining,
+                })),
+            ) => {
+                assert_eq!(offset, u64::try_from(position + 1).unwrap());
+                assert_eq!(needed, 1);
+                assert_eq!(remaining, 0);
+            }
+            (_, result) => panic!("wrong checked refill result for signal {signal}: {result:?}"),
+        }
+        assert_decoder_state_eq(&checked, &expected);
+        assert_eq!(checked.bytes, bytes);
+    }
+
+    #[test]
+    fn refill_byte_pairs_match_numeric_code_consumption_and_counter_boundaries() {
+        for current in 0_u8..=u8::MAX {
+            for next in 0_u8..=u8::MAX {
+                let bytes = [current, next];
+                let increment = if current == 0xff && next >= 0x90 {
+                    65_280
+                } else {
+                    u32::from(next) * if current == 0xff { 512 } else { 256 }
+                };
+                let maximum = u32::MAX - increment;
+                for bit_count in [0, 7, 8] {
+                    for code in [0, maximum, u32::MAX] {
+                        assert_refill_matches_numeric_oracle(&bytes, 0, code, bit_count, None);
+                    }
+                    if increment != 0 {
+                        assert_refill_matches_numeric_oracle(
+                            &bytes,
+                            0,
+                            maximum + 1,
+                            bit_count,
+                            None,
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn refill_eof_and_existing_markers_preserve_exact_error_order_and_frames() {
+        for current in 0_u8..=u8::MAX {
+            for code in [0, u32::MAX] {
+                for bit_count in [0, 3, 8] {
+                    assert_refill_matches_numeric_oracle(&[current], 0, code, bit_count, None);
+                    assert_refill_matches_numeric_oracle(
+                        &[0x12, current],
+                        1,
+                        code,
+                        bit_count,
+                        None,
+                    );
+                }
+            }
+        }
+        for next in 0x90_u8..=u8::MAX {
+            let bytes = [0x12, 0xff, next];
+            for code in [0, u32::MAX - 65_280, u32::MAX - 65_279, u32::MAX] {
+                for bit_count in [0, 3, 8] {
+                    assert_refill_matches_numeric_oracle(
+                        &bytes,
+                        1,
+                        code,
+                        bit_count,
+                        Some(ArithmeticMarker {
+                            offset: 1,
+                            code: next,
+                        }),
+                    );
+                }
+            }
+        }
     }
 
     fn decision_fixture(

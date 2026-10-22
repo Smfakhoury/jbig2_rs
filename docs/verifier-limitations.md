@@ -104,6 +104,30 @@ default remains all groups with two workers. This changes orchestration only:
 whole-crate obligations, native behavior, project assumptions, the remaining
 MMR capacity gap and provisional normative classifications are not upgraded.
 
+The byte-input refill helpers additionally export the exact project transition:
+signal or checked success, input position/current byte, code register, bit count
+and marker. EOF leaves state unchanged. Consuming branches advance before an
+overflow error; the marker branch does not consume its two bytes and leaves
+state unchanged on overflow. Successful stuffed input sets seven available bits;
+ordinary and marker fills set eight. The original validity, input/interval
+frames and preconditions are retained.
+
+One pure tuple model expresses this relation. All 656 production bodies are
+byte-identical to the base; only the two refill proof attributes change, and
+the other 654 attributes and all existing model bytes are unchanged. Six actual
+compiling mutations fail the new signal/code/count/marker/consumption/success
+relations and verify with only their affected relations removed. Independent
+numeric tests cover all 65,536 byte pairs, exact addition boundaries, EOF and
+existing-marker/error frames through both helpers.
+
+The unfiltered compile proof remains 1165 obligations with zero errors; the
+unchanged count is not a completeness metric. The dynamic semantic manifest
+now requires fourteen groups and 60 contrasts. Eleven selected BYTEIN records
+retain provisional state-preservation classifications: the shared project-step
+theorem is not eleven independently reviewed normative proofs. Register
+meaning/overflow interpretation, CT-zero caller timing, initialization and
+renormalization composition, and whole entropy-stream equivalence remain open.
+
 Source-offset region composition now also verifies the executing chunked
 dispatcher rather than a scalar proof substitute. Its existing storage,
 metadata and stored-length guarantees are preserved, with exact invalid-request

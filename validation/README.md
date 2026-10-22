@@ -292,6 +292,16 @@ updates before truncation. The theorem covers successful decisions and context
 steps against the project model, not exact renormalized registers, byte
 consumption or normative entropy-stream equivalence.
 
+`tools/check_arithmetic_refill_proofs.py` checks six compiling mutations of the
+two exact refill helpers. Signal, code, bit count, marker, overflow consumption
+and checked-success relations are rejected individually; controls omit only
+the affected new relations while preserving original validity/frame
+guarantees and other new outputs. A numeric oracle checks all 65,536 byte pairs
+at exact code-addition boundaries, EOF and existing-marker/error frames through
+both helpers. This proves the project refill step, not normative register
+translation, caller timing or complete initialization/renormalization.
+
+The required manifest now has fourteen groups and 60 contrasts.
 `tools/run_semantic_proofs.py` still runs all configured isolated semantic
 checkers locally with at most two concurrent children by default. `--only ID`
 runs one complete known group with one child; unknown IDs fail. Each checker

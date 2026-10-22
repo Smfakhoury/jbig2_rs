@@ -22,7 +22,7 @@ integer representation and Qe table-row relations. The total now comprises
 project-profile policies. All records remain provisional; selected arithmetic
 accounting is not owner-reviewed exhaustive enumeration. Starting every feature
 does not establish exhaustive normative enumeration. Eighteen generated
-integration regressions supplement 147 distinct linked non-ignored Cargo test
+integration regressions supplement 149 distinct linked non-ignored Cargo test
 identities. Exact per-feature membership, remaining scope, official source
 consultation identity and policy-row hashes are checked. T.88 hashes were
 rechecked through its official public package; no standard assets were
@@ -120,6 +120,15 @@ existing models are unchanged. The semantic runner now has thirteen groups and
 initialization/refill, caller composition and normative translation remain
 open; the aggregate arithmetic record remains provisional state-preservation
 evidence rather than a complete transition claim.
+The next refill tranche exposes exact signal/checked-success and
+position/current-byte/code/count/marker outputs for the native byte-input
+step, including EOF and partial overflow consumption. All 656 native bodies
+remain byte-identical; only two proof attributes and one new pure model change.
+Six compiling relation-specific proof contrasts and numeric tests of every
+byte pair at addition/EOF/marker boundaries pass. Whole-crate compile
+verification remains 1165/0; the dynamic manifest requires fourteen groups and
+60 contrasts. The eleven selected BYTEIN records retain their provisional
+strengths and remaining normative/caller-composition gaps.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
@@ -363,7 +372,7 @@ Dependencies: P02, P04.
 2. Strengthen invariants/postconditions where they prove only valid storage or
    bounds rather than the claimed normative transformation. Prove optimized
    kernels refine a reviewed independent functional model.
-3. Keep the 18 boundary limitations and 21 forwarders explicit; update outdated
+3. Keep the 24 boundary limitations and 23 forwarders explicit; update outdated
    reasons, bind dispositions to the actual reviewed source, and document the
    compiler/Verus/vstd trust boundary and conditional preconditions.
 4. Re-evaluate all seven rejected official vectors using byte/bit traces,

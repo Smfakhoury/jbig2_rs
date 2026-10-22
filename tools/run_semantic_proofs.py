@@ -30,6 +30,7 @@ CHECKS = (
     ("bitmap-compose", "check_bitmap_compose_proofs.py", 5, "strong_contract", "weaker_control"),
     ("black-span", "check_black_span_proofs.py", 6, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
     ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
 )
 

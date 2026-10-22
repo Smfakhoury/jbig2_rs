@@ -434,7 +434,7 @@
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
-    "specs/arithmetic.rs": "219325b7b94af05582de1bd682e294a8a7c3922efe9886534779e557fc2c5ae6",
+    "specs/arithmetic.rs": "2a3d5762c00d43f4a7734e45d6084921fe366d9bc21beb1711a68a5a8fa1065f",
     "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
     "specs/document.rs": "cd8bd9344ce1919e6fe9942827404a84dca70e1074da227e703cb2b6a7f039a0",
     "specs/decode.rs": "270442a6accf85260af0ffdccb76e8c7a1a7f9cbfcc8157d030f9c1e45523860",
@@ -447,7 +447,7 @@
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
-    "src/arithmetic.rs": "7d0b2c33864f5fecdc767b26bbb3b446c5f8beb4a63961fa0309b6291e104cb5",
+    "src/arithmetic.rs": "23ac993ba4013294518a16fe8532217de5ca06c3d687cccf6808f70f9b766163",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
@@ -826,6 +826,13 @@
       ],
       "name": "decoder_valid",
       "role": "normalized decoder-state invariant, not decoded-decision equivalence"
+    },
+    "arithmetic-refill-step": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": ["arithmetic", "arithmetic_spec"],
+      "name": "refill_step",
+      "role": "exact project byte-input signal and state tuple, not normative translation or caller-composition equivalence"
     },
     "template-bits": {
       "kind": "spec",
@@ -6639,7 +6646,8 @@
         "arithmetic::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-refill-step"
       ],
       "proof_macros": [],
       "tests": [
@@ -6654,18 +6662,26 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::refill_byte_pairs_match_numeric_code_consumption_and_counter_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::refill_eof_and_existing_markers_preserve_exact_error_order_and_frames"
         }
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Both refill helpers expose exact signal/checked-success and position/current-byte/code/count/marker outputs against the project refill_step model, including EOF and overflow ordering. Existing validity, input and interval frames remain. Normative translation and caller composition remain unproved.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "The validity invariant identifies current_byte with bytes at the current position, but no postcondition specifies the selected BYTEIN branch."
+        "The project refill_step now specifies exact branch outputs and EOF/overflow frames. Independent normative-model review and composition with CT-zero caller timing remain open."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6711,10 +6727,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "Marker validity is one-way evidence, not a complete iff contract for the threshold, including equality."
+        "The project step now specifies the available-input marker threshold including equality. Faithful normative translation and marker application by callers remain unreviewed."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6760,10 +6776,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "The signal helper conditionally preserves the pointer on first marker discovery, but lacks a complete marker-branch pointer recurrence for repeated fill."
+        "The project step now preserves the pointer on successful marker discovery/repeated fill and on marker overflow. Caller marker policy and full renormalization consumption remain separate obligations."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6809,10 +6825,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "No ensures relation states the marker branch's exact code increment; raw truncation must not be silently treated as a real marker."
+        "The project step now specifies code plus 0xff00 when representable, with unchanged code on overflow; raw truncation returns EOF without state changes. Normative register/overflow interpretation and caller composition remain open."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6858,10 +6874,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "The postcondition gives only a successful CT lower bound, not the marker branch's exact count of eight."
+        "The project step now fixes the counter to eight on marker success and preserves its old value on error. Normative-model review and composition with renormalization remain open."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6907,10 +6923,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "The pointer postcondition allows zero or one advance without tying the exact advance to the non-marker branch."
+        "The project step now advances exactly one byte before a consuming-branch overflow check; EOF consumes nothing. Normative error-state treatment and caller sequence composition remain open."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6956,10 +6972,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "There is no postcondition for the nine-bit alignment, old-code addition or carry placement."
+        "The project step now specifies old code plus the next byte shifted by nine when representable, and unchanged code on overflow. Logical-register/stuffing translation and caller composition remain unreviewed."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7005,10 +7021,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "Successful CT at least seven does not establish exactly seven on this branch."
+        "The project step now fixes the counter to seven on stuffed-byte success and preserves its old value on error. Normative bit-availability interpretation and caller timing remain open."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7054,10 +7070,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "The allowed zero-or-one position change is not an exact ordinary-branch consumption contract."
+        "The project step now consumes exactly one available ordinary byte even when code addition overflows. CT-zero caller timing and the complete input-state recurrence remain open."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7103,10 +7119,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "No ensures relation specifies the eight-bit alignment and addition to the old code register."
+        "The project step now specifies old code plus the next byte shifted by eight when representable, and unchanged code on overflow. Normative unsigned-register/overflow interpretation remains unreviewed."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7152,10 +7168,10 @@
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
-        "The helper has additional frame and pointer-bound postconditions; these are narrower than the missing branch-sensitive code/count/input relation. Truncated-input rejection is project bounded-input handling, not a new normative fill rule."
+        "The shared project refill-step theorem now specifies branch-sensitive state/error outputs under the original validity precondition. Its eleven row links are not independent normative proofs; truncation/overflow remain project policies requiring normative interpretation."
       ],
       "gaps": [
-        "Successful CT bounds do not establish the ordinary branch's exact count of eight."
+        "The project step now fixes the counter to eight on ordinary success and preserves its old value on error. Normative-model review and caller composition remain open."
       ],
       "functional_evidence": [],
       "invariant_evidence": [

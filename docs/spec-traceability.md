@@ -107,6 +107,15 @@ The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
 implementation data is not by itself proof of a faithful standards translation.
 
+The arithmetic refill tranche adds an exact project-step relation for
+`byte_in_signal` and its checked wrapper: return classification and all
+position/current-byte/code/count/marker outputs, including EOF and partial
+overflow consumption. The BYTEIN interface record links this shared model and
+the all-byte-pair/boundary tests. Its ten leaf records now distinguish these
+project guarantees from remaining normative/caller gaps instead of saying the
+postconditions are absent. All eleven retain provisional state-preservation
+strength; no requirement count, review approval or full-stream claim changes.
+
 ## Selected Annex A/E arithmetic enumeration
 
 This tranche adds **138 provisional normative records**, bringing the arithmetic

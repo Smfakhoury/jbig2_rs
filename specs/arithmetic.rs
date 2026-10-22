@@ -148,6 +148,49 @@ pub(crate) open spec fn decoder_valid(
         && decoder.interval >= super::MIN_INTERVAL
 }
 
+pub(crate) open spec fn refill_step(
+    decoder: &super::ArithmeticDecoder,
+) -> (u8, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
+    recommends decoder_state_valid(decoder),
+{
+    let next_position = decoder.byte_position as nat + 1;
+    if next_position >= decoder.bytes@.len() {
+        (
+            super::RASTER_SIGNAL_EOF, decoder.byte_position, decoder.current_byte,
+            decoder.code, decoder.bit_count, decoder.marker,
+        )
+    } else {
+        let next = decoder.bytes@[next_position as int];
+        let marker = decoder.current_byte == 0xff && next > 0x8f;
+        let increment: u32 = if marker {
+            0xff00
+        } else if decoder.current_byte == 0xff {
+            (next as u32) << 9
+        } else {
+            (next as u32) << 8
+        };
+        let position = if marker { decoder.byte_position } else { next_position as usize };
+        let current = if marker { decoder.current_byte } else { next };
+        let code = decoder.code as nat + increment as nat;
+        if code > u32::MAX {
+            (
+                super::RASTER_SIGNAL_OVERFLOW, position, current,
+                decoder.code, decoder.bit_count, decoder.marker,
+            )
+        } else {
+            (
+                0, position, current, code as u32,
+                if decoder.current_byte == 0xff && !marker { 7u8 } else { 8u8 },
+                if marker {
+                    Some(super::ArithmeticMarker { offset: decoder.byte_position, code: next })
+                } else {
+                    decoder.marker
+                },
+            )
+        }
+    }
+}
+
 pub(crate) open spec fn renormalization_steps(interval: nat) -> nat
     decreases if 0 < interval < super::MIN_INTERVAL {
         super::MIN_INTERVAL - interval
