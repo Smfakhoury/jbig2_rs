@@ -17,6 +17,8 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
+CI_SHARDS = 4
+RECEIPT_SCHEMA = 3
 CHECKS = (
     ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
     ("document-count", "check_document_count_proof.py", 5, "strong_count_contract", "weaker_control"),
@@ -79,6 +81,12 @@ def configured_checks(only=None):
     return tuple(row for row in CHECKS if only is None or row[0] == only)
 
 
+def configured_shards():
+    checks = configured_checks()
+    count = min(CI_SHARDS, len(checks))
+    return tuple(checks[index::count] for index in range(count))
+
+
 def run_identity():
     names = ("GITHUB_REPOSITORY", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_SHA")
     values = {name: os.environ.get(name, "local") for name in names}
@@ -110,12 +118,13 @@ def manifest(root):
         "verification/Cargo.toml", "verification/Cargo.lock",
     ) if (root / name).is_file())
     return {
-        "schema_version": 2,
+        "schema_version": RECEIPT_SCHEMA,
         "groups": [
             {"id": identity, "checker": script, "counterexamples": expected,
              "strong": strong, "weak": weak}
             for identity, script, expected, strong, weak in checks
         ],
+        "shards": [[check[0] for check in shard] for shard in configured_shards()],
         "verus": read_json(root / "toolchain.json")["verus"],
         "source_bindings": {
             path.relative_to(root).as_posix(): digest(path) for path in sorted(paths)
@@ -197,14 +206,21 @@ def check_bound_report(root, check, report, bindings):
             raise ValueError("semantic case edits an unbound production source")
 
 
-def run_checks(root, executable, output, only=None):
+def run_checks(root, executable, output, only=None, shard=None):
     output.mkdir(parents=True, exist_ok=True)
     (output / SUMMARY).unlink(missing_ok=True)
+    if only is not None and shard is not None:
+        raise ValueError("group and shard selectors are mutually exclusive")
     checks = configured_checks(only)
+    if shard is not None:
+        shards = configured_shards()
+        if type(shard) is not int or not 0 <= shard < len(shards):
+            raise ValueError(f"unknown semantic shard: {shard}")
+        checks = shards[shard]
     current = manifest(root)
     identity_binding = run_identity()
     version = current["verus"]["version"]
-    workers = 1 if only is not None else WORKERS
+    workers = 1 if only is not None or shard is not None else WORKERS
 
     def execute(check):
         identity, script, expected, strong, weak = check
@@ -240,17 +256,18 @@ def run_checks(root, executable, output, only=None):
     if manifest(root) != current:
         raise ValueError("source changed during semantic checks")
     summary = {
-        "schema_version": 2,
+        "schema_version": RECEIPT_SCHEMA,
         "status": "passed" if all(row["status"] == "passed" for row in results) else "failed",
         "workers": workers,
         "verus_version": version,
         "manifest": current, "run_identity": identity_binding,
         "selected_groups": [row[0] for row in checks],
+        "shard": shard,
         "checks": results,
         "scope": (
             "All configured isolated semantic contrasts; whole-crate verification remains separate."
-            if only is None else
-            f"Complete selected group {only}; whole-crate and all-group collection remain separate."
+            if only is None and shard is None else
+            "Complete selected groups; whole-crate and all-shard collection remain separate."
         ),
     }
     write_json(output / SUMMARY, summary)
@@ -326,7 +343,7 @@ def seal_whole(root, directory):
     current = manifest(root)
     files = validate_whole(root, directory)
     summary = {
-        "schema_version": 2, "status": "passed", "manifest": current,
+        "schema_version": RECEIPT_SCHEMA, "status": "passed", "manifest": current,
         "run_identity": run_identity(), "files": files,
     }
     write_json(directory / WHOLE_SUMMARY, summary)
@@ -335,7 +352,7 @@ def seal_whole(root, directory):
 
 def require_summary(summary, current):
     if (
-        summary.get("schema_version") != 2 or summary.get("status") != "passed"
+        summary.get("schema_version") != RECEIPT_SCHEMA or summary.get("status") != "passed"
         or summary.get("manifest") != current or summary.get("run_identity") != run_identity()
     ):
         raise ValueError("failed, stale or incompatible artifact manifest/run/source/tool identity")
@@ -349,46 +366,60 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
     current = manifest(root)
     prefix = artifact_prefix()
     checks = configured_checks()
-    expected = {prefix + "whole", *(prefix + row[0] for row in checks)}
+    shards = configured_shards()
+    expected = {prefix + "whole", *(prefix + f"shard-{index}" for index in range(len(shards)))}
     if {path.name for path in inputs.iterdir()} != expected or any(
         not path.is_dir() or path.is_symlink() for path in inputs.iterdir()
     ):
-        raise ValueError("missing, duplicate or unexpected whole/group artifacts")
+        raise ValueError("missing, duplicate or unexpected whole/shard artifacts")
     whole = inputs / (prefix + "whole")
     whole_summary = read_json(whole / WHOLE_SUMMARY)
     require_summary(whole_summary, current)
     if whole_summary.get("files") != validate_whole(root, whole):
         raise ValueError("stale or modified whole-crate evidence")
-    rows = []
-    for check in checks:
-        identity, script, expected_count, *_ = check
-        directory = inputs / (prefix + identity) / TRACE
-        if any(path.is_symlink() for path in (inputs / (prefix + identity)).rglob("*")):
+    rows_by_id = {}
+    directories = {}
+    for index, shard in enumerate(shards):
+        shard_root = inputs / (prefix + f"shard-{index}")
+        directory = shard_root / TRACE
+        if any(path.is_symlink() for path in shard_root.rglob("*")):
             raise ValueError("semantic artifact must not contain symlinks")
         summary = read_json(directory / SUMMARY)
         require_summary(summary, current)
         if (
-            summary.get("selected_groups") != [identity] or summary.get("workers") != 1
+            summary.get("selected_groups") != [check[0] for check in shard]
+            or type(summary.get("workers")) is not int or summary["workers"] != 1
+            or type(summary.get("shard")) is not int or summary["shard"] != index
             or summary.get("verus_version") != current["verus"]["version"]
-            or not isinstance(summary.get("checks"), list) or len(summary["checks"]) != 1
+            or not isinstance(summary.get("checks"), list) or len(summary["checks"]) != len(shard)
         ):
-            raise ValueError(f"missing or duplicate group summary: {identity}")
-        row = summary["checks"][0]
-        report = directory / f"{identity}-proof-sensitivity.json"
-        log = directory / f"{identity}-proof-sensitivity.log"
-        if (
-            row.get("id") != identity or row.get("status") != "passed"
-            or type(row.get("exit_code")) is not int or row["exit_code"] != 0
-            or type(row.get("counterexamples")) is not int or row["counterexamples"] != expected_count
-            or row.get("checker_sha256") != digest(root / "tools" / script)
-            or row.get("report") != report.name or row.get("log") != log.name
-            or row.get("report_sha256") != digest(report) or row.get("log_sha256") != digest(log)
-        ):
-            raise ValueError(f"failed or stale semantic group: {identity}")
-        if {path.name for path in directory.iterdir()} != {SUMMARY, report.name, log.name}:
-            raise ValueError(f"unexpected or duplicate semantic evidence: {identity}")
-        check_bound_report(root, check, read_json(report), current["source_bindings"])
-        rows.append(row)
+            raise ValueError(f"missing, duplicate or wrong shard summary: {index}")
+        expected_files = {SUMMARY}
+        for check, row in zip(shard, summary["checks"]):
+            identity, script, expected_count, *_ = check
+            report = directory / f"{identity}-proof-sensitivity.json"
+            log = directory / f"{identity}-proof-sensitivity.log"
+            if (
+                row.get("id") != identity or row.get("status") != "passed"
+                or type(row.get("exit_code")) is not int or row["exit_code"] != 0
+                or type(row.get("counterexamples")) is not int or row["counterexamples"] != expected_count
+                or row.get("checker_sha256") != digest(root / "tools" / script)
+                or row.get("report") != report.name or row.get("log") != log.name
+                or row.get("report_sha256") != digest(report) or row.get("log_sha256") != digest(log)
+                or identity in rows_by_id
+            ):
+                raise ValueError(f"failed, duplicate or stale semantic group: {identity}")
+            expected_files.update((report.name, log.name))
+            check_bound_report(root, check, read_json(report), current["source_bindings"])
+            rows_by_id[identity] = row
+            directories[identity] = directory
+        if {path.name for path in directory.iterdir()} != expected_files:
+            raise ValueError(f"unexpected, missing or duplicate shard evidence: {index}")
+        if {
+            path.relative_to(shard_root) for path in shard_root.rglob("*") if path.is_file()
+        } != {TRACE / name for name in expected_files}:
+            raise ValueError(f"unexpected files outside semantic shard evidence: {index}")
+    rows = [rows_by_id[check[0]] for check in checks]
     for name in whole_summary["files"]:
         destination = output / name
         destination.parent.mkdir(parents=True, exist_ok=True)
@@ -396,12 +427,13 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
     shutil.copyfile(whole / WHOLE_SUMMARY, output / WHOLE_SUMMARY)
     for row in rows:
         for name in (row["report"], row["log"]):
-            shutil.copyfile(inputs / (prefix + row["id"]) / TRACE / name, output / TRACE / name)
+            shutil.copyfile(directories[row["id"]] / name, output / TRACE / name)
     result = {
-        "schema_version": 2, "status": "passed", "manifest": current,
+        "schema_version": RECEIPT_SCHEMA, "status": "passed", "manifest": current,
         "run_identity": run_identity(), "verus_version": current["verus"]["version"],
         "selected_groups": [row[0] for row in checks], "checks": rows,
         "whole_crate": whole_summary, "workers": 1, "matrix_max_parallel": 4,
+        "matrix_shards": len(shards),
         "scope": "Complete same-run whole-crate and all configured isolated semantic evidence.",
     }
     write_json(output / TRACE / SUMMARY, result)
@@ -412,6 +444,7 @@ def main():
     parser = argparse.ArgumentParser()
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--only")
+    mode.add_argument("--shard", type=int)
     mode.add_argument("--matrix", action="store_true")
     mode.add_argument("--seal-whole", type=Path)
     mode.add_argument("--aggregate", type=Path)
@@ -422,7 +455,7 @@ def main():
     arguments = parser.parse_args()
     try:
         if arguments.matrix:
-            print(json.dumps({"group": [row[0] for row in configured_checks()]}))
+            print(json.dumps({"shard": list(range(len(configured_shards())))}))
             return 0
         if arguments.seal_whole:
             seal_whole(ROOT, arguments.seal_whole.resolve())
@@ -438,7 +471,8 @@ def main():
             if arguments.verus_executable is None:
                 parser.error("--verus-executable is required for execution")
             result = run_checks(
-                ROOT, arguments.verus_executable.resolve(), arguments.output_dir.resolve(), arguments.only,
+                ROOT, arguments.verus_executable.resolve(), arguments.output_dir.resolve(),
+                only=arguments.only, shard=arguments.shard,
             )
     except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.SubprocessError) as error:
         print(f"semantic proof orchestration failed: {error}", file=sys.stderr)

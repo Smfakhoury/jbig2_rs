@@ -1,5 +1,6 @@
 import copy
 import io
+import math
 import json
 import sys
 import tempfile
@@ -210,6 +211,99 @@ class WorkflowPolicyTests(unittest.TestCase):
             mutate(document["jobs"])
             with self.subTest(mutate=mutate), self.assertRaises(ValueError):
                 check_workflow(document, "verus.yml")
+
+    def test_validation_events_avoid_duplicate_pushes_without_filtering_prs_or_tags(self):
+        for name in ("ci", "coverage", "fuzz", "performance", "verus"):
+            actual = load_workflow((TOOLS.parent / f".github/workflows/{name}.yml").read_text())
+            self.assertTrue(check_workflow(actual, f"{name}.yml"))
+            for change in ("branch-pushes", "missing-pr", "filtered-pr", "missing-manual", "missing-tags"):
+                document = copy.deepcopy(actual)
+                if change == "branch-pushes":
+                    document["on"]["push"] = ""
+                elif change == "missing-pr":
+                    document["on"].pop("pull_request")
+                elif change == "filtered-pr":
+                    document["on"]["pull_request"] = {"paths": ["src/**"]}
+                elif change == "missing-manual":
+                    document["on"].pop("workflow_dispatch")
+                else:
+                    document["on"]["push"].pop("tags")
+                with self.subTest(name=name, change=change), self.assertRaisesRegex(ValueError, "validation runs"):
+                    check_workflow(document, f"{name}.yml")
+
+    def test_complete_pr_profile_uses_nineteen_jobs_without_dropping_platforms(self):
+        from run_semantic_proofs import configured_shards
+
+        count = 0
+        for name in ("ci", "coverage", "fuzz", "performance", "verus"):
+            document = load_workflow((TOOLS.parent / f".github/workflows/{name}.yml").read_text())
+            for job_name, job in document["jobs"].items():
+                matrix = job.get("strategy", {}).get("matrix")
+                if matrix is None:
+                    count += 1
+                elif isinstance(matrix, dict):
+                    count += math.prod(len(values) for values in matrix.values())
+                else:
+                    self.assertEqual((name, job_name), ("verus", "semantic"))
+                    count += len(configured_shards())
+            if name == "ci":
+                expected_os = ["ubuntu-latest", "windows-latest", "macos-latest"]
+                self.assertEqual(document["jobs"]["cargo"]["strategy"]["matrix"]["os"], expected_os)
+                self.assertEqual(document["jobs"]["distribution"]["strategy"]["matrix"], {
+                    "os": expected_os, "toolchain": ["1.89.0", "stable"],
+                })
+        self.assertEqual(count, 19)
+
+    def test_verus_compile_gate_cannot_be_satisfied_by_a_substring_or_comment(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        for replacement in ("cargo verus verify", "echo cargo verus build", "# cargo verus build"):
+            document = copy.deepcopy(actual)
+            step = next(
+                step for step in document["jobs"]["whole"]["steps"]
+                if step.get("name") == "Verify proof build and audit production coverage"
+            )
+            step["run"] = step["run"].replace("cargo verus build", replacement)
+            self.assertIn("--compiled-library", step["run"])
+            with self.subTest(replacement=replacement), self.assertRaisesRegex(ValueError, "exact pinned Cargo"):
+                check_workflow(document, "verus.yml")
+
+    def test_verus_check_disabling_flags_and_environment_overrides_are_rejected(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        for flag in (
+            "--no-verify", "--no-lifetime", "--no-erasure-check",
+            "--no-trait-conflicts", "--no-auto-recommends-check",
+        ):
+            for surface in ("command", "workflow-env", "job-env", "step-env", "export"):
+                document = copy.deepcopy(actual)
+                job = document["jobs"]["whole"]
+                step = next(
+                    step for step in job["steps"]
+                    if step.get("name") == "Verify proof build and audit production coverage"
+                )
+                if surface == "command":
+                    step["run"] = step["run"].replace("--rlimit 30", f"--rlimit 30 {flag}")
+                elif surface == "workflow-env":
+                    document["env"] = {"VERUS_ARGS": flag}
+                elif surface == "job-env":
+                    job["env"] = {"VERUS_ARGS": flag}
+                elif surface == "step-env":
+                    step["env"] = {"VERUS_ARGS": flag}
+                else:
+                    step["run"] = f'export VERUS_ARGS="{flag}"\n' + step["run"]
+                with self.subTest(flag=flag, surface=surface), self.assertRaisesRegex(ValueError, "check-disabling"):
+                    check_workflow(document, "verus.yml")
+
+    def test_verus_policy_ignores_comment_flags_but_rejects_extra_invocations(self):
+        document = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        step = next(
+            step for step in document["jobs"]["whole"]["steps"]
+            if step.get("name") == "Verify proof build and audit production coverage"
+        )
+        step["run"] += "\n# --no-lifetime and --no-erasure-check are forbidden\n"
+        self.assertTrue(check_workflow(document, "verus.yml"))
+        step["run"] += "\ncargo verus verify --manifest-path verification/Cargo.toml\n"
+        with self.assertRaisesRegex(ValueError, "exact pinned Cargo"):
+            check_workflow(document, "verus.yml")
 
     def test_cli_failure_removes_prior_success_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:

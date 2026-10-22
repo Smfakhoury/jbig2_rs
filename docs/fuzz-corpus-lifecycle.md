@@ -167,6 +167,12 @@ feedback. The lock covers checkout through cache save and artifact upload, not
 only minimization. `cancel-in-progress: false` protects the running producer.
 The controls job remains independent.
 
+Pull requests run once rather than again on the same feature-branch push.
+Push triggers are restricted to `main` and all tags, with manual branch
+dispatch still available. Daily extended campaigns and the exact trusted
+schedule/manual-main predicate are unchanged; no PR or tag gains cache
+promotion rights through the trigger change.
+
 Every untrusted run uses a distinct repository/run-ID/attempt fallback group.
 PRs, pushes and nondefault-branch dispatches cannot join, queue behind, or cancel
 the trusted group, including when rerun. The job expression uses only `github`

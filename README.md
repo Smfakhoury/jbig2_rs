@@ -124,6 +124,29 @@ correctness proof. See the [auditor index](docs/verus-auditor-index.md) for
 standard-to-model notation bridges and the separate implementation-only
 `proofs/model_support/` lemmas.
 
+### CI execution profile
+
+Every pull request runs the complete validation profile once. Push validation
+runs on `main` and all tags; feature-branch pushes do not duplicate the same
+PR's work. Each workflow also supports manual dispatch for branch preflight.
+The daily extended fuzz campaign and trusted-main corpus producer remain
+unchanged.
+
+The fifteen semantic proof groups and all 66 compiling strong/weaker contrasts
+are preserved, but execute in four deterministic, sequential shards rather
+than fifteen separately initialized jobs. Each shard has one worker; at most
+four run concurrently, under the unchanged 20-minute job cap. The stable
+`verify` collector requires the whole proof and every group exactly once,
+with matching source/tool/run/attempt identities and individual report/log
+hashes. No cached proof result substitutes for execution.
+
+This profile uses 19 workflow jobs per PR, plus the repository's external CLA
+check: about 20 check results rather than the former 61 push-plus-PR results.
+The three native platforms and six isolated distribution combinations remain.
+Workflow policy validates the actual Cargo build invocation and rejects
+check-disabling flags; a `--compile` substring in another argument is not
+compilation evidence.
+
 Do not use standards documents, sample software, or conformance assets unless
 their entry in `source-provenance.json` records the required legal approval.
 

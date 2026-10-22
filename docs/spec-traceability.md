@@ -449,6 +449,15 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
+All fifteen semantic groups still execute; four deterministic shards reduce
+repeated setup without dropping any of the 66 strong/weaker compiling
+contrasts. Each shard executes sequentially, and the final collector requires
+every configured group exactly once, its selected-case baselines and native
+compilation results, individual report/log/checker hashes, and matching
+whole-crate source/tool/run/attempt identities. The source-bound receipt
+includes the complete shard assignment. The stable `verify` check fails on a
+missing, failed, duplicate, stale or wrong-shard result.
+
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional
 `--require-reviewed-decomposition` also requires both inputs, but checks only

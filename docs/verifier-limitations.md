@@ -12,6 +12,18 @@ bare Cargo-Verus success against the ordinary runtime manifest is not proof
 evidence. CI verifies and compiles with Cargo, rejects empty, dependency-only,
 partial, wrong-tool or duplicate production reports, and then checks every
 qualified production identity against the complete inventory.
+The workflow policy requires the literal pinned Cargo verification-and-build
+argument list, not the legacy `--compile` substring (which could also match
+`--compiled-library`). Lifetime, erasure, trait-conflict and verification
+disabling flags are rejected in workflow commands and environments.
+
+The fifteen logical semantic groups remain complete: four deterministic
+round-robin shards execute each group once with one worker per shard. The
+collector requires all four same-run shard receipts, all fifteen independently
+hashed report/log pairs and all 66 actual compiling contrasts. Missing,
+duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
+binds the shard assignment as well as every source/tool identity; the canonical
+report paths and individual checker schemas remain unchanged.
 
 The source audit rejects local trusted-specification APIs, verification
 exclusions and exec termination waivers in runtime, model and proof sources.
