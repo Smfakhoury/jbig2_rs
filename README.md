@@ -103,7 +103,7 @@ With the pinned Verus release and its bundled `cargo-verus` on `PATH`, run from
 the repository root:
 
 ```text
-cargo +1.98.1 verus verify --manifest-path verification/Cargo.toml --locked
+cargo +1.98.1 verus verify --manifest-path verification/Cargo.toml --locked -- --num-threads 1 --rlimit 30
 ```
 
 The isolated verification manifest targets the exact same `src/lib.rs`, with
@@ -111,8 +111,9 @@ the audited crate identity `jbig2_rs_production`. Its locked `vstd` dependency
 does not enter the ordinary runtime manifest or the 24-file Cargo archive.
 The explicit manifest path is intentional: bare `cargo verus verify` against
 the runtime manifest does not verify this project and is not an acceptance
-gate. Use `--verify-module` after `--` for local debugging only, never as
-whole-crate evidence. CI uses `cargo verus build` with the same manifest to
+gate. For local module debugging, use `--verus-args-to roots` before `--` and
+`--verify-module` after it, so selectors do not affect upstream dependencies.
+Such partial results are never whole-crate evidence. CI uses `cargo verus build` with the same manifest to
 also check compilation and proof erasure, then requires the exact complete
 production inventory and every semantic contrast group.
 

@@ -2,6 +2,23 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The Verus-owner alignment tranche configures Cargo verification of the same
+production source through an isolated, locked verifier manifest, preserving
+the dependency-free runtime archive. Source guards reject local trust APIs,
+verification exclusions and termination waivers. Nine proof lemmas and the
+MMR transition-prefix accumulator predicate now live in implementation proof
+support without changing their logical module ownership; traceability binds
+the full literal-include closure. An auditor index records notation bridges
+and independent table-review obligations, and MMR membership predicates no
+longer call themselves normative. Cargo verification and compilation prove
+1170 project obligations with zero errors; this does not close provisional
+normative review or the upstream capacity-getter prerequisite. All native
+source token streams match the owner-merged main revision `64465a7`.
+The explicit verifier-manifest argument is a deliberate packaging boundary;
+bare Cargo-Verus success against the ordinary runtime manifest is not proof
+evidence. Exec termination checking remains enabled but is conditional on
+callee termination, not an end-to-end CPU bound.
+
 The negative/metamorphic catalogs now contain 29 fully executable-linked cases
 (38 references to 37 distinct ordinary tests), with no legacy file-only
 exceptions. Strict schema, source/ignored-test checks and real Cargo discovery
