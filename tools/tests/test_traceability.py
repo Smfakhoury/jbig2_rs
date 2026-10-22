@@ -937,6 +937,9 @@ class TraceabilityTests(unittest.TestCase):
             *(f"RENORM-{suffix}" for suffix in groups["RENORM"]),
             *(f"DECODE-{suffix}" for suffix in groups["DECODE"] if suffix != "QE-LOOKUP"),
             "INTEGER-CONTEXT-SELECT", "INTEGER-HISTORY-GROW", "INTEGER-HISTORY-ROLL",
+            "INTEGER-HISTORY-SEED", "INTEGER-SIGN-DECISION", "INTEGER-PAYLOAD-ORDER",
+            *(f"INTEGER-MAGNITUDE-LEAF-{index}" for index in range(1, 7)),
+            "INTEGER-RESULT-NONNEGATIVE", "INTEGER-RESULT-NEGATIVE", "INTEGER-RESULT-OOB",
             "IAID-SEED", "IAID-CONTEXT", "IAID-HISTORY", "IAID-ITERATIONS",
             "IAID-CLEAR-SENTINEL", "IAID-RESULT",
         }
@@ -951,7 +954,11 @@ class TraceabilityTests(unittest.TestCase):
                 if name in functional:
                     self.assertTrue(row["functional_evidence"])
                     self.assertTrue(
-                        {"arithmetic-normalized-state", "arithmetic-integer-bit-state", "arithmetic-iaid-state"} & set(row["models"])
+                        {
+                            "arithmetic-normalized-state", "arithmetic-integer-bit-state",
+                            "arithmetic-iaid-state", "arithmetic-integer-state",
+                            "arithmetic-integer-bits-run",
+                        } & set(row["models"])
                     )
                 else:
                     self.assertEqual(row["functional_evidence"], [])

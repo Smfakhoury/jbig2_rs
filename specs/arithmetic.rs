@@ -427,6 +427,144 @@ pub(crate) open spec fn iaid_run<'a>(
     }
 }
 
+pub(crate) open spec fn integer_step_state<'a>(
+    decoder: super::ArithmeticDecoder<'a>,
+    contexts: Seq<super::ArithmeticContext>,
+    previous: u16,
+) -> (Result<u8, super::ArithmeticError>, super::ArithmeticDecoder<'a>, Seq<super::ArithmeticContext>, u16) {
+    if previous > 511 || previous as int >= contexts.len()
+        || !decoder_valid(&decoder) || !context_valid(contexts[previous as int]) {
+        // Totality only; production callers supply a valid decoder, bank and history.
+        (
+            Err(super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow)),
+            decoder, contexts, previous,
+        )
+    } else {
+        let context = contexts[previous as int];
+        let step = decision_state(&decoder, context);
+        let next_contexts = contexts.update(
+            previous as int, context_after_decision(&decoder, context),
+        );
+        let next_decoder = super::ArithmeticDecoder {
+            bytes: decoder.bytes,
+            byte_position: step.2,
+            current_byte: step.3,
+            code: step.4,
+            interval: step.1,
+            bit_count: step.5,
+            marker: step.6,
+        };
+        if step.0 > 1 {
+            (Err(error_for_signal(&next_decoder, step.0)), next_decoder, next_contexts, previous)
+        } else {
+            (
+                Ok(step.0), next_decoder, next_contexts,
+                integer_history_step(previous, step.0),
+            )
+        }
+    }
+}
+
+pub(crate) open spec fn integer_bits_run<'a>(
+    decoder: super::ArithmeticDecoder<'a>,
+    contexts: Seq<super::ArithmeticContext>,
+    previous: u16,
+    remaining: u8,
+    value: u32,
+) -> (Result<u32, super::ArithmeticError>, super::ArithmeticDecoder<'a>, Seq<super::ArithmeticContext>, u16)
+    decreases remaining,
+{
+    if remaining == 0 {
+        (Ok(value), decoder, contexts, previous)
+    } else {
+        let step = integer_step_state(decoder, contexts, previous);
+        match step.0 {
+            Err(error) => (Err(error), step.1, step.2, step.3),
+            Ok(bit) => {
+                let next = value as nat * 2 + bit as nat;
+                if next > u32::MAX {
+                    (
+                        Err(super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow)),
+                        step.1, step.2, step.3,
+                    )
+                } else {
+                    integer_bits_run(step.1, step.2, step.3, (remaining - 1) as u8, next as u32)
+                }
+            },
+        }
+    }
+}
+
+pub(crate) open spec fn integer_selection_state<'a>(
+    decoder: super::ArithmeticDecoder<'a>,
+    contexts: Seq<super::ArithmeticContext>,
+    previous: u16,
+    level: u8,
+) -> (Result<(u8, u64), super::ArithmeticError>, super::ArithmeticDecoder<'a>, Seq<super::ArithmeticContext>, u16)
+    decreases 5 - level,
+{
+    if level >= 5 {
+        (Ok((32, 4436)), decoder, contexts, previous)
+    } else {
+        let step = integer_step_state(decoder, contexts, previous);
+        match step.0 {
+            Err(error) => (Err(error), step.1, step.2, step.3),
+            Ok(bit) => if bit == 0 {
+                let leaf: (u8, u64) = match level {
+                    0 => (2, 0),
+                    1 => (4, 4),
+                    2 => (6, 20),
+                    3 => (8, 84),
+                    _ => (12, 340),
+                };
+                (Ok(leaf), step.1, step.2, step.3)
+            } else {
+                integer_selection_state(step.1, step.2, step.3, (level + 1) as u8)
+            },
+        }
+    }
+}
+
+pub(crate) open spec fn integer_state<'a>(
+    decoder: super::ArithmeticDecoder<'a>,
+    contexts: Seq<super::ArithmeticContext>,
+) -> (Result<super::ArithmeticInteger, super::ArithmeticError>, super::ArithmeticDecoder<'a>, Seq<super::ArithmeticContext>) {
+    let sign = integer_step_state(decoder, contexts, 1);
+    match sign.0 {
+        Err(error) => (Err(error), sign.1, sign.2),
+        Ok(sign_bit) => {
+            let leaf = integer_selection_state(sign.1, sign.2, sign.3, 0);
+            match leaf.0 {
+                Err(error) => (Err(error), leaf.1, leaf.2),
+                Ok((count, offset)) => {
+                    let payload = integer_bits_run(leaf.1, leaf.2, leaf.3, count, 0);
+                    match payload.0 {
+                        Err(error) => (Err(error), payload.1, payload.2),
+                        Ok(value) => {
+                            let magnitude = offset as nat + value as nat;
+                            if magnitude > i64::MAX {
+                                (
+                                    Err(super::ArithmeticError::Malformed(super::MalformedError::IntegerOverflow)),
+                                    payload.1, payload.2,
+                                )
+                            } else {
+                                let result = if sign_bit == 1 && magnitude == 0 {
+                                    super::ArithmeticInteger::OutOfBand
+                                } else if sign_bit == 0 {
+                                    super::ArithmeticInteger::Value(magnitude as i64)
+                                } else {
+                                    super::ArithmeticInteger::Value((-(magnitude as int)) as i64)
+                                };
+                                (Ok(result), payload.1, payload.2)
+                            }
+                        },
+                    }
+                },
+            }
+        },
+    }
+}
+
 pub(crate) open spec fn iaid_state<'a>(
     decoder: super::ArithmeticDecoder<'a>,
     contexts: Seq<super::ArithmeticContext>,

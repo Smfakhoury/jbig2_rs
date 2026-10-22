@@ -981,6 +981,9 @@ impl<'a> ArithmeticDecoder<'a> {
                 Ok(_) => arithmetic_spec::decoder_valid(final(self)),
                 Err(_) => true,
             },
+            out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0,
+            *final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1,
+            final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::cast_possible_wrap)]
@@ -988,6 +991,10 @@ impl<'a> ArithmeticDecoder<'a> {
         &mut self,
         contexts: &mut [ArithmeticContext; INTEGER_CONTEXT_COUNT],
     ) -> Result<ArithmeticInteger, ArithmeticError> {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal_with_fuel(arithmetic_spec::integer_selection_state, 6);
+        }
         let mut previous = 1_u16;
         let sign = self.decode_integer_bit(&mut previous, contexts)?;
 
@@ -1008,7 +1015,7 @@ impl<'a> ArithmeticDecoder<'a> {
         let magnitude_bits = self.decode_integer_bits(&mut previous, bit_count, contexts)?;
         let magnitude = offset
             .checked_add(u64::from(magnitude_bits))
-            .ok_or(MalformedError::IntegerOverflow)?;
+            .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
         if sign == 1 && magnitude == 0 {
             return Ok(ArithmeticInteger::OutOfBand);
         }
@@ -1178,6 +1185,18 @@ impl<'a> ArithmeticDecoder<'a> {
             forall|index: int| 0 <= index < old(contexts)@.len()
                 && index != (*old(previous) & 511) as int ==>
                     final(contexts)@[index] == old(contexts)@[index],
+            out == arithmetic_spec::integer_step_state(
+                *old(self), old(contexts)@, *old(previous),
+            ).0,
+            *final(self) == arithmetic_spec::integer_step_state(
+                *old(self), old(contexts)@, *old(previous),
+            ).1,
+            final(contexts)@ == arithmetic_spec::integer_step_state(
+                *old(self), old(contexts)@, *old(previous),
+            ).2,
+            *final(previous) == arithmetic_spec::integer_step_state(
+                *old(self), old(contexts)@, *old(previous),
+            ).3,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn decode_integer_bit(
@@ -1186,6 +1205,11 @@ impl<'a> ArithmeticDecoder<'a> {
         contexts: &mut [ArithmeticContext; INTEGER_CONTEXT_COUNT],
     ) -> Result<u8, ArithmeticError> {
         let prior = *previous;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(prior & 511 == prior) by (bit_vector)
+                requires prior <= 511;
+        }
         let context_index = usize::from(prior & 0x01ff);
         #[cfg(verus_keep_ghost)]
         production_integer_history_index!(prior);
@@ -1226,6 +1250,18 @@ impl<'a> ArithmeticDecoder<'a> {
                 Ok(_) => arithmetic_spec::decoder_valid(final(self)),
                 Err(_) => true,
             },
+            out == arithmetic_spec::integer_bits_run(
+                *old(self), old(contexts)@, *old(previous), bit_count, 0,
+            ).0,
+            *final(self) == arithmetic_spec::integer_bits_run(
+                *old(self), old(contexts)@, *old(previous), bit_count, 0,
+            ).1,
+            final(contexts)@ == arithmetic_spec::integer_bits_run(
+                *old(self), old(contexts)@, *old(previous), bit_count, 0,
+            ).2,
+            *final(previous) == arithmetic_spec::integer_bits_run(
+                *old(self), old(contexts)@, *old(previous), bit_count, 0,
+            ).3,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn decode_integer_bits(
@@ -1243,15 +1279,44 @@ impl<'a> ArithmeticDecoder<'a> {
                 forall|index: int| 0 <= index < contexts@.len() ==>
                     arithmetic_spec::context_valid(contexts@[index]),
                 remaining <= bit_count,
+                arithmetic_spec::integer_bits_run(
+                    *old(self), old(contexts)@, *old(previous), bit_count, 0,
+                ) == arithmetic_spec::integer_bits_run(
+                    *self, contexts@, *previous, remaining, value,
+                ),
             decreases remaining,
         ))]
         while remaining != 0 {
+            #[cfg(verus_keep_ghost)]
+            proof_decl! {
+                let ghost before = *self;
+                let ghost before_contexts = contexts@;
+                let ghost before_previous = *previous;
+                let ghost before_remaining = remaining;
+                let ghost before_value = value;
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                reveal_with_fuel(arithmetic_spec::integer_bits_run, 1);
+            }
             let bit = self.decode_integer_bit(previous, contexts)?;
-            value = value
+            let shifted = value
                 .checked_mul(2)
-                .and_then(|partial| partial.checked_add(u32::from(bit)))
-                .ok_or(MalformedError::IntegerOverflow)?;
+                .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
+            value = shifted
+                .checked_add(u32::from(bit))
+                .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
             remaining -= 1;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(
+                    arithmetic_spec::integer_bits_run(
+                        before, before_contexts, before_previous, before_remaining, before_value,
+                    ) == arithmetic_spec::integer_bits_run(
+                        *self, contexts@, *previous, remaining, value,
+                    )
+                );
+            }
         }
         Ok(value)
     }
@@ -2796,6 +2861,258 @@ mod tests {
                 assert_eq!(decoder.bytes.as_ptr(), before.bytes.as_ptr());
             }
         }
+    }
+
+    fn integer_numeric_bit(
+        decoder: &mut ArithmeticDecoder<'_>,
+        contexts: &mut [ArithmeticContext; INTEGER_CONTEXT_COUNT],
+        previous: &mut u16,
+    ) -> Result<u8, ArithmeticError> {
+        let index = usize::from(*previous);
+        let (signal, next, context) = decision_numeric_oracle(decoder, contexts[index]);
+        *decoder = next;
+        contexts[index] = context;
+        if signal > 1 {
+            return Err(if signal == RASTER_SIGNAL_EOF {
+                eof_numeric_error(decoder.byte_position + 1, 1, 0)
+            } else {
+                assert_eq!(signal, RASTER_SIGNAL_OVERFLOW);
+                ArithmeticError::Malformed(MalformedError::IntegerOverflow)
+            });
+        }
+        let next = *previous * 2 + u16::from(signal);
+        *previous = if *previous < 256 {
+            next
+        } else {
+            256 + next % 256
+        };
+        Ok(signal)
+    }
+
+    fn integer_numeric_oracle<'a>(
+        initial: &ArithmeticDecoder<'a>,
+        contexts: &[ArithmeticContext; INTEGER_CONTEXT_COUNT],
+    ) -> (
+        Result<ArithmeticInteger, ArithmeticError>,
+        ArithmeticDecoder<'a>,
+        [ArithmeticContext; INTEGER_CONTEXT_COUNT],
+        Option<usize>,
+    ) {
+        let mut decoder = refill_fixture(
+            initial.bytes,
+            initial.byte_position,
+            initial.code,
+            initial.bit_count,
+            initial.marker,
+        );
+        decoder.interval = initial.interval;
+        let mut bank = *contexts;
+        let mut previous = 1;
+        let mut selected_leaf = None;
+        let result = (|| {
+            let sign = integer_numeric_bit(&mut decoder, &mut bank, &mut previous)?;
+            let mut ones = 0;
+            while ones < 5 {
+                if integer_numeric_bit(&mut decoder, &mut bank, &mut previous)? == 0 {
+                    break;
+                }
+                ones += 1;
+            }
+            selected_leaf = Some(ones);
+            let (count, offset) = [(2, 0), (4, 4), (6, 20), (8, 84), (12, 340), (32, 4436)][ones];
+            let mut value = 0_u64;
+            for position in (0..count).rev() {
+                let bit = integer_numeric_bit(&mut decoder, &mut bank, &mut previous)?;
+                value |= u64::from(bit) << position;
+            }
+            let magnitude = i64::try_from(value + offset).unwrap();
+            Ok(if sign == 1 && magnitude == 0 {
+                ArithmeticInteger::OutOfBand
+            } else {
+                ArithmeticInteger::Value(if sign == 0 { magnitude } else { -magnitude })
+            })
+        })();
+        (result, decoder, bank, selected_leaf)
+    }
+
+    #[test]
+    fn complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure() {
+        let samples: [&[u8]; 5] = [
+            &[0],
+            &[0, 0],
+            &[0; 64],
+            &[0xff, 0x90, 0],
+            &[0x13, 0xff, 0x8f, 0],
+        ];
+        let mut leaves = [0; 6];
+        let mut outcomes = [0; 6];
+        for salt in 0..47 {
+            let contexts = std::array::from_fn(|index| {
+                ArithmeticContext::from_state(
+                    u8::try_from((index * 17 + salt) % 47).unwrap(),
+                    u8::try_from(((index >> (salt % 3)) + salt) % 2).unwrap(),
+                )
+                .unwrap()
+            });
+            for bytes in samples {
+                for position in [0, bytes.len() - 1] {
+                    for code in [0, 0x1234_5678, 0x4000_0000, u32::MAX] {
+                        for count in [0, 1, 8] {
+                            for interval in [MIN_INTERVAL, 0xffff] {
+                                let mut actual = refill_fixture(bytes, position, code, count, None);
+                                actual.interval = interval;
+                                let (expected, decoder, bank, leaf) =
+                                    integer_numeric_oracle(&actual, &contexts);
+                                let mut prior = refill_fixture(bytes, position, code, count, None);
+                                prior.interval = interval;
+                                let mut prior_bank = contexts;
+                                let result = decode_integer_with(|index| {
+                                    prior.decode(&mut prior_bank[index])
+                                });
+                                assert_eq!(result, expected);
+                                assert_decoder_state_eq(&prior, &decoder);
+                                assert_eq!(prior_bank, bank);
+                                let mut actual_bank = contexts;
+                                assert_eq!(actual.decode_integer(&mut actual_bank), expected);
+                                assert_decoder_state_eq(&actual, &decoder);
+                                assert_eq!(actual.bytes.as_ptr(), decoder.bytes.as_ptr());
+                                assert_eq!(actual_bank, bank);
+                                if let Some(index) = leaf {
+                                    leaves[index] += 1;
+                                }
+                                let index = match expected {
+                                    Ok(ArithmeticInteger::Value(0)) => 0,
+                                    Ok(ArithmeticInteger::Value(value)) if value > 0 => 1,
+                                    Ok(ArithmeticInteger::Value(_)) => 2,
+                                    Ok(ArithmeticInteger::OutOfBand) => 3,
+                                    Err(ArithmeticError::Malformed(
+                                        MalformedError::UnexpectedEof { .. },
+                                    )) => 4,
+                                    Err(ArithmeticError::Malformed(
+                                        MalformedError::IntegerOverflow,
+                                    )) => 5,
+                                    other => panic!("unexpected integer outcome: {other:?}"),
+                                };
+                                outcomes[index] += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(outcomes.iter().sum::<usize>(), 11_280);
+        assert!(outcomes.into_iter().all(|count| count > 0), "{outcomes:?}");
+        assert!(leaves.into_iter().all(|count| count > 0), "{leaves:?}");
+    }
+
+    fn integer_payload_numeric<'a>(
+        initial: &ArithmeticDecoder<'a>,
+        contexts: &[ArithmeticContext; INTEGER_CONTEXT_COUNT],
+        mut previous: u16,
+        bit_count: u8,
+    ) -> (
+        Result<u32, ArithmeticError>,
+        ArithmeticDecoder<'a>,
+        [ArithmeticContext; INTEGER_CONTEXT_COUNT],
+        u16,
+    ) {
+        let mut decoder = refill_fixture(
+            initial.bytes,
+            initial.byte_position,
+            initial.code,
+            initial.bit_count,
+            initial.marker,
+        );
+        decoder.interval = initial.interval;
+        let mut bank = *contexts;
+        let result = (|| {
+            let mut value = 0_u64;
+            for position in (0..bit_count).rev() {
+                let bit = integer_numeric_bit(&mut decoder, &mut bank, &mut previous)?;
+                value |= u64::from(bit) << position;
+            }
+            Ok(u32::try_from(value).unwrap())
+        })();
+        (result, decoder, bank, previous)
+    }
+
+    #[test]
+    fn integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations() {
+        let contexts = std::array::from_fn(|index| {
+            ArithmeticContext::from_state(
+                u8::try_from((index * 17 + 11) % 47).unwrap(),
+                u8::try_from((index / 2) % 2).unwrap(),
+            )
+            .unwrap()
+        });
+        let samples: [&[u8]; 5] = [
+            &[0],
+            &[0, 0],
+            &[0; 64],
+            &[0xff, 0x90, 0],
+            &[0x13, 0xff, 0x8f, 0],
+        ];
+        let mut cases = 0;
+        for bit_count in 0..=32 {
+            for history in [0, 1, 255, 256, 511] {
+                for bytes in samples {
+                    for position in [0, bytes.len() - 1] {
+                        for code in [0, 0x4000_0000, u32::MAX] {
+                            for count in [0, 8] {
+                                for interval in [MIN_INTERVAL, 0xffff] {
+                                    let mut actual =
+                                        refill_fixture(bytes, position, code, count, None);
+                                    actual.interval = interval;
+                                    let (expected, decoder, bank, previous) =
+                                        integer_payload_numeric(
+                                            &actual, &contexts, history, bit_count,
+                                        );
+                                    let mut prior =
+                                        refill_fixture(bytes, position, code, count, None);
+                                    prior.interval = interval;
+                                    let mut prior_bank = contexts;
+                                    let mut prior_history = history;
+                                    let mut decode = |index| prior.decode(&mut prior_bank[index]);
+                                    let prior_result = (|| {
+                                        let mut value = 0_u32;
+                                        for _ in 0..bit_count {
+                                            let bit = integer_bit(&mut prior_history, &mut decode)?;
+                                            value = value
+                                                .checked_mul(2)
+                                                .and_then(|partial| {
+                                                    partial.checked_add(u32::from(bit))
+                                                })
+                                                .ok_or(MalformedError::IntegerOverflow)?;
+                                        }
+                                        Ok(value)
+                                    })();
+                                    assert_eq!(prior_result, expected);
+                                    assert_decoder_state_eq(&prior, &decoder);
+                                    assert_eq!(prior_bank, bank);
+                                    assert_eq!(prior_history, previous);
+                                    let mut actual_bank = contexts;
+                                    let mut actual_history = history;
+                                    assert_eq!(
+                                        actual.decode_integer_bits(
+                                            &mut actual_history,
+                                            bit_count,
+                                            &mut actual_bank
+                                        ),
+                                        expected,
+                                    );
+                                    assert_decoder_state_eq(&actual, &decoder);
+                                    assert_eq!(actual.bytes.as_ptr(), decoder.bytes.as_ptr());
+                                    assert_eq!(actual_bank, bank);
+                                    assert_eq!(actual_history, previous);
+                                    cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 19_800);
     }
 
     fn iaid_numeric_oracle<'a>(

@@ -38,6 +38,7 @@ CHECKS = (
     ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
     ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
     ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
