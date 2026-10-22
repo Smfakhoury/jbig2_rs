@@ -43,13 +43,34 @@ impl Segment {
         self
     }
 
+    fn retaining_references(self, numbers: &[u8]) -> Self {
+        let retention = if numbers.len() <= 4 {
+            u8::try_from((1_u16 << (numbers.len() + 1)) - 1).unwrap()
+        } else {
+            u8::MAX
+        };
+        self.references(numbers, retention)
+    }
+
     fn header(&self) -> Vec<u8> {
-        assert!(self.references.len() <= 4);
+        assert!(self.references.len() <= 256);
         assert!(self.references.is_empty() || self.number <= 256);
         let mut bytes = self.number.to_be_bytes().to_vec();
         let long_page = self.page > 255;
         bytes.push(self.kind | (u8::from(long_page) << 6) | (u8::from(self.deferred) << 7));
-        bytes.push((u8::try_from(self.references.len()).unwrap() << 5) | self.retention);
+        if self.references.len() <= 4 {
+            bytes.push((u8::try_from(self.references.len()).unwrap() << 5) | self.retention);
+        } else {
+            assert_eq!(self.retention, u8::MAX);
+            bytes.extend_from_slice(
+                &(0xe000_0000 | u32::try_from(self.references.len()).unwrap()).to_be_bytes(),
+            );
+            let flag_count = self.references.len() + 1;
+            for first in (0..flag_count).step_by(8) {
+                let count = (flag_count - first).min(8);
+                bytes.push(u8::try_from((1_u16 << count) - 1).unwrap());
+            }
+        }
         bytes.extend_from_slice(&self.references);
         if long_page {
             bytes.extend_from_slice(&self.page.to_be_bytes());
@@ -115,6 +136,47 @@ fn end(number: u32, association: u32) -> Segment {
 
 fn eof(number: u32) -> Segment {
     Segment::new(number, 51, 0, Vec::new())
+}
+
+fn reference_payload(kind: u8) -> Vec<u8> {
+    match kind {
+        48 => page(0, 1, 8, 1).payload,
+        50 | 52 | 62 => vec![0; 4],
+        53 => vec![0x03, 0, 0, 0, 0, 0, 0, 0, 1, 0b0100_0101, 0],
+        _ => Vec::new(),
+    }
+}
+
+fn assert_reference_metadata(segments: &[Segment]) {
+    let decoder = Decoder::default();
+    let count = u32::try_from(segments.len()).unwrap();
+    for sequential in [true, false] {
+        let bytes = standalone(sequential, Some(1), segments);
+        let info = decoder.inspect(&bytes).unwrap();
+        assert_info(
+            &info,
+            if sequential {
+                Organization::Sequential
+            } else {
+                Organization::RandomAccess
+            },
+            Some(1),
+            count,
+            &[(1, 8, 1, 300, 600, false)],
+        );
+        assert_eq!(
+            decoder.inspect_reader(&mut Cursor::new(&bytes)).unwrap(),
+            info
+        );
+    }
+    let info = decoder.inspect_embedded(&embedded(segments)).unwrap();
+    assert_info(
+        &info,
+        Organization::Sequential,
+        None,
+        count,
+        &[(1, 8, 1, 300, 600, false)],
+    );
 }
 
 fn stripe(number: u32, row: u32) -> Segment {
@@ -741,6 +803,209 @@ fn embedded_duplicate_numbers_and_cross_page_references_are_exact() {
             page: 1,
         },
     );
+}
+
+#[test]
+fn reference_roles_reject_invalid_consumers_before_page_delivery() {
+    for source_kind in [0_u8, 4, 16, 36, 38, 53] {
+        for consumer_kind in [
+            0_u8, 4, 6, 7, 16, 20, 22, 23, 36, 38, 39, 40, 42, 43, 48, 49, 50, 52, 53, 62,
+        ] {
+            let source_page = u32::from(!matches!(source_kind, 0 | 16 | 53));
+            let segments = [
+                page(1, 1, 8, 1),
+                Segment::new(2, source_kind, source_page, reference_payload(source_kind)),
+                Segment::new(3, consumer_kind, 1, reference_payload(consumer_kind))
+                    .retaining_references(&[2]),
+                end(4, 1),
+                eof(5),
+            ];
+            let allowed = match consumer_kind {
+                0 | 4 | 6 | 7 => matches!(source_kind, 0 | 53),
+                20 | 22 | 23 => source_kind == 16,
+                40 | 42 | 43 => matches!(source_kind, 4 | 36),
+                62 => true,
+                _ => false,
+            };
+            if allowed {
+                assert_reference_metadata(&segments);
+            } else {
+                reject(&segments, &MalformedError::InvalidSegmentReferences(3));
+            }
+        }
+    }
+}
+
+#[test]
+fn only_intermediate_region_roles_can_supply_explicit_refinement_references() {
+    for source_kind in [4_u8, 6, 20, 22, 36, 38, 40, 42] {
+        let prerequisite = match source_kind {
+            20 | 22 => Segment::new(2, 16, 0, Vec::new()),
+            40 => Segment::new(2, 36, 1, Vec::new()),
+            _ => extension(2, 0, 0, &[]),
+        };
+        let source = Segment::new(3, source_kind, 1, Vec::new());
+        let source = if matches!(source_kind, 20 | 22 | 40) {
+            source.retaining_references(&[2])
+        } else {
+            source
+        };
+        for consumer_kind in [40_u8, 42, 43] {
+            let segments = [
+                page(1, 1, 8, 1),
+                prerequisite.clone(),
+                source.clone(),
+                Segment::new(4, consumer_kind, 1, Vec::new()).retaining_references(&[3]),
+                end(5, 1),
+                eof(6),
+            ];
+            if matches!(source_kind, 4 | 20 | 36 | 40) {
+                assert_reference_metadata(&segments);
+            } else {
+                reject(&segments, &MalformedError::InvalidSegmentReferences(4));
+            }
+        }
+    }
+}
+
+#[test]
+fn reference_table_limits_count_tables_not_dictionaries_in_both_header_forms() {
+    for consumer_kind in [0_u8, 4, 6, 7] {
+        for table_count in [0_u8, 1, 4, 5, 8, 9] {
+            let mut segments = vec![page(1, 1, 8, 1), Segment::new(2, 0, 0, Vec::new())];
+            for index in 0..table_count {
+                segments.push(Segment::new(
+                    u32::from(index) + 3,
+                    53,
+                    0,
+                    reference_payload(53),
+                ));
+            }
+            let number = u32::from(table_count) + 3;
+            let references: Vec<_> = (2..table_count + 3).collect();
+            segments.push(
+                Segment::new(number, consumer_kind, 1, Vec::new())
+                    .retaining_references(&references),
+            );
+            segments.extend([end(number + 1, 1), eof(number + 2)]);
+            let maximum = if consumer_kind == 0 { 4 } else { 8 };
+            if table_count <= maximum {
+                assert_reference_metadata(&segments);
+            } else {
+                reject(&segments, &MalformedError::InvalidSegmentReferences(number));
+            }
+        }
+    }
+}
+
+#[test]
+fn halftone_and_refinement_reference_cardinality_is_exact() {
+    for consumer_kind in [20_u8, 22, 23, 40, 42, 43] {
+        for references in [&[][..], &[2][..], &[2, 3][..]] {
+            let (source_kind, source_page) = if matches!(consumer_kind, 20 | 22 | 23) {
+                (16, 0)
+            } else {
+                (36, 1)
+            };
+            let segments = [
+                page(1, 1, 8, 1),
+                Segment::new(2, source_kind, source_page, Vec::new()),
+                Segment::new(3, source_kind, source_page, Vec::new()),
+                Segment::new(4, consumer_kind, 1, Vec::new()).retaining_references(references),
+                end(5, 1),
+                eof(6),
+            ];
+            if references.len() == 1 || (references.is_empty() && matches!(consumer_kind, 42 | 43))
+            {
+                assert_reference_metadata(&segments);
+            } else {
+                reject(&segments, &MalformedError::InvalidSegmentReferences(4));
+            }
+        }
+    }
+}
+
+#[test]
+fn global_reference_roles_are_rechecked_without_mutating_shared_state() {
+    let decoder = Decoder::default();
+    for source_kind in [0_u8, 16, 53] {
+        let globals = decoder
+            .parse_globals(&embedded(&[Segment::new(
+                2,
+                source_kind,
+                0,
+                reference_payload(source_kind),
+            )]))
+            .unwrap();
+        for consumer_kind in [0_u8, 4, 6, 7, 20, 22, 23, 40, 42, 43] {
+            let bytes = embedded(&[
+                page(3, 1, 8, 1),
+                Segment::new(4, consumer_kind, 1, Vec::new()).retaining_references(&[2]),
+                end(5, 1),
+            ]);
+            let allowed = if matches!(consumer_kind, 0 | 4 | 6 | 7) {
+                matches!(source_kind, 0 | 53)
+            } else {
+                matches!(consumer_kind, 20 | 22 | 23) && source_kind == 16
+            };
+            let mut context = decoder.context();
+            if allowed {
+                let info = decoder
+                    .inspect_embedded_with_globals(&bytes, &globals)
+                    .unwrap();
+                assert_info(
+                    &info,
+                    Organization::Sequential,
+                    None,
+                    3,
+                    &[(1, 8, 1, 300, 600, false)],
+                );
+                assert_eq!(
+                    context
+                        .inspect_embedded_with_globals(&bytes, &globals)
+                        .unwrap(),
+                    info
+                );
+            } else {
+                let expected = MalformedError::InvalidSegmentReferences(4);
+                assert_malformed(
+                    decoder
+                        .inspect_embedded_with_globals(&bytes, &globals)
+                        .unwrap_err(),
+                    &expected,
+                );
+                assert_malformed(
+                    decoder
+                        .decode_embedded_with_globals(&bytes, &globals)
+                        .unwrap_err(),
+                    &expected,
+                );
+                assert_malformed(
+                    context
+                        .inspect_embedded_with_globals(&bytes, &globals)
+                        .unwrap_err(),
+                    &expected,
+                );
+                assert_malformed(
+                    context
+                        .decode_embedded_with_globals(&bytes, &globals)
+                        .unwrap_err(),
+                    &expected,
+                );
+            }
+            assert_eq!(globals.segment_count(), 1);
+            assert_malformed(
+                context.inspect_embedded(&bytes).unwrap_err(),
+                &MalformedError::MissingReferredSegment {
+                    segment: 4,
+                    referred: 2,
+                },
+            );
+            let (valid, _) = fixture::generated_page();
+            let recovered = context.decode(&valid).unwrap();
+            assert_pixels(&recovered.pages()[0], 1, 8, 1, &[0]);
+        }
+    }
 }
 
 #[test]
