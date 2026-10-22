@@ -233,6 +233,24 @@ class RuntimeCoverageTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             regressions(after, before)
 
+    def test_reviewed_floor_rejects_one_lost_coordinate_for_every_measured_metric(self):
+        baseline = load_json(TOOLS.parent / "validation/coverage/baseline.json")
+        self.assertEqual(regressions(baseline, baseline), [])
+        entries = [("total", baseline["totals"])] + list(baseline["files"].items())
+        for label, metrics in entries:
+            for metric, value in metrics.items():
+                if value["covered"] == 0:
+                    continue
+                with self.subTest(file=label, metric=metric):
+                    report = copy.deepcopy(baseline)
+                    report["totals"][metric]["covered"] -= 1
+                    if label != "total":
+                        report["files"][label][metric]["covered"] -= 1
+                    self.assertIn(
+                        f"{label}: {metric} below reviewed baseline",
+                        regressions(report, baseline),
+                    )
+
     def test_changed_line_coverage_reports_uncovered_runtime_lines(self):
         report = self.report()
         process = type("Result", (), {"stdout": "@@ -2,1 +2,1 @@\n@@ -5 +5 @@\n"})

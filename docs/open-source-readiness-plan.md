@@ -10,8 +10,16 @@ project error classification without adding entropy payloads or codec
 families. With normalization and owner-main integration, 349 native tests pass
 with 14 existing ignored tests. Fresh coverage is 81.96% lines, 77.04% regions
 and 72.37% branches; the adapter delta is 19 lines/18 regions/0 branches, with no
-lost coordinates or denominator changes. Existing reviewed floors are retained,
-not lowered or reinterpreted as this new measurement. P06 remains in progress.
+lost coordinates or denominator changes. That tranche retained the existing
+reviewed floors rather than treating its measurement as a ratified floor.
+P06 remains in progress.
+After the normalization and adapter tranches merged, a fresh complete collection
+on main `5d95c52` confirms the same 81.96%/77.04%/72.37% measurements with 349
+passing native tests and 14 existing ignored tests. The global and per-file
+floors now ratchet upward to those actual counts, with unchanged denominators,
+scope, pins, CI jobs and release goals. A tooling regression checks every
+nonzero metric against a single lost covered coordinate. This preserves
+measured progress; it adds no native test coverage or normative approval.
 The Verus-owner alignment tranche configures Cargo verification of the same
 production source through an isolated, locked verifier manifest, preserving
 the dependency-free runtime archive. Source guards reject local trust APIs,

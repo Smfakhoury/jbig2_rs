@@ -157,8 +157,8 @@ cache promotion for the existing nine targets.
 ## Runtime coverage
 
 The pinned Linux coverage workflow measures ordinary runtime code, excluding
-inline tests/oracles and ghost items. Its ratcheted baseline is **81.80% lines,
-76.90% regions and 72.33% branch outcomes**. CI checks aggregate/per-file
+inline tests/oracles and ghost items. Its ratcheted baseline is **81.96% lines,
+77.04% regions and 72.37% branch outcomes**. CI checks aggregate/per-file
 non-regression; the proposed 90% line / 85% branch release goals remain unmet.
 See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
 uncovered-code artifacts and the remaining P06 test-improvement work. Public

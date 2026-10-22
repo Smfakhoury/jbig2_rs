@@ -2,9 +2,9 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only public reference-role and table-error refresh measured on the immutable current source_revision before this evidence commit. Production/model/proof/Cargo inputs match comparison parent33be03f. Its Rust source and test identities exactly match the previously measured owner-aligned baseline. Six integration tests gain31lines,38regions and12branch outcomes, with identical global/per-file denominators and no lost covered coordinates. Eight targeted mutants compile and are detected by their selected tests. Every floor is nondecreasing against both current main and the historical unpublished reference-test baseline. All counts below are the actual fresh combined collection, not summed branch deltas. Positive opaque payloads establish inspection metadata only, not entropy-stream or normative conformance. Scope, exclusions, pins, release goals and publication restrictions are unchanged.",
-  "source_revision": "ca80b60785acc3c0cdd3ae90e8c430f39c7d2b99",
-  "source_sha256": "4f8c146ed8a3163ad4d0cb5858cb22e977c259c5300ceae07aeaa4b121c8a4ce",
+  "policy": "Upward-only ratchet of the actual complete pinned collection on immutable merged main source_revision, after the exact normalization and typed-error adapter tests merged. All global/per-file denominators are unchanged and every covered-count floor is nondecreasing against the previous reviewed baseline. Arithmetic gains one line, one region and one branch outcome; decode gains nineteen lines and eighteen regions with no branch gain. All counts below are a fresh combined measurement, not summed historical branch deltas. This evidence-only change adds no native tests or runtime/model/proof/Cargo behavior. Scope, exclusions, toolchain pins, release goals, CI job count and publication restrictions are unchanged; P06 and normative review remain incomplete.",
+  "source_revision": "5d95c52f2bb7394231ab4802d76f0a9f32b454fc",
+  "source_sha256": "a599328ee25fff023e3b8a8631bb1813d76bf58d706d590609c24309e58d3de1",
   "test_source_sha256": "eabb9d7f2bbccd3ca5886545a9bda5f6a1d29f2f9d78ad3e44f98708492ed091",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
@@ -14,14 +14,14 @@
   },
   "release_goals": {"lines": 90, "branches": 85},
   "totals": {
-    "lines": {"covered": 10325, "count": 12622},
-    "regions": {"covered": 9945, "count": 12933},
-    "branches": {"covered": 1908, "count": 2638}
+    "lines": {"covered": 10345, "count": 12622},
+    "regions": {"covered": 9964, "count": 12933},
+    "branches": {"covered": 1909, "count": 2638}
   },
   "files": {
-    "src/arithmetic.rs": {"lines": {"covered": 281, "count": 340}, "regions": {"covered": 268, "count": 340}, "branches": {"covered": 70, "count": 90}},
+    "src/arithmetic.rs": {"lines": {"covered": 282, "count": 340}, "regions": {"covered": 269, "count": 340}, "branches": {"covered": 71, "count": 90}},
     "src/bitmap.rs": {"lines": {"covered": 900, "count": 974}, "regions": {"covered": 823, "count": 1041}, "branches": {"covered": 166, "count": 188}},
-    "src/decode.rs": {"lines": {"covered": 1092, "count": 1396}, "regions": {"covered": 929, "count": 1336}, "branches": {"covered": 143, "count": 230}},
+    "src/decode.rs": {"lines": {"covered": 1111, "count": 1396}, "regions": {"covered": 947, "count": 1336}, "branches": {"covered": 143, "count": 230}},
     "src/document.rs": {"lines": {"covered": 1067, "count": 1168}, "regions": {"covered": 1038, "count": 1131}, "branches": {"covered": 276, "count": 326}},
     "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
     "src/file_header.rs": {"lines": {"covered": 60, "count": 60}, "regions": {"covered": 55, "count": 55}, "branches": {"covered": 22, "count": 22}},
