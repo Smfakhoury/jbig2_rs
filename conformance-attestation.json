@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "e29bd2e2d3f6d27f125b74461e70e69880ee24ea",
-  "scope": "Fresh existing official diagnostics on immutable unmerged proof-only arithmetic-refill source e29bd2e, not current main or a Huffman fix; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "1359a2fba794bd94b2877aff25d07d1214dd7650",
+  "scope": "Fresh existing official diagnostics on unmerged proof-only arithmetic-initialization source, not current main or a Huffman fix 1359a2f; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 343,
     "passed": 329,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "3747992e1b63f89c665cb6c31fbe464bc7531968d7c856c2987d480d7eb4fd27",
-    "review_sha256": "33208bd5ff763e289259207c5e091d69b466a986c190cebdc97390ac344e8970"
+    "results_sha256": "1b010cdf88a06b42f04b34cc017a7ec6b7679b80d80e37492e6fabfa68119fd4",
+    "review_sha256": "26cc335942fa99d5bb1058f735967e6e4f4f52e2a511d0372b1bdbd5e560a88b"
   },
   "community_regressions": {
     "total": 0,

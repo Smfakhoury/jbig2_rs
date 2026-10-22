@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "e29bd2e2d3f6d27f125b74461e70e69880ee24ea",
+  "source_revision": "1359a2fba794bd94b2877aff25d07d1214dd7650",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -9,9 +9,9 @@
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/arithmetic-refill/final-whole --cfg verus_keep_ghost --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/arithmetic-initialization/final-whole --cfg verus_keep_ghost --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1165,
+    "verified_obligations": 1170,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "4f480ddde120213873439dd5432c32a1a12a231197bb8daab750a0d11b47f798",
-  "proof_dispositions_sha256": "dd97061b175db8f0a2e22d63ee3d29894fc4cc0f773ad30bd8b09944c221d89d",
+  "production_proof_coverage_sha256": "a58dc7c9b30d65b249963e4f069a7bd4d85d3fd649451bf5298574241c01467e",
+  "proof_dispositions_sha256": "01110c2a0dd63508dc651cbdc424e32eb84256809dc67302822406b025ff52d9",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. The immutable source revision proves exact project byte-input signal/checked-success and position/current-byte/code/count/marker outputs, including EOF and partial overflow consumption. A single pure refill_step model expresses the relation. All 656 production bodies are byte-identical to base 33d942b; only the two refill proof attributes change, the other 654 attributes and every existing model byte remain unchanged, and no preconditions are strengthened. Fresh unfiltered compile/lifetime/erasure verification proves 1165 obligations with zero errors; an unchanged count is not a completeness metric. Six real compiling mutations fail the selected new relations and verify when only their affected relations are omitted. Numeric native oracles cover all 65,536 byte pairs at exact addition boundaries and EOF/existing-marker/error frames through both helpers. The required dynamic semantic manifest now contains 14 groups and 60 contrasts; prior decision/context and all earlier guarantees remain. Existing arithmetic bindings and generated inventory are refreshed without changing disposition identities, statuses or reasons. All 249 requirements and all eleven selected BYTEIN records retain provisional reviews and prior strengths. The shared helper theorem is not eleven independently reviewed normative proofs. Normative register/overflow interpretation, CT-zero caller timing, initialization/renormalization composition and complete entropy-stream correctness remain open. The single MMR capacity substitution still needs unsupported pinned Vec::capacity/Result::unwrap_or specifications; no project assumptions, memory-policy changes, coverage-floor reductions or conformance approval are introduced. The seven official cases and coverage release goals remain unresolved. Release remains blocked.",
+  "note": "Complete inventory is not complete normative correctness. The immutable source revision proves exact project initialization composed from the seed and refill transition. Every supplied slice of at least two bytes is accepted; shorter slices fail. Returned input, interval, position/current byte, code, count and marker are explicit. A proved bit-vector bound excludes checked-scaling overflow; a ghost constant bridge relates native 1<<7 to the model's factor 128. All 656 executing bodies/attributes remain token-identical to the refill base 2828539; only the constructor proof/staging changes, while the other 655 declarations and all existing model bytes are unchanged. No preconditions are strengthened. Fresh unfiltered compile/lifetime/erasure verification proves 1170 obligations with zero errors; counts are not completeness metrics. Six real compiling constructor mutations fail the selected new acceptance/state relations and verify when only the affected relation is omitted. Numeric native tests exhaust all 65,536 byte pairs, suffix invariance and exact short-input errors. Prior refill/decision and other guarantees remain; the required dynamic manifest has 15 groups and 66 contrasts. Arithmetic source bindings and generated inventory are refreshed without changing disposition identities, statuses or reasons. All 249 requirements retain provisional review/strength; six INITDEC records distinguish project constructor semantics from normative/caller gaps, not six independent normative proofs. Normative register/stream interpretation, caller slice selection, later decision/renormalization composition and complete entropy-stream correctness remain open. The single MMR capacity substitution still requires pinned standard-library specification support; no project assumptions, memory-policy changes, lowered coverage floors or conformance approval are introduced. Seven official cases and coverage goals remain unresolved. Release remains blocked.",
   "release_gate": "blocked"
 }
