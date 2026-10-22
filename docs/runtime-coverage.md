@@ -13,11 +13,30 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 10,266 / 12,622 | 81.33% |
-| Code regions | 9,875 / 12,934 | 76.35% |
-| Branch outcomes | 1,880 / 2,640 | 71.21% |
+| Lines | 10,287 / 12,622 | 81.50% |
+| Code regions | 9,900 / 12,933 | 76.55% |
+| Branch outcomes | 1,892 / 2,638 | 71.72% |
 
-The latest MMR contract floor is bound to immutable test-source commit
+The table is the retained reviewed floor, not the latest test measurement.
+The error-adapter follow-up measures **10,314/12,622 lines (81.71%)**,
+**9,926/12,933 regions (76.75%)** and **1,897/2,638 branch outcomes (71.91%)**.
+Against its exact normalization parent it gains **19 lines and 18 regions**,
+with **zero branch gain**, no lost covered coordinates and unchanged global/
+per-file denominators. All production declarations, bodies and coordinate
+starts are unchanged; the raw source hash changes because excluded unit tests
+are added to the decode test module. Do not claim raw source-hash equality.
+The reviewed baseline is retained byte-for-byte rather than conflating this
+independent tranche with the separate public-reference ratchet.
+
+Four direct typed-error tests cover every generic/symbol/Huffman adapter
+variant, extreme fields, literal reasons and delegated I/O/allocation/limit/
+malformed errors. Seven actual native-compiling mutants are detected using
+exact library or integration selectors. They construct enum values directly:
+no entropy payload, new coding-family fixture, fuzz seed or normative approval
+is added. The source-bound whole proof and 16-group/72-contrast gate remain
+required, and release coverage goals are still unmet.
+
+The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
 It adds **57 covered lines, 50 regions and 19 branch outcomes** over a fresh
 `d970ac4` main collection with identical source-coordinate denominators and no

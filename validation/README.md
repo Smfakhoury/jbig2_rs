@@ -185,6 +185,14 @@ prefix lacking optional EOF. Duplicate local wire numbers are rejected as
 
 ## Proof and normative link audits
 
+Direct typed-error tests cover every generic, symbol/text and Huffman adapter
+variant, extreme fields and delegated I/O/allocation/limit/malformed errors.
+They construct error enums rather than encoded streams and do not certify
+when a decoder must produce each error. Seven compiling mutation controls
+must run exactly one passing baseline and one failing mutant test. The runner
+supports explicit `lib` and named integration targets without accepting
+zero-test passes or compiler failures as detection.
+
 The Huffman width regressions independently count significant bits for all
 single-bit positions and additional limb patterns at widths 0 through 257.
 They also reject oversubscribed canonical trees at 64/128/192-bit boundaries,

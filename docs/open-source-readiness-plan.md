@@ -2,6 +2,16 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The typed-error adapter tranche adds four unit tests covering all generic,
+symbol/text and Huffman conversion variants, extreme field values and
+unchanged delegated DecodeError classes. Seven actual compiled mutants are
+detected through exact unit/integration selectors. This directly strengthens
+project error classification without adding entropy payloads or codec
+families. With the normalization prerequisite, 343 native tests pass with
+14 existing ignored tests. Fresh coverage is 81.71% lines, 76.75% regions and
+71.91% branches; the adapter delta is 19 lines/18 regions/0 branches, with no
+lost coordinates or denominator changes. Existing reviewed floors are retained,
+not lowered or reinterpreted as this new measurement. P06 remains in progress.
 The Verus-owner alignment tranche configures Cargo verification of the same
 production source through an isolated, locked verifier manifest, preserving
 the dependency-free runtime archive. Source guards reject local trust APIs,

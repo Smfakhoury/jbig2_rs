@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "24bc84214221326e49a5144ae7526fbafe9a2464",
-  "scope": "Fresh existing official diagnostics on Exact arithmetic normalization contracts and provisional P04 output relations 24bc842; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
+  "scope": "Fresh existing official diagnostics on Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 343,
     "passed": 329,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "d547ffefe40692459b528c21971125b8325d4a5a98dc6b09f0407b1394bc6149",
-    "review_sha256": "c5e6d84b250f9cbdbd8f9bb573040457f7f89761a7890283814cd072c8d1a8dc"
+    "results_sha256": "3d5a588e4837af74961cd88a8a8ab02d9e2fd9501774350981278cb5035c7c0d",
+    "review_sha256": "126978cf5b8029aaa39ee83fa638fffd475c9ad619972144b5d146e25c40b6b7"
   },
   "community_regressions": {
     "total": 0,
