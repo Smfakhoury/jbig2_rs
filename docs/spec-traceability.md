@@ -470,7 +470,7 @@ checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
 All sixteen semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 72 required strong/weaker compiling
+repeated setup without dropping any of the 75 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching

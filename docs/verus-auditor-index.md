@@ -66,7 +66,7 @@ implementation data and synthetic semantic mutants are not normative oracles.
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  16-group/72-contrast required profile is neither added normative coverage nor a fresh
+  16-group/75-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks

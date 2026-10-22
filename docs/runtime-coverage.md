@@ -61,7 +61,23 @@ measures 10,326/9,946/1,909 covered coordinates respectively, so this adapter
 tranche adds 19 lines and 18 regions with zero branch gain. All 349 native
 tests and twelve compiling mutation controls pass; denominator and production
 coordinate identities are unchanged. Do not add historical branch deltas or
-lower the merged reviewed floor. The 16-group/72-contrast gate remains required.
+lower the merged reviewed floor. The 16-group/75-contrast gate remains required.
+
+The arithmetic error-context follow-up adds three direct-state unit tests,
+not encoded streams or a new coding family. They check partial EOF registers,
+context updates and the input frame through both decision entry APIs; all
+65,536 stored context-byte pairs through restore/reset/default; and every
+arithmetic error adapter/formatter variant, including formatter failures.
+On immutable source `d9c6d5880930ec4a10d0040388056b806834214b`, all 352 native
+tests pass with the same 14 ignored tests. A fresh complete pinned collection
+measures **10,379/12,622 lines (82.23%)**, **9,996/12,933 regions (77.29%)**
+and **1,910/2,638 branch outcomes (72.40%)**. Against the merged-parent
+measurement, only arithmetic increases: 34 lines, 32 regions and one branch
+outcome. Every denominator is unchanged; arithmetic reaches 316/340 lines and
+72/90 branch outcomes. This is a separate actual measurement, not a ratification
+of a new floor or a sum of historical deltas. The reviewed baseline remains
+unchanged. The formally unreachable subtraction-underflow defense remains in
+the emitted denominator, not marked covered or excluded.
 
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.

@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1171 obligations with zero errors and zero native
+Pinned Verus verifies 1172 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -20,7 +20,7 @@ disabling flags are rejected in workflow commands and environments.
 The sixteen logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
 collector requires all four same-run shard receipts, all sixteen independently
-hashed report/log pairs and all 72 required compiling contrasts. Missing,
+hashed report/log pairs and all 75 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,25 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+The arithmetic error-context follow-up makes the entry-point context-index/MPS
+relations unconditional: they hold on errors as well as successful decisions.
+Both entry points and both exchange helpers preserve the input borrow/view;
+the two normalization helpers now expose their existing borrow frame too.
+A bounded bit-vector obligation proves that the upper-route code subtraction
+cannot underflow, so its defensive return cannot bypass the context relation.
+That native defense remains present and in the coverage denominator.
+
+Seven actual compiling decision/context contrasts now include error-only
+index reset, MPS reset and input replacement. Their weaker controls restore only
+the corresponding old success-only relation or remove only the input frame,
+retaining validity and the other output guarantees. Three direct-state tests
+check partial EOF registers through both entry APIs, all 65,536 context-byte
+pairs, and every arithmetic error conversion/formatter variant including
+formatter failure propagation. All 17 native token streams, all 656 caller
+preconditions and the reviewed arithmetic disposition bodies/attributes are
+unchanged. These are project-state contracts, not a complete decision-register
+recurrence, constructor-reachable stream claim or normative approval.
 
 The normalization follow-up specifies the exact result signal/acceptance and
 every interval/input-position/current-byte/code/count/marker field, including

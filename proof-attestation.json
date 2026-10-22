@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
-  "scope": "Unchanged production error adapters plus exact normalization contracts in the unfiltered compiled Cargo proof, with excluded typed-error unit tests and explicit capacity divergence",
+  "source_revision": "d9c6d5880930ec4a10d0040388056b806834214b",
+  "scope": "Unconditional arithmetic error-context and input-frame contracts with unchanged native tokens and caller preconditions, excluded direct-state tests, and the explicit capacity divergence",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/error-conversions/cargo cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/error-context/whole-build CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1171,
+    "verified_obligations": 1172,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "65510aa1a0cb1f83dcdc86b421388a101ccf5deaa6a6239d593e9f17fa2d8695",
-  "proof_dispositions_sha256": "35b29f828d06ef20a02a69e92b41c96f01dd941be04812e835151700590c68d9",
+  "production_proof_coverage_sha256": "268d5139b917b1f52c7074165d86ea665455b535a3d1d149ee9ae7d5e6d45a7f",
+  "proof_dispositions_sha256": "27cb841217a8a653559ec1905628490f8c4e7eeca2dad39cd899a5ad33bbf959",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered Cargo compilation proves 1171 project obligations with zero errors and enabled lifetime/erasure checks. The exact inventory remains 656 functions: 608 directly verified, 24 reviewed limitations, 23 audited forwarders, one capacity-accounting divergence and zero incomplete/native-assumption entries. All production signatures, attributes, bodies and source-coordinate starts match the normalization parent. Only the excluded decode test module changes source bytes. Four direct typed-error tests cover every generic, symbol/text and Huffman adapter variant, extreme fields and unchanged delegated I/O/allocation/limit/malformed errors, without new entropy payloads or fuzz families. Twelve actual compiling runtime mutants are detected after owner-main integration, including four new error-adapter mutants and eight existing API/reference controls. Library and integration test selectors must each run exactly one passing baseline and one failing compiled mutant. The inherited exact normalization model and six functional P04 gains remain. All 249 records are provisional, with 66 functional, 157 state-preservation and 26 safety-only records. The complete source-bound 16-group/72-contrast gate remains required. Actual fresh normal/logging/native/Hayro execution retains two exact official positives, seven unresolved positives and one unsupported case, with no rejection credit. Coverage gains 19 lines and 18 regions with zero branch gain, unchanged denominators and no lost covered coordinates. The reviewed baseline is retained, not lowered or relabeled as this new measurement. No native/model algorithm, precondition, project assumption, public API, memory policy, exclusion, pin, standard asset or publication change. Upstream capacity, normative review and complete stream correctness remain blocked.",
+  "note": "Fresh unfiltered pinned Cargo verification and compilation prove 1172 project obligations with zero errors and enabled lifetime/erasure checks. Arithmetic decision entry points now preserve exact context index/MPS on error as well as success, and entry/exchange/normalization paths retain the input borrow/view. A bounded bit-vector proof excludes upper-route code-subtraction underflow; its native defensive return remains present and in the coverage denominator. All 17 native token streams and all 656 caller preconditions match the immutable parent; reviewed arithmetic disposition bodies and attributes are byte-identical. The inventory remains 608 directly verified functions,24 reviewed limitations,23 audited forwarders,one capacity divergence and zero incomplete/native-assumption entries. Three direct-state tests check exact partial EOF registers through both entry APIs,all65536 context-byte pairs,and every arithmetic error adapter/formatter variant including formatter failure. All352 native tests pass with14 ignored. Actual coverage is10379/12622 lines,9996/12933 regions and1910/2638 branches, with unchanged denominators and the reviewed baseline retained. Seven actual compiling decision/context contrasts include error-only index/MPS corruption and input replacement; weaker controls retain all other guarantees. The complete required profile is16groups75contrasts across4shards, without additional CI jobs. Fresh approved normal/logging/native/Hayro observations remain2exact positives,7unresolved positives and1unsupported, with no rejection credit. All249 selected records remain provisional:66functional,157state-preservation,26safety-only. No native algorithm, caller precondition, project assumption, public API, memory policy, exclusion, pin, standard asset or publication change. Exact decision-register/stream semantics, independent normative review, upstream capacity adoption and release coverage remain open.",
   "release_gate": "blocked"
 }
