@@ -191,6 +191,45 @@ pub(crate) open spec fn refill_step(
     }
 }
 
+pub(crate) open spec fn initialized_state(
+    bytes: &[u8],
+) -> Option<(usize, u8, u32, u8, Option<super::ArithmeticMarker>)> {
+    if bytes@.len() < 2 {
+        None
+    } else {
+        let seed = super::ArithmeticDecoder {
+            bytes,
+            byte_position: 0,
+            current_byte: bytes@[0],
+            code: (bytes@[0] as u32) << 16,
+            interval: super::MIN_INTERVAL,
+            bit_count: 0,
+            marker: None,
+        };
+        let refill = refill_step(&seed);
+        Some((
+            refill.1, refill.2, (refill.3 as nat * 128) as u32,
+            (refill.4 as int - 7) as u8, refill.5,
+        ))
+    }
+}
+
+pub(crate) proof fn initialization_code_bound(first: u8, next: u8)
+    ensures
+        (((first as u32) << 16) as nat)
+            + (if first == 0xff && next > 0x8f {
+                0xff00u32
+            } else if first == 0xff {
+                (next as u32) << 9
+            } else {
+                (next as u32) << 8
+            }) as nat <= u32::MAX / 128,
+{
+    assert(((first as u32) << 16) <= 0x00ff_0000u32) by(bit_vector);
+    assert(((next as u32) << 9) <= 0x0001_fe00u32) by(bit_vector);
+    assert(((next as u32) << 8) <= 0x0000_ff00u32) by(bit_vector);
+}
+
 pub(crate) open spec fn renormalization_steps(interval: nat) -> nat
     decreases if 0 < interval < super::MIN_INTERVAL {
         super::MIN_INTERVAL - interval

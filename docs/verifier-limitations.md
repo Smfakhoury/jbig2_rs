@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1165 obligations with zero errors and zero native
+Pinned Verus verifies 1170 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -120,13 +120,35 @@ relations and verify with only their affected relations removed. Independent
 numeric tests cover all 65,536 byte pairs, exact addition boundaries, EOF and
 existing-marker/error frames through both helpers.
 
-The unfiltered compile proof remains 1165 obligations with zero errors; the
-unchanged count is not a completeness metric. The dynamic semantic manifest
-now requires fourteen groups and 60 contrasts. Eleven selected BYTEIN records
+At refill-only source e29bd2e the unfiltered compile proof verifies 1165
+obligations with zero errors; that count is not a completeness metric.
+Eleven selected BYTEIN records
 retain provisional state-preservation classifications: the shared project-step
 theorem is not eleven independently reviewed normative proofs. Register
 meaning/overflow interpretation, CT-zero caller timing, initialization and
 renormalization composition, and whole entropy-stream equivalence remain open.
+
+Initialization now composes the seed and exact refill model: the constructor
+accepts exactly supplied slices with at least two bytes and returns the precise
+input, interval, position/current byte, code, available-bit count and marker.
+The returned pointer reflects refill consumption; it is not always zero.
+Suffix bytes are retained but not consumed during initialization.
+
+One proved bit-vector bound establishes that the checked initial code scaling
+cannot overflow. A ghost bridge identifies the native `1 << 7` constant with
+the model's factor 128. No native expression or precondition changes. All 656
+executing bodies/attributes remain token-identical; only the constructor's
+proof declaration/staging changes relative to the refill source, and the other
+655 declarations and existing model bytes are unchanged.
+
+All 65,536 first-byte pairs and suffix invariance are checked by a numeric
+oracle; empty/single-byte inputs retain exact typed EOF fields. Six compiling
+acceptance/scale/count/marker/consumption/interval mutations fail strong
+contracts and verify with only their affected new relations removed. The full
+compile proof verifies 1170 obligations with zero errors. The manifest now
+requires fifteen groups and 66 contrasts. Six selected INITDEC records remain
+provisional state-preservation evidence pending normative register/stream
+interpretation and later decision/renormalization composition.
 
 Source-offset region composition now also verifies the executing chunked
 dispatcher rather than a scalar proof substitute. Its existing storage,

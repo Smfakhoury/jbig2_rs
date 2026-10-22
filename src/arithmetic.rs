@@ -555,8 +555,18 @@ pub(crate) struct ArithmeticDecoder<'a> {
 impl<'a> ArithmeticDecoder<'a> {
     /// Initializes the Annex E decoder at the start of one arithmetic stream.
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures match out {
-            Ok(decoder) => arithmetic_spec::decoder_valid(&decoder),
+        ensures
+        out.is_ok() == (bytes@.len() >= 2),
+        match out {
+            Ok(decoder) =>
+                arithmetic_spec::decoder_valid(&decoder)
+                && decoder.bytes@ == bytes@
+                && decoder.interval == MIN_INTERVAL
+                && decoder.byte_position == arithmetic_spec::initialized_state(bytes).unwrap().0
+                && decoder.current_byte == arithmetic_spec::initialized_state(bytes).unwrap().1
+                && decoder.code == arithmetic_spec::initialized_state(bytes).unwrap().2
+                && decoder.bit_count == arithmetic_spec::initialized_state(bytes).unwrap().3
+                && decoder.marker == arithmetic_spec::initialized_state(bytes).unwrap().4,
             Err(_) => true,
         },
     ))]
@@ -577,7 +587,22 @@ impl<'a> ArithmeticDecoder<'a> {
             bit_count: 0,
             marker: None,
         };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            if bytes@.len() >= 2 {
+                arithmetic_spec::initialization_code_bound(bytes@[0], bytes@[1]);
+                assert(arithmetic_spec::refill_step(&decoder).0 == 0);
+                assert(arithmetic_spec::refill_step(&decoder).3 <= u32::MAX / 128);
+            }
+        }
         decoder.byte_in()?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(bytes@.len() >= 2);
+            assert(decoder.code <= u32::MAX / 128);
+            // Relate the native shift constant to the model's arithmetic scale.
+            assert((1u32 << 7) == 128u32) by(bit_vector);
+        }
         decoder.code = decoder
             .code
             .checked_mul(1 << 7)
@@ -1419,6 +1444,68 @@ mod tests {
         assert_eq!(left.interval, right.interval);
         assert_eq!(left.bit_count, right.bit_count);
         assert_eq!(left.marker, right.marker);
+    }
+
+    #[test]
+    fn initialization_accepts_every_byte_pair_and_preserves_suffixes() {
+        for first in 0_u8..=u8::MAX {
+            for next in 0_u8..=u8::MAX {
+                let bytes = [first, next];
+                let marker = first == 0xff && next >= 0x90;
+                let stuffed = first == 0xff && !marker;
+                let increment = if marker {
+                    65_280
+                } else {
+                    u64::from(next) * if stuffed { 512 } else { 256 }
+                };
+                let expected = ArithmeticDecoder {
+                    bytes: &bytes,
+                    byte_position: usize::from(!marker),
+                    current_byte: if marker { first } else { next },
+                    code: u32::try_from((u64::from(first) * 65_536 + increment) * 128)
+                        .expect("two-byte initialization fits u32"),
+                    interval: MIN_INTERVAL,
+                    bit_count: u8::from(!stuffed),
+                    marker: if marker {
+                        Some(ArithmeticMarker {
+                            offset: 0,
+                            code: next,
+                        })
+                    } else {
+                        None
+                    },
+                };
+                let actual = ArithmeticDecoder::new(&bytes).expect("every two-byte prefix");
+                assert_decoder_state_eq(&actual, &expected);
+                assert_eq!(actual.bytes, bytes);
+                let suffix = [first, next, 0xff, 0xac];
+                let extended = ArithmeticDecoder::new(&suffix).expect("unchanged prefix");
+                assert_decoder_state_eq(&extended, &expected);
+                assert_eq!(extended.bytes, suffix);
+            }
+        }
+    }
+
+    #[test]
+    fn initialization_short_input_errors_preserve_exact_offsets() {
+        assert!(matches!(
+            ArithmeticDecoder::new(&[]),
+            Err(ArithmeticError::Malformed(MalformedError::UnexpectedEof {
+                offset: 0,
+                needed: 1,
+                remaining: 0
+            }))
+        ));
+        for first in 0_u8..=u8::MAX {
+            assert!(matches!(
+                ArithmeticDecoder::new(&[first]),
+                Err(ArithmeticError::Malformed(MalformedError::UnexpectedEof {
+                    offset: 1,
+                    needed: 1,
+                    remaining: 0
+                }))
+            ));
+        }
     }
 
     fn refill_fixture(

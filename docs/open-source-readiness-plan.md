@@ -22,7 +22,7 @@ integer representation and Qe table-row relations. The total now comprises
 project-profile policies. All records remain provisional; selected arithmetic
 accounting is not owner-reviewed exhaustive enumeration. Starting every feature
 does not establish exhaustive normative enumeration. Eighteen generated
-integration regressions supplement 149 distinct linked non-ignored Cargo test
+integration regressions supplement 151 distinct linked non-ignored Cargo test
 identities. Exact per-feature membership, remaining scope, official source
 consultation identity and policy-row hashes are checked. T.88 hashes were
 rechecked through its official public package; no standard assets were
@@ -129,6 +129,15 @@ byte pair at addition/EOF/marker boundaries pass. Whole-crate compile
 verification remains 1165/0; the dynamic manifest requires fourteen groups and
 60 contrasts. The eleven selected BYTEIN records retain their provisional
 strengths and remaining normative/caller-composition gaps.
+The initialization tranche now composes the seed/refill model into an exact
+constructor result and acceptance relation: all supplied slices of at least
+two bytes succeed, shorter slices fail, and all returned fields are explicit.
+A proved bit-vector bound/constant bridge handles initial scaling without
+changing native code or preconditions. Exhaustive byte-pair/suffix tests and
+six compiling relation-specific proof contrasts pass. The whole compile proof
+verifies 1170 obligations with zero errors; the dynamic manifest requires
+fifteen groups and 66 contrasts. All six selected INITDEC records remain
+provisional, with normative/caller/later-decoding gaps explicitly retained.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The

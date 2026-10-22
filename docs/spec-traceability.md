@@ -116,6 +116,15 @@ project guarantees from remaining normative/caller gaps instead of saying the
 postconditions are absent. All eleven retain provisional state-preservation
 strength; no requirement count, review approval or full-stream claim changes.
 
+The initialization tranche composes the project seed/refill transition and
+exposes exact constructor acceptance and returned state for every supplied
+slice. A proved arithmetic bound excludes code-scaling overflow for all
+two-byte prefixes. The six INITDEC records now distinguish this complete
+project-constructor relation from still-unreviewed normative register
+interpretation, caller slice selection and later decoding. They retain their
+prior strengths and provisional reviews; the new model and exhaustive prefix
+tests do not constitute six independent normative proofs.
+
 ## Selected Annex A/E arithmetic enumeration
 
 This tranche adds **138 provisional normative records**, bringing the arithmetic

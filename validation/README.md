@@ -301,7 +301,17 @@ at exact code-addition boundaries, EOF and existing-marker/error frames through
 both helpers. This proves the project refill step, not normative register
 translation, caller timing or complete initialization/renormalization.
 
-The required manifest now has fourteen groups and 60 contrasts.
+`tools/check_arithmetic_initialization_proofs.py` checks six compiling
+constructor mutations against exact two-byte acceptance and initialized
+code/count/marker/position/interval outputs. Each weaker control removes only
+its affected relation and retains old validity plus unaffected new outputs.
+Native numeric tests check all 65,536 byte pairs, suffix invariance and exact
+empty/single-byte EOF fields. The project initialized-state model composes
+the seed and refill; a fully proved bound and shift-constant bridge establish
+safe initial scaling. Normative interpretation and later stream decoding
+remain separate.
+
+The required manifest now has fifteen groups and 66 contrasts.
 `tools/run_semantic_proofs.py` still runs all configured isolated semantic
 checkers locally with at most two concurrent children by default. `--only ID`
 runs one complete known group with one child; unknown IDs fail. Each checker
