@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1172 obligations with zero errors and zero native
+Pinned Verus verifies 1173 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -20,7 +20,7 @@ disabling flags are rejected in workflow commands and environments.
 The sixteen logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
 collector requires all four same-run shard receipts, all sixteen independently
-hashed report/log pairs and all 75 required compiling contrasts. Missing,
+hashed report/log pairs and all 83 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -35,7 +35,33 @@ the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
 
-The arithmetic error-context follow-up makes the entry-point context-index/MPS
+Complete project decision-state composition now exposes every signal, interval,
+code, counter, byte-position/current-byte and marker result at both entry APIs,
+including fast return and all partial EOF/overflow states. Exchange helpers
+compose interval replacement with the existing exact normalization model.
+Checked acceptance and typed failures are exact project policies, including
+cursor-increment and field-representation failures. The private Qe table stays
+private: a closed model and a proof-support equation bridge connect it to an
+auditable scalar register model.
+
+The decision checker now has fifteen relation-specific compiling contrasts.
+Successful wrong-bit controls execute the real step before corrupting the bit;
+error-context controls corrupt only an actual error result. Six new contrasts
+target signal/register/history fields and two target typed error projection.
+Wide numeric tests check both APIs, all probability rows and actual success,
+EOF and overflow outcomes. Full-width error tests compare both numeric policy
+and the prior conversion path.
+
+Only two executing expressions change: opaque standard `Into` calls in
+`signal_error` become the identical explicit `ArithmeticError::Malformed`
+constructor. The unchanged single-expression `From` body and all-signal parity
+test justify the expansion. This removes an unexposed result relation without
+adding a local trusted specification. All other native tokens, all 656 caller
+preconditions and all reviewed arithmetic disposition bodies/attributes remain
+unchanged. These theorems do not independently approve normative register/table
+translation, integer/IAID output semantics or complete entropy streams.
+
+The earlier arithmetic error-context follow-up made the entry-point context-index/MPS
 relations unconditional: they hold on errors as well as successful decisions.
 Both entry points and both exchange helpers preserve the input borrow/view;
 the two normalization helpers now expose their existing borrow frame too.
@@ -43,7 +69,7 @@ A bounded bit-vector obligation proves that the upper-route code subtraction
 cannot underflow, so its defensive return cannot bypass the context relation.
 That native defense remains present and in the coverage denominator.
 
-Seven actual compiling decision/context contrasts now include error-only
+Its seven actual compiling decision/context contrasts included error-only
 index reset, MPS reset and input replacement. Their weaker controls restore only
 the corresponding old success-only relation or remove only the input frame,
 retaining validity and the other output guarantees. Three direct-state tests

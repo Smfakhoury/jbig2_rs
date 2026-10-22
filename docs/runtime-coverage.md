@@ -61,7 +61,7 @@ measures 10,326/9,946/1,909 covered coordinates respectively, so this adapter
 tranche adds 19 lines and 18 regions with zero branch gain. All 349 native
 tests and twelve compiling mutation controls pass; denominator and production
 coordinate identities are unchanged. Do not add historical branch deltas or
-lower the merged reviewed floor. The 16-group/75-contrast gate remains required.
+lower the merged reviewed floor. The 16-group/83-contrast gate remains required.
 
 The arithmetic error-context follow-up adds three direct-state unit tests,
 not encoded streams or a new coding family. They check partial EOF registers,
@@ -78,6 +78,20 @@ outcome. Every denominator is unchanged; arithmetic reaches 316/340 lines and
 of a new floor or a sum of historical deltas. The reviewed baseline remains
 unchanged. The formally unreachable subtraction-underflow defense remains in
 the emitted denominator, not marked covered or excluded.
+
+The complete decision-state follow-up adds wide numeric register oracles across
+all 47 Qe rows through both entry APIs, with actual success, EOF and overflow
+outcomes; full-width EOF projection; and all-signal/cursor-boundary parity with
+the prior conversion path. Actual immutable source
+`3f7b84e2d4de3e4415d127ef821766e1260a23c3` passes 355 native tests with the same
+14 ignored tests. Fresh coverage measures **10,380/12,622 lines (82.24%)**,
+**9,997/12,933 regions (77.30%)**, and **1,910/2,638 branch outcomes (72.40%)**.
+Only arithmetic gains one covered line and one region over the prior measured
+parent; every denominator and branch count is unchanged. This is not a branch
+gain or a new reviewed floor. Sixteen native source files are unchanged;
+arithmetic changes only by two explicit error constructors equivalent to the
+old reviewed conversion. No coded family, entropy encoder, fuzz seed, coverage
+exclusion or policy weakening is introduced.
 
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.

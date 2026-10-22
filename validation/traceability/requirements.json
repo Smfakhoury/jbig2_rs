@@ -615,7 +615,7 @@
     }
   ],
   "bindings": {
-    "proofs/model_support/arithmetic.rs": "c08b5291bdbb73a20b4f535cb9fee3317ae9117e9e07f1040afd78804752a8c1",
+    "proofs/model_support/arithmetic.rs": "2a564c7a80acf17401f877352abba023be522d3e1b3a4ef0b0c3dba1ddaa56bb",
     "proofs/model_support/decode.rs": "67e54d341dcb57f6b4ad8b2c8a489fa52928fd4f7e3c39406139c46dc3d5c2b4",
     "proofs/model_support/document.rs": "5ed88c2393d098a357af93e686ea0d393b60849bee89b73a09f4a915dc5b85b6",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
@@ -629,7 +629,7 @@
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
-    "specs/arithmetic.rs": "6b8f3b39ec048c39593453137fed2a54eb3c324f18fc2923b97cae02d654d5ec",
+    "specs/arithmetic.rs": "99c43258e3a9f90c25526125fbe9aae3cf65f12f2b109b5522f687373ee38f5e",
     "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
     "specs/decode.rs": "f00e3a481025c5f1fd5637972d283d43a95f85846a3c7e610d8442ad2bb979fe",
     "specs/document.rs": "937c78bb6796d5e3c179019c5183ff1c848cece68e26b705cae1f5615ec45480",
@@ -642,7 +642,7 @@
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
-    "src/arithmetic.rs": "cd0c0243c87d23939732132d61decdb6916ab4e3cd55246d32a50ab7d372ea0b",
+    "src/arithmetic.rs": "d8b120ef48cd69de5a0134133388233b61d2823d3fe6a3943b0dbaea6a084417",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "327d77309b8c641d7e3e2cababdab6fe35a92e36f9762014a5f16ae26a08424e",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",

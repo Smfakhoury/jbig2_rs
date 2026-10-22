@@ -654,3 +654,22 @@ All 352 native tests pass with 14 existing ignored tests; fresh coverage is
 82.23% lines, 77.29% regions and 72.40% branch outcomes, with unchanged
 denominators and reviewed floors. P04/P05/P06, independent normative review,
 the capacity prerequisite and the proposed release coverage goals remain open.
+
+## Complete arithmetic decision-state composition
+
+The next tranche exposes exact signal/acceptance, interval, code, count, input
+position/current byte and marker results at both decision entry APIs, including
+partial failures. Typed EOF/overflow projection is explicit project policy.
+Two opaque standard conversion calls become the identical explicit constructor;
+the unchanged reviewed From body and all-signal numeric/prior-path parity tests
+support that expansion. All other executing tokens and 656 caller preconditions
+are unchanged. Fifteen actual compiling decision contrasts fit the same
+sixteen-group/four-shard required profile, now 83 contrasts.
+
+Actual full pinned Cargo verification and compilation pass 1173 project
+obligations with zero errors. The complete native collection passes 355 tests
+with 14 existing ignored tests. Fresh measured coverage is 82.24% lines,
+77.30% regions and 72.40% branches, with unchanged denominators and reviewed
+floors. Seven selected E.3.2 rows gain actual functional project-step evidence;
+all 249 records remain provisional (73 functional / 150 state-preservation /
+26 safety-only), and exhaustive normative review remains incomplete.

@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "d9c6d5880930ec4a10d0040388056b806834214b",
-  "scope": "Unconditional arithmetic error-context and input-frame contracts with unchanged native tokens and caller preconditions, excluded direct-state tests, and the explicit capacity divergence",
+  "source_revision": "3f7b84e2d4de3e4415d127ef821766e1260a23c3",
+  "scope": "Complete project arithmetic decision-register composition and typed failure projection, with two equivalent shared error-constructor expansions and the explicit capacity divergence",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/error-context/whole-build CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/decision-state/whole-build CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1172,
+    "verified_obligations": 1173,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "268d5139b917b1f52c7074165d86ea665455b535a3d1d149ee9ae7d5e6d45a7f",
-  "proof_dispositions_sha256": "27cb841217a8a653559ec1905628490f8c4e7eeca2dad39cd899a5ad33bbf959",
+  "production_proof_coverage_sha256": "2f319d9dd21df46e50cf55be8fe4c3043d16ac1acb4c791a9db2af19ab95d798",
+  "proof_dispositions_sha256": "ca04fa0d0a9d268ea8b3ff13ca89e6ec721dc0ab1275c7a0afdbd11ff60e1ae5",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo verification and compilation prove 1172 project obligations with zero errors and enabled lifetime/erasure checks. Arithmetic decision entry points now preserve exact context index/MPS on error as well as success, and entry/exchange/normalization paths retain the input borrow/view. A bounded bit-vector proof excludes upper-route code-subtraction underflow; its native defensive return remains present and in the coverage denominator. All 17 native token streams and all 656 caller preconditions match the immutable parent; reviewed arithmetic disposition bodies and attributes are byte-identical. The inventory remains 608 directly verified functions,24 reviewed limitations,23 audited forwarders,one capacity divergence and zero incomplete/native-assumption entries. Three direct-state tests check exact partial EOF registers through both entry APIs,all65536 context-byte pairs,and every arithmetic error adapter/formatter variant including formatter failure. All352 native tests pass with14 ignored. Actual coverage is10379/12622 lines,9996/12933 regions and1910/2638 branches, with unchanged denominators and the reviewed baseline retained. Seven actual compiling decision/context contrasts include error-only index/MPS corruption and input replacement; weaker controls retain all other guarantees. The complete required profile is16groups75contrasts across4shards, without additional CI jobs. Fresh approved normal/logging/native/Hayro observations remain2exact positives,7unresolved positives and1unsupported, with no rejection credit. All249 selected records remain provisional:66functional,157state-preservation,26safety-only. No native algorithm, caller precondition, project assumption, public API, memory policy, exclusion, pin, standard asset or publication change. Exact decision-register/stream semantics, independent normative review, upstream capacity adoption and release coverage remain open.",
+  "note": "Fresh unfiltered pinned Cargo verification and compilation prove 1173 project obligations with zero errors and enabled lifetime/erasure checks. Both decision entry APIs expose exact project signal/acceptance, interval, code, counter, byte-position/current-byte and marker results through decision_state, including fast return and every partial EOF/overflow state. Exchange helpers compose interval replacement with exact normalization. Checked errors follow exact error_for_signal/eof_error policies including cursor and representation overflow. Context and input frames remain. Sixteen native files are token-identical; arithmetic differs only by two explicit Malformed constructors replacing equivalent Into calls through the unchanged reviewed one-expression From body. All 656 caller preconditions and all reviewed arithmetic disposition bodies/attributes are unchanged. No new local trusted specification or native/proof substitution is added. Inventory remains 608 directly verified,24 reviewed limitations,23 audited forwarders,one capacity divergence and zero incomplete/native-assumption entries. Three additional direct-state tests compare both entry APIs with wide numeric oracles over all Qe rows and actual success/EOF/overflow outcomes, check full-width EOF fields, and compare every signal/cursor boundary with both numeric policy and the prior conversion path. All355 native tests pass with14 existing ignored tests. Fresh coverage is10380/12622lines,9997/12933regions,1910/2638branches, with unchanged denominators and reviewed floors. The required profile has16groups83compilingcontrasts across4shards; fifteen decision contrasts isolate bit, context, input, signal/register/history and typed-error relations. Seven selected E.3.2 records now expose functional project-step evidence; all249 remain provisional:73functional,150state-preservation,26safety-only. Fresh actual approved normal/logging/native/Hayro observations remain2exact positives,7unresolved positives and1unsupported, with no rejection credit. Full integer/IAID/caller/stream semantics, independent normative interpretation, upstream capacity adoption and release coverage remain open. No public API, memory policy, exclusion, pin, standard asset or publication change.",
   "release_gate": "blocked"
 }
