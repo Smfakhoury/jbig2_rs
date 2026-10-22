@@ -2,6 +2,15 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The diagnostic-only follow-up checks every generic error display/source variant,
+extreme fields, delegated classifications, private-message redaction and exact
+formatter-failure propagation. A thirteenth actual compiled runtime mutant
+swallows a formatter failure and is detected by the exact new test. All native/
+proof token streams and 656 production declarations/source starts are unchanged
+from the integrated integer parent. Fresh actual combined coverage is
+82.62% lines / 77.72% regions / 72.82% branches, with 363 passing native tests
+and 14 ignored. The diagnostic delta is 25 lines / 30 regions / zero branches;
+denominators, floors, pins, proof profile and CI jobs are unchanged.
 The integer single-bit follow-up exposes the exact decision, full decoder/error
 step, selected-context update/unselected-bank frame, growing/rolling history
 and unchanged history on errors. Numeric tests cover 144,384 history/Qe/MPS/

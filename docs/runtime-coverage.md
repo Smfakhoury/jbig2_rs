@@ -123,6 +123,19 @@ The actual parent-relative gain is five lines, three regions and two branch
 outcomes; all denominators, reviewed floors and release goals remain unchanged.
 These tests do not complete integer/IAID folds, caller or normative semantics.
 
+The generic diagnostic follow-up exercises every local error variant's exact
+display fields and source chain, extreme numeric values, redacted delegated I/O
+messages and propagated formatter failures. Its new exact-selector mutant
+swallows a formatter failure: it compiles and the test rejects it, alongside
+all twelve existing controls. After integrating the integer parent, actual
+source `dcea356b2e419fb7d5f3395c7c308cdd109328f7` passes 363 native tests with
+14 ignored. Fresh combined coverage is **10,428/12,622 lines (82.62%)**,
+**10,051/12,933 regions (77.72%)**, and **1,921/2,638 branches (72.82%)**.
+Only diagnostic lines/regions increase over the actual integer parent:
+**25 lines / 30 regions / no branch gain**, with unchanged denominators/floors.
+No decoding, entropy fixture, coded family, production hook or proof claim is
+added by this test-only tranche.
+
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.
 It adds **57 covered lines, 50 regions and 19 branch outcomes** over a fresh
@@ -314,20 +327,21 @@ python -B tools/check_contract_mutations.py --toolchain 1.89.0 \
 ```
 
 CI runs the same check with the pinned coverage nightly. It copies source and
-fixtures outside the checkout, uses a fresh offline Cargo home, and tests three
-single-site mutations: wrong I/O classification, an inclusive-reader-limit
-off-by-one, and a swallowed sink error. For each case the original selected test
+fixtures outside the checkout, uses a fresh offline Cargo home, and tests thirteen
+single-site mutations covering I/O classification, inclusive limits, sink
+propagation, reference roles/cardinality, error adapter fields and formatter
+failure propagation. For each case the original exact library/integration test
 must pass, the mutant must compile, and that exact test must fail. Missing or
 ambiguous mutation sites, compile failures and surviving mutants fail the gate.
 No mutation is written to repository runtime files.
 
-This is sensitivity evidence for three contracts, not exhaustive codec mutation
-coverage. New catalog cases have exact ordinary Cargo target/name references
-checked against non-ignored `#[test]` functions. The 18 legacy file-only case
-references are an explicit migration backlog, not accepted for new cases.
+This is targeted contract sensitivity, not exhaustive codec mutation coverage.
+All 45 catalog cases have exact executable Cargo target/name references checked
+against non-ignored `#[test]` functions; the old file-only reference backlog is
+closed, not a remaining exception.
 
-Remaining P06 work includes migrating those legacy IDs, broader coding-family
-and all-limit tests, additional generated valid streams, broader mutation
+Remaining P06 work includes broader coding-family/all-limit tests,
+additional generated valid streams, broader mutation
 testing, and review/enforcement of release and changed-line thresholds.
 Coverage is distinct from proof coverage and cannot close P05's known
 runtime/proof divergences.
