@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "d9c6d5880930ec4a10d0040388056b806834214b",
-  "scope": "Fresh existing official diagnostics on arithmetic-error-context-contracts-and-direct-tests-native-tokens-unchanged d9c6d58; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
+  "scope": "Fresh existing official diagnostics on packed-storage-and-page-state-tests-native-production-unchanged-relative-to-parent 0c7b468; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 343,
-    "passed": 329,
+    "total": 374,
+    "passed": 360,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "6877cf605c856a54b3706f835d3a4ffe374657a8",
-    "scope": "Historical native suite counts retained; this main-only continuation re-executes the existing official diagnostics and validation controls, not a complete native/proof/coverage suite."
+    "source_revision": "0c7b4680864a5eb5cc3b0a2b95d171a872fbe783",
+    "scope": "Actual complete pinned ordinary-runtime coverage collection: 360 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from the actual official observations and do not provide normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "b9635f8898d2f4ef3b9a20636ebdcc928650363bd16eb6a10015ab443db04148",
-    "review_sha256": "3e7986fb89d09dd55840a158cb654a4e094a4faaa413ca7fa63d89dd077868d5"
+    "results_sha256": "a6840c7e51c70048720cd0ab3f88e2b5fd9c662940344af245b94ba2fe023f9a",
+    "review_sha256": "997839dfb4fe75ba48e3e94f9edb6b4d5208cb7df397a3ef64b7e887b9b3ee2f"
   },
   "community_regressions": {
     "total": 0,

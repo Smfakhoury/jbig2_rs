@@ -935,6 +935,7 @@ class TraceabilityTests(unittest.TestCase):
         functional = {
             "REGISTER-LOW-INPUT",
             *(f"RENORM-{suffix}" for suffix in groups["RENORM"]),
+            *(f"DECODE-{suffix}" for suffix in groups["DECODE"] if suffix != "QE-LOOKUP"),
         }
         for name in added:
             with self.subTest(requirement=name):

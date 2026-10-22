@@ -61,7 +61,7 @@ measures 10,326/9,946/1,909 covered coordinates respectively, so this adapter
 tranche adds 19 lines and 18 regions with zero branch gain. All 349 native
 tests and twelve compiling mutation controls pass; denominator and production
 coordinate identities are unchanged. Do not add historical branch deltas or
-lower the merged reviewed floor. The 16-group/75-contrast gate remains required.
+lower the merged reviewed floor. The 16-group/83-contrast gate remains required.
 
 The arithmetic error-context follow-up adds three direct-state unit tests,
 not encoded streams or a new coding family. They check partial EOF registers,
@@ -78,6 +78,39 @@ outcome. Every denominator is unchanged; arithmetic reaches 316/340 lines and
 of a new floor or a sum of historical deltas. The reviewed baseline remains
 unchanged. The formally unreachable subtraction-underflow defense remains in
 the emitted denominator, not marked covered or excluded.
+
+The complete decision-state follow-up adds wide numeric register oracles across
+all 47 Qe rows through both entry APIs, with actual success, EOF and overflow
+outcomes; full-width EOF projection; and all-signal/cursor-boundary parity with
+the prior conversion path. Actual immutable source
+`3f7b84e2d4de3e4415d127ef821766e1260a23c3` passes 355 native tests with the same
+14 ignored tests. Fresh coverage measures **10,380/12,622 lines (82.24%)**,
+**9,997/12,933 regions (77.30%)**, and **1,910/2,638 branch outcomes (72.40%)**.
+Only arithmetic gains one covered line and one region over the prior measured
+parent; every denominator and branch count is unchanged. This is not a branch
+gain or a new reviewed floor. Sixteen native source files are unchanged;
+arithmetic changes only by two explicit error constructors equivalent to the
+old reviewed conversion. No coded family, entropy encoder, fuzz seed, coverage
+exclusion or policy weakening is introduced.
+
+Five subsequent direct unit tests cover packed-storage/page-state boundaries,
+without any decoder invocation, entropy fixture or new coding family. On
+immutable source `0c7b4680864a5eb5cc3b0a2b95d171a872fbe783`, all 360 native
+tests pass with 14 existing ignored tests. Fresh measured coverage is
+**10,398/12,622 lines (82.38%)**, **10,018/12,933 regions (77.46%)** and
+**1,919/2,638 branch outcomes (72.74%)**. The actual parent-relative gain is
+**18 lines / 21 regions / nine branch outcomes**, with unchanged denominators:
+document gains 6/3/1, shared generic error helpers 3/3/0, and row-ring storage
+9/15/8. Counts are a fresh combined collection, not summed historical deltas.
+
+Tests check inclusive storage budgets, zero/max shapes without huge allocations,
+row-slot mapping, scalar clipped-bit/raw-word windows, clear/copy frames and
+exact big-endian bitmap flush, stripe progress, finish error precedence and
+public metadata. Some direct typed states exercise defensive helper branches
+not reached by validated parser state; they are not represented as valid coded
+streams. Real allocation failures and architecture/invariant-unreachable
+defenses are not manufactured, excluded or counted as covered. The reviewed
+baseline and release goals remain unchanged.
 
 The earlier MMR contract floor was bound to immutable test-source commit
 `8fcd9e93926049492a684e16c7153f26250b7611`, before its separate evidence commit.

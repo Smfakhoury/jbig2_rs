@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 66 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 157 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 73 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 150 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -126,6 +126,18 @@ prior strengths and provisional reviews; the new model and exhaustive prefix
 tests do not constitute six independent normative proofs.
 
 ## Selected Annex A/E arithmetic enumeration
+
+The complete decision-state follow-up gives seven selected E.3.2 records
+functional project-step evidence: interval subtraction, strict code partition,
+upper code subtraction, fast MPS, both exchange/normalization paths and the
+returned decision. Production contracts expose the full signal/register/history
+tuple against the closed `decision_state` model and its scalar
+`decision_registers`/`exchange_normalization` composition. Context and input
+frames remain, and checked errors have a typed project projection.
+Fifteen actual compiling decision contrasts and wide numeric state oracles
+supplement these theorems. All seven records remain provisional: independent
+Qe/register/pointer interpretation and complete stream/caller semantics remain
+open. The ledger is still a selected, nonexhaustive denominator.
 
 The normalization follow-up gives six selected records explicit functional
 evidence against the project `normalized_state` model: the low-input register
@@ -470,7 +482,7 @@ checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
 All sixteen semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 75 required strong/weaker compiling
+repeated setup without dropping any of the 83 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching

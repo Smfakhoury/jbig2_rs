@@ -645,6 +645,19 @@ impl<'a> ArithmeticDecoder<'a> {
                     ),
                 Err(_) => true,
             },
+            out.is_ok() == (arithmetic_spec::decision_state(old(self), *old(context)).0 <= 1),
+            final(self).interval == arithmetic_spec::decision_state(old(self), *old(context)).1,
+            final(self).byte_position == arithmetic_spec::decision_state(old(self), *old(context)).2,
+            final(self).current_byte == arithmetic_spec::decision_state(old(self), *old(context)).3,
+            final(self).code == arithmetic_spec::decision_state(old(self), *old(context)).4,
+            final(self).bit_count == arithmetic_spec::decision_state(old(self), *old(context)).5,
+            final(self).marker == arithmetic_spec::decision_state(old(self), *old(context)).6,
+            match out {
+                Err(error) => error == arithmetic_spec::error_for_signal(
+                    final(self), arithmetic_spec::decision_state(old(self), *old(context)).0,
+                ),
+                Ok(_) => true,
+            },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline]
@@ -680,6 +693,13 @@ impl<'a> ArithmeticDecoder<'a> {
             final(context).mps == arithmetic_spec::entry_mps(
                 old(self).interval, old(self).code, old(context).state_index, old(context).mps,
             ),
+            out == arithmetic_spec::decision_state(old(self), *old(context)).0,
+            final(self).interval == arithmetic_spec::decision_state(old(self), *old(context)).1,
+            final(self).byte_position == arithmetic_spec::decision_state(old(self), *old(context)).2,
+            final(self).current_byte == arithmetic_spec::decision_state(old(self), *old(context)).3,
+            final(self).code == arithmetic_spec::decision_state(old(self), *old(context)).4,
+            final(self).bit_count == arithmetic_spec::decision_state(old(self), *old(context)).5,
+            final(self).marker == arithmetic_spec::decision_state(old(self), *old(context)).6,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline]
@@ -688,6 +708,7 @@ impl<'a> ArithmeticDecoder<'a> {
         production_reveal_decoder_valid!();
         #[cfg(verus_keep_ghost)]
         proof! {
+            arithmetic_spec::decision_model_equations(self, *context);
             arithmetic_spec::entry_model_equations(
                 self.interval, self.code, context.state_index, context.mps,
             );
@@ -759,6 +780,17 @@ impl<'a> ArithmeticDecoder<'a> {
             out <= 1 ==> out == arithmetic_spec::exchange_decision(
                 true, old(self).interval, qe, old_mps,
             ),
+            out == if arithmetic_spec::exchange_normalization(old(self), true, qe).0 == 0 {
+                arithmetic_spec::exchange_decision(true, old(self).interval, qe, old_mps)
+            } else {
+                arithmetic_spec::exchange_normalization(old(self), true, qe).0
+            },
+            final(self).interval == arithmetic_spec::exchange_normalization(old(self), true, qe).1,
+            final(self).byte_position == arithmetic_spec::exchange_normalization(old(self), true, qe).2,
+            final(self).current_byte == arithmetic_spec::exchange_normalization(old(self), true, qe).3,
+            final(self).code == arithmetic_spec::exchange_normalization(old(self), true, qe).4,
+            final(self).bit_count == arithmetic_spec::exchange_normalization(old(self), true, qe).5,
+            final(self).marker == arithmetic_spec::exchange_normalization(old(self), true, qe).6,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline(never)]
@@ -820,6 +852,17 @@ impl<'a> ArithmeticDecoder<'a> {
             out <= 1 ==> out == arithmetic_spec::exchange_decision(
                 false, old(self).interval, qe, old_mps,
             ),
+            out == if arithmetic_spec::exchange_normalization(old(self), false, qe).0 == 0 {
+                arithmetic_spec::exchange_decision(false, old(self).interval, qe, old_mps)
+            } else {
+                arithmetic_spec::exchange_normalization(old(self), false, qe).0
+            },
+            final(self).interval == arithmetic_spec::exchange_normalization(old(self), false, qe).1,
+            final(self).byte_position == arithmetic_spec::exchange_normalization(old(self), false, qe).2,
+            final(self).current_byte == arithmetic_spec::exchange_normalization(old(self), false, qe).3,
+            final(self).code == arithmetic_spec::exchange_normalization(old(self), false, qe).4,
+            final(self).bit_count == arithmetic_spec::exchange_normalization(old(self), false, qe).5,
+            final(self).marker == arithmetic_spec::exchange_normalization(old(self), false, qe).6,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[inline(never)]
@@ -856,15 +899,17 @@ impl<'a> ArithmeticDecoder<'a> {
         }
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == arithmetic_spec::error_for_signal(self, signal),
+    ))]
     pub(crate) fn signal_error(&self, signal: u8) -> ArithmeticError {
         if signal == RASTER_SIGNAL_EOF {
             match self.byte_position.checked_add(1) {
                 Some(offset) => unexpected_eof(offset, 1, 0),
-                None => MalformedError::IntegerOverflow.into(),
+                None => ArithmeticError::Malformed(MalformedError::IntegerOverflow),
             }
         } else {
-            MalformedError::IntegerOverflow.into()
+            ArithmeticError::Malformed(MalformedError::IntegerOverflow)
         }
     }
 
@@ -1444,7 +1489,9 @@ impl<'a> ArithmeticDecoder<'a> {
     }
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == arithmetic_spec::eof_error(offset, needed, remaining),
+))]
 fn unexpected_eof(offset: usize, needed: usize, remaining: usize) -> ArithmeticError {
     let Ok(offset) = u64::try_from(offset) else {
         return ArithmeticError::Malformed(MalformedError::IntegerOverflow);
@@ -2408,6 +2455,231 @@ mod tests {
             expected.bit_count -= 1;
         }
         (0, expected)
+    }
+
+    fn decision_numeric_oracle<'a>(
+        initial: &ArithmeticDecoder<'a>,
+        context: ArithmeticContext,
+    ) -> (u8, ArithmeticDecoder<'a>, ArithmeticContext) {
+        let row = QE_STATES[usize::from(context.state_index)];
+        let qe = u32::from(row.qe);
+        let reduced = initial.interval - qe;
+        let lower = u64::from(initial.code) / 65_536 < u64::from(qe);
+        let fast = !lower && reduced >= MIN_INTERVAL;
+        let mps_route = (lower && reduced < qe) || (!lower && reduced >= qe);
+        let decision = if fast || mps_route {
+            context.mps
+        } else {
+            1 - context.mps
+        };
+        let next_context = ArithmeticContext {
+            state_index: if fast {
+                context.state_index
+            } else if mps_route {
+                row.next_mps
+            } else {
+                row.next_lps
+            },
+            mps: if !fast && !mps_route && row.switch_mps {
+                decision
+            } else {
+                context.mps
+            },
+        };
+        let code = u64::from(initial.code) - if lower { 0 } else { u64::from(qe) * 65_536 };
+        let mut next = refill_fixture(
+            initial.bytes,
+            initial.byte_position,
+            u32::try_from(code).unwrap(),
+            initial.bit_count,
+            initial.marker,
+        );
+        next.interval = if lower { qe } else { reduced };
+        if fast {
+            (decision, next, next_context)
+        } else {
+            let (signal, normalized) = normalization_numeric_oracle(&next);
+            (
+                if signal == 0 { decision } else { signal },
+                normalized,
+                next_context,
+            )
+        }
+    }
+
+    fn assert_decision_matches_numeric_oracle(
+        mut initial: ArithmeticDecoder<'_>,
+        context: ArithmeticContext,
+    ) -> u8 {
+        let bytes = initial.bytes;
+        let (signal, expected, expected_context) = decision_numeric_oracle(&initial, context);
+        let mut actual = refill_fixture(
+            bytes,
+            initial.byte_position,
+            initial.code,
+            initial.bit_count,
+            initial.marker,
+        );
+        actual.interval = initial.interval;
+        let mut actual_context = context;
+        assert_eq!(actual.decode_signal(&mut actual_context), signal);
+        assert_eq!(actual_context, expected_context);
+        assert_decoder_state_eq(&actual, &expected);
+        assert_eq!(actual.bytes, bytes);
+        assert_eq!(actual.bytes.as_ptr(), bytes.as_ptr());
+
+        let mut checked_context = context;
+        let expected_result = if signal <= 1 {
+            Ok(signal)
+        } else {
+            Err(ArithmeticError::Malformed(if signal == RASTER_SIGNAL_EOF {
+                MalformedError::UnexpectedEof {
+                    offset: u64::try_from(expected.byte_position).unwrap() + 1,
+                    needed: 1,
+                    remaining: 0,
+                }
+            } else {
+                MalformedError::IntegerOverflow
+            }))
+        };
+        assert_eq!(initial.decode(&mut checked_context), expected_result);
+        assert_eq!(checked_context, expected_context);
+        assert_decoder_state_eq(&initial, &expected);
+        assert_eq!(initial.bytes.as_ptr(), bytes.as_ptr());
+        signal
+    }
+
+    #[test]
+    fn complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors() {
+        let samples: [&[u8]; 6] = [
+            &[0x13],
+            &[0, 0x11],
+            &[0xff, 0x8f, 0],
+            &[0xff, 0x90, 0],
+            &[0x5a, 0xff, 0x90],
+            &[0; 32],
+        ];
+        let mut outcomes = [0usize; 3];
+        for bytes in samples {
+            for position in [0, bytes.len() - 1] {
+                let marker = bytes
+                    .get(position + 1)
+                    .copied()
+                    .filter(|&next| bytes[position] == 0xff && next >= 144)
+                    .map(|code| ArithmeticMarker {
+                        offset: position,
+                        code,
+                    });
+                for marker in [None, marker] {
+                    for (index, row) in QE_STATES.iter().copied().enumerate() {
+                        let qe = u32::from(row.qe);
+                        for mps in 0..=1 {
+                            let context =
+                                ArithmeticContext::from_state(u8::try_from(index).unwrap(), mps)
+                                    .unwrap();
+                            for interval in [
+                                MIN_INTERVAL,
+                                0xffff,
+                                (2 * qe).max(MIN_INTERVAL),
+                                (MIN_INTERVAL + qe).min(0xffff),
+                            ] {
+                                for code in [
+                                    0,
+                                    (qe - 1) << 16,
+                                    qe << 16,
+                                    (qe + 1) << 16,
+                                    u32::MAX / 2,
+                                    u32::MAX / 2 + 1,
+                                    u32::MAX,
+                                ] {
+                                    for count in [0, 1, 7, 8] {
+                                        let mut initial =
+                                            refill_fixture(bytes, position, code, count, marker);
+                                        initial.interval = interval;
+                                        let signal = assert_decision_matches_numeric_oracle(
+                                            initial, context,
+                                        );
+                                        let outcome = if signal <= 1 {
+                                            0
+                                        } else if signal == RASTER_SIGNAL_EOF {
+                                            1
+                                        } else {
+                                            assert_eq!(signal, RASTER_SIGNAL_OVERFLOW);
+                                            2
+                                        };
+                                        outcomes[outcome] += 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert!(outcomes.into_iter().all(|count| count > 0));
+    }
+
+    fn eof_numeric_error(offset: usize, needed: usize, remaining: usize) -> ArithmeticError {
+        if [offset, needed, remaining]
+            .into_iter()
+            .any(|value| value as u128 > u128::from(u64::MAX))
+        {
+            ArithmeticError::Malformed(MalformedError::IntegerOverflow)
+        } else {
+            ArithmeticError::Malformed(MalformedError::UnexpectedEof {
+                offset: offset as u64,
+                needed: needed as u64,
+                remaining: remaining as u64,
+            })
+        }
+    }
+
+    #[test]
+    fn eof_projection_preserves_full_width_fields() {
+        let values = [
+            0,
+            1,
+            usize::from(u16::MAX),
+            usize::MAX / 2,
+            usize::MAX - 1,
+            usize::MAX,
+        ];
+        for offset in values {
+            for needed in values {
+                for remaining in values {
+                    assert_eq!(
+                        unexpected_eof(offset, needed, remaining),
+                        eof_numeric_error(offset, needed, remaining)
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn signal_error_projection_matches_numeric_policy_and_prior_conversion_path() {
+        let bytes = [0];
+        for position in [0, 1, usize::MAX / 2, usize::MAX - 1, usize::MAX] {
+            let mut decoder = decision_fixture(&bytes, MIN_INTERVAL, 0, 0);
+            decoder.byte_position = position;
+            for signal in 0..=u8::MAX {
+                let expected = if signal == RASTER_SIGNAL_EOF && position < usize::MAX {
+                    eof_numeric_error(position + 1, 1, 0)
+                } else {
+                    ArithmeticError::Malformed(MalformedError::IntegerOverflow)
+                };
+                assert_eq!(decoder.signal_error(signal), expected);
+                let prior = if signal == RASTER_SIGNAL_EOF {
+                    match position.checked_add(1) {
+                        Some(offset) => unexpected_eof(offset, 1, 0),
+                        None => MalformedError::IntegerOverflow.into(),
+                    }
+                } else {
+                    MalformedError::IntegerOverflow.into()
+                };
+                assert_eq!(decoder.signal_error(signal), prior);
+            }
+        }
     }
 
     fn assert_normalization_matches_numeric_oracle(initial: ArithmeticDecoder<'_>) {

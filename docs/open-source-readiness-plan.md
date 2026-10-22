@@ -2,12 +2,39 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
-The arithmetic error-context follow-up closes an entry-point contract gap:
+The packed-storage/page-state test tranche adds five direct unit tests without
+entropy fixtures or new coding families. Scalar oracles check raw word windows,
+clipped pixel history, inclusive row-buffer budgets, mutation frames/endian
+flush, stripe progression and exact finish/metadata errors. All 360 native
+tests pass with 14 existing ignored tests. Fresh coverage is 82.38% lines,
+77.46% regions and 72.74% branches: an actual parent-relative gain of 18 lines,
+21 regions and nine branch outcomes, with every denominator and reviewed floor
+unchanged. All 17 native/proof token streams and 656 production declarations,
+attributes, bodies and source starts match the complete decision-state parent.
+Actual unfiltered pinned Cargo proof/compilation remains 1173/0, with no new
+functional or normative claim.
+The complete arithmetic decision-state tranche composes exact normalization
+with fast/upper/lower decision paths and exposes all signal, interval, code,
+counter, input-position/current-byte and marker outputs, plus exact checked
+acceptance and typed failure projection. Fifteen compiling decision contrasts
+fit the existing sixteen-group/four-shard profile, now with 83 contrasts.
+Seven selected E.3.2 records gain actual functional project-step evidence:
+the 249-record ledger now has 73 functional / 150 state-preservation / 26
+safety-only records, all still provisional and nonexhaustive.
+Actual unfiltered pinned Cargo verification/compilation passes 1173 obligations
+with zero errors; all 355 native tests pass with the same 14 ignored tests.
+Fresh coverage is 82.24% lines, 77.30% regions and 72.40% branches, with unchanged
+denominators and reviewed floors. Sixteen native source files are token-identical;
+arithmetic changes only by two equivalent explicit error constructors replacing
+opaque standard conversion calls. All 656 caller preconditions remain unchanged.
+Independent normative review, full stream/caller composition, seven official
+positives, upstream capacity adoption and release coverage goals remain open.
+The earlier arithmetic error-context follow-up closed an entry-point contract gap:
 exact next context index/MPS now hold on failure as well as success, and both
 entry/exchange paths preserve the input borrow/view. A bounded bit-vector proof
 excludes underflow in the native upper-route code subtraction without removing
 the defensive branch. The decision checker grows from four to seven actual
-compiling strong/weaker contrasts; the full sixteen-group profile now has 75.
+compiling strong/weaker contrasts; its then-current sixteen-group profile had 75.
 Native tokens and all 656 caller preconditions remain unchanged.
 Three direct-state tests cover partial EOF registers through both entry APIs,
 every stored context-byte pair, and typed arithmetic error adapters/formatters.
@@ -45,7 +72,7 @@ support without changing their logical module ownership; traceability binds
 the full literal-include closure. An auditor index records notation bridges
 and independent table-review obligations, and MMR membership predicates no
 longer call themselves normative. Cargo verification and compilation prove
-1172 project obligations with zero errors; this does not close provisional
+1173 project obligations with zero errors; this does not close provisional
 normative review or the upstream capacity-getter prerequisite. All native
 source token streams match the owner-merged main revision `64465a7`.
 The explicit verifier-manifest argument is a deliberate packaging boundary;
@@ -106,8 +133,8 @@ collection/finalization, not body-byte parser correctness or complete page
 lifecycle semantics. Reader I/O remains a reviewed formal boundary.
 The typical-row copy now executes and verifies the same safe native slice-copy
 path, with full byte/frame and visible-pixel postconditions; its obsolete
-scalar proof substitute is removed. The current selected ledger has 66
-functional, 157 state-preservation and 26 safety-only records; all 249 remain
+scalar proof substitute is removed. The current selected ledger has 73
+functional, 150 state-preservation and 26 safety-only records; all 249 remain
 provisional.
 The exact normalization follow-up raises the functional total from 60 to 66:
 one low-input register row and five selected E.3.3 rows now reference complete
