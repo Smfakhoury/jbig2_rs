@@ -185,6 +185,15 @@ prefix lacking optional EOF. Duplicate local wire numbers are rejected as
 
 ## Proof and normative link audits
 
+Direct typed-error tests cover every generic, symbol/text and Huffman adapter
+variant, extreme fields and delegated I/O/allocation/limit/malformed errors.
+They construct error enums rather than encoded streams and do not certify
+when a decoder must produce each error. Twelve compiling mutation controls
+must run exactly one passing baseline and one failing mutant test. The runner
+supports explicit `lib` and named integration targets without accepting
+zero-test passes or compiler failures as detection. With the owner-merged
+reference-role controls the complete runtime mutation set has twelve cases.
+
 The public reference-contract tranche adds six integration tests and two exact
 negative-catalog entries. It covers 216 local/global role, cardinality and table
 count scenarios plus three eager table-payload error precedence cases. Failure

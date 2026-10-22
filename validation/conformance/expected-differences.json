@@ -11,7 +11,7 @@
         "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
         "src/reader.rs": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba"
       },
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a"
     },
     {
@@ -24,7 +24,7 @@
         "src/mmr.rs": "c6810537f116140b4374e52264b9f7190c775c173e14903271f316220a837290",
         "src/reader.rs": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba"
       },
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a"
     },
     {
@@ -34,9 +34,9 @@
       "stream_sha256": "23341708b770936cd199bbfa7a4f7be41b7b0257b38532a3e678710bac46012b",
       "source_files_sha256": {
         "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
-        "src/arithmetic.rs": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec"
+        "src/arithmetic.rs": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3"
       },
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
@@ -46,9 +46,9 @@
       "stream_sha256": "872ef6cb28c55b5e7d9f7d04c834896f4b06e52819254b3e2596d022dcc06305",
       "source_files_sha256": {
         "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
-        "src/arithmetic.rs": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec"
+        "src/arithmetic.rs": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3"
       },
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
@@ -58,9 +58,9 @@
       "stream_sha256": "ebec26a22425cce27de5feaf91bc8a6528428283cfdeeb5f39825fe1ba992871",
       "source_files_sha256": {
         "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
-        "src/arithmetic.rs": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec"
+        "src/arithmetic.rs": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3"
       },
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "83fb4c32a7c0adcbf69c6dc92489749783b4d57df6692e42cae5133e196ea418"
     },
     {
@@ -70,9 +70,9 @@
       "stream_sha256": "afa20c52a9fc0c4b33c867338b4447e0be7d402a814fadf52f414ed4d4f08a82",
       "source_files_sha256": {
         "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
-        "src/arithmetic.rs": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec"
+        "src/arithmetic.rs": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3"
       },
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "52f8bcbd6d8f2a55bdf1112eda6c1a36f38cd9c6fd784119a88154ce8c943a74"
     },
     {
@@ -82,9 +82,9 @@
       "stream_sha256": "e53dbbbc54b71e8f873c767a2e321444c26a245728007e4842c8746933df1bad",
       "source_files_sha256": {
         "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
-        "src/arithmetic.rs": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec"
+        "src/arithmetic.rs": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3"
       },
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "48f47424233ba140b26527ca45651147c7a6e80d3e796ccfbad54416d0b1da73"
     },
     {

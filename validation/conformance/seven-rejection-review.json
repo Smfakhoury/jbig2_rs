@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "recorded_at": "2026-10-22T09:14:57.218093+00:00",
-  "source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+  "recorded_at": "2026-10-22T13:52:39.591314+00:00",
+  "source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
   "scope": "Same seven existing official diagnoses, freshly executed on unmerged proof-only arithmetic-refill source. This is not current main or a Huffman fix; standards interpretation and release blockers remain unchanged.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
-    "src/arithmetic.rs": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec",
+    "src/arithmetic.rs": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
-    "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
+    "src/decode.rs": "327d77309b8c641d7e3e2cababdab6fe35a92e36f9762014a5f16ae26a08424e",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
     "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
@@ -26,8 +26,8 @@
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
     "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f"
   },
-  "ordinary_runtime_source_sha256": "4f8c146ed8a3163ad4d0cb5858cb22e977c259c5300ceae07aeaa4b121c8a4ce",
-  "normal_decoder_sha256": "3324b7f3a62927854c72294245a82b54077318beb458519ef85a71fcb56a8d38",
+  "ordinary_runtime_source_sha256": "a599328ee25fff023e3b8a8631bb1813d76bf58d706d590609c24309e58d3de1",
+  "normal_decoder_sha256": "ade1cfd04faa0cb720d7a5ccc87e3335cfcaf6d8f3075f122888bb645c4f524d",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -40,22 +40,22 @@
     "t6_route": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items"
   },
   "diagnosis_origin": {
-    "previous_review_source_revision": "1359a2fba794bd94b2877aff25d07d1214dd7650",
-    "previous_review_sha256": "26cc335942fa99d5bb1058f735967e6e4f4f52e2a511d0372b1bdbd5e560a88b",
-    "fresh_execution_source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
-    "fresh_source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+    "previous_review_source_revision": "24bc84214221326e49a5144ae7526fbafe9a2464",
+    "previous_review_sha256": "c5e6d84b250f9cbdbd8f9bb573040457f7f89761a7890283814cd072c8d1a8dc",
+    "fresh_execution_source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
+    "fresh_source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
     "trace_repeated_for_all_seven_cases": true,
     "diagnostic_patch_sha256": "4f97ced44076a03f6380cd4bd5f65f9fe20e7b3277a601d83a30949400316879",
-    "trace_index_sha256": "2068bb67ca22f3833a7315e8d933b4f3c3a4d55f44d3af2307b31726b9a35dfb",
+    "trace_index_sha256": "6ab0334a4ca36f8463fed452d9d7eeaf3b77529b5888cfa93fa7794b6fa18d65",
     "instrumented_source_files_sha256": {
-      "src/decode.rs": "71c21f01fae473d18c116325f9074028457594000447b403818f89878b03a293",
+      "src/decode.rs": "d2338d1584ea1deccdb34e08d86f65b7be7d70977a8be83aede4a61a1aef93d2",
       "src/mmr.rs": "403887e0ea57f4fac121df4c41f5117569f29389e9187a1ec03a842a5f79f8af",
       "src/segment_header.rs": "3bdc1a67b805ad5fbc8c0a8ca3067edf2afbdc6ab47615884b9c1131d25e6c60",
       "src/symbol_text.rs": "bb6419c4fc03ba3a063dcbd6a1beb8aeedc6554211b075aacf4a531cf367b905"
     },
-    "unmodified_arithmetic_source_sha256": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec",
+    "unmodified_arithmetic_source_sha256": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "diagnostic_decoder_sha256": "b3166f011e3ef16ae159c4959078e6c2a52fa6df8c193f0cf8a64557f1337fa1",
+    "diagnostic_decoder_sha256": "8401cbc81246e56faedd6a3697b9f8b886ae342becdaff6188f9f5616e8294fe",
     "instrumentation_scope": "Existing logging in an isolated source copy only; parent source/proof/scripts never edited.",
     "fresh_unclassified_execution_sha256": "6a5ad994148574e6e673dfee419df9c8609797a1b7fd26e793725dc00030ba15"
   },
@@ -68,7 +68,7 @@
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
     "source-provenance.json": "98e7b5390912d6d8dce068a851c1afbcd2bedf4856c64cbe9678bc7dcef1bf49",
-    "validation/conformance/expected-differences.json": "46d579dce83df9ac33c34506b4510e084ead8d801388ba2aeb3b0c2371996537"
+    "validation/conformance/expected-differences.json": "c7594020ce3d0246f9ff6eef55bb3d544631cdbeb60532e6af97ca8bd98fb3cf"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -96,7 +96,7 @@
     "official_expected_hashes_unchanged_from_prior_native_run": true,
     "scope_limit": "Covered one-bit BI_RGB layouts, not a general BMP parser certification.",
     "fresh_gate_test_count": 32,
-    "fresh_gate_test_log_sha256": "0b9484d17df1c55614cb4380ebdf4d137caa1f63f5cbef74ab7456819e8a874a"
+    "fresh_gate_test_log_sha256": "9f4d6b99c460b7dcbc225ad8674133c6e7de22b096c7684a029c463bd5161201"
   },
   "hayro": {
     "crate": "hayro-jbig2",
@@ -109,7 +109,7 @@
       "std",
       "simd"
     ],
-    "binary_sha256": "8303dd8aa64637740285345967bc360d2fad76b8e0f47efbf4edef3107fa9f6a",
+    "binary_sha256": "98237f343042528fde6c5b9f1bba8335a3e92b890869aa6c3e6a8c337e2347f3",
     "harness_files_sha256": {
       "benchmarks/hayro-comparison/Cargo.toml": "c52af510f56cff89f7e9e9a6fb7031894650961d079686db80c517145580e471",
       "benchmarks/hayro-comparison/Cargo.lock": "ffa4928ea5fb38e7be4ded8a67b44f9ea2fe04adddb4b925e68832778e696e89",
@@ -123,7 +123,7 @@
     "seven_case_normative_passes": 0,
     "two_single_page_controls_have_matching_dimensions_and_fnv64_summary": true,
     "scope_limit": "Wrapper exposes one image and an FNV64 bitmap summary, not full-byte/all-page validation; errors do not establish pre-error entropy equivalence.",
-    "candidate_source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af"
+    "candidate_source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7"
   },
   "native_tool_identities": {
     "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
@@ -155,7 +155,7 @@
     "strict_policy_unchanged": true,
     "blanket_root_cause_claimed_for_seven_cases": false
   },
-  "normal_conformance_results_sha256": "9ae1230ab7d25f7130c7d13fbde89ec0095f38c7cb46c41ae1774f6031e9b07b",
+  "normal_conformance_results_sha256": "3d5a588e4837af74961cd88a8a8ab02d9e2fd9501774350981278cb5035c7c0d",
   "release_gate": "blocked",
   "cases": [
     {
@@ -187,9 +187,9 @@
         "T.88 6.5.9 and 6.2.6"
       ],
       "source_trace_sha256": "e6b157debad4281af44889333801e245cc5f2b3a773b787948c0f8de65abd508",
-      "source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+      "source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need an independently anchored text entropy/ID/strip trace, or official attachment-owner clarification, before identifying an unambiguous production correction.",
       "expected_pages": [
         {
@@ -289,9 +289,9 @@
         "T.6 Table 1 and 2.2.5.2"
       ],
       "source_trace_sha256": "14757f8b8d0089aa431cd0d5a3c1ee09c77430f226ea0833a3a2c779a1f496d3",
-      "source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+      "source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Do not extend BMSIZE or synthesize row data. Need independent upstream Huffman field alignment or official asset-owner clarification before assigning normative malformation.",
       "expected_pages": [
         {
@@ -385,9 +385,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b10d665c2180b605627120f1eda641edd91ffc8eec9f6cea24e94741b8d61061",
-      "source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+      "source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -481,9 +481,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "5ea8fb0789178b025c0ccc377afef04eae89851c8c89e19e792636525c707095",
-      "source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+      "source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -577,9 +577,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "05d26bb3da2a9954462c46ed4cb39d647624a3dd4cfe3f3adc4a56e88bd2ded8",
-      "source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+      "source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -673,9 +673,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b1dbb0f363ca6f467c14515d78f848e71270edae807ca0fad9fd8006b58935dd",
-      "source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+      "source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -769,9 +769,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "863c467991c565f1b8330550dee1c03777c582afdf851473106340f4b6afb81f",
-      "source_trace_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+      "source_trace_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Verus owner alignment with owner-merged Huffman source 8628fc0 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Typed-error adapter coverage with unchanged production bodies and normalization prerequisite c1b5fcf execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -831,107 +831,20 @@
     }
   ],
   "source_selection": {
-    "kind": "Verus owner alignment with owner-merged Huffman source",
-    "immutable_source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
-    "arithmetic_source_sha256": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec",
-    "arithmetic_spec_sha256": "21936486f64d42755b41b4ff0d817d4d075beca8811c0d42bf461abd977f7cdf",
+    "kind": "Typed-error adapter coverage with unchanged production bodies and normalization prerequisite",
+    "immutable_source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
+    "arithmetic_source_sha256": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3",
+    "arithmetic_spec_sha256": "6b8f3b39ec048c39593453137fed2a54eb3c324f18fc2923b97cae02d654d5ec",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "owner_source_review_sha256": "cdf8f836ad8dcb9df0fa5f44935ab98e7775246c9074f9f27cde2ccdce678a75",
+    "owner_source_review_sha256": "dfcf21ae3a9e771f362b005874702ca1562e5e5bf1df62f0341adc076cd5dc8e",
     "owner_source_review": {
-      "source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
-      "native_comparison_revision": "64465a72e6c8b6ca9f20682e46e68bdad8aecc81",
-      "native_token_streams_unchanged": true,
-      "strings_retained": true,
-      "ghost_cfg_and_cfg_attr_excluded": true,
-      "source_file_count": 17,
-      "files": [
-        {
-          "file": "src/arithmetic.rs",
-          "native_tokens_sha256": "42f3c4643e46c31493e97e6761cb093d007fb24cb7c59c4c8a7311fdcca5963c",
-          "source_sha256": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec"
-        },
-        {
-          "file": "src/bitmap.rs",
-          "native_tokens_sha256": "1c757e0b8c9b23875521247d25670c528a347496e1578138bebca9b66b5268ce",
-          "source_sha256": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17"
-        },
-        {
-          "file": "src/decode.rs",
-          "native_tokens_sha256": "7145833fc2567f9e1f95d773d8e373ba87dad9f0c6b35a7881650b56758c71c2",
-          "source_sha256": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb"
-        },
-        {
-          "file": "src/document.rs",
-          "native_tokens_sha256": "777e188cedc0ff7368393bcf5467db8d1a8cdcd505f86f3ba37f3f444173f660",
-          "source_sha256": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49"
-        },
-        {
-          "file": "src/error.rs",
-          "native_tokens_sha256": "d1d19689e9cda6347510b205f299c25fae05eac72ca9a8fd8ec50746bb7752d1",
-          "source_sha256": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4"
-        },
-        {
-          "file": "src/file_header.rs",
-          "native_tokens_sha256": "f87602e504aaf5c97c41c489071ee419cc5c8d2853aa4947a768e04939026223",
-          "source_sha256": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db"
-        },
-        {
-          "file": "src/generic_region.rs",
-          "native_tokens_sha256": "49bdac0ed117d6d1bab6a3043d0a6ad5cef5c78d1bf5b127e7ab2c9dd0387a9f",
-          "source_sha256": "86385485c127fbe9f9ab40e3aff83e3ed89c45465e0ebb73c02cc37c300acbda"
-        },
-        {
-          "file": "src/generic_row_ring.rs",
-          "native_tokens_sha256": "970f762dd7cba054055876b4f04b3b5ff132fcfbe7908af6e29a6e682bfcf338",
-          "source_sha256": "dd6f05b2fc2deb8d612d826828c8ba2661c6094ba44a7579faacb3dee80c0e11"
-        },
-        {
-          "file": "src/halftone.rs",
-          "native_tokens_sha256": "6438827f7a33c99b43dbd35f3f8122edcb403edcf8d50a10ec599ca58749bbf0",
-          "source_sha256": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648"
-        },
-        {
-          "file": "src/huffman.rs",
-          "native_tokens_sha256": "16deebde18060ca4655ae1668d6bd264612c0e3de755082ac25d9e9a62a58a9d",
-          "source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c"
-        },
-        {
-          "file": "src/lib.rs",
-          "native_tokens_sha256": "eeb81d9be1aad4d4e0e55d8f0b4d3cb8cc3a8405735319d77a65062f193e5ad3",
-          "source_sha256": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019"
-        },
-        {
-          "file": "src/limits.rs",
-          "native_tokens_sha256": "d07d8a3d752c9b2e91ec0a5520e4b3835d6be09c0dc6d9424302d83e647582a7",
-          "source_sha256": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516"
-        },
-        {
-          "file": "src/mmr.rs",
-          "native_tokens_sha256": "80c8ab659513ef2b6a026414c345d27d3310ca97edfc7de5ac7d536fcc4beac8",
-          "source_sha256": "c6810537f116140b4374e52264b9f7190c775c173e14903271f316220a837290"
-        },
-        {
-          "file": "src/reader.rs",
-          "native_tokens_sha256": "7b2aba9f0fe2e61ef074ccac5e792511aa9440129d8fbd5ed2800cf9374a62eb",
-          "source_sha256": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba"
-        },
-        {
-          "file": "src/segment_data.rs",
-          "native_tokens_sha256": "76a0bb8c0f0fe5c8347832b353c23ae6547b81c42f69f1f2e157edff61681dd1",
-          "source_sha256": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a"
-        },
-        {
-          "file": "src/segment_header.rs",
-          "native_tokens_sha256": "888ba3cc2eeae040a20d959894e9e4c295a016b5698e69c1eb118ca1e521439e",
-          "source_sha256": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5"
-        },
-        {
-          "file": "src/symbol_text.rs",
-          "native_tokens_sha256": "af5e811ec0575feb6bb1ab844f2f14f210d49aff66779852502bebab94be230c",
-          "source_sha256": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f"
-        }
-      ],
-      "scope": "Native source tokens match owner-merged main; additional changes are proof/model/support/tooling only, not normative approval."
+      "production_comparison_revision": "a809e2ab0e147c0fdbb5cb0684cebaefb9cad414",
+      "production_functions": 656,
+      "all_production_signatures_attributes_bodies_and_source_starts_unchanged": true,
+      "only_decode_test_module_changed": true,
+      "runtime_or_model_algorithm_changed": false,
+      "scope": "Typed error-conversion test evidence, not normative decoding approval.",
+      "source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7"
     }
   },
   "historical_ci_repair": {
@@ -951,15 +864,15 @@
     "execution_gate": "run_itu.py still exits 1 with seven unresolved official cases."
   },
   "refill_source_continuation": {
-    "immutable_source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
-    "source_kind": "Verus owner alignment with owner-merged Huffman source",
+    "immutable_source_revision": "c1b5fcfa906a927970a463e8f133519cd2ec91b7",
+    "source_kind": "Typed-error adapter coverage with unchanged production bodies and normalization prerequisite",
     "all_seven_normal_and_logging_executions_repeated": true,
     "source_provenance_unchanged": true,
     "parent_owns_proof_inventory_coverage_metadata": true,
     "official_runner_exit": 1,
     "new_normative_approvals": 0,
-    "normal_build_target": "/workspace/jbig2-normative-local-assets/owner-alignment-8628fc0/normal-build",
-    "trace_build_target": "/workspace/jbig2-normative-local-assets/owner-alignment-8628fc0/trace-build",
-    "hayro_build_target": "/workspace/jbig2-normative-local-assets/owner-alignment-8628fc0/hayro-build"
+    "normal_build_target": "/workspace/jbig2-normative-local-assets/error-conversions-c1b5fcf/normal-build",
+    "trace_build_target": "/workspace/jbig2-normative-local-assets/error-conversions-c1b5fcf/trace-build",
+    "hayro_build_target": "/workspace/jbig2-normative-local-assets/error-conversions-c1b5fcf/hayro-build"
   }
 }

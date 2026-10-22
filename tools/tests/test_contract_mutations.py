@@ -10,33 +10,13 @@ sys.path.insert(0, str(TOOLS))
 from check_contract_mutations import MUTATIONS, mutate
 import check_contract_mutations
 from evidence import load_json, validate
-from rust_source import parse
 from rust_tests import test_inventory as inventory_tests
-
-
-def integration_test_names(target):
-    path = TOOLS.parent / "tests" / f"{target}.rs"
-    names = set()
-    attributes = []
-    for node in parse(path.read_bytes()).named_children:
-        if node.type in {"line_comment", "block_comment"}:
-            continue
-        if node.type == "attribute_item":
-            attributes.append(b"".join(node.text.split()))
-            continue
-        if (
-            node.type == "function_item" and b"#[test]" in attributes
-            and not any(attribute.startswith(b"#[ignore") for attribute in attributes)
-        ):
-            names.add(node.child_by_field_name("name").text.decode("utf-8"))
-        attributes = []
-    return names
 
 
 class ContractMutationTests(unittest.TestCase):
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
-        self.assertEqual(len(identifiers), 8)
+        self.assertEqual(len(identifiers), 12)
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):
@@ -60,9 +40,12 @@ class ContractMutationTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaisesRegex(ValueError, "missing or ambiguous"):
                 mutate(source, mutation)
 
-    def test_mutation_filters_name_real_integration_tests(self):
+    def test_mutation_filters_name_real_nonignored_tests(self):
+        tests = inventory_tests(TOOLS.parent)
         for mutation in MUTATIONS:
-            self.assertIn(mutation["test"], integration_test_names(mutation["target"]))
+            identity = (mutation["target"], mutation["test"])
+            self.assertIn(identity, tests)
+            self.assertFalse(tests[identity]["ignored"])
 
     def test_all_catalog_cases_require_exact_executable_test_references(self):
         tests = inventory_tests(TOOLS.parent)
