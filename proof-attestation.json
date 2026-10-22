@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "83070c87a550811c8cfe1cca97a61558a4526fad",
+  "source_revision": "e29bd2e2d3f6d27f125b74461e70e69880ee24ea",
   "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
   "toolchain": {
     "manifest": "toolchain.json",
@@ -9,7 +9,7 @@
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/arithmetic-decision/verus --cfg verus_keep_ghost --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/arithmetic-refill/final-whole --cfg verus_keep_ghost --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1165,
     "verified_production_functions": 608,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "ae136c65aa4777576418db8da2dbc814e1ef2df394a501fffa8a8542d50f60ec",
-  "proof_dispositions_sha256": "6b30b159cfb23b61e13978e1ff55b0130d903a7d215cda39a941e01ce91213d9",
+  "production_proof_coverage_sha256": "4f480ddde120213873439dd5432c32a1a12a231197bb8daab750a0d11b47f798",
+  "proof_dispositions_sha256": "dd97061b175db8f0a2e22d63ee3d29894fc4cc0f773ad30bd8b09944c221d89d",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. The immutable source revision above retains owner main updates and proves successful arithmetic decisions and exact next probability-context index/MPS against the project Qe-table model. Lower/upper exchange helpers additionally specify context updates on error. Existing preconditions, model definitions and all erased native tokens are unchanged; only four production contracts/proof blocks change, while the other 652 production bodies/attributes are byte-identical. The full proof build compiles and verifies 1165 obligations with zero errors. The mandatory semantic runner includes thirteen checkers and 54 contrasts, adding four real compiling arithmetic strong/weaker controls. Existing arithmetic source bindings are refreshed without changing disposition identities, statuses or reasons. All 249 normative/project-policy records remain provisional with unchanged strength classifications. Exact renormalized registers, byte consumption, initialization/refill, caller composition and faithful normative translation remain separate obligations. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Coverage release goals remain unmet. Release remains blocked.",
+  "note": "Complete inventory is not complete normative correctness. The immutable source revision proves exact project byte-input signal/checked-success and position/current-byte/code/count/marker outputs, including EOF and partial overflow consumption. A single pure refill_step model expresses the relation. All 656 production bodies are byte-identical to base 33d942b; only the two refill proof attributes change, the other 654 attributes and every existing model byte remain unchanged, and no preconditions are strengthened. Fresh unfiltered compile/lifetime/erasure verification proves 1165 obligations with zero errors; an unchanged count is not a completeness metric. Six real compiling mutations fail the selected new relations and verify when only their affected relations are omitted. Numeric native oracles cover all 65,536 byte pairs at exact addition boundaries and EOF/existing-marker/error frames through both helpers. The required dynamic semantic manifest now contains 14 groups and 60 contrasts; prior decision/context and all earlier guarantees remain. Existing arithmetic bindings and generated inventory are refreshed without changing disposition identities, statuses or reasons. All 249 requirements and all eleven selected BYTEIN records retain provisional reviews and prior strengths. The shared helper theorem is not eleven independently reviewed normative proofs. Normative register/overflow interpretation, CT-zero caller timing, initialization/renormalization composition and complete entropy-stream correctness remain open. The single MMR capacity substitution still needs unsupported pinned Vec::capacity/Result::unwrap_or specifications; no project assumptions, memory-policy changes, coverage-floor reductions or conformance approval are introduced. The seven official cases and coverage release goals remain unresolved. Release remains blocked.",
   "release_gate": "blocked"
 }
