@@ -13,11 +13,23 @@ ordinary native build policy are unchanged.
 
 | Runtime metric | Covered / count | Coverage |
 |---|---:|---:|
-| Lines | 10,325 / 12,622 | 81.80% |
-| Code regions | 9,945 / 12,933 | 76.90% |
-| Branch outcomes | 1,908 / 2,638 | 72.33% |
+| Lines | 10,345 / 12,622 | 81.96% |
+| Code regions | 9,964 / 12,933 | 77.04% |
+| Branch outcomes | 1,909 / 2,638 | 72.37% |
 
-The public reference-contract floor is bound to immutable source
+The floor is now bound to merged main
+`5d95c52f2bb7394231ab4802d76f0a9f32b454fc`, after the exact normalization and
+typed-error adapter tests merged. A fresh complete pinned collection runs
+349 native tests with the same 14 ignored microbenchmarks. Global and per-file
+denominators are unchanged; every covered-count floor is nondecreasing against
+the previous reviewed baseline. Arithmetic increases by one line, one region
+and one branch outcome; decode increases by 19 lines and 18 regions, with no
+branch gain. These are actual combined counts, not summed historical deltas.
+This ratchet adds no runtime behavior, native tests, coverage exclusions, CI
+jobs or release approvals. A tooling regression checks that losing even one
+covered coordinate fails each nonzero global/per-file metric.
+
+The previous public reference-contract floor was bound to immutable source
 `ca80b60785acc3c0cdd3ae90e8c430f39c7d2b99`, before its separate evidence
 commit. Six integration tests cover 216 role/cardinality/table/global cases
 and three exact table-error precedence cases. Fresh collection runs
@@ -30,9 +42,10 @@ the CI parent `33be03f`; its actual totals are 10,294/12,622 lines,
 9,907/12,933 regions and 1,896/2,638 branch outcomes. Exact source-coordinate
 comparison gains **31 lines, 38 regions and 12 branch outcomes**, with no lost
 covered coordinate and every global/per-file denominator unchanged. All floors
-are nondecreasing against current main and the earlier unpublished reference
-candidate; the totals above are a fresh combined measurement, not summed
-branch deltas. Production/model/proof/Cargo inputs are unchanged from the CI
+were nondecreasing against its main parent and the earlier unpublished reference
+candidate. That prior floor was 10,325/12,622 lines, 9,945/12,933 regions and
+1,908/2,638 branch outcomes: a fresh combined measurement, not summed branch
+deltas. Production/model/proof/Cargo inputs were unchanged from the CI
 parent. Positive opaque-payload cases assert inspection metadata only, not
 valid entropy streams, new coding families or normative conformance.
 
