@@ -31,12 +31,6 @@ pub(crate) open spec fn decoder_state_valid(
     }
 }
 
-pub(super) proof fn work_fields(work: &super::WorkBudget)
-    ensures
-        work_limit(work) == work.limit,
-        work_used(work) == work.used,
-{}
-
 pub(super) open spec fn pattern_flags_valid(flags: u8) -> bool {
     flags & 0xf8 == 0
         && (flags & 1 == 0 || (flags / 2) % 4 == 0)
@@ -234,3 +228,6 @@ pub(super) open spec fn render_precedes(
 }
 
 }
+
+// Preserve the logical owner and private-field access of the model bridge.
+include!("../proofs/model_support/halftone.rs");

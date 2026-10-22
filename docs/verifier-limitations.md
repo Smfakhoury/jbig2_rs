@@ -1,9 +1,27 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1165 obligations with zero errors and zero native
+Pinned Verus verifies 1170 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
+
+Cargo verification uses `verification/Cargo.toml` against the same production
+crate root, with a locked development-only `vstd` dependency. This explicit
+manifest boundary preserves the dependency-free, proof-free runtime archive;
+bare Cargo-Verus success against the ordinary runtime manifest is not proof
+evidence. CI verifies and compiles with Cargo, rejects empty, dependency-only,
+partial, wrong-tool or duplicate production reports, and then checks every
+qualified production identity against the complete inventory.
+
+The source audit rejects local trusted-specification APIs, verification
+exclusions and exec termination waivers in runtime, model and proof sources.
+Decreases checks remain enabled. Exec termination checking is conditional on
+callee termination and must not be confused with the runtime work-budget
+policy or an end-to-end complexity bound. Implementation-only model lemmas
+live under `proofs/model_support/` with their original logical module ownership;
+the traceability checker binds the complete literal-include closure.
+See the [auditor index](verus-auditor-index.md) for notation bridges and the
+remaining independent normative-review obligations.
 
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
@@ -17,6 +35,11 @@ on `Vec::capacity` and `Result::unwrap_or`. This is a standard-library
 specification prerequisite, not a reason to count vector length as capacity,
 add project assumptions or declare the source gap closed. Its runtime body
 and accounting policy remain unchanged.
+The upstream capacity prerequisite is
+[verus-lang/verus#3304](https://github.com/verus-lang/verus/issues/3304), still
+open as of 2026-10-22. The merged reservation specification in
+[verus-lang/verus#3094](https://github.com/verus-lang/verus/pull/3094) does not
+itself specify the capacity getter or close this divergence.
 The five primitive value/operator bridges now share their verified executing
 bodies. Even where an optimized helper separately
 verifies, a different ghost wrapper is not an exact-source proof of the executing
@@ -119,6 +142,52 @@ succeed with matching source, tool and run/attempt identities. The local
 default remains all groups with two workers. This changes orchestration only:
 whole-crate obligations, native behavior, project assumptions, the remaining
 MMR capacity gap and provisional normative classifications are not upgraded.
+
+The byte-input refill helpers additionally export the exact project transition:
+signal or checked success, input position/current byte, code register, bit count
+and marker. EOF leaves state unchanged. Consuming branches advance before an
+overflow error; the marker branch does not consume its two bytes and leaves
+state unchanged on overflow. Successful stuffed input sets seven available bits;
+ordinary and marker fills set eight. The original validity, input/interval
+frames and preconditions are retained.
+
+One pure tuple model expresses this relation. All 656 production bodies are
+byte-identical to the base; only the two refill proof attributes change, and
+the other 654 attributes and all existing model bytes are unchanged. Six actual
+compiling mutations fail the new signal/code/count/marker/consumption/success
+relations and verify with only their affected relations removed. Independent
+numeric tests cover all 65,536 byte pairs, exact addition boundaries, EOF and
+existing-marker/error frames through both helpers.
+
+At refill-only source e29bd2e the unfiltered compile proof verifies 1165
+obligations with zero errors; that count is not a completeness metric.
+Eleven selected BYTEIN records
+retain provisional state-preservation classifications: the shared project-step
+theorem is not eleven independently reviewed normative proofs. Register
+meaning/overflow interpretation, CT-zero caller timing, initialization and
+renormalization composition, and whole entropy-stream equivalence remain open.
+
+Initialization now composes the seed and exact refill model: the constructor
+accepts exactly supplied slices with at least two bytes and returns the precise
+input, interval, position/current byte, code, available-bit count and marker.
+The returned pointer reflects refill consumption; it is not always zero.
+Suffix bytes are retained but not consumed during initialization.
+
+One proved bit-vector bound establishes that the checked initial code scaling
+cannot overflow. A ghost bridge identifies the native `1 << 7` constant with
+the model's factor 128. No native expression or precondition changes. All 656
+executing bodies/attributes remain token-identical; only the constructor's
+proof declaration/staging changes relative to the refill source, and the other
+655 declarations and existing model bytes are unchanged.
+
+All 65,536 first-byte pairs and suffix invariance are checked by a numeric
+oracle; empty/single-byte inputs retain exact typed EOF fields. Six compiling
+acceptance/scale/count/marker/consumption/interval mutations fail strong
+contracts and verify with only their affected new relations removed. The full
+compile proof verifies 1170 obligations with zero errors. The manifest now
+requires fifteen groups and 66 contrasts. Six selected INITDEC records remain
+provisional state-preservation evidence pending normative register/stream
+interpretation and later decision/renormalization composition.
 
 Source-offset region composition now also verifies the executing chunked
 dispatcher rather than a scalar proof substitute. Its existing storage,

@@ -2,6 +2,23 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The Verus-owner alignment tranche configures Cargo verification of the same
+production source through an isolated, locked verifier manifest, preserving
+the dependency-free runtime archive. Source guards reject local trust APIs,
+verification exclusions and termination waivers. Nine proof lemmas and the
+MMR transition-prefix accumulator predicate now live in implementation proof
+support without changing their logical module ownership; traceability binds
+the full literal-include closure. An auditor index records notation bridges
+and independent table-review obligations, and MMR membership predicates no
+longer call themselves normative. Cargo verification and compilation prove
+1170 project obligations with zero errors; this does not close provisional
+normative review or the upstream capacity-getter prerequisite. All native
+source token streams match the owner-merged main revision `64465a7`.
+The explicit verifier-manifest argument is a deliberate packaging boundary;
+bare Cargo-Verus success against the ordinary runtime manifest is not proof
+evidence. Exec termination checking remains enabled but is conditional on
+callee termination, not an end-to-end CPU bound.
+
 The negative/metamorphic catalogs now contain 29 fully executable-linked cases
 (38 references to 37 distinct ordinary tests), with no legacy file-only
 exceptions. Strict schema, source/ignored-test checks and real Cargo discovery
@@ -22,7 +39,7 @@ integer representation and Qe table-row relations. The total now comprises
 project-profile policies. All records remain provisional; selected arithmetic
 accounting is not owner-reviewed exhaustive enumeration. Starting every feature
 does not establish exhaustive normative enumeration. Eighteen generated
-integration regressions supplement 147 distinct linked non-ignored Cargo test
+integration regressions supplement 151 distinct linked non-ignored Cargo test
 identities. Exact per-feature membership, remaining scope, official source
 consultation identity and policy-row hashes are checked. T.88 hashes were
 rechecked through its official public package; no standard assets were
@@ -132,6 +149,24 @@ existing models are unchanged. The semantic runner now has thirteen groups and
 initialization/refill, caller composition and normative translation remain
 open; the aggregate arithmetic record remains provisional state-preservation
 evidence rather than a complete transition claim.
+The next refill tranche exposes exact signal/checked-success and
+position/current-byte/code/count/marker outputs for the native byte-input
+step, including EOF and partial overflow consumption. All 656 native bodies
+remain byte-identical; only two proof attributes and one new pure model change.
+Six compiling relation-specific proof contrasts and numeric tests of every
+byte pair at addition/EOF/marker boundaries pass. Whole-crate compile
+verification remains 1165/0; the dynamic manifest requires fourteen groups and
+60 contrasts. The eleven selected BYTEIN records retain their provisional
+strengths and remaining normative/caller-composition gaps.
+The initialization tranche now composes the seed/refill model into an exact
+constructor result and acceptance relation: all supplied slices of at least
+two bytes succeed, shorter slices fail, and all returned fields are explicit.
+A proved bit-vector bound/constant bridge handles initial scaling without
+changing native code or preconditions. Exhaustive byte-pair/suffix tests and
+six compiling relation-specific proof contrasts pass. The whole compile proof
+verifies 1170 obligations with zero errors; the dynamic manifest requires
+fifteen groups and 66 contrasts. All six selected INITDEC records remain
+provisional, with normative/caller/later-decoding gaps explicitly retained.
 Generated segment-header coverage uncovered a long-retention wire-order and
 unused-bit-location mismatch between implementation/model and 7.2.4. Both are
 corrected with exact materialization contracts and independent tests. The
@@ -375,7 +410,7 @@ Dependencies: P02, P04.
 2. Strengthen invariants/postconditions where they prove only valid storage or
    bounds rather than the claimed normative transformation. Prove optimized
    kernels refine a reviewed independent functional model.
-3. Keep the 18 boundary limitations and 21 forwarders explicit; update outdated
+3. Keep the 24 boundary limitations and 23 forwarders explicit; update outdated
    reasons, bind dispositions to the actual reviewed source, and document the
    compiler/Verus/vstd trust boundary and conditional preconditions.
 4. Re-evaluate all seven rejected official vectors using byte/bit traces,

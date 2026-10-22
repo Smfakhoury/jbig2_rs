@@ -65,25 +65,73 @@ def resolve_module(root, names):
     return path, visited
 
 
+def module_sources(root, path):
+    sources = set()
+
+    def visit(current):
+        if current in sources:
+            raise ValueError(f"cyclic or duplicate source inclusion: {current}")
+        sources.add(current)
+        source = current.read_bytes()
+        includes = []
+        for node, _ in items(parse(source), False):
+            if node.type == "expression_statement" and len(node.named_children) == 1:
+                node = node.named_children[0]
+            if node.type != "macro_invocation":
+                continue
+            name = node.child_by_field_name("macro")
+            if name is not None and name.text == b"include":
+                includes.append(node)
+        code = production_code(source, exclude_proofs=False)
+        if len(re.findall(r"\binclude\s*!\s*[\(\[{]", code)) != len(includes):
+            raise ValueError("only module-scope source inclusion is supported")
+        for node in includes:
+            literal = re.fullmatch(
+                r'include\s*!\s*\(\s*"([^"\\\n]+)"\s*\)', node.text.decode(),
+            )
+            if literal is None or (
+                PurePosixPath(literal[1]).is_absolute() or Path(literal[1]).is_absolute()
+            ):
+                raise ValueError("source inclusion requires a literal relative path")
+            included = (current.parent / literal[1]).resolve()
+            if not included.is_relative_to(root.resolve()) or not included.is_file():
+                raise ValueError("missing or external included source")
+            if any(node.type == "mod_item" for node, _ in items(parse(included.read_bytes()), False)):
+                raise ValueError("included module declarations need explicit support")
+            visit(included)
+
+    visit(path.resolve())
+    return sources
+
+
 def check_definition(root, definition, verifier_names):
     path, used = resolve_module(root, definition["module_path"])
-    if path != source_path(root, definition["file"]):
+    sources = module_sources(root, path)
+    declared = source_path(root, definition["file"])
+    if declared not in sources:
         raise ValueError(f"definition module points to another file: {definition['name']}")
+    used.update(source.relative_to(root).as_posix() for source in sources)
     if definition["kind"] == "macro":
         declarations = [
-            node for node in parse(path.read_bytes()).named_children
+            source for source in sources
+            for node in parse(source.read_bytes()).named_children
             if node.type == "macro_definition"
             and node.child_by_field_name("name").text.decode() == definition["name"]
         ]
-        if len(declarations) != 1:
+        if declarations != [declared]:
             raise ValueError(f"missing or ambiguous proof macro: {definition['name']}")
     else:
-        code = production_code(path.read_bytes(), exclude_proofs=False)
         pattern = (
             r"(?m)^\s*(?:pub(?:\([^)]*\))?\s+)?(?:(?:open|closed|opaque)\s+)?"
             + definition["kind"] + r"\s+fn\s+" + re.escape(definition["name"]) + r"\b"
         )
-        if len(re.findall(pattern, code)) != 1:
+        declarations = [
+            source for source in sources
+            for _ in re.finditer(
+                pattern, production_code(source.read_bytes(), exclude_proofs=False),
+            )
+        ]
+        if declarations != [declared]:
             raise ValueError(f"missing or ambiguous Verus declaration: {definition['name']}")
         qualified = PREFIX + "::".join([*definition["module_path"], definition["name"]])
         if verifier_names is not None and qualified not in verifier_names:

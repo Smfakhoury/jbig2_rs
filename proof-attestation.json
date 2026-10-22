@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "83070c87a550811c8cfe1cca97a61558a4526fad",
-  "scope": "Pinned proof build rooted at src/lib.rs, with syntax-audited production identities and explicit runtime/proof divergence backlog",
+  "source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+  "scope": "Cargo-Verus verification and compilation of the same src/lib.rs through the isolated locked verification manifest, with complete exact production identities and an explicit capacity-accounting divergence",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "verus src/lib.rs --crate-name jbig2_rs_production --crate-type rlib --compile --out-dir target/arithmetic-decision/verus --cfg verus_keep_ghost --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/verus-cargo cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1165,
+    "verified_obligations": 1170,
     "verified_production_functions": 608,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "19fa840570fe4865b040ab90048f78472441b3c7dc2db8eeaaff95e2a6a800fa",
-  "proof_dispositions_sha256": "13b0a5299269e6a4fbfb0f7461b55ee0e94458c16a9a63762aa32f7a0f67be94",
+  "production_proof_coverage_sha256": "53e511d6e8ece27f8651c5257408cb20df7166f1c991bf6632c24c44c4fd2354",
+  "proof_dispositions_sha256": "4093de061f892ef46818f240568ab3d7ff9b6accf379580c8aeb7927084fa14e",
   "duplicate_executable_proof_source": true,
-  "note": "Complete inventory is not complete normative correctness. The immutable source revision above retains owner main updates and proves successful arithmetic decisions and exact next probability-context index/MPS against the project Qe-table model. Lower/upper exchange helpers additionally specify context updates on error. Existing preconditions, model definitions and all erased native tokens are unchanged; only four production contracts/proof blocks change, while the other 652 production bodies/attributes are byte-identical. The full proof build compiles and verifies 1165 obligations with zero errors. The mandatory semantic runner includes thirteen checkers and 54 contrasts, adding four real compiling arithmetic strong/weaker controls. Existing arithmetic source bindings are refreshed without changing disposition identities, statuses or reasons. All 249 normative/project-policy records remain provisional with unchanged strength classifications. Exact renormalized registers, byte consumption, initialization/refill, caller composition and faithful normative translation remain separate obligations. Earlier bridge/reset/metadata/bitmap/MMR/text-batch/retention/composition guarantees remain. The single MMR capacity-accounting runtime/proof substitution remains blocked by unsupported pinned Vec::capacity/Result::unwrap_or, without new assumptions, memory-policy changes or conformance approval. Coverage release goals remain unmet. Release remains blocked.",
+  "note": "Fresh unfiltered Cargo verification and compilation prove 1170 production-crate obligations with zero errors, with lifetime and erasure checks enabled. The exact inventory remains 656 production functions: 608 directly verified, 24 reviewed limitations, 23 audited forwarders and one capacity-accounting divergence; zero incomplete entries and zero project-native assumptions. All 17 native source token streams, including string literals, match owner-merged main 64465a72e6c8b6ca9f20682e46e68bdad8aecc81. The prior exact arithmetic refill and initialization contracts are retained. Nine proof lemmas and a transition-prefix support predicate are relocated byte-for-byte while preserving logical module identity and closed-model reveal permissions. MMR table-membership names no longer imply independent normative correctness. The verifier-only Cargo manifest pins vstd without adding runtime/archive dependencies. The collector rejects vacuous, partial, duplicate, failed or wrong-tool Cargo reports, then requires complete exact production identities. Source guards reject project-local trusted specifications, verification exclusions and termination waivers; exec decreases checking remains callee-conditional, not a CPU-bound proof. Literal module-scope includes are source-bound recursively and ambiguous/dynamic/external inclusion fails closed. The complete source-bound semantic contrast gate remains required. All 249 selected requirements retain provisional review and the unchanged 60/163/26 strength distribution; neither normative decomposition nor semantic completion is claimed. Fresh source-bound official execution retains two exact positives, seven unresolved positives and one unsupported case, with no reviewed rejection credit. Upstream capacity support and independent normative review remain blockers. No lowered coverage floors, publication enablement or conformance approval is introduced.",
   "release_gate": "blocked"
 }

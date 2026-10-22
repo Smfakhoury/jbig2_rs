@@ -205,12 +205,7 @@ pub(crate) closed spec fn table_has_oob(table: &super::HuffmanTable) -> bool {
         && table.lines@[index].kind == super::LineKind::OutOfBand
 }
 
-pub(super) proof fn table_has_oob_definition(table: &super::HuffmanTable)
-    ensures table_has_oob(table) == exists|index: int|
-        0 <= index < table.lines@.len()
-        && table.lines@[index].kind == super::LineKind::OutOfBand,
-{
-    reveal(table_has_oob);
 }
 
-}
+// Keep the closed-model reveal in its owning module.
+include!("../proofs/model_support/huffman.rs");

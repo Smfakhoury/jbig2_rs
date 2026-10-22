@@ -7,11 +7,11 @@ pub(super) proof fn normative_run_value_is_positive_when_makeup(
     code: super::RunCode,
 )
     requires
-        super::mmr_spec::run_code_is_normative(black, code),
+        super::mmr_spec::run_code_in_implementation_tables(black, code),
         !code.terminal,
     ensures code.value >= 64,
 {
-    reveal(super::mmr_spec::run_code_is_normative);
+    reveal(super::mmr_spec::run_code_in_implementation_tables);
     if black {
         assert(super::BLACK_MAKEUP@.len() == 27);
     } else {
@@ -24,10 +24,10 @@ pub(super) proof fn normative_run_value_is_bounded(
     black: bool,
     code: super::RunCode,
 )
-    requires super::mmr_spec::run_code_is_normative(black, code),
+    requires super::mmr_spec::run_code_in_implementation_tables(black, code),
     ensures code.value <= 2560,
 {
-    reveal(super::mmr_spec::run_code_is_normative);
+    reveal(super::mmr_spec::run_code_in_implementation_tables);
     assert(super::WHITE_TERMINATING@.len() == 64);
     assert(super::BLACK_TERMINATING@.len() == 64);
     assert(super::WHITE_MAKEUP@.len() == 27);
@@ -39,10 +39,10 @@ pub(super) proof fn normative_run_length_is_bounded(
     black: bool,
     code: super::RunCode,
 )
-    requires super::mmr_spec::run_code_is_normative(black, code),
+    requires super::mmr_spec::run_code_in_implementation_tables(black, code),
     ensures 1 <= code.length <= super::MAX_RUN_CODE_BITS,
 {
-    reveal(super::mmr_spec::run_code_is_normative);
+    reveal(super::mmr_spec::run_code_in_implementation_tables);
     assert(super::WHITE_TERMINATING@.len() == 64);
     assert(super::BLACK_TERMINATING@.len() == 64);
     assert(super::WHITE_MAKEUP@.len() == 27);

@@ -1,0 +1,25 @@
+[package]
+name = "jbig2_rs_verification"
+version = "0.0.1"
+edition = "2021"
+rust-version = "1.98.1"
+publish = false
+
+[lib]
+name = "jbig2_rs_production"
+path = "../src/lib.rs"
+
+[dependencies]
+vstd = "=0.0.0-2026-10-04-0306"
+
+[package.metadata.verus]
+verify = true
+
+[workspace]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+  "cfg(fuzzing)",
+  "cfg(jbig2_validation)",
+  "cfg(verus_keep_ghost)",
+] }

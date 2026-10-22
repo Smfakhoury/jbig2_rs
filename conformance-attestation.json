@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "49051dbfff9136e46ebc00560837462d0c25d903",
-  "scope": "Fresh canonical merged-main execution only: seven existing official diagnoses remain pending/unresolved; no unmerged runtime payload, normative approval or conformance credit.",
+  "source_revision": "8628fc0c5c18462858c095fe5d630f2be12695af",
+  "scope": "Fresh existing official diagnostics on Verus owner alignment with owner-merged Huffman source 8628fc0; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 343,
     "passed": 329,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "39664f6b15b06cf25fc3d628482e504ac75940822deb1fca2d230fd141d751b1",
-    "review_sha256": "c313d94c210195f33875d44631cf1afc13a77cba366de215b0f55c7bdc9c9350"
+    "results_sha256": "9ae1230ab7d25f7130c7d13fbde89ec0095f38c7cb46c41ae1774f6031e9b07b",
+    "review_sha256": "491c6e8bfddb5dd595b38ff303a7ff3b50b48c19ef2417a39921d5a5e7032c85"
   },
   "community_regressions": {
     "total": 0,

@@ -21,10 +21,10 @@ macro_rules! production_mmr_run_entry {
         proof! {
             assert($table@[$index as int] == $code);
             assert($table@.contains($code));
-            reveal(crate::mmr::mmr_spec::run_code_is_normative);
+            reveal(crate::mmr::mmr_spec::run_code_in_implementation_tables);
             reveal(crate::mmr::mmr_spec::run_key_matches);
             assert($black == $table_black);
-            assert(crate::mmr::mmr_spec::run_code_is_normative(
+            assert(crate::mmr::mmr_spec::run_code_in_implementation_tables(
                 $black,
                 $code,
             ));
@@ -42,9 +42,9 @@ macro_rules! production_mmr_mode_entry {
         proof! {
             assert(crate::mmr::MODE_CODES@[$index as int] == $code);
             assert(crate::mmr::MODE_CODES@.contains($code));
-            reveal(crate::mmr::mmr_spec::mode_code_is_normative);
+            reveal(crate::mmr::mmr_spec::mode_code_in_implementation_table);
             reveal(crate::mmr::mmr_spec::mode_matches);
-            assert(crate::mmr::mmr_spec::mode_code_is_normative($code));
+            assert(crate::mmr::mmr_spec::mode_code_in_implementation_table($code));
             assert(crate::mmr::mmr_spec::mode_matches(
                 $code,
                 $prefix,

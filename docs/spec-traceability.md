@@ -107,6 +107,24 @@ The ledger records these distinctions rather than upgrading weaker evidence.
 Definitions are not independent correctness theorems, and a model matching
 implementation data is not by itself proof of a faithful standards translation.
 
+The arithmetic refill tranche adds an exact project-step relation for
+`byte_in_signal` and its checked wrapper: return classification and all
+position/current-byte/code/count/marker outputs, including EOF and partial
+overflow consumption. The BYTEIN interface record links this shared model and
+the all-byte-pair/boundary tests. Its ten leaf records now distinguish these
+project guarantees from remaining normative/caller gaps instead of saying the
+postconditions are absent. All eleven retain provisional state-preservation
+strength; no requirement count, review approval or full-stream claim changes.
+
+The initialization tranche composes the project seed/refill transition and
+exposes exact constructor acceptance and returned state for every supplied
+slice. A proved arithmetic bound excludes code-scaling overflow for all
+two-byte prefixes. The six INITDEC records now distinguish this complete
+project-constructor relation from still-unreviewed normative register
+interpretation, caller slice selection and later decoding. They retain their
+prior strengths and provisional reviews; the new model and exhaustive prefix
+tests do not constitute six independent normative proofs.
+
 ## Selected Annex A/E arithmetic enumeration
 
 This tranche adds **138 provisional normative records**, bringing the arithmetic
@@ -343,8 +361,9 @@ or standards prose are added.
 | Post-EOFB padding | Reader/framing invariants; zero-padding values and T.88/fixed-block applicability remain open |
 | Truncated runs, row overshoot and required-marker truncation | Executable private typed-error regressions and bounded reader state, not T.6-mandated Rust diagnostics or a proved public-error mapping |
 
-The names `mode_code_is_normative` and `run_code_is_normative` denote project
-array-membership predicates. Naming does not make those arrays independently
+The names `mode_code_in_implementation_table` and
+`run_code_in_implementation_tables` explicitly denote project array-membership
+predicates. Naming does not make those arrays independently
 faithful to T.6. Ordinary table-driven tests can share the implementation tables;
 the ledger records that limitation rather than promoting them to a normative
 oracle. All new records remain provisional with explicit gaps.

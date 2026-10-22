@@ -2,7 +2,8 @@ use vstd::prelude::*;
 
 verus! {
 
-pub(super) open spec fn mode_code_is_normative(code: super::ModeCode) -> bool {
+// Membership in implementation data is not an independent normative-table proof.
+pub(super) open spec fn mode_code_in_implementation_table(code: super::ModeCode) -> bool {
     super::MODE_CODES@.contains(code)
 }
 
@@ -14,7 +15,7 @@ pub(super) open spec fn mode_matches(
     code.bits == bits && code.length == length
 }
 
-pub(super) open spec fn run_code_is_normative(
+pub(super) open spec fn run_code_in_implementation_tables(
     black: bool,
     code: super::RunCode,
 ) -> bool {
@@ -63,19 +64,6 @@ pub(super) open spec fn reference_line_valid(
         && transitions_ordered(transitions, width)
 }
 
-pub(super) open spec fn transition_prefix_valid(
-    transitions: Seq<u32>,
-    scanned: u32,
-    width: u32,
-) -> bool {
-    scanned <= width
-        && forall|index: int| 0 <= index < transitions.len() ==>
-            #[trigger] transitions[index] < scanned
-        && forall|left: int, right: int|
-            0 <= left < right < transitions.len() ==>
-                #[trigger] transitions[left] <= #[trigger] transitions[right]
-}
-
 pub(super) open spec fn span_byte(
     bitmap: &crate::bitmap::Bitmap,
     row: u32,
@@ -98,3 +86,6 @@ pub(super) open spec fn exact_eofb(
 }
 
 }
+
+// Private helper preconditions still use mmr_spec::transition_prefix_valid.
+include!("../proofs/model_support/mmr.rs");
