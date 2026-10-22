@@ -201,6 +201,57 @@ pub(crate) open spec fn renormalization_steps(interval: nat) -> nat
     }
 }
 
+pub(crate) open spec fn normalized_state(
+    decoder: &super::ArithmeticDecoder,
+) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
+    recommends decoder_state_valid(decoder),
+    decreases if 0 < decoder.interval < super::MIN_INTERVAL {
+        super::MIN_INTERVAL as int - decoder.interval as int
+    } else {
+        0
+    },
+{
+    if decoder.interval == 0 || decoder.interval >= super::MIN_INTERVAL {
+        (
+            0, decoder.interval, decoder.byte_position, decoder.current_byte,
+            decoder.code, decoder.bit_count, decoder.marker,
+        )
+    } else {
+        let refill = if decoder.bit_count == 0 {
+            refill_step(decoder)
+        } else {
+            (
+                0u8, decoder.byte_position, decoder.current_byte,
+                decoder.code, decoder.bit_count, decoder.marker,
+            )
+        };
+        if refill.0 != 0 {
+            (
+                refill.0, decoder.interval, refill.1, refill.2,
+                refill.3, refill.4, refill.5,
+            )
+        } else {
+            let interval = (decoder.interval as nat * 2) as u32;
+            if refill.3 as nat * 2 > u32::MAX {
+                (
+                    super::RASTER_SIGNAL_OVERFLOW, interval, refill.1,
+                    refill.2, refill.3, refill.4, refill.5,
+                )
+            } else {
+                normalized_state(&super::ArithmeticDecoder {
+                    bytes: decoder.bytes,
+                    byte_position: refill.1,
+                    current_byte: refill.2,
+                    code: (refill.3 as nat * 2) as u32,
+                    interval,
+                    bit_count: (refill.4 as int - 1) as u8,
+                    marker: refill.5,
+                })
+            }
+        }
+    }
+}
+
 pub(crate) open spec fn decoder_marker(
     decoder: &super::ArithmeticDecoder,
 ) -> Option<super::ArithmeticMarker> {

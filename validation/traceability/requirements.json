@@ -326,10 +326,10 @@
       ],
       "remaining_scope": [
         "The selected A.1-A.3, E.3-E.3.5, E.3.7 and decoder-shared E.2.5/Table E.1 accounting is provisional; owner review may identify further obligations. No exhaustive-denominator or approved-decomposition claim is made.",
-        "All new decision, exchange, byte-input, initialization, renormalization, integer, IAID and table-relation records retain explicit semantic gaps. Current production contracts preserve state, not complete decoded-output or next-state relations.",
+        "Selected decision/context, refill, initialization and normalization helpers expose their recorded exact project relations. Integer/IAID output semantics, complete caller composition and normative register/stream interpretation remain open; helper-level functional contracts do not establish full arithmetic decoding.",
         "Procedure-specific bank selection, context-sequence agreement, initialization/reset timing and complete caller composition are not established by local arithmetic helper contracts.",
         "E.3.6 error-recovery discussion, E.3.8 GB/GR statistics save/restore and cross-clause segment/caller rules are outside this selected tranche and remain undecomposed here; encoder-only E.1/E.2 algorithms and non-normative Annex G are not newly enumerated.",
-        "Existing callback integer/IAID tests and duplicated checked-decision oracle are bounded support only; dedicated production branch/table-boundary tests and independent standard-to-model review remain missing."
+        "Native numeric tests cover selected decision/refill/initialization/normalization boundaries, while callback integer/IAID tests remain bounded support only. Independent standard-to-model review and universal caller/decoded-output relations remain missing."
       ]
     },
     {
@@ -629,7 +629,7 @@
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
-    "specs/arithmetic.rs": "21936486f64d42755b41b4ff0d817d4d075beca8811c0d42bf461abd977f7cdf",
+    "specs/arithmetic.rs": "6b8f3b39ec048c39593453137fed2a54eb3c324f18fc2923b97cae02d654d5ec",
     "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
     "specs/decode.rs": "f00e3a481025c5f1fd5637972d283d43a95f85846a3c7e610d8442ad2bb979fe",
     "specs/document.rs": "937c78bb6796d5e3c179019c5183ff1c848cece68e26b705cae1f5615ec45480",
@@ -642,7 +642,7 @@
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
-    "src/arithmetic.rs": "a6a9b0d6c5ac019fe393950283531a432aed88a568e797991181c17a2d8b83ec",
+    "src/arithmetic.rs": "d32dbc795c0dad265ccd5d49b75ceb6226263a195453eb8ad2507aa3c57953a3",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "0ed3f5c078a01840fc481e668279540fb02fae8a1d779b81865251fa65d009eb",
     "src/document.rs": "828b20550ba99bd7936650414a3df1215f53ba2f99f264625ca27338ac3d9b49",
@@ -1445,6 +1445,16 @@
       ],
       "name": "pow2",
       "role": "pure power-of-two model used in IAID context/output bounds; not a production code-length or context-selection postcondition"
+    },
+    "arithmetic-normalized-state": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "normalized_state",
+      "role": "Exact project normalization signal, interval, input position/current byte, code, counter and marker, including partial errors; not independent normative register interpretation."
     }
   },
   "requirements": [
@@ -8232,7 +8242,8 @@
       ],
       "models": [
         "decoder-state-valid",
-        "arithmetic-renormalization-steps"
+        "arithmetic-renormalization-steps",
+        "arithmetic-normalized-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8243,19 +8254,36 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Exact project normalization output against normalized_state: conditional refill before shifting, mathematical code/interval doubling, counter updates, termination and all partial EOF/overflow state. Input bytes are preserved. This is a production functional postcondition, not normative register interpretation or complete arithmetic-stream/caller composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem."
       ],
       "gaps": [
-        "State validity does not specify input-bit placement, shift history, or carry movement between code halves."
+        "Independent comparison of the project normalization/refill models with normative register, pointer and marker conventions remains unapproved.",
+        "Caller decision/context sequencing and complete entropy-stream correctness are not established by this helper-level theorem."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(self).code == arithmetic_spec::normalized_state(old(self)).4"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
@@ -9191,7 +9219,8 @@
       ],
       "models": [
         "decoder-state-valid",
-        "arithmetic-renormalization-steps"
+        "arithmetic-renormalization-steps",
+        "arithmetic-normalized-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -9202,20 +9231,37 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Exact project normalization output against normalized_state: conditional refill before shifting, mathematical code/interval doubling, counter updates, termination and all partial EOF/overflow state. Input bytes are preserved. This is a production functional postcondition, not normative register interpretation or complete arithmetic-stream/caller composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The production helper accepts any valid positive interval and may do zero shifts if already normalized; the decision algorithm invokes it on paths needing normalization. The figure's loop is entered when normalization is required; entry/caller composition is not proved."
       ],
       "gaps": [
-        "The return contract does not specify refill timing, number of BYTEIN calls, or bytes consumed."
+        "Independent comparison of the project normalization/refill models with normative register, pointer and marker conventions remains unapproved.",
+        "Caller decision/context sequencing and complete entropy-stream correctness are not established by this helper-level theorem."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(self).byte_position == arithmetic_spec::normalized_state(old(self)).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
@@ -9237,7 +9283,8 @@
       ],
       "models": [
         "decoder-state-valid",
-        "arithmetic-renormalization-steps"
+        "arithmetic-renormalization-steps",
+        "arithmetic-normalized-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -9248,20 +9295,37 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Exact project normalization output against normalized_state: conditional refill before shifting, mathematical code/interval doubling, counter updates, termination and all partial EOF/overflow state. Input bytes are preserved. This is a production functional postcondition, not normative register interpretation or complete arithmetic-stream/caller composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The production helper accepts any valid positive interval and may do zero shifts if already normalized; the decision algorithm invokes it on paths needing normalization. The figure's loop is entered when normalization is required; entry/caller composition is not proved."
       ],
       "gaps": [
-        "The loop's decreasing normalization measure proves progress but the return contract gives no exact shift-count or old-to-new interval relation."
+        "Independent comparison of the project normalization/refill models with normative register, pointer and marker conventions remains unapproved.",
+        "Caller decision/context sequencing and complete entropy-stream correctness are not established by this helper-level theorem."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(self).interval == arithmetic_spec::normalized_state(old(self)).1"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
@@ -9283,7 +9347,8 @@
       ],
       "models": [
         "decoder-state-valid",
-        "arithmetic-renormalization-steps"
+        "arithmetic-renormalization-steps",
+        "arithmetic-normalized-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -9294,20 +9359,37 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Exact project normalization output against normalized_state: conditional refill before shifting, mathematical code/interval doubling, counter updates, termination and all partial EOF/overflow state. Input bytes are preserved. This is a production functional postcondition, not normative register interpretation or complete arithmetic-stream/caller composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The production helper accepts any valid positive interval and may do zero shifts if already normalized; the decision algorithm invokes it on paths needing normalization. The figure's loop is entered when normalization is required; entry/caller composition is not proved."
       ],
       "gaps": [
-        "No relational code-register model accounts for every shift, refill and overflow boundary."
+        "Independent comparison of the project normalization/refill models with normative register, pointer and marker conventions remains unapproved.",
+        "Caller decision/context sequencing and complete entropy-stream correctness are not established by this helper-level theorem."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(self).code == arithmetic_spec::normalized_state(old(self)).4"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
@@ -9329,7 +9411,8 @@
       ],
       "models": [
         "decoder-state-valid",
-        "arithmetic-renormalization-steps"
+        "arithmetic-renormalization-steps",
+        "arithmetic-normalized-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -9340,20 +9423,37 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Exact project normalization output against normalized_state: conditional refill before shifting, mathematical code/interval doubling, counter updates, termination and all partial EOF/overflow state. Input bytes are preserved. This is a production functional postcondition, not normative register interpretation or complete arithmetic-stream/caller composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The production helper accepts any valid positive interval and may do zero shifts if already normalized; the decision algorithm invokes it on paths needing normalization. The figure's loop is entered when normalization is required; entry/caller composition is not proved."
       ],
       "gaps": [
-        "The validity postcondition bounds CT but does not specify its decrement/refill recurrence."
+        "Independent comparison of the project normalization/refill models with normative register, pointer and marker conventions remains unapproved.",
+        "Caller decision/context sequencing and complete entropy-stream correctness are not established by this helper-level theorem."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(self).bit_count == arithmetic_spec::normalized_state(old(self)).5"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
@@ -9375,7 +9475,8 @@
       ],
       "models": [
         "decoder-state-valid",
-        "arithmetic-renormalization-steps"
+        "arithmetic-renormalization-steps",
+        "arithmetic-normalized-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -9386,20 +9487,38 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Exact project normalization output against normalized_state: conditional refill before shifting, mathematical code/interval doubling, counter updates, termination and all partial EOF/overflow state. Input bytes are preserved. This is a production functional postcondition, not normative register interpretation or complete arithmetic-stream/caller composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The production helper accepts any valid positive interval and may do zero shifts if already normalized; the decision algorithm invokes it on paths needing normalization. The figure's loop is entered when normalization is required; entry/caller composition is not proved."
       ],
       "gaps": [
-        "Successful return proves normalized state, not the minimal prescribed sequence of shifts, code value and bit consumption."
+        "Independent comparison of the project normalization/refill models with normative register, pointer and marker conventions remains unapproved.",
+        "Caller decision/context sequencing and complete entropy-stream correctness are not established by this helper-level theorem."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(self).interval == arithmetic_spec::normalized_state(old(self)).1",
+            "out == arithmetic_spec::normalized_state(old(self)).0"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",

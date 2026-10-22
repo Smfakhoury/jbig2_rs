@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 60 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 163 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 66 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 157 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -127,12 +127,32 @@ tests do not constitute six independent normative proofs.
 
 ## Selected Annex A/E arithmetic enumeration
 
+The normalization follow-up gives six selected records explicit functional
+evidence against the project `normalized_state` model: the low-input register
+row and all five `RENORM-*` rows. Both signal and checked helpers expose exact
+signal/acceptance, interval, consumed position/current byte, code, counter and
+marker state, including EOF/refill overflow and interval-before-code-overflow
+ordering. Bytes remain unchanged, and existing preconditions are not
+strengthened. The decreasing measure remains termination support; the new
+recursive output model supplies the register recurrence.
+
+Two independent numeric tests use a closed-form leading-zero shift count and
+wide arithmetic across every byte pair, normalized no-op states, shift limits,
+real marker fills, stuffing, EOF and partial overflow. Six native-compiling
+mutants violate individual result relations and pass when only the affected
+postconditions are omitted; input framing, state validity and loop recurrence
+remain in the controls. These results do not approve normative register/pointer
+interpretation, caller sequencing or full arithmetic-stream conformance.
+All 249 records remain provisional, with unchanged selected membership.
+
 This tranche adds **138 provisional normative records**, bringing the arithmetic
 worklist from three records to **141**, without changing runtime, models, proofs,
 coverage floors or trust/attestation metadata. The two existing reset records
 retain their narrow functional classification; the aggregate decision record
-retains state-preservation strength. All 138 additions are **state-preservation**
-records with explicit missing functional relations, not newly proved semantics.
+retains state-preservation strength. At initial enumeration all 138 additions
+were **state-preservation** records with explicit missing functional relations.
+The six normalization records above now have narrow functional evidence; the
+remaining 132 retain their original state-preservation classification.
 The original 111 IDs and review states are preserved.
 
 | Consulted source / selected membership | Added records | Accounting boundary |
@@ -143,7 +163,7 @@ The original 111 IDs and review states are preserved.
 | E.3/E.3.1 interface, stream/context loop and register conventions | 6 | Caller sequence/stream agreement and logical code-register interpretation remain gaps |
 | E.3.2 Figure E.15 decision steps | 8 | Lookup, interval subtraction, strict partition, high-code subtraction, fast MPS, both exchange/renormalization paths and return |
 | E.3.2 Figures E.16/E.17 exchange branches | 11 | Both comparisons, old-sense decisions, NMPS/NLPS, switch/no-switch and lower-path interval replacement |
-| E.3.3 Figure E.18 normalization steps | 5 | Refill, both shifts, counter consumption and exit; normalization measure is termination support, not a register recurrence |
+| E.3.3 Figure E.18 normalization steps | 5 | Exact project refill/shift/counter/exit recurrence now linked; normative register interpretation and caller composition remain open |
 | E.3.4 Figure E.19 input branches | 11 | FF/marker tests and each branch's pointer, code alignment/fill and exact bit count |
 | E.3.5 Figure E.20 initialization steps | 6 | Pointer, code seed, BYTEIN, alignment shift, counter adjustment and initial interval |
 | Decoder-shared E.2.5 estimator rules and each Table E.1 index 0–46 | 52 | Five rule records plus 47 four-field row relations; bounded transitions are not table fidelity |
@@ -449,8 +469,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All fifteen semantic groups still execute; four deterministic shards reduce
-repeated setup without dropping any of the 66 strong/weaker compiling
+All sixteen semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 72 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
