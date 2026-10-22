@@ -639,3 +639,18 @@ This does not close arithmetic symbol/text, aggregate/single-instance refinement
 arithmetic/skip halftone, deeper dictionaries, arbitrary custom tables or corpus
 minimization gaps. Those require further first-party valid encoders and
 independent oracles; successful bounded fuzz runs are not normative conformance.
+## Arithmetic error-context and adapter follow-up
+
+Three direct-state arithmetic unit tests check entry-point context updates and
+exact partial EOF registers, unchanged input, every context-byte pair through
+restore/reset/default, and all arithmetic error conversion/formatter variants.
+No entropy payload, coded family or fuzz seed is added. Seven actual compiling
+decision/context proof contrasts include error-only index/MPS corruption and
+input replacement; weaker controls retain the other guarantees.
+The complete required profile remains sixteen groups across four shards,
+now with 75 contrasts and unchanged CI jobs. Actual full pinned Cargo
+verification/compilation passes 1172 project obligations with zero errors.
+All 352 native tests pass with 14 existing ignored tests; fresh coverage is
+82.23% lines, 77.29% regions and 72.40% branch outcomes, with unchanged
+denominators and reviewed floors. P04/P05/P06, independent normative review,
+the capacity prerequisite and the proposed release coverage goals remain open.

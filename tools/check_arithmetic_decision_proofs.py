@@ -11,24 +11,41 @@ from proof_sensitivity import check_semantic_cases
 
 
 ROOT = Path(__file__).resolve().parents[1]
+CONTEXT_POST = """final(context).state_index == arithmetic_spec::entry_index(
+    old(self).interval, old(self).code, old(context).state_index,
+),
+final(context).mps == arithmetic_spec::entry_mps(
+    old(self).interval, old(self).code, old(context).state_index, old(context).mps,
+),"""
 SIGNAL_POST = """out <= 1 ==> out == arithmetic_spec::entry_decision(
     old(self).interval, old(self).code, old(context).state_index, old(context).mps,
 ),
-out <= 1 ==> final(context).state_index == arithmetic_spec::entry_index(
-    old(self).interval, old(self).code, old(context).state_index,
-),
-out <= 1 ==> final(context).mps == arithmetic_spec::entry_mps(
-    old(self).interval, old(self).code, old(context).state_index, old(context).mps,
-),"""
+""" + CONTEXT_POST
 CHECKED_POST = """&& decision == arithmetic_spec::entry_decision(
     old(self).interval, old(self).code, old(context).state_index, old(context).mps,
-)
-&& final(context).state_index == arithmetic_spec::entry_index(
-    old(self).interval, old(self).code, old(context).state_index,
-)
-&& final(context).mps == arithmetic_spec::entry_mps(
-    old(self).interval, old(self).code, old(context).state_index, old(context).mps,
 )"""
+CHECKED_CONTEXT = "final(self).bytes == old(self).bytes,\n" + CONTEXT_POST + "\nmatch out {"
+FRAME = """final(self).bytes@ == old(self).bytes@,
+final(self).bytes == old(self).bytes,"""
+SIGNAL_FRAME = """out <= RASTER_SIGNAL_OVERFLOW,
+arithmetic_spec::decoder_state_valid(final(self)),
+arithmetic_spec::context_valid(*final(context)),
+""" + FRAME + """
+out <= 1 ==> arithmetic_spec::decoder_valid(final(self)),
+""" + SIGNAL_POST
+ERROR_SITE = "return self.decode_lower_signal(context, state, qe, old_mps);"
+
+
+def error_case(identity, change, controls):
+    return {
+        "id": identity, "file": "src/arithmetic.rs", "module": "arithmetic",
+        "function": "ArithmeticDecoder::decode_signal", "site": ERROR_SITE,
+        "replacement": (
+            "let signal = self.decode_lower_signal(context, state, qe, old_mps);\n"
+            f"if signal > 1 {{ {change} }}\nreturn signal;"
+        ),
+        "controls": controls,
+    }
 
 
 def exchange_post(lower):
@@ -59,7 +76,10 @@ CASES = (
         "replacement": """pub(crate) fn decode(
     &mut self, context: &mut ArithmeticContext,
 ) -> Result<u8, ArithmeticError> { return Ok(0);""",
-        "controls": ((CHECKED_POST, ""),),
+        "controls": (
+            (CHECKED_POST, ""),
+            (CHECKED_CONTEXT, "final(self).bytes == old(self).bytes,\nmatch out {"),
+        ),
     },
 ) + tuple(
     {
@@ -75,6 +95,25 @@ CASES = (
         "controls": ((exchange_post(lower), ""),),
     }
     for side, lower in (("lower", "true"), ("upper", "false"))
+) + (
+    error_case(
+        "entry_error_discards_context_index", "context.state_index = 0;",
+        ((SIGNAL_POST, SIGNAL_POST.replace(
+            "final(context).state_index ==", "out <= 1 ==> final(context).state_index ==",
+        )),),
+    ),
+    error_case(
+        "entry_error_discards_mps", "context.mps = 0;",
+        ((SIGNAL_POST, SIGNAL_POST.replace(
+            "final(context).mps ==", "out <= 1 ==> final(context).mps ==",
+        )),),
+    ),
+    error_case(
+        "entry_error_replaces_input",
+        "self.bytes = &self.bytes[..1]; self.byte_position = 0; "
+        "self.current_byte = self.bytes[0]; self.marker = None;",
+        ((SIGNAL_FRAME, SIGNAL_FRAME.replace(FRAME, "")),),
+    ),
 )
 
 
@@ -88,7 +127,7 @@ def main():
             ROOT, args.verus_executable.resolve(), CASES,
             ("src/arithmetic.rs", "specs/arithmetic.rs"),
             "jbig2-arithmetic-decision-",
-            "Successful decoded decision and probability-context step against project Qe model; exact renormalized registers, input consumption and normative translation remain separate",
+            "Successful decision, unconditional probability-context update including errors, and unchanged input borrow/view; exact renormalized decision registers, stream semantics and normative translation remain separate",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"arithmetic decision proof sensitivity failed: {error}", file=sys.stderr)

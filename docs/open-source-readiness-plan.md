@@ -2,6 +2,22 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The arithmetic error-context follow-up closes an entry-point contract gap:
+exact next context index/MPS now hold on failure as well as success, and both
+entry/exchange paths preserve the input borrow/view. A bounded bit-vector proof
+excludes underflow in the native upper-route code subtraction without removing
+the defensive branch. The decision checker grows from four to seven actual
+compiling strong/weaker contrasts; the full sixteen-group profile now has 75.
+Native tokens and all 656 caller preconditions remain unchanged.
+Three direct-state tests cover partial EOF registers through both entry APIs,
+every stored context-byte pair, and typed arithmetic error adapters/formatters.
+Actual pinned whole-crate verification and compilation pass 1172 obligations
+with zero errors. All 352 native tests pass with 14 existing ignored tests.
+Fresh coverage is 82.23% lines, 77.29% regions and 72.40% branches; reviewed
+floors, pins, scope and CI job count are unchanged. Fresh approved official
+observations remain two exact positives, seven unresolved positives and one
+unsupported case. All 249 selected records remain provisional, with the same
+66 functional / 157 state-preservation / 26 safety-only classifications.
 The typed-error adapter tranche adds four unit tests covering all generic,
 symbol/text and Huffman conversion variants, extreme field values and
 unchanged delegated DecodeError classes. Twelve actual compiled mutants are
@@ -29,7 +45,7 @@ support without changing their logical module ownership; traceability binds
 the full literal-include closure. An auditor index records notation bridges
 and independent table-review obligations, and MMR membership predicates no
 longer call themselves normative. Cargo verification and compilation prove
-1171 project obligations with zero errors; this does not close provisional
+1172 project obligations with zero errors; this does not close provisional
 normative review or the upstream capacity-getter prerequisite. All native
 source token streams match the owner-merged main revision `64465a7`.
 The explicit verifier-manifest argument is a deliberate packaging boundary;
