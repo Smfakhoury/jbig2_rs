@@ -36,23 +36,19 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p target/verus-production
-          verus-x86-linux/verus src/lib.rs \
-            --crate-name jbig2_rs_production \
-            --crate-type rlib \
-            --compile \
-            --out-dir target/verus-production \
-            --cfg verus_keep_ghost \
+          export PATH="$PWD/verus-x86-linux:$PATH"
+          export CARGO_TARGET_DIR="$PWD/target/verus-cargo"
+          cargo fetch --manifest-path verification/Cargo.toml --locked
+          cargo verus build --manifest-path verification/Cargo.toml --locked --offline -- \
             --num-threads 4 \
             --rlimit 30 \
             --triggers-mode silent \
-            --output-json > verus-production.json
-          python - <<'PY'
-          import json
-          report = json.load(open("verus-production.json", encoding="utf-8"))
-          result = report["verification-results"]
-          assert result["success"]
-          assert result["errors"] == 0
-          PY
+            --output-json > target/verus-production/cargo-reports.jsons
+          python tools/extract_cargo_verus_report.py \
+            --input target/verus-production/cargo-reports.jsons \
+            --output verus-production.json \
+            --compiled-library target/verus-cargo/debug/libjbig2_rs_production.rlib
+          cp target/verus-cargo/debug/libjbig2_rs_production.rlib target/verus-production/
           python tools/audit_production_coverage.py \
             --verus-json verus-production.json \
             --output production-proof-coverage-ci.json \

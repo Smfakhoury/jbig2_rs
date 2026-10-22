@@ -5,6 +5,24 @@ assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
 
+Cargo verification uses `verification/Cargo.toml` against the same production
+crate root, with a locked development-only `vstd` dependency. This explicit
+manifest boundary preserves the dependency-free, proof-free runtime archive;
+bare Cargo-Verus success against the ordinary runtime manifest is not proof
+evidence. CI verifies and compiles with Cargo, rejects empty, dependency-only,
+partial, wrong-tool or duplicate production reports, and then checks every
+qualified production identity against the complete inventory.
+
+The source audit rejects local trusted-specification APIs, verification
+exclusions and exec termination waivers in runtime, model and proof sources.
+Decreases checks remain enabled. Exec termination checking is conditional on
+callee termination and must not be confused with the runtime work-budget
+policy or an end-to-end complexity bound. Implementation-only model lemmas
+live under `proofs/model_support/` with their original logical module ownership;
+the traceability checker binds the complete literal-include closure.
+See the [auditor index](verus-auditor-index.md) for notation bridges and the
+remaining independent normative-review obligations.
+
 The readiness audit corrected earlier same-name proof matching and exclusion
 of production code after test-only items. The old count of 618 was not reliable
 evidence of exact-source coverage. Reusable-context paths and their real
@@ -17,6 +35,11 @@ on `Vec::capacity` and `Result::unwrap_or`. This is a standard-library
 specification prerequisite, not a reason to count vector length as capacity,
 add project assumptions or declare the source gap closed. Its runtime body
 and accounting policy remain unchanged.
+The upstream capacity prerequisite is
+[verus-lang/verus#3304](https://github.com/verus-lang/verus/issues/3304), still
+open as of 2026-10-22. The merged reservation specification in
+[verus-lang/verus#3094](https://github.com/verus-lang/verus/pull/3094) does not
+itself specify the capacity getter or close this divergence.
 The five primitive value/operator bridges now share their verified executing
 bodies. Even where an optimized helper separately
 verifies, a different ghost wrapper is not an exact-source proof of the executing

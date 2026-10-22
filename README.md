@@ -60,15 +60,17 @@ The latter blocks a full exact-source proof claim; passing Verus does not alone
 establish normative conformance. See [verifier limitations](docs/verifier-limitations.md).
 
 Approved local validation has executed official ITU vectors and independent
-black-box oracles. The reviewed rejections and oracle differences remain under
-`validation/` and require normative re-evaluation before stronger claims.
+black-box oracles: two exact positives, seven unresolved official positives and
+one unsupported case, with no reviewed rejection credit. These differences
+remain under `validation/` and require normative re-evaluation before stronger claims.
 The [readiness plan](docs/open-source-readiness-plan.md) tracks the remaining work.
 
 ## Normative traceability
 
-The [provisional T.88 ledger](docs/spec-traceability.md) links an initial
-20 requirement records to exact contracts, model/proof definitions and test
-identities. It distinguishes functional postconditions from state/bounds-only
+The [provisional T.88/T.6 ledger](docs/spec-traceability.md) links 249 selected
+records (240 normative-rule records and nine project-policy records) to exact
+contracts, model/proof definitions and test identities. It distinguishes
+functional postconditions from state/bounds-only
 evidence and runtime/proof substitutions. All 30 feature rows have a
 decomposition worklist, but requirement decomposition and owner review remain
 incomplete; passing the reference checker is not a conformance certificate.
@@ -94,6 +96,32 @@ Audit tooling additionally requires the pinned development-only dependencies:
 python -m pip install -r tools/requirements.txt
 python -B -m unittest discover -s tools/tests -v
 ```
+
+### Cargo-Verus verification
+
+With the pinned Verus release and its bundled `cargo-verus` on `PATH`, run from
+the repository root:
+
+```text
+cargo +1.98.1 verus verify --manifest-path verification/Cargo.toml --locked
+```
+
+The isolated verification manifest targets the exact same `src/lib.rs`, with
+the audited crate identity `jbig2_rs_production`. Its locked `vstd` dependency
+does not enter the ordinary runtime manifest or the 24-file Cargo archive.
+The explicit manifest path is intentional: bare `cargo verus verify` against
+the runtime manifest does not verify this project and is not an acceptance
+gate. Use `--verify-module` after `--` for local debugging only, never as
+whole-crate evidence. CI uses `cargo verus build` with the same manifest to
+also check compilation and proof erasure, then requires the exact complete
+production inventory and every semantic contrast group.
+
+The runtime audit rejects project-local trust-introducing specifications and
+termination waivers. Exec-loop decreases checks are lightweight and conditional
+on callees terminating; they are not an end-to-end CPU bound or normative
+correctness proof. See the [auditor index](docs/verus-auditor-index.md) for
+standard-to-model notation bridges and the separate implementation-only
+`proofs/model_support/` lemmas.
 
 Do not use standards documents, sample software, or conformance assets unless
 their entry in `source-provenance.json` records the required legal approval.

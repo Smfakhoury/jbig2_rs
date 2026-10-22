@@ -107,6 +107,7 @@ def manifest(root):
             paths.update((root / directory).rglob(pattern))
     paths.update(root / name for name in (
         "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
+        "verification/Cargo.toml", "verification/Cargo.lock",
     ) if (root / name).is_file())
     return {
         "schema_version": 2,

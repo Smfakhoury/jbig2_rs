@@ -76,6 +76,19 @@ class SemanticOrchestrationTests(unittest.TestCase):
         )
         self.assertTrue(all(type(row[2]) is int and row[2] > 0 for row in checks))
 
+    def test_manifest_binds_verification_cargo_inputs_without_build_outputs(self):
+        verification = self.root / "verification"
+        verification.mkdir()
+        for name in ("Cargo.toml", "Cargo.lock"):
+            (verification / name).write_text("pinned verification fixture\n")
+        (verification / "target").mkdir()
+        (verification / "target/Cargo.toml").write_text("not an input\n")
+        with patch.object(runner, "CHECKS", self.checks):
+            bindings = runner.manifest(self.root)["source_bindings"]
+        self.assertIn("verification/Cargo.toml", bindings)
+        self.assertIn("verification/Cargo.lock", bindings)
+        self.assertNotIn("verification/target/Cargo.toml", bindings)
+
     def test_actual_work_overlaps_but_never_exceeds_two_children(self):
         lock = threading.Lock()
         active = 0

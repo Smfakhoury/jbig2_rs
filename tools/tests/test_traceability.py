@@ -209,6 +209,91 @@ class TraceabilityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "another file"):
             self.run_check(ledger)
 
+    def included_ledger(self):
+        self.write("specs/model.rs", 'include!("../proofs/model_support/model.rs");\n')
+        self.write("proofs/model_support/model.rs", """
+            verus! {
+                pub open spec fn identity(x: u8) -> u8 { x }
+            }
+        """)
+        ledger = copy.deepcopy(self.ledger)
+        ledger["definitions"]["identity-model"]["file"] = "proofs/model_support/model.rs"
+        for path in ("specs/model.rs", "proofs/model_support/model.rs"):
+            ledger["bindings"][path] = hashlib.sha256((self.root / path).read_bytes()).hexdigest()
+        return ledger
+
+    def test_literal_include_preserves_logical_owner_and_binds_physical_file(self):
+        ledger = self.included_ledger()
+        self.assertEqual(self.run_check(ledger)["status"], "references_valid_scope_incomplete")
+        wrong = {"jbig2_rs_production::model_support::identity"}
+        with self.assertRaisesRegex(ValueError, "definition absent"):
+            self.run_check(ledger, names=wrong)
+
+    def test_included_source_must_be_bound_and_fresh(self):
+        ledger = self.included_ledger()
+        included = "proofs/model_support/model.rs"
+        ledger["bindings"].pop(included)
+        with self.assertRaisesRegex(ValueError, "unbound"):
+            self.run_check(ledger)
+        ledger = self.included_ledger()
+        self.write(included, (self.root / included).read_text() + "\n")
+        with self.assertRaisesRegex(ValueError, "stale"):
+            self.run_check(ledger)
+
+    def test_unused_included_support_is_still_in_the_module_binding_closure(self):
+        self.write("proofs/model_support/extra.rs", """
+            verus! {
+                proof fn helper() {}
+            }
+        """)
+        self.write(
+            "specs/model.rs",
+            (self.root / "specs/model.rs").read_text()
+            + '\ninclude!("../proofs/model_support/extra.rs");\n',
+        )
+        ledger = copy.deepcopy(self.ledger)
+        for path in ("specs/model.rs", "proofs/model_support/extra.rs"):
+            ledger["bindings"][path] = hashlib.sha256((self.root / path).read_bytes()).hexdigest()
+        self.assertEqual(self.run_check(ledger)["status"], "references_valid_scope_incomplete")
+
+    def test_include_cycles_duplicates_and_ambiguous_declarations_fail(self):
+        for content, message in (
+            ('include!("model.rs");\n', "cyclic or duplicate"),
+            ('include!("extra.rs");\ninclude!("extra.rs");\n', "cyclic or duplicate"),
+            ("""
+                verus! {
+                    pub open spec fn identity(x: u8) -> u8 { x }
+                }
+                include!("extra.rs");
+            """, "missing or ambiguous"),
+        ):
+            ledger = self.included_ledger()
+            self.write("proofs/model_support/extra.rs", """
+                verus! {
+                    pub open spec fn identity(x: u8) -> u8 { x }
+                }
+            """)
+            self.write("proofs/model_support/model.rs", content)
+            with self.subTest(content=content), self.assertRaisesRegex(ValueError, message):
+                self.run_check(ledger)
+
+    def test_dynamic_nested_and_external_includes_fail_closed(self):
+        for source, message in (
+            ('include!(concat!("model", ".rs"));\n', "literal relative"),
+            ('verus! { include!("model.rs"); }\n', "module-scope"),
+            ('include!("/external.rs");\n', "literal relative"),
+            ('include!("../../external.rs");\n', "external included"),
+        ):
+            self.write("specs/model.rs", source)
+            with self.subTest(source=source), self.assertRaisesRegex(ValueError, message):
+                self.run_check()
+
+    def test_child_modules_in_included_source_need_explicit_support(self):
+        self.included_ledger()
+        self.write("proofs/model_support/model.rs", "mod nested;\n")
+        with self.assertRaisesRegex(ValueError, "included module declarations"):
+            self.run_check()
+
     def test_ignored_missing_and_undiscovered_tests_fail(self):
         for name in ("leaf::tests::ignored_probe", "leaf::tests::nonexistent"):
             ledger = copy.deepcopy(self.ledger)

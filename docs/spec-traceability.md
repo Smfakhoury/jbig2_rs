@@ -361,8 +361,9 @@ or standards prose are added.
 | Post-EOFB padding | Reader/framing invariants; zero-padding values and T.88/fixed-block applicability remain open |
 | Truncated runs, row overshoot and required-marker truncation | Executable private typed-error regressions and bounded reader state, not T.6-mandated Rust diagnostics or a proved public-error mapping |
 
-The names `mode_code_is_normative` and `run_code_is_normative` denote project
-array-membership predicates. Naming does not make those arrays independently
+The names `mode_code_in_implementation_table` and
+`run_code_in_implementation_tables` explicitly denote project array-membership
+predicates. Naming does not make those arrays independently
 faithful to T.6. Ordinary table-driven tests can share the implementation tables;
 the ledger records that limitation rather than promoting them to a normative
 oracle. All new records remain provisional with explicit gaps.
