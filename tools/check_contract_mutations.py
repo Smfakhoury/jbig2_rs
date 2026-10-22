@@ -39,6 +39,38 @@ MUTATIONS = (
         "target": "public_api",
         "test": "sink_failure_is_preserved_and_does_not_poison_the_decoder",
     },
+    {
+        "id": "generic-marker-offset-discarded",
+        "file": "src/decode.rs",
+        "before": "GenericRegionError::UnexpectedArithmeticMarker { offset, code } => {\n            GenericRegionErrorKind::UnexpectedArithmeticMarker { offset, code }\n        }",
+        "after": "GenericRegionError::UnexpectedArithmeticMarker { offset: _offset, code } => {\n            GenericRegionErrorKind::UnexpectedArithmeticMarker { offset: 0, code }\n        }",
+        "target": "lib",
+        "test": "decode::tests::generic_error_conversion_preserves_every_classification_and_field",
+    },
+    {
+        "id": "symbol-availability-discarded",
+        "file": "src/decode.rs",
+        "before": "SymbolTextError::SymbolIdOutOfRange { id, available } => {\n            DecodeError::Malformed(MalformedError::SymbolIdOutOfRange { id, available })\n        }",
+        "after": "SymbolTextError::SymbolIdOutOfRange { id, available: _available } => {\n            DecodeError::Malformed(MalformedError::SymbolIdOutOfRange { id, available: 0 })\n        }",
+        "target": "lib",
+        "test": "decode::tests::symbol_error_conversion_preserves_reasons_and_structured_fields",
+    },
+    {
+        "id": "huffman-kind-misclassification",
+        "file": "src/decode.rs",
+        "before": "HuffmanError::InvalidTable(kind) => {\n            DecodeError::Malformed(MalformedError::InvalidHuffman(kind))\n        }",
+        "after": "HuffmanError::InvalidTable(_kind) => {\n            DecodeError::Malformed(MalformedError::IntegerOverflow)\n        }",
+        "target": "lib",
+        "test": "decode::tests::huffman_error_conversion_preserves_every_table_kind_and_field",
+    },
+    {
+        "id": "generic-decode-error-flattened",
+        "file": "src/decode.rs",
+        "before": "GenericRegionError::Decode(error) => return error,",
+        "after": "GenericRegionError::Decode(_error) => return DecodeError::Malformed(MalformedError::IntegerOverflow),",
+        "target": "lib",
+        "test": "decode::tests::error_adapters_preserve_existing_decode_errors",
+    },
 )
 
 
@@ -64,8 +96,9 @@ def check_mutations(toolchain: str) -> dict:
             shutil.copyfile(ROOT / name, directory / name)
         environment = isolated_environment(directory)
         for mutation in MUTATIONS:
+            selector = ["--lib"] if mutation["target"] == "lib" else ["--test", mutation["target"]]
             command = cargo + [
-                "test", "--offline", "--locked", "--test", mutation["target"],
+                "test", "--offline", "--locked", *selector,
                 mutation["test"], "--", "--exact",
             ]
             baseline = run(command, directory, environment, capture=True)
@@ -76,8 +109,7 @@ def check_mutations(toolchain: str) -> dict:
             try:
                 path.write_text(mutate(original.decode("utf-8"), mutation), encoding="utf-8")
                 run(cargo + [
-                    "test", "--offline", "--locked", "--test",
-                    mutation["target"], "--no-run",
+                    "test", "--offline", "--locked", *selector, "--no-run",
                 ], directory, environment, capture=True)
                 process = subprocess.run(
                     command, cwd=directory, env=environment,
@@ -99,7 +131,7 @@ def check_mutations(toolchain: str) -> dict:
                 path.write_bytes(original)
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
-        "scope": "Three targeted API contracts, not exhaustive codec mutation coverage",
+        "scope": "Targeted public API and typed-error adapter contracts, not exhaustive codec mutation coverage",
         "runtime_source_modified": False, "mutations": results,
     }
 
