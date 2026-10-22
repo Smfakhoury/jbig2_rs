@@ -43,7 +43,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         (self.root / "src").mkdir()
         (self.root / "src/example.rs").write_text("// source fixture\n")
         (self.root / "toolchain.json").write_text(json.dumps({"verus": {"version": "pinned"}}))
-        self.checks = tuple((str(index), f"{index}.py", 1, "strong_contract", "weaker_control") for index in range(4))
+        self.checks = tuple((str(index), f"{index}.py", 1, "strong_contract", "weaker_control") for index in range(8))
         for _, script, *_ in self.checks:
             (self.root / "tools" / script).write_text(
                 'CASES = ({"id": "case", "module": "module", "function": "function"},)\n'
@@ -109,7 +109,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         result = self.run_fixture(process)
         self.assertEqual(result["status"], "passed")
         self.assertEqual(maximum, 2)
-        self.assertEqual([row["id"] for row in result["checks"]], ["0", "1", "2", "3"])
+        self.assertEqual([row["id"] for row in result["checks"]], [row[0] for row in self.checks])
 
     def test_failed_child_cannot_reuse_a_stale_passing_report(self):
         self.output.mkdir()
@@ -190,7 +190,36 @@ class SemanticOrchestrationTests(unittest.TestCase):
             sys, "argv", ["runner", "--matrix"],
         ), redirect_stdout(io.StringIO()) as stream:
             self.assertEqual(runner.main(), 0)
-        self.assertEqual(json.loads(stream.getvalue()), {"group": [row[0] for row in future_checks]})
+        self.assertEqual(json.loads(stream.getvalue()), {"shard": [0, 1, 2, 3]})
+        with patch.object(runner, "CHECKS", future_checks):
+            assigned = [check[0] for shard in runner.configured_shards() for check in shard]
+        self.assertEqual(set(assigned), {row[0] for row in future_checks})
+        self.assertEqual(len(assigned), len(future_checks))
+
+    def test_shard_runs_every_assigned_group_with_one_worker(self):
+        with patch.object(runner, "CHECKS", self.checks), patch.object(
+            runner.subprocess, "run", side_effect=self.passing_process,
+        ) as process:
+            result = runner.run_checks(self.root, self.root / "verus", self.output, shard=0)
+        self.assertEqual(result["selected_groups"], ["0", "4"])
+        self.assertEqual(result["shard"], 0)
+        self.assertEqual(result["workers"], 1)
+        self.assertEqual(process.call_count, 2)
+        self.assertEqual(result["manifest"]["shards"], [["0", "4"], ["1", "5"], ["2", "6"], ["3", "7"]])
+
+    def test_invalid_or_mixed_shard_selectors_fail_without_stale_success(self):
+        self.output.mkdir()
+        for shard in (-1, 4, True):
+            runner.write_json(self.output / runner.SUMMARY, {"status": "passed"})
+            with patch.object(runner, "CHECKS", self.checks), self.subTest(shard=shard), self.assertRaises(ValueError):
+                runner.run_checks(self.root, self.root / "verus", self.output, shard=shard)
+            self.assertFalse((self.output / runner.SUMMARY).exists())
+        with patch.object(runner, "CHECKS", self.checks), self.assertRaises(ValueError):
+            runner.run_checks(self.root, self.root / "verus", self.output, only="0", shard=0)
+
+    def test_smaller_configurations_do_not_create_empty_shards(self):
+        with patch.object(runner, "CHECKS", self.checks[:2]):
+            self.assertEqual(runner.configured_shards(), ((self.checks[0],), (self.checks[1],)))
 
     def test_clean_shards_and_whole_job_outputs_have_identical_source_manifests(self):
         with patch.object(runner, "CHECKS", self.checks):
@@ -250,10 +279,10 @@ class SemanticOrchestrationTests(unittest.TestCase):
             runner.subprocess, "run", side_effect=self.passing_process,
         ):
             runner.seal_whole(self.root, whole)
-            for identity, *_ in self.checks:
+            for index, _ in enumerate(runner.configured_shards()):
                 runner.run_checks(
                     self.root, self.root / "verus",
-                    inputs / (runner.artifact_prefix() + identity) / runner.TRACE, only=identity,
+                    inputs / (runner.artifact_prefix() + f"shard-{index}") / runner.TRACE, shard=index,
                 )
         return inputs
 
@@ -267,15 +296,16 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(result["status"], "passed")
         self.assertEqual(result["selected_groups"], [row[0] for row in self.checks])
         self.assertEqual(len(result["checks"]), len(self.checks))
+        self.assertEqual(result["matrix_shards"], 4)
         self.assertTrue((self.output / "verus-production.json").is_file())
         self.assertTrue((self.output / "production-proof-coverage-ci.json").is_file())
         self.assertTrue((self.output / runner.TRACE / runner.SUMMARY).is_file())
         for identity, *_ in self.checks:
             self.assertTrue((self.output / runner.TRACE / f"{identity}-proof-sensitivity.json").is_file())
 
-    def test_missing_whole_or_each_group_fails_and_removes_stale_success(self):
+    def test_missing_whole_or_each_shard_fails_and_removes_stale_success(self):
         inputs = self.collection_fixture()
-        for identity in ("whole", *(row[0] for row in self.checks)):
+        for identity in ("whole", *(f"shard-{index}" for index in range(4))):
             path = inputs / (runner.artifact_prefix() + identity)
             moved = self.root / "removed"
             path.rename(moved)
@@ -294,11 +324,16 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     def test_failed_stale_duplicate_manifest_tool_and_source_evidence_are_rejected(self):
         inputs = self.collection_fixture()
-        summary_path = inputs / (runner.artifact_prefix() + "0") / runner.TRACE / runner.SUMMARY
+        summary_path = inputs / (runner.artifact_prefix() + "shard-0") / runner.TRACE / runner.SUMMARY
         original = runner.read_json(summary_path)
         mutations = [
             lambda r: r.update(status="failed"),
             lambda r: r.update(schema_version=1),
+            lambda r: r.update(schema_version=2),
+            lambda r: r.update(shard=1),
+            lambda r: r.update(shard=False),
+            lambda r: r.update(workers=True),
+            lambda r: r.update(workers=2),
             lambda r: r["checks"][0].update(status="failed"),
             lambda r: r["checks"][0].update(exit_code=1),
             lambda r: r["checks"][0].update(exit_code=False),
@@ -307,6 +342,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             lambda r: r["checks"][0].update(counterexamples=True),
             lambda r: r["checks"][0].update(report_sha256="0" * 64),
             lambda r: r["checks"].extend(r["checks"]),
+            lambda r: r["checks"].pop(),
             lambda r: r.update(selected_groups=["0", "0"]),
             lambda r: r["manifest"]["groups"].pop(),
             lambda r: r["manifest"]["verus"].update(version="floating"),
@@ -326,7 +362,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     def test_success_shaped_report_rejected_even_with_updated_file_hash(self):
         inputs = self.collection_fixture()
-        directory = inputs / (runner.artifact_prefix() + "0") / runner.TRACE
+        directory = inputs / (runner.artifact_prefix() + "shard-0") / runner.TRACE
         report_path = directory / "0-proof-sensitivity.json"
         summary_path = directory / runner.SUMMARY
         original_report = runner.read_json(report_path)
@@ -396,9 +432,23 @@ class SemanticOrchestrationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.collect(inputs)
         extra.rmdir()
-        summary = inputs / (runner.artifact_prefix() + "0") / runner.TRACE / runner.SUMMARY
+        summary = inputs / (runner.artifact_prefix() + "shard-0") / runner.TRACE / runner.SUMMARY
         summary.write_text('{"status":"failed","status":"passed"}')
         with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
+            self.collect(inputs)
+
+    def test_missing_or_unexpected_group_files_inside_shard_are_rejected(self):
+        inputs = self.collection_fixture()
+        shard = inputs / (runner.artifact_prefix() + "shard-0")
+        report = shard / runner.TRACE / "4-proof-sensitivity.json"
+        original = report.read_bytes()
+        report.unlink()
+        with self.assertRaises((ValueError, OSError)):
+            self.collect(inputs)
+        report.write_bytes(original)
+        extra = shard / "unbound.json"
+        extra.write_text("{}")
+        with self.assertRaisesRegex(ValueError, "outside"):
             self.collect(inputs)
 
     def test_aggregate_cli_missing_inputs_exits_nonzero_with_failure_diagnostic(self):

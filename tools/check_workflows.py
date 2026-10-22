@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -24,6 +25,11 @@ FUZZ_PRODUCER_GROUP = (
     + " && format('fuzz-generated-v2-trusted-{0}-main', github.repository)"
     " || format('fuzz-generated-v2-untrusted-{0}-{1}-{2}',"
     " github.repository, github.run_id, github.run_attempt) }}"
+)
+VALIDATION_WORKFLOWS = {"ci", "coverage", "fuzz", "performance", "verus"}
+DISABLED_VERUS_CHECK = re.compile(
+    r"(?<![\w-])--(?:no-verify|no-lifetime|no-erasure-check|no-trait-conflicts"
+    r"|no-auto-recommends-check)(?![\w-])"
 )
 
 
@@ -141,17 +147,43 @@ def check_verus_sharding(document):
     runs = ["\n".join(step.get("run", "") for step in steps) for steps in (
         whole_steps, semantic_steps, verify_steps,
     )]
+    commands = [
+        [shlex.split(line, comments=True) for line in text.replace("\\\n", " ").splitlines()]
+        for text in runs
+    ]
+    environments = [
+        document.get("env", {}), *(job.get("env", {}) for job in jobs.values()),
+        *(step.get("env", {}) for steps in (whole_steps, semantic_steps, verify_steps) for step in steps),
+    ]
+    if not all(isinstance(environment, dict) for environment in environments):
+        raise ValueError("Verus validation environments must be mappings")
+    if any(
+        DISABLED_VERUS_CHECK.search(token)
+        for command_list in commands for command in command_list for token in command
+    ) or any(
+        DISABLED_VERUS_CHECK.search(str(value))
+        for environment in environments for value in environment.values()
+    ):
+        raise ValueError("Verus check-disabling flags are forbidden in validation commands/environment")
+    cargo_invocations = [command for command in commands[0] if command[:2] == ["cargo", "verus"]]
+    if cargo_invocations != [[
+        "cargo", "verus", "build", "--manifest-path", "verification/Cargo.toml",
+        "--locked", "--offline", "--", "--num-threads", "4", "--rlimit", "30",
+        "--triggers-mode", "silent", "--output-json", ">",
+        "target/verus-production/cargo-reports.jsons",
+    ]]:
+        raise ValueError("whole-crate gate requires the exact pinned Cargo verification-and-build invocation")
     for text in (
-        "--compile", "--num-threads 4", "--rlimit 30", "--require-complete",
+        "--require-complete",
         "diff -u production-proof-coverage.json", "tools/check_traceability.py",
         "--seal-whole target/semantic-ci/whole", "tools/run_semantic_proofs.py --matrix",
     ):
         if text not in runs[0]:
             raise ValueError(f"whole-crate verification gate missing: {text}")
-    if '--only "$SEMANTIC_GROUP"' not in runs[1] or not any(
-        step.get("env") == {"SEMANTIC_GROUP": "${{ matrix.group }}"} for step in semantic_steps
+    if '--shard "$SEMANTIC_SHARD"' not in runs[1] or not any(
+        step.get("env") == {"SEMANTIC_SHARD": "${{ matrix.shard }}"} for step in semantic_steps
     ):
-        raise ValueError("semantic matrix must execute its exact selected group")
+        raise ValueError("semantic matrix must execute its exact complete selected shard")
     download = [step for step in verify_steps if step.get("uses", "").startswith("actions/download-artifact@")]
     if len(download) != 1 or download[0].get("with") != {
         "pattern": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-*",
@@ -182,7 +214,7 @@ def check_verus_sharding(document):
     if uploads != {
         "whole": {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-whole",
                   "path": "target/semantic-ci/whole/"},
-        "semantic": {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.group }}",
+        "semantic": {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}",
                      "path": "target/semantic-ci/group/"},
         "verify": {"name": "verus-bootstrap-log", "path": "target/semantic-canonical/"},
     }:
@@ -197,6 +229,13 @@ def check_workflow(document, name):
         raise ValueError(f"{name}: missing or unsupported privileged workflow trigger")
     if isinstance(events, list) and any(not isinstance(event, str) for event in events):
         raise ValueError(f"{name}: workflow event names must be strings")
+    if Path(name).stem in VALIDATION_WORKFLOWS and (
+        not isinstance(events, dict) or "pull_request" not in events
+        or events.get("pull_request") not in ("", None, {})
+        or "workflow_dispatch" not in events
+        or events.get("push") != {"branches": ["main"], "tags": ["**"]}
+    ):
+        raise ValueError("validation runs on every PR, main/tag pushes and manual dispatch, not duplicate branch pushes")
     jobs = document.get("jobs")
     if not isinstance(jobs, dict) or not jobs:
         raise ValueError(f"{name}: workflow must contain jobs")
