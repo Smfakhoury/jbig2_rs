@@ -2,6 +2,40 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+
+### Session continuation status
+
+#73 and #74 reached owner-review readiness with22/22successful current-head
+checks each. Their complete six-shard artifacts were independently rebuilt
+byte-for-byte (62canonical files each), including all51raw coverage measures,
+actual runtime mutants and repository/run/attempt/head/merge identities.
+They were not self-approved or merged. #75 carries the numeric quota work;
+its live review/CI state is authoritative for its acceptance, not a local
+targeted proof or an earlier failed run.
+
+The first #75 run39941605340 was correctly rejected: one public pinned-tool
+download returnedHTTP403 and a crowded shard reached its20-minute deadline.
+The unchanged27groups183contrasts are now grouped using actual completed
+run costs, with explicit750-second headroom for the enlarged arithmetic
+caller group. Estimated loads are848/852/849/979/848/846seconds; the regression
+fixture now requires at most1000seconds, not1100. These are scheduling
+estimates, not acceptance. Six shards, at most four active one-worker jobs,
+all20-minute timeouts and21workflow jobs plusCLA remain. Public compiler
+downloads use bounded retries/time limits, the same pinnedURL/SHA256 and
+mandatory hash checking before unpacking; no credentials or trust policy change.
+
+P04/P05/P06 remain in progress. All266selected records are still provisional
+115functional/125state/26safety, with no approved exhaustive normative
+denominator. Official observations remain2passed/7unresolved/1unsupported
+with zero restored rejection credit. Capacity approval/integration and full
+caller/raster/cache/export/stream semantics remain open. In addition to the
+4112/4128borrowed-vector reproduction, an unchanged native parentc7a49d9
+accepts a one-byte bitmap under a one-byte managed limit while reserving
+eightVecbytes. This is observed capacity, not allocator/RSS estimation.
+No local standard-library getter declaration, native capacity repair or
+paused-family expansion is approved or integrated. Preserve those consent
+boundaries in the next session.
+
 The required CI profile now partitions all27groups183contrasts into six
 deterministic one-worker shards, with at most four active and unchanged
 20-minute job limits. Both previous four-shard hosted attempts were rejected

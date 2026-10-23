@@ -30,7 +30,8 @@ jobs:
       - run: python tools/audit_runtime.py
       - name: Download pinned Verus
         run: |
-          curl --fail --location --output verus.zip \
+          curl --fail --location --retry 3 --retry-all-errors --retry-delay 2 \
+            --retry-max-time 60 --connect-timeout 10 --max-time 30 --output verus.zip \
             https://github.com/verus-lang/verus/releases/download/release/0.2026.10.04.426d8b0/verus-0.2026.10.04.426d8b0-x86-linux.zip
           echo "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0  verus.zip" |
             sha256sum --check
@@ -101,7 +102,8 @@ jobs:
       - run: python tools/audit_runtime.py
       - name: Download pinned Verus
         run: |
-          curl --fail --location --output verus.zip \
+          curl --fail --location --retry 3 --retry-all-errors --retry-delay 2 \
+            --retry-max-time 60 --connect-timeout 10 --max-time 30 --output verus.zip \
             https://github.com/verus-lang/verus/releases/download/release/0.2026.10.04.426d8b0/verus-0.2026.10.04.426d8b0-x86-linux.zip
           echo "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0  verus.zip" |
             sha256sum --check
