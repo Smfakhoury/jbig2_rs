@@ -2,6 +2,21 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The latest horizontal-pair tranche extracts the exact existing native block
+without changing guards, errors or their order. The actual helper now proves
+opposite-colour input-bound run sequences, exact ordered endpoints, progress
+and combined input consumption; its caller uses the same returned fields.
+Whole pinned proof/compilation pass1190/0, inventory658/610direct. Six actual
+compiling contrasts extend the unchanged four-shard profile to25groups147cases.
+Tests perform368634numeric/prior-procedure comparisons across73728encodedpairs
+and1456partial-input/error/cursor cases. All657existing preconditions/attributes
+and48reviewed boundaries remain unchanged. All266records stayprovisional,
+now114functional126state26safety. Native coverage passes the same floors at
+10705/12636lines,10320/12945regions,2009/2638branches. The +9coveredlines/
++10regions reflect extraction/new helper coverage, with +9/+8 denominators,
+not new branch outcomes or normative credit. Dispatch, raster/caller/stream,
+table review, official positives and all existing release gates remain open.
+
 The subsequent MMR run-sequence tranche proves exact successful make-up/
 terminal sums and consumed input extent with no executing-code change.
 All 17 native streams, 657 preconditions and 48 reviewed boundaries remain

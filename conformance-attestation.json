@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "a245af7dbbb78879846a141407e363412127e309",
-  "scope": "Fresh existing official diagnostics on exact input-bound MMR run-sequence sum contracts with unchanged native code a245af7; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "740bd8115f352e75178bb4cec723dd8eac1d0e7b",
+  "scope": "Fresh existing official diagnostics on exact horizontal MMR block extraction with opposite-colour input-sequence composition 740bd81; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "d30bc2c913c77963d1221a3fd9e4b7b7338f13daaa77abee84b0032da5c2e8a6",
-    "review_sha256": "7f87b711adde722fd4ed0d6534e98ceb903e6c295cd2cbe93fc405490a96d969"
+    "results_sha256": "9e62b3ca17cd3c3fb801853acac0cff46c659aa814427057b7ec7f5593e00a37",
+    "review_sha256": "f49d73858a87f6e92709975b65b8a65c0eeb49695893321e3fb5154930e89387"
   },
   "community_regressions": {
     "total": 0,

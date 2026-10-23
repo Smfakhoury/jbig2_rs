@@ -67,6 +67,12 @@ implementation data and synthetic semantic mutants are not normative oracles.
 
 ## Evidence and unchanged stop conditions
 
+MMR `horizontal_pair` composes two opposite-colour `complete_run` witnesses
+with exact endpoints, progress and total input extent. Its returned endpoints
+are those used by the existing raster caller; dispatch and raster/caller
+composition remain separate. Erased witness selection and normalization
+assertions in the helper are proof support, not extra normative rules.
+
 MMR `complete_run` is output semantics, not merely an accumulator invariant.
 Its `run_prefix_matches`, `run_bit_length`, `run_value_sum` and
 `run_all_makeups` components define the actual input sequence, consumed extent,
@@ -80,7 +86,7 @@ row/raster/caller interpretation remain separate review obligations.
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  24-group/141-contrast required profile is neither added normative coverage nor a fresh
+  25-group/147-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks

@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1189 obligations with zero errors and zero native
+Pinned Verus verifies 1190 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-609 directly verified functions, 24 reviewed verifier limitations, 23 audited
+610 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
 
 Cargo verification uses `verification/Cargo.toml` against the same production
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-four logical semantic groups remain complete: four deterministic
+The twenty-five logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-four independently
-hashed report/log pairs and all 141 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty-five independently
+hashed report/log pairs and all 147 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,20 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+The exact native horizontal block is now a directly verified helper exposing
+both opposite-colour run sequences, ordered endpoints, progress and input
+extent. The caller changes only to invoke it; all original guards/errors/order,
+657 existing preconditions/attributes and 48 reviewed boundaries remain.
+Inventory is 658 functions, 610 directly verified; whole proof/compile1190/0.
+Six actual compiling contrasts distinguish lost/shrunken endpoints, wrong
+first/second colours, skipped second decoding and zero-pair acceptance.
+Redundant positive proof support is absent from mutants, avoiding resource-limit
+failures as evidence; production retains and verifies the witness support.
+73,728 encoded pairs yield 368,634 numeric/prior-procedure comparisons, with
+1,456 additional partial-input/error/cursor cases. All 266 records stay
+provisional114/126/26. This does not prove horizontal-mode dispatch, raster
+spans, full caller/stream composition or independent normative table fidelity.
 
 MMR run success now additionally proves a nonempty input-bound sequence of
 make-up codes followed by one terminal code, with exact total and consumed

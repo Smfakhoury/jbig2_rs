@@ -655,7 +655,7 @@
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
     "specs/huffman.rs": "fe0cca185e75966a67834cc01c44ac080eb7eee5374fffcc9fbaf790c81e0a58",
-    "specs/mmr.rs": "ccebf5dc72c6ffee1e387a3f5349e69b4e66a40dda64b06a105a54d3d6494cea",
+    "specs/mmr.rs": "f840db7b78cc5b4c3e0dc0649a00bd951a19d95f17bef801d95a1f0ddc800eb6",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
@@ -669,7 +669,7 @@
     "src/halftone.rs": "af19dc1f2ba4179a44c5c2f9e5432190dfaca464312ec1a6f62a98390dc3cd9d",
     "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
-    "src/mmr.rs": "1ea84568319dda775baa035f0eba4fffc6143cfbc3d9475f70c391000e526dd4",
+    "src/mmr.rs": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
@@ -1020,6 +1020,16 @@
       ],
       "name": "complete_run",
       "role": "Nonempty input-bound project run sequence with earlier make-up codes, one terminal code, exact consumed length and exact value sum; implementation-table fidelity remains unapproved."
+    },
+    "mmr-horizontal-pair": {
+      "kind": "spec",
+      "file": "specs/mmr.rs",
+      "module_path": [
+        "mmr",
+        "mmr_spec"
+      ],
+      "name": "horizontal_pair",
+      "role": "Exact project opposite-colour input-bound run sequences, ordered endpoints, progress and consumed extent; mode dispatch and raster/caller interpretation remain separate."
     },
     "mmr-exact-eofb": {
       "kind": "spec",
@@ -2018,11 +2028,13 @@
       "feature": "mmr_coding",
       "runtime": [
         "mmr::decode_bitmap",
-        "mmr::decode_run"
+        "mmr::decode_run",
+        "mmr::decode_horizontal_runs"
       ],
       "models": [
         "bitmap-storage-valid",
-        "mmr-reader-valid"
+        "mmr-reader-valid",
+        "mmr-horizontal-pair"
       ],
       "proof_macros": [],
       "tests": [
@@ -2037,18 +2049,38 @@
         {
           "target": "lib",
           "name": "mmr::tests::horizontal_black_makeup_run_decodes"
+        },
+        {
+          "target": "lib",
+          "name": "mmr::tests::horizontal_pairs_match_numeric_endpoints_and_previous_inline_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "mmr::tests::horizontal_pair_partial_failures_preserve_previous_error_fields_and_cursor"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Raster storage and run-reader validity are maintained; the exported contracts do not identify the ordered run pair or resulting horizontal pixel spans.",
+      "scope_of_formal_result": "The actual extracted horizontal helper proves two complete input-bound project run sequences in opposite-colour order, exact intermediate/final endpoints, progress, row bounds and combined consumed extent. The raster caller invokes that helper with the same arguments and uses the same endpoint fields as the previous inline procedure. This is not a complete horizontal-mode dispatch, raster-pixel, acceptance/typed-error or stream theorem.",
       "assumptions": [
-        "Each selected run must use its proper colour table; bounded run totals do not establish correct paired consumption or coding-position updates."
+        "The helper is entered after a horizontal mode; the surrounding dispatch and coding-position/colour interpretation still need independent composition.",
+        "Numeric tests use implementation tables, not independently translated normative tables."
       ],
       "gaps": [
-        "Prove horizontal-prefix dispatch, run-colour order, both lengths, endpoint update and exact two-span pixel contents."
+        "Prove horizontal-prefix dispatch and exact two-span raster pixels with caller/state composition.",
+        "Independently review table translation and complete acceptance/typed partial errors."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "mmr::decode_horizontal_runs",
+          "section": "ensures",
+          "tokens": [
+            "x <= after_first <= end <= width",
+            "&& x < end",
+            "mmr_spec::horizontal_pair(black, old(reader).bytes@, old(reader).bit_position as nat, final(reader).bit_position as nat, x, width, after_first, end,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "mmr::decode_bitmap",

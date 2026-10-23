@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 113 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 127 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 114 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 126 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -542,8 +542,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty-four semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 141 required strong/weaker compiling
+All twenty-five semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 147 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
@@ -584,6 +584,22 @@ provisional, now 113 functional / 127 state / 26 safety. Full acceptance/typed
 errors, horizontal-pair/row/raster/caller composition and table review remain
 separate. All native code, caller preconditions and trust boundaries are
 unchanged; this theorem does not close the complete-scope gate.
+
+The horizontal follow-up extracts the exact existing ordered-run block into
+the actual verified `decode_horizontal_runs` callee. Its output relates both
+opposite-colour input sequences to the intermediate/final endpoints, row
+bounds, progress and combined consumption. No original check, error or order
+changes. Six compiling contrasts retain reader/end-point bounds in weaker
+controls; only the zero-pair contrast also removes strict progress.
+Redundant positive proof support is removed from mutants to avoid a solver
+resource-limit failure masquerading as semantic rejection; the unmodified
+production baseline retains and verifies that support.
+Numeric tests perform 368,634 actual/prior-procedure comparisons over 73,728
+encoded pairs, plus 1,456 partial-input/error/cursor cases. They share
+implementation tables. Only the horizontal-pair record gains functional
+strength: all 266 records remain provisional at 114/126/26. Horizontal-prefix
+dispatch, exact raster spans, full caller/stream composition, independent table
+review and complete acceptance/typed errors remain open.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional
