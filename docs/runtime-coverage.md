@@ -231,6 +231,27 @@ the existing valid-reader/count domain; native defensive paths are retained
 and not counted covered or excluded. The full required semantic profile becomes
 twenty-two groups / 133 contrasts in four unchanged shards/jobs.
 
+The consumed-MMR-prefix tranche adds exhaustive scalar table lookup oracles
+for1,024modewindows and131,072runwindow/colour/alignment cases, plus262,144
+actual shared-helper/prior checked-operation comparisons and constructor
+field/terminal-sense boundaries. These do not independently establish T.6
+table fidelity or valid full-image conformance. Two checked expressions share
+one verified private helper; all guards/errors/order and656existing caller
+preconditions remain. No allocation failure or unreachable state is fabricated.
+
+The initial sequential rewrite removed covered LLVM coordinates and failed the
+reviewed per-file line/region floors. It was not accepted and no floor was
+lowered. A verified shared helper removes duplicate arithmetic, while genuine
+constructor tests exercise previously untested raw-field factory contracts.
+The final collection passes the same reviewed floor and measures
+**10,696/12,627 lines (84.71%)**, **10,310/12,937 regions (79.69%)** and
+**2,009/2,638 branches (76.16%)**. Against the reader parent, only MMR changes:
+seventeen more covered lines, fifteen more regions, no branch gain, two fewer
+line denominator entries and one additional region entry. The MMR file reaches
+96.41%lines/88.14%regions/90.67%branches. These are actual combined counts, not
+summed historical gains. All coverage exclusions, release goals, reviewed floors
+and four-shard CI job/cap policy remain unchanged.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant

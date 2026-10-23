@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "recorded_at": "2026-10-23T01:11:17.857646+00:00",
-  "source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+  "recorded_at": "2026-10-23T02:12:40.855339+00:00",
+  "source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
-  "scope": "Same seven existing official diagnoses, freshly executed on immutable Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged source ec18721f3580373e8ebe63e287cbdcf76212d1fb. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
+  "scope": "Same seven existing official diagnoses, freshly executed on immutable Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change source 8219834ae4c2f5882affd28c0ae3070c15afc141. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
@@ -20,14 +20,14 @@
     "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/limits.rs": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516",
-    "src/mmr.rs": "c6810537f116140b4374e52264b9f7190c775c173e14903271f316220a837290",
+    "src/mmr.rs": "94ae36c1440bf2d3a4404974698e682f1aad721ff9dbfe89370f540fabd2fa80",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
     "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad"
   },
-  "ordinary_runtime_source_sha256": "b4b2f41c7189883f7eb19f4a7b4eca5c0b8434298c2c6044cfde34262e98662d",
-  "normal_decoder_sha256": "a245d8ad1ffb3680ce6e76744b9549dd838c660fe8dfc176a700806d7e6eb13a",
+  "ordinary_runtime_source_sha256": "ea4d01b55a7814d9abc72dd8c18642c10ef3f40a4975c1754b5372e37a2e198e",
+  "normal_decoder_sha256": "bae13b6b415ff4b335d99cd19c44eda76ef85b896fe9739699e39f639d1d9b4d",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -40,22 +40,22 @@
     "t6_route": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items"
   },
   "diagnosis_origin": {
-    "previous_review_source_revision": "7118fcf255a016e51d267704714a5c37bb1d6c12",
-    "previous_review_sha256": "b91cc27d46716787fbe4faa233129fc7a1a28572e27ae5d773ebf771b03e5656",
-    "fresh_execution_source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
-    "fresh_source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+    "previous_review_source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+    "previous_review_sha256": "bc69059a31482efe713ad75e0cceb643ee19fe3464cc93b1293518a41091c0c8",
+    "fresh_execution_source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
+    "fresh_source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
     "trace_repeated_for_all_seven_cases": true,
     "diagnostic_patch_sha256": "aac71b2bad605ed24b26cf22a9e4bcb82e70bd03eede064cb7431d7e169bdbfd",
-    "trace_index_sha256": "ecce7f19cc33ad2c72de2820e1621b4451205343296e4456cb30520e51df4b62",
+    "trace_index_sha256": "04ce0e128a1a6898448b3b78d30d0e4dac0cb885eda3a71604531d480659e252",
     "instrumented_source_files_sha256": {
       "src/decode.rs": "d2338d1584ea1deccdb34e08d86f65b7be7d70977a8be83aede4a61a1aef93d2",
-      "src/mmr.rs": "403887e0ea57f4fac121df4c41f5117569f29389e9187a1ec03a842a5f79f8af",
+      "src/mmr.rs": "6364373ff50d8e2b547e7c911580b22f00cd90c0c6a116afc1d745952482e36d",
       "src/segment_header.rs": "3bdc1a67b805ad5fbc8c0a8ca3067edf2afbdc6ab47615884b9c1131d25e6c60",
       "src/symbol_text.rs": "3d663fc9304f1b94aabf0708cac3d7f8b77d3bf514922c887f8a819fda183ab6"
     },
     "unmodified_arithmetic_source_sha256": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "diagnostic_decoder_sha256": "8ff0c6fc9e0ae1eb0e72b9e124f6e7a5c35a563f05c467d6d5006e7fd5782b50",
+    "diagnostic_decoder_sha256": "6932ca297bed104a2887b7acb97870e30fc45f1072d8818fc0d2fd406649bd44",
     "instrumentation_scope": "Existing logging in an isolated source copy only; parent source/proof/scripts never edited.",
     "fresh_unclassified_execution_sha256": "6a5ad994148574e6e673dfee419df9c8609797a1b7fd26e793725dc00030ba15"
   },
@@ -68,7 +68,7 @@
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
     "source-provenance.json": "98e7b5390912d6d8dce068a851c1afbcd2bedf4856c64cbe9678bc7dcef1bf49",
-    "validation/conformance/expected-differences.json": "53ff4ccccde707a75c1f203ee10247bcb6b46949e633a5badb2a65f1ad21d070"
+    "validation/conformance/expected-differences.json": "c476e3f30af387b7fc4a9d70967e0d2e3b87b6720bea93d57bf1742846253642"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -109,7 +109,7 @@
       "std",
       "simd"
     ],
-    "binary_sha256": "cd54eb9f00b76af0a6c4ba85f1fee564ea75bf7232a89e8e88626be6626cef58",
+    "binary_sha256": "4372c0379784d53d7d3c29d18f8a76dcfc5b07bfcd5543df3881734f26f022ab",
     "harness_files_sha256": {
       "benchmarks/hayro-comparison/Cargo.toml": "c52af510f56cff89f7e9e9a6fb7031894650961d079686db80c517145580e471",
       "benchmarks/hayro-comparison/Cargo.lock": "ffa4928ea5fb38e7be4ded8a67b44f9ea2fe04adddb4b925e68832778e696e89",
@@ -123,7 +123,7 @@
     "seven_case_normative_passes": 0,
     "two_single_page_controls_have_matching_dimensions_and_fnv64_summary": true,
     "scope_limit": "Wrapper exposes one image and an FNV64 bitmap summary, not full-byte/all-page validation; errors do not establish pre-error entropy equivalence.",
-    "candidate_source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb"
+    "candidate_source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141"
   },
   "native_tool_identities": {
     "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
@@ -155,7 +155,7 @@
     "strict_policy_unchanged": true,
     "blanket_root_cause_claimed_for_seven_cases": false
   },
-  "normal_conformance_results_sha256": "5e9680731af00a7d561f0fc105f6f99dc29938662e8f1ca5a5b5b93504223adb",
+  "normal_conformance_results_sha256": "0ec1ae827c748065ca0672e0bf9091b1ba7aae62d7493e7d4fdf5bfb5398957a",
   "release_gate": "blocked",
   "cases": [
     {
@@ -187,9 +187,9 @@
         "T.88 6.5.9 and 6.2.6"
       ],
       "source_trace_sha256": "e6b157debad4281af44889333801e245cc5f2b3a773b787948c0f8de65abd508",
-      "source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+      "source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need an independently anchored text entropy/ID/strip trace, or official attachment-owner clarification, before identifying an unambiguous production correction.",
       "expected_pages": [
         {
@@ -289,9 +289,9 @@
         "T.6 Table 1 and 2.2.5.2"
       ],
       "source_trace_sha256": "14757f8b8d0089aa431cd0d5a3c1ee09c77430f226ea0833a3a2c779a1f496d3",
-      "source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+      "source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Do not extend BMSIZE or synthesize row data. Need independent upstream Huffman field alignment or official asset-owner clarification before assigning normative malformation.",
       "expected_pages": [
         {
@@ -385,9 +385,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b10d665c2180b605627120f1eda641edd91ffc8eec9f6cea24e94741b8d61061",
-      "source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+      "source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -481,9 +481,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "5ea8fb0789178b025c0ccc377afef04eae89851c8c89e19e792636525c707095",
-      "source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+      "source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -577,9 +577,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "05d26bb3da2a9954462c46ed4cb39d647624a3dd4cfe3f3adc4a56e88bd2ded8",
-      "source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+      "source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -673,9 +673,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b1dbb0f363ca6f467c14515d78f848e71270edae807ca0fad9fd8006b58935dd",
-      "source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+      "source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -769,9 +769,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "863c467991c565f1b8330550dee1c03777c582afdf851473106340f4b6afb81f",
-      "source_trace_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+      "source_trace_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -831,31 +831,23 @@
     }
   ],
   "source_selection": {
-    "kind": "Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged",
-    "immutable_source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+    "kind": "Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change",
+    "immutable_source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
     "arithmetic_source_sha256": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35",
     "arithmetic_spec_sha256": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "owner_source_review_sha256": "cae64bd8760f74851e849c5daabb56af33f086355f9d8c0a6ce7968c743537b2",
+    "owner_source_review_sha256": "3b2f2a9467e901fdfe735ee02e02bb9fbea7f2e630f6ec38f9881936ef3ea28a",
     "owner_source_review": {
-      "native_comparison_revision": "55105a0a37992642830ede22a8353579a1531617",
-      "source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
-      "native_token_streams_unchanged": true,
+      "native_comparison_revision": "9597d7fee3f43bf20f20781ee340e3dfeda1c2be",
+      "source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
+      "unchanged_native_token_streams": 16,
       "strings_retained": true,
       "source_file_count": 17,
-      "production_function_count": 656,
+      "production_function_count": 657,
       "caller_preconditions_unchanged": true,
-      "changed_attributes": [
-        "reader::ByteReader::read_u8",
-        "reader::ByteReader::read_u32",
-        "reader::ByteReader::read_u16",
-        "reader::ByteReader::read_bytes",
-        "reader::BitReader::read_bits"
-      ],
-      "ghost_only_changed_bodies": [
-        "reader::BitReader::read_bits"
-      ],
+      "mmr_native_delta": "Two checked multiply/closure-add chains call one shared, directly verified checked arithmetic helper, preserving every guard/error/failure order. All65536u16prefixes x4digits(0,1,2,65535) compare the actual helper with the prior closure; constructors receive separate field-boundary tests.",
       "all_reviewed_boundary_bodies_and_attributes_unchanged": true,
+      "capacity_divergence_body_and_flags_unchanged": true,
       "files": [
         {
           "file": "src/arithmetic.rs",
@@ -907,7 +899,7 @@
         },
         {
           "file": "src/mmr.rs",
-          "source_sha256": "c6810537f116140b4374e52264b9f7190c775c173e14903271f316220a837290"
+          "source_sha256": "94ae36c1440bf2d3a4404974698e682f1aad721ff9dbfe89370f540fabd2fa80"
         },
         {
           "file": "src/reader.rs",
@@ -926,7 +918,7 @@
           "source_sha256": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad"
         }
       ],
-      "scope": "Exact project reader failure payloads; no native change, new trust, weakened defense or coverage exclusion. Existing exact bit-value semantics/tests are preserved, not claimed as new."
+      "scope": "Exact project consumed bit-prefix witnesses; scalar windows share implementation tables and do not independently approve T.6 table translation, run totals or full raster semantics."
     }
   },
   "historical_ci_repair": {
@@ -946,15 +938,15 @@
     "execution_gate": "run_itu.py still exits 1 with seven unresolved official cases."
   },
   "refill_source_continuation": {
-    "immutable_source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
-    "source_kind": "Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged",
+    "immutable_source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
+    "source_kind": "Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change",
     "all_seven_normal_and_logging_executions_repeated": true,
     "source_provenance_unchanged": true,
     "parent_owns_proof_inventory_coverage_metadata": true,
     "official_runner_exit": 1,
     "new_normative_approvals": 0,
-    "normal_build_target": "/workspace/jbig2-normative-local-assets/reader-errors-ec18721/normal-build",
-    "trace_build_target": "/workspace/jbig2-normative-local-assets/reader-errors-ec18721/trace-build",
-    "hayro_build_target": "/workspace/jbig2-normative-local-assets/reader-errors-ec18721/hayro-build"
+    "normal_build_target": "/workspace/jbig2-normative-local-assets/mmr-prefix-8219834/normal-build",
+    "trace_build_target": "/workspace/jbig2-normative-local-assets/mmr-prefix-8219834/trace-build",
+    "hayro_build_target": "/workspace/jbig2-normative-local-assets/mmr-prefix-8219834/hayro-build"
   }
 }

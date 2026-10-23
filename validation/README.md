@@ -870,3 +870,30 @@ auxiliary error payloads and internal bound models are not normative approval.
 Actual approved normal/logged/native/Hayro observations are rerun and remain
 2/7/1 with zero rejection credit. No stopped family, observer hook, fake
 allocation failure, trust exception, policy, CI-job or publication change.
+
+## Exact consumed MMR code prefixes
+
+Successful mode/run-code lookup now ties its table key and length to the actual
+old-input MSB-first bit prefix. A shared reader append lemma composes the loop;
+two identical opaque closure chains use one verified checked-arithmetic helper
+with unchanged checks/errors/order. All656existing preconditions/48boundaries
+and capacity-divergence bodies/flags remain. The657function inventory has
+609directlyverified functions; whole proof/compilation pass1185/0.
+
+Four real compiling wrong-key controls retain old membership/length/reader
+guarantees under the weaker controls. The required profile is23groups137contrasts
+in the same four shards/jobs/cap. Scalar lookup tests cover1024mode and
+131072runwindow/colour/alignment cases;262144actual helper/prior closure pairs
+and constructor-boundary tests check arithmetic/field consistency.
+One selected mode row gains actual input-to-code functionality; all266records
+remain provisional112/128/26. Run truncation policy retains its old strength.
+
+An initial arithmetic rewrite failed reviewed coverage floors; it was not
+accepted and no floor was lowered. The shared-helper refactor plus actual
+constructor field tests pass the existing floor with coverage10696/12627lines,
+10310/12937regions,2009/2638branches. Only MMR changes; these are actual combined
+counts, not artificial padding, exclusions or a new ratified floor.
+Independent T.6 table fidelity, complete mode/errors/run totals/row/raster/caller
+semantics, official positives, capacity support and release coverage goals remain
+open. No stopped family, trust exception, fake allocation failure, CI job or
+publication change is introduced.

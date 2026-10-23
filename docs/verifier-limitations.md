@@ -1,8 +1,8 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1183 obligations with zero errors and zero native
+Pinned Verus verifies 1185 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-608 directly verified functions, 24 reviewed verifier limitations, 23 audited
+609 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
 
 Cargo verification uses `verification/Cargo.toml` against the same production
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-two logical semantic groups remain complete: four deterministic
+The twenty-three logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-two independently
-hashed report/log pairs and all 133 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty-three independently
+hashed report/log pairs and all 137 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,27 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+MMR mode/run-code success now binds the returned implementation-table key to
+the exact MSB-first old-input prefix, as well as its existing table membership
+and consumed length. Prefix loop invariants compose the existing exact one-bit
+reader result using an internal append lemma. Two opaque checked closure chains
+call one directly verified checked-arithmetic helper with the same multiply/add
+guards, error and ordering; no check is removed or new caller constraint added.
+Sixteen native streams and all656existing preconditions/48reviewed boundaries,
+including capacity-divergence bodies/flags, are unchanged. The inventory now
+has657functions,609directlyverified. Whole Cargo proof/compilation pass1185/0.
+
+Four compiling contrasts query a different prefix key while retaining old
+membership/length/bounds guarantees in the weaker controls. Scalar lookup
+oracles cover1024modewindows and131072runwindow/colour/alignment cases;
+262144checked-operation pairs compare the actual helper with the prior closure.
+Direct constructor-boundary tests additionally assert raw fields and terminal
+sense. These share implementation tables, not an independent T.6 oracle.
+One selected mode record gains actual project input-to-code functionality;
+all266records remain provisional112/128/26. Complete mode acceptance/errors,
+run totals, table translation, row/raster/caller semantics and capacity support
+remain separate.
 
 All byte-read methods now expose exact project EOF offset/needed/remaining
 fields. Bit reads expose the supplied invalid count before EOF and otherwise

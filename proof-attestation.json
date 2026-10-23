@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
-  "scope": "Exact project byte/bit reader failures and exclusion of false accumulation overflow, preserving existing value/input/cursor semantics",
+  "source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
+  "scope": "Exact project consumed MMR mode/run-code prefix witnesses and shared checked arithmetic, preserving implementation-table membership and reader bounds",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/reader-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/mmr-prefix-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1183,
-    "verified_production_functions": 608,
+    "verified_obligations": 1185,
+    "verified_production_functions": 609,
     "errors": 0,
     "proof_build_compiles": true,
     "exact_production_source_compiles": false,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "fd5e6c0c9713700eb17c673879559dc526566980be3bf830ba5a277a415ae9f0",
-  "proof_dispositions_sha256": "14762f4e444f4b13be5ef79936228a903690c03bbec4e18f505d0a2088f160a5",
+  "production_proof_coverage_sha256": "8a3642734cfb3e4c0bdd4dbd2796e941a5d5244d1a60acbe5b2add8c1ae2eeca",
+  "proof_dispositions_sha256": "cb394eb466a97844d15d403accd86b70cf078a8d6f4cdc09310a41923dc80e1c",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo verification and compilation pass1183/0 with lifetime/erasure checks enabled. Fourbyte-read primitives expose exact project EOFoffset/needed/remaining; bitreads expose invalid-count-first/value, exactEOF and no false overflow/valid-width rejection. Existing successful byte/bit values,input/cursorframes andexhaustivebittests werealreadyformal andarenotnewclaims. Independent bits_value_bound/bits_limit_monotone proofsupportandghostloop facts excludemultiply/add overflowaftertheexisting<=32preflight; nativecheckeddefenses remainemitted,uncoveredandunexcluded. All17native streams,656callerpreconditions and48reviewedboundarybodies/attrs areunchanged;5readerpostconditionattributesandonlyghostloop supportchange. Nineactualcompilingstrong/weakercontrols pass,retainingvalue/input/cursorrelations. Fullrequiredprofile22groups133contrasts/fourunchangedshards. Oneadditional78casebyte-position/width/EOFmatrixchecksactualpartialremainders,max/zerorequests,fixedwidthvaluesandborrow/cursorframes. All382native tests passwith14ignored;actualcoverageunchanged10679/12629lines,10295/12936regions,2009/2638branches,no gain,denominator/floor/exclusionchange. All17runtime mutants actuallycompile/detect.266selectedrecordsremainprovisional111/129/26; APIerrors/internalbounds addneithernormativerulesnorstrength/reviewupgrades. Actualapprovednormal/logged/native/Hayro observations freshlyrerunandremain2/7/1,zerorejectioncredit. Inventory608verified/24limitations/23forwarders/1capacitydivergence/0incomplete/0nativeassumptions remains. No nativebehavior,trustexception,policy,pin,CIjob,observerhook,fakeallocationfailure,pausedfamilyorpublicationchange. Normativeerror/markerinterpretation,fullcaller/stream/rastersemantics,sevenofficialpositives,capacityintegration,exhaustivereviewand90/85goalsremainopen.",
+  "note": "Fresh unfiltered pinned Cargo verification and compilation pass1185/0 with lifetime/erasure checks enabled. Successful MMRmode/run-code tablekeys nowequal theactualconsumedold-inputbits_value prefix inadditiontomembership andlength. Prefixloop invariantscomposeaninternalone-bitappendlemma;2duplicatedcheckedclosureoperationscall1verifiedprivatechecked-arithmetichelper,preservingguards/errors/order. Sixteen native streams,all656existing preconditions and48reviewed boundarybodies/attrs,includingcapacitydivergencebodies/flags,areunchanged. Inventory657functions:609verified/24limitations/23forwarders/1capacitydivergence/0incomplete/0nativeassumptions. Fouractualcompilingwrong-keycontrastsretainoldmembership/length/readerboundsunderweakercontrols. Fullrequiredprofile23groups137contrasts/fourunchangedshards. Scalaroraclescover1024modewindowsand131072runwindow/colour/alignmentcases;262144actualhelper/priorclosurepairsandconstructorfield/terminal-senseboundarytestscheckconsistency. Theyshareimplementationtables,notindependentT6approvalorfullimageconformance. Initialsequentialrewritesfailedreviewedperfilecoverageandwerenotaccepted;nothresholdwaslowered. Finalsharedhelperandgenuineconstructortestspasssamefloorswithactual10696/12627lines,10310/12937regions,2009/2638branches. OnlyMMRchanges+17coveredlines/+15regions/0branches,-2linedenominator/+1regionentry,noexclusionorfloorchange. One selectedmode recordgainsprojectinput-to-codefunctionality;266allprovisional112/128/26. Runtruncationpolicyremainsstateonly. Actualapprovednormal/logged/native/Hayro observationsrerunandremain2/7/1,zerorejectioncredit. No nativealgorithmsemantics,callerpreconditionstrengthening,trustexception,policy,pin,CIjob,observerhook,fakeallocationfailure,pausedfamilyorpublicationchange. IndependentT6tablefidelity,completeacceptance/errors,runtotals,row/raster/caller/streamsemantics,sevenofficialpositives,capacityintegration,exhaustivereviewand90/85goalsremainopen.",
   "release_gate": "blocked"
 }

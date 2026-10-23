@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 111 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 129 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 112 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 128 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -446,7 +446,7 @@ or standards prose are added.
 |---|---|
 | Initial white reference and previous-row reuse | Raster storage/reader invariants, not reference pixel equivalence |
 | Changing elements and pass/vertical/horizontal transitions | Bounded reference positions and safe raster state, not an exact line-transition theorem |
-| Mode prefix dispatch | Implementation-table witness and consumed length, not equality to the actual consumed prefix bits |
+| Mode prefix dispatch | Exact old-input bit-prefix, implementation-table mode and consumed-length witness; independent table fidelity and complete acceptance/errors remain open |
 | White/black run lookup | Matching supplied key and membership in implementation arrays; no independent T.6 table-translation proof |
 | Make-up/terminating accumulation and initial imaginary white run | Reader/row bounds and storage, not run summation or initial-position equivalence |
 | Terminal reference sentinels | Valid width-sentinel representation and two added entries, not preservation of all earlier transitions or full row pixels |
@@ -542,8 +542,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty-two semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 133 required strong/weaker compiling
+All twenty-three semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 137 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
@@ -557,8 +557,18 @@ All byte methods now expose EOF payloads; bit reads preserve invalid-count
 priority/value, exact EOF and absence of spurious overflow or valid-width
 rejection. Internal overflow-bound support is separately source-bound under
 proofs, not presented as a normative theorem. No requirement, strength or review
-count changes: all266remain provisional111/129/26. Project error payloads do
+count changes at that reader tranche: all266remain provisional111/129/26. Project error payloads do
 not establish normative rejection/marker-fill rules or downstream conformance.
+
+The subsequent MMR prefix tranche closes a distinct table-witness gap:
+mode and run-code success now prove that the implementation key equals the
+actual old input's consumed `bits_value`, not merely some same-length table
+entry. Four compiling wrong-key contrasts retain old membership/length/reader
+guarantees under their weaker controls. One mode record gains functional
+project input-to-code evidence; the truncation-policy row only gains an
+auxiliary success relation and retains state-only strength. All266remain
+provisional112/128/26. Shared-table scalar windows are not independent T.6
+table approval, complete mode/error/run-total or row/raster/caller theorems.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional

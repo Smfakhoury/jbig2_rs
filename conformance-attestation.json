@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
-  "scope": "Fresh existing official diagnostics on Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
+  "scope": "Fresh existing official diagnostics on Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "5e9680731af00a7d561f0fc105f6f99dc29938662e8f1ca5a5b5b93504223adb",
-    "review_sha256": "bc69059a31482efe713ad75e0cceb643ee19fe3464cc93b1293518a41091c0c8"
+    "results_sha256": "0ec1ae827c748065ca0672e0bf9091b1ba7aae62d7493e7d4fdf5bfb5398957a",
+    "review_sha256": "a62989d7dd6ee2cb4e81497a104e38964a8c29bc35131c1c54667a443413ab84"
   },
   "community_regressions": {
     "total": 0,

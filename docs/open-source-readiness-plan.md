@@ -2,6 +2,27 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The MMR prefix tranche now binds successful mode/run-code table keys to the
+actual consumed old-input MSB-first prefix, preserving membership/length/reader
+guarantees. An internal one-bit append lemma composes the loop; two identical
+checked closure operations call one directly verified checked helper with the
+same guards/errors/order. All656existing preconditions/48boundaries and the
+capacity-divergence bodies/flags are unchanged;16native streams are identical.
+The inventory now has657functions,609directlyverified, and whole pinned
+verification/compilation pass1185/0. Four compiling wrong-key contrasts extend
+the required profile to23groups137contrasts/fourunchangedshardsjobs.
+Scalar oracles cover1024mode and131072runwindow/colour/alignment cases, and
+262144rawprefix/digit pairs compare the actual helper with the prior operation.
+Constructor-boundary tests check raw fields and terminal sense. These are
+shared-table component checks, not independent T.6 or full-image conformance.
+One selected mode row gains project functionality:266records remain provisional
+112functional/128state/26safety. Reviewed coverage floors are unchanged; initial
+arithmetic decompositions that failed them were not accepted. The final shared
+helper and actual constructor tests pass the same floors at84.71%lines,
+79.69%regions,76.16%branches, with no exclusion. Independent table translation,
+complete mode/errors/run totals/raster/caller semantics, official positives,
+capacity integration, exhaustive review and release goals remain open.
+
 The reader-error tranche adds exact project EOF offset/needed/remaining fields
 to all four byte-read entry points and exact invalid-count-first/EOF failures
 to bit reads. Existing successful byte/bit values and input/cursor frames are
