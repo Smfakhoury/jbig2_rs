@@ -18,14 +18,25 @@ from proof_sensitivity import replace_once, weakened_contract
 
 class ArithmeticCodecProofTests(unittest.TestCase):
     def test_unique_sites_and_relation_specific_controls(self):
-        self.assertEqual(len(CASES), 8)
-        self.assertEqual(len({case["id"] for case in CASES}), 8)
+        self.assertEqual(len(CASES), 19)
+        self.assertEqual(len({case["id"] for case in CASES}), 19)
         for case in CASES:
             source = (TOOLS.parent / case["file"]).read_text()
             with self.subTest(case=case["id"]):
                 changed = replace_once(source, case["site"], case["replacement"])
                 self.assertNotEqual(changed, source)
                 self.assertNotEqual(weakened_contract(changed, case), changed)
+
+    def test_context_validation_controls_preserve_original_success_guarantee(self):
+        for case in CASES:
+            if case["function"] != "validate_probability_states":
+                continue
+            source = (TOOLS.parent / case["file"]).read_text()
+            with self.subTest(case=case["id"]):
+                weaker = weakened_contract(source, case)
+                self.assertIn("Ok(()) => forall|index: int|", weaker)
+                self.assertIn("Err(_) => true,", weaker)
+                self.assertIn("decreases contexts@.len() - index,", weaker)
 
     def test_missing_or_duplicate_sites_fail_closed(self):
         for case in CASES:

@@ -370,7 +370,8 @@ impl ArithmeticContext {
                 && mps <= 1
                 && context.state_index == state_index
                 && context.mps == mps,
-            Err(_) => state_index >= 47 || mps > 1,
+            Err(error) => (state_index >= 47 || mps > 1)
+                && error == ArithmeticError::InvalidContextState { state_index, mps },
         },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]

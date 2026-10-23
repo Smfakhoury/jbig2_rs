@@ -9,6 +9,43 @@ pub(crate) open spec fn contexts_valid(
         crate::arithmetic::arithmetic_spec::context_valid(contexts[index])
 }
 
+// Project diagnostic policy, not a T.88 arithmetic-decoding equation.
+pub(crate) open spec fn probability_validation_result(
+    contexts: Seq<crate::arithmetic::ArithmeticContext>,
+    result: Result<(), super::GenericRegionError>,
+) -> bool {
+    match result {
+        Ok(()) => contexts_valid(contexts),
+        Err(error) => exists|index: int| 0 <= index < contexts.len()
+            && !crate::arithmetic::arithmetic_spec::context_valid(contexts[index])
+            && (forall|before: int| 0 <= before < index ==>
+                crate::arithmetic::arithmetic_spec::context_valid(contexts[before]))
+            && error == super::GenericRegionError::Decode(
+                crate::DecodeError::Malformed(crate::MalformedError::InvalidArithmeticContextState {
+                    state_index: contexts[index].state_index,
+                    mps: contexts[index].mps,
+                }),
+            ),
+    }
+}
+
+pub(crate) open spec fn probability_error_for_signal(
+    decoder: &crate::arithmetic::ArithmeticDecoder,
+    index: usize,
+    context_count: usize,
+    signal: u8,
+) -> super::GenericRegionError {
+    if signal == super::RASTER_SIGNAL_CONTEXT {
+        super::GenericRegionError::ContextIndex { index, count: context_count }
+    } else {
+        super::GenericRegionError::Decode(
+            crate::arithmetic::arithmetic_spec::decode_error(
+                crate::arithmetic::arithmetic_spec::error_for_signal(decoder, signal),
+            ),
+        )
+    }
+}
+
 pub(crate) open spec fn generic_contexts_valid(
     contexts: &crate::generic_region::GenericContexts,
 ) -> bool {

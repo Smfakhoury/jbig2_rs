@@ -39,7 +39,7 @@ CHECKS = (
     ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
     ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
     ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
     ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
     ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),

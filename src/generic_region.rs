@@ -2175,7 +2175,11 @@ pub(crate) fn decode_probability_signal(
     decoder.decode_signal(context)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == generic_region_spec::probability_error_for_signal(
+        decoder, index, context_count, signal,
+    ),
+))]
 #[cold]
 pub(crate) fn probability_signal_error(
     decoder: &ArithmeticDecoder<'_>,
@@ -4758,6 +4762,7 @@ fn validate_refinement_context_layout(
             contexts@[index].state_index < 47 && contexts@[index].mps <= 1,
         Err(_) => true,
     },
+    generic_region_spec::probability_validation_result(contexts@, out),
 ))]
 fn validate_probability_states(contexts: &[ArithmeticContext]) -> Result<(), GenericRegionError> {
     let mut index = 0_usize;
@@ -5155,12 +5160,22 @@ fn enforce_input_limit(data: &[u8], limits: &Limits) -> Result<(), GenericRegion
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == GenericRegionError::Decode(
+        DecodeError::Malformed(MalformedError::IntegerOverflow),
+    ),
+))]
 pub(crate) fn integer_overflow() -> GenericRegionError {
     GenericRegionError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == GenericRegionError::Decode(
+        crate::arithmetic::arithmetic_spec::decode_error(
+            crate::arithmetic::arithmetic_spec::eof_error(offset, needed, remaining),
+        ),
+    ),
+))]
 fn unexpected_eof(offset: usize, needed: usize, remaining: usize) -> GenericRegionError {
     let Ok(offset) = u64::try_from(offset) else {
         return GenericRegionError::Decode(MalformedError::IntegerOverflow.into());
