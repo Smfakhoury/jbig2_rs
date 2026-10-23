@@ -10,6 +10,143 @@ pub(crate) open spec fn bitmap_bytes(tracker: &super::ResourceTracker) -> u64 {
     tracker.decoded_bitmap_bytes
 }
 
+pub(crate) open spec fn work_charge_effect(
+    before: &super::ResourceTracker,
+    after: &super::ResourceTracker,
+    units: u64,
+    limits: &crate::Limits,
+    accepted: bool,
+) -> bool {
+    let total = work_units(before) as nat + units as nat;
+    bitmap_bytes(after) == bitmap_bytes(before)
+        && work_units(after) == (if total <= u64::MAX {
+            total as u64
+        } else {
+            work_units(before)
+        })
+        && accepted == (total <= u64::MAX && total <= limits.max_work_units)
+}
+
+pub(crate) open spec fn bitmap_charge_effect(
+    before: &super::ResourceTracker,
+    after: &super::ResourceTracker,
+    width: u32,
+    height: u32,
+    limits: &crate::Limits,
+    accepted: bool,
+) -> bool {
+    let dimensions_fit = width <= limits.max_width
+        && height <= limits.max_height
+        && width as nat * height as nat <= limits.max_pixels_per_page;
+    let requested = ((width as nat + 7) / 8) * height as nat;
+    let total = bitmap_bytes(before) as nat + requested;
+    work_units(after) == work_units(before)
+        && bitmap_bytes(after) == (if dimensions_fit && total <= u64::MAX {
+            total as u64
+        } else {
+            bitmap_bytes(before)
+        })
+        && accepted == (
+            dimensions_fit
+                && total <= u64::MAX
+                && total <= limits.max_cumulative_decoded_bitmap_bytes
+        )
+}
+
+pub(crate) open spec fn text_initialization_allowed(
+    config: super::TextRegionConfig,
+    instances: u32,
+    initial_strip: i64,
+    limits: &crate::Limits,
+) -> bool {
+    let scaled = initial_strip as int * config.strip_size as int;
+    instances as nat <= limits.max_work_units
+        && i64::MIN <= scaled <= i64::MAX
+        && i64::MIN <= -scaled <= i64::MAX
+}
+
+pub(crate) open spec fn text_placement_allowed(
+    state: &super::TextRegionState,
+    within_strip_t: u8,
+    width: u32,
+    height: u32,
+    resources: &super::ResourceTracker,
+    limits: &crate::Limits,
+) -> bool {
+    match state.strip {
+        None => false,
+        Some(strip) => {
+            let extent = if state.config.transposed {
+                height as int - 1
+            } else {
+                width as int - 1
+            };
+            let next_s = strip.cursor_s as int + extent;
+            let symbol_t = state.strip_t as int + within_strip_t as int;
+            let next_work = work_units(resources) as nat + 1;
+            width > 0 && height > 0
+                && within_strip_t < state.config.strip_size
+                && state.decoded_instances < state.declared_instances
+                && next_work <= u64::MAX
+                && next_work <= limits.max_work_units
+                && i64::MIN <= next_s <= i64::MAX
+                && i64::MIN <= symbol_t <= i64::MAX
+                && exists|placement: super::Placement|
+                    placement_for_current(state, within_strip_t, width, height, placement)
+        },
+    }
+}
+
+pub(crate) open spec fn placement_overlap(
+    destination: &crate::bitmap::Bitmap,
+    source: &crate::bitmap::Bitmap,
+    placement: super::Placement,
+) -> (int, int, nat, nat) {
+    let left = clipped_start(placement.x as int);
+    let top = clipped_start(placement.y as int);
+    let right = clipped_end(
+        placement.x as int, source.width as nat, destination.width as nat,
+    );
+    let bottom = clipped_end(
+        placement.y as int, source.height as nat, destination.height as nat,
+    );
+    (left, top, if right > left { (right - left) as nat } else { 0 },
+        if bottom > top { (bottom - top) as nat } else { 0 })
+}
+
+pub(crate) open spec fn placement_preflight_result(
+    destination: &crate::bitmap::Bitmap,
+    source: &crate::bitmap::Bitmap,
+    placement: super::Placement,
+    before: &super::ResourceTracker,
+    after: &super::ResourceTracker,
+    limits: &crate::Limits,
+    result: Result<Option<super::PreparedPlacement>, super::SymbolTextError>,
+) -> bool {
+    let (left, top, width, height) = placement_overlap(destination, source, placement);
+    let work = width * height;
+    if placement.x == i64::MIN || placement.y == i64::MIN || work > u64::MAX {
+        result.is_err()
+            && work_units(after) == work_units(before)
+            && bitmap_bytes(after) == bitmap_bytes(before)
+    } else {
+        work_charge_effect(before, after, work as u64, limits, result.is_ok())
+            && match result {
+                Ok(Some(prepared)) =>
+                    width > 0 && height > 0
+                        && bitmap_contents_match(prepared.blit.source, source)
+                        && prepared.blit.source_x as int == left - placement.x as int
+                        && prepared.source_y as int == top - placement.y as int
+                        && prepared.blit.destination_x as int == left
+                        && prepared.destination_y as int == top
+                        && prepared.blit.width as nat == width
+                        && prepared.height as nat == height,
+                Ok(None) => width == 0 || height == 0,
+                Err(_) => true,
+            }
+    }
+}
+
 pub(super) open spec fn integer_contexts_valid(
     contexts: &super::IntegerContexts,
 ) -> bool {

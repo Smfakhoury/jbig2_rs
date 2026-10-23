@@ -252,6 +252,23 @@
       ]
     },
     {
+      "id": "NEG-SYMBOL-ABSTRACT-CHARGES",
+      "surface": "raw symbol/text work and cumulative bitmap counters",
+      "expected": "exact wide-arithmetic overflow/limit priority and attempted-charge semantics: representable charges remain recorded on limit rejection; dimension/overflow failures preserve the primary counter",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::work_charges_match_wide_results_and_attempted_charge_failure_state"},
+        {"target": "lib", "name": "symbol_text::tests::bitmap_charges_match_wide_priority_and_attempted_charge_failure_state"}
+      ]
+    },
+    {
+      "id": "NEG-TEXT-BATCH-RESERVATION",
+      "surface": "raw placement reservation counts and requested-byte limits",
+      "expected": "count clamps to sixteen; requested-byte limit is inclusive and pending logical state is preserved; no allocator-capacity upper bound is inferred",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::placement_batch_reservation_clamps_counts_and_preserves_pending_state"}
+      ]
+    },
+    {
       "id": "NEG-RAW-CONTEXT-MEMORY-WORK",
       "surface": "raw statistics memory and raster-work guard inputs",
       "expected": "wide-arithmetic overflow priority and exact inclusive retained, managed-memory and work limits without allocating large images",

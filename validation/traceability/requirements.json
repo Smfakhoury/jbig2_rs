@@ -647,6 +647,7 @@
     "proofs/production_impl/mmr.rs": "9c65c21afeb76ee1014f50ed8e03d9bfc8fb129a309d254cfc45089fcba128cc",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
+    "proofs/production_impl/symbol_text.rs": "8668f869c5c1ede704ca751406ad7cbc94146db43aa2c8cd507ac25a0f09ce84",
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "specs/bitmap.rs": "913592795b8b43e3b716f77481b265c3d8ce55be9bce8d1ddb3dce69a865ff0c",
@@ -903,6 +904,20 @@
       ],
       "name": "placement_for_current",
       "role": "Current-state symbol placement with transposition and reference corner."
+    },
+    "text-current-placement-acceptance": {
+      "kind": "spec",
+      "file": "specs/symbol_text.rs",
+      "module_path": ["symbol_text", "symbol_text_spec"],
+      "name": "text_placement_allowed",
+      "role": "Exact current-placement acceptance under count, strip, work and checked-coordinate bounds; not entropy-to-state or whole rendering correctness."
+    },
+    "text-current-placement-witness": {
+      "kind": "macro",
+      "file": "proofs/production_impl/symbol_text.rs",
+      "module_path": ["symbol_text", "symbol_text_proofs"],
+      "name": "production_symbol_current_placement_witness",
+      "role": "Erased proved witness of the existing coordinate relation used to establish nonvacuous acceptance; not a trusted declaration."
     },
     "text-floor-half": {
       "kind": "spec",
@@ -4886,30 +4901,38 @@
         "symbol_text::TextRegionState::place_current"
       ],
       "models": [
-        "text-current-placement"
+        "text-current-placement",
+        "text-current-placement-acceptance"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "text-current-placement-witness"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "symbol_text::tests::computes_strip_placement_and_reference_corners"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::current_text_placement_matches_wide_coordinates_and_partial_failure_state"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful current-state placement satisfies the project placement_for_current relation to old strip state, within-strip T, bitmap dimensions, transposition and reference corner.",
+      "scope_of_formal_result": "Successful current-state placement satisfies the project placement_for_current relation. Current placement also succeeds if and only if the supplied state/geometry/work satisfy text_placement_allowed, including all checked intermediate coordinate bounds; no arbitrary valid-input rejection is permitted.",
       "assumptions": [
         "text_state_valid is a precondition; old strip coordinates are supplied, not proved to equal all prior entropy-decoded deltas."
       ],
       "gaps": [
-        "Independently review the coordinate model and compose it with first/subsequent strip updates, decoded deltas, instance count and rendering order."
+        "Independently review the coordinate and acceptance models and compose them with first/subsequent strip updates, decoded deltas, instance count and rendering order; complete typed-error/partial-state and bitmap rendering results remain separate."
       ],
       "functional_evidence": [
         {
           "runtime": "symbol_text::TextRegionState::place_current",
           "section": "ensures",
           "tokens": [
-            "symbol_text_spec::placement_for_current(old(self), within_strip_t, width, height, placement)"
+            "symbol_text_spec::placement_for_current(old(self), within_strip_t, width, height, placement)",
+            "out.is_ok() == symbol_text_spec::text_placement_allowed(old(self), within_strip_t, width, height, old(resources), limits)"
           ]
         }
       ],
