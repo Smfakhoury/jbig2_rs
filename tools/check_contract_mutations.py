@@ -231,6 +231,40 @@ MUTATIONS = (
         "target": "public_envelope",
         "test": "table_body_errors_precede_reference_role_checks_without_losing_error_fields",
     },
+    {
+        "id": "document-stream-quota-rejects-inclusive-boundary",
+        "file": "src/document.rs",
+        "before": (
+            "fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Ok(actual) = u64::try_from(length) else {\n"
+            "        return Err(MalformedError::IntegerOverflow.into());\n"
+            "    };\n"
+            "    if actual > limits.max_stream_bytes {"
+        ),
+        "after": (
+            "fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Ok(actual) = u64::try_from(length) else {\n"
+            "        return Err(MalformedError::IntegerOverflow.into());\n"
+            "    };\n"
+            "    if actual >= limits.max_stream_bytes {"
+        ),
+        "target": "lib",
+        "test": "document::tests::numeric_preflight_quotas_match_wide_results_and_priority",
+    },
+    {
+        "id": "document-page-quota-discards-next-count",
+        "file": "src/document.rs",
+        "before": (
+            "fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Some(next_count) = count.checked_add(1) else {"
+        ),
+        "after": (
+            "fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Some(next_count) = count.checked_add(0) else {"
+        ),
+        "target": "lib",
+        "test": "document::tests::numeric_preflight_quotas_match_wide_results_and_priority",
+    },
 )
 
 

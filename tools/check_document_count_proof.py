@@ -10,9 +10,38 @@ from pathlib import Path
 
 from check_distribution import run
 from proof_sensitivity import proof_workspace, replace_once, selected_proof
+from rust_source import source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
+FUNCTIONS = {entry["id"]: entry for entry in source_functions(ROOT)}
+
+
+def quota_cases(function, comparison, postcondition):
+    original = FUNCTIONS[f"document::{function}"]["body_text"]
+    return (
+        {
+            "id": f"{function}_rejects_inclusive_boundary",
+            "function": function,
+            "site": original,
+            "replacement": replace_once(
+                original, f"if actual > {comparison} {{",
+                f"if actual >= {comparison} {{",
+            ),
+            "control_site": postcondition,
+            "control_replacement": "",
+        },
+        {
+            "id": f"{function}_discards_error_actual",
+            "function": function,
+            "site": original,
+            "replacement": replace_once(original, "actual,\n}", "actual: 0,\n}"),
+            "control_site": postcondition,
+            "control_replacement": "",
+        },
+    )
+
+
 CASES = (
     {
         "id": "accept_inconsistent_declared_count",
@@ -60,6 +89,30 @@ CASES = (
         "control_site": "&&& document_declared_page_count(document) == None",
         "control_replacement": "",
     },
+    *quota_cases(
+        "enforce_stream_limit", "limits.max_stream_bytes",
+        """out == document_spec::quota_result(
+            length as nat, limits.max_stream_bytes, LimitKind::StreamBytes,
+        ),""",
+    ),
+    *quota_cases(
+        "enforce_input_work", "limits.max_work_units",
+        """out == document_spec::quota_result(
+            input_length as nat, limits.max_work_units, LimitKind::Work,
+        ),""",
+    ),
+    *quota_cases(
+        "enforce_segment_limit", "u64::from(limits.max_segments)",
+        """out == document_spec::next_count_quota_result(
+            count, limits.max_segments, LimitKind::Segments,
+        ),""",
+    ),
+    *quota_cases(
+        "enforce_page_limit", "u64::from(limits.max_pages)",
+        """out == document_spec::next_count_quota_result(
+            count, limits.max_pages, LimitKind::Pages,
+        ),""",
+    ),
 )
 PREFIX_INVARIANT = """page_states@.len()
                 == document_spec::page_information_count(segments@, segment_index as nat),"""
@@ -88,12 +141,15 @@ def check_document_count_proof(executable: Path) -> dict:
     ):
         path = directory / "src/document.rs"
         original = path.read_text(encoding="utf-8")
+        baselines = {}
         for case in CASES:
             control_path = directory / case.get("control_file", "src/document.rs")
             control_original = control_path.read_text(encoding="utf-8")
-            baseline = selected_proof(
-                executable, directory, environment, False, "document", case["function"],
-            )
+            if case["function"] not in baselines:
+                baselines[case["function"]] = selected_proof(
+                    executable, directory, environment, False, "document", case["function"],
+                )
+            baseline = baselines[case["function"]]
             source = mutated_document(original, case)
             path.write_text(source, encoding="utf-8")
             run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
@@ -120,7 +176,7 @@ def check_document_count_proof(executable: Path) -> dict:
         raise ValueError("production source changed during document proof sensitivity checks")
     return {
         "schema_version": 1, "status": "passed", "verus_version": expected,
-        "scope": "Selected document count/metadata proofs only; whole-crate verification is separate",
+        "scope": "Selected document count/metadata and exact project numeric preflight quota results; no whole-container, decoder work-complexity, allocator/RSS or normative stream claim",
         "production_sources_modified": False, "counterexamples": results,
         "source_bindings": {
             name: hashlib.sha256(data).hexdigest() for name, data in sources.items()

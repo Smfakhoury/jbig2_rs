@@ -3,6 +3,35 @@ use crate::file_header::file_header_spec;
 
 verus! {
 
+// Project quota/error policy, not a normative JBIG2 decoding equation.
+pub(crate) open spec fn quota_result(
+    actual: nat,
+    limit: u64,
+    kind: crate::LimitKind,
+) -> Result<(), crate::DecodeError> {
+    if actual > u64::MAX {
+        Err(crate::DecodeError::Malformed(crate::MalformedError::IntegerOverflow))
+    } else if actual > limit {
+        Err(crate::DecodeError::LimitExceeded(crate::LimitExceeded {
+            kind, limit, actual: actual as u64,
+        }))
+    } else {
+        Ok(())
+    }
+}
+
+pub(crate) open spec fn next_count_quota_result(
+    count: usize,
+    limit: u32,
+    kind: crate::LimitKind,
+) -> Result<(), crate::DecodeError> {
+    if count == usize::MAX {
+        Err(crate::DecodeError::Malformed(crate::MalformedError::IntegerOverflow))
+    } else {
+        quota_result(count as nat + 1, limit as u64, kind)
+    }
+}
+
 pub closed spec fn decoder_limits(
     decoder: &crate::document::Decoder,
 ) -> crate::Limits {

@@ -1980,6 +1980,9 @@ pub(crate) fn read_bounded_input<R: Read>(
         Ok(()) => length as nat <= limits.max_stream_bytes,
         Err(_) => true,
     },
+    out == document_spec::quota_result(
+        length as nat, limits.max_stream_bytes, LimitKind::StreamBytes,
+    ),
 ))]
 fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeError> {
     let Ok(actual) = u64::try_from(length) else {
@@ -2001,6 +2004,9 @@ fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeErro
         Ok(()) => count as nat + 1 <= limits.max_segments,
         Err(_) => true,
     },
+    out == document_spec::next_count_quota_result(
+        count, limits.max_segments, LimitKind::Segments,
+    ),
 ))]
 fn enforce_segment_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {
     let Some(next_count) = count.checked_add(1) else {
@@ -2025,6 +2031,9 @@ fn enforce_segment_limit(count: usize, limits: &Limits) -> Result<(), DecodeErro
         Ok(()) => count as nat + 1 <= limits.max_pages,
         Err(_) => true,
     },
+    out == document_spec::next_count_quota_result(
+        count, limits.max_pages, LimitKind::Pages,
+    ),
 ))]
 fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {
     let Some(next_count) = count.checked_add(1) else {
@@ -2094,6 +2103,9 @@ fn enforce_work_limit(
         Ok(()) => input_length as nat <= limits.max_work_units,
         Err(_) => true,
     },
+    out == document_spec::quota_result(
+        input_length as nat, limits.max_work_units, LimitKind::Work,
+    ),
 ))]
 fn enforce_input_work(input_length: usize, limits: &Limits) -> Result<(), DecodeError> {
     let Ok(actual) = u64::try_from(input_length) else {
@@ -2132,6 +2144,106 @@ fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn quota_view(
+        result: Result<(), DecodeError>,
+    ) -> Result<Option<LimitExceeded>, MalformedError> {
+        match result {
+            Ok(()) => Ok(None),
+            Err(DecodeError::LimitExceeded(limit)) => Ok(Some(limit)),
+            Err(DecodeError::Malformed(error)) => Err(error),
+            Err(error) => panic!("unexpected preflight error: {error:?}"),
+        }
+    }
+
+    fn wide_quota(
+        actual: u128,
+        maximum: u128,
+        limit: u64,
+        kind: LimitKind,
+    ) -> Result<Option<LimitExceeded>, MalformedError> {
+        if actual > maximum {
+            Err(MalformedError::IntegerOverflow)
+        } else if actual > u128::from(limit) {
+            Ok(Some(LimitExceeded {
+                kind,
+                limit,
+                actual: u64::try_from(actual).unwrap(),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    #[test]
+    fn numeric_preflight_quotas_match_wide_results_and_priority() {
+        let counts = [
+            0_usize,
+            1,
+            2,
+            7,
+            8,
+            9,
+            15,
+            16,
+            17,
+            31,
+            32,
+            33,
+            usize::MAX / 2,
+            usize::MAX - 1,
+            usize::MAX,
+        ];
+        let scalar_limits = [0_u64, 1, 7, 8, u64::MAX / 2, u64::MAX - 1, u64::MAX];
+        let count_limits = [0_u32, 1, 7, 8, u32::MAX];
+        let mut cases = 0;
+        for count in counts {
+            for limit in scalar_limits {
+                let limits = Limits {
+                    max_stream_bytes: limit,
+                    max_work_units: limit,
+                    ..Limits::default()
+                };
+                assert_eq!(
+                    quota_view(enforce_stream_limit(count, &limits)),
+                    wide_quota(
+                        count as u128,
+                        u128::from(u64::MAX),
+                        limit,
+                        LimitKind::StreamBytes
+                    ),
+                    "stream {count}/{limit}",
+                );
+                assert_eq!(
+                    quota_view(enforce_input_work(count, &limits)),
+                    wide_quota(count as u128, u128::from(u64::MAX), limit, LimitKind::Work),
+                    "work {count}/{limit}",
+                );
+                cases += 2;
+            }
+            for limit in count_limits {
+                let limits = Limits {
+                    max_pages: limit,
+                    max_segments: limit,
+                    ..Limits::default()
+                };
+                let actual = count as u128 + 1;
+                let maximum = (usize::MAX as u128).min(u128::from(u64::MAX));
+                assert_eq!(
+                    quota_view(enforce_segment_limit(count, &limits)),
+                    wide_quota(actual, maximum, u64::from(limit), LimitKind::Segments),
+                    "segments {count}/{limit}",
+                );
+                assert_eq!(
+                    quota_view(enforce_page_limit(count, &limits)),
+                    wide_quota(actual, maximum, u64::from(limit), LimitKind::Pages),
+                    "pages {count}/{limit}",
+                );
+                cases += 2;
+            }
+        }
+        assert_eq!(cases, 360);
+    }
 
     const SIGNATURE: [u8; 8] = [0x97, 0x4A, 0x42, 0x32, 0x0D, 0x0A, 0x1A, 0x0A];
 
