@@ -7244,6 +7244,235 @@ mod tests {
     }
 
     #[test]
+    fn known_length_normalization_preserves_zero_row_bitmap_geometry() {
+        let limits = Limits::default();
+        for (template, extended) in [
+            (GenericTemplate::Template0, false),
+            (GenericTemplate::Template0, true),
+            (GenericTemplate::Template1, false),
+            (GenericTemplate::Template2, false),
+            (GenericTemplate::Template3, false),
+        ] {
+            for typical in [false, true] {
+                let header = generic_header(9, 2, template, extended, typical);
+                for coded in [&[0xff][..], &[0x12, 0xff], &[0xff, 0xac]] {
+                    let owned = decode_known_length_arithmetic_generic(coded, &header, 0, &limits)
+                        .expect("zero rows require no entropy decisions");
+                    let mut direct = Bitmap::blank(9, 2, &limits).unwrap();
+                    decode_known_length_arithmetic_generic_into(
+                        coded,
+                        &header,
+                        0,
+                        &limits,
+                        &mut direct,
+                    )
+                    .expect("zero-row direct decode");
+                    for bitmap in [&owned, &direct] {
+                        assert_eq!(bitmap.width(), 9);
+                        assert_eq!(bitmap.height(), 2);
+                        assert_eq!(bitmap.stride(), 2);
+                        assert_eq!(bitmap.bytes(), &[0, 0, 0, 0]);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn known_length_normalization_reports_exact_errors_before_bitmap_mutation() {
+        let limits = Limits::default();
+        let header = generic_header(9, 2, GenericTemplate::Template3, false, false);
+        for coded in [&[][..], &[0], &[0xff, 0], &[0, 0xac]] {
+            let mut direct = Bitmap::filled(9, 2, true, &limits).unwrap();
+            let before = direct.bytes().to_vec();
+            for result in [
+                decode_known_length_arithmetic_generic(coded, &header, 0, &limits).map(|_| ()),
+                decode_known_length_arithmetic_generic_into(
+                    coded,
+                    &header,
+                    0,
+                    &limits,
+                    &mut direct,
+                ),
+            ] {
+                assert!(matches!(
+                    result,
+                    Err(GenericRegionError::InvalidArithmeticTerminator)
+                ));
+            }
+            assert_eq!(direct.bytes(), before);
+        }
+
+        for (coded, limit, actual) in [(&[0xff][..], 1, 2), (&[0x12, 0xff][..], 2, 3)] {
+            let limited = Limits {
+                max_decoder_managed_memory_bytes: limit,
+                ..limits
+            };
+            let mut direct = Bitmap::filled(9, 2, true, &limits).unwrap();
+            let before = direct.bytes().to_vec();
+            for result in [
+                decode_known_length_arithmetic_generic(coded, &header, 0, &limited).map(|_| ()),
+                decode_known_length_arithmetic_generic_into(
+                    coded,
+                    &header,
+                    0,
+                    &limited,
+                    &mut direct,
+                ),
+            ] {
+                assert!(matches!(
+                    result,
+                    Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+                        LimitExceeded {
+                            kind: LimitKind::Memory,
+                            limit: observed_limit,
+                            actual: observed_actual,
+                        }
+                    ))) if observed_limit == limit && observed_actual == actual
+                ));
+            }
+            assert_eq!(direct.bytes(), before);
+        }
+
+        let context_bytes = 1024 * u64::try_from(std::mem::size_of::<ArithmeticContext>()).unwrap();
+        let limited = Limits {
+            max_decoder_managed_memory_bytes: 2,
+            ..limits
+        };
+        for coded in [&[0xff][..], &[0xff, 0xac]] {
+            let mut direct = Bitmap::filled(9, 2, true, &limits).unwrap();
+            for result in [
+                decode_known_length_arithmetic_generic(coded, &header, 0, &limited).map(|_| ()),
+                decode_known_length_arithmetic_generic_into(
+                    coded,
+                    &header,
+                    0,
+                    &limited,
+                    &mut direct,
+                ),
+            ] {
+                assert!(matches!(
+                    result,
+                    Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+                        LimitExceeded {
+                            kind: LimitKind::Memory,
+                            limit: 2,
+                            actual,
+                        }
+                    ))) if actual == context_bytes
+                ));
+            }
+            assert_eq!(direct.bytes(), &[0xff, 0x80, 0xff, 0x80]);
+        }
+    }
+
+    #[test]
+    fn unknown_length_framing_preserves_count_extent_and_exact_eof_fields() {
+        let limits = Limits::default();
+        for mmr in [false, true] {
+            let marker = if mmr { [0, 0] } else { [0xff, 0xac] };
+            for rows in [0_u32, 1, 0x100, 0x1_0000, 0x100_0000, u32::MAX] {
+                let mut data = vec![0x12, 0x34, marker[0], marker[1]];
+                data.extend_from_slice(&rows.to_be_bytes());
+                data.extend_from_slice(&[0xde, 0xad]);
+                let terminal = split_unknown_length_data(&data, mmr, rows, &limits).unwrap();
+                assert_eq!(terminal.rows, rows);
+                assert_eq!(terminal.consumed, 8);
+                assert_eq!(terminal.coded, &data[..if mmr { 2 } else { 4 }]);
+                if rows != 0 {
+                    assert!(matches!(
+                        split_unknown_length_data(&data, mmr, rows - 1, &limits),
+                        Err(GenericRegionError::Decode(DecodeError::Malformed(
+                            MalformedError::GenericRegionRowCount { declared, actual }
+                        ))) if declared == rows - 1 && actual == rows
+                    ));
+                }
+            }
+            for count_bytes in 0..4 {
+                let mut truncated = marker.to_vec();
+                truncated.extend_from_slice(&[0; 3][..count_bytes]);
+                assert!(matches!(
+                    split_unknown_length_data(&truncated, mmr, 0, &limits),
+                    Err(GenericRegionError::Decode(DecodeError::Malformed(
+                        MalformedError::UnexpectedEof {
+                            offset: 2,
+                            needed: 4,
+                            remaining,
+                        }
+                    ))) if remaining == u64::try_from(count_bytes).unwrap()
+                ));
+            }
+            for data in [&[][..], &[0x12], &[0x12, marker[0]], &[marker[0], 0x34]] {
+                assert!(matches!(
+                    split_unknown_length_data(data, mmr, 0, &limits),
+                    Err(GenericRegionError::Decode(DecodeError::Malformed(
+                        MalformedError::MissingGenericRegionTerminator
+                    )))
+                ));
+            }
+        }
+    }
+
+    #[test]
+    fn direct_generic_dispatch_declines_unsupported_routes_without_mutation() {
+        let limits = Limits::default();
+        for (mmr, width, height) in [(true, 9, 2), (false, 8, 2), (false, 9, 3)] {
+            let mut payload = region_prefix(9, 2);
+            if mmr {
+                payload.push(1);
+            } else {
+                payload.extend_from_slice(&[6, 2, 0xff]);
+            }
+            for unknown_length in [false, true] {
+                let mut target = Bitmap::filled(width, height, true, &limits).unwrap();
+                let before = target.bytes().to_vec();
+                assert!(decode_generic_region_segment_into(
+                    &payload,
+                    unknown_length,
+                    &limits,
+                    &mut target,
+                )
+                .unwrap()
+                .is_none());
+                assert_eq!(target.width(), width);
+                assert_eq!(target.height(), height);
+                assert_eq!(target.bytes(), before);
+            }
+        }
+    }
+
+    #[test]
+    fn zero_row_dispatch_reports_original_not_normalized_input_extent() {
+        let limits = Limits::default();
+        for unknown_length in [false, true] {
+            let height = if unknown_length { 2 } else { 0 };
+            let mut payload = region_prefix(9, height);
+            payload.extend_from_slice(&[6, 2, 0xff]);
+            if unknown_length {
+                payload.extend_from_slice(&[0xff, 0xac, 0, 0, 0, 0, 0xde, 0xad]);
+            } else {
+                payload.push(0xff);
+            }
+            let expected_consumed = if unknown_length { 26 } else { 21 };
+            let owned = decode_generic_region_segment(&payload, unknown_length, &limits).unwrap();
+            let mut direct = Bitmap::blank(9, height, &limits).unwrap();
+            let metadata =
+                decode_generic_region_segment_into(&payload, unknown_length, &limits, &mut direct)
+                    .unwrap()
+                    .unwrap();
+            assert_eq!(owned.consumed_bytes, expected_consumed);
+            assert_eq!(metadata.consumed_bytes, expected_consumed);
+            assert_eq!(owned.decoded_rows, 0);
+            assert_eq!(metadata.decoded_rows, 0);
+            for bitmap in [&owned.bitmap, &direct] {
+                assert_eq!(bitmap.width(), 9);
+                assert_eq!(bitmap.height(), height);
+                assert!(bitmap.bytes().iter().all(|byte| *byte == 0));
+            }
+        }
+    }
+
+    #[test]
     fn known_length_mmr_dispatches_to_shared_decoder() {
         let limits = Limits::default();
         let mut payload = region_prefix(8, 1);

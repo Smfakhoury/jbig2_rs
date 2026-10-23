@@ -5,7 +5,29 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
-The current local symbol tranche closes the missing **content/order** links,
+The current raw framing/resource control tranche adds ten native tests without
+new encoded refinement, aggregation or custom-Huffman fixtures. Zero-row generic
+controls check owned/direct normalization, exact original-input consumption,
+row-count byte order, missing/truncated framing diagnostics and unchanged
+destinations on preflight rejection. Independent wide-integer budget controls
+check inclusive limits, overflow precedence and rejected-state preservation.
+Raw bitmap snapshots match a literal scalar clipping/padding oracle; sixteen
+retention masks check repeated/missing references and idempotent buffer, pattern
+and symbol release. Raw graph metadata checks sorting, missing/overflowed
+ancestors, duplicate IDs and cross-page diagnostics.
+
+Actual complete pinned runtime coverage passes414tests/14existing ignored and
+measures10919/12636lines(86.4118%),10512/12945regions(81.2051%) and
+2080/2638branch outcomes(78.8476%). Against owner-merged#81 this adds119covered
+lines,115regions and39branch outcomes, with all global/per-file denominators
+unchanged. The protected90%line/85%branch goals still need454covered lines and
+163branch outcomes. The baseline, exclusions, pins, six semantic shards,
+max4active workers,20-minute caps and22CIchecks are unchanged. All46native
+runtime mutants compile and are detected, preserving the old38 and adding
+eight real framing/resource/graph controls. New local evidence is not hosted
+acceptance, normative approval or P04/P05/P06 completion.
+
+The preceding owner-merged symbol tranche closes the missing **content/order** links,
 not just collected cardinality. Contiguous and borrowed codebook lookups
 select exact geometry/packed bytes; combined imported/new lookup preserves
 that ID mapping and guarantees valid-ID success when the counts are
@@ -28,7 +50,10 @@ values no longer call productionclone. Full configured profile is27groups/
 195contrasts with unchanged six one-worker shards/max4active/20-minute caps/
 22checks. Only the symbol/halftone checker slots swap to retain the existing
 estimated1000-second scheduling ceiling; no protection or case is dropped.
-Complete same-snapshot and current-head hosted acceptance remain separate.
+Exact f4ee5af hosted acceptance passed all22checks and independent current-run
+62canonical-file/225binding/195contrast/six-shard/all51rawmetric/38runtime
+reconstruction. Owner merged#81 into main after#80; neither was self-approved
+or self-merged.
 
 The selected export-order record gains real project functionality; all266
 remain provisional123functional/117state/26safety. Encoded export-run
@@ -40,14 +65,13 @@ JSON/LCOVmetrics independently equal actual hosted-accepted#80, with no gain,
 coordinate identity or lower floor/exclusion;573covered lines and202branch
 outcomes are still required.
 
-#80 now has22/22successful current-head checks and independent1219/0/
+#80 passed22/22successful current-head checks and independent1219/0/
 190contrast/six-shard/62canonical/225binding/all51rawmetric/33runtime
 acceptance. It deliberately targets main and carries reviewed#78 cache
 changes, because#78 merged into the former#77 branch after#77 had reached
-main. Its ready-only update is held: original repository access again
-reportspush:false, the user renewal form was unavailable, and no body/ready/
-credential/fork workaround was attempted. No issue/outreach or standard/
-family-scope approval is inferred. The symbol batch remains local.
+main. Its current-head guarded readiness update completed after access returned,
+and the owner merged it. No issue/outreach or standard/family-scope approval
+is inferred from write access or owner PR merges.
 
 The preceding tranche exported **accepted MMR input-to-raster results**,
 not only row-cache invariants. Finite ghost step/row histories bind actual

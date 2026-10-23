@@ -16,6 +16,90 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "owned-generic-normalization-appends-wrong-marker",
+        "file": "src/generic_region.rs",
+        "before": (
+            "normalized.push(ARITHMETIC_TERMINATOR[1]);\n"
+            "    decode_arithmetic_generic(&normalized, header, rows, None, limits)"
+        ),
+        "after": (
+            "normalized.push(0xab);\n"
+            "    decode_arithmetic_generic(&normalized, header, rows, None, limits)"
+        ),
+        "target": "lib",
+        "test": "generic_region::tests::known_length_normalization_preserves_zero_row_bitmap_geometry",
+    },
+    {
+        "id": "direct-generic-normalization-appends-wrong-marker",
+        "file": "src/generic_region.rs",
+        "before": (
+            "normalized.push(ARITHMETIC_TERMINATOR[1]);\n"
+            "    decode_arithmetic_generic_into(&normalized, header, rows, limits, bitmap)"
+        ),
+        "after": (
+            "normalized.push(0xab);\n"
+            "    decode_arithmetic_generic_into(&normalized, header, rows, limits, bitmap)"
+        ),
+        "target": "lib",
+        "test": "generic_region::tests::known_length_normalization_preserves_zero_row_bitmap_geometry",
+    },
+    {
+        "id": "unknown-generic-extent-includes-following-byte",
+        "file": "src/generic_region.rs",
+        "before": "consumed: count_end,",
+        "after": "consumed: count_end + 1,",
+        "target": "lib",
+        "test": "generic_region::tests::unknown_length_framing_preserves_count_extent_and_exact_eof_fields",
+    },
+    {
+        "id": "runtime-work-pair-rejects-inclusive-limit",
+        "file": "src/decode.rs",
+        "before": "Some(used) => used <= limits.max_work_units,",
+        "after": "Some(used) => used < limits.max_work_units,",
+        "target": "lib",
+        "test": "decode::tests::runtime_budgets_match_wide_arithmetic_and_preserve_rejected_state",
+    },
+    {
+        "id": "referred-buffer-retention-polarity-reversed",
+        "file": "src/decode.rs",
+        "before": (
+            "== Some(false)\n"
+            "        {\n"
+            "            if let Some(buffer_index) = region_buffer_index(buffers, number) {"
+        ),
+        "after": (
+            "== Some(true)\n"
+            "        {\n"
+            "            if let Some(buffer_index) = region_buffer_index(buffers, number) {"
+        ),
+        "target": "lib",
+        "test": "decode::tests::referred_bitmap_resources_release_only_selected_existing_keys_once",
+    },
+    {
+        "id": "released-symbol-bitmap-bytes-not-deducted",
+        "file": "src/decode.rs",
+        "before": ".checked_add(bitmap_byte_len(&resource.exported[bitmap_index])?)",
+        "after": ".checked_add(0)",
+        "target": "lib",
+        "test": "decode::tests::referred_bitmap_resources_release_only_selected_existing_keys_once",
+    },
+    {
+        "id": "raw-bitmap-snapshot-discards-source-x",
+        "file": "src/decode.rs",
+        "before": "snapshot.compose_region(\n            page,\n            region.x,",
+        "after": "snapshot.compose_region(\n            page,\n            0,",
+        "target": "lib",
+        "test": "decode::tests::raw_bitmap_snapshot_matches_literal_scalar_clipping_and_padding",
+    },
+    {
+        "id": "reference-depth-fails-to-count-own-node",
+        "file": "src/document.rs",
+        "before": "let Some(candidate) = referred_depth.checked_add(1) else {",
+        "after": "let Some(candidate) = referred_depth.checked_add(0) else {",
+        "target": "lib",
+        "test": "document::tests::reference_depth_orders_raw_metadata_and_reports_missing_or_overflowed_ancestors",
+    },
+    {
         "id": "generic-probability-state-validation-skipped",
         "file": "src/generic_region.rs",
         "before": "if let Err(error) = ArithmeticContext::from_state(context.state_index(), context.mps()) {",
