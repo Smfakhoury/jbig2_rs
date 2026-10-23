@@ -2,7 +2,7 @@
 name = "jbig2_rs"
 version = "0.0.1"
 edition = "2021"
-rust-version = "1.89.0"
+rust-version = "1.88.0"
 license = "MIT"
 description = "Memory-safe JBIG2 decoder under development"
 repository = "https://github.com/microsoft/jbig2_rs"
