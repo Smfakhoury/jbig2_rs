@@ -542,9 +542,10 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty-seven semantic groups execute; four deterministic shards reduce
+All twenty-seven semantic groups execute; six deterministic shards reduce
 repeated setup without dropping any of the 164 required strong/weaker compiling
-contrasts. Each shard executes sequentially, and the final collector requires
+contrasts. Each shard executes sequentially, at most four run concurrently,
+and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
 whole-crate source/tool/run/attempt identities. The source-bound receipt

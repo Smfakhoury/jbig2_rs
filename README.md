@@ -132,16 +132,16 @@ PR's work. Each workflow also supports manual dispatch for branch preflight.
 The daily extended fuzz campaign and trusted-main corpus producer remain
 unchanged.
 
-The seventeen semantic proof groups and all 92 compiling strong/weaker contrasts
-are preserved, but execute in four deterministic, sequential shards rather
+The twenty-seven semantic proof groups and all 164 compiling strong/weaker contrasts
+are preserved, but execute in six deterministic, sequential shards rather
 than one separately initialized job per group. Each shard has one worker; at most
 four run concurrently, under the unchanged 20-minute job cap. The stable
 `verify` collector requires the whole proof and every group exactly once,
 with matching source/tool/run/attempt identities and individual report/log
 hashes. No cached proof result substitutes for execution.
 
-This profile uses 19 workflow jobs per PR, plus the repository's external CLA
-check: about 20 check results rather than the former 61 push-plus-PR results.
+This profile uses 21 workflow jobs per PR, plus the repository's external CLA
+check: about 22 check results rather than the former 61 push-plus-PR results.
 The three native platforms and six isolated distribution combinations remain.
 Workflow policy validates the actual Cargo build invocation and rejects
 check-disabling flags; a `--compile` substring in another argument is not

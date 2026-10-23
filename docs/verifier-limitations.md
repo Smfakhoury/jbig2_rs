@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-seven logical semantic groups remain complete: four deterministic
+The twenty-seven logical semantic groups remain complete: six deterministic
 round-robin shards over a cost-balanced group order execute each group once
 with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-seven independently
+collector requires all six same-run shard receipts, all twenty-seven independently
 hashed report/log pairs and all 164 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
@@ -35,6 +35,21 @@ all 164 contrasts, four one-worker shards and existing timeouts. A regression
 fixture scales those observed costs when case counts grow and requires setup
 headroom. Estimates are not runtime guarantees: fresh successful jobs and
 independent same-run artifact reconstruction are still required for readiness.
+
+A second run,39930728153, confirmed that regrouping alone is insufficient:
+two shards reached the same deadline while their last groups were incomplete.
+Neither cancelled run is accepted. Expected-failure sensitivity invocations now
+use `--multiple-errors 0`: Verus still finds the first failure, but does not run
+its two default additional error-discovery queries on deliberately bad code.
+Native compilation, the exact qualified target and an actual postcondition or
+loop-invariant rejection remain mandatory. Positive baselines, weaker controls,
+whole-crate verification, resource limits, the four-worker cap and timeouts
+are unchanged. Its measured same-machine improvement was only3-5%, so the
+required work is now split into six smaller shards with at most four active.
+This adds two workflow jobs (21plusCLA, about22checks rather than61); it does
+not add concurrent workers, increase timeouts or remove logical checks.
+Fresh execution, not this optimization's predicted cost, decides
+whether the complete hosted gate passes.
 
 The source audit rejects local trusted-specification APIs, verification
 exclusions and exec termination waivers in runtime, model and proof sources.

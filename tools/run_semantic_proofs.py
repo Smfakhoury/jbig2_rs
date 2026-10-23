@@ -17,7 +17,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
-CI_SHARDS = 4
+CI_SHARDS = 6
 RECEIPT_SCHEMA = 3
 CHECKS = (
     ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),

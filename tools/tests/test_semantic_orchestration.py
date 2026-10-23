@@ -219,7 +219,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             sys, "argv", ["runner", "--matrix"],
         ), redirect_stdout(io.StringIO()) as stream:
             self.assertEqual(runner.main(), 0)
-        self.assertEqual(json.loads(stream.getvalue()), {"shard": [0, 1, 2, 3]})
+        self.assertEqual(json.loads(stream.getvalue()), {"shard": [0, 1, 2, 3, 4, 5]})
         with patch.object(runner, "CHECKS", future_checks):
             assigned = [check[0] for shard in runner.configured_shards() for check in shard]
         self.assertEqual(set(assigned), {row[0] for row in future_checks})
@@ -230,15 +230,15 @@ class SemanticOrchestrationTests(unittest.TestCase):
             runner.subprocess, "run", side_effect=self.passing_process,
         ) as process:
             result = runner.run_checks(self.root, self.root / "verus", self.output, shard=0)
-        self.assertEqual(result["selected_groups"], ["0", "4"])
+        self.assertEqual(result["selected_groups"], ["0", "6"])
         self.assertEqual(result["shard"], 0)
         self.assertEqual(result["workers"], 1)
         self.assertEqual(process.call_count, 2)
-        self.assertEqual(result["manifest"]["shards"], [["0", "4"], ["1", "5"], ["2", "6"], ["3", "7"]])
+        self.assertEqual(result["manifest"]["shards"], [["0", "6"], ["1", "7"], ["2"], ["3"], ["4"], ["5"]])
 
     def test_invalid_or_mixed_shard_selectors_fail_without_stale_success(self):
         self.output.mkdir()
-        for shard in (-1, 4, True):
+        for shard in (-1, 6, True):
             runner.write_json(self.output / runner.SUMMARY, {"status": "passed"})
             with patch.object(runner, "CHECKS", self.checks), self.subTest(shard=shard), self.assertRaises(ValueError):
                 runner.run_checks(self.root, self.root / "verus", self.output, shard=shard)
@@ -325,7 +325,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(result["status"], "passed")
         self.assertEqual(result["selected_groups"], [row[0] for row in self.checks])
         self.assertEqual(len(result["checks"]), len(self.checks))
-        self.assertEqual(result["matrix_shards"], 4)
+        self.assertEqual(result["matrix_shards"], 6)
+        self.assertEqual(result["matrix_max_parallel"], 4)
         self.assertTrue((self.output / "verus-production.json").is_file())
         self.assertTrue((self.output / "production-proof-coverage-ci.json").is_file())
         self.assertTrue((self.output / runner.TRACE / runner.SUMMARY).is_file())
@@ -334,7 +335,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     def test_missing_whole_or_each_shard_fails_and_removes_stale_success(self):
         inputs = self.collection_fixture()
-        for identity in ("whole", *(f"shard-{index}" for index in range(4))):
+        for identity in ("whole", *(f"shard-{index}" for index in range(6))):
             path = inputs / (runner.artifact_prefix() + identity)
             moved = self.root / "removed"
             path.rename(moved)
@@ -469,7 +470,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
     def test_missing_or_unexpected_group_files_inside_shard_are_rejected(self):
         inputs = self.collection_fixture()
         shard = inputs / (runner.artifact_prefix() + "shard-0")
-        report = shard / runner.TRACE / "4-proof-sensitivity.json"
+        report = shard / runner.TRACE / "0-proof-sensitivity.json"
         original = report.read_bytes()
         report.unlink()
         with self.assertRaises((ValueError, OSError)):

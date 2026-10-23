@@ -2,6 +2,16 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The required CI profile now partitions all27groups164contrasts into six
+deterministic one-worker shards, with at most four active and unchanged
+20-minute job limits. Both previous four-shard hosted attempts were rejected
+after cancellations; regrouping and a measured3-5%diagnostic-query optimization
+were insufficient for reliable deadlines. The stable collector now requires
+all six same-run receipts. This uses21workflow jobs plusCLA (about22checks),
+still below the former61, without dropping any platform, proof, mutation or
+coverage protection. Prior four-shard local receipts retain their original
+source identities; fresh six-shard local/hosted execution is required.
+
 The latest T.6 reference-search tranche proves valid-cache acceptance, exact
 first eligible opposite-colour `b1`/following `b2`, width-sentinel fallback
 and the optimized lower cursor. The real raster loop now maintains the
@@ -11,7 +21,7 @@ lower-loop result avoid relying on an unused helper theorem. No existing
 precondition or executing operation changes;658preconditions/48boundaries
 remain, with one narrowly scoped style annotation for erased source lines.
 Whole proof/compile1192/0 and six actual compiling contrasts pass. The same
-four-shard profile now requires27groups164contrasts, with no new CI job.
+four-shard profile at that checkpoint required27groups164contrasts.
 The native oracle enumerates461sorted sentinel vectors,9240full searches and
 49364cursor searches;397native tests/14ignored and21runtime mutants pass.
 Coverage is10739/12636lines,10352/12945regions,2025/2638branches:only2new
