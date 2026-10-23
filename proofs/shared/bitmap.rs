@@ -2,6 +2,115 @@ use vstd::prelude::*;
 
 verus! {
 
+pub(super) open spec fn black_fill_prefix(
+    data: Seq<u8>, width: u32, stride: usize, height: u32, completed: nat,
+) -> bool {
+    forall|row: int, column: int|
+        0 <= row < height && 0 <= column < stride ==>
+            #[trigger] data[row * stride as int + column]
+                == if row < completed {
+                    crate::spec::bitmap::filled_byte(width, column as nat, true)
+                } else {
+                    0xFFu8
+                }
+}
+
+pub(super) proof fn row_byte_bounds(row: int, column: int, stride: int, height: int)
+    requires 0 <= row < height, 0 <= column < stride,
+    ensures 0 <= row * stride + column < height * stride,
+{
+    assert(row * stride + column < (row + 1) * stride) by(nonlinear_arith);
+    assert((row + 1) * stride <= height * stride) by(nonlinear_arith);
+}
+
+pub(super) proof fn distinct_row_tail(row: int, column: int, current: int, stride: int)
+    requires
+        0 <= row, 0 <= current, 0 <= column < stride,
+        row != current || column + 1 != stride,
+    ensures row * stride + column != current * stride + stride - 1,
+{
+    if row < current {
+        assert(row * stride + column < (row + 1) * stride) by(nonlinear_arith);
+        assert((row + 1) * stride <= current * stride) by(nonlinear_arith);
+    } else if row > current {
+        assert(current * stride + stride <= row * stride) by(nonlinear_arith);
+    }
+}
+
+pub(super) proof fn initial_black_fill(
+    data: Seq<u8>, width: u32, stride: usize, height: u32,
+)
+    requires
+        data.len() == stride as nat * height as nat,
+        forall|index: int| 0 <= index < data.len() ==> data[index] == 0xFF,
+    ensures black_fill_prefix(data, width, stride, height, 0),
+{
+    assert forall|row: int, column: int|
+        0 <= row < height && 0 <= column < stride implies
+        #[trigger] data[row * stride as int + column] == 0xFFu8 by {
+        row_byte_bounds(row, column, stride as int, height as int);
+    }
+}
+
+pub(super) proof fn black_fill_step(
+    before: Seq<u8>, after: Seq<u8>,
+    width: u32, stride: usize, height: u32, current: usize,
+)
+    requires
+        width % 8 != 0,
+        stride as nat == crate::spec::bitmap::stride_for_width(width as nat),
+        0 < stride, current < height,
+        before.len() == stride as nat * height as nat,
+        after.len() == before.len(),
+        black_fill_prefix(before, width, stride, height, current as nat),
+        after[current as int * stride as int + stride as int - 1]
+            == crate::spec::bitmap::filled_byte(width, (stride - 1) as nat, true),
+        forall|index: int| 0 <= index < before.len()
+            && index != current as int * stride as int + stride as int - 1
+            ==> after[index] == before[index],
+    ensures black_fill_prefix(after, width, stride, height, current as nat + 1),
+{
+    assert forall|row: int, column: int|
+        0 <= row < height && 0 <= column < stride implies
+        #[trigger] after[row * stride as int + column]
+            == if row < current as int + 1 {
+                crate::spec::bitmap::filled_byte(width, column as nat, true)
+            } else {
+                0xFFu8
+            } by {
+        row_byte_bounds(row, column, stride as int, height as int);
+        assert(before[row * stride as int + column] == if row < current {
+            crate::spec::bitmap::filled_byte(width, column as nat, true)
+        } else { 0xFFu8 });
+        if row != current as int || column + 1 != stride as int {
+            distinct_row_tail(row, column, current as int, stride as int);
+        }
+    }
+}
+
+pub(super) proof fn filled_storage_result(bitmap: &crate::bitmap::Bitmap, value: bool)
+    requires
+        crate::spec::bitmap::storage_valid(bitmap),
+        if value && bitmap.width % 8 != 0 {
+            black_fill_prefix(
+                bitmap.data@, bitmap.width, bitmap.stride, bitmap.height, bitmap.height as nat,
+            )
+        } else {
+            forall|index: int| 0 <= index < bitmap.data@.len() ==>
+                bitmap.data@[index] == if value { 0xFFu8 } else { 0u8 }
+        },
+    ensures crate::spec::bitmap::filled_storage(bitmap, value),
+{
+    crate::views::bitmap_fields(bitmap);
+    reveal(crate::spec::bitmap::storage_valid);
+    assert forall|row: int, column: int|
+        0 <= row < bitmap.height && 0 <= column < bitmap.stride implies
+        #[trigger] bitmap.data@[row * bitmap.stride as int + column]
+            == crate::spec::bitmap::filled_byte(bitmap.width, column as nat, value) by {
+        row_byte_bounds(row, column, bitmap.stride as int, bitmap.height as int);
+    }
+}
+
 pub(super) proof fn black_span_mask(byte: u8, shift: u32, count: u32)
     requires shift < 8, 0 < count <= 8 - shift,
     ensures forall|bit: u32| bit < 8 ==>

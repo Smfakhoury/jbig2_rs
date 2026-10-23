@@ -237,6 +237,28 @@ pub open spec fn zeroed_storage(bitmap: &crate::bitmap::Bitmap) -> bool {
         crate::views::bitmap_data(bitmap)[index] == 0
 }
 
+pub(crate) open spec fn filled_byte(width: u32, column: nat, value: bool) -> u8 {
+    if !value {
+        0
+    } else if width % 8 != 0 && column + 1 == stride_for_width(width as nat) {
+        0xFFu8 << (8u8 - (width % 8) as u8)
+    } else {
+        0xFF
+    }
+}
+
+pub(crate) open spec fn filled_storage(
+    bitmap: &crate::bitmap::Bitmap, value: bool,
+) -> bool {
+    &&& storage_valid(bitmap)
+    &&& forall|row: int, column: int|
+        0 <= row < crate::views::bitmap_height(bitmap)
+        && 0 <= column < crate::views::bitmap_stride(bitmap) ==>
+            #[trigger] crate::views::bitmap_data(bitmap)[
+                row * crate::views::bitmap_stride(bitmap) as int + column
+            ] == filled_byte(crate::views::bitmap_width(bitmap), column as nat, value)
+}
+
 pub open spec fn prefix_copy_result(
     before: &crate::bitmap::Bitmap,
     after: &crate::bitmap::Bitmap,

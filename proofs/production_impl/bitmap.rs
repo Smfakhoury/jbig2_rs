@@ -1,5 +1,47 @@
 use vstd::prelude::*;
 
+macro_rules! production_filled_tail_bounds {
+    ($data:ident, $height:ident, $stride:ident, $row:ident, $offset:ident, $last:ident, $index:ident) => {
+        proof! {
+            assert($row < $height as usize);
+            assert($offset as nat == $row as nat * $stride as nat);
+            assert($last as nat + 1 == $stride as nat);
+            assert($index as nat == $offset as nat + $last as nat);
+            vstd::arithmetic::mul::lemma_mul_inequality(
+                $row as int + 1, $height as int, $stride as int,
+            );
+            vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
+                $stride as int, $row as int, 1,
+            );
+            vstd::arithmetic::mul::lemma_mul_is_commutative($height as int, $stride as int);
+            assert(($row as nat + 1) * $stride as nat <= $height as nat * $stride as nat);
+            assert($index as nat + 1 == ($row as nat + 1) * $stride as nat);
+            assert($index < $data@.len());
+        }
+    };
+}
+
+macro_rules! production_filled_storage_step {
+    ($before:ident, $data:ident, $width:ident, $stride:ident, $height:ident, $row:ident, $mask:ident) => {
+        proof! {
+            assert($before[$row as int * $stride as int + $stride as int - 1] == 0xFFu8);
+            assert((0xFFu8 & $mask) == $mask) by(bit_vector);
+            assert(crate::spec::bitmap::filled_byte($width, ($stride - 1) as nat, true) == $mask);
+            crate::bitmap::bitmap_shared::black_fill_step(
+                $before, $data@, $width, $stride, $height, $row,
+            );
+        }
+    };
+}
+
+macro_rules! production_filled_storage_result {
+    ($bitmap:ident, $value:ident) => {
+        proof! {
+            crate::bitmap::bitmap_shared::filled_storage_result(&$bitmap, $value);
+        }
+    };
+}
+
 macro_rules! production_black_span_init {
     ($bitmap:ident, $row:ident, $start:ident, $end:ident, $original:ident, $valid:ident) => {
         proof! {

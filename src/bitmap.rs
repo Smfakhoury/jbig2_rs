@@ -417,6 +417,7 @@ impl Bitmap {
                 && crate::views::bitmap_height(&bitmap) == height
                 && crate::spec::bitmap::storage_valid(&bitmap)
                 && (!value ==> crate::spec::bitmap::zeroed_storage(&bitmap))
+                && crate::spec::bitmap::filled_storage(&bitmap, value)
                 && crate::spec::bitmap::limits_allow_bitmap(width, height, limits),
             Err(_) => true,
         },
@@ -440,12 +441,22 @@ impl Bitmap {
         if value && width % 8 != 0 {
             let used_bits = (width % 8) as u8;
             let trailing_mask = 0xFF_u8 << (8 - used_bits);
+            #[cfg(verus_keep_ghost)]
+            proof! { bitmap_shared::initial_black_fill(data@, width, stride, height); }
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
                     row <= height,
+                    value,
+                    width % 8 != 0,
+                    trailing_mask == (0xFFu8 << (8u8 - (width % 8) as u8)),
                     data@.len() == length,
                     length as nat == stride as nat * height as nat,
                     stride > 0,
+                    stride as nat == crate::spec::bitmap::stride_for_width(width as nat),
+                    bitmap_shared::black_fill_prefix(data@, width, stride, height, row as nat),
+                ensures bitmap_shared::black_fill_prefix(
+                    data@, width, stride, height, height as nat,
+                ),
                 decreases height - row,
             ))]
             for row in 0..height {
@@ -462,33 +473,28 @@ impl Bitmap {
                     .checked_add(stride_minus_one)
                     .ok_or(MalformedError::IntegerOverflow)?;
                 #[cfg(verus_keep_ghost)]
-                proof! {
-                    assert(row < height as usize);
-                    assert(row_offset as nat == row as nat * stride as nat);
-                    assert(stride_minus_one as nat + 1 == stride as nat);
-                    assert(final_byte as nat
-                        == row_offset as nat + stride_minus_one as nat);
-                    vstd::arithmetic::mul::lemma_mul_inequality(
-                        row as int + 1,
-                        height as int,
-                        stride as int,
-                    );
-                    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
-                        stride as int,
-                        row as int,
-                        1,
-                    );
-                    vstd::arithmetic::mul::lemma_mul_is_commutative(
-                        height as int,
-                        stride as int,
-                    );
-                    assert((row as nat + 1) * stride as nat
-                        <= height as nat * stride as nat);
-                    assert(final_byte as nat + 1
-                        == (row as nat + 1) * stride as nat);
-                    assert(final_byte < data@.len());
-                }
+                production_filled_tail_bounds!(
+                    data,
+                    height,
+                    stride,
+                    row,
+                    row_offset,
+                    stride_minus_one,
+                    final_byte
+                );
+                #[cfg(verus_keep_ghost)]
+                proof_decl! { let ghost before_fill = data@; }
                 data[final_byte] &= trailing_mask;
+                #[cfg(verus_keep_ghost)]
+                production_filled_storage_step!(
+                    before_fill,
+                    data,
+                    width,
+                    stride,
+                    height,
+                    row,
+                    trailing_mask
+                );
             }
         }
 
@@ -503,6 +509,8 @@ impl Bitmap {
             crate::views::bitmap_fields(&bitmap);
             reveal(crate::spec::bitmap::storage_valid);
         }
+        #[cfg(verus_keep_ghost)]
+        production_filled_storage_result!(bitmap, value);
         Ok(bitmap)
     }
 
@@ -2563,27 +2571,44 @@ mod tests {
     #[test]
     fn filled_layout_and_padding_are_deterministic() {
         let limits = Limits::default();
-        for width in [0, 1, 7, 8, 9, 15, 16, 17] {
-            for value in [false, true] {
-                let bitmap = Bitmap::filled(width, 3, value, &limits).expect("bitmap fits");
-                let expected_stride = usize::try_from(width.div_ceil(8)).expect("test width fits");
-                assert_eq!(bitmap.stride(), expected_stride);
-                assert_eq!(bitmap.bytes().len(), expected_stride * 3);
-                for y in 0..bitmap.height() {
-                    for x in 0..bitmap.width() {
-                        assert_eq!(bitmap.pixel(x, y), Some(value));
+        let mut cases = 0;
+        for width in 0..=128 {
+            for height in 0..=4 {
+                for value in [false, true] {
+                    let bitmap =
+                        Bitmap::filled(width, height, value, &limits).expect("bitmap fits");
+                    let expected_stride =
+                        usize::try_from(width.div_ceil(8)).expect("test width fits");
+                    assert_eq!(bitmap.stride(), expected_stride);
+                    assert_eq!(
+                        bitmap.bytes().len(),
+                        expected_stride * usize::try_from(height).unwrap()
+                    );
+                    for y in 0..height {
+                        for x in 0..width {
+                            assert_eq!(bitmap.pixel(x, y), Some(value));
+                        }
+                        for column in 0..expected_stride {
+                            let mut expected = 0_u8;
+                            for bit in 0..8 {
+                                expected = expected * 2
+                                    + u8::from(
+                                        value && column * 8 + bit < usize::try_from(width).unwrap(),
+                                    );
+                            }
+                            assert_eq!(
+                                bitmap.bytes()
+                                    [usize::try_from(y).unwrap() * expected_stride + column],
+                                expected,
+                                "{width}x{height}, row{y} byte{column}, value{value}",
+                            );
+                        }
                     }
-                    if width % 8 != 0 {
-                        let last = bitmap.bytes()[usize::try_from(y).expect("test row fits")
-                            * expected_stride
-                            + expected_stride
-                            - 1];
-                        let padding_mask = (1_u8 << (8 - width % 8)) - 1;
-                        assert_eq!(last & padding_mask, 0);
-                    }
+                    cases += 1;
                 }
             }
         }
+        assert_eq!(cases, 1290);
     }
 
     #[test]
