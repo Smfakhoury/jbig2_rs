@@ -2,6 +2,42 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The latest resource/reference tranche adds only direct native component tests:
+9,207 collection scenarios check existing bitmap-resource order, pointer
+identity and successful observed-capacity upper bounds, including 5,460
+below-requested-minimum rejections; 20 numeric preflight cases allocate nothing.
+These tests do not equate requested bytes with actual reserved capacity.
+Another 216 parsed-
+header retention graphs produce 2,856 reference/depth budget-precedence cases,
+plus an internal empty-retention guard. No entropy decoder vector, new coding/
+custom/refinement/aggregation family or observer hook is added.
+All 17 native streams and 658 production declarations/bodies/attributes/source
+starts, plus 48 reviewed boundaries, are unchanged. Fresh proof/compile1190/0;
+395 native tests pass with14ignored and20actualruntime mutants compile/detect.
+The three added mutants test inclusive borrowed peaks, dropped later bitmaps
+and inclusive total-reference limits. Same-coordinate comparison proves
+actual +34 covered lines / +32 regions / +14 branch outcomes, zero lost
+coordinates and unchanged denominators:10739/12636lines (84.99%),
+10352/12945regions (79.97%),2023/2638branches (76.69%). Only decode/document
+gain coverage; no floor or exclusion changes. The required proof profile
+remains25groups152contrasts/fourshards, with no additional CI job. All266
+records remain provisional114/126/26. Native component ordering/budget tests
+are not new formal output-order, normative or full-image conformance evidence.
+At current denominators,90%line/85%branch goals still need634covered lines
+and220branch outcomes; all existing owner/raster/stream/capacity gates remain.
+
+An isolated check additionally exposed an existing symbol-borrow accounting
+gap: a 4,112-byte limit can accept a returned vector whose safe observed
+capacity implies a 4,128-byte managed total (16 requested pointer bytes versus
+32 reserved). This is not allocator/RSS estimation. The separate native repair
+at `1e2bf67` rejects the shortfall, passes396native tests/21runtime mutants and
+strict MSRV lint, and its regression fails on the original collector. Full
+pinned verification correctly fails at the unsupported capacity getter.
+No standard-library trust exception or proof waiver is approved/integrated;
+the native-only repair is not ready or formally accepted. Safety verification
+and component coverage on the unchanged production source do not close this
+functional memory-accounting defect.
+
 The latest recorded-span tranche propagates canonical-storage-conditional
 primitive pixel/storage effects and exact cache/emitted-state updates without
 changing any native body or existing weak precondition. White remains a no-op,

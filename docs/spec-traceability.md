@@ -616,6 +616,29 @@ pixel relation. The polarity record remains state-only, and all 266 records
 remain provisional114/126/26: full raster-loop white initialization,
 disjointness, mode interpretation and caller composition are still open.
 
+The resource/reference coverage follow-up changes no production declaration,
+body, attribute/precondition or source start. Its direct native tests cover
+existing resource borrowing/order/identity, observed-success/requested-minimum
+pointer-memory boundaries and
+general parsed-header retention/reference-depth policy precedence. They do not
+run a new entropy/coding family, exercise paused work, or prove formal output
+ordering. Three added real runtime mutants join the existing seventeen; all
+twenty actually compile and are detected. Identical production coverage
+coordinates demonstrate +34 lines/+32 regions/+14 branch outcomes with zero
+lost coordinates, unchanged denominators and no exclusion/floor changes.
+No requirement, strength or review count changes: all266 remain provisional
+114/126/26. Component-native gains do not close normative/model review or
+complete-stream/raster claims.
+
+Here the borrowing success tests use safe observed vector capacity; rejection
+tests cover the requested minimum only. Requested bytes are not asserted equal
+to reserved capacity. An isolated native counterexample exposes an existing
+4,112-versus-4,128 managed-budget gap, despite the safety proof's success.
+A separate native-only repair remains blocked by the unapproved standard
+capacity specification, with no current formal acceptance. This is an
+additional functional resource-accounting gap, not a new standards exception,
+conformance credit or reason to upgrade a provisional record.
+
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional
 `--require-reviewed-decomposition` also requires both inputs, but checks only

@@ -35,6 +35,34 @@ the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
 
+The resource/reference coverage tranche leaves all17native streams and
+658production declarations/bodies/attributes/source starts unchanged, as well
+as48reviewed boundaries. Whole proof/compile remains1190/0. Native component
+matrices cover9207resourcecollection scenarios/5460tight-budget errors,
+20allocation-free numeric preflights and216parsed-header retention graphs/
+2856budget-precedence cases. No new entropy-family fixture or paused-family
+work is introduced. All395native tests pass with14ignored;20actualruntime
+mutants compile/detect. Identical coverage coordinates prove+34lines/
++32regions/+14branch outcomes, zero lost coordinates and unchanged
+denominators/floors/exclusions. Native ordering/budget observations are not
+new formal output-order or normative approval;266allprovisional114/126/26.
+The required25group152contrast/fourshard profile and CI job count are unchanged.
+
+Those resource tests check successful observed-capacity upper bounds and
+below-requested-minimum rejection, not complete observed-capacity enforcement.
+The unchanged collector has a reproduced semantic gap: a 4,112-byte accepted
+limit can correspond to a 4,128-byte observed managed total, because its
+pointer reservation requests16bytes but reports32bytes capacity. This is a
+native `Vec::capacity()` observation, not allocator/RSS accounting. Safety
+verification1190/0 does not prove this missing functional bound.
+Native-only repair `1e2bf67` retains requested preflight/error precedence and
+checks actual capacity after reservation; its strict regression fails on the
+old collector and passes after repair, with396native tests/21actual mutants
+and strict MSRV lint passing. Pinned whole verification fails at unsupported
+`Vec::capacity`. No local trusted standard declaration, waiver or accepted
+proof inventory is added for that candidate. Owner approval of the scoped
+standard boundary is still absent, so the repair remains blocked/not ready.
+
 The span/recorded-span wrappers now expose canonical-storage-conditional
 success and exact primitive black-pixel/storage effects, with unchanged weaker
 preconditions. White remains an exact no-op. Exact cached-transition/emitted
