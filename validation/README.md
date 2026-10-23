@@ -126,7 +126,8 @@ not an independent approval of upstream code.
 Rust setup uses a pinned generic action with explicit compiler inputs.
 Version-named upstream action wrappers hard-code their version and do not
 accept that input, so they are not used as implicit compiler selectors.
-MSRV remains 1.89.0, Verus uses 1.98.1, fuzz/coverage use their existing dated
+The runtime MSRV is 1.88.0, the development compiler remains 1.89.0, Verus uses
+1.98.1, fuzz/coverage use their existing dated
 nightly, and distribution intentionally tests both MSRV and current stable.
 All jobs have explicit budgets; native Cargo and Verus now have 20-minute
 caps instead of the hosted six-hour default. Existing fuzz, coverage,

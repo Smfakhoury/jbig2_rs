@@ -1,7 +1,7 @@
 # Ordinary Rust distribution without Verus
 
 The crate has no runtime dependencies, uses the MIT license, and declares Rust
-1.89.0 as its minimum supported Rust version (MSRV). Crates.io publication is
+1.88.0 as its minimum supported Rust version (MSRV). Crates.io publication is
 still disabled while the readiness plan and proof/conformance gaps are open.
 
 ## What is packaged
@@ -31,7 +31,7 @@ and the validation-access module is not available to a normal consumer.
 With Python 3.11+ and the selected Rust toolchain already installed:
 
 ```text
-python -B tools/check_distribution.py --toolchain 1.89.0 \
+python -B tools/check_distribution.py --toolchain 1.88.0 \
   --output target/distribution/msrv.json
 python -B tools/check_distribution.py --toolchain stable \
   --output target/distribution/stable.json
@@ -68,6 +68,9 @@ CI runs this gate natively on Linux, Windows and macOS, using both MSRV and
 current stable. Each report records the actual compiler version and archive
 hash. Different Cargo versions can normalize manifests differently, so the
 archive hashes are not expected to match across toolchains.
+
+The development compiler in `toolchain.json` remains 1.89.0, independently of
+the runtime minimum. Verus, coverage and fuzz toolchain pins are unchanged.
 
 ## What this does not prove
 
