@@ -18,12 +18,23 @@ argument list, not the legacy `--compile` substring (which could also match
 disabling flags are rejected in workflow commands and environments.
 
 The twenty-seven logical semantic groups remain complete: four deterministic
-round-robin shards execute each group once with one worker per shard. The
+round-robin shards over a cost-balanced group order execute each group once
+with one worker per shard. The
 collector requires all four same-run shard receipts, all twenty-seven independently
 hashed report/log pairs and all 164 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
+
+Hosted run 39926348004 executed all 27 group checkers successfully, but its
+slowest shard used 1158 seconds plus setup/cleanup and received a cancelled
+20-minute job verdict. The collector correctly rejected that run; it is not
+hosted acceptance. Swapping the independent halftone-header and region-dispatch
+groups reduces the largest recorded shard estimate to 1090 seconds, preserving
+all 164 contrasts, four one-worker shards and existing timeouts. A regression
+fixture scales those observed costs when case counts grow and requires setup
+headroom. Estimates are not runtime guarantees: fresh successful jobs and
+independent same-run artifact reconstruction are still required for readiness.
 
 The source audit rejects local trusted-specification APIs, verification
 exclusions and exec termination waivers in runtime, model and proof sources.
