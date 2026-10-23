@@ -185,22 +185,24 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertFalse((self.output / runner.SUMMARY).exists())
 
     def test_measured_complete_profile_leaves_timeout_headroom(self):
-        # Rounded-up seconds from run 39926348004; estimates are not acceptance.
+        # Worst completed costs from runs 39937231524/39941605340.
+        # The enlarged caller group gets explicit 750-second headroom.
+        # Scheduling estimates are not hosted acceptance.
         measured = {
-            "reset": (2, 57), "document-count": (5, 129),
-            "bitmap-copy": (6, 145), "retention": (3, 106),
-            "value-bridge": (5, 185), "mmr-span": (8, 160),
-            "region-dispatch": (3, 63), "text-batch": (4, 115),
-            "bitmap-chunk": (4, 121), "bitmap-compose": (5, 96),
-            "black-span": (6, 121), "arithmetic-decision": (15, 399),
-            "arithmetic-refill": (6, 158), "arithmetic-initialization": (6, 111),
-            "arithmetic-normalization": (6, 110), "operator-bit": (4, 116),
-            "arithmetic-integer": (9, 230), "iaid-state": (6, 118),
-            "integer-state": (9, 195), "arithmetic-codec": (8, 248),
-            "halftone-header": (9, 233), "reader-error": (9, 191),
-            "mmr-prefix": (4, 102), "mmr-run": (4, 106),
-            "mmr-horizontal": (6, 178), "symbol-cardinality": (6, 141),
-            "mmr-reference": (6, 137),
+            "reset": (2, 44), "document-count": (13, 391),
+            "bitmap-copy": (6, 204), "retention": (3, 100),
+            "value-bridge": (5, 181), "mmr-span": (8, 245),
+            "region-dispatch": (3, 85), "text-batch": (4, 109),
+            "bitmap-chunk": (4, 130), "bitmap-compose": (5, 125),
+            "black-span": (6, 155), "arithmetic-decision": (15, 442),
+            "arithmetic-refill": (6, 123), "arithmetic-initialization": (6, 140),
+            "arithmetic-normalization": (6, 155), "operator-bit": (4, 115),
+            "arithmetic-integer": (9, 220), "iaid-state": (6, 167),
+            "integer-state": (9, 190), "arithmetic-codec": (19, 750),
+            "halftone-header": (9, 179), "reader-error": (9, 249),
+            "mmr-prefix": (4, 117), "mmr-run": (4, 119),
+            "mmr-horizontal": (6, 135), "symbol-cardinality": (6, 178),
+            "mmr-reference": (6, 174),
         }
         checks = runner.configured_checks()
         self.assertEqual({check[0] for check in checks}, set(measured))
@@ -211,7 +213,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 observed_cases, observed_seconds = measured[identity]
                 seconds += (cases * observed_seconds + observed_cases - 1) // observed_cases
             estimates.append(seconds)
-        self.assertLessEqual(max(estimates), 1100)
+        self.assertLessEqual(max(estimates), 1000)
 
     def test_matrix_is_generated_from_current_complete_checks(self):
         future_checks = self.checks + (("future-decision", "future.py", 4, "strong_contract", "weaker_control"),)

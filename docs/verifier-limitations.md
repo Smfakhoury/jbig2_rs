@@ -80,6 +80,17 @@ not add concurrent workers, increase timeouts or remove logical checks.
 Fresh execution, not this optimization's predicted cost, decides
 whether the complete hosted gate passes.
 
+PR75run39941605340 additionally exposed a public-release downloadHTTP403 and
+one overloaded enlarged-caller shard. Its partial artifacts are not acceptance.
+Compiler transport now retries only within fixed retry/connect/total-time
+budgets and retains the exact pinnedURL/SHA256 check before unzip. The workflow
+auditor rejects unbounded retries or removed integrity checks. The same27groups/
+183contrasts are statically reordered using actual completed group costs, with
+750seconds reserved for the enlarged caller group. The largest estimated
+shard is979seconds and the regression ceiling is tightened to1000; actual
+successful hosted execution still decides acceptance. No worker, job timeout,
+positive proof, weaker control or resource/coverage floor is relaxed.
+
 The source audit rejects local trusted-specification APIs, verification
 exclusions and exec termination waivers in runtime, model and proof sources.
 Decreases checks remain enabled. Exec termination checking is conditional on
