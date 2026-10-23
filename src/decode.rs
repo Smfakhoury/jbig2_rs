@@ -662,7 +662,10 @@ enum CollectedSymbols<'a> {
 impl<'a> CollectedSymbols<'a> {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires decode_spec::collected_symbols_valid(self),
-        ensures crate::symbol_text::symbol_text_spec::codebook_valid(out),
+        ensures
+            crate::symbol_text::symbol_text_spec::codebook_valid(out),
+            crate::symbol_text::symbol_text_spec::codebook_len(out)
+                == decode_spec::collected_symbol_count(self),
     ))]
     fn codebook(&'a self) -> SymbolCodebook<'a> {
         match self {
@@ -676,7 +679,8 @@ impl<'a> CollectedSymbols<'a> {
     ensures match out {
         Some(index) =>
             index < symbols@.len()
-            && symbols@[index as int].0 == number,
+            && symbols@[index as int].0 == number
+            && decode_spec::first_symbol_index(symbols@, number, index as int),
         None =>
             forall|index: int| 0 <= index < symbols@.len() ==>
                 symbols@[index].0 != number,
@@ -704,8 +708,9 @@ fn symbol_index(symbols: &[(u32, SymbolResource)], number: u32) -> Option<usize>
     requires decode_spec::symbol_store_valid(symbols),
     ensures match out {
         Some(resource) =>
-            crate::halftone::halftone_spec::bitmaps_valid(resource.exported@),
-        None => true,
+            crate::halftone::halftone_spec::bitmaps_valid(resource.exported@)
+            && resource.exported@.len() == decode_spec::symbol_group_count(symbols@, number),
+        None => decode_spec::symbol_group_count(symbols@, number) == 0,
     },
 ))]
 fn get_symbol_resource(symbols: &SymbolStore, number: u32) -> Option<&SymbolResource> {
@@ -715,6 +720,14 @@ fn get_symbol_resource(symbols: &SymbolStore, number: u32) -> Option<&SymbolReso
         assert(crate::halftone::halftone_spec::bitmaps_valid(
             symbols@[index as int].1.exported@,
         ));
+        assert forall|other: int| decode_spec::first_symbol_index(symbols@, number, other)
+            implies other == index as int by {
+            if other < index as int {
+                assert(symbols@[other].0 != number);
+            } else if other > index as int {
+                assert(symbols@[index as int].0 != number);
+            }
+        }
     }
     Some(&symbols[index].1)
 }
@@ -2076,10 +2089,16 @@ fn decode_text_segment(
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires decode_spec::symbol_store_valid(symbols),
     ensures match out {
-        Ok(bitmaps) => decode_spec::collected_symbols_valid(&bitmaps),
+        Ok(bitmaps) => decode_spec::collected_symbols_valid(&bitmaps)
+            && decode_spec::collected_symbol_count(&bitmaps)
+                == decode_spec::referred_symbol_count(
+                    symbols@, segment.header.referred_segments@,
+                    segment.header.referred_segments@.len(),
+                ),
         Err(_) => true,
     },
 ))]
+#[allow(clippy::too_many_lines)]
 fn collect_referred_symbols<'a>(
     segment: &ParsedSegment<'_>,
     symbols: &'a SymbolStore,
@@ -2094,6 +2113,14 @@ fn collect_referred_symbols<'a>(
         invariant
             reference_index <= segment.header.referred_segments@.len(),
             decode_spec::symbol_store_valid(symbols),
+            count as nat == decode_spec::referred_symbol_count(
+                symbols@, segment.header.referred_segments@, reference_index as nat,
+            ),
+            nonempty_groups == 0 ==> count == 0 && contiguous.is_none(),
+            nonempty_groups <= 1 ==> match contiguous {
+                Some(bitmaps) => count == bitmaps@.len(),
+                None => count == 0,
+            },
             match contiguous {
                 Some(bitmaps) =>
                     crate::halftone::halftone_spec::bitmaps_valid(bitmaps@),
@@ -2114,6 +2141,9 @@ fn collect_referred_symbols<'a>(
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
                     bitmap_index <= resource.exported@.len(),
+                    count as nat == decode_spec::referred_symbol_count(
+                        symbols@, segment.header.referred_segments@, reference_index as nat,
+                    ) + bitmap_index as nat,
                     crate::halftone::halftone_spec::bitmaps_valid(
                         resource.exported@
                     ),
@@ -2158,6 +2188,9 @@ fn collect_referred_symbols<'a>(
             reference_index <= segment.header.referred_segments@.len(),
             decode_spec::symbol_store_valid(symbols),
             decode_spec::bitmap_refs_valid(imported@),
+            imported@.len() == decode_spec::referred_symbol_count(
+                symbols@, segment.header.referred_segments@, reference_index as nat,
+            ),
         decreases segment.header.referred_segments@.len() - reference_index,
     ))]
     while reference_index < segment.header.referred_segments.len() {
@@ -2167,6 +2200,9 @@ fn collect_referred_symbols<'a>(
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
                     bitmap_index <= resource.exported@.len(),
+                    imported@.len() == decode_spec::referred_symbol_count(
+                        symbols@, segment.header.referred_segments@, reference_index as nat,
+                    ) + bitmap_index as nat,
                     crate::halftone::halftone_spec::bitmaps_valid(
                         resource.exported@
                     ),
@@ -3454,6 +3490,51 @@ mod tests {
             }
         }
         assert_eq!(cases, 20);
+    }
+
+    #[test]
+    fn first_matching_symbol_group_controls_duplicate_keys_and_collection_count() {
+        let bitmap = Bitmap::blank(9, 1, &Limits::default()).unwrap();
+        let symbols = vec![
+            (
+                10,
+                SymbolResource {
+                    exported: vec![bitmap.clone()],
+                    contexts: None,
+                },
+            ),
+            (
+                10,
+                SymbolResource {
+                    exported: vec![bitmap.clone(), bitmap],
+                    contexts: None,
+                },
+            ),
+            (
+                20,
+                SymbolResource {
+                    exported: Vec::new(),
+                    contexts: None,
+                },
+            ),
+        ];
+        assert_eq!(symbol_index(&symbols, 10), Some(0));
+        assert_eq!(get_symbol_resource(&symbols, 10).unwrap().exported.len(), 1);
+        assert_eq!(symbol_index(&symbols, 20), Some(2));
+        assert_eq!(get_symbol_resource(&symbols, 20).unwrap().exported.len(), 0);
+        assert_eq!(symbol_index(&symbols, 99), None);
+        assert!(get_symbol_resource(&symbols, 99).is_none());
+        let segment = symbol_reference_segment(&[10, 10, 20, 99]);
+        let collected =
+            collect_referred_symbols(&segment, &symbols, 0, &Limits::default()).unwrap();
+        let SymbolCodebook::Borrowed(bitmaps) = collected.codebook() else {
+            panic!("two nonempty reference occurrences require borrowed storage");
+        };
+        assert_eq!(bitmaps.len(), 2);
+        let expected = &symbols[0].1.exported[0];
+        assert!(bitmaps
+            .iter()
+            .all(|bitmap| core::ptr::eq(*bitmap, expected)));
     }
 
     fn generic_data(coded: &[u8]) -> Vec<u8> {

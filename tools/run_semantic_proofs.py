@@ -45,6 +45,7 @@ CHECKS = (
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 6, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"

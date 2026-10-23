@@ -100,6 +100,54 @@ pub(super) open spec fn collected_symbols_valid(
     }
 }
 
+pub(super) open spec fn collected_symbol_count(
+    symbols: &crate::decode::CollectedSymbols,
+) -> nat {
+    match symbols {
+        crate::decode::CollectedSymbols::Contiguous(bitmaps) => bitmaps@.len(),
+        crate::decode::CollectedSymbols::Borrowed(bitmaps) => bitmaps@.len(),
+    }
+}
+
+pub(super) open spec fn first_symbol_index(
+    symbols: Seq<(u32, crate::decode::SymbolResource)>,
+    number: u32,
+    index: int,
+) -> bool {
+    0 <= index < symbols.len()
+        && symbols[index].0 == number
+        && forall|previous: int| 0 <= previous < index ==>
+            #[trigger] symbols[previous].0 != number
+}
+
+pub(super) open spec fn symbol_group_count(
+    symbols: Seq<(u32, crate::decode::SymbolResource)>,
+    number: u32,
+) -> nat {
+    if exists|index: int| first_symbol_index(symbols, number, index) {
+        let index = choose|index: int| first_symbol_index(symbols, number, index);
+        symbols[index].1.exported@.len()
+    } else {
+        0
+    }
+}
+
+pub(super) open spec fn referred_symbol_count(
+    symbols: Seq<(u32, crate::decode::SymbolResource)>,
+    references: Seq<u32>,
+    count: nat,
+) -> nat
+    recommends count <= references.len(),
+    decreases count,
+{
+    if count == 0 {
+        0
+    } else {
+        referred_symbol_count(symbols, references, (count - 1) as nat)
+            + symbol_group_count(symbols, references[count - 1])
+    }
+}
+
 pub(super) open spec fn pattern_store_valid(
     patterns: &crate::decode::PatternStore,
 ) -> bool {
