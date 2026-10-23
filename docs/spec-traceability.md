@@ -670,6 +670,20 @@ The existing first-white/next-row records are not upgraded. Two real native
 branch outcomes are additionally covered, with no changed denominator/floor.
 This does not resume any paused JBIG2 refinement/aggregation/custom family.
 
+The native generic-control follow-up preserves every production declaration,
+body, attribute/precondition and source start. Its independent scalar packed-
+row samples, raw probability validation and error projection tests do not
+decode entropy or introduce a coding-family/refinement/aggregation fixture.
+All401native tests/14ignored and24actual runtime mutants pass. Identical native
+coordinates prove+59lines/+43regions/+14branch outcomes, zero lost covered
+coordinates, unchanged denominators and no weakened floor/exclusion. Queries
+outside the bitmap or with defensive row offsets exercise helper white padding,
+not malformed backing slices; some such guard inputs are not produced by a
+valid decoder caller. These are native component facts, not new formal error-
+projection, normative rejection or full-family conformance theorems.
+All266records remain provisional115/125/26, with no requirement/strength/review
+upgrade. Existing independent-review/raster/stream/capacity gaps remain.
+
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional
 `--require-reviewed-decomposition` also requires both inputs, but checks only

@@ -159,42 +159,42 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
+      "file_sha256": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
       "status": "reviewed-verifier-limitation",
       "reason": "Standard Display formatting uses formatting machinery not directly verified by pinned Verus; this is not a raster-kernel or fallible-allocation limitation."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
+      "file_sha256": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
       "status": "reviewed-verifier-limitation",
       "reason": "The standard Error trait source method is not directly verified by pinned Verus; raster algorithms and allocation specifications are accounted for separately."
     },
     {
       "id": "generic_region::GenericRegionError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
+      "file_sha256": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#2",
       "file": "src/generic_region.rs",
-      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
+      "file_sha256": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#3",
       "file": "src/generic_region.rs",
-      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
+      "file_sha256": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::DecodeError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
+      "file_sha256": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     },

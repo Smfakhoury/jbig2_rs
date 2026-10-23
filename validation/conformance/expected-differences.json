@@ -11,7 +11,7 @@
         "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
         "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9"
       },
-      "rationale": "Fresh exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a"
     },
     {
@@ -24,7 +24,7 @@
         "src/mmr.rs": "8fbc634c20453f849630b145593c268ef77e2ad1c4c3926929c174b5c46c4c35",
         "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9"
       },
-      "rationale": "Fresh exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a"
     },
     {
@@ -36,7 +36,7 @@
         "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad",
         "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35"
       },
-      "rationale": "Fresh exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
@@ -48,7 +48,7 @@
         "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad",
         "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35"
       },
-      "rationale": "Fresh exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
@@ -60,7 +60,7 @@
         "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad",
         "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35"
       },
-      "rationale": "Fresh exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "83fb4c32a7c0adcbf69c6dc92489749783b4d57df6692e42cae5133e196ea418"
     },
     {
@@ -72,7 +72,7 @@
         "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad",
         "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35"
       },
-      "rationale": "Fresh exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "52f8bcbd6d8f2a55bdf1112eda6c1a36f38cd9c6fd784119a88154ce8c943a74"
     },
     {
@@ -84,7 +84,7 @@
         "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad",
         "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35"
       },
-      "rationale": "Fresh exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "48f47424233ba140b26527ca45651147c7a6e80d3e796ccfbad54416d0b1da73"
     },
     {

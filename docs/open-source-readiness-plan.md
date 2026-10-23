@@ -2,6 +2,26 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The latest native generic-control tranche changes no production declaration,
+body, attribute/precondition or source start:all17streams/658functions and
+48reviewed boundaries remain. Independent MSB sampling checks1085row-byte,
+59675window and4800numeric-edge cases;131072raw probability-state checks cover
+allstate/mpsbytes,94valid-prefix successes and first-error order. Generic
+trait/factory projections cover allvariants,64EOFpayloads and2304failure-signal
+cases. Bounded bitmap storage remains valid; outside query/defensive row
+offsets test existing white padding, not malformed backing slices. No entropy
+decode, new family fixture, paused-family work, hook or allocator failure is
+introduced. Whole proof/compile1192/0 and401native tests/14ignored pass;
+24actualruntime mutants compile/detect, adding3controls in the existing runner.
+Same-coordinate comparison proves+59coveredlines/+43regions/+14branches,
+zero lost coordinates and no changed denominator/floor/exclusion. Only
+generic_region improves:10798/12636lines (85.45%),10395/12945regions (80.30%),
+2039/2638branches (77.29%). Required27groups164contrasts/fourshards and CIjob
+count remain unchanged. All266records stayprovisional115/125/26. Native
+component checks do not imply new formal error/entropy/normative conformance.
+The90%line/85%branch goals still need575coveredlines/204branch outcomes;
+capacity, independent review and full raster/caller/stream gates stay open.
+
 The latest T.6 reference-search tranche proves valid-cache acceptance, exact
 first eligible opposite-colour `b1`/following `b2`, width-sentinel fallback
 and the optimized lower cursor. The real raster loop now maintains the

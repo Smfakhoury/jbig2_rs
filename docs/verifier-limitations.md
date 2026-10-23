@@ -35,6 +35,22 @@ the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
 
+Native generic helper tests now independently cover packed-row MSB/padding
+and numeric query edges, raw probability-state validation/first-error order
+and generic diagnostic projections. All17native streams/658declarations,
+bodies/attributes/preconditions/source starts and48reviewed boundaries remain
+unchanged. Whole proof/compile stays1192/0;401native tests/14ignored and
+24actualruntime mutants pass. Same-coordinate coverage comparison establishes
++59lines/+43regions/+14branches, zero lost covered coordinates and unchanged
+denominators/floors/exclusions; onlygeneric_region gains. No entropy decode,
+new encoded/coding family, paused-family fixture, hook, fake allocation or
+architecture-invalid slice is added. Explicit outside query/defensive offsets
+exercise existing helper white padding, not invalid bitmap backing storage.
+These native facts are not new formal projection/entropy/normative theorems.
+All266records remain provisional115/125/26;27group164contrast/fourshard and
+CIjobcount stay unchanged. Capacity/native-repair and full raster/stream/
+independent normative review gates remain open.
+
 Both T.6 reference helpers now expose valid-cache acceptance and exact
 eligible opposite-colour pair/fallback selection. The optimized lower cursor
 and conditional suffix/global theorem are tied to the real raster loop's

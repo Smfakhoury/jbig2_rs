@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "3a8a31651220083725c04d8cabbb5e1e89d367cd",
-  "scope": "Fresh existing official diagnostics on exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+  "scope": "Fresh existing official diagnostics on native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "6825e6bf59d655ce51057e8e1d96d3b833fee99d9accd5d1b0c13ca8c3f22e13",
-    "review_sha256": "c7ba029ebf00e90a013ba7652551d7578805571880790956dcc43e02627fbb66"
+    "results_sha256": "a6f1914184a540ea22c4082a30e0547ebe06682c26c50f1832031a30be86ec82",
+    "review_sha256": "7b6a127e6b3ff82033e5754655f54e04c37dceaa0cf6e6b903f888e3fccac431"
   },
   "community_regressions": {
     "total": 0,
