@@ -14,6 +14,7 @@ sys.path.insert(0, str(TOOLS))
 
 from check_arithmetic_codec_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
+from rust_source import parse
 
 
 class ArithmeticCodecProofTests(unittest.TestCase):
@@ -37,6 +38,13 @@ class ArithmeticCodecProofTests(unittest.TestCase):
                 self.assertIn("Ok(()) => forall|index: int|", weaker)
                 self.assertIn("Err(_) => true,", weaker)
                 self.assertIn("decreases contexts@.len() - index,", weaker)
+
+    def test_mutants_preserve_ordinary_rust_syntax(self):
+        for case in CASES:
+            source = (TOOLS.parent / case["file"]).read_text()
+            with self.subTest(case=case["id"]):
+                changed = replace_once(source, case["site"], case["replacement"])
+                self.assertFalse(parse(changed.encode()).has_error)
 
     def test_missing_or_duplicate_sites_fail_closed(self):
         for case in CASES:

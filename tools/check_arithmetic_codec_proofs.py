@@ -156,7 +156,12 @@ CASES = (
     ),
     case(
         "probability_validation_rejects_valid_bank", "generic_region", "validate_probability_states",
-        VALIDATION_BODY, "Err(integer_overflow())", VALIDATION_POST,
+        VALIDATION_BODY,
+        replace_once(
+            VALIDATION_BODY, "let mut index = 0_usize;",
+            "return Err(integer_overflow());\nlet mut index = 0_usize;",
+        ),
+        VALIDATION_POST,
     ),
     case(
         "probability_validation_loses_first_invalid_state", "generic_region", "validate_probability_states",
@@ -218,7 +223,11 @@ CASES = (
     case(
         "generic_overflow_reclassified_as_eof", "generic_region", "integer_overflow",
         OVERFLOW_BODY,
-        "GenericRegionError::Decode(DecodeError::Malformed(MalformedError::UnexpectedEof { offset: 0, needed: 1, remaining: 0 }))",
+        replace_once(
+            OVERFLOW_BODY,
+            "GenericRegionError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow))",
+            "GenericRegionError::Decode(DecodeError::Malformed(MalformedError::UnexpectedEof { offset: 0, needed: 1, remaining: 0 }))",
+        ),
         OVERFLOW_POST, "ensures true,",
     ),
 )

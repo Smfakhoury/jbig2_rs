@@ -652,7 +652,7 @@
     "specs/decode.rs": "71640bc0bd5731b8a995abdcb34cc3b268c2219609da3f166f8997216e5bd61b",
     "specs/document.rs": "937c78bb6796d5e3c179019c5183ff1c848cece68e26b705cae1f5615ec45480",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
-    "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
+    "specs/generic_region.rs": "8f368daad98291eb31f1ccc5914ab836fcdbaa5c820f70ca71317a29140d22b9",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
     "specs/huffman.rs": "fe0cca185e75966a67834cc01c44ac080eb7eee5374fffcc9fbaf790c81e0a58",
     "specs/mmr.rs": "612368eee98519bb7ee2d1a751a29c7db3ef56d9a552aec3543001174f55c34d",
@@ -660,12 +660,12 @@
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "785d9b5ec8d8bb60e2bd4c3b18ec557621467dd42a78ee08dd208bb9ee2c52cf",
-    "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35",
+    "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "6ed26b570e11b89367a16c422eb21c6b70587903d845cfd09192d9c772166a8c",
     "src/document.rs": "42c4e58ff2b0325a757a555e5782113326e0043235e45c06aa622a880a9e8214",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
-    "src/generic_region.rs": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
+    "src/generic_region.rs": "d30f71c0b8eaa4db860473bf0e48468761d074a8f1014e3fe8888f77f64bf14c",
     "src/halftone.rs": "af19dc1f2ba4179a44c5c2f9e5432190dfaca464312ec1a6f62a98390dc3cd9d",
     "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
@@ -1755,6 +1755,26 @@
       ],
       "name": "decode_error",
       "role": "Exact project ArithmeticError-to-DecodeError classification and fields, not a normative error policy."
+    },
+    "generic-probability-validation-result": {
+      "kind": "spec",
+      "file": "specs/generic_region.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec"
+      ],
+      "name": "probability_validation_result",
+      "role": "Project valid-bank acceptance and exact first-invalid raw state/MPS error, not normative context selection or entropy decoding."
+    },
+    "generic-probability-signal-error": {
+      "kind": "spec",
+      "file": "specs/generic_region.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec"
+      ],
+      "name": "probability_error_for_signal",
+      "role": "Exact project context-index/count and arithmetic signal-error forwarding, not an independently approved normative rejection policy."
     },
     "symbol-integer-field-slot": {
       "kind": "spec",
@@ -9295,10 +9315,21 @@
       "title": "Use the model's matching context sequence and stop when its decisions are exhausted",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode"
+        "arithmetic::ArithmeticDecoder::decode",
+        "arithmetic::ArithmeticContext::from_state",
+        "generic_region::validate_probability_states",
+        "generic_region::probability_signal_error",
+        "generic_region::unexpected_eof",
+        "generic_region::integer_overflow"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "context-valid",
+        "generic-probability-validation-result",
+        "generic-probability-signal-error",
+        "arithmetic-eof-error",
+        "arithmetic-signal-error",
+        "arithmetic-decode-error"
       ],
       "proof_macros": [],
       "tests": [
@@ -9309,11 +9340,23 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::probability_state_validation_matches_all_raw_fields_and_first_error"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::probability_failure_projection_preserves_context_and_decoder_errors"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::generic_error_trait_projection_and_eof_factory_preserve_fields"
         }
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The decoder postcondition preserves decoder/context validity, not this row's normative context sequence or stopping relation. Auxiliary project contracts prove valid raw-bank acceptance, the first invalid state/MPS payload and exact context/signal/EOF/overflow diagnostic projection; those are not whole-stream selection, decoding or normative rejection theorems.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem."
