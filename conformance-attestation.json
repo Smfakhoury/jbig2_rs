@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "e72af696c8bfd43cddcb78161362f12dcd9a09b1",
-  "scope": "Fresh existing official diagnostics on accepted MMR input-to-raster and exact EOFB framing proof; unchanged native tokens and old preconditions, not independent normative approval e72af69; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "e5142ab1eff3fa841ae68b3920aade29e93a235e",
+  "scope": "Fresh existing official diagnostics on exact symbol content/order and valid representable lookup acceptance; unchanged native tokens and old preconditions, no normative approval e5142ab; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 418,
     "passed": 404,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "e72af696c8bfd43cddcb78161362f12dcd9a09b1",
+    "source_revision": "e5142ab1eff3fa841ae68b3920aade29e93a235e",
     "scope": "Actual complete pinned ordinary-runtime coverage collection: 404 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from official observations and do not provide normative approval."
   },
   "normative_vectors": {
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "689c1153462b46f48ed5aeb9a134a5f8e5ae0bc8dc9f8d601da95fb40473ca08",
-    "review_sha256": "d66fce66cc18cdd05ad7b2f203b9255f9387c34474d9f4a11089e0601674152c"
+    "results_sha256": "cbe5bcc52bfc45a83a335bd95b87d8e06fe0963634548f99fd3288011d19a41a",
+    "review_sha256": "e52ecb33537d953b806212cccdea856a663c700da7187170896d66e2953e0b53"
   },
   "community_regressions": {
     "total": 0,

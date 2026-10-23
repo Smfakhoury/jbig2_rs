@@ -5,7 +5,51 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
-The current local tranche now exports **accepted MMR input-to-raster results**,
+The current local symbol tranche closes the missing **content/order** links,
+not just collected cardinality. Contiguous and borrowed codebook lookups
+select exact geometry/packed bytes; combined imported/new lookup preserves
+that ID mapping and guarantees valid-ID success when the counts are
+representable. Owned export assembly now guarantees every supplied output
+position's exact selected bytes/dimensions, including order and repeats,
+through the existing proved fallible bitmap clone. Native operations, all658
+old preconditions and48reviewed boundaries remain unchanged. No infallible
+Clone, standard declaration, allocation/error-policy edit or encoded-family
+fixture is introduced.
+
+Genuine unfiltered whole Cargo proof plus actual library compilation
+passes1219/0. All404native tests/14ignored, strictMSRVlint,386tooling tests,
+38actual runtime mutants and the expanded11-case old/new cardinality/content/
+order/valid-acceptance group pass. Actual proof-free package tests, exact
+offline downstream output and provenance/trust/workflow/source/test/document
+gates also pass. The strengthened existing raw oracle compares six
+independent literal geometry/byte descriptors across eight selections and
+both codebook representations, with source/output ownership checks; expected
+values no longer call productionclone. Full configured profile is27groups/
+195contrasts with unchanged six one-worker shards/max4active/20-minute caps/
+22checks. Only the symbol/halftone checker slots swap to retain the existing
+estimated1000-second scheduling ceiling; no protection or case is dropped.
+Complete same-snapshot and current-head hosted acceptance remain separate.
+
+The selected export-order record gains real project functionality; all266
+remain provisional123functional/117state/26safety. Encoded export-run
+derivation/order, complete dictionary/refinement/rendering/context/caller/
+resource and independent normative review are not inferred from helper
+content equality. Fresh approved official normal/logged/native/Hayro results
+remain2passed/7unresolved/1unsupported withzero restoredcredit. All51raw
+JSON/LCOVmetrics independently equal actual hosted-accepted#80, with no gain,
+coordinate identity or lower floor/exclusion;573covered lines and202branch
+outcomes are still required.
+
+#80 now has22/22successful current-head checks and independent1219/0/
+190contrast/six-shard/62canonical/225binding/all51rawmetric/33runtime
+acceptance. It deliberately targets main and carries reviewed#78 cache
+changes, because#78 merged into the former#77 branch after#77 had reached
+main. Its ready-only update is held: original repository access again
+reportspush:false, the user renewal form was unavailable, and no body/ready/
+credential/fork workaround was attempted. No issue/outreach or standard/
+family-scope approval is inferred. The symbol batch remains local.
+
+The preceding tranche exported **accepted MMR input-to-raster results**,
 not only row-cache invariants. Finite ghost step/row histories bind actual
 mode/run input bits, exact reference pairs, span/cache/colour updates and reader
 positions to every visible row of the declared bitmap. The initial reference

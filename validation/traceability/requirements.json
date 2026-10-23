@@ -660,7 +660,7 @@
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
-    "specs/symbol_text.rs": "785d9b5ec8d8bb60e2bd4c3b18ec557621467dd42a78ee08dd208bb9ee2c52cf",
+    "specs/symbol_text.rs": "8338692a6630fa322c02173a241a933e9f545e532ef9f26eecffaafa107e5c2c",
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "dca4537fd36675fb2d6608c5bc50a8ca7be7e8d83a412f647520d310a0e33216",
     "src/decode.rs": "6ed26b570e11b89367a16c422eb21c6b70587903d845cfd09192d9c772166a8c",
@@ -674,7 +674,7 @@
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
-    "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad",
+    "src/symbol_text.rs": "d501771af7c5014b890288cd774c42a5130def97aad9ae8610f950645abc78a0",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
     "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
@@ -833,6 +833,46 @@
       ],
       "name": "codebook_len",
       "role": "Existing exact logical length of contiguous/borrowed project codebook views."
+    },
+    "symbol-bitmap-contents-match": {
+      "kind": "spec",
+      "file": "specs/symbol_text.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec"
+      ],
+      "name": "bitmap_contents_match",
+      "role": "Exact width/height/stride and all packed bytes, not a physical address/capacity/allocator relation."
+    },
+    "symbol-codebook-selects": {
+      "kind": "spec",
+      "file": "specs/symbol_text.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec"
+      ],
+      "name": "codebook_selects",
+      "role": "Requested position in either contiguous or borrowed codebook view selects that bitmap's exact geometry and packed content."
+    },
+    "symbol-id-selects": {
+      "kind": "spec",
+      "file": "specs/symbol_text.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec"
+      ],
+      "name": "symbol_id_selects",
+      "role": "Project ID mapping across the imported prefix and already-decoded-new suffix, with exact selected bitmap content."
+    },
+    "symbol-exported-contents-match": {
+      "kind": "spec",
+      "file": "specs/symbol_text.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec"
+      ],
+      "name": "exported_contents_match",
+      "role": "Every owned output position has the exact geometry/packed bytes of its requested imported/new candidate, preserving order and repeats; encoded flag/run selection remains a separate obligation."
     },
     "symbol-bitmaps-valid": {
       "kind": "spec",
@@ -3949,9 +3989,15 @@
       "obligation_kind": "project_profile_policy",
       "policy_row_sha256": "4cfe363f77d12f62f57222bd6bd76222e3333e94f85c9a8bc0d25b77b1f0fdee",
       "runtime": [
-        "symbol_text::checked_symbol_id"
+        "symbol_text::checked_symbol_id",
+        "symbol_text::SymbolCodebook::get",
+        "symbol_text::symbol_by_id"
       ],
-      "models": [],
+      "models": [
+        "symbol-bitmap-contents-match",
+        "symbol-codebook-selects",
+        "symbol-id-selects"
+      ],
       "proof_macros": [],
       "tests": [
         {
@@ -3961,12 +4007,12 @@
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "A successful checked ID is exactly the input ID and within the supplied extent. This narrow helper fact does not prove lookup/decoded text never substitutes a different symbol bitmap.",
+      "scope_of_formal_result": "The checked ID remains exactly the supplied in-range ID. Successful contiguous/borrowed lookup now returns that position's exact bitmap geometry/packed bytes, and combined imported/new lookup preserves the project ID mapping; valid IDs succeed whenever the total is representable by both native counters. This still does not prove encoded-ID extraction and the complete decoded-text pipeline.",
       "assumptions": [
         "The no-lossy-substitution rule is the project prohibition; informative 0.2 is context, not an invented independent normative clause. The linked test exercises exact invalid-ID rejection only."
       ],
       "gaps": [
-        "Prove encoded-ID extraction, lookup identity, refinement selection and final rendered pixels; add independent positive no-substitution end-to-end cases."
+        "Prove encoded-ID extraction, refinement/placement selection and final rendered pixels through complete callers; add independent positive no-substitution bitstream cases only within approved family scope."
       ],
       "functional_evidence": [
         {
@@ -3991,7 +4037,10 @@
         "symbol_text::clone_bitmap"
       ],
       "models": [
-        "bitmap-storage-valid"
+        "bitmap-storage-valid",
+        "symbol-bitmap-contents-match",
+        "symbol-codebook-selects",
+        "symbol-id-selects"
       ],
       "proof_macros": [],
       "tests": [
@@ -4004,10 +4053,10 @@
       "review": "provisional",
       "scope_of_formal_result": "Successful cloning preserves width, height, stride and the complete stored byte sequence exactly.",
       "assumptions": [
-        "Source storage is valid and source selection is already correct; the linked clone oracle shares this helper and does not independently establish its content relation."
+        "Source storage is valid. The expanded raw oracle now uses independent literal geometry/bytes for both codebook representations, not this clone helper as expected output; complete encoded-source selection remains a separate obligation."
       ],
       "gaps": [
-        "Prove upstream symbol selection and all no-clone/refinement/rendering paths preserve encoded semantics; add an independent clone-content oracle and no-substitution pipeline tests."
+        "Prove complete encoded-source/refinement/rendering selection and no-substitution pipeline semantics; selected helper contents are exact, but no physical-capacity or normative bitstream theorem is inferred."
       ],
       "functional_evidence": [
         {
@@ -4677,6 +4726,8 @@
       "feature": "symbol_dictionaries",
       "runtime": [
         "symbol_text::assemble_exported_symbols",
+        "symbol_text::SymbolCodebook::get",
+        "symbol_text::symbol_by_id",
         "decode::symbol_index",
         "decode::get_symbol_resource",
         "decode::collect_referred_symbols",
@@ -4688,7 +4739,11 @@
         "first-symbol-store-index",
         "symbol-resource-group-count",
         "referred-symbol-count",
-        "project-symbol-codebook-length"
+        "project-symbol-codebook-length",
+        "symbol-bitmap-contents-match",
+        "symbol-codebook-selects",
+        "symbol-id-selects",
+        "symbol-exported-contents-match"
       ],
       "proof_macros": [],
       "tests": [
@@ -4709,17 +4764,40 @@
           "name": "decode::tests::first_matching_symbol_group_controls_duplicate_keys_and_collection_count"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful assembly preserves output storage validity and output index-list length. Auxiliary imported-resource helpers now prove first-match group cardinality, complete referenced-group count and exact contiguous/borrowed codebook length, preserving existing preconditions and repeated/missing-reference behavior. These count theorems do not export equality between each assembled bitmap and its selected imported/new candidate, so this order record retains state-preservation strength.",
+      "scope_of_formal_result": "Every successful owned output position now has exactly the geometry and packed bytes selected by that supplied ID over the imported prefix and new-symbol suffix, preserving order and repeats. Contiguous/borrowed lookup and representable valid-ID acceptance are explicit; the existing exact fallible clone supplies content preservation. Resource collection cardinality remains linked, while encoded export-run flag interpretation and complete dictionary/caller semantics remain separate.",
       "assumptions": [
-        "Input codebook/bitmaps and all indices are valid; one linked test uses the clone helper in its oracle and is not an independent clone-content proof."
+        "Input codebook/bitmaps and all indices are valid under the unchanged helper preconditions. Supplied selection order is preserved even for repeated IDs; normative derivation of those IDs from encoded export runs is not assumed proved. The raw oracle now uses independent literal descriptors rather than production clone expectations."
       ],
       "gaps": [
-        "Prove exact candidate selection, sequence order, dimensions and complete bitmap bytes at every output index; cardinality is not sequence-content or normative caller-order equivalence.",
-        "The existing observed-capacity accounting gap is independent of these count results and remains open on this source."
+        "Prove encoded export-run selection/order and complete imported-resource/dictionary/caller bitstream composition against independently reviewed normative models.",
+        "Observed-capacity/bookkeeping accounting, allocator/RSS and cross-pipeline no-substitution remain independent open obligations."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "symbol_text::SymbolCodebook::get",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::codebook_selects(self, index as nat, bitmap)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::symbol_by_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::symbol_id_selects(imported, new_symbols@, id, bitmap)",
+            "(symbol_text_spec::codebook_len(imported) + new_symbols@.len() <= usize::MAX && symbol_text_spec::codebook_len(imported) + new_symbols@.len() <= u32::MAX && (id as nat) < symbol_text_spec::codebook_len(imported) + new_symbols@.len()) ==> out.is_ok()"
+          ]
+        },
+        {
+          "runtime": "symbol_text::assemble_exported_symbols",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::exported_contents_match(imported, new_symbols@, exported_indices@, exported@,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "decode::symbol_index",

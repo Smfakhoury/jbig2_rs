@@ -4,7 +4,16 @@ P06 is in progress. This tranche establishes a reproducible baseline and
 non-regression checks; it does not meet or ratify the proposed release goals,
 complete the missing tests, or establish normative correctness.
 
-## Latest MMR raster/cache observations
+## Latest symbol-content and MMR observations
+
+The later symbol-content source `e5142ab` freshly executes404native tests/
+14ignored and38real compiling/detected runtime mutants. Its expanded existing
+raw oracle uses six independent geometry/byte descriptors, eight selections
+and both codebook representations, checking order/repeats and independent
+owned storage without a new encoded-family fixture. All51rawJSON/LCOVmetrics,
+digests and source/test identities independently match hosted-accepted#80:
+there is no coverage gain or absolute-coordinate claim, and the current totals
+and573line/202branch-outcome release-goal gap below remain unchanged.
 
 The next accepted-input/raster source `e72af69` also freshly executes404native
 tests/14ignored, now with33actually compiling/detected runtime mutants.

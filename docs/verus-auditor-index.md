@@ -14,6 +14,7 @@ prose, table entries, diagrams or official vectors are reproduced here.
 |---|---|---|
 | Normative-facing project models | [`specs/`](../specs), especially arithmetic `entry_*`, `refill_step`, `initialized_state`; MMR `exact_eofb`; header/segment and halftone flag models | Candidate translations to compare with the ledger's approved source identities and exact locators, not independently certified standards |
 | Project/API semantics and results | Decode charge/release/allocation predicates; document metadata, counts and resource limits; bitmap `black_span_result`, `prefix_copy_result`, `row_copy_result` and `pixel_result`; MMR cache/pixel models plus `raster_step`, `raster_steps`, `raster_rows`, `bitmap_decodes`, `bounded_bitmap_decodes`, `prefix_bitmap_decodes`, `required_eofb_prefix` | Consequential success/failure, input/raster, framing and representation results; retain these in the specification surface without treating project consistency as normative approval |
+| Symbol lookup/export results | [`bitmap_contents_match`, `codebook_selects`, `symbol_id_selects`, `exported_contents_match`](../specs/symbol_text.rs) | Exact selected geometry/packed bytes and supplied output order/repeats; valid lookup acceptance has explicit representability conditions. This does not identify encoded export-run flags or prove complete caller/no-substitution/resource semantics |
 | Representation preconditions | Arithmetic `context_valid` and `decoder_*valid`; decode store/buffer validity; halftone `work_valid`, `bitmaps_valid`, `decoder_state_valid`; Huffman `reader_valid`, `wide_fits`, `line_decodable`; MMR `reader_valid`, `bitmap_storage_valid`, `transitions_ordered`, `reference_line_valid` | Bounds, storage, reachable-state and sentinel assumptions/results, not complete decoding semantics; auditors must inspect their use in production `requires`/`ensures` |
 | Implementation accumulator support | [`transition_prefix_valid`, `row_cache_prefix`, `future_rows_white`, `raster_outer`, `raster_inner`](../proofs/model_support/mmr.rs) | Ordering, pixel/cache framing and packaged loop invariants; unlike the observable finite trace relation, these are not additional normative rules |
 | Model-access and arithmetic proof support | [`proofs/model_support/`](../proofs/model_support) | Nine relocated proof functions: arithmetic `entry_model_equations`, `initialization_code_bound`; decode `page_fields`, `document_fields`; document `decoder_fields`, `document_fields`, `global_fields`; halftone `work_fields`; Huffman `table_has_oob_definition`. New MMR `bounded_bitmap_witness`/`prefix_bitmap_witness` are same-owner proved reveals of public closed accepted-result models, not assumptions or native-type visibility changes |
@@ -120,6 +121,17 @@ Decode `first_symbol_index`, `symbol_group_count`, `referred_symbol_count` and
 uses the complete reference length; prefix calls support the native loops.
 Repeated references count again and missing groups contribute zero, without
 asserting that a normative caller may supply an invalid reference. The existing
+selection layer now additionally binds each contiguous/borrowed codebook
+position, imported/new ID and owned export position to exact dimensions,
+stride and all stored bytes. The producer uses the already verified fallible
+`clone_bitmap`; no infallible Clone or standard specification is introduced.
+The raw oracle uses independent literal descriptors rather than that producer
+helper for expected values, and checks both representations, repeated/shuffled
+selections and owned-buffer separation. Physical addresses/capacity are not
+part of the formal content relation. Encoded selection/order and complete
+dictionary/refinement/rendering pipelines still require separate proof.
+
+The existing
 codebook-length model is reused. These are not sequence-content/order or
 observed-capacity theorems, and the export-order ledger record stays state-only.
 
