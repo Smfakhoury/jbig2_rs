@@ -42,6 +42,7 @@ CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 8, "strong_contract", "weaker_control"),
     ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
     ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"

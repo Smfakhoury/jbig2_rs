@@ -981,6 +981,18 @@ fn prepare_transition_storage(
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == if prefix as nat * 2 + bit as nat <= u16::MAX {
+        Ok((prefix as nat * 2 + bit as nat) as u16)
+    } else {
+        Err(MmrError::IntegerOverflow)
+    },
+))]
+fn append_code_bit(prefix: u16, bit: u16) -> Result<u16, MmrError> {
+    let doubled = prefix.checked_mul(2).ok_or(MmrError::IntegerOverflow)?;
+    doubled.checked_add(bit).ok_or(MmrError::IntegerOverflow)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires mmr_spec::reader_valid(old(reader)),
     ensures
         mmr_spec::reader_valid(final(reader)),
@@ -993,7 +1005,10 @@ fn prepare_transition_storage(
                 mmr_spec::mode_code_in_implementation_table(code)
                 && code.mode == mode
                 && final(reader).bit_position
-                    == old(reader).bit_position + code.length as usize,
+                    == old(reader).bit_position + code.length as usize
+                && code.bits as nat == crate::spec::readers::bits_value(
+                    old(reader).bytes@, old(reader).bit_position as nat, code.length as nat,
+                ),
             Err(_) => true,
         },
 ))]
@@ -1009,15 +1024,29 @@ fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
             start == old(reader).bit_position,
             reader.bit_position
                 == start + (length - 1) as usize,
+            prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            ),
         decreases MAX_MODE_CODE_BITS + 1 - length,
     ))]
     while length <= MAX_MODE_CODE_BITS {
+        #[cfg(verus_keep_ghost)]
+        proof_decl! {
+            let ghost previous_prefix = prefix;
+        }
         let bit =
             u16::try_from(reader.read_bits(1)?).map_err(|_error| MmrError::IntegerOverflow)?;
-        prefix = prefix
-            .checked_mul(2)
-            .and_then(|value| value.checked_add(bit))
-            .ok_or(MmrError::IntegerOverflow)?;
+        prefix = append_code_bit(prefix, bit)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::reader_properties::bits_value_append_one(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            );
+            assert(prefix as nat == previous_prefix as nat * 2 + bit as nat);
+            assert(prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, length as nat,
+            ));
+        }
         let mut index = 0_usize;
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
@@ -1026,6 +1055,9 @@ fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
                 reader.bytes@ == old(reader).bytes@,
                 start == old(reader).bit_position,
                 reader.bit_position == start + length as usize,
+                prefix as nat == crate::spec::readers::bits_value(
+                    reader.bytes@, start as nat, length as nat,
+                ),
             decreases MODE_CODES@.len() - index,
         ))]
         while index < MODE_CODES.len() {
@@ -1104,7 +1136,10 @@ fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result
             Ok(code) =>
                 mmr_spec::run_code_in_implementation_tables(black, code)
                 && final(reader).bit_position
-                    == old(reader).bit_position + code.length as usize,
+                    == old(reader).bit_position + code.length as usize
+                && code.bits as nat == crate::spec::readers::bits_value(
+                    old(reader).bytes@, old(reader).bit_position as nat, code.length as nat,
+                ),
             Err(_) => true,
         },
 ))]
@@ -1120,15 +1155,29 @@ fn decode_run_code(reader: &mut BitReader<'_>, black: bool) -> Result<RunCode, M
             start == old(reader).bit_position,
             reader.bit_position
                 == start + (length - 1) as usize,
+            prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            ),
         decreases MAX_RUN_CODE_BITS + 1 - length,
     ))]
     while length <= MAX_RUN_CODE_BITS {
+        #[cfg(verus_keep_ghost)]
+        proof_decl! {
+            let ghost previous_prefix = prefix;
+        }
         let bit =
             u16::try_from(reader.read_bits(1)?).map_err(|_error| MmrError::IntegerOverflow)?;
-        prefix = prefix
-            .checked_mul(2)
-            .and_then(|value| value.checked_add(bit))
-            .ok_or(MmrError::IntegerOverflow)?;
+        prefix = append_code_bit(prefix, bit)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::reader_properties::bits_value_append_one(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            );
+            assert(prefix as nat == previous_prefix as nat * 2 + bit as nat);
+            assert(prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, length as nat,
+            ));
+        }
         if let Some(code) = find_run_code(black, prefix, length) {
             #[cfg(verus_keep_ghost)]
             production_mmr_run_code_bounds!(black, code);
@@ -1699,6 +1748,152 @@ fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn prefix_window_bytes(window: u16, width: u8, start: usize) -> [u8; 8] {
+        let value = u64::from(window) << (64 - start - usize::from(width));
+        let leading = if start == 0 {
+            0
+        } else {
+            (0xa5_u64 << 56) & (u64::MAX << (64 - start))
+        };
+        (value | leading | 0x5a).to_be_bytes()
+    }
+
+    #[test]
+    fn every_mode_window_and_alignment_matches_scalar_prefix_lookup() {
+        for window in 0..(1_u16 << MAX_MODE_CODE_BITS) {
+            let expected = MODE_CODES
+                .iter()
+                .filter(|code| window >> (MAX_MODE_CODE_BITS - code.length) == code.bits)
+                .min_by_key(|code| code.length);
+            for start in 0..8 {
+                let encoded = prefix_window_bytes(window, MAX_MODE_CODE_BITS, start);
+                let mut reader = BitReader {
+                    bytes: &encoded,
+                    bit_position: start,
+                };
+                if let Some(code) = expected {
+                    assert_eq!(decode_mode(&mut reader).unwrap(), code.mode);
+                    assert_eq!(reader.bit_position(), start + usize::from(code.length));
+                    let packed = u64::from_be_bytes(encoded);
+                    let bits =
+                        (packed >> (64 - reader.bit_position())) & ((1_u64 << code.length) - 1);
+                    assert_eq!(bits, u64::from(code.bits));
+                } else {
+                    assert_kind(
+                        decode_mode(&mut reader).unwrap_err(),
+                        MmrErrorKind::InvalidMode { bit_offset: start },
+                    );
+                    assert_eq!(
+                        reader.bit_position(),
+                        start + usize::from(MAX_MODE_CODE_BITS)
+                    );
+                }
+                assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+            }
+        }
+    }
+
+    #[test]
+    fn every_run_window_colour_and_alignment_matches_scalar_prefix_lookup() {
+        for black in [false, true] {
+            let terminating = if black {
+                &BLACK_TERMINATING
+            } else {
+                &WHITE_TERMINATING
+            };
+            let makeup = if black { &BLACK_MAKEUP } else { &WHITE_MAKEUP };
+            for window in 0..(1_u16 << MAX_RUN_CODE_BITS) {
+                let expected = terminating
+                    .iter()
+                    .chain(makeup)
+                    .chain(&COMMON_MAKEUP)
+                    .filter(|code| window >> (MAX_RUN_CODE_BITS - code.length) == code.bits)
+                    .min_by_key(|code| code.length);
+                for start in 0..8 {
+                    let encoded = prefix_window_bytes(window, MAX_RUN_CODE_BITS, start);
+                    let mut reader = BitReader {
+                        bytes: &encoded,
+                        bit_position: start,
+                    };
+                    if let Some(code) = expected {
+                        let actual = decode_run_code(&mut reader, black).unwrap();
+                        assert_eq!(
+                            (actual.bits, actual.length, actual.value, actual.terminal),
+                            (code.bits, code.length, code.value, code.terminal)
+                        );
+                        assert_eq!(reader.bit_position(), start + usize::from(code.length));
+                        let packed = u64::from_be_bytes(encoded);
+                        let bits = (packed >> (64 - reader.bit_position()))
+                            & ((1_u64 << actual.length) - 1);
+                        assert_eq!(bits, u64::from(actual.bits));
+                    } else {
+                        assert_kind(
+                            decode_run_code(&mut reader, black).unwrap_err(),
+                            MmrErrorKind::InvalidRunCode {
+                                bit_offset: start,
+                                black,
+                            },
+                        );
+                        assert_eq!(
+                            reader.bit_position(),
+                            start + usize::from(MAX_RUN_CODE_BITS)
+                        );
+                    }
+                    assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn code_constructors_preserve_raw_fields_and_terminal_sense() {
+        for bits in [0, 1, u16::MAX] {
+            for length in [0, 1, MAX_RUN_CODE_BITS, u8::MAX] {
+                for mode in [
+                    Mode::Pass,
+                    Mode::Horizontal,
+                    Mode::Extension,
+                    Mode::Vertical(i8::MIN),
+                    Mode::Vertical(0),
+                    Mode::Vertical(i8::MAX),
+                ] {
+                    let code = ModeCode::new(bits, length, mode);
+                    assert_eq!((code.bits, code.length, code.mode), (bits, length, mode));
+                }
+                for value in [0, 63, 64, u16::MAX] {
+                    let terminal = RunCode::terminal(value, bits, length);
+                    let makeup = RunCode::makeup(value, bits, length);
+                    assert_eq!(
+                        (
+                            terminal.bits,
+                            terminal.length,
+                            terminal.value,
+                            terminal.terminal
+                        ),
+                        (bits, length, value, true)
+                    );
+                    assert_eq!(
+                        (makeup.bits, makeup.length, makeup.value, makeup.terminal),
+                        (bits, length, value, false)
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn sequential_prefix_checks_equal_prior_closure_at_every_u16_value() {
+        for prefix in 0..=u16::MAX {
+            for bit in [0, 1, 2, u16::MAX] {
+                let prior = prefix
+                    .checked_mul(2)
+                    .and_then(|value| value.checked_add(bit));
+                let expanded = append_code_bit(prefix, bit).ok();
+                assert_eq!(expanded, prior);
+            }
+        }
+    }
 
     fn span_test_bitmap(width: u32) -> Bitmap {
         let mut bitmap = Bitmap::blank(width, 3, &Limits::default()).expect("bounded bitmap");

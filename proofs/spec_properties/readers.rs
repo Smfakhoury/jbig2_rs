@@ -32,4 +32,14 @@ pub(crate) proof fn bits_value_bound(bytes: Seq<u8>, start: nat, count: nat)
     }
 }
 
+pub(crate) proof fn bits_value_append_one(bytes: Seq<u8>, start: nat, count: nat)
+    requires start + count < bytes.len() * 8,
+    ensures
+        crate::spec::readers::bits_value(bytes, start, count + 1)
+            == crate::spec::readers::bits_value(bytes, start, count) * 2
+                + crate::spec::readers::bits_value(bytes, start + count, 1),
+{
+    reveal_with_fuel(crate::spec::readers::bits_value, 2);
+}
+
 }
