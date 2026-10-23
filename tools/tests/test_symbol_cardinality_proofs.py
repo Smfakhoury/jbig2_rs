@@ -17,19 +17,26 @@ from proof_sensitivity import replace_once, weakened_contract
 
 class SymbolCardinalityProofTests(unittest.TestCase):
     def test_unique_mutations_retain_existing_storage_and_lookup_bounds(self):
-        source = (TOOLS.parent / "src/decode.rs").read_text()
-        self.assertEqual(len(CASES), 6)
-        self.assertEqual(len({case["id"] for case in CASES}), 6)
+        self.assertEqual(len(CASES), 11)
+        self.assertEqual(len({case["id"] for case in CASES}), 11)
         for case in CASES:
             with self.subTest(case=case["id"]):
+                source = (TOOLS.parent / case["file"]).read_text()
                 changed = replace_once(source, case["site"], case["replacement"])
                 weaker = weakened_contract(changed, case)
                 self.assertNotEqual(source, changed)
                 self.assertNotEqual(changed, weaker)
-                self.assertIn("decode_spec::collected_symbols_valid(&bitmaps)", weaker)
-                self.assertIn("decode_spec::symbol_store_valid(symbols)", weaker)
-                self.assertIn("index < symbols@.len()", weaker)
-                self.assertIn("crate::symbol_text::symbol_text_spec::codebook_valid(out)", weaker)
+                if case["module"] == "decode":
+                    self.assertIn("decode_spec::collected_symbols_valid(&bitmaps)", weaker)
+                    self.assertIn("decode_spec::symbol_store_valid(symbols)", weaker)
+                    self.assertIn("index < symbols@.len()", weaker)
+                    self.assertIn("crate::symbol_text::symbol_text_spec::codebook_valid(out)", weaker)
+                else:
+                    self.assertIn("symbol_text_spec::codebook_valid(imported)", weaker)
+                    self.assertIn("symbol_text_spec::bitmaps_valid(new_symbols@)", weaker)
+                    self.assertIn("symbol_text_spec::bitmaps_valid(exported@)", weaker)
+                    self.assertIn("exported@.len() == exported_indices@.len()", weaker)
+                    self.assertIn("None => index as nat >= symbol_text_spec::codebook_len(self)", weaker)
 
     def test_missing_or_duplicate_sites_fail_closed(self):
         for case in CASES:
@@ -38,8 +45,8 @@ class SymbolCardinalityProofTests(unittest.TestCase):
                     replace_once(source, case["site"], case["replacement"])
 
     def test_missing_or_repeated_controls_fail_closed(self):
-        source = (TOOLS.parent / "src/decode.rs").read_text()
         for case in CASES:
+            source = (TOOLS.parent / case["file"]).read_text()
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):
                 weakened_contract("", case)
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):
