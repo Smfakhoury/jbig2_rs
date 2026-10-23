@@ -180,7 +180,8 @@
       "expected": "DuplicateSegmentNumber for a globals/page collision; NonIncreasingSegmentNumber for repeated local wire numbers",
       "tests": [
         {"target": "catalog_contracts", "name": "global_page_number_collision_is_an_exact_duplicate_error"},
-        {"target": "catalog_contracts", "name": "duplicate_local_wire_numbers_have_exact_order_errors"}
+        {"target": "catalog_contracts", "name": "duplicate_local_wire_numbers_have_exact_order_errors"},
+        {"target": "lib", "name": "document::tests::raw_reference_duplicates_and_cross_page_links_preserve_exact_diagnostics"}
       ]
     },
     {
@@ -188,7 +189,8 @@
       "surface": "reference graph",
       "expected": "MalformedError::MissingReferredSegment",
       "tests": [
-        {"target": "catalog_contracts", "name": "missing_reference_has_exact_segment_and_referred_numbers"}
+        {"target": "catalog_contracts", "name": "missing_reference_has_exact_segment_and_referred_numbers"},
+        {"target": "lib", "name": "document::tests::reference_depth_orders_raw_metadata_and_reports_missing_or_overflowed_ancestors"}
       ]
     },
     {
@@ -247,6 +249,23 @@
       "expected": "MmrErrorKind::RunExceedsRow",
       "tests": [
         {"target": "lib", "name": "mmr::tests::run_overshoot_is_rejected"}
+      ]
+    },
+    {
+      "id": "NEG-GENERIC-FRAMING-CONTROLS",
+      "surface": "raw generic framing and zero-row constructor preflight",
+      "expected": "exact terminator, row-count, EOF and normalization-memory errors; rejected direct targets unchanged",
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::known_length_normalization_reports_exact_errors_before_bitmap_mutation"},
+        {"target": "lib", "name": "generic_region::tests::unknown_length_framing_preserves_count_extent_and_exact_eof_fields"}
+      ]
+    },
+    {
+      "id": "NEG-RUNTIME-BUDGET-NUMERIC",
+      "surface": "raw work and retained-state counters",
+      "expected": "wide-arithmetic overflow precedence, exact inclusive limit fields and unchanged rejected counters",
+      "tests": [
+        {"target": "lib", "name": "decode::tests::runtime_budgets_match_wide_arithmetic_and_preserve_rejected_state"}
       ]
     },
     {

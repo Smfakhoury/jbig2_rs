@@ -102,6 +102,32 @@
       ]
     },
     {
+      "id": "META-RAW-BITMAP-CLIPPED-SNAPSHOT",
+      "transformation": "vary raw bitmap crop origins and dimensions across empty, partial and out-of-page intersections",
+      "invariant": "literal scalar pixels and zero padding agree; source pixels remain unchanged",
+      "tests": [
+        {"target": "lib", "name": "decode::tests::raw_bitmap_snapshot_matches_literal_scalar_clipping_and_padding"}
+      ]
+    },
+    {
+      "id": "META-REFERRED-RESOURCE-RELEASE",
+      "transformation": "vary sixteen raw retention masks with repeated, missing and unreferenced bitmap resource IDs; release twice",
+      "invariant": "only selected existing keys are removed, surviving order and exact bitmap-byte accounting remain stable",
+      "tests": [
+        {"target": "lib", "name": "decode::tests::referred_bitmap_resources_release_only_selected_existing_keys_once"}
+      ]
+    },
+    {
+      "id": "META-ZERO-ROW-GENERIC-FRAMING",
+      "transformation": "owned/direct zero-row calls with complete or normalized arithmetic terminators and known/unknown lengths",
+      "invariant": "geometry and blank bytes agree; reported consumption uses original input extent, not normalized allocation length",
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::known_length_normalization_preserves_zero_row_bitmap_geometry"},
+        {"target": "lib", "name": "generic_region::tests::zero_row_dispatch_reports_original_not_normalized_input_extent"},
+        {"target": "lib", "name": "generic_region::tests::direct_generic_dispatch_declines_unsupported_routes_without_mutation"}
+      ]
+    },
+    {
       "id": "META-COMBINATION-IDENTITIES",
       "transformation": "Boolean inputs across all operators",
       "invariant": "OR/AND/XOR/XNOR/REPLACE truth tables",

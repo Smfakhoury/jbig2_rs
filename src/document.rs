@@ -2443,6 +2443,111 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn reference_depth_orders_raw_metadata_and_reports_missing_or_overflowed_ancestors() {
+        let limits = Limits::default();
+        let segments = [
+            reference_validation_segment(2, &[1], 3),
+            reference_validation_segment(0, &[], 1),
+            reference_validation_segment(1, &[0], 3),
+        ];
+        let indexes = vec![(2, 0), (0, 1), (1, 2)];
+        assert_eq!(
+            validate_reference_depth(&segments, &indexes, None, &limits).unwrap(),
+            vec![(0, 1), (1, 2), (2, 3)],
+        );
+
+        let segments = [reference_validation_segment(1, &[0], 3)];
+        let ordered = [(1, 0)];
+        let indexes = vec![(1, 0)];
+        for globals in [
+            None,
+            Some(GlobalSegments {
+                types: vec![(0, SegmentType::SymbolDictionary)],
+                depths: Vec::new(),
+                bytes: Vec::new(),
+            }),
+        ] {
+            let mut depths = Vec::new();
+            assert!(matches!(
+                validate_reference_depth_ordered(
+                    &ordered,
+                    &segments,
+                    &indexes,
+                    globals.as_ref(),
+                    &limits,
+                    &mut depths,
+                ),
+                Err(DecodeError::Malformed(
+                    MalformedError::MissingReferredSegment {
+                        segment: 1,
+                        referred: 0,
+                    }
+                ))
+            ));
+            assert!(depths.is_empty());
+        }
+        let globals = GlobalSegments {
+            types: vec![(0, SegmentType::SymbolDictionary)],
+            depths: vec![(0, u32::MAX)],
+            bytes: Vec::new(),
+        };
+        let mut depths = Vec::new();
+        assert!(matches!(
+            validate_reference_depth_ordered(
+                &ordered,
+                &segments,
+                &indexes,
+                Some(&globals),
+                &limits,
+                &mut depths,
+            ),
+            Err(DecodeError::Malformed(MalformedError::IntegerOverflow))
+        ));
+        assert!(depths.is_empty());
+    }
+
+    #[test]
+    fn raw_reference_duplicates_and_cross_page_links_preserve_exact_diagnostics() {
+        let limits = Limits::default();
+        let segments = [
+            reference_validation_segment(0, &[], 1),
+            reference_validation_segment(0, &[], 1),
+        ];
+        assert!(matches!(
+            validate_references(&segments, None, &limits),
+            Err(DecodeError::Malformed(
+                MalformedError::DuplicateSegmentNumber(0)
+            ))
+        ));
+        let globals = GlobalSegments {
+            types: vec![(0, SegmentType::SymbolDictionary)],
+            depths: vec![(0, 1)],
+            bytes: Vec::new(),
+        };
+        assert!(matches!(
+            validate_references(&segments[..1], Some(&globals), &limits),
+            Err(DecodeError::Malformed(
+                MalformedError::DuplicateSegmentNumber(0)
+            ))
+        ));
+        let mut segments = [
+            reference_validation_segment(0, &[], 1),
+            reference_validation_segment(1, &[0], 3),
+        ];
+        segments[0].header.page_association = 2;
+        segments[1].header.page_association = 1;
+        assert!(matches!(
+            validate_reference_links(&segments, &vec![(0, 0), (1, 1)], None),
+            Err(DecodeError::Malformed(
+                MalformedError::InvalidPageAssociation {
+                    segment: 1,
+                    page: 1,
+                }
+            ))
+        ));
+    }
+
     fn page_data(height: u32) -> [u8; 19] {
         let mut data = [0_u8; 19];
         data[0..4].copy_from_slice(&8_u32.to_be_bytes());
