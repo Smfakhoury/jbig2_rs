@@ -16,6 +16,42 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "generic-probability-state-validation-skipped",
+        "file": "src/generic_region.rs",
+        "before": "if let Err(error) = ArithmeticContext::from_state(context.state_index(), context.mps()) {",
+        "after": "if let Err(error) = ArithmeticContext::from_state(0, 0) {",
+        "target": "lib",
+        "test": "generic_region::tests::probability_state_validation_matches_all_raw_fields_and_first_error",
+    },
+    {
+        "id": "generic-packed-eight-bit-window-rejected",
+        "file": "src/generic_region.rs",
+        "before": "if count == 0 || count > 8 || row < 0 || row >= i64::from(bitmap.height) {",
+        "after": "if count == 0 || count > 7 || row < 0 || row >= i64::from(bitmap.height) {",
+        "target": "lib",
+        "test": "generic_region::tests::packed_rows_match_scalar_msb_windows_padding_and_numeric_edges",
+    },
+    {
+        "id": "generic-probability-context-error-fields-discarded",
+        "file": "src/generic_region.rs",
+        "before": (
+            "if signal == RASTER_SIGNAL_CONTEXT {\n"
+            "        GenericRegionError::ContextIndex {\n"
+            "            index,\n"
+            "            count: context_count,\n"
+            "        }"
+        ),
+        "after": (
+            "if signal == RASTER_SIGNAL_CONTEXT {\n"
+            "        GenericRegionError::ContextIndex {\n"
+            "            index: 0,\n"
+            "            count: 0,\n"
+            "        }"
+        ),
+        "target": "lib",
+        "test": "generic_region::tests::probability_failure_projection_preserves_context_and_decoder_errors",
+    },
+    {
         "id": "mmr-reference-cursor-update-discarded",
         "file": "src/mmr.rs",
         "before": "*search_start = index;",
