@@ -22,7 +22,7 @@ RECEIPT_SCHEMA = 3
 CHECKS = (
     ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
-    ("bitmap-copy", "check_bitmap_copy_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
     ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),

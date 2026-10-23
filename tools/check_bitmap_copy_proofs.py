@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from proof_sensitivity import check_semantic_cases, replace_once, weakened_contract
+from rust_source import source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,6 +39,17 @@ PAD_RESULT = """&& forall|index: int| 0 <= index < crate::views::bitmap_data(&bi
                     == if index < crate::views::bitmap_data(&decoded).len() {
                         crate::views::bitmap_data(&decoded)[index]
                     } else { 0u8 }"""
+FILLED = next(
+    entry["body_text"] for entry in source_functions(ROOT)
+    if entry["id"] == "bitmap::Bitmap::filled"
+)
+FILLED_WITHOUT_RESULT_SUPPORT = replace_once(
+    FILLED,
+    """#[cfg(verus_keep_ghost)]
+    production_filled_storage_result!(bitmap, value);""",
+    "",
+)
+FILLED_RESULT = "&& crate::spec::bitmap::filled_storage(&bitmap, value)"
 CASES = (
     {
         "id": "skip_row_copy", "file": "src/bitmap.rs", "module": "bitmap",
@@ -72,6 +84,29 @@ CASES = (
         "function": "pad_bitmap_height", "site": "padded.copy_prefix_from(&decoded, byte_count)?;",
         "replacement": ";", "control": PAD_RESULT,
     },
+    {
+        "id": "filled_black_pixel_lost_after_masking", "file": "src/bitmap.rs", "module": "bitmap",
+        "function": "Bitmap::filled", "site": FILLED,
+        "replacement": replace_once(
+            FILLED_WITHOUT_RESULT_SUPPORT, "let bitmap = Self {",
+            """if value && !data.is_empty() { data[0] ^= 0x80; }
+            let bitmap = Self {""",
+        ),
+        "control": FILLED_RESULT,
+    },
+    {
+        "id": "filled_padding_reintroduced_after_masking", "file": "src/bitmap.rs", "module": "bitmap",
+        "function": "Bitmap::filled", "site": FILLED,
+        "replacement": replace_once(
+            FILLED_WITHOUT_RESULT_SUPPORT, "let bitmap = Self {",
+            """if value && width % 8 != 0 && !data.is_empty() {
+                let last = data.len() - 1;
+                data[last] |= 1;
+            }
+            let bitmap = Self {""",
+        ),
+        "control": FILLED_RESULT,
+    },
 )
 
 
@@ -91,7 +126,7 @@ def check_bitmap_copy_proofs(executable: Path) -> dict:
     )
     return check_semantic_cases(
         ROOT, executable, CASES, files, "jbig2-bitmap-proof-",
-        "Selected bitmap materialization proofs only; whole-crate verification is separate",
+        "Exact copy/blank/padding and complete filled packed-byte results; filled mutants retain all row/math proof support and remove only the new result-specific proof call so actual postconditions, not a helper precondition, detect corrupted output. Whole rendering/caller and normative review remain separate",
     )
 
 

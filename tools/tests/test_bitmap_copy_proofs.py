@@ -7,6 +7,7 @@ TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
 from check_bitmap_copy_proofs import CASES, mutated_copy, weaker_contract
+from rust_source import parse
 
 
 class BitmapCopyProofFixtureTests(unittest.TestCase):
@@ -23,6 +24,7 @@ class BitmapCopyProofFixtureTests(unittest.TestCase):
                 changed = mutated_copy(source, case)
                 self.assertNotEqual(changed, source)
                 self.assertIn(case["replacement"], changed)
+                self.assertFalse(parse(changed.encode()).has_error)
                 self.assertEqual(weaker_contract(source, case), source.replace(case["control"], "", 1))
 
     def test_storage_control_only_removes_byte_result(self):
@@ -45,9 +47,10 @@ class BitmapCopyProofFixtureTests(unittest.TestCase):
                 weaker_contract(weaker_contract(source, case), case)
 
     def test_catalog_covers_distinct_copy_initialization_and_padding_results(self):
-        self.assertEqual(len({case["id"] for case in CASES}), 6)
+        self.assertEqual(len({case["id"] for case in CASES}), 8)
         self.assertEqual({case["function"] for case in CASES}, {
             "Bitmap::copy_row", "Bitmap::copy_prefix_from", "Bitmap::blank", "pad_bitmap_height",
+            "Bitmap::filled",
         })
 
     def test_zero_and_padding_controls_keep_storage_and_dimension_guarantees(self):
@@ -58,6 +61,18 @@ class BitmapCopyProofFixtureTests(unittest.TestCase):
         self.assertIn("bitmap.width == decoded.width", padded)
         self.assertIn("bitmap.height == nominal_height", padded)
         self.assertIn("crate::spec::bitmap::storage_valid(&bitmap)", padded)
+
+    def test_filled_mutants_keep_loop_and_original_zero_guarantees(self):
+        for case in CASES[6:]:
+            changed = mutated_copy(self.sources["src/bitmap.rs"], case)
+            with self.subTest(case=case["id"]):
+                self.assertIn("production_filled_storage_step!(", changed)
+                self.assertIn("production_filled_tail_bounds!(", changed)
+                self.assertIn("bitmap_shared::black_fill_prefix(", changed)
+                self.assertNotIn("production_filled_storage_result!(", changed)
+                weaker = weaker_contract(changed, case)
+                self.assertIn("!value ==> crate::spec::bitmap::zeroed_storage(&bitmap)", weaker)
+                self.assertIn("crate::spec::bitmap::limits_allow_bitmap(width, height, limits)", weaker)
 
 
 if __name__ == "__main__":

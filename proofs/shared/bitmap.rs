@@ -17,10 +17,16 @@ pub(super) open spec fn black_fill_prefix(
 
 pub(super) proof fn row_byte_bounds(row: int, column: int, stride: int, height: int)
     requires 0 <= row < height, 0 <= column < stride,
-    ensures 0 <= row * stride + column < height * stride,
+    ensures
+        0 <= row * stride + column < height * stride,
+        row * stride + column < stride * height,
 {
-    assert(row * stride + column < (row + 1) * stride) by(nonlinear_arith);
-    assert((row + 1) * stride <= height * stride) by(nonlinear_arith);
+    vstd::arithmetic::mul::lemma_mul_inequality(0, row, stride);
+    vstd::arithmetic::mul::lemma_mul_inequality(row + 1, height, stride);
+    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(stride, row, 1);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(row, stride);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(row + 1, stride);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(height, stride);
 }
 
 pub(super) proof fn distinct_row_tail(row: int, column: int, current: int, stride: int)
@@ -29,11 +35,16 @@ pub(super) proof fn distinct_row_tail(row: int, column: int, current: int, strid
         row != current || column + 1 != stride,
     ensures row * stride + column != current * stride + stride - 1,
 {
+    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(stride, row, 1);
+    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(stride, current, 1);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(row, stride);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(row + 1, stride);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(current, stride);
+    vstd::arithmetic::mul::lemma_mul_is_commutative(current + 1, stride);
     if row < current {
-        assert(row * stride + column < (row + 1) * stride) by(nonlinear_arith);
-        assert((row + 1) * stride <= current * stride) by(nonlinear_arith);
+        vstd::arithmetic::mul::lemma_mul_inequality(row + 1, current, stride);
     } else if row > current {
-        assert(current * stride + stride <= row * stride) by(nonlinear_arith);
+        vstd::arithmetic::mul::lemma_mul_inequality(current + 1, row, stride);
     }
 }
 
@@ -45,6 +56,8 @@ pub(super) proof fn initial_black_fill(
         forall|index: int| 0 <= index < data.len() ==> data[index] == 0xFF,
     ensures black_fill_prefix(data, width, stride, height, 0),
 {
+    vstd::arithmetic::mul::lemma_mul_is_commutative(height as int, stride as int);
+    reveal(black_fill_prefix);
     assert forall|row: int, column: int|
         0 <= row < height && 0 <= column < stride implies
         #[trigger] data[row * stride as int + column] == 0xFFu8 by {
@@ -70,6 +83,7 @@ pub(super) proof fn black_fill_step(
             ==> after[index] == before[index],
     ensures black_fill_prefix(after, width, stride, height, current as nat + 1),
 {
+    reveal(black_fill_prefix);
     assert forall|row: int, column: int|
         0 <= row < height && 0 <= column < stride implies
         #[trigger] after[row * stride as int + column]
@@ -103,6 +117,8 @@ pub(super) proof fn filled_storage_result(bitmap: &crate::bitmap::Bitmap, value:
 {
     crate::views::bitmap_fields(bitmap);
     reveal(crate::spec::bitmap::storage_valid);
+    reveal(crate::spec::bitmap::filled_storage);
+    reveal(black_fill_prefix);
     assert forall|row: int, column: int|
         0 <= row < bitmap.height && 0 <= column < bitmap.stride implies
         #[trigger] bitmap.data@[row * bitmap.stride as int + column]

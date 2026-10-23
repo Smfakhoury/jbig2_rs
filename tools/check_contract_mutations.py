@@ -265,6 +265,22 @@ MUTATIONS = (
         "target": "lib",
         "test": "document::tests::numeric_preflight_quotas_match_wide_results_and_priority",
     },
+    {
+        "id": "filled-bitmap-loses-black-storage-bit",
+        "file": "src/bitmap.rs",
+        "before": "data.resize(length, if value { 0xFF } else { 0 });",
+        "after": "data.resize(length, if value { 0xFE } else { 0 });",
+        "target": "lib",
+        "test": "bitmap::tests::filled_layout_and_padding_are_deterministic",
+    },
+    {
+        "id": "filled-bitmap-keeps-black-padding",
+        "file": "src/bitmap.rs",
+        "before": "data[final_byte] &= trailing_mask;",
+        "after": "data[final_byte] |= trailing_mask;",
+        "target": "lib",
+        "test": "bitmap::tests::filled_layout_and_padding_are_deterministic",
+    },
 )
 
 
