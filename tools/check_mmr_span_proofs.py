@@ -7,7 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from proof_sensitivity import check_semantic_cases
+from proof_sensitivity import check_semantic_cases, replace_once
+from rust_source import source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +28,28 @@ TRANSITION_RESULT = """mmr_spec::transition_span_result(
     old(transitions)@, final(transitions)@,
     *old(emitted_black), *final(emitted_black), start, end, black,
 )"""
+ROW_PREFIX_RESULT = """mmr_spec::row_cache_prefix(
+    old(bitmap), row, old(transitions)@, *old(emitted_black), start,
+) ==> mmr_spec::row_cache_prefix(
+    final(bitmap), row, final(transitions)@, *final(emitted_black), end,
+),"""
+RECORDED = next(
+    row["body_text"] for row in source_functions(ROOT)
+    if row["id"] == "mmr::fill_recorded_span"
+)
+RECORD_CALL = "record_transition_span(transitions, emitted_black, start, end, width, black);"
+ROLLED_BACK = replace_once(
+    replace_once(
+        RECORDED, RECORD_CALL,
+        "let saved_length = transitions.len();\n"
+        "let saved_emitted = *emitted_black;\n" + RECORD_CALL,
+    ),
+    "Ok(())\n}",
+    """if transitions.len() > saved_length { let _ = transitions.pop(); }
+    *emitted_black = saved_emitted;
+    Ok(())
+}""",
+)
 CASES = (
     {
         "id": "invalid_span_mutates_storage", "file": "src/mmr.rs",
@@ -70,9 +93,9 @@ CASES = (
     {
         "id": "recorded_span_discards_cache_update", "file": "src/mmr.rs",
         "module": "mmr", "function": "fill_recorded_span",
-        "site": "record_transition_span(transitions, emitted_black, start, end, width, black);",
-        "replacement": "",
-        "controls": (("&& " + TRANSITION_RESULT, ""),),
+        "site": RECORDED,
+        "replacement": ROLLED_BACK,
+        "controls": (("&& " + TRANSITION_RESULT, ""), (ROW_PREFIX_RESULT, "")),
     },
     {
         "id": "transition_cache_stores_wrong_emitted_colour", "file": "src/mmr.rs",
@@ -100,7 +123,8 @@ def main():
         result = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/mmr.rs", "src/bitmap.rs", "specs/mmr.rs", "specs/bitmap.rs",
-             "proofs/model_support/mmr.rs", "proofs/production_impl/mmr.rs"),
+             "proofs/model_support/mmr.rs", "proofs/production_impl/mmr.rs",
+             "proofs/spec_properties/mmr.rs", "proofs/shared/bitmap.rs"),
             "jbig2-mmr-span-proof-",
             "Exact canonical-storage-conditional black-span/white-no-op effects and exact internal transition/emitted-state updates; original invalid/white/empty no-op controls retained; no strengthened preconditions or complete raster-loop/polarity claim",
         )

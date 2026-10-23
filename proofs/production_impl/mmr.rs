@@ -198,3 +198,104 @@ macro_rules! production_mmr_memory_bound {
         }
     };
 }
+
+macro_rules! production_mmr_trace_begin {
+    ($rows:ident) => {
+        proof_decl! {
+            let ghost mut $rows = Seq::<crate::mmr::mmr_spec::RasterRow>::empty();
+        }
+    };
+}
+
+macro_rules! production_mmr_trace_row_start {
+    ($start:ident, $steps:ident, $reader:ident) => {
+        proof_decl! {
+            let ghost $start = $reader.bit_position as nat;
+            let ghost mut $steps = Seq::<crate::mmr::mmr_spec::RasterStep>::empty();
+        }
+    };
+}
+
+macro_rules! production_mmr_trace_before {
+    ($before:ident, $reader:ident, $x:ident, $black:ident, $cache:ident, $emitted:ident) => {
+        proof_decl! {
+            let ghost $before = crate::mmr::mmr_spec::raster_state(
+                $reader.bit_position as nat, $x, $black, $cache@, $emitted,
+            );
+        }
+    };
+}
+
+macro_rules! production_mmr_trace_mode_end {
+    ($end:ident, $reader:ident) => {
+        proof_decl! { let ghost $end = $reader.bit_position as nat; }
+    };
+}
+
+macro_rules! production_mmr_trace_step {
+    (
+        $data:ident, $reference:ident, $width:ident, $start:ident, $steps:ident,
+        $before:ident, $mode:expr, $mode_end:ident, $b1:ident, $b2:ident, $split:ident,
+        $reader:ident, $x:ident, $black:ident, $cache:ident, $emitted:ident
+    ) => {
+        proof! {
+            let step = crate::mmr::mmr_spec::RasterStep {
+                before: $before,
+                after: crate::mmr::mmr_spec::raster_state(
+                    $reader.bit_position as nat, $x, $black, $cache@, $emitted,
+                ),
+                mode: $mode,
+                mode_end: $mode_end,
+                b1: $b1,
+                b2: $b2,
+                split: $split,
+            };
+            assert(crate::mmr::mmr_spec::raster_step(
+                $data@, $reference@, $width, $steps.len() == 0, step,
+            ));
+            crate::mmr::mmr_properties::raster_step_append(
+                $data@, $reference@, $width, $start, $steps, step,
+            );
+            $steps = $steps.push(step);
+        }
+    };
+}
+
+macro_rules! production_mmr_trace_row_complete {
+    ($row:ident, $start:ident, $steps:ident, $reader:ident, $x:ident,
+     $black:ident, $cache:ident, $emitted:ident) => {
+        proof_decl! {
+            let ghost $row = crate::mmr::mmr_spec::RasterRow {
+                start: $start,
+                steps: $steps,
+                state: crate::mmr::mmr_spec::raster_state(
+                    $reader.bit_position as nat, $x, $black, $cache@, $emitted,
+                ),
+            };
+        }
+    };
+}
+
+macro_rules! production_mmr_trace_row_push {
+    ($data:ident, $width:ident, $bitmap:ident, $rows:ident, $row:ident) => {
+        proof! {
+            crate::mmr::mmr_properties::raster_row_append($data@, $width, $rows, $row);
+            crate::mmr::mmr_properties::rows_cache_append(&$bitmap, $rows, $row);
+            $rows = $rows.push($row);
+        }
+    };
+}
+
+macro_rules! production_mmr_trace_output {
+    ($data:ident, $width:ident, $height:ident, $bitmap:ident, $reader:ident, $rows:ident) => {
+        proof! {
+            assert($rows.len() == $height);
+            assert(crate::mmr::mmr_spec::raster_rows($data@, $width, $rows));
+            assert(crate::mmr::mmr_spec::rows_cache_pixels(&$bitmap, $rows));
+            assert($reader.bit_position as nat == crate::mmr::mmr_spec::rows_position($rows));
+            assert(crate::mmr::mmr_spec::bitmap_decodes(
+                $data@, $width, $height, &$bitmap, $reader.bit_position as nat,
+            ));
+        }
+    };
+}

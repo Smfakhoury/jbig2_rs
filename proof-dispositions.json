@@ -264,21 +264,21 @@
     {
       "id": "mmr::MmrError::from",
       "file": "src/mmr.rs",
-      "file_sha256": "8fbc634c20453f849630b145593c268ef77e2ad1c4c3926929c174b5c46c4c35",
+      "file_sha256": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "mmr::DecodeError::from",
       "file": "src/mmr.rs",
-      "file_sha256": "8fbc634c20453f849630b145593c268ef77e2ad1c4c3926929c174b5c46c4c35",
+      "file_sha256": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     },
     {
       "id": "mmr::prepare_transition_storage",
       "file": "src/mmr.rs",
-      "file_sha256": "8fbc634c20453f849630b145593c268ef77e2ad1c4c3926929c174b5c46c4c35",
+      "file_sha256": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
       "status": "runtime-proof-divergence",
       "reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Including them is rejected by pinned Verus on Vec::capacity and Result::unwrap_or. Runtime limit handling remains unverified; replacing capacity with length or adding project assumptions is not closure."
     },

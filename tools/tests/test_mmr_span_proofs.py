@@ -41,6 +41,18 @@ class MmrSpanProofFixtureTests(unittest.TestCase):
                 self.assertIn("matches!(out, Err(MmrError::InvalidTransition))", control)
                 self.assertNotEqual(self.source, control)
 
+    def test_recorded_cache_rollback_preserves_proof_support_before_corruption(self):
+        case = next(case for case in CASES if case["id"] == "recorded_span_discards_cache_update")
+        changed = replace_once(self.source, case["site"], case["replacement"])
+        weaker = weakened_contract(changed, case)
+        bridge = "mmr_properties::recorded_span_cache_pixels("
+        rollback = "if transitions.len() > saved_length"
+        self.assertLess(changed.index(bridge), changed.index(rollback))
+        self.assertIn(bridge, weaker)
+        self.assertIn("mmr_spec::span_pixels(", weaker)
+        self.assertIn("mmr_spec::future_rows_white(", weaker)
+        self.assertNotIn("mmr_spec::row_cache_prefix(\n        final(bitmap)", weaker)
+
     def test_missing_ambiguous_and_already_weakened_sites_fail_closed(self):
         for case in CASES:
             with self.subTest(case=case["id"]):

@@ -195,6 +195,248 @@ pub(super) open spec fn span_result(
     }
 }
 
+pub(super) open spec fn transition_count_at(transitions: Seq<u32>, x: u32) -> nat
+    decreases transitions.len(),
+{
+    if transitions.len() == 0 {
+        0
+    } else {
+        transition_count_at(transitions.subrange(0, transitions.len() - 1), x)
+            + if transitions[transitions.len() - 1] <= x { 1nat } else { 0nat }
+    }
+}
+
+pub(super) open spec fn transition_black_at(transitions: Seq<u32>, x: u32) -> bool {
+    transition_count_at(transitions, x) % 2 == 1
+}
+
+pub(super) open spec fn row_cache_matches(
+    bitmap: &crate::Bitmap, row: u32, transitions: Seq<u32>,
+) -> bool {
+    row < bitmap.height
+        && forall|x: u32| x < bitmap.width ==>
+            #[trigger] crate::spec::bitmap::stored_pixel(bitmap, x, row)
+                == transition_black_at(transitions, x)
+}
+
+pub(super) open spec fn white_reference_cache(transitions: Seq<u32>, width: u32) -> bool {
+    forall|x: u32| x < width ==> !#[trigger] transition_black_at(transitions, x)
+}
+
+pub(super) open spec fn span_pixels(
+    before: &crate::Bitmap, after: &crate::Bitmap,
+    row: u32, start: u32, end: u32, black: bool,
+) -> bool {
+    forall|x: u32, y: u32| x < before.width && y < before.height ==>
+        #[trigger] crate::spec::bitmap::stored_pixel(after, x, y)
+            == ((black && y == row && start <= x < end)
+                || crate::spec::bitmap::stored_pixel(before, x, y))
+}
+
+pub(super) struct RasterState {
+    pub(super) ghost position: nat,
+    pub(super) ghost x: u32,
+    pub(super) ghost black: bool,
+    pub(super) ghost transitions: Seq<u32>,
+    pub(super) ghost emitted_black: bool,
+}
+
+pub(super) struct RasterStep {
+    pub(super) ghost before: RasterState,
+    pub(super) ghost after: RasterState,
+    pub(super) ghost mode: super::Mode,
+    pub(super) ghost mode_end: nat,
+    pub(super) ghost b1: u32,
+    pub(super) ghost b2: u32,
+    pub(super) ghost split: u32,
+}
+
+pub(super) struct RasterRow {
+    pub(super) ghost start: nat,
+    pub(super) ghost steps: Seq<RasterStep>,
+    pub(super) ghost state: RasterState,
+}
+
+pub(super) open spec fn raster_state(
+    position: nat, x: u32, black: bool, transitions: Seq<u32>, emitted_black: bool,
+) -> RasterState {
+    RasterState { position, x, black, transitions, emitted_black }
+}
+
+pub(super) open spec fn transition_span_state(
+    before: Seq<u32>, emitted: bool, start: u32, end: u32, black: bool,
+) -> (Seq<u32>, bool) {
+    (
+        if start < end && emitted != black { before.push(start) } else { before },
+        if start < end { black } else { emitted },
+    )
+}
+
+pub(super) open spec fn mode_prefix_matches(
+    bytes: Seq<u8>, start: nat, end: nat, mode: super::Mode,
+) -> bool {
+    start <= end <= bytes.len() * 8
+        && exists|code: super::ModeCode|
+            #[trigger] mode_code_in_implementation_table(code)
+                && code.mode == mode
+                && end == start + code.length as nat
+                && code.bits as nat
+                    == crate::spec::readers::bits_value(bytes, start, code.length as nat)
+}
+
+pub(super) open spec fn raster_step(
+    bytes: Seq<u8>, reference: Seq<u32>, width: u32, initial: bool,
+    step: RasterStep,
+) -> bool {
+    let before = step.before;
+    let after = step.after;
+    &&& before.x < width
+    &&& before.x <= after.x <= width
+    &&& step.mode_end <= after.position
+    &&& mode_prefix_matches(bytes, before.position, step.mode_end, step.mode)
+    &&& reference_pair_matches(
+        reference, before.x, before.black, width, initial, 0, step.b1, step.b2,
+    )
+    &&& match step.mode {
+        super::Mode::Extension => false,
+        super::Mode::Pass =>
+            before.x < step.b2
+                && after.x == step.b2
+                && after.black == before.black
+                && after.position == step.mode_end
+                && transition_span_result(
+                    before.transitions, after.transitions,
+                    before.emitted_black, after.emitted_black,
+                    before.x, after.x, before.black,
+                ),
+        super::Mode::Vertical(displacement) =>
+            -3 <= displacement <= 3
+                && after.x as int == step.b1 as int + displacement as int
+                && after.black == !before.black
+                && after.position == step.mode_end
+                && transition_span_result(
+                    before.transitions, after.transitions,
+                    before.emitted_black, after.emitted_black,
+                    before.x, after.x, before.black,
+                ),
+        super::Mode::Horizontal => {
+            let middle = transition_span_state(
+                before.transitions, before.emitted_black,
+                before.x, step.split, before.black,
+            );
+            after.black == before.black
+                && horizontal_pair(
+                    before.black, bytes, step.mode_end, after.position,
+                    before.x, width, step.split, after.x,
+                )
+                && transition_span_result(
+                    middle.0, after.transitions, middle.1, after.emitted_black,
+                    step.split, after.x, !before.black,
+                )
+        },
+    }
+}
+
+pub(super) open spec fn raster_steps(
+    bytes: Seq<u8>, reference: Seq<u32>, width: u32, start: nat,
+    steps: Seq<RasterStep>, state: RasterState,
+) -> bool
+    decreases steps.len(),
+{
+    if steps.len() == 0 {
+        state == raster_state(start, 0, false, Seq::empty(), false)
+    } else {
+        let step = steps.last();
+        raster_steps(bytes, reference, width, start, steps.drop_last(), step.before)
+            && raster_step(bytes, reference, width, steps.len() == 1, step)
+            && state == step.after
+    }
+}
+
+pub(super) open spec fn rows_position(rows: Seq<RasterRow>) -> nat {
+    if rows.len() == 0 { 0 } else { rows.last().state.position }
+}
+
+pub(super) open spec fn rows_reference(rows: Seq<RasterRow>, width: u32) -> Seq<u32> {
+    if rows.len() == 0 {
+        Seq::empty().push(width).push(width)
+    } else {
+        rows.last().state.transitions.push(width).push(width)
+    }
+}
+
+pub(super) open spec fn raster_rows(bytes: Seq<u8>, width: u32, rows: Seq<RasterRow>) -> bool
+    decreases rows.len(),
+{
+    if rows.len() == 0 {
+        true
+    } else {
+        let prefix = rows.drop_last();
+        let row = rows.last();
+        raster_rows(bytes, width, prefix)
+            && row.start == rows_position(prefix)
+            && raster_steps(
+                bytes, rows_reference(prefix, width), width, row.start,
+                row.steps, row.state,
+            )
+            && row.state.x == width
+    }
+}
+
+pub(super) open spec fn rows_cache_pixels(
+    bitmap: &crate::Bitmap, rows: Seq<RasterRow>,
+) -> bool {
+    crate::spec::bitmap::storage_valid(bitmap)
+        && rows.len() <= bitmap.height
+        && forall|row: int| 0 <= row < rows.len() ==>
+            row_cache_matches(
+                bitmap, row as u32,
+                #[trigger] rows[row].state.transitions.push(bitmap.width).push(bitmap.width),
+            )
+}
+
+pub(super) open spec fn bitmap_decodes(
+    bytes: Seq<u8>, width: u32, height: u32, bitmap: &crate::Bitmap, end: nat,
+) -> bool {
+    bitmap.width == width && bitmap.height == height
+        && crate::spec::bitmap::storage_valid(bitmap)
+        && exists|rows: Seq<RasterRow>|
+            rows.len() == height
+                && #[trigger] raster_rows(bytes, width, rows)
+                && rows_cache_pixels(bitmap, rows)
+                && end == rows_position(rows)
+}
+
+pub(super) open spec fn required_eofb_prefix(
+    bytes: Seq<u8>, start: nat, end: nat,
+) -> bool {
+    start + 24 <= end <= start + 31
+        && end <= bytes.len() * 8
+        && end % 8 == 0
+        && exact_eofb(bytes, start)
+        && crate::spec::readers::bits_value(
+            bytes, start + 24, (end - start - 24) as nat,
+        ) == 0
+}
+
+pub(crate) closed spec fn bounded_bitmap_decodes(
+    bytes: Seq<u8>, width: u32, height: u32, bitmap: &crate::Bitmap,
+    policy: super::EofbPolicy,
+) -> bool {
+    exists|end: nat| #[trigger] bitmap_decodes(bytes, width, height, bitmap, end)
+        && match policy {
+            super::EofbPolicy::Optional => true,
+            super::EofbPolicy::Required => required_eofb_prefix(bytes, end, bytes.len() * 8),
+        }
+}
+
+pub(crate) closed spec fn prefix_bitmap_decodes(
+    bytes: Seq<u8>, width: u32, height: u32, bitmap: &crate::Bitmap, consumed: usize,
+) -> bool {
+    exists|end: nat| #[trigger] bitmap_decodes(bytes, width, height, bitmap, end)
+        && required_eofb_prefix(bytes, end, consumed as nat * 8)
+}
+
 pub(super) open spec fn exact_eofb(
     bytes: Seq<u8>,
     start: nat,

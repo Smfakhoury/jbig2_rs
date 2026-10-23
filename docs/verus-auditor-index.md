@@ -13,10 +13,10 @@ prose, table entries, diagrams or official vectors are reproduced here.
 | Layer | Entry points | Audit meaning |
 |---|---|---|
 | Normative-facing project models | [`specs/`](../specs), especially arithmetic `entry_*`, `refill_step`, `initialized_state`; MMR `exact_eofb`; header/segment and halftone flag models | Candidate translations to compare with the ledger's approved source identities and exact locators, not independently certified standards |
-| Project/API semantics and results | Decode charge/release/allocation predicates; document metadata, counts and resource limits; bitmap `black_span_result`, `prefix_copy_result`, `row_copy_result` and `pixel_result` | Consequential success/failure, framing and result guarantees; retain these in the specification surface |
+| Project/API semantics and results | Decode charge/release/allocation predicates; document metadata, counts and resource limits; bitmap `black_span_result`, `prefix_copy_result`, `row_copy_result` and `pixel_result`; MMR cache/pixel models plus `raster_step`, `raster_steps`, `raster_rows`, `bitmap_decodes`, `bounded_bitmap_decodes`, `prefix_bitmap_decodes`, `required_eofb_prefix` | Consequential success/failure, input/raster, framing and representation results; retain these in the specification surface without treating project consistency as normative approval |
 | Representation preconditions | Arithmetic `context_valid` and `decoder_*valid`; decode store/buffer validity; halftone `work_valid`, `bitmaps_valid`, `decoder_state_valid`; Huffman `reader_valid`, `wide_fits`, `line_decodable`; MMR `reader_valid`, `bitmap_storage_valid`, `transitions_ordered`, `reference_line_valid` | Bounds, storage, reachable-state and sentinel assumptions/results, not complete decoding semantics; auditors must inspect their use in production `requires`/`ensures` |
-| Implementation accumulator support | [`transition_prefix_valid`](../proofs/model_support/mmr.rs) | Prefix ordering and scan bounds used by private helper contracts and loops, not an exact MMR raster specification |
-| Model-access and arithmetic proof support | [`proofs/model_support/`](../proofs/model_support) | Nine relocated proof functions: arithmetic `entry_model_equations`, `initialization_code_bound`; decode `page_fields`, `document_fields`; document `decoder_fields`, `document_fields`, `global_fields`; halftone `work_fields`; Huffman `table_has_oob_definition` |
+| Implementation accumulator support | [`transition_prefix_valid`, `row_cache_prefix`, `future_rows_white`, `raster_outer`, `raster_inner`](../proofs/model_support/mmr.rs) | Ordering, pixel/cache framing and packaged loop invariants; unlike the observable finite trace relation, these are not additional normative rules |
+| Model-access and arithmetic proof support | [`proofs/model_support/`](../proofs/model_support) | Nine relocated proof functions: arithmetic `entry_model_equations`, `initialization_code_bound`; decode `page_fields`, `document_fields`; document `decoder_fields`, `document_fields`, `global_fields`; halftone `work_fields`; Huffman `table_has_oob_definition`. New MMR `bounded_bitmap_witness`/`prefix_bitmap_witness` are same-owner proved reveals of public closed accepted-result models, not assumptions or native-type visibility changes |
 | Other proof support | [`proofs/shared/`](../proofs/shared), [`proofs/production_impl/`](../proofs/production_impl), [`proofs/spec_properties/`](../proofs/spec_properties) | Representation/termination lemmas, production ghost bridges and local-model properties; file/lemma names do not upgrade evidence strength |
 
 The classification is by meaning, not a `*_valid`/`*_prefix` naming rule.
@@ -28,7 +28,10 @@ the same visibility and logical name, `mmr::mmr_spec::transition_prefix_valid`.
 Inspect [`src/mmr.rs`](../src/mmr.rs) contracts for `record_transition_span`,
 `fill_recorded_span` and `finish_transition_row` alongside that definition.
 The finish helper still requires the prefix invariant at `(width, width)`;
-its sentinel result is not a full line-pixel theorem.
+its exact result is the old sequence followed by two width sentinels. A separate
+composition lemma shows that these appends preserve visible pixel colour; the
+actual raster loop establishes row/cache agreement before and after finishing
+and swapping live references. This is not a full input-to-line theorem.
 
 The six specification files include support **outside** their `verus!` blocks.
 Each support file supplies a `verus!` block in the same logical module, not a
@@ -82,7 +85,35 @@ that mapping still needs independent comparison with T.6 notation.
 `reference_cursor_matches` and `reference_prefix_skipped` are internal cache
 optimization support. The verified suffix/global bridge is used by the real
 raster caller, which maintains its skipped prefix across position/flag updates.
-No reference-cache/previous-row pixel correspondence follows from these models.
+Those search models alone do not establish previous-row pixel correspondence.
+The separate `row_cache_matches` relation now supplies that actual loop
+composition: colour at `x` is odd parity of transitions at or before `x`,
+including meaningful zero-position changes but excluding width sentinels from
+visible pixels. `row_cache_prefix` and `future_rows_white` remain internal
+support. Final physical scratch-buffer roles depend on height parity because
+the native code swaps mutable references, not vector contents; no exported
+parity result or complete input/mode-to-raster conformance is claimed.
+
+The later accepted-result layer uses ghost `RasterState`, `RasterStep` and
+`RasterRow` values to state actual input/mode/run/reference/cache/colour/cursor
+relationships and every completed row's visible pixels. These finite
+declarative histories belong to the **observable result** surface, not merely
+loop support. Row starts and next references chain through the preceding
+completed history; steps are admitted only before the coding position reaches
+width. `transition_span_state` is the shared deterministic update in the
+specification file. The old private `transition_span_result` remains a
+one-line tuple-equality bridge to that same definition; no second algorithm is
+silently introduced in proof support.
+
+`required_eofb_prefix` spells out the immediate24-bit marker and0..7zero
+alignment bits to an input-bounded octet boundary. The public bounded/prefix
+result models are closed to preserve the private native Mode type; ordinary
+proved same-owner witness helpers expose their successful producer contracts.
+No new external declaration or proof exclusion is used. Actual whole proof/
+compilation1219/0 includes those helpers, not just selected debug targets.
+Complete valid-input acceptance/errors, independent normative table/coordinate/
+policy interpretation and broader codec/container/resource composition remain
+open despite this stronger accepted-input-to-raster result.
 
 Decode `first_symbol_index`, `symbol_group_count`, `referred_symbol_count` and
 `collected_symbol_count` are project lookup/count semantics. The full result

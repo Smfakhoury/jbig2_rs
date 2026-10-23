@@ -40,6 +40,48 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The current [accepted MMR result models](../specs/mmr.rs) now link actual
+mode/run input prefixes, reference pairs, span/cache/colour state and the
+reader extent through finite step/row histories to **every visible output
+row**. Public bounded/prefix results also compose exact EOFB/zero-padding
+framing and returned byte extent. These public models are closed so private
+native Mode types need not be widened; two ordinary proved same-owner
+[witness helpers](../proofs/model_support/mmr.rs) establish them. Internal
+`raster_outer`/`raster_inner` remain proof support, not extra normative rules.
+The unchanged span-state formula is shared by the public result model and
+the old private wrapper relation.
+
+Actual unfiltered whole proof and compilation are1219/0. Eleven reference/
+raster/framing contrasts and all eight old span cases compile, reject strongly
+and accept the intended weaker guarantees. Reader rewind, a wrong rendered
+pixel and ignored nonzero alignment bits are rejected by real result
+postconditions with all loop/trace proofs retained. Four reused literal
+vectors additionally assert input-bit extents1/17/19/13; no encoded-family
+fixture is added. Seven existing selected records gain project accepted-result
+functionality: first-white reference, next-row reuse, pass, vertical,
+imaginary-start, padding and binary polarity. Current selected strengths are
+**122functional/118state/26safety**, all266stillprovisional.
+
+This does **not** establish independent normative mode-table/coordinate/policy
+translation, complete valid-input acceptance or rejection/error conditions,
+broader codec/container/caller semantics, resource accounting, an exhaustive
+denominator or release readiness. The seven official-positive failures remain
+unresolved. Stronger successful MMR contracts are not new conformance credit.
+
+The preceding [MMR raster-loop tranche](../src/mmr.rs) composed a project
+[row/cache pixel relation](../specs/mmr.rs) through blank initialization,
+recorded spans, exact sentinel appends and live-reference swaps. Internal
+[prefix/future-white invariants](../proofs/model_support/mmr.rs) and
+[composition lemmas](../proofs/spec_properties/mmr.rs) stay outside the
+normative-facing model file. The next reference cache agrees with the preceding
+physical bitmap row; the first reference is project-white. Fresh whole proof
+and actual library compilation pass1211/0. Existing first-white, next-row,
+imaginary-element and polarity rows gain auxiliary loop/model/test links only:
+their exported result still states storage validity, not complete
+input/mode-to-raster or caller semantics. No selected strength or review status
+is upgraded; all266records remain provisional115/125/26. Independent T.6
+parity/coordinate review and complete stream semantics remain separate.
+
 The [filled-storage model](../specs/bitmap.rs) now specifies exact packed bytes
 for either fill value, including partial-byte padding, and the unchanged native
 constructor satisfies it in a1198/0whole proof/compile. Processed-row support
@@ -74,8 +116,8 @@ review and open gaps; all266strength counts remain115/125/26.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 115 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 125 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 122 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 118 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -697,9 +739,11 @@ Cursor/prefix cache machinery remains in proof support, not the normative
 reference-position model. Six actual compiling controls include false
 valid-input rejections;461native vectors cover9240full/49364cursor calls.
 One record gains functional project evidence:266allprovisional115/125/26.
-Previous-row/cache pixel correspondence, independent initial-coordinate and
-colour-parity review, and full mode/raster/stream semantics remain open.
-The existing first-white/next-row records are not upgraded. Two real native
+That search tranche alone did not establish previous-row pixel correspondence;
+the later raster/cache composition above supplies that project loop relation.
+Independent initial-coordinate/colour-parity review and complete input/mode/
+raster/stream semantics remain open. The existing first-white/next-row records
+are not upgraded. Two real native
 branch outcomes are additionally covered, with no changed denominator/floor.
 This does not resume any paused JBIG2 refinement/aggregation/custom family.
 

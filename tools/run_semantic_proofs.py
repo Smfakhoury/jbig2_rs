@@ -32,7 +32,7 @@ CHECKS = (
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
     ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("mmr-reference", "check_mmr_reference_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("mmr-reference", "check_mmr_reference_proofs.py", 11, "strong_contract", "weaker_control"),
     ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
     ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 6, "strong_contract", "weaker_control"),
     ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),

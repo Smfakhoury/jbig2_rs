@@ -515,7 +515,10 @@ const COMMON_MAKEUP: [RunCode; 13] = [
 /// required EOFB and final byte-alignment bits.
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap)
+            && mmr_spec::bounded_bitmap_decodes(
+                data@, width, height, &bitmap, eofb_policy,
+            ),
         Err(_) => true,
     },
 ))]
@@ -532,7 +535,10 @@ pub(crate) fn decode_mmr(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap),
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(&bitmap)
+            && mmr_spec::bounded_bitmap_decodes(
+                data@, width, height, &bitmap, eofb_policy,
+            ),
         Err(_) => true,
     },
 ))]
@@ -552,9 +558,18 @@ pub(crate) fn decode_mmr_reused(
             return Err(error);
         }
     };
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost decoded_end = reader.bit_position as nat; }
     let finish = finish_block(&mut reader, eofb_policy);
     scratch.clear();
     finish?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(mmr_spec::bitmap_decodes(data@, width, height, &bitmap, decoded_end));
+        mmr_spec::bounded_bitmap_witness(
+            data@, width, height, &bitmap, eofb_policy, decoded_end,
+        );
+    }
     Ok(bitmap)
 }
 
@@ -569,7 +584,10 @@ pub(crate) fn decode_mmr_reused(
     ensures match out {
         Ok((bitmap, consumed_bytes)) =>
             crate::spec::bitmap::storage_valid(&bitmap)
-            && consumed_bytes <= data@.len(),
+            && consumed_bytes <= data@.len()
+            && mmr_spec::prefix_bitmap_decodes(
+                data@, width, height, &bitmap, consumed_bytes,
+            ),
         Err(_) => true,
     },
 ))]
@@ -581,6 +599,8 @@ pub(crate) fn decode_mmr_prefix(
 ) -> Result<(Bitmap, usize), MmrError> {
     let mut scratch = MmrScratch::default();
     let (bitmap, mut reader) = decode_bitmap(data, width, height, limits, &mut scratch)?;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost decoded_end = reader.bit_position as nat; }
     let finish = finish_required_prefix(&mut reader);
     scratch.clear();
     finish?;
@@ -588,6 +608,14 @@ pub(crate) fn decode_mmr_prefix(
         .bit_position
         .checked_div(8)
         .ok_or(MmrError::IntegerOverflow)?;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(mmr_spec::bitmap_decodes(data@, width, height, &bitmap, decoded_end));
+        assert(consumed_bytes as nat * 8 == reader.bit_position as nat);
+        mmr_spec::prefix_bitmap_witness(
+            data@, width, height, &bitmap, decoded_end, consumed_bytes,
+        );
+    }
     Ok((bitmap, consumed_bytes))
 }
 
@@ -596,7 +624,10 @@ pub(crate) fn decode_mmr_prefix(
         Ok((bitmap, reader)) =>
             crate::spec::bitmap::storage_valid(&bitmap)
             && mmr_spec::reader_valid(&reader)
-            && reader.bytes@ == data@,
+            && reader.bytes@ == data@
+            && mmr_spec::bitmap_decodes(
+                data@, width, height, &bitmap, reader.bit_position as nat,
+            ),
         Err(_) => true,
     },
 ))]
@@ -627,6 +658,7 @@ fn decode_bitmap<'a>(
         reveal(crate::spec::bitmap::storage_valid);
         reveal(mmr_spec::bitmap_storage_valid);
         crate::bitmap::bitmap_shared::stride_covers_width(width);
+        mmr_properties::zeroed_rows_are_white(&bitmap);
     }
     prepare_transition_storage(width, &bitmap, limits, scratch)?;
     let mut transitions = &mut scratch.transitions;
@@ -637,6 +669,8 @@ fn decode_bitmap<'a>(
     proof! {
         reveal(mmr_spec::reference_line_valid);
         reveal(mmr_spec::transitions_ordered);
+        mmr_properties::initial_reference_cache(width);
+        assert(transitions@ == Seq::empty().push(width).push(width));
     }
 
     let mut reader = bit_reader(data);
@@ -648,6 +682,8 @@ fn decode_bitmap<'a>(
         .checked_mul(2)
         .and_then(|value| value.checked_add(2))
         .ok_or(MmrError::IntegerOverflow)?;
+    #[cfg(verus_keep_ghost)]
+    production_mmr_trace_begin!(traced_rows);
 
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
@@ -656,10 +692,19 @@ fn decode_bitmap<'a>(
             bitmap.height == height,
             crate::spec::bitmap::storage_valid(&bitmap),
             mmr_spec::bitmap_storage_valid(&bitmap),
+            mmr_spec::future_rows_white(&bitmap, row as nat),
+            row == 0 ==> mmr_spec::white_reference_cache(transitions@, width),
+            row > 0 ==> mmr_spec::row_cache_matches(
+                &bitmap, (row - 1) as u32, transitions@,
+            ),
             mmr_spec::reference_line_valid(transitions@, width),
             transitions@.len() <= width as nat + 2,
             mmr_spec::reader_valid(&reader),
             reader.bytes@ == data@,
+            mmr_spec::raster_outer(
+                data@, width, row, &bitmap, traced_rows, transitions@,
+                reader.bit_position as nat,
+            ),
         decreases height - row,
     ))]
     for row in 0..height {
@@ -676,7 +721,11 @@ fn decode_bitmap<'a>(
         proof! {
             crate::views::bitmap_fields(&bitmap);
             reveal(crate::spec::bitmap::storage_valid);
+            mmr_properties::empty_row_cache(&bitmap, row);
+            mmr_properties::white_future_advance(&bitmap, row as nat, row as nat + 1);
         }
+        #[cfg(verus_keep_ghost)]
+        production_mmr_trace_row_start!(traced_start, traced_steps, reader);
 
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
@@ -688,6 +737,14 @@ fn decode_bitmap<'a>(
                 bitmap.stride as nat
                     == crate::spec::bitmap::stride_for_width(bitmap.width as nat),
                 mmr_spec::bitmap_storage_valid(&bitmap),
+                crate::spec::bitmap::storage_valid(&bitmap),
+                mmr_spec::future_rows_white(&bitmap, row as nat + 1),
+                mmr_spec::row_cache_prefix(
+                    &bitmap, row, row_transitions@, emitted_black, x,
+                ),
+                row > 0 ==> mmr_spec::row_cache_matches(
+                    &bitmap, (row - 1) as u32, transitions@,
+                ),
                 mmr_spec::reference_line_valid(transitions@, width),
                 transitions@.len() <= width as nat + 2,
                 reference_index < transitions@.len(),
@@ -698,6 +755,14 @@ fn decode_bitmap<'a>(
                 row_transitions@.len() <= x as nat,
                 mmr_spec::reader_valid(&reader),
                 reader.bytes@ == data@,
+                mmr_spec::raster_inner(
+                    data@, width, row, &bitmap, traced_rows, transitions@,
+                    traced_start, traced_steps, initial,
+                    mmr_spec::raster_state(
+                        reader.bit_position as nat, x, black,
+                        row_transitions@, emitted_black,
+                    ),
+                ),
             decreases max_modes + 1 - mode_count,
         ))]
         while x < width {
@@ -741,6 +806,15 @@ fn decode_bitmap<'a>(
                 assert forall|previous: int| 0 <= previous < reference_index implies
                     #[trigger] transitions@[previous] <= reference_x by {}
             }
+            #[cfg(verus_keep_ghost)]
+            production_mmr_trace_before!(
+                traced_before,
+                reader,
+                x,
+                black,
+                row_transitions,
+                emitted_black
+            );
             let mode_offset = reader.bit_position;
             match decode_mode(&mut reader)? {
                 Mode::Extension => {
@@ -749,6 +823,8 @@ fn decode_bitmap<'a>(
                     });
                 }
                 Mode::Pass => {
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_trace_mode_end!(traced_mode_end, reader);
                     if b2 <= x || b2 > width {
                         return Err(MmrError::NonProgress);
                     }
@@ -765,8 +841,29 @@ fn decode_bitmap<'a>(
                         &mut emitted_black,
                     )?;
                     x = b2;
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_trace_step!(
+                        data,
+                        transitions,
+                        width,
+                        traced_start,
+                        traced_steps,
+                        traced_before,
+                        Mode::Pass,
+                        traced_mode_end,
+                        b1,
+                        b2,
+                        x,
+                        reader,
+                        x,
+                        black,
+                        row_transitions,
+                        emitted_black
+                    );
                 }
                 Mode::Horizontal => {
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_trace_mode_end!(traced_mode_end, reader);
                     let (after_first, end) = decode_horizontal_runs(&mut reader, black, x, width)?;
                     fill_recorded_span(
                         &mut bitmap,
@@ -789,8 +886,29 @@ fn decode_bitmap<'a>(
                         &mut emitted_black,
                     )?;
                     x = end;
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_trace_step!(
+                        data,
+                        transitions,
+                        width,
+                        traced_start,
+                        traced_steps,
+                        traced_before,
+                        Mode::Horizontal,
+                        traced_mode_end,
+                        b1,
+                        b2,
+                        after_first,
+                        reader,
+                        x,
+                        black,
+                        row_transitions,
+                        emitted_black
+                    );
                 }
                 Mode::Vertical(displacement) => {
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_trace_mode_end!(traced_mode_end, reader);
                     let target = match displacement {
                         -3 => b1.checked_sub(3),
                         -2 => b1.checked_sub(2),
@@ -819,6 +937,25 @@ fn decode_bitmap<'a>(
                     )?;
                     x = target;
                     black = !black;
+                    #[cfg(verus_keep_ghost)]
+                    production_mmr_trace_step!(
+                        data,
+                        transitions,
+                        width,
+                        traced_start,
+                        traced_steps,
+                        traced_before,
+                        Mode::Vertical(displacement),
+                        traced_mode_end,
+                        b1,
+                        b2,
+                        x,
+                        reader,
+                        x,
+                        black,
+                        row_transitions,
+                        emitted_black
+                    );
                 }
             }
             #[cfg(verus_keep_ghost)]
@@ -843,14 +980,36 @@ fn decode_bitmap<'a>(
             crate::views::bitmap_fields(&bitmap);
             reveal(crate::spec::bitmap::storage_valid);
             reveal(mmr_spec::bitmap_storage_valid);
+            mmr_properties::complete_row_cache(&bitmap, row, row_transitions@, emitted_black);
         }
+        #[cfg(verus_keep_ghost)]
+        production_mmr_trace_row_complete!(
+            traced_row,
+            traced_start,
+            traced_steps,
+            reader,
+            x,
+            black,
+            row_transitions,
+            emitted_black
+        );
 
+        #[cfg(verus_keep_ghost)]
+        proof_decl! { let ghost completed_cache = row_transitions@; }
         finish_transition_row(row_transitions, width);
+        #[cfg(verus_keep_ghost)]
+        proof! { mmr_properties::finished_row_cache(&bitmap, row, completed_cache, width); }
         core::mem::swap(&mut transitions, &mut row_transitions);
+        #[cfg(verus_keep_ghost)]
+        proof! { assert(mmr_spec::row_cache_matches(&bitmap, row, transitions@)); }
+        #[cfg(verus_keep_ghost)]
+        production_mmr_trace_row_push!(data, width, bitmap, traced_rows, traced_row);
         #[cfg(verus_keep_ghost)]
         production_mmr_row_termination!(row, height);
     }
 
+    #[cfg(verus_keep_ghost)]
+    production_mmr_trace_output!(data, width, height, bitmap, reader, traced_rows);
     Ok((bitmap, reader))
 }
 
@@ -1776,11 +1935,23 @@ fn record_transition_span(
                 *old(emitted_black), *final(emitted_black), start, end, black,
             )
             && (crate::spec::bitmap::storage_valid(old(bitmap)) ==>
-                mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black)),
+                mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black)
+                && mmr_spec::span_pixels(old(bitmap), final(bitmap), row, start, end, black)),
         Err(_) => final(transitions)@ == old(transitions)@
             && *final(emitted_black) == *old(emitted_black),
     },
     crate::spec::bitmap::storage_valid(old(bitmap)) ==> out.is_ok(),
+    mmr_spec::row_cache_prefix(
+        old(bitmap), row, old(transitions)@, *old(emitted_black), start,
+    ) ==> mmr_spec::row_cache_prefix(
+        final(bitmap), row, final(transitions)@, *final(emitted_black), end,
+    ),
+    mmr_spec::future_rows_white(old(bitmap), row as nat + 1) ==>
+        mmr_spec::future_rows_white(final(bitmap), row as nat + 1),
+    crate::spec::bitmap::storage_valid(old(bitmap)) ==>
+        forall|other: u32, cache: Seq<u32>|
+            other != row && mmr_spec::row_cache_matches(old(bitmap), other, cache) ==>
+                mmr_spec::row_cache_matches(final(bitmap), other, cache),
 ))]
 #[allow(clippy::too_many_arguments)]
 fn fill_recorded_span(
@@ -1793,8 +1964,34 @@ fn fill_recorded_span(
     transitions: &mut Vec<u32>,
     emitted_black: &mut bool,
 ) -> Result<(), MmrError> {
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost old_cache = transitions@;
+        let ghost old_emitted = *emitted_black;
+    }
     fill_span(bitmap, row, start, end, black)?;
     record_transition_span(transitions, emitted_black, start, end, width, black);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(old(bitmap));
+        crate::views::bitmap_fields(bitmap);
+        reveal(crate::spec::bitmap::storage_valid);
+        if crate::spec::bitmap::storage_valid(old(bitmap)) {
+            mmr_properties::span_pixel_frame(old(bitmap), bitmap, row, start, end, black);
+            mmr_properties::span_row_cache_frame(old(bitmap), bitmap, row, start, end, black);
+            if mmr_spec::future_rows_white(old(bitmap), row as nat + 1) {
+                mmr_properties::span_keeps_future_white(
+                    old(bitmap), bitmap, row, start, end, black, row as nat + 1,
+                );
+            }
+        }
+        if mmr_spec::row_cache_prefix(old(bitmap), row, old_cache, old_emitted, start) {
+            mmr_properties::recorded_span_cache_pixels(
+                old(bitmap), bitmap, row, start, end, black, old_cache, transitions@,
+                old_emitted, *emitted_black, width,
+            );
+        }
+    }
     Ok(())
 }
 
@@ -1803,6 +2000,7 @@ fn fill_recorded_span(
     ensures
         mmr_spec::reference_line_valid(final(transitions)@, width),
         final(transitions)@.len() == old(transitions)@.len() + 2,
+        final(transitions)@ == old(transitions)@.push(width).push(width),
 ))]
 fn finish_transition_row(transitions: &mut Vec<u32>, width: u32) {
     #[cfg(verus_keep_ghost)]
@@ -1905,6 +2103,10 @@ fn collect_transitions(
                     && mmr_spec::exact_eofb(
                         old(reader).bytes@,
                         old(reader).bit_position as nat,
+                    )
+                    && mmr_spec::required_eofb_prefix(
+                        old(reader).bytes@, old(reader).bit_position as nat,
+                        final(reader).bit_position as nat,
                     ),
             },
             Err(_) => true,
@@ -1953,6 +2155,10 @@ fn finish_block(reader: &mut BitReader<'_>, policy: EofbPolicy) -> Result<(), Mm
                 && mmr_spec::exact_eofb(
                     old(reader).bytes@,
                     old(reader).bit_position as nat,
+                )
+                && mmr_spec::required_eofb_prefix(
+                    old(reader).bytes@, old(reader).bit_position as nat,
+                    final(reader).bit_position as nat,
                 ),
             Err(_) => true,
         },
@@ -2007,6 +2213,125 @@ fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn recorded_span_cache_tracks_scalar_pixels_across_zero_and_colored_runs() {
+        let mut sequences = 0;
+        let mut prefixes = 0;
+        for width in 0..=12 {
+            for first in 0..=width {
+                for second in first..=width {
+                    for colors in 0..8_u8 {
+                        for row in 0..2 {
+                            let mut bitmap = Bitmap::blank(width, 2, &Limits::default()).unwrap();
+                            let mut transitions = Vec::new();
+                            let mut emitted = false;
+                            let mut expected = vec![false; usize::try_from(width).unwrap()];
+                            let mut start = 0;
+                            for (index, end) in [first, second, width].into_iter().enumerate() {
+                                let black = colors & (1 << index) != 0;
+                                for x in start..end {
+                                    expected[usize::try_from(x).unwrap()] = black;
+                                }
+                                fill_recorded_span(
+                                    &mut bitmap,
+                                    row,
+                                    start,
+                                    end,
+                                    black,
+                                    width,
+                                    &mut transitions,
+                                    &mut emitted,
+                                )
+                                .unwrap();
+                                let mut expected_transitions = Vec::new();
+                                let mut last = false;
+                                for x in 0..end {
+                                    let pixel = expected[usize::try_from(x).unwrap()];
+                                    if pixel != last {
+                                        expected_transitions.push(x);
+                                        last = pixel;
+                                    }
+                                }
+                                assert_eq!(transitions, expected_transitions);
+                                assert_eq!(emitted, last);
+                                for x in 0..width {
+                                    assert_eq!(
+                                        bitmap.pixel(x, row),
+                                        Some(expected[usize::try_from(x).unwrap()])
+                                    );
+                                    assert_eq!(bitmap.pixel(x, 1 - row), Some(false));
+                                    let cache_black = transitions
+                                        .iter()
+                                        .filter(|&&position| position <= x)
+                                        .count()
+                                        % 2
+                                        == 1;
+                                    assert_eq!(
+                                        x < end && cache_black,
+                                        expected[usize::try_from(x).unwrap()]
+                                    );
+                                }
+                                prefixes += 1;
+                                start = end;
+                            }
+                            finish_transition_row(&mut transitions, width);
+                            assert_eq!(&transitions[transitions.len() - 2..], &[width, width]);
+                            for x in 0..width {
+                                let cache_black = transitions
+                                    .iter()
+                                    .filter(|&&position| position <= x)
+                                    .count()
+                                    % 2
+                                    == 1;
+                                assert_eq!(cache_black, expected[usize::try_from(x).unwrap()]);
+                            }
+                            sequences += 1;
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(sequences, 7280);
+        assert_eq!(prefixes, 21840);
+    }
+
+    #[test]
+    fn decoded_reference_cache_matches_the_last_physical_row() {
+        type RasterCase<'a> = (&'a [u8], u32, usize, [[bool; 8]; 2]);
+        let island = [false, false, true, true, false, false, false, false];
+        let cases: [RasterCase<'_>; 4] = [
+            (&[0x80], 1, 1, [[false; 8]; 2]),
+            (&[0x26, 0xA2, 0x80], 1, 17, [[true; 8]; 2]),
+            (&[0x26, 0xA2, 0xE0], 2, 19, [[true; 8]; 2]),
+            (&[0x2F, 0xF8], 2, 13, [island; 2]),
+        ];
+        for (data, height, expected_bits, expected) in cases {
+            let width = 8;
+            let mut scratch = MmrScratch::default();
+            let (bitmap, reader) =
+                decode_bitmap(data, width, height, &Limits::default(), &mut scratch).unwrap();
+            assert_eq!(reader.bit_position, expected_bits);
+            let cache = if height % 2 == 0 {
+                &scratch.transitions
+            } else {
+                &scratch.row_transitions
+            };
+            assert_eq!(&cache[cache.len() - 2..], &[width, width]);
+            for row in 0..height {
+                for x in 0..width {
+                    assert_eq!(
+                        bitmap.pixel(x, row),
+                        Some(expected[usize::try_from(row).unwrap()][usize::try_from(x).unwrap()])
+                    );
+                }
+            }
+            for x in 0..width {
+                let black = cache.iter().filter(|&&position| position <= x).count() % 2 == 1;
+                assert_eq!(bitmap.pixel(x, height - 1), Some(black));
+            }
+        }
+    }
 
     fn previous_horizontal_runs(
         reader: &mut BitReader<'_>,

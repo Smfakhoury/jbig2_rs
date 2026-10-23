@@ -5,6 +5,100 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The current local tranche now exports **accepted MMR input-to-raster results**,
+not only row-cache invariants. Finite ghost step/row histories bind actual
+mode/run input bits, exact reference pairs, span/cache/colour updates and reader
+positions to every visible row of the declared bitmap. The initial reference
+and every next-row reference are causally linked through the completed history.
+Required finishing specifies an immediate24-bitEOFB plus0..7zero alignment bits;
+public bounded/prefix results compose the actual returned bitmap and byte
+extent. Closed result models preserve private native Mode visibility, with
+ordinary proved same-owner witness helpers rather than visibility/trust waivers.
+
+Unfiltered pinned Cargo proof and real library compilation pass1219/0,
+including every helper. All404native tests/14ignored, strict MSRV lint,
+386tooling tests,33real compiling runtime mutants and the affected11reference/
+raster/framing plus8span contrasts pass. Actual proof-free package tests,
+exact offline downstream output and all provenance/trust/workflow gates pass.
+Reused literal vectors assert exact bit extents
+1/17/19/13 without a new encoded-family fixture. Output/cursor/padding mutants
+retain all preceding loop/trace proofs; weaker variants remove only the new
+result relation. The older cache controls additionally remove logically
+coupled trace-only support, never old cache/math/shape protections.
+The configured complete profile is27groups190contrasts with the same six
+one-worker shards, max4active,20-minute caps and22checks. Complete same-snapshot
+local and same-run hosted acceptance remain separate gates.
+
+Seven selected records now carry exact **project success functionality**:
+first-white reference, next-row reuse, pass, vertical, imaginary-start,
+padding and binary polarity. All266remain provisional122functional/118state/
+26safety; no normative approval or denominator is invented. Fresh approved
+official normal/logged/native/Hayro observations still yield2passed/
+7unresolved/1unsupported and zero restored rejection credit. All51raw
+JSON/LCOV metrics independently match hosted-accepted#78; no coverage gain,
+coordinate identity, floor/denominator reduction or exclusion is claimed.
+Goals still need573covered lines and202branch outcomes. Full valid-input
+acceptance/errors, independent table/coordinate/policy review, broader codec/
+container/caller/resource, arithmetic-context sequence and symbol-content/
+export semantics remain open; the capacity repair is still isolated and
+proof-blocked without an approved getter boundary.
+
+JIT write access was restored without a workaround. #77 and #78 each reached
+22/22successful current-head checks plus independent62canonical-file/
+225binding/six-shard reconstruction and all51raw metrics/native mutants.
+Both are marked ready **only for owner review**, not self-approved or merged.
+#78 remains stacked on#77; current review/CI state is authoritative. The new
+accepted-input/raster work is an additional local batch, not inherited hosted
+acceptance or global P04/P05/P06 completion.
+
+The preceding MMR tranche closed the actual raster-loop row-cache/pixel
+composition gap, not just another scalar guard. The imaginary reference is
+white; scanned row pixels and emitted colour agree with transition parity;
+unwritten suffixes/future rows remain white; finishing preserves all visible
+pixels' cache interpretation; and swapping live buffer references makes the
+next reference cache agree with the preceding physical row. Native token
+streams, literal values, old preconditions and all three existing MMR
+disposition bodies are unchanged. Internal prefix/framing support remains in
+proof files. Fresh unfiltered pinned Cargo verification and real library
+compilation pass1211/0, including every helper.
+
+Two independent native tests add7280three-span sequences/21840prefixes and
+literal raster/cache checks using four existing white/black/island vectors,
+including odd/even physical scratch-buffer roles. No encoded-family fixture
+is added. All404native tests/14ignored, strict MSRV lint,385tooling tests and
+30actual compiling runtime mutants pass. Offline package audit, unpacked
+package tests and exact downstream output also pass without publication.
+Both affected semantic groups pass8cases each. New
+main-loop controls corrupt a finished raster pixel or the swapped cache while
+preserving bounds; weaker controls remove only the two previous-row agreement
+invariants and retain all proof support. The older recorded-span control now
+rolls back the cache after its proof bridge, so rejection is by real result
+obligations, not a failed helper precondition. The configured full profile is
+27groups187contrasts with the same six shards, four-active limit and22checks.
+Complete same-snapshot local collection and same-run hosted acceptance are
+separate requirements; selected-group results alone do not establish either.
+
+These are project representation/composition results, not an exported complete
+input-to-raster, final scratch-buffer parity or independently reviewed T.6
+theorem. All266records remain provisional115functional/125state/26safety.
+The seven official-positive failures, exhaustive denominator/independent model
+review, complete mode/caller/export/stream semantics and90%line/85%branch
+goals remain open. Fresh rawJSON/LCOV independently recomputes all51metrics,
+equal accepted#77:10800/12636lines,10397/12945regions,2041/2638branches.
+There is no new coverage gain or absolute-coordinate identity claim;573covered
+lines and202branch outcomes are still needed. Fresh approved official
+normal/logging/oracle executions retain2passed/7unresolved/1unsupported and
+zero restored strict-rejection credit.
+The separate native capacity repair remains unpublished and proof-blocked on
+the unsupported getter; no new standard declaration or approval is inferred.
+
+Owners merged#73/#74/#75. At the earlier row-cache checkpoint, #77 had
+22/22successful independently reconstructed checks but was held as a draft
+because access reportedpull:true/push:false at exact headb5e4974. No write or
+credential/fork workaround was attempted under that hold. After access was
+actually restored, the guarded ready-only updates and #78 acceptance above
+superseded that publication hold; no issue or external outreach was created.
+
 #73 and #74 reached owner-review readiness with22/22successful current-head
 checks each. Their complete six-shard artifacts were independently rebuilt
 byte-for-byte (62canonical files each), including all51raw coverage measures,
