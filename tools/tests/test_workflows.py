@@ -250,7 +250,7 @@ class WorkflowPolicyTests(unittest.TestCase):
                 expected_os = ["ubuntu-latest", "windows-latest", "macos-latest"]
                 self.assertEqual(document["jobs"]["cargo"]["strategy"]["matrix"]["os"], expected_os)
                 self.assertEqual(document["jobs"]["distribution"]["strategy"]["matrix"], {
-                    "os": expected_os, "toolchain": ["1.89.0", "stable"],
+                    "os": expected_os, "toolchain": ["1.88.0", "stable"],
                 })
         self.assertEqual(count, 21)
 
