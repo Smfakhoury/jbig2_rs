@@ -40,6 +40,19 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The [generic probability models](../specs/generic_region.rs) now specify
+valid-bank acceptance, the first invalid raw state/MPS payload and exact
+context/signal error projection. Together with the existing
+[arithmetic error models](../specs/arithmetic.rs), five unchanged native helper
+bodies prove exact constructor, validation, signal, EOF and overflow results.
+Fresh whole verification/compilation is1192/0 and19 compiling contrasts reject
+under the stronger contracts but accept under the original guarantees.
+These auxiliary links belong to the still-state-only
+`T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE` record: they do not prove which context
+the decoder must choose or when the complete stream finishes.
+The record keeps its empty normative functional-evidence list, provisional
+review and open gaps; all266strength counts remain115/125/26.
+
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
 | `functional_contract` | 115 | Explicit postcondition evidence within the stated narrow property scope |

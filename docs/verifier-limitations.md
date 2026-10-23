@@ -5,6 +5,22 @@ assumptions in its proof build. The syntax-audited production inventory contains
 610 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
 
+Five existing result attributes now specify exact project raw-context and
+diagnostic behavior. Valid banks are accepted; invalid banks report the first
+invalid state/MPS pair. Context construction, signal/context errors, EOF fields
+and overflow identity are preserved exactly. The fresh whole proof remains
+1192/0: obligation/function counts alone do not measure this strengthening.
+The existing arithmetic caller checker retains its eight cases and adds eleven
+compiling strong/original-contract controls, all passing. Native bodies,
+all old preconditions and all48reviewed boundary bodies/attributes are unchanged.
+Fresh401native tests/14ignored,24runtime mutants and378tooling tests pass.
+All51raw coverage metrics equal the accepted parent; source line offsets may
+shift and no new coordinate identity or coverage gain is claimed.
+These are auxiliary project error results, not a normative context-sequence,
+complete raster/stream or approved rejection theorem. The full required
+27group175contrast/fourshard receipt collection and hosted acceptance remain
+separate; existing capacity divergences and release blockers are retained.
+
 Cargo verification uses `verification/Cargo.toml` against the same production
 crate root, with a locked development-only `vstd` dependency. This explicit
 manifest boundary preserves the dependency-free, proof-free runtime archive;

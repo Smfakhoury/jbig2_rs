@@ -2,7 +2,25 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
-The latest native generic-control tranche changes no production declaration,
+The latest generic probability-result tranche strengthens five existing
+result attributes: invalid context construction, valid-bank acceptance and
+first-invalid state/MPS, context/signal errors, EOF fields and overflow
+identity. Fresh pinned whole proof/compilation is1192/0; all19 compiling
+strong/original-contract controls in the existing arithmetic caller group pass.
+All17native streams,658declarations/bodies,oldpreconditions and48reviewed
+boundary bodies/attributes remain unchanged; erased annotations may shift
+source lines. Fresh401native/14ignored,24runtime mutants and378tooling tests
+pass. All51raw-recomputed coverage metrics equal the accepted native-control
+parent, with no new coverage gain claimed. Fresh normal/logged/oracle
+observations remain2/7/1 with zero rejection credit. The required full profile
+is27groups175contrasts/fourshards; complete current-source receipt collection
+and hosted acceptance remain separate gates. All266records retain provisional
+115functional/125state/26safety classification: auxiliary project diagnostic
+models do not prove the driver's normative context sequence or stop condition.
+No native algorithm, error/resource policy, standard trust, pin, termination
+waiver, coding-family fixture or release approval changes.
+
+The previous native generic-control tranche changes no production declaration,
 body, attribute/precondition or source start:all17streams/658functions and
 48reviewed boundaries remain. Independent MSB sampling checks1085row-byte,
 59675window and4800numeric-edge cases;131072raw probability-state checks cover

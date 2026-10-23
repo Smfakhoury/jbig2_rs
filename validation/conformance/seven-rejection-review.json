@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "recorded_at": "2026-10-23T08:36:12.920090+00:00",
-  "source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+  "recorded_at": "2026-10-23T09:28:03.692212+00:00",
+  "source_revision": "81335099fea18dfce433c3f98f8126d677788562",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
-  "scope": "Same seven existing official diagnoses, freshly executed on immutable native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode source 13d3e6f2047bb7efdd08162673790db1438fd23d. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
+  "scope": "Same seven existing official diagnoses, freshly executed on immutable exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change source 81335099fea18dfce433c3f98f8126d677788562. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
-    "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35",
+    "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "6ed26b570e11b89367a16c422eb21c6b70587903d845cfd09192d9c772166a8c",
     "src/document.rs": "42c4e58ff2b0325a757a555e5782113326e0043235e45c06aa622a880a9e8214",
     "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
-    "src/generic_region.rs": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1",
+    "src/generic_region.rs": "d30f71c0b8eaa4db860473bf0e48468761d074a8f1014e3fe8888f77f64bf14c",
     "src/generic_row_ring.rs": "11f135b71730d44cddc61d44f34b1898e5859bfd3df0d489b7c47debb158827d",
     "src/halftone.rs": "af19dc1f2ba4179a44c5c2f9e5432190dfaca464312ec1a6f62a98390dc3cd9d",
     "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
@@ -26,8 +26,8 @@
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
     "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad"
   },
-  "ordinary_runtime_source_sha256": "22b9293afbf3dbe39ed3b6102d62008be5508a98c456a21891eab1f26088dc67",
-  "normal_decoder_sha256": "e79ef74562d4ec02e2a08fc8d0082b9e463fb2384afa91d8ce5873a31fb834d5",
+  "ordinary_runtime_source_sha256": "e877f4b72c9ee0f8e7dfce87e93f13edafa7b55670863b8da6d97d10d8ca7bd5",
+  "normal_decoder_sha256": "9ed03bb56ae32cc7970cf8f8fa02657a70951f82e8c1e8592ec0bc2a0448d3cf",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -40,22 +40,22 @@
     "t6_route": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items"
   },
   "diagnosis_origin": {
-    "previous_review_source_revision": "3a8a31651220083725c04d8cabbb5e1e89d367cd",
-    "previous_review_sha256": "c7ba029ebf00e90a013ba7652551d7578805571880790956dcc43e02627fbb66",
-    "fresh_execution_source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
-    "fresh_source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+    "previous_review_source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+    "previous_review_sha256": "7b6a127e6b3ff82033e5754655f54e04c37dceaa0cf6e6b903f888e3fccac431",
+    "fresh_execution_source_revision": "81335099fea18dfce433c3f98f8126d677788562",
+    "fresh_source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
     "trace_repeated_for_all_seven_cases": true,
     "diagnostic_patch_sha256": "387ecfda4004860a5be3d03ae16e3574e9175d82581350f37ef23b192e0ca3ec",
-    "trace_index_sha256": "c9d0b441b6af4b556786f336099bd4b34ab65495b8797da22914614e9851f9bc",
+    "trace_index_sha256": "b2caa167dd08e44533a319bc84687b3790f85ac01601e7ca08cdf2fc4e551f64",
     "instrumented_source_files_sha256": {
       "src/decode.rs": "27ffe8956ed65187eb4ab2f0331ee65ccf4dbfa8881918f1cc613df313bec1fa",
       "src/mmr.rs": "4a9c75ff2157b043e014c3075a6456f083e414dde109bfda58f9e8cf64032a8f",
       "src/segment_header.rs": "3bdc1a67b805ad5fbc8c0a8ca3067edf2afbdc6ab47615884b9c1131d25e6c60",
       "src/symbol_text.rs": "3d663fc9304f1b94aabf0708cac3d7f8b77d3bf514922c887f8a819fda183ab6"
     },
-    "unmodified_arithmetic_source_sha256": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35",
+    "unmodified_arithmetic_source_sha256": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "diagnostic_decoder_sha256": "e9e1df62bed0dc3ff44e2361ba8d4a696a8eb21f7e955ed11e235153d84dad35",
+    "diagnostic_decoder_sha256": "cc9774a0305f1f6542e9625df99e4a8ca350539265cb3de04b92f4b6860a6f5e",
     "instrumentation_scope": "Existing logging in an isolated source copy only; parent source/proof/scripts never edited.",
     "fresh_unclassified_execution_sha256": "6a5ad994148574e6e673dfee419df9c8609797a1b7fd26e793725dc00030ba15"
   },
@@ -68,7 +68,7 @@
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
     "source-provenance.json": "98e7b5390912d6d8dce068a851c1afbcd2bedf4856c64cbe9678bc7dcef1bf49",
-    "validation/conformance/expected-differences.json": "ae3c3f5ea12aab92edcd533db1c91f84b1b4f035dbaa1c669130eef24c901a78"
+    "validation/conformance/expected-differences.json": "26ca1b9d044b26ef73fc36fc79c19b1de48e245988280a376aa2165c82308f9f"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -96,7 +96,7 @@
     "official_expected_hashes_unchanged_from_prior_native_run": true,
     "scope_limit": "Covered one-bit BI_RGB layouts, not a general BMP parser certification.",
     "fresh_gate_test_count": 32,
-    "fresh_gate_test_log_sha256": "a2affeea98b2e2165c4fb50f1735d715651fcb3d77a9fc27ab46864b05d8fc38"
+    "fresh_gate_test_log_sha256": "6a75c163b0444c43751bdfd3dd6ad0fba219308c980476583a6ccabffce79610"
   },
   "hayro": {
     "crate": "hayro-jbig2",
@@ -109,7 +109,7 @@
       "std",
       "simd"
     ],
-    "binary_sha256": "9b7595e76f44c97fad946e00f4069dd9cf6af0c30df76c8f0eef096934655a47",
+    "binary_sha256": "7e0084090054242fd200d865bc690734868c93438355922c5a5b30f7a995c8e7",
     "harness_files_sha256": {
       "benchmarks/hayro-comparison/Cargo.toml": "c52af510f56cff89f7e9e9a6fb7031894650961d079686db80c517145580e471",
       "benchmarks/hayro-comparison/Cargo.lock": "ffa4928ea5fb38e7be4ded8a67b44f9ea2fe04adddb4b925e68832778e696e89",
@@ -123,7 +123,7 @@
     "seven_case_normative_passes": 0,
     "two_single_page_controls_have_matching_dimensions_and_fnv64_summary": true,
     "scope_limit": "Wrapper exposes one image and an FNV64 bitmap summary, not full-byte/all-page validation; errors do not establish pre-error entropy equivalence.",
-    "candidate_source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d"
+    "candidate_source_revision": "81335099fea18dfce433c3f98f8126d677788562"
   },
   "native_tool_identities": {
     "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
@@ -155,7 +155,7 @@
     "strict_policy_unchanged": true,
     "blanket_root_cause_claimed_for_seven_cases": false
   },
-  "normal_conformance_results_sha256": "a6f1914184a540ea22c4082a30e0547ebe06682c26c50f1832031a30be86ec82",
+  "normal_conformance_results_sha256": "789bed5c11a6afc9652ccdaa4ece867807dfaab60b1df1fed6f67e20fb0bd47f",
   "release_gate": "blocked",
   "cases": [
     {
@@ -187,9 +187,9 @@
         "T.88 6.5.9 and 6.2.6"
       ],
       "source_trace_sha256": "e6b157debad4281af44889333801e245cc5f2b3a773b787948c0f8de65abd508",
-      "source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need an independently anchored text entropy/ID/strip trace, or official attachment-owner clarification, before identifying an unambiguous production correction.",
       "expected_pages": [
         {
@@ -289,9 +289,9 @@
         "T.6 Table 1 and 2.2.5.2"
       ],
       "source_trace_sha256": "14757f8b8d0089aa431cd0d5a3c1ee09c77430f226ea0833a3a2c779a1f496d3",
-      "source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Do not extend BMSIZE or synthesize row data. Need independent upstream Huffman field alignment or official asset-owner clarification before assigning normative malformation.",
       "expected_pages": [
         {
@@ -385,9 +385,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b10d665c2180b605627120f1eda641edd91ffc8eec9f6cea24e94741b8d61061",
-      "source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -481,9 +481,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "5ea8fb0789178b025c0ccc377afef04eae89851c8c89e19e792636525c707095",
-      "source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -577,9 +577,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "05d26bb3da2a9954462c46ed4cb39d647624a3dd4cfe3f3adc4a56e88bd2ded8",
-      "source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -673,9 +673,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b1dbb0f363ca6f467c14515d78f848e71270edae807ca0fad9fd8006b58935dd",
-      "source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -769,9 +769,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "863c467991c565f1b8330550dee1c03777c582afdf851473106340f4b6afb81f",
-      "source_trace_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "source_trace_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -831,26 +831,35 @@
     }
   ],
   "source_selection": {
-    "kind": "native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode",
-    "immutable_source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
-    "arithmetic_source_sha256": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35",
+    "kind": "exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change",
+    "immutable_source_revision": "81335099fea18dfce433c3f98f8126d677788562",
+    "arithmetic_source_sha256": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "arithmetic_spec_sha256": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "owner_source_review_sha256": "f87aa1c5d1bd4ffd4ccd51547b8ed235bf455c441916132c7389e7c0fcfbb075",
+    "owner_source_review_sha256": "9e471dbcef2246511f2558ba5e94c761f241852c552e219abb9ce7763433b0bd",
     "owner_source_review": {
-      "native_comparison_revision": "947306efc5b8855eaaf57005529469cdd8ad8ae1",
-      "source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
+      "native_comparison_revision": "aab7038cc7ab43799c680c21bd38a91c16ff71f5",
+      "source_revision": "81335099fea18dfce433c3f98f8126d677788562",
       "unchanged_native_token_streams": 17,
       "strings_retained": true,
       "source_file_count": 17,
       "production_function_count": 658,
-      "all_658_production_declarations_bodies_attributes_and_starts_unchanged": true,
+      "all_658_production_declarations_and_bodies_unchanged": true,
+      "all_existing_preconditions_unchanged": true,
+      "exactly_five_result_attributes_strengthened": [
+        "arithmetic::ArithmeticContext::from_state",
+        "generic_region::integer_overflow",
+        "generic_region::probability_signal_error",
+        "generic_region::unexpected_eof",
+        "generic_region::validate_probability_states"
+      ],
       "all_reviewed_boundary_bodies_and_attributes_unchanged": true,
       "capacity_divergence_body_and_flags_unchanged": true,
+      "source_line_offsets_may_shift": true,
       "files": [
         {
           "file": "src/arithmetic.rs",
-          "source_sha256": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35"
+          "source_sha256": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb"
         },
         {
           "file": "src/bitmap.rs",
@@ -874,7 +883,7 @@
         },
         {
           "file": "src/generic_region.rs",
-          "source_sha256": "0a59d689c6b2b9697b6ec0396b187b102f0e0d482c830548e6273a2964d6a7b1"
+          "source_sha256": "d30f71c0b8eaa4db860473bf0e48468761d074a8f1014e3fe8888f77f64bf14c"
         },
         {
           "file": "src/generic_row_ring.rs",
@@ -917,7 +926,7 @@
           "source_sha256": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad"
         }
       ],
-      "scope": "Only direct generic packed-row sampling, raw probability-state validation and diagnostic projection tests plus3runtime mutants. No entropy decoding, new coding/custom/refinement/aggregation family fixture, observer hook, fake allocator failure or architecture-invalid slice. Bounded bitmap storage is valid; explicit invalid query coordinates/row offsets exercise existing white-padding guards, not malformed slices."
+      "scope": "Only erased project raw-context and diagnostic result contracts; no native algorithm, API, error policy, standard trust, termination waiver or coding-family fixture change."
     }
   },
   "historical_ci_repair": {
@@ -937,15 +946,15 @@
     "execution_gate": "run_itu.py still exits 1 with seven unresolved official cases."
   },
   "refill_source_continuation": {
-    "immutable_source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
-    "source_kind": "native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode",
+    "immutable_source_revision": "81335099fea18dfce433c3f98f8126d677788562",
+    "source_kind": "exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change",
     "all_seven_normal_and_logging_executions_repeated": true,
     "source_provenance_unchanged": true,
     "parent_owns_proof_inventory_coverage_metadata": true,
     "official_runner_exit": 1,
     "new_normative_approvals": 0,
-    "normal_build_target": "/workspace/jbig2-normative-local-assets/generic-controls-13d3e6f/normal-build",
-    "trace_build_target": "/workspace/jbig2-normative-local-assets/generic-controls-13d3e6f/trace-build",
-    "hayro_build_target": "/workspace/jbig2-normative-local-assets/generic-controls-13d3e6f/hayro-build"
+    "normal_build_target": "/workspace/jbig2-normative-local-assets/generic-probability-errors-8133509/normal-build",
+    "trace_build_target": "/workspace/jbig2-normative-local-assets/generic-probability-errors-8133509/trace-build",
+    "hayro_build_target": "/workspace/jbig2-normative-local-assets/generic-probability-errors-8133509/hayro-build"
   }
 }

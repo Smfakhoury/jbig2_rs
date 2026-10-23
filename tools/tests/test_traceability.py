@@ -1003,6 +1003,18 @@ class TraceabilityTests(unittest.TestCase):
                 } if name in {
                     "INTEGER-PROCEDURE-BANKS", "IAID-LENGTH", "IAID-STORAGE",
                 } else set()
+                if name == "DRIVER-CONTEXT-SEQUENCE":
+                    callers = {
+                        "generic_region::validate_probability_states",
+                        "generic_region::probability_signal_error",
+                        "generic_region::unexpected_eof",
+                        "generic_region::integer_overflow",
+                    }
+                    self.assertTrue({
+                        "generic-probability-validation-result",
+                        "generic-probability-signal-error",
+                    }.issubset(row["models"]))
+                    self.assertIn("Auxiliary project contracts", row["scope_of_formal_result"])
                 self.assertTrue(callers.issubset(row["runtime"]))
                 self.assertTrue(all(
                     runtime.startswith("arithmetic::") or runtime in callers

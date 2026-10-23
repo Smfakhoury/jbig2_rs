@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "13d3e6f2047bb7efdd08162673790db1438fd23d",
-  "scope": "Fresh existing official diagnostics on native generic packed sampling/raw-state/error controls with unchanged production and no entropy decode 13d3e6f; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "81335099fea18dfce433c3f98f8126d677788562",
+  "scope": "Fresh existing official diagnostics on exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "a6f1914184a540ea22c4082a30e0547ebe06682c26c50f1832031a30be86ec82",
-    "review_sha256": "7b6a127e6b3ff82033e5754655f54e04c37dceaa0cf6e6b903f888e3fccac431"
+    "results_sha256": "789bed5c11a6afc9652ccdaa4ece867807dfaab60b1df1fed6f67e20fb0bd47f",
+    "review_sha256": "a561a79d778f257602f6daafd8516122826fb8b9795cd2b222343777dd8e2277"
   },
   "community_regressions": {
     "total": 0,
