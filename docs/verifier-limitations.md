@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1185 obligations with zero errors and zero native
+Pinned Verus verifies 1189 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 609 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-three logical semantic groups remain complete: four deterministic
+The twenty-four logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-three independently
-hashed report/log pairs and all 137 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty-four independently
+hashed report/log pairs and all 141 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -35,7 +35,19 @@ the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
 
-MMR mode/run-code success now binds the returned implementation-table key to
+MMR run success now additionally proves a nonempty input-bound sequence of
+make-up codes followed by one terminal code, with exact total and consumed
+extent. Only erased sequence accumulation/invariants and the success
+postcondition change; all 17 native streams, 657 preconditions and 48 reviewed
+boundaries are unchanged. Whole Cargo verification/compilation pass 1189/0.
+Four actual compiling controls distinguish discarded totals/make-up values,
+premature make-up termination and an unconsumed empty zero run. Native tests
+cover 87,040 sequence scenarios plus exact missing-terminal EOF cases.
+One selected summation record gains project functionality, leaving all 266
+records provisional at 113/127/26. Implementation-table review, full
+acceptance/typed errors and horizontal-pair/raster/caller semantics remain open.
+
+The preceding MMR mode/run-code success tranche binds the returned implementation-table key to
 the exact MSB-first old-input prefix, as well as its existing table membership
 and consumed length. Prefix loop invariants compose the existing exact one-bit
 reader result using an internal append lemma. Two opaque checked closure chains
@@ -53,7 +65,7 @@ Direct constructor-boundary tests additionally assert raw fields and terminal
 sense. These share implementation tables, not an independent T.6 oracle.
 One selected mode record gains actual project input-to-code functionality;
 all266records remain provisional112/128/26. Complete mode acceptance/errors,
-run totals, table translation, row/raster/caller semantics and capacity support
+table translation, row/raster/caller semantics and capacity support
 remain separate.
 
 All byte-read methods now expose exact project EOF offset/needed/remaining

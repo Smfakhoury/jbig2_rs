@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
-  "scope": "Fresh existing official diagnostics on Exact project consumed MMR mode/run-code bit-prefix witnesses, shared checked arithmetic equivalent to prior closure, exhaustive aligned window and constructor checks; no normative table fidelity, full raster or trust change 8219834; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "a245af7dbbb78879846a141407e363412127e309",
+  "scope": "Fresh existing official diagnostics on exact input-bound MMR run-sequence sum contracts with unchanged native code a245af7; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "0ec1ae827c748065ca0672e0bf9091b1ba7aae62d7493e7d4fdf5bfb5398957a",
-    "review_sha256": "a62989d7dd6ee2cb4e81497a104e38964a8c29bc35131c1c54667a443413ab84"
+    "results_sha256": "d30bc2c913c77963d1221a3fd9e4b7b7338f13daaa77abee84b0032da5c2e8a6",
+    "review_sha256": "7f87b711adde722fd4ed0d6534e98ceb903e6c295cd2cbe93fc405490a96d969"
   },
   "community_regressions": {
     "total": 0,

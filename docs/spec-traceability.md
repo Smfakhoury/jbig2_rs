@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 112 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 128 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 113 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 127 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -542,8 +542,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty-three semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 137 required strong/weaker compiling
+All twenty-four semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 141 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
@@ -569,6 +569,21 @@ project input-to-code evidence; the truncation-policy row only gains an
 auxiliary success relation and retains state-only strength. All266remain
 provisional112/128/26. Shared-table scalar windows are not independent T.6
 table approval, complete mode/error/run-total or row/raster/caller theorems.
+
+The run-sequence follow-up proves that each successful `decode_run` has a
+nonempty input-bound implementation-table sequence: preceding codes are
+make-up, the final code is terminating, and its value sum and bit-length sum
+equal the returned total and consumed extent. Four compiling contrasts detect
+lost totals, discarded make-up values, premature make-up termination and
+empty zero-run acceptance. Numeric tests exercise 87,040 colour/alignment/
+make-up/terminal scenarios with exact and spare row remainders, every nonzero
+scenario's first overshoot, and eight exact missing-terminal EOF cases.
+They share implementation tables, not independently translated normative data.
+Only `T6-RUN-MAKEUP-SUM` gains functional strength: all 266 records remain
+provisional, now 113 functional / 127 state / 26 safety. Full acceptance/typed
+errors, horizontal-pair/row/raster/caller composition and table review remain
+separate. All native code, caller preconditions and trust boundaries are
+unchanged; this theorem does not close the complete-scope gate.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional

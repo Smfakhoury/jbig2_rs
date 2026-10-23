@@ -2,6 +2,21 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The subsequent MMR run-sequence tranche proves exact successful make-up/
+terminal sums and consumed input extent with no executing-code change.
+All 17 native streams, 657 preconditions and 48 reviewed boundaries remain
+unchanged. Whole pinned verification/compilation pass 1189/0; four actual
+compiling contrasts extend the required profile to 24 groups / 141 contrasts
+in the same four shards/jobs. Native tests cover 87,040 sequence scenarios,
+exact/spare/overshooting row remainders and eight missing-terminal EOF cases.
+Only the selected run-sum row gains functional strength: all 266 records remain
+provisional at 113 functional / 127 state / 26 safety. Actual coverage is
+unchanged at 84.71% lines / 79.69% regions / 76.16% branches, with no floor or
+exclusion change. Complete acceptance/errors, independent table review,
+horizontal-pair/row/raster/caller semantics and all existing owner/release
+gates remain open.
+
+The preceding tranche's measurements are retained below as historical context.
 The MMR prefix tranche now binds successful mode/run-code table keys to the
 actual consumed old-input MSB-first prefix, preserving membership/length/reader
 guarantees. An internal one-bit append lemma composes the loop; two identical

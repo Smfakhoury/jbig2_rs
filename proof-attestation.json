@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "8219834ae4c2f5882affd28c0ae3070c15afc141",
-  "scope": "Exact project consumed MMR mode/run-code prefix witnesses and shared checked arithmetic, preserving implementation-table membership and reader bounds",
+  "source_revision": "a245af7dbbb78879846a141407e363412127e309",
+  "scope": "Exact successful project MMR input-bound make-up/terminal sequences, value sums and consumed extent, preserving native code and all trust boundaries",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/mmr-prefix-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/mmr-run-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1185,
+    "verified_obligations": 1189,
     "verified_production_functions": 609,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "8a3642734cfb3e4c0bdd4dbd2796e941a5d5244d1a60acbe5b2add8c1ae2eeca",
-  "proof_dispositions_sha256": "cb394eb466a97844d15d403accd86b70cf078a8d6f4cdc09310a41923dc80e1c",
+  "production_proof_coverage_sha256": "f0cbc9ee8014cc410a7248ef89c6acdf53f75084e18aaec14828214c81ea9561",
+  "proof_dispositions_sha256": "9e383887a1d64b9f48df684f0bf8ed182eb2d3524d17bf822af2f83dc841be66",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo verification and compilation pass1185/0 with lifetime/erasure checks enabled. Successful MMRmode/run-code tablekeys nowequal theactualconsumedold-inputbits_value prefix inadditiontomembership andlength. Prefixloop invariantscomposeaninternalone-bitappendlemma;2duplicatedcheckedclosureoperationscall1verifiedprivatechecked-arithmetichelper,preservingguards/errors/order. Sixteen native streams,all656existing preconditions and48reviewed boundarybodies/attrs,includingcapacitydivergencebodies/flags,areunchanged. Inventory657functions:609verified/24limitations/23forwarders/1capacitydivergence/0incomplete/0nativeassumptions. Fouractualcompilingwrong-keycontrastsretainoldmembership/length/readerboundsunderweakercontrols. Fullrequiredprofile23groups137contrasts/fourunchangedshards. Scalaroraclescover1024modewindowsand131072runwindow/colour/alignmentcases;262144actualhelper/priorclosurepairsandconstructorfield/terminal-senseboundarytestscheckconsistency. Theyshareimplementationtables,notindependentT6approvalorfullimageconformance. Initialsequentialrewritesfailedreviewedperfilecoverageandwerenotaccepted;nothresholdwaslowered. Finalsharedhelperandgenuineconstructortestspasssamefloorswithactual10696/12627lines,10310/12937regions,2009/2638branches. OnlyMMRchanges+17coveredlines/+15regions/0branches,-2linedenominator/+1regionentry,noexclusionorfloorchange. One selectedmode recordgainsprojectinput-to-codefunctionality;266allprovisional112/128/26. Runtruncationpolicyremainsstateonly. Actualapprovednormal/logged/native/Hayro observationsrerunandremain2/7/1,zerorejectioncredit. No nativealgorithmsemantics,callerpreconditionstrengthening,trustexception,policy,pin,CIjob,observerhook,fakeallocationfailure,pausedfamilyorpublicationchange. IndependentT6tablefidelity,completeacceptance/errors,runtotals,row/raster/caller/streamsemantics,sevenofficialpositives,capacityintegration,exhaustivereviewand90/85goalsremainopen.",
+  "note": "Fresh unfiltered pinned Cargo verification and compilation pass 1189/0 with lifetime/erasure checks enabled. Successful decode_run equals a nonempty input-bound implementation-table sequence: all earlier codes are make-up, the last is terminating, and exact value/bit-length sums equal the returned total and consumed extent. Only postconditions and erased ghost accumulation/invariants change. All 17 native token streams, 657 caller preconditions and 48 reviewed boundary bodies/attributes, including capacity-divergence bodies/flags, are unchanged. Inventory remains 657 functions: 609 directly verified, 24 limitations, 23 forwarders, 1 capacity divergence, 0 incomplete and 0 native assumptions. Four actual compiling strong/weaker controls detect discarded totals, lost make-up values, premature make-up termination and empty zero-run acceptance. The required complete profile is 24 groups/141 contrasts/four unchanged shards; local and hosted execution receipts are distinct. Numeric tests exercise 87040 sequence scenarios, exact/spare remainders, every nonzero scenario's first overshoot and eight exact missing-terminal EOF cases. All 388 native tests pass with 14 ignored; all 17 runtime mutants compile and are detected. Coverage remains 10696/12627 lines, 10310/12937 regions and 2009/2638 branches, with no denominator, floor or exclusion change. Only T6-RUN-MAKEUP-SUM gains project functional evidence: all 266 selected records remain provisional at 113 functional/127 state/26 safety. Tests share implementation tables and do not independently certify T.6 translation, complete acceptance/typed errors or horizontal-pair/row/raster/caller composition. Official positive diagnoses, capacity integration, exhaustive independent review and 90/85 goals remain open. No native algorithm, caller constraint, trust exception, policy, pin, CI job, observer hook, fake allocation failure, paused family or release approval change is included.",
   "release_gate": "blocked"
 }

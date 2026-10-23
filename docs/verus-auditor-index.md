@@ -67,12 +67,20 @@ implementation data and synthetic semantic mutants are not normative oracles.
 
 ## Evidence and unchanged stop conditions
 
+MMR `complete_run` is output semantics, not merely an accumulator invariant.
+Its `run_prefix_matches`, `run_bit_length`, `run_value_sum` and
+`run_all_makeups` components define the actual input sequence, consumed extent,
+sum and earlier-code structure. Successful `decode_run` proves this relation
+using an erased sequence accumulator. These models use implementation tables;
+independent T.6 table fidelity, complete acceptance/errors and horizontal-pair/
+row/raster/caller interpretation remain separate review obligations.
+
 - Production `verus_spec` contracts in [`src/`](../src) remain the place to check
   actual preconditions and postconditions. A model definition or field-reveal
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  23-group/137-contrast required profile is neither added normative coverage nor a fresh
+  24-group/141-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks
