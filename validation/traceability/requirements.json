@@ -42,7 +42,8 @@
         "E.3.2; E.3.7",
         "A.1-A.3; Figure A.1; Table A.1",
         "E.2.5; Table E.1 (decoder-shared estimator rules only)",
-        "E.3-E.3.5; Figures E.13-E.20"
+        "E.3-E.3.5; Figures E.13-E.20",
+        "7.4.4.1.1-7.4.4.1.4; 7.4.5.1.1-7.4.5.1.3.2; Figures 41-46 (selected header fields, locally consulted 2026-10-23)"
       ]
     },
     {
@@ -458,10 +459,16 @@
       "requirement_ids": [
         "T88-PATTERN-COUNT",
         "T88-PATTERN-COLLECTIVE-WIDTH",
-        "T88-PATTERN-EXTRACTION"
+        "T88-PATTERN-EXTRACTION",
+        "T88-PATTERN-HEADER-MMR",
+        "T88-PATTERN-HEADER-TEMPLATE",
+        "T88-PATTERN-HEADER-RESERVED",
+        "T88-PATTERN-HEADER-WIDTH",
+        "T88-PATTERN-HEADER-HEIGHT",
+        "T88-PATTERN-HEADER-GRAYMAX"
       ],
       "remaining_scope": [
-        "Complete header/flag and generic-parameter enumeration, collective bitmap decoding and per-pattern count/order/pixel extraction theorems remain open."
+        "Selected raw header fields now have provisional records and exact accepted-output contracts; independent enumeration/model review, complete acceptance/errors, region-information/caller/resource binding and full decoded output semantics remain open."
       ]
     },
     {
@@ -473,10 +480,21 @@
         "T88-HALFTONE-GRAY-DEPTH",
         "T88-HALFTONE-GRAY-RECONSTRUCTION",
         "T88-HALFTONE-SKIP-BOUNDARY",
-        "T88-HALFTONE-RENDER-ORDER"
+        "T88-HALFTONE-RENDER-ORDER",
+        "T88-HALFTONE-HEADER-MMR",
+        "T88-HALFTONE-HEADER-TEMPLATE",
+        "T88-HALFTONE-HEADER-SKIP",
+        "T88-HALFTONE-HEADER-OPERATOR",
+        "T88-HALFTONE-HEADER-DEFAULT-PIXEL",
+        "T88-HALFTONE-HEADER-GRID-WIDTH",
+        "T88-HALFTONE-HEADER-GRID-HEIGHT",
+        "T88-HALFTONE-HEADER-GRID-X",
+        "T88-HALFTONE-HEADER-GRID-Y",
+        "T88-HALFTONE-HEADER-VECTOR-X",
+        "T88-HALFTONE-HEADER-VECTOR-Y"
       ],
       "remaining_scope": [
-        "Complete header/parameter and bitplane enumeration, full mask/index values, pattern lookup, pixel combination and row-major rendering semantics remain open despite exact grid/depth/boundary helper contracts."
+        "Selected raw header fields now have provisional records and exact accepted-output contracts; independent enumeration/model review, complete acceptance/errors, region-information/caller/resource binding and full decoded output semantics remain open."
       ]
     },
     {
@@ -635,7 +653,7 @@
     "specs/document.rs": "937c78bb6796d5e3c179019c5183ff1c848cece68e26b705cae1f5615ec45480",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
-    "specs/halftone.rs": "2e7513dc1f1143b895fe7d8739cad169500ed47ff42e054af2f134c2a0f38697",
+    "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
     "specs/huffman.rs": "fe0cca185e75966a67834cc01c44ac080eb7eee5374fffcc9fbaf790c81e0a58",
     "specs/mmr.rs": "ec66a5b8b9e37f9043536a470c9500aa2f935bf0435bba351144a358a66b9226",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
@@ -648,7 +666,7 @@
     "src/document.rs": "3fd262ee16be836fdf8dba91a43ef294dc2dd55dbbe8865c8af917a68ec1d8d8",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
-    "src/halftone.rs": "2bbb7e44cee749b68ba73c1a80aab7ff0e8eb938e02df22125cc22eeaba36648",
+    "src/halftone.rs": "af19dc1f2ba4179a44c5c2f9e5432190dfaca464312ec1a6f62a98390dc3cd9d",
     "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/mmr.rs": "c6810537f116140b4374e52264b9f7190c775c173e14903271f316220a837290",
@@ -1635,6 +1653,46 @@
       ],
       "name": "arithmetic_symbol_id_result",
       "role": "Exact project IAID value/error projection into the symbol/text caller result."
+    },
+    "pattern-header-fields": {
+      "kind": "spec",
+      "file": "specs/halftone.rs",
+      "module_path": [
+        "halftone",
+        "halftone_spec"
+      ],
+      "name": "pattern_header_fields",
+      "role": "Exact accepted project pattern header flags, dimensions and raw maximum-index word at the supplied reader position."
+    },
+    "halftone-header-fields": {
+      "kind": "spec",
+      "file": "specs/halftone.rs",
+      "module_path": [
+        "halftone",
+        "halftone_spec"
+      ],
+      "name": "halftone_header_fields",
+      "role": "Exact accepted project halftone-specific fields after region information, retaining signed/unsigned raw 256-scaled quantities."
+    },
+    "pattern-header-accepted": {
+      "kind": "spec",
+      "file": "specs/halftone.rs",
+      "module_path": [
+        "halftone",
+        "halftone_spec"
+      ],
+      "name": "pattern_header_accepted",
+      "role": "Exact project parser success/rejection predicate for current header bytes and position; typed partial errors and independent normative approval remain separate."
+    },
+    "halftone-header-accepted": {
+      "kind": "spec",
+      "file": "specs/halftone.rs",
+      "module_path": [
+        "halftone",
+        "halftone_spec"
+      ],
+      "name": "halftone_header_accepted",
+      "role": "Exact project parser success/rejection predicate for current header bytes and position; typed partial errors and independent normative approval remain separate."
     }
   },
   "requirements": [
@@ -13723,6 +13781,754 @@
           ]
         }
       ]
+    },
+    {
+      "id": "T88-PATTERN-HEADER-MMR",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.4.1.1 bit 0; Figure 42",
+      "title": "Extract the pattern coding selector without changing its bit value",
+      "feature": "pattern_dictionaries",
+      "runtime": [
+        "halftone::parse_pattern_dictionary_header"
+      ],
+      "models": [
+        "pattern-header-fields",
+        "segment-be-u32",
+        "pattern-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_pattern_dictionary_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::pattern_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-PATTERN-HEADER-TEMPLATE",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.4.1.1 bits 1-2; Figure 42",
+      "title": "Extract the pattern template and require the neutral selection for MMR",
+      "feature": "pattern_dictionaries",
+      "runtime": [
+        "halftone::parse_pattern_dictionary_header"
+      ],
+      "models": [
+        "pattern-header-fields",
+        "segment-be-u32",
+        "pattern-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_pattern_dictionary_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::pattern_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-PATTERN-HEADER-RESERVED",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.4.1.1 bits 3-7; Figure 42",
+      "title": "Do not accept a pattern header with reserved flag bits set",
+      "feature": "pattern_dictionaries",
+      "runtime": [
+        "halftone::parse_pattern_dictionary_header"
+      ],
+      "models": [
+        "pattern-header-fields",
+        "segment-be-u32",
+        "pattern-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_pattern_dictionary_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::pattern_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-PATTERN-HEADER-WIDTH",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.4.1.2",
+      "title": "Preserve the positive one-byte pattern width",
+      "feature": "pattern_dictionaries",
+      "runtime": [
+        "halftone::parse_pattern_dictionary_header"
+      ],
+      "models": [
+        "pattern-header-fields",
+        "segment-be-u32",
+        "pattern-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_pattern_dictionary_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::pattern_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-PATTERN-HEADER-HEIGHT",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.4.1.3",
+      "title": "Preserve the positive one-byte pattern height",
+      "feature": "pattern_dictionaries",
+      "runtime": [
+        "halftone::parse_pattern_dictionary_header"
+      ],
+      "models": [
+        "pattern-header-fields",
+        "segment-be-u32",
+        "pattern-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_pattern_dictionary_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::pattern_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-PATTERN-HEADER-GRAYMAX",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.4.1.4",
+      "title": "Preserve the serialized maximum pattern-index word",
+      "feature": "pattern_dictionaries",
+      "runtime": [
+        "halftone::parse_pattern_dictionary_header"
+      ],
+      "models": [
+        "pattern-header-fields",
+        "segment-be-u32",
+        "pattern-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_pattern_dictionary_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::pattern_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-MMR",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.1 bit 0; Figure 44",
+      "title": "Extract the gray-plane coding selector",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-TEMPLATE",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.1 bits 1-2; Figure 44",
+      "title": "Extract the gray-plane template with the MMR restriction",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-SKIP",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.1 bit 3; Figure 44",
+      "title": "Preserve skip selection and do not enable it for MMR",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-OPERATOR",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.1 bits 4-6; Figure 44",
+      "title": "Preserve the accepted pattern-combination selection",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-DEFAULT-PIXEL",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.1 bit 7; Figure 44",
+      "title": "Extract the initial output-pixel selection",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-GRID-WIDTH",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.2.1",
+      "title": "Preserve the gray-value array width word",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-GRID-HEIGHT",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.2.2",
+      "title": "Preserve the gray-value array height word",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-GRID-X",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.2.3",
+      "title": "Interpret the horizontal grid-origin word as signed while retaining its encoded scale",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-GRID-Y",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.2.4",
+      "title": "Interpret the vertical grid-origin word as signed while retaining its encoded scale",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-VECTOR-X",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.3.1",
+      "title": "Preserve the unsigned horizontal grid-vector word and its encoded scale",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
+    },
+    {
+      "id": "T88-HALFTONE-HEADER-VECTOR-Y",
+      "standard": "ITU-T T.88 (08/2018)",
+      "clause": "7.4.5.1.3.2",
+      "title": "Preserve the unsigned vertical grid-vector word and its encoded scale",
+      "feature": "halftone_regions",
+      "runtime": [
+        "halftone::parse_halftone_header"
+      ],
+      "models": [
+        "halftone-header-fields",
+        "segment-be-u32",
+        "halftone-header-accepted"
+      ],
+      "proof_macros": [],
+      "tests": [
+        {
+          "target": "lib",
+          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+        }
+      ],
+      "strength": "functional_contract",
+      "review": "provisional",
+      "scope_of_formal_result": "Parser success is equivalent to the project header acceptance predicate at the old reader position. Successful output exactly matches the raw field model and consumes seven pattern-specific or twenty-one halftone-specific bytes. The halftone helper starts after region information; signed origins and unsigned vectors retain their raw 256-scaled representation. This is not exact typed-error/partial-cursor, complete segment/caller/raster semantics or independent normative translation approval.",
+      "assumptions": [
+        "The caller supplies a reader with a valid current position and selects the correct segment-specific header entry point.",
+        "Existing ByteReader big-endian word contracts and project flag/operator/signed-word models are used; full region information and downstream semantics remain separate."
+      ],
+      "gaps": [
+        "Independent review of the standard-to-model field/byte-order/fixed-point translation remains pending.",
+        "Exact typed-error/partial-cursor contracts, region-information/segment/caller/resource binding and decoded bitplane/pattern/raster semantics remain open."
+      ],
+      "functional_evidence": [
+        {
+          "runtime": "halftone::parse_halftone_header",
+          "section": "ensures",
+          "tokens": [
+            "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
+            "out.is_ok() == halftone_spec::halftone_header_accepted(old(reader).bytes@, old(reader).position as int,)"
+          ]
+        }
+      ],
+      "invariant_evidence": []
     }
   ]
 }

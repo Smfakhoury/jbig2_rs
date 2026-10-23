@@ -16,6 +16,22 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "halftone-gray-state-trailing-bytes-ignored",
+        "file": "src/halftone.rs",
+        "before": "if *offset != coded.len() {",
+        "after": "if *offset > coded.len() {",
+        "target": "lib",
+        "test": "halftone::tests::gray_mmr_consumes_exact_prefixes_and_requires_all_declared_bytes",
+    },
+    {
+        "id": "pattern-mmr-single-use-check-disabled",
+        "file": "src/halftone.rs",
+        "before": "if *used {",
+        "after": "if *used && 0_u8 == 1_u8 {",
+        "target": "lib",
+        "test": "halftone::tests::pattern_mmr_is_single_use_and_mode_errors_do_not_consume_it",
+    },
+    {
         "id": "symbol-code-length-power-boundary-misclassified",
         "file": "src/symbol_text.rs",
         "before": "else if symbol_count <= 65_536 {",
@@ -203,7 +219,7 @@ def check_mutations(toolchain: str) -> dict:
                 path.write_bytes(original)
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
-        "scope": "Targeted public API, reference-role, typed-error, formatter-failure and direct symbol code-length/storage contracts, not exhaustive codec mutation coverage",
+        "scope": "Targeted public API, reference-role, typed-error, formatter-failure, symbol storage and halftone state contracts, not exhaustive codec mutation coverage",
         "runtime_source_modified": False, "mutations": results,
     }
 

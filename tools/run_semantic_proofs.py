@@ -40,6 +40,7 @@ CHECKS = (
     ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
     ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"

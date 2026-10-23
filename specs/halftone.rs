@@ -31,12 +31,12 @@ pub(crate) open spec fn decoder_state_valid(
     }
 }
 
-pub(super) open spec fn pattern_flags_valid(flags: u8) -> bool {
+pub(crate) open spec fn pattern_flags_valid(flags: u8) -> bool {
     flags & 0xf8 == 0
         && (flags & 1 == 0 || (flags / 2) % 4 == 0)
 }
 
-pub(super) open spec fn halftone_flags_valid(flags: u8) -> bool {
+pub(crate) open spec fn halftone_flags_valid(flags: u8) -> bool {
     flags & 1 == 0 || ((flags / 2) % 4 == 0 && flags & 8 == 0)
 }
 
@@ -44,7 +44,7 @@ pub(super) open spec fn operator_code_valid(flags: u8) -> bool {
     ((flags >> 4) & 7) <= 4
 }
 
-pub(super) open spec fn operator_for_code(
+pub(crate) open spec fn operator_for_code(
     code: u8,
 ) -> Option<crate::bitmap::CombinationOperator> {
     match code {
@@ -69,6 +69,51 @@ pub(crate) open spec fn pattern_count(
     header: super::PatternDictionaryHeader,
 ) -> nat {
     header.gray_max as nat + 1
+}
+
+pub(crate) open spec fn pattern_header_accepted(bytes: Seq<u8>, start: int) -> bool {
+    0 <= start && start + 7 <= bytes.len()
+        && pattern_flags_valid(bytes[start])
+        && bytes[start + 1] > 0 && bytes[start + 2] > 0
+}
+
+pub(crate) open spec fn halftone_header_accepted(bytes: Seq<u8>, start: int) -> bool {
+    0 <= start && start + 21 <= bytes.len()
+        && halftone_flags_valid(bytes[start])
+        && operator_for_code((bytes[start] >> 4) & 7).is_some()
+}
+
+pub(crate) open spec fn pattern_header_fields(
+    header: super::PatternDictionaryHeader, bytes: Seq<u8>, start: int,
+) -> bool {
+    0 <= start && start + 7 <= bytes.len()
+        && pattern_flags_valid(bytes[start])
+        && header.mmr == (bytes[start] & 1 != 0)
+        && header.template == (bytes[start] / 2) % 4
+        && header.pattern_width == bytes[start + 1]
+        && header.pattern_height == bytes[start + 2]
+        && header.gray_max == crate::spec::segments::be_u32_at(bytes, start + 3)
+}
+
+pub(crate) open spec fn halftone_header_fields(
+    header: super::HalftoneHeader, bytes: Seq<u8>, start: int,
+) -> bool {
+    0 <= start && start + 21 <= bytes.len()
+        && halftone_flags_valid(bytes[start])
+        && header.mmr == (bytes[start] & 1 != 0)
+        && header.template == (bytes[start] / 2) % 4
+        && header.enable_skip == (bytes[start] & 8 != 0)
+        && match operator_for_code((bytes[start] >> 4) & 7) {
+            Some(operator) => header.operator == operator,
+            None => false,
+        }
+        && header.default_pixel == (bytes[start] & 0x80 != 0)
+        && header.grid_width == crate::spec::segments::be_u32_at(bytes, start + 1)
+        && header.grid_height == crate::spec::segments::be_u32_at(bytes, start + 5)
+        && header.grid_x as int == signed_u32(crate::spec::segments::be_u32_at(bytes, start + 9))
+        && header.grid_y as int == signed_u32(crate::spec::segments::be_u32_at(bytes, start + 13))
+        && header.grid_vector_x == ((bytes[start + 17] as u16) << 8) | bytes[start + 18] as u16
+        && header.grid_vector_y == ((bytes[start + 19] as u16) << 8) | bytes[start + 20] as u16
 }
 
 pub(crate) open spec fn pow2(exponent: nat) -> nat
