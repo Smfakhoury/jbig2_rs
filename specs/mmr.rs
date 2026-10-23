@@ -97,6 +97,24 @@ pub(super) open spec fn complete_run(
         && total as nat == run_value_sum(codes)
 }
 
+pub(super) open spec fn horizontal_pair(
+    black: bool, bytes: Seq<u8>, start: nat, finish: nat,
+    x: u32, width: u32, after_first: u32, end: u32,
+) -> bool {
+    x <= after_first <= end <= width
+        && x < end
+        && exists|first: Seq<super::RunCode>, second: Seq<super::RunCode>|
+            #[trigger] complete_run(
+                black, bytes, start, start + run_bit_length(first),
+                (after_first - x) as u32, first,
+            )
+            && finish == start + run_bit_length(first) + #[trigger] run_bit_length(second)
+            && complete_run(
+                !black, bytes, start + run_bit_length(first), finish,
+                (end - after_first) as u32, second,
+            )
+}
+
 pub(super) open spec fn transitions_ordered(
     transitions: Seq<u32>,
     width: u32,

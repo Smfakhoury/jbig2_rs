@@ -741,24 +741,7 @@ fn decode_bitmap<'a>(
                     x = b2;
                 }
                 Mode::Horizontal => {
-                    let remaining = width.checked_sub(x).ok_or(MmrError::InvalidTransition)?;
-                    let first = decode_run(&mut reader, black, remaining)?;
-                    let after_first = x.checked_add(first).ok_or(MmrError::IntegerOverflow)?;
-                    let second_remaining = width
-                        .checked_sub(after_first)
-                        .ok_or(MmrError::RunExceedsRow)?;
-                    let second = decode_run(&mut reader, !black, second_remaining)?;
-                    let end = after_first
-                        .checked_add(second)
-                        .ok_or(MmrError::IntegerOverflow)?;
-                    if end > width {
-                        return Err(MmrError::RunExceedsRow);
-                    }
-                    if end == x {
-                        return Err(MmrError::NonProgress);
-                    }
-                    #[cfg(verus_keep_ghost)]
-                    production_mmr_horizontal_progress!(x, width, first, second);
+                    let (after_first, end) = decode_horizontal_runs(&mut reader, black, x, width)?;
                     fill_recorded_span(
                         &mut bitmap,
                         row,
@@ -1072,6 +1055,101 @@ fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
         length = length.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
     }
     Err(MmrError::InvalidMode { bit_offset: start })
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(old(reader)),
+    ensures
+        mmr_spec::reader_valid(final(reader)),
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).bit_position <= final(reader).bit_position,
+        match out {
+            Ok((after_first, end)) =>
+                x <= after_first <= end <= width
+                && x < end
+                && mmr_spec::horizontal_pair(
+                    black, old(reader).bytes@, old(reader).bit_position as nat,
+                    final(reader).bit_position as nat, x, width, after_first, end,
+                ),
+            Err(_) => true,
+        },
+))]
+fn decode_horizontal_runs(
+    reader: &mut BitReader<'_>,
+    black: bool,
+    x: u32,
+    width: u32,
+) -> Result<(u32, u32), MmrError> {
+    let remaining = width.checked_sub(x).ok_or(MmrError::InvalidTransition)?;
+    let first = decode_run(reader, black, remaining)?;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost split = reader.bit_position as nat;
+        let ghost first_codes = choose|codes: Seq<RunCode>|
+            #[trigger] codes.len() > 0
+            && mmr_spec::complete_run(
+                black, old(reader).bytes@, old(reader).bit_position as nat,
+                split, first, codes,
+            );
+    }
+    let after_first = x.checked_add(first).ok_or(MmrError::IntegerOverflow)?;
+    let second_remaining = width
+        .checked_sub(after_first)
+        .ok_or(MmrError::RunExceedsRow)?;
+    let second = decode_run(reader, !black, second_remaining)?;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost second_codes = choose|codes: Seq<RunCode>|
+            #[trigger] codes.len() > 0
+            && mmr_spec::complete_run(
+                !black, old(reader).bytes@, split, reader.bit_position as nat,
+                second, codes,
+            );
+    }
+    let end = after_first
+        .checked_add(second)
+        .ok_or(MmrError::IntegerOverflow)?;
+    if end > width {
+        return Err(MmrError::RunExceedsRow);
+    }
+    if end == x {
+        return Err(MmrError::NonProgress);
+    }
+    #[cfg(verus_keep_ghost)]
+    production_mmr_horizontal_progress!(x, width, first, second);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(after_first - x == first);
+        assert(end - after_first == second);
+        assert(mmr_spec::complete_run(
+            black, old(reader).bytes@, old(reader).bit_position as nat,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            first, first_codes,
+        ));
+        assert(reader.bit_position as nat == old(reader).bit_position as nat
+            + mmr_spec::run_bit_length(first_codes)
+            + mmr_spec::run_bit_length(second_codes));
+        assert(mmr_spec::complete_run(
+            !black, old(reader).bytes@,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            reader.bit_position as nat, second, second_codes,
+        ));
+        assert(mmr_spec::complete_run(
+            black, old(reader).bytes@, old(reader).bit_position as nat,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            (after_first - x) as u32, first_codes,
+        ));
+        assert(mmr_spec::complete_run(
+            !black, old(reader).bytes@,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            reader.bit_position as nat, (end - after_first) as u32, second_codes,
+        ));
+        assert(mmr_spec::horizontal_pair(
+            black, old(reader).bytes@, old(reader).bit_position as nat,
+            reader.bit_position as nat, x, width, after_first, end,
+        ));
+    }
+    Ok((after_first, end))
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
@@ -1784,6 +1862,204 @@ fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn previous_horizontal_runs(
+        reader: &mut BitReader<'_>,
+        black: bool,
+        x: u32,
+        width: u32,
+    ) -> Result<(u32, u32), MmrError> {
+        let remaining = width.checked_sub(x).ok_or(MmrError::InvalidTransition)?;
+        let first = decode_run(reader, black, remaining)?;
+        let after_first = x.checked_add(first).ok_or(MmrError::IntegerOverflow)?;
+        let second_remaining = width
+            .checked_sub(after_first)
+            .ok_or(MmrError::RunExceedsRow)?;
+        let second = decode_run(reader, !black, second_remaining)?;
+        let end = after_first
+            .checked_add(second)
+            .ok_or(MmrError::IntegerOverflow)?;
+        if end > width {
+            return Err(MmrError::RunExceedsRow);
+        }
+        if end == x {
+            return Err(MmrError::NonProgress);
+        }
+        Ok((after_first, end))
+    }
+
+    fn horizontal_error(error: MmrError) -> MalformedError {
+        let DecodeError::Malformed(error) = DecodeError::from(error) else {
+            panic!("horizontal runs produce typed malformed errors");
+        };
+        error
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn horizontal_pairs_match_numeric_endpoints_and_previous_inline_procedure() {
+        let mut pairs = 0;
+        let mut comparisons = 0;
+        for black in [false, true] {
+            let (first_table, second_table) = if black {
+                (&BLACK_TERMINATING, &WHITE_TERMINATING)
+            } else {
+                (&WHITE_TERMINATING, &BLACK_TERMINATING)
+            };
+            for first_terminal in first_table {
+                for second_terminal in second_table {
+                    for start in [0, 1, 7] {
+                        for (first_makeup, second_makeup) in [(0, 0), (64, 2560), (2560, 64)] {
+                            let mut codes = Vec::new();
+                            if first_makeup != 0 {
+                                codes.push(
+                                    (if black {
+                                        BLACK_MAKEUP.iter()
+                                    } else {
+                                        WHITE_MAKEUP.iter()
+                                    })
+                                    .chain(COMMON_MAKEUP.iter())
+                                    .copied()
+                                    .find(|code| code.value == first_makeup)
+                                    .unwrap(),
+                                );
+                            }
+                            codes.push(*first_terminal);
+                            if second_makeup != 0 {
+                                codes.push(
+                                    COMMON_MAKEUP
+                                        .iter()
+                                        .chain(if black {
+                                            WHITE_MAKEUP.iter()
+                                        } else {
+                                            BLACK_MAKEUP.iter()
+                                        })
+                                        .copied()
+                                        .find(|code| code.value == second_makeup)
+                                        .unwrap(),
+                                );
+                            }
+                            codes.push(*second_terminal);
+                            let first = u32::from(first_makeup) + u32::from(first_terminal.value);
+                            let second =
+                                u32::from(second_makeup) + u32::from(second_terminal.value);
+                            let total = first + second;
+                            let (bytes, bits) = run_sequence_bytes(&codes, start);
+                            pairs += 1;
+                            for x in [0, u32::MAX - total - 1] {
+                                for spare in 0..=1 {
+                                    let width = x + total + spare;
+                                    let mut reader = bit_reader(&bytes);
+                                    reader.bit_position = start;
+                                    let mut previous = bit_reader(&bytes);
+                                    previous.bit_position = start;
+                                    let actual =
+                                        decode_horizontal_runs(&mut reader, black, x, width)
+                                            .map_err(horizontal_error);
+                                    let expected =
+                                        previous_horizontal_runs(&mut previous, black, x, width)
+                                            .map_err(horizontal_error);
+                                    assert_eq!(actual, expected);
+                                    if total == 0 {
+                                        assert_eq!(
+                                            actual,
+                                            Err(MalformedError::InvalidMmr(
+                                                MmrErrorKind::NonProgress
+                                            ))
+                                        );
+                                    } else {
+                                        assert_eq!(actual.unwrap(), (x + first, x + total));
+                                    }
+                                    assert_eq!(reader.bit_position, start + bits);
+                                    assert_eq!(reader.bit_position, previous.bit_position);
+                                    assert_eq!(reader.bytes, previous.bytes);
+                                    comparisons += 1;
+                                }
+                            }
+                            if total != 0 {
+                                let mut reader = bit_reader(&bytes);
+                                reader.bit_position = start;
+                                let mut previous = bit_reader(&bytes);
+                                previous.bit_position = start;
+                                let error =
+                                    decode_horizontal_runs(&mut reader, black, 0, total - 1)
+                                        .unwrap_err();
+                                let old_error =
+                                    previous_horizontal_runs(&mut previous, black, 0, total - 1)
+                                        .unwrap_err();
+                                assert_eq!(horizontal_error(error), horizontal_error(old_error));
+                                let mut sum = 0;
+                                let mut consumed = start;
+                                for code in &codes {
+                                    sum += u32::from(code.value);
+                                    consumed += usize::from(code.length);
+                                    if sum >= total {
+                                        break;
+                                    }
+                                }
+                                assert_eq!(reader.bit_position, consumed);
+                                assert_eq!(reader.bit_position, previous.bit_position);
+                                assert_eq!(reader.bytes, previous.bytes);
+                                comparisons += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(pairs, 73_728);
+        assert_eq!(comparisons, 368_634);
+    }
+
+    #[test]
+    fn horizontal_pair_partial_failures_preserve_previous_error_fields_and_cursor() {
+        let inputs: &[&[u8]] = &[
+            &[],
+            &[0],
+            &[0xff],
+            &[0x35],
+            &[0x35, 0],
+            &[0x35, 0x01],
+            &[0x03, 0xc0],
+            &[0xde, 0xcd, 0x40],
+        ];
+        let mut errors = 0;
+        let mut cases = 0;
+        for bytes in inputs {
+            for start in 0..=bytes.len() * 8 {
+                for black in [false, true] {
+                    for (x, width) in [
+                        (0, 0),
+                        (0, 1),
+                        (0, 63),
+                        (0, 64),
+                        (0, 4096),
+                        (u32::MAX, u32::MAX),
+                        (1, 0),
+                    ] {
+                        let mut reader = bit_reader(bytes);
+                        reader.bit_position = start;
+                        let mut previous = bit_reader(bytes);
+                        previous.bit_position = start;
+                        let actual = decode_horizontal_runs(&mut reader, black, x, width)
+                            .map_err(horizontal_error);
+                        let expected = previous_horizontal_runs(&mut previous, black, x, width)
+                            .map_err(horizontal_error);
+                        errors += usize::from(actual.is_err());
+                        cases += 1;
+                        assert_eq!(actual, expected);
+                        assert_eq!(reader.bit_position, previous.bit_position);
+                        assert_eq!(reader.bytes, previous.bytes);
+                        if x > width {
+                            assert_eq!(reader.bit_position, start);
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 1456);
+        assert!(errors > 0);
+    }
 
     fn run_sequence_bytes(codes: &[RunCode], start: usize) -> ([u8; 8], usize) {
         let mut packed = 0_u64;
