@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check exact T.6 reference pairs, optimized cursor updates and valid-input acceptance."""
+"""Check reference selection and actual raster-loop cache/pixel correspondence."""
 
 import argparse
 import json
@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FUNCTIONS = {row["id"]: row for row in source_functions(ROOT)}
 FULL = FUNCTIONS["mmr::reference_elements"]["body_text"]
 FROM = FUNCTIONS["mmr::reference_elements_from"]["body_text"]
+RASTER = FUNCTIONS["mmr::decode_bitmap"]["body_text"]
 FULL_PAIR = """&& mmr_spec::reference_pair_matches(
     transitions@, x, black, width, initial, 0, b1, b2,
 )"""
@@ -35,6 +36,18 @@ FULL_ACCEPT = "ensures out.is_ok(), match out { Ok((b1, b2)) =>"
 FULL_ACCEPT_CONTROL = "ensures match out { Ok((b1, b2)) =>"
 FROM_ACCEPT = "*final(search_start) < transitions@.len(), out.is_ok(),"
 FROM_ACCEPT_CONTROL = "*final(search_start) < transitions@.len(),"
+RASTER_TAIL = "production_mmr_row_termination!(row, height);"
+ROW_REFERENCE = """row > 0 ==> mmr_spec::row_cache_matches(
+    &bitmap, (row - 1) as u32, transitions@,
+),"""
+WHITE_REFERENCE = "row == 0 ==> mmr_spec::white_reference_cache(transitions@, width),"
+ROW_PREFIX = """mmr_spec::row_cache_prefix(
+    &bitmap, row, row_transitions@, emitted_black, x,
+),"""
+RASTER_CONTROLS = (
+    (WHITE_REFERENCE + "\n" + ROW_REFERENCE, WHITE_REFERENCE),
+    (ROW_PREFIX + "\n" + ROW_REFERENCE, ROW_PREFIX),
+)
 
 
 def case(identity, function, source, replacement, controls):
@@ -84,6 +97,30 @@ CASES = (
         ),
         ((FROM_ACCEPT, FROM_ACCEPT_CONTROL),),
     ),
+    case(
+        "raster_reference_pixels_corrupted_after_row_finish", "decode_bitmap", RASTER,
+        replace_once(
+            RASTER, RASTER_TAIL,
+            RASTER_TAIL + """
+            if row == 0 && height == 1 && width > 0 && !bitmap.data.is_empty() {
+                bitmap.data[0] ^= 0x80;
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! { crate::views::bitmap_fields(&bitmap); }""",
+        ),
+        RASTER_CONTROLS,
+    ),
+    case(
+        "raster_reference_cache_corrupted_after_row_swap", "decode_bitmap", RASTER,
+        replace_once(
+            RASTER, RASTER_TAIL,
+            RASTER_TAIL + """
+            if row == 0 && transitions.len() > 2 {
+                transitions[0] = 0;
+            }""",
+        ),
+        RASTER_CONTROLS,
+    ),
 )
 
 
@@ -96,9 +133,9 @@ def main():
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/mmr.rs", "specs/mmr.rs", "proofs/model_support/mmr.rs",
-             "proofs/spec_properties/mmr.rs"),
+             "proofs/spec_properties/mmr.rs", "proofs/shared/bitmap.rs"),
             "jbig2-mmr-reference-",
-            "Exact project first eligible opposite-colour reference pair, optimized lower cursor and valid-input acceptance; real caller maintains skipped-prefix condition for global selection. Cache/pixel correspondence and normative/full-raster review remain separate",
+            "Exact project reference pair/cursor/acceptance and actual raster-loop reference-cache correspondence to the completed physical row. Shape-preserving pixel/cache corruption is rejected without deleting proof support; controls remove only the two previous-row correspondence invariants. Normative/input-to-raster conformance remains separate",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"MMR reference proof sensitivity failed: {error}", file=sys.stderr)

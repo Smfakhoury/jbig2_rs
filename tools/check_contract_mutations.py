@@ -281,6 +281,30 @@ MUTATIONS = (
         "target": "lib",
         "test": "bitmap::tests::filled_layout_and_padding_are_deterministic",
     },
+    {
+        "id": "mmr-raster-reference-pixels-corrupted-after-row-finish",
+        "file": "src/mmr.rs",
+        "before": "production_mmr_row_termination!(row, height);",
+        "after": (
+            "production_mmr_row_termination!(row, height);\n"
+            "        if row == 0 && height == 1 && width > 0 && !bitmap.data.is_empty() {\n"
+            "            bitmap.data[0] ^= 0x80;\n"
+            "        }"
+        ),
+        "target": "lib",
+        "test": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row",
+    },
+    {
+        "id": "mmr-raster-reference-cache-corrupted-after-row-swap",
+        "file": "src/mmr.rs",
+        "before": "production_mmr_row_termination!(row, height);",
+        "after": (
+            "production_mmr_row_termination!(row, height);\n"
+            "        if row == 0 && transitions.len() > 2 { transitions[0] = 0; }"
+        ),
+        "target": "lib",
+        "test": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row",
+    },
 )
 
 

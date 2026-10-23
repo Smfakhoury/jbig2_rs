@@ -5,6 +5,45 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The current local MMR tranche closes the actual raster-loop row-cache/pixel
+composition gap, not just another scalar guard. The imaginary reference is
+white; scanned row pixels and emitted colour agree with transition parity;
+unwritten suffixes/future rows remain white; finishing preserves all visible
+pixels' cache interpretation; and swapping live buffer references makes the
+next reference cache agree with the preceding physical row. Native token
+streams, literal values, old preconditions and all three existing MMR
+disposition bodies are unchanged. Internal prefix/framing support remains in
+proof files. Fresh unfiltered pinned Cargo verification and real library
+compilation pass1211/0, including every helper.
+
+Two independent native tests add7280three-span sequences/21840prefixes and
+literal raster/cache checks using four existing white/black/island vectors,
+including odd/even physical scratch-buffer roles. No encoded-family fixture
+is added. All404native tests/14ignored, strict MSRV lint and30actual compiling
+runtime mutants pass. Both affected semantic groups pass8cases each. New
+main-loop controls corrupt a finished raster pixel or the swapped cache while
+preserving bounds; weaker controls remove only the two previous-row agreement
+invariants and retain all proof support. The older recorded-span control now
+rolls back the cache after its proof bridge, so rejection is by real result
+obligations, not a failed helper precondition. The configured full profile is
+27groups187contrasts with the same six shards, four-active limit and22checks;
+fresh complete current-snapshot evidence is still required.
+
+These are project representation/composition results, not an exported complete
+input-to-raster, final scratch-buffer parity or independently reviewed T.6
+theorem. All266records remain provisional115functional/125state/26safety.
+The seven official-positive failures, exhaustive denominator/independent model
+review, complete mode/caller/export/stream semantics and90%line/85%branch
+goals remain open. Coverage must be freshly measured, not inferred from tests.
+The separate native capacity repair remains unpublished and proof-blocked on
+the unsupported getter; no new standard declaration or approval is inferred.
+
+Owners merged#73/#74/#75. #77 has22/22successful independently reconstructed
+checks but remains a draft: the latest read-only access check still reports
+pull:true/push:false at exact headb5e4974. No readiness write, credential/fork
+workaround, issue or external outreach was attempted. The MMR tranche remains
+local while that publication hold persists.
+
 #73 and #74 reached owner-review readiness with22/22successful current-head
 checks each. Their complete six-shard artifacts were independently rebuilt
 byte-for-byte (62canonical files each), including all51raw coverage measures,

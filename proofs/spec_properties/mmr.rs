@@ -7,7 +7,9 @@ pub(super) proof fn transition_count_append(before: Seq<u32>, position: u32, x: 
         == super::mmr_spec::transition_count_at(before, x)
             + if position <= x { 1nat } else { 0nat },
 {
-    assert(before.push(position).subrange(0, before.len() as int) =~= before);
+    vstd::assert_seqs_equal!(
+        before.push(position).subrange(0, before.len() as int), before,
+    );
 }
 
 pub(super) proof fn transition_count_all_before(

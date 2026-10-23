@@ -13,9 +13,9 @@ prose, table entries, diagrams or official vectors are reproduced here.
 | Layer | Entry points | Audit meaning |
 |---|---|---|
 | Normative-facing project models | [`specs/`](../specs), especially arithmetic `entry_*`, `refill_step`, `initialized_state`; MMR `exact_eofb`; header/segment and halftone flag models | Candidate translations to compare with the ledger's approved source identities and exact locators, not independently certified standards |
-| Project/API semantics and results | Decode charge/release/allocation predicates; document metadata, counts and resource limits; bitmap `black_span_result`, `prefix_copy_result`, `row_copy_result` and `pixel_result` | Consequential success/failure, framing and result guarantees; retain these in the specification surface |
+| Project/API semantics and results | Decode charge/release/allocation predicates; document metadata, counts and resource limits; bitmap `black_span_result`, `prefix_copy_result`, `row_copy_result` and `pixel_result`; MMR `transition_count_at`, `transition_black_at`, `row_cache_matches`, `white_reference_cache`, `span_pixels` | Consequential success/failure, framing and representation results; retain these in the specification surface without treating project consistency as normative approval |
 | Representation preconditions | Arithmetic `context_valid` and `decoder_*valid`; decode store/buffer validity; halftone `work_valid`, `bitmaps_valid`, `decoder_state_valid`; Huffman `reader_valid`, `wide_fits`, `line_decodable`; MMR `reader_valid`, `bitmap_storage_valid`, `transitions_ordered`, `reference_line_valid` | Bounds, storage, reachable-state and sentinel assumptions/results, not complete decoding semantics; auditors must inspect their use in production `requires`/`ensures` |
-| Implementation accumulator support | [`transition_prefix_valid`](../proofs/model_support/mmr.rs) | Prefix ordering and scan bounds used by private helper contracts and loops, not an exact MMR raster specification |
+| Implementation accumulator support | [`transition_prefix_valid`, `row_cache_prefix`, `future_rows_white`](../proofs/model_support/mmr.rs) | Ordering, scanned-row/cache parity and untouched-white-row framing used by private helper contracts and loops, not a complete input-to-raster specification |
 | Model-access and arithmetic proof support | [`proofs/model_support/`](../proofs/model_support) | Nine relocated proof functions: arithmetic `entry_model_equations`, `initialization_code_bound`; decode `page_fields`, `document_fields`; document `decoder_fields`, `document_fields`, `global_fields`; halftone `work_fields`; Huffman `table_has_oob_definition` |
 | Other proof support | [`proofs/shared/`](../proofs/shared), [`proofs/production_impl/`](../proofs/production_impl), [`proofs/spec_properties/`](../proofs/spec_properties) | Representation/termination lemmas, production ghost bridges and local-model properties; file/lemma names do not upgrade evidence strength |
 
@@ -28,7 +28,10 @@ the same visibility and logical name, `mmr::mmr_spec::transition_prefix_valid`.
 Inspect [`src/mmr.rs`](../src/mmr.rs) contracts for `record_transition_span`,
 `fill_recorded_span` and `finish_transition_row` alongside that definition.
 The finish helper still requires the prefix invariant at `(width, width)`;
-its sentinel result is not a full line-pixel theorem.
+its exact result is the old sequence followed by two width sentinels. A separate
+composition lemma shows that these appends preserve visible pixel colour; the
+actual raster loop establishes row/cache agreement before and after finishing
+and swapping live references. This is not a full input-to-line theorem.
 
 The six specification files include support **outside** their `verus!` blocks.
 Each support file supplies a `verus!` block in the same logical module, not a
@@ -82,7 +85,14 @@ that mapping still needs independent comparison with T.6 notation.
 `reference_cursor_matches` and `reference_prefix_skipped` are internal cache
 optimization support. The verified suffix/global bridge is used by the real
 raster caller, which maintains its skipped prefix across position/flag updates.
-No reference-cache/previous-row pixel correspondence follows from these models.
+Those search models alone do not establish previous-row pixel correspondence.
+The separate `row_cache_matches` relation now supplies that actual loop
+composition: colour at `x` is odd parity of transitions at or before `x`,
+including meaningful zero-position changes but excluding width sentinels from
+visible pixels. `row_cache_prefix` and `future_rows_white` remain internal
+support. Final physical scratch-buffer roles depend on height parity because
+the native code swaps mutable references, not vector contents; no exported
+parity result or complete input/mode-to-raster conformance is claimed.
 
 Decode `first_symbol_index`, `symbol_group_count`, `referred_symbol_count` and
 `collected_symbol_count` are project lookup/count semantics. The full result

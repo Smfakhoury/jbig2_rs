@@ -40,6 +40,20 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The actual [MMR raster loops](../src/mmr.rs) now compose a project
+[row/cache pixel relation](../specs/mmr.rs) through blank initialization,
+recorded spans, exact sentinel appends and live-reference swaps. Internal
+[prefix/future-white invariants](../proofs/model_support/mmr.rs) and
+[composition lemmas](../proofs/spec_properties/mmr.rs) stay outside the
+normative-facing model file. The next reference cache agrees with the preceding
+physical bitmap row; the first reference is project-white. Fresh whole proof
+and actual library compilation pass1211/0. Existing first-white, next-row,
+imaginary-element and polarity rows gain auxiliary loop/model/test links only:
+their exported result still states storage validity, not complete
+input/mode-to-raster or caller semantics. No selected strength or review status
+is upgraded; all266records remain provisional115/125/26. Independent T.6
+parity/coordinate review and complete stream semantics remain separate.
+
 The [filled-storage model](../specs/bitmap.rs) now specifies exact packed bytes
 for either fill value, including partial-byte padding, and the unchanged native
 constructor satisfies it in a1198/0whole proof/compile. Processed-row support
@@ -697,9 +711,11 @@ Cursor/prefix cache machinery remains in proof support, not the normative
 reference-position model. Six actual compiling controls include false
 valid-input rejections;461native vectors cover9240full/49364cursor calls.
 One record gains functional project evidence:266allprovisional115/125/26.
-Previous-row/cache pixel correspondence, independent initial-coordinate and
-colour-parity review, and full mode/raster/stream semantics remain open.
-The existing first-white/next-row records are not upgraded. Two real native
+That search tranche alone did not establish previous-row pixel correspondence;
+the later raster/cache composition above supplies that project loop relation.
+Independent initial-coordinate/colour-parity review and complete input/mode/
+raster/stream semantics remain open. The existing first-white/next-row records
+are not upgraded. Two real native
 branch outcomes are additionally covered, with no changed denominator/floor.
 This does not resume any paused JBIG2 refinement/aggregation/custom family.
 
