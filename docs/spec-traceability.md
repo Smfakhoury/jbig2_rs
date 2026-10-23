@@ -40,7 +40,26 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
-The current [accepted MMR result models](../specs/mmr.rs) now link actual
+The current [symbol result models](../specs/symbol_text.rs) now state exact
+codebook position content for contiguous/borrowed storage, imported/new ID
+mapping and every owned export position's width/height/stride/allpackedbytes.
+Successful [assembly](../src/symbol_text.rs) preserves supplied selection order
+and repeats through the already exact fallible clone; representable valid
+lookups cannot falsely reject. Native operations and all old preconditions
+remain unchanged. Actual whole proof/compilation is1219/0, with eleven real
+old/new cardinality/content/order/acceptance contrasts and38runtime mutants.
+The raw oracle now uses independent literal descriptors rather than the
+production clone as its expected result.
+
+The existing `T88-DICTIONARY-EXPORT-ORDER` record gains project functional
+evidence. Its encoded export-run flag derivation/order and complete dictionary/
+caller streams remain explicit gaps, not assumptions. Current selected
+strengths are **123functional/117state/26safety**, all266provisional.
+Neither exact helper contents nor the independent raw oracle approves an
+exhaustive denominator, normative translation, allocator/capacity bound or
+complete no-substitution rendering pipeline.
+
+The preceding [accepted MMR result models](../specs/mmr.rs) linked actual
 mode/run input prefixes, reference pairs, span/cache/colour state and the
 reader extent through finite step/row histories to **every visible output
 row**. Public bounded/prefix results also compose exact EOFB/zero-padding
@@ -116,8 +135,8 @@ review and open gaps; all266strength counts remain115/125/26.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 122 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 118 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 123 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 117 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 

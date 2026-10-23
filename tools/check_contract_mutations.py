@@ -342,6 +342,57 @@ MUTATIONS = (
         "target": "lib",
         "test": "mmr::tests::prefix_decoder_rejects_nonzero_alignment_padding",
     },
+    {
+        "id": "contiguous-symbol-lookup-uses-first-bitmap",
+        "file": "src/symbol_text.rs",
+        "before": "Self::Contiguous(symbols) => symbols.get(index),",
+        "after": (
+            "Self::Contiguous(symbols) => "
+            "symbols.get(if index < symbols.len() { 0 } else { index }),"
+        ),
+        "target": "lib",
+        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+    },
+    {
+        "id": "borrowed-symbol-lookup-uses-first-bitmap",
+        "file": "src/symbol_text.rs",
+        "before": "Self::Borrowed(symbols) => match symbols.get(index) {",
+        "after": (
+            "Self::Borrowed(symbols) => match symbols.get("
+            "if index < symbols.len() { 0 } else { index }) {"
+        ),
+        "target": "lib",
+        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+    },
+    {
+        "id": "new-symbol-lookup-uses-first-bitmap",
+        "file": "src/symbol_text.rs",
+        "before": "Ok(&new_symbols[new_index])",
+        "after": "Ok(&new_symbols[0])",
+        "target": "lib",
+        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+    },
+    {
+        "id": "exported-symbols-repeat-first-selection",
+        "file": "src/symbol_text.rs",
+        "before": "let symbol_id = exported_indices[index];",
+        "after": "let symbol_id = exported_indices[0];",
+        "target": "lib",
+        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+    },
+    {
+        "id": "symbol-lookup-rejects-valid-representable-id",
+        "file": "src/symbol_text.rs",
+        "before": "if id_usize < imported.len() {",
+        "after": (
+            "if id_usize < available {\n"
+            "        return Err(SymbolTextError::InvalidState(\"mutant false valid lookup rejection\"));\n"
+            "    }\n"
+            "    if id_usize < imported.len() {"
+        ),
+        "target": "lib",
+        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+    },
 )
 
 

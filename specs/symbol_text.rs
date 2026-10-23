@@ -117,6 +117,49 @@ pub(crate) open spec fn codebook_valid(codebook: super::SymbolCodebook) -> bool 
     }
 }
 
+pub(crate) open spec fn bitmap_contents_match(
+    actual: &crate::bitmap::Bitmap, expected: &crate::bitmap::Bitmap,
+) -> bool {
+    actual.width == expected.width
+        && actual.height == expected.height
+        && actual.stride == expected.stride
+        && actual.data@ == expected.data@
+}
+
+pub(crate) open spec fn codebook_selects(
+    codebook: super::SymbolCodebook, index: nat, bitmap: &crate::bitmap::Bitmap,
+) -> bool {
+    index < codebook_len(codebook)
+        && match codebook {
+            super::SymbolCodebook::Contiguous(symbols) =>
+                bitmap_contents_match(bitmap, &symbols@[index as int]),
+            super::SymbolCodebook::Borrowed(symbols) =>
+                bitmap_contents_match(bitmap, symbols@[index as int]),
+        }
+}
+
+pub(super) open spec fn symbol_id_selects(
+    imported: super::SymbolCodebook, new_symbols: Seq<crate::bitmap::Bitmap>,
+    id: u32, bitmap: &crate::bitmap::Bitmap,
+) -> bool {
+    if (id as nat) < codebook_len(imported) {
+        codebook_selects(imported, id as nat, bitmap)
+    } else {
+        let index = id as int - codebook_len(imported) as int;
+        0 <= index < new_symbols.len()
+            && bitmap_contents_match(bitmap, &new_symbols[index])
+    }
+}
+
+pub(super) open spec fn exported_contents_match(
+    imported: super::SymbolCodebook, new_symbols: Seq<crate::bitmap::Bitmap>,
+    indices: Seq<u32>, exported: Seq<crate::bitmap::Bitmap>,
+) -> bool {
+    exported.len() == indices.len()
+        && forall|index: int| 0 <= index < indices.len() ==>
+            #[trigger] symbol_id_selects(imported, new_symbols, indices[index], &exported[index])
+}
+
 pub(crate) open spec fn two_bit_choice_result(
     encoded: u8,
     first: crate::huffman::StandardHuffmanTable,

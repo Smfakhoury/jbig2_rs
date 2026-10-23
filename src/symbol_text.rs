@@ -4263,7 +4263,8 @@ impl<'a> SymbolCodebook<'a> {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires symbol_text_spec::codebook_valid(self),
         ensures match out {
-            Some(bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+            Some(bitmap) => crate::spec::bitmap::storage_valid(bitmap)
+                && symbol_text_spec::codebook_selects(self, index as nat, bitmap),
             None => index as nat >= symbol_text_spec::codebook_len(self),
         },
     ))]
@@ -4286,9 +4287,14 @@ impl<'a> SymbolCodebook<'a> {
         symbol_text_spec::codebook_valid(imported),
         symbol_text_spec::bitmaps_valid(new_symbols@),
     ensures match out {
-        Ok(bitmap) => crate::spec::bitmap::storage_valid(bitmap),
+        Ok(bitmap) => crate::spec::bitmap::storage_valid(bitmap)
+            && symbol_text_spec::symbol_id_selects(imported, new_symbols@, id, bitmap),
         Err(_) => true,
     },
+    (symbol_text_spec::codebook_len(imported) + new_symbols@.len() <= usize::MAX
+        && symbol_text_spec::codebook_len(imported) + new_symbols@.len() <= u32::MAX
+        && (id as nat) < symbol_text_spec::codebook_len(imported) + new_symbols@.len())
+        ==> out.is_ok(),
 ))]
 fn symbol_by_id<'a>(
     imported: SymbolCodebook<'a>,
@@ -5468,7 +5474,10 @@ fn decode_symbol_dictionary_huffman(
     ensures match out {
         Ok(exported) =>
             exported@.len() == exported_indices@.len()
-                && symbol_text_spec::bitmaps_valid(exported@),
+                && symbol_text_spec::bitmaps_valid(exported@)
+                && symbol_text_spec::exported_contents_match(
+                    imported, new_symbols@, exported_indices@, exported@,
+                ),
         Err(_) => true,
     },
 ))]
@@ -5498,6 +5507,10 @@ fn assemble_exported_symbols(
             forall|offset: int| 0 <= offset < exported_indices@.len()
                 ==> (#[trigger] exported_indices@[offset] as nat)
                     < symbol_text_spec::codebook_len(imported) + (new_symbols@).len(),
+            forall|offset: int| 0 <= offset < index ==>
+                #[trigger] symbol_text_spec::symbol_id_selects(
+                    imported, new_symbols@, exported_indices@[offset], &exported_symbols@[offset],
+                ),
         decreases exported_indices@.len() - index,
     ))]
     while index < exported_indices.len() {
@@ -6712,43 +6725,66 @@ mod tests {
 
     #[test]
     fn exported_symbols_match_exact_clone_oracle() {
+        type Descriptor<'a> = (u32, u32, usize, &'a [u8]);
         let limits = Limits::default();
-        let imported = Bitmap {
-            width: 8,
-            height: 1,
-            stride: 1,
-            data: vec![0x11],
-        };
-        let new0 = Bitmap {
-            width: 8,
-            height: 1,
-            stride: 1,
-            data: vec![0x22],
-        };
-        let new1 = Bitmap {
-            width: 8,
-            height: 1,
-            stride: 1,
-            data: vec![0x33],
-        };
-        let imported_pointer = imported.data.as_ptr();
-        let new0_pointer = new0.data.as_ptr();
-        let expected = vec![
-            clone_bitmap(&imported, &limits).expect("imported clone"),
-            clone_bitmap(&new0, &limits).expect("new clone oracle"),
+        let descriptions: [Descriptor<'_>; 6] = [
+            (8, 1, 1, &[0x11]),
+            (16, 2, 2, &[0x21, 0x22, 0x23, 0x24]),
+            (1, 3, 1, &[0x80, 0, 0x80]),
+            (9, 1, 2, &[0x81, 0x80]),
+            (0, 2, 0, &[]),
+            (8, 2, 1, &[0x5A, 0xA5]),
         ];
-        let new_symbols = vec![new0, new1];
-        let output = assemble_exported_symbols(
-            SymbolCodebook::Borrowed(&[&imported]),
-            &new_symbols,
-            &[0, 1],
-            &limits,
-        )
-        .expect("assembled symbols");
-        assert_eq!(output, expected);
-        assert_ne!(output[0].data.as_ptr(), imported_pointer);
-        assert_ne!(output[1].data.as_ptr(), new0_pointer);
-        assert!(output.capacity() >= 2);
+        let symbols: Vec<Bitmap> = descriptions
+            .iter()
+            .map(|&(width, height, stride, data)| Bitmap {
+                width,
+                height,
+                stride,
+                data: data.to_vec(),
+            })
+            .collect();
+        let (imported, new_symbols) = symbols.split_at(3);
+        let borrowed: Vec<&Bitmap> = imported.iter().collect();
+        let selections: [&[u32]; 8] = [
+            &[],
+            &[0],
+            &[2],
+            &[3],
+            &[5],
+            &[0, 1, 2, 3, 4, 5],
+            &[5, 2, 0, 5, 3, 4, 1, 0],
+            &[1, 1, 1, 1],
+        ];
+        for codebook in [
+            SymbolCodebook::Contiguous(imported),
+            SymbolCodebook::Borrowed(&borrowed),
+        ] {
+            for selected in selections {
+                let output = assemble_exported_symbols(codebook, new_symbols, selected, &limits)
+                    .expect("assembled raw symbols");
+                assert_eq!(output.len(), selected.len());
+                assert!(output.capacity() >= selected.len());
+                for (offset, &id) in selected.iter().enumerate() {
+                    let id = usize::try_from(id).unwrap();
+                    let (width, height, stride, data) = descriptions[id];
+                    let bitmap = &output[offset];
+                    assert_eq!(
+                        (bitmap.width, bitmap.height, bitmap.stride),
+                        (width, height, stride)
+                    );
+                    assert_eq!(bitmap.data.as_slice(), data);
+                    if !data.is_empty() {
+                        assert_ne!(bitmap.data.as_ptr(), symbols[id].data.as_ptr());
+                        for earlier in &output[..offset] {
+                            if !earlier.data.is_empty() {
+                                assert_ne!(bitmap.data.as_ptr(), earlier.data.as_ptr());
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     #[test]
