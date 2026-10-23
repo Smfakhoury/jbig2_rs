@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "81335099fea18dfce433c3f98f8126d677788562",
-  "scope": "Fresh existing official diagnostics on exact project raw-context first-failure and probability diagnostic result contracts; all17native streams658bodies48boundaries andoldpreconditions unchanged; no entropy/family or stdtrust change 8133509; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+  "scope": "Fresh existing official diagnostics on exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "789bed5c11a6afc9652ccdaa4ece867807dfaab60b1df1fed6f67e20fb0bd47f",
-    "review_sha256": "a561a79d778f257602f6daafd8516122826fb8b9795cd2b222343777dd8e2277"
+    "results_sha256": "4009237e16c2cb47e6b512df295f6c469b7611a22373b3bf93b804582abaf90a",
+    "review_sha256": "e7096ac2aee9d218cf7c4589327ac1b0fa7cf20d81f1da09f2b94817a2bb6de4"
   },
   "community_regressions": {
     "total": 0,

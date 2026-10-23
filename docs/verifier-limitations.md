@@ -5,7 +5,20 @@ assumptions in its proof build. The syntax-audited production inventory contains
 610 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
 
-Five existing result attributes now specify exact project raw-context and
+Four numeric document quota results now also expose exact inclusive acceptance,
+overflow-before-limit priority and kind/limit/actual payloads. Fresh whole
+verification/compilation remains1192/0;13actual compiling document controls
+reject strongly and accept original contracts. The original five metadata
+cases remain, with eight quota cases and per-target original-source baseline
+reuse. All402native tests/14ignored,26actual runtime mutants and381tooling
+tests pass. Onlydocument gains2covered lines/2regions/2branch outcomes;
+all51metrics are independently recomputed with unchanged denominators.
+These project models are not new selected normative obligations or proofs of
+aggregate decoder complexity, allocator/RSS, whole streams or release readiness.
+Full current-source27group183contrast/sixshard receipts remain required,
+with at most four active workers and unchanged timeouts.
+
+The preceding five result attributes specify exact project raw-context and
 diagnostic behavior. Valid banks are accepted; invalid banks report the first
 invalid state/MPS pair. Context construction, signal/context errors, EOF fields
 and overflow identity are preserved exactly. The fresh whole proof remains
@@ -37,7 +50,7 @@ The twenty-seven logical semantic groups remain complete: six deterministic
 round-robin shards over a cost-balanced group order execute each group once
 with one worker per shard. The
 collector requires all six same-run shard receipts, all twenty-seven independently
-hashed report/log pairs and all 175 required compiling contrasts. Missing,
+hashed report/log pairs and all 183 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.

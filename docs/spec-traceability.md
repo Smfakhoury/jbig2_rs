@@ -40,6 +40,15 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The [document quota models](../specs/document.rs) specify observable project
+numeric preflight results, including accepted boundaries, overflow priority and
+typed quota payloads. Four unchanged native guard bodies satisfy those
+relations with fresh whole proof/compilation1192/0 and13actual document
+strong/original-contract controls. These are not new selected normative
+records or extra normative credit; the ledger's266provisional records and
+115/125/26strength counts are unchanged. Aggregate decoder work, allocator/RSS,
+complete containers/streams and independent normative review remain distinct.
+
 The [generic probability models](../specs/generic_region.rs) now specify
 valid-bank acceptance, the first invalid raw state/MPS payload and exact
 context/signal error projection. Together with the existing
@@ -556,7 +565,7 @@ checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
 All twenty-seven semantic groups execute; six deterministic shards reduce
-repeated setup without dropping any of the 175 required strong/weaker compiling
+repeated setup without dropping any of the 183 required strong/weaker compiling
 contrasts. Each shard executes sequentially, at most four run concurrently,
 and the final collector requires
 every configured group exactly once, its selected-case baselines and native

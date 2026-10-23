@@ -4,6 +4,23 @@ P06 is in progress. This tranche establishes a reproducible baseline and
 non-regression checks; it does not meet or ratify the proposed release goals,
 complete the missing tests, or establish normative correctness.
 
+## Latest numeric quota observations
+
+Immutable source `6d73a9a` freshly executes402native tests with14existing ignored
+and26actually compiling/detected runtime mutants. A360-case independentu128
+oracle checks scalar and next-count quota boundaries, exact errors and overflow
+priority using numeric parameters only, not giant allocated containers or
+architecture-invalid slices.
+
+All51raw global/per-file metrics and report digests/source/test identities are
+recomputed. Only`src/document.rs` gains2covered lines,2regions and2branch
+outcomes. Totals are10800/12636lines (85.4701%),10397/12945regions (80.3167%)
+and2041/2638branches (77.3692%). Every denominator, floor and exclusion stays
+unchanged. Erased result annotations can shift line offsets; absolute coordinate
+identity is not claimed. The90%line/85%branch goals still require573covered
+lines and202branch outcomes. This observation does not ratchet the committed
+baseline or authorize a release exception.
+
 ## Current ratcheted baseline
 
 Pinned compiler: `nightly-2026-10-12`; collector: `cargo-llvm-cov 0.9.1`;

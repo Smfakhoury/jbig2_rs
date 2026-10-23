@@ -2,7 +2,7 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
-The required CI profile now partitions all27groups175contrasts into six
+The required CI profile now partitions all27groups183contrasts into six
 deterministic one-worker shards, with at most four active and unchanged
 20-minute job limits. Both previous four-shard hosted attempts were rejected
 after cancellations; regrouping and a measured3-5%diagnostic-query optimization
@@ -12,7 +12,26 @@ still below the former61, without dropping any platform, proof, mutation or
 coverage protection. Prior four-shard local receipts retain their original
 source identities; fresh six-shard local/hosted execution is required.
 
-The latest generic probability-result tranche strengthens five existing
+The latest numeric document-preflight tranche proves exact scalar stream/input
+work and next-segment/page quotas: inclusive acceptance, overflow priority and
+all kind/limit/actual error fields. Four result attributes and two project
+quota models strengthen unchanged native bodies and old preconditions.
+Fresh whole proof/compilation is1192/0; all13document/metadata/quota contrasts
+actually compile, reject strongly and accept original-contract controls.
+An independent360-caseu128 oracle allocates no giant input;402native tests/
+14ignored,26runtime mutants and381tooling tests pass. All51raw coverage metrics
+are independently checked:onlydocument gains2lines/2regions/2outcomes,
+now10800/12636lines,10397/12945regions,2041/2638branches. Denominators,
+floors and exclusions stay fixed; source-coordinate identity is not claimed
+across erased-line shifts. The90/85goals still need573lines/202outcomes.
+The expanded existing document group moves away from the arithmetic caller
+group without new jobs. Complete current-head183contrast/sixshard hosted
+acceptance remains required. These are project numeric guards, not aggregate
+decoder complexity, allocator/RSS or normative stream theorems. All266selected
+records remain provisional115/125/26; fresh observations remain2/7/1 with zero
+rejection credit and every capacity/review/family/release blocker retained.
+
+The preceding generic probability-result tranche strengthens five existing
 result attributes: invalid context construction, valid-bank acceptance and
 first-invalid state/MPS, context/signal errors, EOF fields and overflow
 identity. Fresh pinned whole proof/compilation is1192/0; all19 compiling

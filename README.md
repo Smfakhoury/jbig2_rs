@@ -132,7 +132,7 @@ PR's work. Each workflow also supports manual dispatch for branch preflight.
 The daily extended fuzz campaign and trusted-main corpus producer remain
 unchanged.
 
-The twenty-seven semantic proof groups and all 175 compiling strong/weaker contrasts
+The twenty-seven semantic proof groups and all 183 compiling strong/weaker contrasts
 are preserved, but execute in six deterministic, sequential shards rather
 than one separately initialized job per group. Each shard has one worker; at most
 four run concurrently, under the unchanged 20-minute job cap. The stable
