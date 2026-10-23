@@ -231,7 +231,7 @@ class WorkflowPolicyTests(unittest.TestCase):
                 with self.subTest(name=name, change=change), self.assertRaisesRegex(ValueError, "validation runs"):
                     check_workflow(document, f"{name}.yml")
 
-    def test_complete_pr_profile_uses_nineteen_jobs_without_dropping_platforms(self):
+    def test_complete_pr_profile_uses_twenty_one_jobs_without_dropping_platforms(self):
         from run_semantic_proofs import configured_shards
 
         count = 0
@@ -252,7 +252,7 @@ class WorkflowPolicyTests(unittest.TestCase):
                 self.assertEqual(document["jobs"]["distribution"]["strategy"]["matrix"], {
                     "os": expected_os, "toolchain": ["1.89.0", "stable"],
                 })
-        self.assertEqual(count, 19)
+        self.assertEqual(count, 21)
 
     def test_verus_compile_gate_cannot_be_satisfied_by_a_substring_or_comment(self):
         actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())

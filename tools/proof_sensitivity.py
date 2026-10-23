@@ -44,13 +44,17 @@ def selected_proof(
     executable: Path, directory: Path, environment: dict, expect_failure: bool,
     module: str, function: str,
 ):
+    command = [
+        str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
+        "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
+        "--verify-only-module", module, "--verify-function", function,
+        "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
+    ]
+    if expect_failure:
+        # Zero skips additional error searches, not the first semantic failure.
+        command.extend(["--multiple-errors", "0"])
     process = subprocess.run(
-        [
-            str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
-            "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
-            "--verify-only-module", module, "--verify-function", function,
-            "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
-        ],
+        command,
         cwd=directory, env=environment, text=True, capture_output=True, check=False, timeout=180,
     )
     try:

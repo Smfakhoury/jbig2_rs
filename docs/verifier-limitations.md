@@ -13,12 +13,12 @@ and overflow identity are preserved exactly. The fresh whole proof remains
 The existing arithmetic caller checker retains its eight cases and adds eleven
 compiling strong/original-contract controls, all passing. Native bodies,
 all old preconditions and all48reviewed boundary bodies/attributes are unchanged.
-Fresh401native tests/14ignored,24runtime mutants and378tooling tests pass.
+Fresh401native tests/14ignored,24runtime mutants and380tooling tests pass.
 All51raw coverage metrics equal the accepted parent; source line offsets may
 shift and no new coordinate identity or coverage gain is claimed.
 These are auxiliary project error results, not a normative context-sequence,
 complete raster/stream or approved rejection theorem. The full required
-27group175contrast/fourshard receipt collection and hosted acceptance remain
+27group175contrast/sixshard receipt collection and hosted acceptance remain
 separate; existing capacity divergences and release blockers are retained.
 
 Cargo verification uses `verification/Cargo.toml` against the same production
@@ -33,13 +33,39 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-seven logical semantic groups remain complete: four deterministic
-round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-seven independently
-hashed report/log pairs and all 164 required compiling contrasts. Missing,
+The twenty-seven logical semantic groups remain complete: six deterministic
+round-robin shards over a cost-balanced group order execute each group once
+with one worker per shard. The
+collector requires all six same-run shard receipts, all twenty-seven independently
+hashed report/log pairs and all 175 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
+
+Hosted run 39926348004 executed all 27 group checkers successfully, but its
+slowest shard used 1158 seconds plus setup/cleanup and received a cancelled
+20-minute job verdict. The collector correctly rejected that run; it is not
+hosted acceptance. Swapping the independent halftone-header and region-dispatch
+groups reduces the largest recorded shard estimate to 1090 seconds, preserving
+all 164 contrasts, four one-worker shards and existing timeouts. A regression
+fixture scales those observed costs when case counts grow and requires setup
+headroom. Estimates are not runtime guarantees: fresh successful jobs and
+independent same-run artifact reconstruction are still required for readiness.
+
+A second run,39930728153, confirmed that regrouping alone is insufficient:
+two shards reached the same deadline while their last groups were incomplete.
+Neither cancelled run is accepted. Expected-failure sensitivity invocations now
+use `--multiple-errors 0`: Verus still finds the first failure, but does not run
+its two default additional error-discovery queries on deliberately bad code.
+Native compilation, the exact qualified target and an actual postcondition or
+loop-invariant rejection remain mandatory. Positive baselines, weaker controls,
+whole-crate verification, resource limits, the four-worker cap and timeouts
+are unchanged. Its measured same-machine improvement was only3-5%, so the
+required work is now split into six smaller shards with at most four active.
+This adds two workflow jobs (21plusCLA, about22checks rather than61); it does
+not add concurrent workers, increase timeouts or remove logical checks.
+Fresh execution, not this optimization's predicted cost, decides
+whether the complete hosted gate passes.
 
 The source audit rejects local trusted-specification APIs, verification
 exclusions and exec termination waivers in runtime, model and proof sources.

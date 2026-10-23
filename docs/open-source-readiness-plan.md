@@ -2,6 +2,16 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The required CI profile now partitions all27groups175contrasts into six
+deterministic one-worker shards, with at most four active and unchanged
+20-minute job limits. Both previous four-shard hosted attempts were rejected
+after cancellations; regrouping and a measured3-5%diagnostic-query optimization
+were insufficient for reliable deadlines. The stable collector now requires
+all six same-run receipts. This uses21workflow jobs plusCLA (about22checks),
+still below the former61, without dropping any platform, proof, mutation or
+coverage protection. Prior four-shard local receipts retain their original
+source identities; fresh six-shard local/hosted execution is required.
+
 The latest generic probability-result tranche strengthens five existing
 result attributes: invalid context construction, valid-bank acceptance and
 first-invalid state/MPS, context/signal errors, EOF fields and overflow
@@ -9,11 +19,11 @@ identity. Fresh pinned whole proof/compilation is1192/0; all19 compiling
 strong/original-contract controls in the existing arithmetic caller group pass.
 All17native streams,658declarations/bodies,oldpreconditions and48reviewed
 boundary bodies/attributes remain unchanged; erased annotations may shift
-source lines. Fresh401native/14ignored,24runtime mutants and378tooling tests
+source lines. Fresh401native/14ignored,24runtime mutants and380tooling tests
 pass. All51raw-recomputed coverage metrics equal the accepted native-control
 parent, with no new coverage gain claimed. Fresh normal/logged/oracle
 observations remain2/7/1 with zero rejection credit. The required full profile
-is27groups175contrasts/fourshards; complete current-source receipt collection
+is27groups175contrasts/sixshards; complete current-source receipt collection
 and hosted acceptance remain separate gates. All266records retain provisional
 115functional/125state/26safety classification: auxiliary project diagnostic
 models do not prove the driver's normative context sequence or stop condition.
@@ -49,7 +59,7 @@ lower-loop result avoid relying on an unused helper theorem. No existing
 precondition or executing operation changes;658preconditions/48boundaries
 remain, with one narrowly scoped style annotation for erased source lines.
 Whole proof/compile1192/0 and six actual compiling contrasts pass. The same
-four-shard profile now requires27groups164contrasts, with no new CI job.
+four-shard profile at that checkpoint required27groups164contrasts.
 The native oracle enumerates461sorted sentinel vectors,9240full searches and
 49364cursor searches;397native tests/14ignored and21runtime mutants pass.
 Coverage is10739/12636lines,10352/12945regions,2025/2638branches:only2new

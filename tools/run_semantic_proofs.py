@@ -17,7 +17,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
-CI_SHARDS = 4
+CI_SHARDS = 6
 RECEIPT_SCHEMA = 3
 CHECKS = (
     ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
@@ -26,7 +26,7 @@ CHECKS = (
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
     ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
-    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
     ("text-batch", "check_text_batch_proofs.py", 4, "strong_contract", "weaker_control"),
     ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
     ("bitmap-compose", "check_bitmap_compose_proofs.py", 5, "strong_contract", "weaker_control"),
@@ -40,7 +40,7 @@ CHECKS = (
     ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
     ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
-    ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
     ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
