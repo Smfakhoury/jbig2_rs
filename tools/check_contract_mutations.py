@@ -16,6 +16,22 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "symbol-code-length-power-boundary-misclassified",
+        "file": "src/symbol_text.rs",
+        "before": "else if symbol_count <= 65_536 {",
+        "after": "else if symbol_count <= 65_535 {",
+        "target": "lib",
+        "test": "symbol_text::tests::symbol_code_length_is_minimal_at_every_u32_power_boundary",
+    },
+    {
+        "id": "packed-symbol-padding-check-weakened",
+        "file": "src/symbol_text.rs",
+        "before": "if bytes[final_byte] & padding_mask != 0 {",
+        "after": "if bytes[final_byte] & padding_mask > 0x80 {",
+        "target": "lib",
+        "test": "symbol_text::tests::packed_symbol_storage_matches_pixels_and_rejects_each_dirty_row",
+    },
+    {
         "id": "generic-formatter-failure-swallowed",
         "file": "src/generic_region.rs",
         "before": 'formatter.write_str("arithmetic region does not end in FF AC")',
@@ -187,7 +203,7 @@ def check_mutations(toolchain: str) -> dict:
                 path.write_bytes(original)
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
-        "scope": "Targeted public API, reference-role, typed-error adapter and formatter-failure contracts, not exhaustive codec mutation coverage",
+        "scope": "Targeted public API, reference-role, typed-error, formatter-failure and direct symbol code-length/storage contracts, not exhaustive codec mutation coverage",
         "runtime_source_modified": False, "mutations": results,
     }
 

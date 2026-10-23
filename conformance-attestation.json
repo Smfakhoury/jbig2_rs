@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "dcea356b2e419fb7d5f3395c7c308cdd109328f7",
-  "scope": "Fresh existing official diagnostics on generic-error-diagnostic-unit-tests-native-production-unchanged-relative-to-integer-parent dcea356; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "d43847b26905656a9b253d9c56fec51bd0906999",
+  "scope": "Fresh existing official diagnostics on Complete project signed integer seed, sign, six-leaf selection, payload fold, value/OOB and decoder/context/history composition with equivalent checked-operation expansion; 31080 direct numeric/prior-procedure states, no new encoded stream or coding family d43847b; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "300c073b62a65a79b050ac8a0b49f7e30cc1fc5cedc6867fce4c5b6a7f10bbe2",
-    "review_sha256": "aba00150ff1aaa1199330ef818b657a34676e3d96acf042783507979d1618a5c"
+    "results_sha256": "f2870b2bef6a9d678f93ca40ad682f9a503e8912a7256c1ea133608e428ec153",
+    "review_sha256": "56e6dad5691e146e38fe5891945e1b9639088936130ce69602a9292a8055faff"
   },
   "community_regressions": {
     "total": 0,

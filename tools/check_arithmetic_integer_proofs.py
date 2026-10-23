@@ -60,14 +60,39 @@ if context_count < required {
         actual: context_count,
     });
 }"""
+IAID_RESULT = "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0,"
+IAID_CONTEXTS = "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2,"
+STEP_POSTS = tuple(
+    f"""{target} == arithmetic_spec::integer_step_state(
+        *old(self), old(contexts)@, *old(previous),
+    ).{index},"""
+    for index, target in enumerate(("out", "*final(self)", "final(contexts)@", "*final(previous)"))
+)
 
 
 def case(identity, site, replacement, control, weaker="", function="ArithmeticDecoder::decode_integer_bit"):
+    controls = [(control, weaker)]
+    affected = {
+        "growing_history_discards_the_decision": (3,),
+        "rolling_history_discards_the_retained_high_bit": (3,),
+        "integer_bit_returns_the_wrong_decision": (0, 3),
+        "integer_bit_changes_an_unselected_context": (2,),
+        "integer_error_discards_history": (3,),
+        "integer_bit_discards_the_exact_code_register": (1,),
+    }
+    controls.extend((STEP_POSTS[index], "") for index in affected.get(identity, ()))
+    if identity in {
+        "iaid_invalid_length_loses_the_supplied_value",
+        "iaid_insufficient_storage_loses_required_count",
+    }:
+        controls.append((IAID_RESULT, ""))
+    elif identity == "iaid_invalid_length_mutates_context_storage":
+        controls.append((IAID_CONTEXTS, ""))
     return {
         "id": identity, "file": "src/arithmetic.rs", "module": "arithmetic",
         "function": function,
         "site": site, "replacement": replacement,
-        "controls": ((control, weaker),),
+        "controls": tuple(controls),
     }
 
 

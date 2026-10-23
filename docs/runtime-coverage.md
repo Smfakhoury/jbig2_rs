@@ -123,6 +123,60 @@ The actual parent-relative gain is five lines, three regions and two branch
 outcomes; all denominators, reviewed floors and release goals remain unchanged.
 These tests do not complete integer/IAID folds, caller or normative semantics.
 
+The complete IAID follow-up compares 3,600 direct decoder/context states with
+a numeric value/context-address oracle and the prior checked procedure.
+Zero length, extra bank capacity, nonzero results and partial EOF/overflow are
+included; these are not generated valid encoded streams. Actual collection on
+source `e36a2bb5ff3f690f9ae36de7c1de073346f7f551` passes 364 native tests with
+14 ignored and measures **10,430/12,624 lines (82.62%)**,
+**10,051/12,933 regions (77.72%)**, and **1,921/2,638 branches (72.82%)**.
+The checked multiply/add expansion adds two covered physical lines and two
+denominator lines relative to owner-merged main; it adds no covered region or
+branch outcome. This is not a semantic coverage gain or a new ratified floor.
+The same thirteen compiling runtime controls remain required; the proof profile
+becomes eighteen groups / 98 contrasts without additional CI jobs or shards.
+All reviewed floors, exclusions and release goals remain unchanged.
+
+The direct symbol/storage tranche adds five tests on immutable source
+`3683e4ae949b033d39a3376a85860fa8292694fb`, without any executing production
+change. Fresh combined collection passes 369 native tests with 14 ignored and
+measures **10,514/12,624 lines (83.29%)**, **10,131/12,933 regions (78.33%)** and
+**1,987/2,638 branches (75.32%)**. Against the complete IAID parent, the actual
+gain is **84 lines / 80 regions / 66 branch outcomes**, all in symbol/text;
+every denominator, exclusion and reviewed floor is unchanged.
+
+The tests cover minimal symbol-code length at all u32 power boundaries and
+65,537 consecutive counts; 408 raw packed shapes/patterns with exact visible
+pixels, all stored-row padding positions and truncated lengths; inclusive
+dimension/pixel/memory policies and precedence before data access; ten typed
+export failures; and all 1,023 selections of up to nine symbols with exact
+work charges, unread input and bitmap-byte frames. Export cases use the existing
+scripted codec, not an entropy engine or a generated coded stream. No new coding
+family, refinement/aggregation/custom-family expansion, hook or injected
+allocation failure is added. Two compiling mutants misclassify a code-length
+boundary and weaken the packed-padding check; both are detected by exact tests.
+The thirteen existing controls remain, for fifteen total. These are runtime
+regressions, not independent normative approval or a complete export theorem.
+
+The complete signed-integer tranche compares 11,280 complete procedure states
+and 19,800 payload-fold states with wide numeric/weighted-bit oracles and the
+prior checked procedure. It checks every leaf, positive/negative/zero/OOB/EOF/
+overflow categories, complete decoder/bank state, payload history and input
+borrow. These direct states are not valid coded-stream fixtures.
+On immutable source `d43847b26905656a9b253d9c56fec51bd0906999`, all 371 native
+tests pass with 14 ignored. Fresh actual collection measures
+**10,525/12,626 lines (83.36%)**, **10,152/12,933 regions (78.50%)** and
+**1,997/2,638 branches (75.70%)**. Relative to the symbol/storage parent,
+arithmetic gains eleven covered lines, twenty-one regions and ten branch
+outcomes; all other file metrics are unchanged. The checked-operation expansion
+adds two covered physical/denominator lines. Region/branch denominators, every
+reviewed floor and all exclusions remain unchanged. No new entropy fixture,
+coding family, hook or allocation-failure injection is introduced. All fifteen
+existing runtime mutants compile and are detected; the required semantic
+profile becomes nineteen groups / 107 contrasts in four unchanged shards/jobs.
+Independent normative interpretation, complete caller/stream composition,
+critical uncovered paths and 90%/85% release goals remain open.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant
@@ -327,10 +381,10 @@ python -B tools/check_contract_mutations.py --toolchain 1.89.0 \
 ```
 
 CI runs the same check with the pinned coverage nightly. It copies source and
-fixtures outside the checkout, uses a fresh offline Cargo home, and tests thirteen
+fixtures outside the checkout, uses a fresh offline Cargo home, and tests fifteen
 single-site mutations covering I/O classification, inclusive limits, sink
 propagation, reference roles/cardinality, error adapter fields and formatter
-failure propagation. For each case the original exact library/integration test
+failure propagation, symbol-code length and packed padding. For each case the original exact library/integration test
 must pass, the mutant must compile, and that exact test must fail. Missing or
 ambiguous mutation sites, compile failures and surviving mutants fail the gate.
 No mutation is written to repository runtime files.

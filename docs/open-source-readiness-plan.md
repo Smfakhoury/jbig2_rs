@@ -2,6 +2,66 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The complete signed-integer tranche proves the full project seed/sign,
+six-leaf count/offset selection, payload fold, nonnegative/negative/OOB result
+and decoder/context-bank composition, including partial errors. The payload
+helper also exposes its exact final history. Twelve additional selected rows
+now have actual functional contracts: 94 functional / 129 state-preservation /
+26 safety-only, all 249 still provisional. Procedure-bank/storage and all
+fourteen Table A.1 representation rows intentionally remain state-only.
+The required profile is nineteen groups / 107 compiling contrasts in the
+same four shards, with nine new relation-specific controls and all nine
+history/IAID controls rerun against the stronger contracts.
+Actual unfiltered pinned Cargo verification and compilation pass 1177/0.
+Two direct-state tests compare 11,280 complete integers and 19,800 payload
+folds with wide numeric and prior checked procedures, exercising all six
+leaves and positive, negative, zero, OOB, EOF and overflow outcomes.
+All 371 native tests pass with 14 ignored. Fresh actual coverage is
+10,525/12,626 lines (83.36%), 10,152/12,933 regions (78.50%) and 1,997/2,638
+branches (75.70%). Sixteen native streams and all 656 caller preconditions
+are unchanged; arithmetic differs only by equivalent checked-operation and
+typed-error expansions. No new family, encoded stream, trust exception,
+resource policy, CI job, exclusion or publication change is introduced.
+Independent Annex A/Table A.1/Qe interpretation, procedure-bank/caller/reset
+and full-stream composition, seven official positives, capacity integration,
+exhaustive normative review and release coverage goals remain open.
+
+The direct symbol/storage boundary tranche adds five tests without new entropy
+fixtures or coding families. It checks every u32 power boundary for minimal
+symbol code length, 408 packed storage shapes/patterns and their truncations/
+dirty rows, inclusive dimension/pixel/memory limits, ten exact export failures,
+and all 1,023 selections of up to nine symbols through the existing scripted
+codec. Work charges, unread input and bitmap-byte frames are explicit.
+Two additional compiling runtime mutants bring the required controls to fifteen.
+Fresh complete collection passes 369 native tests with 14 ignored and measures
+10,514/12,624 lines (83.29%), 10,131/12,933 regions (78.33%) and 1,987/2,638
+branches (75.32%). The actual parent-relative gain is 84 lines / 80 regions /
+66 branch outcomes with unchanged denominators and reviewed floors.
+All 17 native/proof token streams and all 656 production declarations,
+attributes, bodies and source starts match the complete IAID parent.
+Fresh unfiltered Cargo verification and compilation remain 1174/0.
+The selected ledger remains provisional 82/141/26, with no new proof-strength
+or normative approval. The signed integer/caller/stream, capacity, official
+positive, independent-review and 90%/85% release gates remain open.
+
+The complete IAID follow-up exposes the result, full decoder and complete
+context bank of every accepted project IAID run, including zero length and
+partial errors. Six additional selected rows now have functional project
+contracts: 82 functional / 141 state-preservation / 26 safety-only, all 249
+still provisional. The required profile is eighteen groups / 98 contrasts in
+the same four shards. Actual unfiltered pinned Cargo verification and
+compilation pass 1174 obligations with zero errors. All 364 native tests pass
+with 14 existing ignored tests; fresh coverage is 10,430/12,624 lines (82.62%),
+10,051/12,933 regions (77.72%) and 1,921/2,638 branches (72.82%).
+The line denominator grows by two because an opaque checked-operation chain
+is expanded, not because coverage exclusions or scope changed. Sixteen native
+token streams and all 656 caller preconditions are unchanged; arithmetic
+differs only by equivalent sequential checked operations and explicit typed
+overflow constructors. Numeric/state/context and prior-procedure comparisons
+cover 3,600 direct states. The 31-bit project cap, normative caller/bank
+selection, signed integer procedure, independent standards review, seven
+official positives, capacity divergence and 90%/85% goals remain open.
+
 The diagnostic-only follow-up checks every generic error display/source variant,
 extreme fields, delegated classifications, private-message redaction and exact
 formatter-failure propagation. A thirteenth actual compiled runtime mutant

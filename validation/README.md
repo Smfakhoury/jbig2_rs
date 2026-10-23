@@ -713,3 +713,77 @@ measures82.62%lines/77.72%regions/72.82%branches. Diagnostic-only gain is25lines
 30regions/0branches with unchanged denominators/floors. All17native/proof
 streams and656production declarations/source starts match the integer parent.
 No decoding/entropy fixture, family, hook, exclusion or proof-strength change.
+
+## Complete project IAID composition
+
+The production IAID entry point equals `iaid_state` for result, full decoder
+and complete context bank. The finite `iaid_run` model includes prefix seed,
+context address/update, exact decision state, count/prefix recurrence, sentinel
+removal, zero length and partial typed errors. Six compiling strong/weaker
+contrasts extend the required profile to eighteen groups / 98 contrasts in
+the same four shards. Six selected rows gain functional project evidence;
+all 249 remain provisional (82 functional / 141 state / 26 safety).
+LENGTH/STORAGE remain state-only because project rejection policy does not
+prove normative caller length/address-space sufficiency.
+
+One direct-state test checks 3,600 numeric value/context/state and prior-procedure
+comparisons. All 364 native tests pass with 14 ignored. Fresh actual coverage
+is10,430/12,624lines,10,051/12,933regions,1,921/2,638branches. Two additional covered
+physical lines and denominator lines arise from the equivalent checked-operation
+expansion, not an exclusion or region/branch gain. Whole pinned verification
+and compilation pass1174/0 with unchanged preconditions and no new assumptions.
+No entropy fixture, coding family, encoder or fuzz seed is introduced.
+Normative review, complete signed integer/caller/stream composition, official
+positive adjudication, capacity divergence and 90%/85% goals remain open.
+
+## Direct symbol/storage boundary coverage
+
+Five ordinary direct-state tests exercise minimal symbol-code length across
+all u32 power boundaries, raw packed pixels/padding/truncation, inclusive
+dimension/pixel/memory policies and precedence, ten exact export failures,
+and all 1,023 small symbol selections using the existing scripted codec.
+Export work charges, bitmap-byte frames and unread input are asserted.
+The existing export-count requirement links the new exact test identities;
+its partial theorem and all provisional review/strength classifications remain
+unchanged. No new entropy fixture, real entropy-engine execution, coding family,
+refinement/aggregation/custom-family expansion, hook or allocation-failure
+injection is introduced.
+
+All 369 native tests pass with 14 ignored. Fresh actual coverage is
+10,514/12,624lines,10,131/12,933regions,1,987/2,638branches, an actual gain of
+84/80/66 over the complete IAID parent with unchanged denominators/floors.
+All seventeen native/proof streams and 656 production declarations, attributes,
+bodies and source starts match that parent. Fresh whole pinned verification
+and compilation remain1174/0. Two additional actual runtime mutants compile
+and are detected, alongside all thirteen existing controls. The required
+semantic profile remains eighteen groups / 98 contrasts in the same four shards.
+Independent review, full semantic composition, official positives, capacity
+integration and release coverage goals remain open.
+
+## Complete project signed-integer composition
+
+`decode_integer` now exposes exact `integer_state` result/full-decoder/full-bank
+equality, composing seed, sign, all six leaf counts/offsets, payload and signed
+value/OOB. The payload helper exposes its complete result/decoder/bank/history
+fold. Nine new compiling contrasts and nine rerun history/preflight controls
+exercise the stronger contracts without weakening validity or bounds.
+The required profile is nineteen groups / 107 contrasts in the same four
+shards and unchanged CI jobs/cap. Twelve selected algorithm rows gain functional
+project evidence; all 249 remain provisional (94 functional / 129 state /
+26 safety). Procedure-bank/storage and fourteen Table A.1 representation rows
+retain state-only strength.
+
+Two direct-state tests compare 11,280 complete integers and 19,800 payload
+folds to wide numeric/weighted-bit and prior checked procedures. All six leaves
+and positive/negative/zero/OOB/EOF/overflow categories execute. All 371 native
+tests pass with 14 ignored; fresh coverage is10,525/12,626lines,
+10,152/12,933regions,1,997/2,638branches. Only arithmetic gains11/21/10; its
+checked-operation expansion adds two covered physical/denominator lines.
+All fifteen existing runtime mutants compile and are detected.
+Fresh whole pinned verification and compilation pass1177/0. Sixteen native
+streams, all656caller preconditions and all48reviewed boundary bodies/attributes
+are unchanged; arithmetic differs only by equivalent checked-operation/error
+constructor expansions. No new encoded stream, family, trust exception,
+resource policy, exclusion or publication change is introduced. Independent
+Annex A/Table A.1/Qe interpretation, caller/reset/stream composition, official
+positive adjudication, capacity integration and coverage goals remain open.

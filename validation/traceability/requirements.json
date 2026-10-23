@@ -629,7 +629,7 @@
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
-    "specs/arithmetic.rs": "c0aa80438370cb1402a87f09e53ee0fdba48767dc5e7e690e1c2060af8055b4d",
+    "specs/arithmetic.rs": "19cb79c8166e2e28934d33b1cd8fad0e0e0e835ce53a34488e5e636123e58494",
     "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
     "specs/decode.rs": "f00e3a481025c5f1fd5637972d283d43a95f85846a3c7e610d8442ad2bb979fe",
     "specs/document.rs": "937c78bb6796d5e3c179019c5183ff1c848cece68e26b705cae1f5615ec45480",
@@ -642,7 +642,7 @@
     "specs/readers.rs": "e1d2a8e0b15fb74e604f4abbd4f3e7f86a3342eb43fb8a4114d817bf8f098f33",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "669724f721ba0f904cf002e1a36c34c2bca2d707ce3b75564a8dde2be579f78c",
-    "src/arithmetic.rs": "934c94576f893c12b416af80df78a058873c9152a8e113a3ea49516bd75a06c7",
+    "src/arithmetic.rs": "b7aca677d3fb21ea07970f9c0c05aff5375a8643f6ebdc8be7cccc78c64b846d",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
     "src/decode.rs": "327d77309b8c641d7e3e2cababdab6fe35a92e36f9762014a5f16ae26a08424e",
     "src/document.rs": "3fd262ee16be836fdf8dba91a43ef294dc2dd55dbbe8865c8af917a68ec1d8d8",
@@ -655,7 +655,7 @@
     "src/reader.rs": "6ff37e4e37970bca4001d84032f788ab3f8016238d6aa22789398946604d43ba",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
-    "src/symbol_text.rs": "f446fd284602b63685e2fa81bd16c37ee9605fb428ff8381ed82f14c34bed57f",
+    "src/symbol_text.rs": "d8b8f39318362561c351f6596947bd1ddff581bbdac81378f3257326f8bb84d1",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
     "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
@@ -1535,6 +1535,66 @@
       ],
       "name": "integer_bit_state",
       "role": "Exact project decision-state tuple for the low-nine-bit history-selected context, with the same representation preconditions."
+    },
+    "arithmetic-iaid-run": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "iaid_run",
+      "role": "Complete finite project IAID prefix/decoder/context transition with partial errors; out-of-domain totality is not native behavior."
+    },
+    "arithmetic-iaid-state": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "iaid_state",
+      "role": "Complete project IAID preflight, finite prefix run, sentinel-cleared result and all decoder/context outputs; 31-bit cap is project policy, not normative approval."
+    },
+    "arithmetic-integer-step-state": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "integer_step_state",
+      "role": "Complete project bit result, decoder/context bank and growing/rolling history, including partial errors."
+    },
+    "arithmetic-integer-bits-run": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "integer_bits_run",
+      "role": "Finite project payload fold with exact result, decoder, context bank and history; a mathematical accumulator models checked overflow and partial errors."
+    },
+    "arithmetic-integer-selection-state": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "integer_selection_state",
+      "role": "Project five-decision magnitude-leaf selection with six count/offset outcomes, exact state and errors; entered at level zero."
+    },
+    "arithmetic-integer-state": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "integer_state",
+      "role": "Complete project seed/sign/leaf/payload/value-or-OOB result and decoder/context composition, not independent Annex A/Table A.1/caller approval."
     }
   },
   "requirements": [
@@ -3851,6 +3911,14 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::decodes_export_runs_including_zero_length_toggles"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::export_run_errors_preserve_classification_work_and_unread_input"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::export_runs_match_every_small_selection_with_exact_work_and_input_frames"
         }
       ],
       "strength": "functional_contract",
@@ -6274,7 +6342,11 @@
         "arithmetic::ArithmeticDecoder::decode_iaid"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -6285,7 +6357,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6293,7 +6365,7 @@
         "The scripted integer tests exercise a test-only callback procedure, not production decode_integer on arbitrarily chosen decision sequences; the concrete comparison covers one existing arithmetic stream and shares the decision decoder."
       ],
       "gaps": [
-        "No helper postcondition identifies the caller's procedure namespace, independent bank storage, or the application role of any named procedure; bank choice and caller correctness remain unproved."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6317,7 +6389,11 @@
       ],
       "models": [
         "decoder-state-valid",
-        "context-valid"
+        "context-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -6328,11 +6404,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6340,9 +6424,20 @@
         "Valid supplied contexts are a precondition, not a proof of their procedure identity."
       ],
       "gaps": [
-        "No contract relates the first selected context to a newly seeded invocation history."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6568,7 +6663,11 @@
       ],
       "models": [
         "decoder-state-valid",
-        "context-valid"
+        "context-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -6583,7 +6682,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6591,7 +6690,7 @@
         "Valid supplied contexts are a precondition, not a proof of their procedure identity."
       ],
       "gaps": [
-        "The fixed 512-element argument and bounded indexing are not a theorem of procedure-local history selection or bank separation."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -6614,7 +6713,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -6625,20 +6728,39 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The scripted integer tests exercise a test-only callback procedure, not production decode_integer on arbitrarily chosen decision sequences; the concrete comparison covers one existing arithmetic stream and shares the decision decoder."
       ],
       "gaps": [
-        "No return contract records sign-decision ordering or the relation between sign and returned value."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6660,7 +6782,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -6673,11 +6799,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6685,9 +6819,20 @@
         "The selected tests do not exercise every leaf in production; intermediate leaves lack dedicated concrete boundary tests."
       ],
       "gaps": [
-        "No functional model or postcondition binds the first zero branch to exactly 2 payload decisions, their ordering, or the offset 0."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6709,7 +6854,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -6722,11 +6871,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6734,9 +6891,20 @@
         "The selected tests do not exercise every leaf in production; intermediate leaves lack dedicated concrete boundary tests."
       ],
       "gaps": [
-        "No functional model or postcondition binds the one continuation then zero to exactly 4 payload decisions, their ordering, or the offset 4."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6758,7 +6926,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -6771,11 +6943,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6783,9 +6963,20 @@
         "The selected tests do not exercise every leaf in production; intermediate leaves lack dedicated concrete boundary tests."
       ],
       "gaps": [
-        "No functional model or postcondition binds the two continuations then zero to exactly 6 payload decisions, their ordering, or the offset 20."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6807,7 +6998,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -6820,11 +7015,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6832,9 +7035,20 @@
         "The selected tests do not exercise every leaf in production; intermediate leaves lack dedicated concrete boundary tests."
       ],
       "gaps": [
-        "No functional model or postcondition binds the three continuations then zero to exactly 8 payload decisions, their ordering, or the offset 84."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6856,7 +7070,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -6869,11 +7087,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6881,9 +7107,20 @@
         "The selected tests do not exercise every leaf in production; intermediate leaves lack dedicated concrete boundary tests."
       ],
       "gaps": [
-        "No functional model or postcondition binds the four continuations then zero to exactly 12 payload decisions, their ordering, or the offset 340."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6905,7 +7142,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -6918,11 +7159,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6930,9 +7179,20 @@
         "The selected tests do not exercise every leaf in production; intermediate leaves lack dedicated concrete boundary tests."
       ],
       "gaps": [
-        "No functional model or postcondition binds the all five continuation decisions to exactly 32 payload decisions, their ordering, or the offset 4436."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -6955,7 +7215,11 @@
       "models": [
         "decoder-state-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -6966,11 +7230,19 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -6978,9 +7250,21 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "The payload loop's invariants and return contract do not relate the accumulated number to a decoded-bit sequence."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bits",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_bits_run(*old(self), old(contexts)@, *old(previous), bit_count, 0,).0",
+            "*final(self) == arithmetic_spec::integer_bits_run(*old(self), old(contexts)@, *old(previous), bit_count, 0,).1",
+            "final(contexts)@ == arithmetic_spec::integer_bits_run(*old(self), old(contexts)@, *old(previous), bit_count, 0,).2",
+            "*final(previous) == arithmetic_spec::integer_bits_run(*old(self), old(contexts)@, *old(previous), bit_count, 0,).3"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bits",
@@ -7001,7 +7285,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -7014,20 +7302,39 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The scripted integer tests exercise a test-only callback procedure, not production decode_integer on arbitrarily chosen decision sequences; the concrete comparison covers one existing arithmetic stream and shares the decision decoder."
       ],
       "gaps": [
-        "There is no ensures relation from the decoded sign and magnitude to the nonnegative integer result."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -7048,7 +7355,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -7061,20 +7372,39 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The scripted integer tests exercise a test-only callback procedure, not production decode_integer on arbitrarily chosen decision sequences; the concrete comparison covers one existing arithmetic stream and shares the decision decoder."
       ],
       "gaps": [
-        "The magnitude bound lemma prevents a cast overflow but does not prove the returned negative value's decision semantics."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -7095,7 +7425,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [
         "arithmetic-magnitude-bounds"
@@ -7108,20 +7442,39 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The complete project integer entry point equals integer_state for result, full decoder and complete context bank. The finite model composes history seed/sign, all six leaf counts/offsets, MSB-first payload accumulation and nonnegative, negative or out-of-band result with exact partial errors. The payload helper also exposes complete result/decoder/bank/history fold equality. This is not independent Annex A/Table A.1/Qe/caller or full-stream approval.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
         "The scripted integer tests exercise a test-only callback procedure, not production decode_integer on arbitrarily chosen decision sequences; the concrete comparison covers one existing arithmetic stream and shares the decision decoder."
       ],
       "gaps": [
-        "No return postcondition distinguishes OutOfBand from Value using the decoded sign and magnitude."
+        "Independent Annex A/Table A.1 and Qe/decision/register interpretation remains unapproved.",
+        "Procedure-bank/caller selection, reset timing and full entropy-stream composition remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
+            "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1",
+            "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
@@ -7143,7 +7496,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7158,7 +7515,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7166,7 +7523,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 1; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7190,7 +7547,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7205,7 +7566,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7213,7 +7574,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 2; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7237,7 +7598,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7252,7 +7617,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7260,7 +7625,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 3; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7284,7 +7649,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7299,7 +7668,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7307,7 +7676,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 4; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7331,7 +7700,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7346,7 +7719,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7354,7 +7727,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 5; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7378,7 +7751,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7393,7 +7770,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7401,7 +7778,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 6; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7425,7 +7802,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7440,7 +7821,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7448,7 +7829,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 7; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7472,7 +7853,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7487,7 +7872,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7495,7 +7880,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 8; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7519,7 +7904,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7534,7 +7923,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7542,7 +7931,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 9; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7566,7 +7955,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7581,7 +7974,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7589,7 +7982,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 10; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7613,7 +8006,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7628,7 +8025,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7636,7 +8033,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 11; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7660,7 +8057,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7675,7 +8076,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7683,7 +8084,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 12; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7707,7 +8108,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7722,7 +8127,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7730,7 +8135,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 13; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7754,7 +8159,11 @@
         "arithmetic::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-integer-step-state",
+        "arithmetic-integer-bits-run",
+        "arithmetic-integer-selection-state",
+        "arithmetic-integer-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7769,7 +8178,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The full project integer procedure now equals integer_state for result and decoder/context bank, composing all six leaves and typed partial errors. This does not independently establish this row's procedure-bank/caller or Table A.1 representation relation, so the state-preservation grade is retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7777,7 +8186,7 @@
         "This relation is linked without reproducing the table's encodings. The last two numeric families still use a 32-bit payload; the table's open-ended range notation is not evidence of unbounded runtime integers."
       ],
       "gaps": [
-        "No independently reviewed decision-sequence model or production return contract establishes Table A.1 row 14; this row has no dedicated all-boundary production test."
+        "Independent procedure-bank/caller identity and Table A.1 representation-to-decision/register interpretation remain unapproved; complete project composition is not that independent theorem."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7803,7 +8212,9 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7822,7 +8233,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "Project preflight rejections now specify exact supplied-length/required/actual error fields and unchanged complete decoder/context state. The 31-bit cap is project policy. These rejection contracts do not prove the row's normative caller/history-index/value relation, so its state-preservation classification is intentionally retained.",
+      "scope_of_formal_result": "The complete project IAID entry point now equals iaid_state for result and decoder/context bank, including positive runs and exact preflight rejection. The 31-bit cap remains project policy. The row's stronger normative caller-length/address-space obligation is not independently proved, so its prior state-preservation grade is deliberately retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7831,7 +8242,7 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "No helper contract binds code_length to the caller's SBSYMCODELEN. The implementation's maximum length 31 is a project boundary, not an Annex A limit."
+        "Caller SBSYMCODELEN/bank allocation and independent normative prefix/address-space sufficiency remain unapproved; the project 31-bit cap is not an Annex A limit."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
@@ -7857,7 +8268,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7868,11 +8282,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7881,9 +8299,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "The return contract does not specify the initial history or the first context index."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -7907,7 +8336,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7918,11 +8350,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7931,9 +8367,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "Validity of supplied contexts does not prove IAID namespace selection or the exact tree node used per decision."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -7957,7 +8404,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -7968,11 +8418,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -7981,9 +8435,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "The loop has no functional history/decision-sequence invariant; full history retention is not in the return contract."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8007,7 +8472,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8018,11 +8486,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8031,9 +8503,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "A decreasing remaining counter is termination support, not a postcondition of exact decision count, including the zero-length case."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8057,7 +8540,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8068,11 +8554,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8081,9 +8571,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "Checked subtraction avoids underflow but no postcondition connects the output to history minus the code-length sentinel."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8107,7 +8608,10 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state",
+        "arithmetic-decision-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8118,11 +8622,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8131,9 +8639,20 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "No ensures relation specifies the returned ID, bit order, or its range relative to code_length."
+        "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
+        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "section": "ensures",
+          "tokens": [
+            "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
+            "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
@@ -8157,7 +8676,9 @@
         "decoder-state-valid",
         "context-valid",
         "arithmetic-binary-value",
-        "arithmetic-pow2"
+        "arithmetic-pow2",
+        "arithmetic-iaid-run",
+        "arithmetic-iaid-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8176,7 +8697,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "Project preflight rejections now specify exact supplied-length/required/actual error fields and unchanged complete decoder/context state. The 31-bit cap is project policy. These rejection contracts do not prove the row's normative caller/history-index/value relation, so its state-preservation classification is intentionally retained.",
+      "scope_of_formal_result": "The complete project IAID entry point now equals iaid_state for result and decoder/context bank, including positive runs and exact preflight rejection. The 31-bit cap remains project policy. The row's stronger normative caller-length/address-space obligation is not independently proved, so its prior state-preservation grade is deliberately retained.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -8185,7 +8706,7 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "The runtime minimum-storage check is not a proved history-index model or a contract of required context count; the 31-bit cap is project policy."
+        "Caller SBSYMCODELEN/bank allocation and independent normative prefix/address-space sufficiency remain unapproved; the project 31-bit cap is not an Annex A limit."
       ],
       "functional_evidence": [],
       "invariant_evidence": [

@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 76 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 147 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 94 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 129 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -132,10 +132,26 @@ single-step output contracts: the returned bit and full decoder/error state,
 selected-context update and unselected-bank frame, growing/rolling history,
 and unchanged history on error. Nine actual compiling contrasts and 144,384
 numeric/frame scenarios supplement the proofs. The records remain provisional;
-full integer leaf/payload/sign semantics and normative interpretation stay open.
+independent normative interpretation stays open.
+The complete signed-integer follow-up now composes the seed/sign, all six
+leaf counts/offsets, MSB-first payload and signed value/OOB against
+`integer_step_state`, `integer_selection_state`, `integer_bits_run` and
+`integer_state`. The entry point exposes exact result/full-decoder/full-bank
+equality; the payload helper additionally exposes its complete history.
+Twelve selected algorithm rows gain actual functional project evidence.
+Procedure-bank/storage and all fourteen Table A.1 rows deliberately remain
+state-only: complete project composition is not an independent caller or
+representation theorem. Nine additional compiling contrasts and 31,080
+numeric/state/prior-procedure comparisons supplement the contracts.
 IAID preflight rejections now have exact project classification and state frames,
-but the 31-bit cap is not an Annex A limit and no SBSYMCODELEN caller/positive
-value fold is proved. Those two records are deliberately **not** upgraded.
+and the complete IAID follow-up proves the positive prefix/value fold and all
+decoder/context outputs against `iaid_run` and `iaid_state`. Six selected rows
+now link the production result/decoder/bank equalities, covering seed, context,
+history, iteration count, sentinel removal and result. Six additional compiling
+contrasts and 3,600 numeric/state/prior-procedure comparisons supplement these
+contracts. The 31-bit cap is not an Annex A limit; the SBSYMCODELEN caller and
+normative address-space obligations remain open. The two LENGTH/STORAGE rows
+are deliberately **not** upgraded.
 
 The complete decision-state follow-up gives seven selected E.3.2 records
 functional project-step evidence: interval subtraction, strict code partition,
@@ -173,15 +189,16 @@ coverage floors or trust/attestation metadata. The two existing reset records
 retain their narrow functional classification; the aggregate decision record
 retains state-preservation strength. At initial enumeration all 138 additions
 were **state-preservation** records with explicit missing functional relations.
-The six normalization records above now have narrow functional evidence; the
-remaining 132 retain their original state-preservation classification.
+Thirty-four additions now have narrow functional project evidence across
+normalization, decision composition, integer history/procedure and IAID.
+The remaining 104 retain their original state-preservation classification.
 The original 111 IDs and review states are preserved.
 
 | Consulted source / selected membership | Added records | Accounting boundary |
 |---|---:|---|
-| A.1/A.2 procedure namespaces, history, sign, six magnitude leaves, payload order, three result cases | 17 | Local integer helper and history/magnitude bound macros; no decision-sequence-to-integer contract |
+| A.1/A.2 procedure namespaces, history, sign, six magnitude leaves, payload order, three result cases | 17 | Fifteen now link functional project history/procedure contracts; caller namespace/storage obligations remain state-only and unapproved |
 | A.2 Table A.1, each of its 14 representation rows | 14 | Separate row locators, including negative unit and OOB; no copied encodings or independent table-to-output proof |
-| A.3 fixed length, seed, context, recurrence, iteration count, sentinel removal, return and storage | 8 | Existing pure binary-value/power-of-two models are linked, but production IAID does not promise their output relation |
+| A.3 fixed length, seed, context, recurrence, iteration count, sentinel removal, return and storage | 8 | Six rows now link complete project result/decoder/bank contracts; normative caller length and address-space sufficiency remain state-only and unapproved |
 | E.3/E.3.1 interface, stream/context loop and register conventions | 6 | Caller sequence/stream agreement and logical code-register interpretation remain gaps |
 | E.3.2 Figure E.15 decision steps | 8 | Lookup, interval subtraction, strict partition, high-code subtraction, fast MPS, both exchange/renormalization paths and return |
 | E.3.2 Figures E.16/E.17 exchange branches | 11 | Both comparisons, old-sense decisions, NMPS/NLPS, switch/no-switch and lower-path interval replacement |
@@ -217,14 +234,22 @@ its existing consultation history and records are unchanged. This consultation
 is not owner approval or an independent formal standard-translation review.
 
 The existing integer/IAID scripted tests run callback reference procedures.
-Only the concrete comparison test runs the production integer/IAID helpers
-against those procedures on one existing stream. Many leaf/range/length
-boundaries therefore still lack dedicated production tests. The randomized
+The concrete comparison test runs both production helpers on an existing
+stream. The complete IAID test additionally compares 3,600 direct states to
+an independently accumulated numeric value/context-address oracle and the
+prior checked procedure, including zero length, success and partial errors.
+The signed-integer follow-up adds 11,280 complete-procedure and 19,800
+payload-fold comparisons, exercising every leaf and positive/negative/zero/OOB/
+EOF/overflow outcomes. These direct states are not claimed as valid encoded
+streams or exhaustive representation-range tests. The randomized
 decision oracle repeats the implementation algorithm; the table test repeats a
 project-local constant list; neither is an independent normative specification.
-The linked IAID pure-model lemmas start from an assumed decision sequence and
-are not a production output postcondition. New records state these limitations
-instead of treating test names or bounds lemmas as functional proof.
+The older IAID pure-model lemmas start from an assumed decision sequence.
+The new production postconditions instead equal the complete `iaid_state`
+model, which composes the exact decision state with each context update.
+Neither this composition nor shared Qe data independently approves normative
+bitstream interpretation. Records distinguish these claims rather than
+treating test names or bounds lemmas as functional proof.
 
 Selected-section accounting is now substantially finer grained, but remains
 **provisional and partial**. Owner review must check for omissions and confirm
@@ -491,8 +516,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All seventeen semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 92 required strong/weaker compiling
+All nineteen semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 107 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
