@@ -1,8 +1,8 @@
 # Provisional statement-level T.88 and T.6 traceability
 
-P04 is in progress. The ledger maps **249 selected requirement records**
+P04 is in progress. The ledger maps **266 selected requirement records**
 to source contracts, project models, proof support and exact test identities.
-These comprise **240 selected normative-rule records and nine explicit project-
+These comprise **257 selected normative-rule records and nine explicit project-
 profile-policy records**. A policy row uses the standard only as context and
 does not increase the normative-rule count.
 It also inventories all **30 support-matrix features** as a decomposition
@@ -30,7 +30,7 @@ the repository. Ledger titles and scope notes are original paraphrases.
   source links, model/proof support, exact tests, assumptions and unresolved gaps.
   CI uploads these instead of committing constantly regenerated reports.
 
-All 249 records are **provisional**, pending owner normative/model review.
+All 266 records are **provisional**, pending owner normative/model review.
 Twenty-nine feature groups now have partial records, none is unstarted, one
 deferred feature is excluded, and none has an approved complete normative
 decomposition. Starting every coarse feature worklist does **not** mean that
@@ -42,7 +42,7 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 94 | Explicit postcondition evidence within the stated narrow property scope |
+| `functional_contract` | 111 | Explicit postcondition evidence within the stated narrow property scope |
 | `state_preservation` | 129 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
@@ -52,6 +52,21 @@ and header fields, Huffman construction/decoding helpers, selected T.6 mode/run/
 framing rules and JBIG2-specific MMR
 exceptions, selected generic-template parameters, arithmetic reset contracts,
 selected Annex A/E algorithm and table relations, and typical-row copying.
+
+Seventeen additional selected pattern/halftone header-field records now link
+exact project acceptance predicates, successful raw fields and seven/twenty-one
+byte cursor advancement. Their locators were checked locally on 2026-10-23
+against the unchanged approved T.88 hash above: 7.4.4.1.1-7.4.4.1.4 and
+7.4.5.1.1-7.4.5.1.3.2, with Figures 41-46's field layouts/captions.
+Only original paraphrases, identifiers and locators are recorded, not source
+prose, diagrams or vectors. The halftone-specific helper starts after region
+information; signed origins and unsigned vectors retain their encoded
+256-scaled representation. Native parser bodies/preconditions are unchanged.
+Nine real compiling contrasts include deliberately rejecting otherwise valid
+headers, so accepted-field contracts are not the only success guarantee.
+Typed partial-error/cursor contracts, full segment/caller/resource and raster
+composition, exhaustive decomposition and independent normative review remain
+open. Both feature worklists remain partial, and all new records provisional.
 
 Important examples:
 
@@ -192,7 +207,7 @@ mutants violate individual result relations and pass when only the affected
 postconditions are omitted; input framing, state validity and loop recurrence
 remain in the controls. These results do not approve normative register/pointer
 interpretation, caller sequencing or full arithmetic-stream conformance.
-All 249 records remain provisional, with unchanged selected membership.
+The selected arithmetic membership and its provisional review states are unchanged.
 
 This tranche adds **138 provisional normative records**, bringing the arithmetic
 worklist from three records to **141**, without changing runtime, models, proofs,
@@ -527,8 +542,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 115 required strong/weaker compiling
+All twenty-one semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 124 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching

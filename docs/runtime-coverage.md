@@ -195,6 +195,27 @@ and are detected. The required profile becomes twenty groups / 115 compiling
 contrasts in four unchanged shards/jobs. Normative caller/stream interpretation,
 critical uncovered paths and release coverage goals remain open.
 
+The unpaused halftone/pattern control follow-up adds eight ordinary tests for
+all generic/MMR/halftone adapter variants and full-width/delegated fields;
+inclusive input/context budgets and error precedence; arithmetic coding/
+template rejection frames, zero-area dispatch and noncausal adaptive-pixel
+rejection; pattern MMR single-use and consecutive real zero-area EOFB prefixes
+with exact trailing-byte checks; and every flag byte/truncation of both headers.
+These are component/control tests, not full valid image-stream conformance.
+No refinement/aggregation/custom-family expansion, observer hook, fake
+allocation failure, new entropy encoder or exclusion is introduced.
+
+On source `7118fcf255a016e51d267704714a5c37bb1d6c12`, all 381 native tests pass
+with 14 ignored. Actual fresh coverage is **10,679/12,629 lines (84.56%)**,
+**10,295/12,936 regions (79.58%)** and **2,009/2,638 branches (76.16%)**.
+Only halftone gains **142 lines / 130 regions / twelve branch outcomes**;
+all denominators and other file metrics are unchanged. Halftone itself reaches
+93.90% lines / 80.58% branches. Every native production body is byte-identical
+to the caller parent; only two successful-field/acceptance postcondition
+attributes change. Two new compiled runtime mutants disable the MMR single-use
+and trailing-byte checks; all fifteen existing controls remain for seventeen.
+Floors, release goals and four-shard CI job/cap policy are unchanged.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant
@@ -399,7 +420,7 @@ python -B tools/check_contract_mutations.py --toolchain 1.89.0 \
 ```
 
 CI runs the same check with the pinned coverage nightly. It copies source and
-fixtures outside the checkout, uses a fresh offline Cargo home, and tests fifteen
+fixtures outside the checkout, uses a fresh offline Cargo home, and tests seventeen
 single-site mutations covering I/O classification, inclusive limits, sink
 propagation, reference roles/cardinality, error adapter fields and formatter
 failure propagation, symbol-code length and packed padding. For each case the original exact library/integration test

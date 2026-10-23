@@ -2,6 +2,28 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The unpaused halftone/pattern control tranche adds eight ordinary tests for
+all typed error-adapter variants, exact constructor input/context budgets,
+coding/template rejection frames, zero-area generic dispatch, noncausal adaptive
+pixels, MMR single-use/prefix/trailing-byte policy and every flag/truncated
+header shape. Actual fresh collection passes 381 native tests with 14 ignored,
+measuring 10,679/12,629 lines (84.56%), 10,295/12,936 regions (79.58%) and
+2,009/2,638 branch outcomes (76.16%): an actual +142/+130/+12 with unchanged
+denominators/floors. Seventeen real runtime mutants now compile and are detected.
+Two unchanged native parser bodies gain exact project acceptance/rejection,
+raw-field and seven/twenty-one byte consumption postconditions. Nine actual
+compiling contrasts extend the required profile to 21 groups / 124 contrasts,
+with the same four shards/jobs/cap. Whole pinned proof/compilation remain1177/0.
+Seventeen field records were checked against the approved T.88 source and
+linked to these contracts: 266 selected records, all provisional, now
+111 functional / 129 state / 26 safety. This is not an exhaustive denominator
+or independent normative approval. All 17 native streams and 656 bodies/
+preconditions, plus all 48 reviewed boundaries, remain unchanged. Original
+standard text/diagrams/vectors are not committed. Exact typed partial errors,
+caller/resource/raster semantics, official positives, capacity integration,
+exhaustive review and release coverage goals stay open; paused families and
+the no-local-trusted-specification policy remain unchanged.
+
 The arithmetic caller follow-up now composes integer/IAID results, exact typed
 error projection, complete decoder/selected-bank state and all unselected
 integer/IAID/optional-refinement/work frames on every outcome. Field selection

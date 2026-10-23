@@ -468,7 +468,7 @@
         "T88-PATTERN-HEADER-GRAYMAX"
       ],
       "remaining_scope": [
-        "Selected raw header fields now have provisional records and exact accepted-output contracts; independent enumeration/model review, complete acceptance/errors, region-information/caller/resource binding and full decoded output semantics remain open."
+        "Selected raw header fields and exact project acceptance now have provisional records; independent enumeration/model review, typed partial errors/cursors, region-information/caller/resource binding and full decoded output semantics remain open."
       ]
     },
     {
@@ -494,7 +494,7 @@
         "T88-HALFTONE-HEADER-VECTOR-Y"
       ],
       "remaining_scope": [
-        "Selected raw header fields now have provisional records and exact accepted-output contracts; independent enumeration/model review, complete acceptance/errors, region-information/caller/resource binding and full decoded output semantics remain open."
+        "Selected raw header fields and exact project acceptance now have provisional records; independent enumeration/model review, typed partial errors/cursors, region-information/caller/resource binding and full decoded output semantics remain open."
       ]
     },
     {

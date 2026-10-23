@@ -820,3 +820,30 @@ without strength/review upgrades; all249remain provisional94/129/26.
 Normative caller-field/count/SBSYMCODELEN/reset/stream interpretation, official
 positives, capacity integration and coverage goals remain open. No stopped
 refinement/aggregation/custom-family expansion or trust exception is introduced.
+
+## Unpaused halftone control and exact header relations
+
+Eight new unit tests exercise every generic/MMR/halftone adapter variant,
+full-width/delegated errors, exact input/context budgets, arithmetic mode/
+template frames and noncausal adaptive-pixel rejection, zero-area generic
+dispatch, MMR single-use/EOFB-prefix/trailing-byte policy and all header flags/
+truncations. They use existing component interfaces without hooks or fake
+allocation failures and do not resume refinement/aggregation/custom families.
+All 381 native tests pass with 14 ignored. Actual fresh coverage is
+10,679/12,629lines,10,295/12,936regions,2,009/2,638branches: +142/+130/+12 in
+halftone only, unchanged denominators/floors and no exclusion.
+
+Native parser bodies gain exact success/rejection predicates, every accepted
+raw field and seven/twenty-one byte consumption. Three pure flag/operator
+models become crate-visible solely for the public postconditions; no native
+API changes. Nine compiling contrasts include false rejection of valid input.
+The full required profile is21groups124contrasts in four unchanged shards/jobs.
+All17native token streams and656bodies/preconditions, plus all48reviewed
+boundary bodies/attributes, are unchanged. Whole proof/compilation remain1177/0.
+Two new real runtime mutants join all fifteen prior controls: seventeen compile
+and are detected. Seventeen locally consulted T.88 field records raise selected
+membership to266(257normative/9policy), all provisional111functional/129state/
+26safety. No original source prose, diagrams, vector bytes or oracle source is
+committed. Exact typed partial errors/cursors, complete segment/caller/resource/
+raster semantics, independent review, official positives, capacity integration
+and coverage goals remain open.

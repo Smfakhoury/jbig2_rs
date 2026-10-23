@@ -4,7 +4,7 @@ This is a navigation and notation aid, **not normative approval**. The
 [statement ledger](../validation/traceability/requirements.json) remains
 authoritative for exact clause/figure/table locators, assumptions, contracts
 and tests; [traceability](spec-traceability.md) explains evidence strengths.
-All 249 selected records remain provisional, the normative denominator remains
+All 266 selected records remain provisional, the normative denominator remains
 incomplete, and no feature has an approved complete decomposition. No standard
 prose, table entries, diagrams or official vectors are reproduced here.
 
@@ -53,6 +53,7 @@ Consult each requirement's exact locator in the ledger before judging fidelity.
 | A.3 IAID prefix and result | `iaid_run` starts from prefix one, composes each exact decision/context update and finite count; `iaid_state` clears the sentinel and exposes project preflight/partial errors | Production `decode_iaid` equals the model for result, full decoder and full context bank. Six compiling contrasts and 3,600 numeric/prior-procedure comparisons supplement this project theorem. The 31-bit cap is project policy; normative caller length, address-space sufficiency and bitstream interpretation remain unapproved |
 | A.1/A.2 signed integer procedure | `integer_step_state` exposes decision/decoder/bank/history; `integer_selection_state` enters at level zero and selects one of six count/offset pairs; `integer_bits_run` is the finite payload fold; `integer_state` composes seed/sign, leaf, payload and signed value/OOB | Production `decode_integer` exposes result/full-decoder/full-bank equality, and `decode_integer_bits` also exposes history. Nine compiling contrasts and 31,080 numeric/prior-procedure comparisons supplement these project contracts. Model totality guards are not native behavior. Procedure-bank/storage, fourteen independent Table A.1 representation relations, Qe/register translation and complete caller/stream interpretation remain unapproved |
 | Concrete arithmetic caller boundary | `integer_field_slot` is the project enum ordinal; `arithmetic_integer_result` and `arithmetic_symbol_id_result` project values/OOB and exact `decode_error` fields | Both concrete codec methods expose full decoder/selected-bank relations and all other bank/refinement/work frames on every outcome. Eight compiling contrasts and 12,648 direct caller cases supplement the proof. These are project backend guarantees, not independent normative call-site field, symbol-count/SBSYMCODELEN, reset or full-stream approval |
+| 7.4.4.1 and 7.4.5.1 selected header fields | `pattern_header_accepted` / `halftone_header_accepted` give exact project success conditions; `*_header_fields` bind raw flags, dimensions/index, signed grid origins and unsigned vector words | Native parsers promise success iff acceptance, exact successful fields and seven/twenty-one byte consumption. The halftone helper excludes previously parsed region information and retains raw 256-scaled quantities. Shared `segments::be_u32_at` supplies word order. Three pure flag/operator helpers become crate-visible solely to expose these postconditions; no native API changes. Nine compiling contrasts supplement the contracts, not independent translation, typed partial-error or full caller/raster approval |
 | T.6 2.2.3 / Table 1 mode lookup | [`mode_code_in_implementation_table`](../specs/mmr.rs) is membership in runtime `MODE_CODES`; successful `decode_mode` has a table witness and consumed length | Not an independent normative table proof or a proof that consumed input bits equal the returned key |
 | T.6 2.2.4 / Tables 2–3 run lookup | `run_code_in_implementation_tables` selects the runtime white/black terminating/make-up arrays and common make-up array; `find_run_code` relates a supplied `(bits, length)` key to a returned entry | Membership and key matching, not independent standard-table correctness or complete run accumulation/raster semantics |
 | T.6 framing and T.88 6.2.6 omission context | MMR `exact_eofb` relates successful required framing to local `EOFB` | Constant/model equality does not independently review standard framing, padding applicability or caller omission policy |
@@ -70,7 +71,7 @@ implementation data and synthetic semantic mutants are not normative oracles.
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  20-group/115-contrast required profile is neither added normative coverage nor a fresh
+  21-group/124-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks

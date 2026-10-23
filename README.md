@@ -67,8 +67,8 @@ The [readiness plan](docs/open-source-readiness-plan.md) tracks the remaining wo
 
 ## Normative traceability
 
-The [provisional T.88/T.6 ledger](docs/spec-traceability.md) links 249 selected
-records (240 normative-rule records and nine project-policy records) to exact
+The [provisional T.88/T.6 ledger](docs/spec-traceability.md) links 266 selected
+records (257 normative-rule records and nine project-policy records) to exact
 contracts, model/proof definitions and test identities. It distinguishes
 functional postconditions from state/bounds-only
 evidence and runtime/proof substitutions. All 30 feature rows have a

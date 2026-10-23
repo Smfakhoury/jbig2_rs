@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty logical semantic groups remain complete: four deterministic
+The twenty-one logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty independently
-hashed report/log pairs and all 115 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty-one independently
+hashed report/log pairs and all 124 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,21 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+The pattern and halftone-specific header parsers now expose exact project
+acceptance/rejection, successful raw fields and seven/twenty-one byte cursor
+advancement. The shared big-endian word model is reused, signed origins retain
+their encoded scale, and region information remains the caller's preceding
+header. Three pure flag/operator helpers become crate-visible because public
+postconditions cannot reference private open models; no native API changes.
+All seventeen native token streams, all 656 production bodies/preconditions
+and all 48 reviewed boundary bodies/attributes remain unchanged. Only two
+production postcondition attributes change, with no termination/trust waiver.
+Nine compiling contrasts include false rejection of valid headers and loss of
+width, maximum index, cursor, grid dimensions/origin, operator and default pixel.
+Seventeen consulted field records gain functional project links but remain
+provisional, and full typed errors/partial cursors, caller/raster composition
+and independent normative approval are not inferred.
 
 The single integer-bit helper now exposes the exact returned decision, growing
 or rolling nine-bit history, error-history frame, complete decoder/error state,

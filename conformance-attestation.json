@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "f625744923200267c504f123dd7fe6c2c6f20cc0",
-  "scope": "Fresh existing official diagnostics on Exact arithmetic integer/IAID caller result/error and decoder/selected-bank composition with all unselected-bank/refinement/work frames; equivalent explicit error forwarding and reviewed logging-only patch adaptation; no new encoded stream or coding-family expansion f625744; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "7118fcf255a016e51d267704714a5c37bb1d6c12",
+  "scope": "Fresh existing official diagnostics on Proof-only exact pattern/halftone header acceptance, fields and cursor postconditions, seventeen consulted provisional field records, eight excluded unpaused control tests and seventeen runtime mutation controls; all native tokens/bodies/preconditions unchanged 7118fcf; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "caf55809d516d0ab9e51478ff4de54e592877a539ce36b5a4a972f6f92421325",
-    "review_sha256": "3b5f33611d6afc030541e1f1377702993f2b0f2558715b1b93efb48fefdeadd6"
+    "results_sha256": "0991a9b5a3d7930fc915e8d095b858c1571560ecf3acdefa8ba4044798370832",
+    "review_sha256": "b91cc27d46716787fbe4faa233129fc7a1a28572e27ae5d773ebf771b03e5656"
   },
   "community_regressions": {
     "total": 0,
