@@ -543,7 +543,7 @@ checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
 All twenty-five semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 147 required strong/weaker compiling
+repeated setup without dropping any of the 152 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
@@ -600,6 +600,21 @@ implementation tables. Only the horizontal-pair record gains functional
 strength: all 266 records remain provisional at 114/126/26. Horizontal-prefix
 dispatch, exact raster spans, full caller/stream composition, independent table
 review and complete acceptance/typed errors remain open.
+
+The recorded-span follow-up propagates exact primitive black-span pixels and
+storage through both wrappers under an explicit canonical-storage condition;
+their existing weaker preconditions are unchanged. White remains a no-op,
+not a clearing theorem. Exact transition-cache/emitted-state results and cache
+frames on error are auxiliary implementation guarantees; their model belongs
+under proof support, not the normative-facing span model. New direct matrices
+cover 11,196 complete pixel/cache cases and 32,136 transition-state cases.
+Five new real contrasts join the existing three no-op contrasts in the same
+`mmr-span` group, reusing its workspace and selected-function baselines.
+All 25 groups remain required, now with 152 contrasts; no new CI job or shard
+is added. The two older affected no-op controls remove only the redundant new
+pixel relation. The polarity record remains state-only, and all 266 records
+remain provisional114/126/26: full raster-loop white initialization,
+disjointness, mode interpretation and caller composition are still open.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional

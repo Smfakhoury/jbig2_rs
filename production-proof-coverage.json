@@ -5048,7 +5048,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::MmrScratch::clear"
       ]
@@ -5059,7 +5059,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::MmrScratch::release"
       ]
@@ -5070,7 +5070,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::MmrScratch::retained_bytes"
       ]
@@ -5081,7 +5081,7 @@
       "visibility": "private",
       "status": "audited-forwarder",
       "disposition_reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit.",
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": []
     },
     {
@@ -5090,7 +5090,7 @@
       "visibility": "private",
       "status": "reviewed-verifier-limitation",
       "disposition_reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from.",
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": []
     },
     {
@@ -5099,7 +5099,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::ModeCode::new"
       ]
@@ -5110,7 +5110,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::RunCode::terminal"
       ]
@@ -5121,7 +5121,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::RunCode::makeup"
       ]
@@ -5132,7 +5132,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_mmr"
       ]
@@ -5143,7 +5143,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_mmr_reused"
       ]
@@ -5154,7 +5154,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_mmr_prefix"
       ]
@@ -5165,7 +5165,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_bitmap"
       ]
@@ -5176,7 +5176,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::enforce_input_limit"
       ]
@@ -5187,7 +5187,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::enforce_work"
       ]
@@ -5198,7 +5198,7 @@
       "visibility": "private",
       "status": "runtime-proof-divergence",
       "disposition_reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Including them is rejected by pinned Verus on Vec::capacity and Result::unwrap_or. Runtime limit handling remains unverified; replacing capacity with length or adding project assumptions is not closure.",
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": []
     },
     {
@@ -5207,7 +5207,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::append_code_bit"
       ]
@@ -5218,7 +5218,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_mode"
       ]
@@ -5229,7 +5229,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_horizontal_runs"
       ]
@@ -5240,7 +5240,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_run"
       ]
@@ -5251,7 +5251,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::decode_run_code"
       ]
@@ -5262,7 +5262,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::find_run_code"
       ]
@@ -5273,7 +5273,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::reference_elements"
       ]
@@ -5284,7 +5284,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::reference_elements_from"
       ]
@@ -5295,7 +5295,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::fill_span"
       ]
@@ -5306,7 +5306,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::record_transition_span"
       ]
@@ -5317,7 +5317,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::fill_recorded_span"
       ]
@@ -5328,7 +5328,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::finish_transition_row"
       ]
@@ -5339,7 +5339,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::finish_block"
       ]
@@ -5350,7 +5350,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::finish_required_prefix"
       ]
@@ -5361,7 +5361,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+      "file_sha256": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
       "verus_functions": [
         "jbig2_rs_production::mmr::remaining_bits"
       ]

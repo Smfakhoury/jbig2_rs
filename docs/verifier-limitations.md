@@ -20,7 +20,7 @@ disabling flags are rejected in workflow commands and environments.
 The twenty-five logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
 collector requires all four same-run shard receipts, all twenty-five independently
-hashed report/log pairs and all 147 required compiling contrasts. Missing,
+hashed report/log pairs and all 152 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,20 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+The span/recorded-span wrappers now expose canonical-storage-conditional
+success and exact primitive black-pixel/storage effects, with unchanged weaker
+preconditions. White remains an exact no-op. Exact cached-transition/emitted
+state updates and cache error frames are proved separately from complete
+raster semantics; that cache model lives in implementation proof support.
+All17native streams,658bodies/preconditions and48reviewed boundaries are
+unchanged. Only3postcondition attributes strengthen; whole proof/compile1190/0.
+Five new real controls are merged into the existing three-case span group,
+reusing its workspace and per-function baselines. The full profile remains
+25groups/fourshards, now152contrasts rather than adding another logical group.
+Two affected no-op controls remove only the newly redundant pixel relation.
+Native matrices check11196pixel/cache and32136transition cases. All266records
+stayprovisional114/126/26; full raster-loop/polarity/caller semantics remain open.
 
 The exact native horizontal block is now a directly verified helper exposing
 both opposite-colour run sequences, ordered endpoints, progress and input

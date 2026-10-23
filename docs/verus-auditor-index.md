@@ -73,6 +73,13 @@ are those used by the existing raster caller; dispatch and raster/caller
 composition remain separate. Erased witness selection and normalization
 assertions in the helper are proof support, not extra normative rules.
 
+MMR `span_result` is conditional project output semantics: the exact existing
+primitive black-span relation or an unchanged white span. It is not a theorem
+that arbitrary old white-span pixels are zero. `transition_span_result` lives
+under model support because its exact vector append/emitted-state result
+describes the internal transition cache, not a complete normative raster rule.
+The existing weaker wrapper preconditions are retained.
+
 MMR `complete_run` is output semantics, not merely an accumulator invariant.
 Its `run_prefix_matches`, `run_bit_length`, `run_value_sum` and
 `run_all_makeups` components define the actual input sequence, consumed extent,
@@ -86,7 +93,7 @@ row/raster/caller interpretation remain separate review obligations.
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  25-group/147-contrast required profile is neither added normative coverage nor a fresh
+  25-group/152-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks

@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "740bd8115f352e75178bb4cec723dd8eac1d0e7b",
-  "scope": "Exact project opposite-colour input-bound horizontal MMR run sequences, ordered endpoints, progress and consumed extent; exact native block extraction",
+  "source_revision": "0276c7a80de25817b41df10d69a06bd89869724c",
+  "scope": "Canonical-storage-conditional exact MMR span success/pixels and exact internal transition-cache/emitted-state updates; all native bodies and existing weaker preconditions preserved",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/mmr-horizontal-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/mmr-recorded-span-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1190,
     "verified_production_functions": 610,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "91f7faa917114d68e394a4186c43a1c30548acc95de9fe119918e5dd2a4ef753",
-  "proof_dispositions_sha256": "c7ce2c9bb195aab35543e44a60c9ba4a2dad53c4e921e59c5d8b36135bd37411",
+  "production_proof_coverage_sha256": "39603fef73dda48fce93f81ec991d4bf95344fe17b1b039267903629c8112084",
+  "proof_dispositions_sha256": "2ecdb76660584469001b51e3b271686848b99422c8dad0a6339f8c02ff4a1ae4",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo proof/compilation pass1190/0 with lifetime/erasure checks. The exact former horizontal block is one directly verified helper returning the same after_first/end. Its contract binds two complete input sequences in opposite-colour order to both endpoints, progress, row bounds and total consumed extent. Original checked operations, guards, errors and order remain; source review verifies16unchanged native streams and only that exact MMR extraction. All657existing preconditions/attributes and48reviewed boundaries, including capacity-divergence bodies/flags, remain unchanged. Inventory658functions:610direct/24limitations/23forwarders/1capacitydivergence/0incomplete/0projectassumptions. Six actual compiling strong/weaker controls detect lost/shrunken endpoints, wrong first/second colours, skipped second decoding and zero-pair acceptance. Redundant positive proof support is removed from mutants so resource-limit failures are not counted as semantic rejection. The required full profile is25groups147contrasts/fourunchangedshards; local/hosted receipts remain distinct. Tests compare368634actual/prior-procedure cases across73728encodedpairs, plus1456partial-input/error/cursor cases, using implementation tables rather than independent normative data. All390native tests pass with14ignored;17actualruntime mutants compile/detect. Current coverage passes unchanged floors at10705/12636lines,10320/12945regions,2009/2638branches. Extraction/new helper coverage adds9coveredlines/10regions with9/8denominator changes and no new branch outcomes; no threshold or exclusion changes. Only horizontal-pair evidence gains functionality:266allprovisional114functional126state26safety. Horizontal mode dispatch, exact raster spans, full caller/stream composition, independent table review, complete acceptance/typed errors, seven official positives, capacity integration and90/85goals remain open. No API, trust exception, policy, pin, CI job, observer hook, fakeallocationfailure, paused family or release approval change.",
+  "note": "Fresh unfiltered pinned Cargo proof/compilation pass1190/0 with lifetime/erasure checks. Conditional canonical-storage success and exact primitive black-span pixel/storage results now propagate through both wrappers without changing their existing weaker preconditions. White remains an exact no-op, not unconditional clearing. Exact internal cache/emitted-state results and cache frames on error are also proved; the cache model stays under implementation proof support. All17native streams,658bodies/preconditions and48reviewed boundary bodies/attributes, including capacity divergence, are unchanged. Only3postcondition attributes strengthen. Inventory remains658functions:610direct/24limitations/23forwarders/1capacitydivergence/0incomplete/0projectassumptions. Five new actual compiling strong/weaker contrasts join the existing3no-op contrasts in the same span group, reusing workspace and per-function baselines. The complete required profile stays25groups/fourshards, now152contrasts; no new checker file or CI job. Two affected older controls remove only the redundant new pixel relation. Local/hosted receipts remain distinct. Native matrices check11196fullpixel/cache and32136transition cases; all392native tests pass with14ignored and17actualruntime mutants compile/detect. Coverage stays10705/12636lines,10320/12945regions,2009/2638branches with no floor/exclusion change. The polarity record staysstate-only: 266allprovisional114functional126state26safety. Full raster-loop white initialization/disjointness, mode/raster/caller/stream composition, independent table/model review, complete acceptance/typed errors, seven official positives, capacity integration and90/85goals remain open. No native algorithm, API, guard, resource/error policy, pin, trust exception, observer hook, fakeallocationfailure, paused family or release approval change.",
   "release_gate": "blocked"
 }

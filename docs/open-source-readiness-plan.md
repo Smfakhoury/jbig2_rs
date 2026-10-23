@@ -2,6 +2,20 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The latest recorded-span tranche propagates canonical-storage-conditional
+primitive pixel/storage effects and exact cache/emitted-state updates without
+changing any native body or existing weak precondition. White remains a no-op,
+not a clearing theorem; the cache model stays under internal proof support.
+All17native streams,658bodies/preconditions and48reviewed boundaries remain
+unchanged. Whole proof/compile stays1190/0. Five new compiling contrasts extend
+the existing span group from3to8cases, reusing its workspace and per-function
+baselines:25groups152contrasts/fourunchangedshards, no new CI job or checker.
+Direct matrices cover11196completepixel/cache and32136transitionstate cases.
+Native coverage is unchanged at10705/12636lines,10320/12945regions and
+2009/2638branches, with no floor/exclusion change. The polarity record remains
+state-only:266allprovisional114/126/26. Full raster-loop white initialization,
+disjointness, mode interpretation and caller/stream composition stay open.
+
 The latest horizontal-pair tranche extracts the exact existing native block
 without changing guards, errors or their order. The actual helper now proves
 opposite-colour input-bound run sequences, exact ordered endpoints, progress

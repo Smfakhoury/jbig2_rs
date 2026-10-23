@@ -638,7 +638,7 @@
     "proofs/model_support/document.rs": "5ed88c2393d098a357af93e686ea0d393b60849bee89b73a09f4a915dc5b85b6",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
     "proofs/model_support/huffman.rs": "75ad3133571303f2d0369fb935e5b7dc4a94a16bab0fa65977af35f6a237e503",
-    "proofs/model_support/mmr.rs": "43f97f87ce0d847666ce83d2d2972a15c4b9d087651c9b57387b45bc7bd3fbdc",
+    "proofs/model_support/mmr.rs": "8375f66864eec9e83361d0e8bb9f2e9f61006eae74414ad45db6098f5f40b244",
     "proofs/production_impl/arithmetic.rs": "7baccbade7a1276a4efbe7de1a34a986d21e88ac7300ce449dd70a561bc0a3c9",
     "proofs/production_impl/bitmap.rs": "5b344e6374e04c0a3d6d86084cc01c0b98a0d72cadd63fb820c9665d03715303",
     "proofs/production_impl/document.rs": "be644143f4b507fbf7923af1eadeb051ee6192c94aa99e02d792dc495890646f",
@@ -655,7 +655,7 @@
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
     "specs/huffman.rs": "fe0cca185e75966a67834cc01c44ac080eb7eee5374fffcc9fbaf790c81e0a58",
-    "specs/mmr.rs": "f840db7b78cc5b4c3e0dc0649a00bd951a19d95f17bef801d95a1f0ddc800eb6",
+    "specs/mmr.rs": "1967433db515ace6ddc5926770a26a63412607c2f74de1dad00a9e4487b465b0",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
@@ -669,7 +669,7 @@
     "src/halftone.rs": "af19dc1f2ba4179a44c5c2f9e5432190dfaca464312ec1a6f62a98390dc3cd9d",
     "src/huffman.rs": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
-    "src/mmr.rs": "f1dd0083859a5a03017eec51a37e542e637ce4cf1fa2aa2d1b1c1471e05b6f05",
+    "src/mmr.rs": "fb004e8245e67cfe6d7cd64699b44a3798047c5fecdbee8c70152674b2d45570",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
@@ -1030,6 +1030,16 @@
       ],
       "name": "horizontal_pair",
       "role": "Exact project opposite-colour input-bound run sequences, ordered endpoints, progress and consumed extent; mode dispatch and raster/caller interpretation remain separate."
+    },
+    "mmr-span-result": {
+      "kind": "spec",
+      "file": "specs/mmr.rs",
+      "module_path": [
+        "mmr",
+        "mmr_spec"
+      ],
+      "name": "span_result",
+      "role": "Canonical-storage-conditional exact black-span pixel/storage relation or white-byte no-op; not full decoded white/black polarity or raster/caller composition."
     },
     "mmr-exact-eofb": {
       "kind": "spec",
@@ -5243,11 +5253,13 @@
       "feature": "mmr_coding",
       "runtime": [
         "mmr::decode_mmr",
-        "mmr::fill_span"
+        "mmr::fill_span",
+        "mmr::fill_recorded_span"
       ],
       "models": [
         "bitmap-storage-valid",
-        "mmr-storage-valid"
+        "mmr-storage-valid",
+        "mmr-span-result"
       ],
       "proof_macros": [],
       "tests": [
@@ -5262,19 +5274,34 @@
         {
           "target": "lib",
           "name": "mmr::tests::optimized_span_dispatch_matches_scalar_pixels_and_full_storage"
+        },
+        {
+          "target": "lib",
+          "name": "mmr::tests::recorded_span_matches_scalar_storage_and_exact_transition_updates"
+        },
+        {
+          "target": "lib",
+          "name": "mmr::tests::transition_span_complete_output_matrix_preserves_empty_and_same_colour_frames"
         }
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "Successful MMR output and span filling preserve storage invariants. White/empty span no-ops are stronger auxiliary guarantees. The optimized Bitmap::fill_black_span primitive separately proves valid-storage success and exact effects on all stored bits, visible pixels and outside-span bytes; that result is not yet propagated through the wrapper's weaker storage predicate and the complete MMR raster loop.",
+      "scope_of_formal_result": "The span and recorded-span wrappers now propagate canonical-storage-conditional success and exact primitive black-span pixel/storage effects without strengthening their existing weaker preconditions. White remains an exact no-op, not unconditional clearing. The recorded wrapper also exposes exact internal cache/emitted-state updates and cache frames on error. Complete decoded white/black polarity still needs raster-loop initialization, disjointness, mode and caller composition, so this record retains state-preservation strength.",
       "assumptions": [
         "Only the JBIG2-specific polarity exception is mapped; T.6 mode/run correctness is not inferred from this row."
       ],
       "gaps": [
-        "Propagate the proved primitive black-span pixel/storage relation through the MMR wrapper's weaker storage predicate and complete raster loop; prove complete decoded black/white polarity and caller composition."
+        "Propagate the conditional helper results through the complete raster loop, including blank/unwritten white storage and disjoint spans; prove complete decoded black/white polarity and caller composition."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
+        {
+          "runtime": "mmr::fill_span",
+          "section": "ensures",
+          "tokens": [
+            "(out.is_ok() && crate::spec::bitmap::storage_valid(old(bitmap)) && start <= end <= old(bitmap).width && row < old(bitmap).height) ==> mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black)"
+          ]
+        },
         {
           "runtime": "mmr::decode_mmr",
           "section": "ensures",

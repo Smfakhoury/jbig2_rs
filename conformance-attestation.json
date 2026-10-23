@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "740bd8115f352e75178bb4cec723dd8eac1d0e7b",
-  "scope": "Fresh existing official diagnostics on exact horizontal MMR block extraction with opposite-colour input-sequence composition 740bd81; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "0276c7a80de25817b41df10d69a06bd89869724c",
+  "scope": "Fresh existing official diagnostics on conditional exact MMR span and transition-cache contracts with unchanged native bodies 0276c7a; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "9e62b3ca17cd3c3fb801853acac0cff46c659aa814427057b7ec7f5593e00a37",
-    "review_sha256": "f49d73858a87f6e92709975b65b8a65c0eeb49695893321e3fb5154930e89387"
+    "results_sha256": "7b28143a657b86554bc0937fa0d6110bca8786881016ebe9f2568d021ba02b8c",
+    "review_sha256": "46e562f83876ab4d3d124e8301fe9ff0c65564f68c1d658301200f50469e1594"
   },
   "community_regressions": {
     "total": 0,
