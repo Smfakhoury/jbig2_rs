@@ -6,6 +6,15 @@ complete the missing tests, or establish normative correctness.
 
 ## Latest MMR raster/cache observations
 
+The next accepted-input/raster source `e72af69` also freshly executes404native
+tests/14ignored, now with33actually compiling/detected runtime mutants.
+Four reused literal vectors assert exact core input extents1/17/19/13 as well
+as literal pixels and odd/even scratch roles. Full rawJSON/LCOV recomputation
+checks all51metrics and current source/test/report identities against actual
+hosted-accepted#78: every metric is unchanged. The totals/goals below remain
+the current ones; no gain, coordinate-identity or floor/exclusion change is
+claimed from adding erased trace proofs.
+
 Immutable source `a21b167` freshly executes404native tests with14existing
 ignored and30actually compiling/detected runtime mutants. The two new scalar/
 literal tests cover7280three-span sequences/21840prefixes and four existing

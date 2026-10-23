@@ -40,7 +40,35 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
-The actual [MMR raster loops](../src/mmr.rs) now compose a project
+The current [accepted MMR result models](../specs/mmr.rs) now link actual
+mode/run input prefixes, reference pairs, span/cache/colour state and the
+reader extent through finite step/row histories to **every visible output
+row**. Public bounded/prefix results also compose exact EOFB/zero-padding
+framing and returned byte extent. These public models are closed so private
+native Mode types need not be widened; two ordinary proved same-owner
+[witness helpers](../proofs/model_support/mmr.rs) establish them. Internal
+`raster_outer`/`raster_inner` remain proof support, not extra normative rules.
+The unchanged span-state formula is shared by the public result model and
+the old private wrapper relation.
+
+Actual unfiltered whole proof and compilation are1219/0. Eleven reference/
+raster/framing contrasts and all eight old span cases compile, reject strongly
+and accept the intended weaker guarantees. Reader rewind, a wrong rendered
+pixel and ignored nonzero alignment bits are rejected by real result
+postconditions with all loop/trace proofs retained. Four reused literal
+vectors additionally assert input-bit extents1/17/19/13; no encoded-family
+fixture is added. Seven existing selected records gain project accepted-result
+functionality: first-white reference, next-row reuse, pass, vertical,
+imaginary-start, padding and binary polarity. Current selected strengths are
+**122functional/118state/26safety**, all266stillprovisional.
+
+This does **not** establish independent normative mode-table/coordinate/policy
+translation, complete valid-input acceptance or rejection/error conditions,
+broader codec/container/caller semantics, resource accounting, an exhaustive
+denominator or release readiness. The seven official-positive failures remain
+unresolved. Stronger successful MMR contracts are not new conformance credit.
+
+The preceding [MMR raster-loop tranche](../src/mmr.rs) composed a project
 [row/cache pixel relation](../specs/mmr.rs) through blank initialization,
 recorded spans, exact sentinel appends and live-reference swaps. Internal
 [prefix/future-white invariants](../proofs/model_support/mmr.rs) and
@@ -88,8 +116,8 @@ review and open gaps; all266strength counts remain115/125/26.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 115 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 125 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 122 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 118 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 

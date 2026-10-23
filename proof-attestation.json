@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "a21b167780401418e6a9aa33dc73bf8eead777dd",
-  "scope": "Actual MMR row-cache/raster-loop composition; no complete input-to-raster/caller, observed-capacity or independent normative theorem",
+  "source_revision": "e72af696c8bfd43cddcb78161362f12dcd9a09b1",
+  "scope": "Accepted MMR input-to-raster and exact EOFB prefix/bounded results; not complete valid-input acceptance/errors, broader callers, observed-capacity or independent normative approval",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/mmr-row-cache/whole-final/cargo-target CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/input-raster/whole-1/cargo-target CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1211,
+    "verified_obligations": 1219,
     "verified_production_functions": 610,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "f854b211ee49ec21c6f058787a830bb92a2b05aee11d27b17b1584e9fb057547",
-  "proof_dispositions_sha256": "e6eb03f5d4671d9e8038528c9138d7fa2641aacb29c8e263f327f89774b2983c",
+  "production_proof_coverage_sha256": "e3db75b32724e32ec304dfb83f7b7c203454e797e880a38976cdcf2030600dba",
+  "proof_dispositions_sha256": "9d54f56ed883815df03a045be1220db0254a4dbff064a38e91a6792ea40ae37b",
   "duplicate_executable_proof_source": true,
-  "note": "Actual source a21b167 has unfiltered pinned Cargo verification and real library compilation1211/0, including every new cache/pixel/white-frame lemma. Initial imaginary-white reference, scanned-row cache/parity agreement, untouched-white framing, exact sentinel appends and actual next-row reference swaps compose in the production raster loops. All17native token streams including literals,658existing preconditions and48boundary bodies/attributes remain unchanged. No new trust, termination/style waiver or encoded-family fixture. All404native tests/14ignored, strict MSRV lint,30actual compiling runtime mutants and both affected8-case semantic groups pass. Main-loop strong/weaker controls retain all proof support and remove only previous-row agreement invariants; the older recorded-span mutant rolls back its cache after the proof bridge, avoiding false helper-precondition credit. Independent scalar tests cover7280three-span sequences/21840prefixes and four reused literal raster vectors with odd/even scratch roles. All51raw JSON/LCOV metrics and source/test digests are recomputed, equal acceptedPR77:10800/12636lines10397/12945regions2041/2638branches. No coverage gain or absolute-coordinate identity is claimed. The configured full27groups187contrasts/sixshards/maxfouractive still needs complete current-snapshot acceptance. All266records remain provisional115/125/26; exported complete input/mode-to-raster/caller semantics, normative parity/coordinate review, exhaustive denominator, seven official-positive failures and90/85coverage goals remain open. Fresh approved official diagnostics retain2passed/7unresolved/1unsupported and zero restored rejection credit. Capacity accounting/divergence remains unclosed; the native-only repair is not integrated, and no getter approval, allocator/RSS or capacity-stability guarantee is inferred. Release remains blocked; no issue/outreach/publication approval change.",
+  "note": "Actual immutable e72af69 has genuine unfiltered pinned Cargo verification plus real library compilation1219/0, including every finite trace, framing and same-owner witness lemma. Accepted core outputs link actual input mode/run prefixes, exact reference pairs, cache/colour/cursor transitions and every physical bitmap row. Public closed bounded/prefix models compose immediate24bitEOFB and0..7zero alignment bits with exact consumed byte extents, while preserving private native Mode visibility through proved owner-local bridges. All17native token streams/literals,658existing preconditions and48boundary bodies/attributes are unchanged; no new trust, waiver or encoded-family fixture. All404native tests/14ignored, strict MSRV lint,33actual runtime mutants and complete affected11reference/raster/framing+8span semantic cases pass. New reader-rewind/pixel-corruption/padding mutants retain all loop/trace proofs and remove only the new output relation; canonical geometry facts prevent storage/precondition-only rejection credit. Older cache controls remove only logically coupled new trace-result support in the weaker variant and retain all old cache/math proofs. Four reused literal vectors independently assert bit extents1/17/19/13. All51raw JSON/LCOV metrics/digests/source/test identities independently match hosted-acceptedPR78:10800/12636lines10397/12945regions2041/2638branches; no coverage gain or coordinate identity claimed. Full configured27groups190contrasts/sixshards/maxfouractive requires separate complete current-snapshot/local/hosted acceptance. Seven selected rows gain exact project functionality, leaving all266provisional122functional118state26safety; no approved normative denominator or independent translation review. Complete valid-input acceptance/errors, broader codec/container/caller/resource and arithmetic-context/symbol-content semantics remain open. Fresh approved normal/logged/native/Hayro observations remain2/7/1,zero restored rejection credit. Capacity getter approval/integration/divergence, allocator/RSS/stability and90/85coverage goals remain unclosed. No issue/outreach or release approval; release remains blocked.",
   "release_gate": "blocked"
 }

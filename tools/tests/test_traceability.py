@@ -1077,7 +1077,7 @@ class TraceabilityTests(unittest.TestCase):
         ):
             self.assertEqual(features[name]["decomposition"], "partial")
 
-    def test_new_family_records_do_not_upgrade_parser_or_pixel_evidence(self):
+    def test_parser_only_records_stay_weak_and_mmr_requires_input_raster_evidence(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
         for name in ("T88-SEQUENTIAL-SEGMENT-LAYOUT", "T88-RANDOM-HEADER-PAYLOAD-LAYOUT",
@@ -1086,8 +1086,22 @@ class TraceabilityTests(unittest.TestCase):
             self.assertEqual(rows[name]["functional_evidence"], [])
             self.assertTrue(rows[name]["gaps"])
         self.assertEqual(rows["T88-HUFFMAN-PREFIX-MATCH"]["strength"], "state_preservation")
-        self.assertEqual(rows["T88-MMR-BINARY-POLARITY"]["strength"], "state_preservation")
-        self.assertIn("T.6", " ".join(rows["T88-MMR-BINARY-POLARITY"]["assumptions"]))
+        for name in (
+            "T6-REFERENCE-FIRST-WHITE", "T6-REFERENCE-NEXT-LINE", "T6-PASS-TRANSITION",
+            "T6-VERTICAL-TRANSITION", "T6-FIRST-IMAGINARY-WHITE", "T6-EOFB-PADDING",
+            "T88-MMR-BINARY-POLARITY",
+        ):
+            row = rows[name]
+            self.assertEqual(row["strength"], "functional_contract")
+            self.assertEqual(row["review"], "provisional")
+            self.assertTrue(row["functional_evidence"])
+            self.assertTrue(row["gaps"])
+        polarity = rows["T88-MMR-BINARY-POLARITY"]
+        self.assertTrue({"mmr-input-bitmap", "mmr-bounded-bitmap"} <= set(polarity["models"]))
+        claims = {claim["runtime"]: claim["tokens"] for claim in polarity["functional_evidence"]}
+        self.assertTrue(any("mmr_spec::bitmap_decodes(" in token for token in claims["mmr::decode_bitmap"]))
+        self.assertTrue(any("mmr_spec::bounded_bitmap_decodes(" in token for token in claims["mmr::decode_mmr"]))
+        self.assertIn("T.6", " ".join(polarity["assumptions"]))
 
     def test_all_feature_worklists_have_started_without_claiming_full_decomposition(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")

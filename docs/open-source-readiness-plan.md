@@ -5,7 +5,53 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
-The current local MMR tranche closes the actual raster-loop row-cache/pixel
+The current local tranche now exports **accepted MMR input-to-raster results**,
+not only row-cache invariants. Finite ghost step/row histories bind actual
+mode/run input bits, exact reference pairs, span/cache/colour updates and reader
+positions to every visible row of the declared bitmap. The initial reference
+and every next-row reference are causally linked through the completed history.
+Required finishing specifies an immediate24-bitEOFB plus0..7zero alignment bits;
+public bounded/prefix results compose the actual returned bitmap and byte
+extent. Closed result models preserve private native Mode visibility, with
+ordinary proved same-owner witness helpers rather than visibility/trust waivers.
+
+Unfiltered pinned Cargo proof and real library compilation pass1219/0,
+including every helper. All404native tests/14ignored, strict MSRV lint,
+386tooling tests,33real compiling runtime mutants and the affected11reference/
+raster/framing plus8span contrasts pass. Actual proof-free package tests,
+exact offline downstream output and all provenance/trust/workflow gates pass.
+Reused literal vectors assert exact bit extents
+1/17/19/13 without a new encoded-family fixture. Output/cursor/padding mutants
+retain all preceding loop/trace proofs; weaker variants remove only the new
+result relation. The older cache controls additionally remove logically
+coupled trace-only support, never old cache/math/shape protections.
+The configured complete profile is27groups190contrasts with the same six
+one-worker shards, max4active,20-minute caps and22checks. Complete same-snapshot
+local and same-run hosted acceptance remain separate gates.
+
+Seven selected records now carry exact **project success functionality**:
+first-white reference, next-row reuse, pass, vertical, imaginary-start,
+padding and binary polarity. All266remain provisional122functional/118state/
+26safety; no normative approval or denominator is invented. Fresh approved
+official normal/logged/native/Hayro observations still yield2passed/
+7unresolved/1unsupported and zero restored rejection credit. All51raw
+JSON/LCOV metrics independently match hosted-accepted#78; no coverage gain,
+coordinate identity, floor/denominator reduction or exclusion is claimed.
+Goals still need573covered lines and202branch outcomes. Full valid-input
+acceptance/errors, independent table/coordinate/policy review, broader codec/
+container/caller/resource, arithmetic-context sequence and symbol-content/
+export semantics remain open; the capacity repair is still isolated and
+proof-blocked without an approved getter boundary.
+
+JIT write access was restored without a workaround. #77 and #78 each reached
+22/22successful current-head checks plus independent62canonical-file/
+225binding/six-shard reconstruction and all51raw metrics/native mutants.
+Both are marked ready **only for owner review**, not self-approved or merged.
+#78 remains stacked on#77; current review/CI state is authoritative. The new
+accepted-input/raster work is an additional local batch, not inherited hosted
+acceptance or global P04/P05/P06 completion.
+
+The preceding MMR tranche closed the actual raster-loop row-cache/pixel
 composition gap, not just another scalar guard. The imaginary reference is
 white; scanned row pixels and emitted colour agree with transition parity;
 unwritten suffixes/future rows remain white; finishing preserves all visible
@@ -46,11 +92,12 @@ zero restored strict-rejection credit.
 The separate native capacity repair remains unpublished and proof-blocked on
 the unsupported getter; no new standard declaration or approval is inferred.
 
-Owners merged#73/#74/#75. #77 has22/22successful independently reconstructed
-checks but remains a draft: the latest read-only access check still reports
-pull:true/push:false at exact headb5e4974. No readiness write, credential/fork
-workaround, issue or external outreach was attempted. The MMR tranche remains
-local while that publication hold persists.
+Owners merged#73/#74/#75. At the earlier row-cache checkpoint, #77 had
+22/22successful independently reconstructed checks but was held as a draft
+because access reportedpull:true/push:false at exact headb5e4974. No write or
+credential/fork workaround was attempted under that hold. After access was
+actually restored, the guarded ready-only updates and #78 acceptance above
+superseded that publication hold; no issue or external outreach was created.
 
 #73 and #74 reached owner-review readiness with22/22successful current-head
 checks each. Their complete six-shard artifacts were independently rebuilt
