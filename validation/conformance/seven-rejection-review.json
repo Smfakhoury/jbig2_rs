@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "recorded_at": "2026-10-23T10:31:13.038810+00:00",
-  "source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+  "recorded_at": "2026-10-23T12:17:52.153718+00:00",
+  "source_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
-  "scope": "Same seven existing official diagnoses, freshly executed on immutable exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim source 6d73a9a7f67bac1a791c99e2cff575c7e76c94ed. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
+  "scope": "Same seven existing official diagnoses, freshly executed on immutable exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim source bc6d8d658823cd9a38f5c30e0d946dbe95b400b9. Source changes and boundaries are recorded in source_selection.owner_source_review. This is not a normative interpretation change, exception approval or conformance credit.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
-    "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
+    "src/bitmap.rs": "dca4537fd36675fb2d6608c5bc50a8ca7be7e8d83a412f647520d310a0e33216",
     "src/decode.rs": "6ed26b570e11b89367a16c422eb21c6b70587903d845cfd09192d9c772166a8c",
     "src/document.rs": "0ac6c357b26f06be01e8e9097f62ae28b17fc994a763ea29efe6c4a4c6c62582",
     "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
@@ -26,8 +26,8 @@
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
     "src/symbol_text.rs": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad"
   },
-  "ordinary_runtime_source_sha256": "12ef174f3f8036d83342560bce02f7f3746524affd0fc87f3608d4557dc72ee3",
-  "normal_decoder_sha256": "c0480feabdc6a6405d9af8d638a3c5a295a0c65c943ea81f5252de033b428cae",
+  "ordinary_runtime_source_sha256": "a2fc61d78d85f315f8f6d16a54ee8a90de10a6b874edacb533e12f52c2a9ac35",
+  "normal_decoder_sha256": "737352349633e5101676932378cdf47fa0bed4b34eac39843c2d8cd7fd3a7608",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -40,13 +40,13 @@
     "t6_route": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items"
   },
   "diagnosis_origin": {
-    "previous_review_source_revision": "81335099fea18dfce433c3f98f8126d677788562",
-    "previous_review_sha256": "a561a79d778f257602f6daafd8516122826fb8b9795cd2b222343777dd8e2277",
-    "fresh_execution_source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
-    "fresh_source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+    "previous_review_source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+    "previous_review_sha256": "e7096ac2aee9d218cf7c4589327ac1b0fa7cf20d81f1da09f2b94817a2bb6de4",
+    "fresh_execution_source_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
+    "fresh_source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
     "trace_repeated_for_all_seven_cases": true,
     "diagnostic_patch_sha256": "387ecfda4004860a5be3d03ae16e3574e9175d82581350f37ef23b192e0ca3ec",
-    "trace_index_sha256": "9fd3e691b68205be84cc6daf4bcf6fadda9e2ce56f64ccabf16700d7ae05c94a",
+    "trace_index_sha256": "f1a92a2c7a2e637824bfc1f238e79703151373f2c1b58d0ed94b351e828a97f0",
     "instrumented_source_files_sha256": {
       "src/decode.rs": "27ffe8956ed65187eb4ab2f0331ee65ccf4dbfa8881918f1cc613df313bec1fa",
       "src/mmr.rs": "4a9c75ff2157b043e014c3075a6456f083e414dde109bfda58f9e8cf64032a8f",
@@ -55,7 +55,7 @@
     },
     "unmodified_arithmetic_source_sha256": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "diagnostic_decoder_sha256": "920bad2540a93830c849d9d79e9ca25e6774b5f4cd9941306d30ad5aba5e1f2c",
+    "diagnostic_decoder_sha256": "c3d42e63b6f378f7b4badec9276ca7bb008e8616d045007caf61cea03c14a86f",
     "instrumentation_scope": "Existing logging in an isolated source copy only; parent source/proof/scripts never edited.",
     "fresh_unclassified_execution_sha256": "6a5ad994148574e6e673dfee419df9c8609797a1b7fd26e793725dc00030ba15"
   },
@@ -68,7 +68,7 @@
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
     "source-provenance.json": "98e7b5390912d6d8dce068a851c1afbcd2bedf4856c64cbe9678bc7dcef1bf49",
-    "validation/conformance/expected-differences.json": "e3191501d56200eb47f352be761e4a91b8865a76f11d64c4ac663ee33497352d"
+    "validation/conformance/expected-differences.json": "fc1be4792b90a61766f6f11a91d113fd6ffacb8068bf5d73f4018e29ea1dd31c"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -96,7 +96,7 @@
     "official_expected_hashes_unchanged_from_prior_native_run": true,
     "scope_limit": "Covered one-bit BI_RGB layouts, not a general BMP parser certification.",
     "fresh_gate_test_count": 32,
-    "fresh_gate_test_log_sha256": "0b4dabffce8094352e07d911dc44b40970e5f9e1fd6008333f6dbe0c82424e2e"
+    "fresh_gate_test_log_sha256": "ef5fc1592eda372e52bf00aae59b38ed9c410515e709a45e3a4df2bc56824d14"
   },
   "hayro": {
     "crate": "hayro-jbig2",
@@ -109,7 +109,7 @@
       "std",
       "simd"
     ],
-    "binary_sha256": "7ff4b9ac999283f71c0922095b951801f48427599a681fd9450c89540b73ae0a",
+    "binary_sha256": "254ac8b98ed1b5f960054259e9f2556426ca21c132feecbcc01776d62f6c964c",
     "harness_files_sha256": {
       "benchmarks/hayro-comparison/Cargo.toml": "c52af510f56cff89f7e9e9a6fb7031894650961d079686db80c517145580e471",
       "benchmarks/hayro-comparison/Cargo.lock": "ffa4928ea5fb38e7be4ded8a67b44f9ea2fe04adddb4b925e68832778e696e89",
@@ -123,7 +123,7 @@
     "seven_case_normative_passes": 0,
     "two_single_page_controls_have_matching_dimensions_and_fnv64_summary": true,
     "scope_limit": "Wrapper exposes one image and an FNV64 bitmap summary, not full-byte/all-page validation; errors do not establish pre-error entropy equivalence.",
-    "candidate_source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed"
+    "candidate_source_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9"
   },
   "native_tool_identities": {
     "revision": "6e8205ba61a206a0830f4884ebe52be615735f3d",
@@ -155,7 +155,7 @@
     "strict_policy_unchanged": true,
     "blanket_root_cause_claimed_for_seven_cases": false
   },
-  "normal_conformance_results_sha256": "4009237e16c2cb47e6b512df295f6c469b7611a22373b3bf93b804582abaf90a",
+  "normal_conformance_results_sha256": "c4ea476d47f5ee5a9908ee8ea0bff9f7cf95831fe078772cdb1d971a1e0b6264",
   "release_gate": "blocked",
   "cases": [
     {
@@ -187,9 +187,9 @@
         "T.88 6.5.9 and 6.2.6"
       ],
       "source_trace_sha256": "e6b157debad4281af44889333801e245cc5f2b3a773b787948c0f8de65abd508",
-      "source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need an independently anchored text entropy/ID/strip trace, or official attachment-owner clarification, before identifying an unambiguous production correction.",
       "expected_pages": [
         {
@@ -289,9 +289,9 @@
         "T.6 Table 1 and 2.2.5.2"
       ],
       "source_trace_sha256": "14757f8b8d0089aa431cd0d5a3c1ee09c77430f226ea0833a3a2c779a1f496d3",
-      "source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Do not extend BMSIZE or synthesize row data. Need independent upstream Huffman field alignment or official asset-owner clarification before assigning normative malformation.",
       "expected_pages": [
         {
@@ -385,9 +385,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b10d665c2180b605627120f1eda641edd91ffc8eec9f6cea24e94741b8d61061",
-      "source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -481,9 +481,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "5ea8fb0789178b025c0ccc377afef04eae89851c8c89e19e792636525c707095",
-      "source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -577,9 +577,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "05d26bb3da2a9954462c46ed4cb39d647624a3dd4cfe3f3adc4a56e88bd2ded8",
-      "source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -673,9 +673,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "b1dbb0f363ca6f467c14515d78f848e71270edae807ca0fad9fd8006b58935dd",
-      "source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -769,9 +769,9 @@
         "T.88 Annex A and Annex E"
       ],
       "source_trace_sha256": "863c467991c565f1b8330550dee1c03777c582afdf851473106340f4b6afb81f",
-      "source_trace_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "source_trace_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "current_source_exact_error_reproduced": true,
-      "rationale": "Fresh exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim 6d73a9a execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "resolution_blocker": "Need independently anchored pre-IAEX bitmap/context/termination state or official attachment-owner clarification; do not reinterpret a negative run as unsigned, cap it, alter marker policy or add a conformance exception.",
       "expected_pages": [
         {
@@ -831,27 +831,21 @@
     }
   ],
   "source_selection": {
-    "kind": "exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim",
-    "immutable_source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+    "kind": "exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim",
+    "immutable_source_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
     "arithmetic_source_sha256": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "arithmetic_spec_sha256": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "original_huffman_source_sha256": "e1731535a9505e902427c5d339da71dc4c094e018f8773513e0d3f8c195cd26c",
-    "owner_source_review_sha256": "2156efae96e4156d86c086a7971a86676c9c676a76172c7a9a31c633a4c93607",
+    "owner_source_review_sha256": "9bcf09a25c230a2e5e5045d2a8c61c37ab58541dd1fc414ee1ad45011d912bb0",
     "owner_source_review": {
-      "native_comparison_revision": "96c7e75b23f619b67aab262fa26767e99a23caff",
-      "source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+      "native_comparison_revision": "c7a49d924f5bc59671801f32fd214b8498a7fd74",
+      "source_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
       "unchanged_native_token_streams": 17,
       "strings_retained": true,
-      "source_file_count": 17,
       "production_function_count": 658,
-      "all_658_production_declarations_and_bodies_unchanged": true,
       "all_existing_preconditions_unchanged": true,
-      "exactly_four_result_attributes_strengthened": [
-        "document::enforce_input_work",
-        "document::enforce_page_limit",
-        "document::enforce_segment_limit",
-        "document::enforce_stream_limit"
-      ],
+      "all_production_executing_bodies_unchanged": true,
+      "only_erased_filled_attribute_and_proof_support_changed": true,
       "all_reviewed_boundary_bodies_and_attributes_unchanged": true,
       "capacity_divergence_body_and_flags_unchanged": true,
       "source_line_offsets_may_shift": true,
@@ -862,7 +856,7 @@
         },
         {
           "file": "src/bitmap.rs",
-          "source_sha256": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17"
+          "source_sha256": "dca4537fd36675fb2d6608c5bc50a8ca7be7e8d83a412f647520d310a0e33216"
         },
         {
           "file": "src/decode.rs",
@@ -925,7 +919,7 @@
           "source_sha256": "c1bfd8322e35c4d5586d7229fb57990ea206d70a364f7ff6b16136f4121e07ad"
         }
       ],
-      "scope": "Only project scalar/next-count quota result contracts and360allocation-free wide numeric oracle cases; no aggregate decoder complexity, allocator/RSS, entropy/family, normative rejection or release claim."
+      "scope": "Exact packed fill bytes and padding; 1290-case raw bitmap oracle, no encoded-family fixture, native algorithm/error/resource-policy edit, standard trust or allocator/RSS guarantee."
     }
   },
   "historical_ci_repair": {
@@ -945,15 +939,15 @@
     "execution_gate": "run_itu.py still exits 1 with seven unresolved official cases."
   },
   "refill_source_continuation": {
-    "immutable_source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
-    "source_kind": "exact project scalar and next-count quota results with360allocation-free wide numeric controls;17native streams658bodiesoldpreconditions48boundaries unchanged; no entropy/family/stdtrust or aggregate-work/RSS claim",
+    "immutable_source_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
+    "source_kind": "exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim",
     "all_seven_normal_and_logging_executions_repeated": true,
     "source_provenance_unchanged": true,
     "parent_owns_proof_inventory_coverage_metadata": true,
     "official_runner_exit": 1,
     "new_normative_approvals": 0,
-    "normal_build_target": "/workspace/jbig2-normative-local-assets/document-preflight-6d73a9a/normal-build",
-    "trace_build_target": "/workspace/jbig2-normative-local-assets/document-preflight-6d73a9a/trace-build",
-    "hayro_build_target": "/workspace/jbig2-normative-local-assets/document-preflight-6d73a9a/hayro-build"
+    "normal_build_target": "/workspace/jbig2-normative-local-assets/bitmap-filled-bc6d8d6/normal-build",
+    "trace_build_target": "/workspace/jbig2-normative-local-assets/bitmap-filled-bc6d8d6/trace-build",
+    "hayro_build_target": "/workspace/jbig2-normative-local-assets/bitmap-filled-bc6d8d6/hayro-build"
   }
 }

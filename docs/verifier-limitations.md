@@ -1,9 +1,23 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1192 obligations with zero errors and zero native
+Pinned Verus verifies 1198 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 610 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
+
+The filled-bitmap result now describes every packed row byte, both fill values
+and masked partial-byte padding. All helper lemmas are included in the actual
+1198/0 whole Cargo proof/compilation. Internal row-prefix and geometry lemmas
+remain outside the auditor-facing bitmap model; native operations and old
+preconditions are unchanged, without a source-line style waiver. All8actual
+copy/initialization/padding contrasts compile, reject strongly and accept old
+contracts; the two filled mutants retain loop proofs and remove only the
+result-specific proof call so postconditions detect actual output corruption.
+The1290-case scalar oracle,402native tests/14ignored,28runtime mutants and383
+tooling tests pass. All51raw coverage metrics equal the preceding quota source.
+This is not a theorem about parsed page flags reaching the unverified renderer
+or observed managed capacities: the existing1byte/8reserved and4112/4128
+defects remain open, as do standard-trust approval and global release gates.
 
 Four numeric document quota results now also expose exact inclusive acceptance,
 overflow-before-limit priority and kind/limit/actual payloads. Fresh whole
@@ -50,7 +64,7 @@ The twenty-seven logical semantic groups remain complete: six deterministic
 round-robin shards over a cost-balanced group order execute each group once
 with one worker per shard. The
 collector requires all six same-run shard receipts, all twenty-seven independently
-hashed report/log pairs and all 183 required compiling contrasts. Missing,
+hashed report/log pairs and all 185 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
