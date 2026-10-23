@@ -7154,6 +7154,259 @@ mod tests {
         ));
     }
 
+    fn assert_raw_guard_result(
+        actual: Result<(), GenericRegionError>,
+        expected: Result<(), Option<LimitExceeded>>,
+    ) {
+        match actual {
+            Ok(()) => assert_eq!(expected, Ok(())),
+            Err(GenericRegionError::Decode(DecodeError::Malformed(
+                MalformedError::IntegerOverflow,
+            ))) => assert_eq!(expected, Err(None)),
+            Err(GenericRegionError::Decode(DecodeError::LimitExceeded(error))) => {
+                assert_eq!(expected, Err(Some(error)));
+            }
+            other => panic!("unexpected raw guard result: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn raw_context_memory_guards_match_wide_arithmetic_and_priority() {
+        let values = [0, 1, 2, u64::MAX / 2, u64::MAX / 2 + 1, u64::MAX];
+        for bytes in values {
+            for retained_limit in values {
+                for memory_limit in values {
+                    let limits = Limits {
+                        max_retained_state_bytes: retained_limit,
+                        max_decoder_managed_memory_bytes: memory_limit,
+                        ..Limits::default()
+                    };
+                    let combined = u128::from(bytes) * 2;
+                    let expected = if bytes > retained_limit {
+                        Err(Some(LimitExceeded {
+                            kind: LimitKind::RetainedState,
+                            limit: retained_limit,
+                            actual: bytes,
+                        }))
+                    } else if combined > u128::from(u64::MAX) {
+                        Err(None)
+                    } else if combined > u128::from(memory_limit) {
+                        Err(Some(LimitExceeded {
+                            kind: LimitKind::Memory,
+                            limit: memory_limit,
+                            actual: u64::try_from(combined).unwrap(),
+                        }))
+                    } else {
+                        Ok(())
+                    };
+                    assert_raw_guard_result(validate_snapshot_limits(bytes, &limits), expected);
+                    for bitmap_bytes in values {
+                        let combined = u128::from(bytes) + u128::from(bitmap_bytes);
+                        let expected = if combined > u128::from(u64::MAX) {
+                            Err(None)
+                        } else if combined > u128::from(memory_limit) {
+                            Err(Some(LimitExceeded {
+                                kind: LimitKind::Memory,
+                                limit: memory_limit,
+                                actual: u64::try_from(combined).unwrap(),
+                            }))
+                        } else {
+                            Ok(())
+                        };
+                        assert_raw_guard_result(
+                            enforce_managed_memory(bytes, bitmap_bytes, &limits),
+                            expected,
+                        );
+                    }
+                }
+            }
+        }
+        for count in [0, 1, 65_536, usize::MAX / 2, usize::MAX] {
+            let wide = count as u128 * 2;
+            assert_raw_guard_result(
+                context_storage_bytes(count).map(|bytes| assert_eq!(u128::from(bytes), wide)),
+                if wide > u128::from(u64::MAX) {
+                    Err(None)
+                } else {
+                    Ok(())
+                },
+            );
+        }
+    }
+
+    #[test]
+    fn raw_raster_work_guards_cover_exact_addition_overflow_boundaries() {
+        for (width, rows) in [
+            (0_u32, u32::MAX),
+            (u32::MAX, 0),
+            (1, 1),
+            (65_535, 65_535),
+            (u32::MAX, u32::MAX),
+            (4_294_967_280, 252_645_136),
+            (4_294_967_286, 306_783_379),
+            (4_294_967_285, 186_737_709),
+        ] {
+            for typical in [false, true] {
+                let pixels = u128::from(width) * u128::from(rows);
+                let generic = pixels * 17 + if typical { u128::from(rows) } else { 0 };
+                let refinement = pixels * if typical { 23 } else { 14 } + u128::from(rows);
+                for (is_generic, expected) in [(true, generic), (false, refinement)] {
+                    let actual = if is_generic {
+                        generic_work(width, rows, typical)
+                    } else {
+                        refinement_work(width, rows, typical)
+                    };
+                    assert_raw_guard_result(
+                        actual.map(|work| assert_eq!(u128::from(work), expected)),
+                        if expected > u128::from(u64::MAX) {
+                            Err(None)
+                        } else {
+                            Ok(())
+                        },
+                    );
+                    let work = u64::try_from(expected).unwrap_or(u64::MAX);
+                    for limit in [work.saturating_sub(1), work, work.saturating_add(1)] {
+                        let limits = Limits {
+                            max_work_units: limit,
+                            ..Limits::default()
+                        };
+                        let actual = if is_generic {
+                            enforce_generic_work(width, rows, typical, &limits)
+                        } else {
+                            enforce_refinement_work(width, rows, typical, &limits)
+                        };
+                        let result = if expected > u128::from(u64::MAX) {
+                            Err(None)
+                        } else if expected > u128::from(limit) {
+                            Err(Some(LimitExceeded {
+                                kind: LimitKind::Work,
+                                limit,
+                                actual: work,
+                            }))
+                        } else {
+                            Ok(())
+                        };
+                        assert_raw_guard_result(actual, result);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn generic_snapshots_copy_all_states_and_preserve_rejected_targets() {
+        let limits = Limits::default();
+        let templates = [
+            (GenericTemplate::Template0, false, 65_536, 0),
+            (GenericTemplate::Template0, true, 65_536, 0x10),
+            (GenericTemplate::Template1, false, 8_192, 2),
+            (GenericTemplate::Template2, false, 1_024, 4),
+            (GenericTemplate::Template3, false, 1_024, 6),
+        ];
+        for (template, extended, count, code) in templates {
+            let mut source = GenericContexts::new(template, extended, &limits).unwrap();
+            assert_eq!(source.contexts.len(), count);
+            for (index, context) in source.contexts.iter_mut().enumerate() {
+                *context = ArithmeticContext::from_state(
+                    u8::try_from(index % 47).unwrap(),
+                    u8::try_from(index % 2).unwrap(),
+                )
+                .unwrap();
+            }
+            let bytes = u64::try_from(count).unwrap() * 2;
+            let exact = Limits {
+                max_retained_state_bytes: bytes,
+                max_decoder_managed_memory_bytes: bytes * 2,
+                ..limits
+            };
+            let snapshot = source.try_snapshot(&exact).unwrap();
+            assert_ne!(source.contexts.as_ptr(), snapshot.contexts.as_ptr());
+            assert_eq!(snapshot.storage_bytes, bytes);
+            source.reset().unwrap();
+            assert!(source
+                .contexts
+                .iter()
+                .all(|c| c.state_index() == 0 && c.mps() == 0));
+            for (target_template, target_extended, _, _) in templates {
+                let mut target =
+                    GenericContexts::new(target_template, target_extended, &limits).unwrap();
+                target
+                    .contexts
+                    .fill(ArithmeticContext::from_state(46, 1).unwrap());
+                let result = target.restore(&snapshot, &exact);
+                if (target_template, target_extended) == (template, extended) {
+                    result.unwrap();
+                    for (index, context) in target.contexts.iter().enumerate() {
+                        assert_eq!(usize::from(context.state_index()), index % 47);
+                        assert_eq!(usize::from(context.mps()), index % 2);
+                    }
+                } else {
+                    assert!(
+                        matches!(result, Err(GenericRegionError::InvalidFlags(c)) if c == code)
+                    );
+                    assert!(target
+                        .contexts
+                        .iter()
+                        .all(|c| c.state_index() == 46 && c.mps() == 1));
+                }
+            }
+            for (limited, kind, limit, actual) in [
+                (
+                    Limits {
+                        max_retained_state_bytes: bytes - 1,
+                        ..exact
+                    },
+                    LimitKind::RetainedState,
+                    bytes - 1,
+                    bytes,
+                ),
+                (
+                    Limits {
+                        max_decoder_managed_memory_bytes: bytes * 2 - 1,
+                        ..exact
+                    },
+                    LimitKind::Memory,
+                    bytes * 2 - 1,
+                    bytes * 2,
+                ),
+            ] {
+                assert_raw_guard_result(
+                    source.try_snapshot(&limited).map(|_| ()),
+                    Err(Some(LimitExceeded {
+                        kind,
+                        limit,
+                        actual,
+                    })),
+                );
+                let mut target = GenericContexts::new(template, extended, &limits).unwrap();
+                target
+                    .contexts
+                    .fill(ArithmeticContext::from_state(46, 1).unwrap());
+                assert_raw_guard_result(
+                    target.restore(&snapshot, &limited),
+                    Err(Some(LimitExceeded {
+                        kind,
+                        limit,
+                        actual,
+                    })),
+                );
+                assert!(target
+                    .contexts
+                    .iter()
+                    .all(|c| c.state_index() == 46 && c.mps() == 1));
+                assert!(source
+                    .contexts
+                    .iter()
+                    .all(|c| c.state_index() == 0 && c.mps() == 0));
+            }
+            for (index, context) in snapshot.contexts.iter().enumerate() {
+                assert_eq!(usize::from(context.state_index()), index % 47);
+                assert_eq!(usize::from(context.mps()), index % 2);
+            }
+        }
+    }
+
     #[test]
     fn arithmetic_procedures_interleave_on_one_decoder() {
         const ANNEX_H_ENCODED: [u8; 30] = [
@@ -7241,6 +7494,121 @@ mod tests {
                 }
             )))
         ));
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn generic_preflight_errors_preserve_stream_statistics_work_and_direct_bytes() {
+        let limits = Limits::default();
+        let header = generic_header(9, 2, GenericTemplate::Template3, false, false);
+        let coded = [0xff, 0xac];
+        for direct in [false, true] {
+            for case in 0..4 {
+                let rows = if case == 0 { 3 } else { 1 };
+                let initial = if case == 1 { u64::MAX } else { 11 };
+                let limited = match case {
+                    2 => Limits {
+                        max_work_units: 163,
+                        ..limits
+                    },
+                    3 => Limits {
+                        max_decoder_managed_memory_bytes: 2051,
+                        ..limits
+                    },
+                    _ => limits,
+                };
+                let mut decoder = ArithmeticDecoder::new(&coded).unwrap();
+                let mut contexts =
+                    GenericContexts::new(GenericTemplate::Template3, false, &limits).unwrap();
+                let mut work = initial;
+                let mut target = Bitmap::filled(9, 2, true, &limits).unwrap();
+                let call = GenericArithmeticCall {
+                    width: 9,
+                    height: 2,
+                    adaptive: header.adaptive,
+                    typical_prediction: false,
+                    skip: None,
+                };
+                let result = if direct {
+                    decode_generic_on_into(
+                        &mut decoder,
+                        &mut contexts,
+                        call,
+                        rows,
+                        &limited,
+                        &mut work,
+                        &mut target,
+                    )
+                } else {
+                    decode_generic_on(&mut decoder, &mut contexts, call, rows, &limited, &mut work)
+                        .map(|_| ())
+                };
+                if case == 0 {
+                    assert!(matches!(
+                        result,
+                        Err(GenericRegionError::Decode(DecodeError::Malformed(
+                            MalformedError::GenericRegionRowCount {
+                                declared: 2,
+                                actual: 3
+                            }
+                        )))
+                    ));
+                } else {
+                    let expected = match case {
+                        1 => None,
+                        2 => Some(LimitExceeded {
+                            kind: LimitKind::Work,
+                            limit: 163,
+                            actual: 164,
+                        }),
+                        3 => Some(LimitExceeded {
+                            kind: LimitKind::Memory,
+                            limit: 2051,
+                            actual: 2052,
+                        }),
+                        _ => unreachable!(),
+                    };
+                    assert_raw_guard_result(result, Err(expected));
+                }
+                assert_eq!(work, initial);
+                assert_eq!(target.bytes(), &[0xff, 0x80, 0xff, 0x80]);
+                assert!(contexts
+                    .contexts
+                    .iter()
+                    .all(|c| c.state_index() == 0 && c.mps() == 0));
+                assert_decoder_state_eq(&decoder, &ArithmeticDecoder::new(&coded).unwrap());
+            }
+        }
+        for (width, height) in [(8, 2), (9, 3)] {
+            let skip = Bitmap::blank(width, height, &limits).unwrap();
+            assert!(matches!(
+                decode_arithmetic_generic(&coded, &header, 0, Some(&skip), &limits),
+                Err(GenericRegionError::InvalidSkipDimensions)
+            ));
+            let mut decoder = ArithmeticDecoder::new(&coded).unwrap();
+            let mut contexts =
+                GenericContexts::new(GenericTemplate::Template3, false, &limits).unwrap();
+            let mut work = 11;
+            assert!(matches!(
+                decode_generic_on(
+                    &mut decoder,
+                    &mut contexts,
+                    GenericArithmeticCall {
+                        width: 9,
+                        height: 2,
+                        adaptive: header.adaptive,
+                        typical_prediction: false,
+                        skip: Some(&skip),
+                    },
+                    0,
+                    &limits,
+                    &mut work,
+                ),
+                Err(GenericRegionError::InvalidSkipDimensions)
+            ));
+            assert_eq!(work, 11);
+            assert_decoder_state_eq(&decoder, &ArithmeticDecoder::new(&coded).unwrap());
+        }
     }
 
     #[test]

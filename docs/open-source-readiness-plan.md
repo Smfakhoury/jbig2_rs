@@ -5,7 +5,39 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
-The current raw framing/resource control tranche adds ten native tests without
+The current raw-state tranche fixes a reproduced **zero-width unaligned row
+blit** error. The minimal regression actually fails with IntegerOverflow on
+unchanged parent production code, then passes with a width-zero no-op guard.
+The same executing helper now proves success and exact storage preservation
+for empty spans, without strengthening its precondition. Positive-width
+operations and all other executing functions are unchanged.
+
+Ten new tests include10560independent ordered bit-update cases,40000wide
+page-write cases,6776local/global reference-role cases, raw context copying/
+ownership and exact work-overflow/memory/preflight controls. They add no encoded
+refinement, aggregation or custom-Huffman fixture. Actual complete pinned
+runtime coverage passes424tests/14existing ignored and measures
+10990/12639lines(86.9531%),10583/12948regions(81.7346%) and
+2110/2640branch outcomes(79.9242%). Compared with owner-merged#82,71lines,
+71regions and30outcomes are covered additionally; the new guard itself adds
+3production lines,3regions and2outcomes. No denominator is reduced or defensive
+code excluded. Protected90%line/85%branch goals still need386covered lines and
+134outcomes.
+
+Whole Cargo proof plus actual library compilation passes1219/0. All52native
+runtime mutants compile and are detected. The affected composition group passes
+all7real strong/weaker contrasts, preserving its old5 and adding false empty
+rejection/storage-corruption controls. The full configured profile is27groups/
+197contrasts, not a claim of complete local/hosted execution. Swap only the
+bitmap-compose/text-batch checker slots to keep the existing maximum1000-second
+scheduling-estimate ceiling (current maximum996); six one-worker shards,
+max4active,20-minute caps and22checks remain unchanged. Exact immutable-source
+official observations and current-head hosted reconstruction remain separate
+gates. All266selected records remain provisional123functional/117state/
+26safety; full codec/caller/resource semantics, independent normative approval
+and the protected capacity/fixture decisions remain open.
+
+The preceding owner-merged#82 raw framing/resource control tranche adds ten native tests without
 new encoded refinement, aggregation or custom-Huffman fixtures. Zero-row generic
 controls check owned/direct normalization, exact original-input consumption,
 row-count byte order, missing/truncated framing diagnostics and unchanged

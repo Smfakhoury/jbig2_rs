@@ -2548,6 +2548,101 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn raw_reference_role_matrix_matches_numeric_tag_policy_locally_and_globally() {
+        let kinds = [
+            SegmentType::SymbolDictionary,
+            SegmentType::IntermediateTextRegion,
+            SegmentType::ImmediateTextRegion,
+            SegmentType::ImmediateLosslessTextRegion,
+            SegmentType::PatternDictionary,
+            SegmentType::IntermediateHalftoneRegion,
+            SegmentType::ImmediateHalftoneRegion,
+            SegmentType::ImmediateLosslessHalftoneRegion,
+            SegmentType::IntermediateGenericRegion,
+            SegmentType::ImmediateGenericRegion,
+            SegmentType::ImmediateLosslessGenericRegion,
+            SegmentType::IntermediateGenericRefinementRegion,
+            SegmentType::ImmediateGenericRefinementRegion,
+            SegmentType::ImmediateLosslessGenericRefinementRegion,
+            SegmentType::PageInformation,
+            SegmentType::EndOfPage,
+            SegmentType::EndOfStripe,
+            SegmentType::EndOfFile,
+            SegmentType::Profiles,
+            SegmentType::Tables,
+            SegmentType::ColourPalette,
+            SegmentType::Extension,
+        ];
+        let mut cases = 0;
+        for owner_kind in kinds {
+            for target_kind in kinds {
+                for count in [0_u32, 1, 2, 4, 5, 8, 9] {
+                    let references: Vec<_> = (0..count).collect();
+                    let mut owner = reference_validation_segment(30, &[], 1);
+                    owner.header.segment_type = owner_kind;
+                    owner.header.referred_segments = references;
+                    owner.header.retention_flags.values =
+                        vec![1; usize::try_from(count).unwrap() + 1];
+                    let segments: Vec<_> = (0..count)
+                        .map(|number| {
+                            let mut segment = reference_validation_segment(number, &[], 1);
+                            segment.header.segment_type = target_kind;
+                            segment
+                        })
+                        .collect();
+                    let indexes: Vec<_> = (0..count)
+                        .map(|number| (number, usize::try_from(number).unwrap()))
+                        .collect();
+                    let globals = GlobalSegments {
+                        types: (0..count).map(|number| (number, target_kind)).collect(),
+                        depths: Vec::new(),
+                        bytes: Vec::new(),
+                    };
+                    let target = target_kind as u8;
+                    let expected = match owner_kind as u8 {
+                        0 => count == 0 || target == 0 || (target == 53 && count <= 4),
+                        4 | 6 | 7 => count == 0 || target == 0 || (target == 53 && count <= 8),
+                        20 | 22 | 23 => count == 1 && target == 16,
+                        40 => count == 1 && [4, 20, 36, 40].contains(&target),
+                        42 | 43 => count == 0 || (count == 1 && [4, 20, 36, 40].contains(&target)),
+                        62 => true,
+                        _ => count == 0,
+                    };
+                    for global in [false, true] {
+                        let actual = if global {
+                            validate_reference_types(
+                                &owner.header,
+                                &[],
+                                &Vec::new(),
+                                Some(&globals),
+                            )
+                        } else {
+                            validate_reference_types(&owner.header, &segments, &indexes, None)
+                        };
+                        if expected {
+                            actual.unwrap();
+                        } else {
+                            assert!(matches!(
+                                actual,
+                                Err(DecodeError::Malformed(
+                                    MalformedError::InvalidSegmentReferences(30)
+                                ))
+                            ));
+                        }
+                        cases += 1;
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 6_776);
+        let empty = reference_validation_segment(30, &[], 1);
+        assert_eq!(
+            known_reference_type(&empty.header, 0, &[], &Vec::new(), None),
+            None
+        );
+    }
+
     fn page_data(height: u32) -> [u8; 19] {
         let mut data = [0_u8; 19];
         data[0..4].copy_from_slice(&8_u32.to_be_bytes());

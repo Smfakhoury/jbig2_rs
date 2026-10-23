@@ -23,6 +23,12 @@ FRAME = """forall|index: int|
     ==> crate::views::bitmap_data(final(self))[index]
         == crate::views::bitmap_data(old(self))[index],"""
 SUCCESS = "ensures out.is_ok(), crate::spec::bitmap::storage_valid(final(self)),"
+ZERO_BLIT_RESULT = """width == 0 ==> out.is_ok(),
+    width == 0 ==> final(self).data@ == old(self).data@,"""
+ZERO_BLIT_GUARD = """if width == 0 {
+        return Ok(());
+    }
+    let mut source_bit = source_x;"""
 CASES = tuple(
     {
         "id": identity, "file": "src/bitmap.rs",
@@ -43,6 +49,22 @@ CASES = tuple(
         "replacement": "let result: Result<(), MalformedError> = Err(MalformedError::IntegerOverflow);",
         "controls": ((SUCCESS, "ensures crate::spec::bitmap::storage_valid(final(self)),"),),
     },
+    {
+        "id": "zero_width_unaligned_blit_returns_error", "file": "src/bitmap.rs",
+        "module": "bitmap", "function": "Bitmap::compose_row_blit_chunked",
+        "site": ZERO_BLIT_GUARD, "replacement": "let mut source_bit = source_x;",
+        "controls": ((ZERO_BLIT_RESULT, ""),),
+    },
+    {
+        "id": "zero_width_blit_mutates_storage", "file": "src/bitmap.rs",
+        "module": "bitmap", "function": "Bitmap::compose_row_blit_chunked",
+        "site": ZERO_BLIT_GUARD,
+        "replacement": (
+            f"if width == 0 {{ {FLIP} return Ok(()); }}\n"
+            "    let mut source_bit = source_x;"
+        ),
+        "controls": ((ZERO_BLIT_RESULT, ""),),
+    },
 )
 
 
@@ -57,7 +79,7 @@ def main():
             ("src/bitmap.rs", "specs/bitmap.rs", "proofs/shared/bitmap.rs",
              "proofs/production_impl/bitmap.rs"),
             "jbig2-bitmap-compose-",
-            "Executing optimized composition: preserved success/storage/metadata and original outside-clipped-byte frame; general pixel/operator equivalence remains scalar-oracle tested",
+            "Executing optimized composition and empty row blits: preserved success/storage/metadata and original outside-clipped-byte frame, plus the complete new zero-width success/storage result; general pixel/operator equivalence remains scalar-oracle tested",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"bitmap composition proof sensitivity failed: {error}", file=sys.stderr)

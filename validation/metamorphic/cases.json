@@ -102,6 +102,41 @@
       ]
     },
     {
+      "id": "META-ROW-BATCH-ORDERED-BITS",
+      "transformation": "vary row-blit alignment, widths around byte/word boundaries, overlap order, operators and empty spans",
+      "invariant": "all bytes match independent ordered bit updates, source bytes remain unchanged and zero-area requests are successful no-ops",
+      "tests": [
+        {"target": "lib", "name": "bitmap::tests::row_batch_chunking_matches_independent_ordered_bit_updates"},
+        {"target": "lib", "name": "bitmap::tests::zero_height_row_batch_never_reads_blit_coordinates"},
+        {"target": "lib", "name": "bitmap::tests::zero_width_unaligned_row_blit_preserves_all_storage"}
+      ]
+    },
+    {
+      "id": "META-GENERIC-SNAPSHOT-STATE-COPY",
+      "transformation": "retain/reset/restore raw valid statistics across all generic template layouts, incompatible layouts and inclusive memory limits",
+      "invariant": "every state/MPS pair and ownership are preserved; incompatible or limited operations do not modify their targets",
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::generic_snapshots_copy_all_states_and_preserve_rejected_targets"}
+      ]
+    },
+    {
+      "id": "META-RAW-REFERENCE-ROLE-MATRIX",
+      "transformation": "resolve raw numeric owner/target tags and reference cardinalities through local or global metadata",
+      "invariant": "both resolution routes agree with the independent tag/cardinality matrix and preserve exact invalid-role diagnostics",
+      "tests": [
+        {"target": "lib", "name": "document::tests::raw_reference_role_matrix_matches_numeric_tag_policy_locally_and_globally"}
+      ]
+    },
+    {
+      "id": "META-RAW-PAGE-WRITE-SEAL",
+      "transformation": "vary raw rectangle/stripe coordinates, numeric boundaries and existing open/sealed rows",
+      "invariant": "wide intersection/error-priority rules agree; sealing preserves pixels and rejected page state",
+      "tests": [
+        {"target": "lib", "name": "decode::tests::raw_page_write_bounds_match_wide_intersection_and_error_priority"},
+        {"target": "lib", "name": "decode::tests::raw_stripe_sealing_preserves_pixels_and_rejected_page_state"}
+      ]
+    },
+    {
       "id": "META-RAW-BITMAP-CLIPPED-SNAPSHOT",
       "transformation": "vary raw bitmap crop origins and dimensions across empty, partial and out-of-page intersections",
       "invariant": "literal scalar pixels and zero padding agree; source pixels remain unchanged",

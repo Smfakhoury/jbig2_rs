@@ -6,7 +6,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_bitmap_compose_proofs import CASES, FRAME
+from check_bitmap_compose_proofs import CASES, FRAME, ZERO_BLIT_RESULT
 from proof_sensitivity import replace_once, weakened_contract
 
 
@@ -14,8 +14,8 @@ class BitmapCompositionProofFixtureTests(unittest.TestCase):
     def setUp(self):
         self.source = (TOOLS.parent / "src/bitmap.rs").read_text(encoding="utf-8")
 
-    def test_five_distinct_mutations_have_unique_sites(self):
-        self.assertEqual(len({case["id"] for case in CASES}), 5)
+    def test_seven_distinct_mutations_have_unique_sites(self):
+        self.assertEqual(len({case["id"] for case in CASES}), 7)
         for case in CASES:
             with self.subTest(case=case["id"]):
                 changed = replace_once(self.source, case["site"], case["replacement"])
@@ -33,6 +33,12 @@ class BitmapCompositionProofFixtureTests(unittest.TestCase):
                     self.assertIn("ensures\n            out.is_ok(),", control)
                 else:
                     replace_once(control, FRAME, "")
+                if case["controls"][0][0] != ZERO_BLIT_RESULT:
+                    replace_once(control, ZERO_BLIT_RESULT, "")
+                else:
+                    self.assertIn("destination_shift < 8", control)
+                    self.assertIn("final(self).stride == old(self).stride", control)
+                    self.assertIn("final(self).data@.len() == old(self).data@.len()", control)
 
     def test_missing_ambiguous_and_already_weakened_sites_fail_closed(self):
         for case in CASES:

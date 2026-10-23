@@ -1787,6 +1787,8 @@ impl Bitmap {
         requires
             destination_shift < 8,
         ensures
+            width == 0 ==> out.is_ok(),
+            width == 0 ==> final(self).data@ == old(self).data@,
             final(self).width == old(self).width,
             final(self).height == old(self).height,
             final(self).stride == old(self).stride,
@@ -1803,6 +1805,9 @@ impl Bitmap {
         width: u32,
         operator: CombinationOperator,
     ) -> Result<(), MalformedError> {
+        if width == 0 {
+            return Ok(());
+        }
         let mut source_bit = source_x;
         let mut remaining = width;
         let mut destination_index = destination_row;
@@ -2820,6 +2825,127 @@ mod tests {
                     }
                 }
             }
+        }
+    }
+
+    #[test]
+    fn row_batch_chunking_matches_independent_ordered_bit_updates() {
+        let first = patterned_bitmap(161, 4, 0x1739_a56c);
+        let second = patterned_bitmap(161, 4, 0xc62e_408b);
+        let original = patterned_bitmap(177, 5, 0x9281_fde3);
+        let first_before = first.bytes().to_vec();
+        let second_before = second.bytes().to_vec();
+        let mut cases = 0;
+        for source_x in 0..8 {
+            for destination_x in 0..8 {
+                for width in [0, 1, 7, 8, 9, 63, 64, 65, 127, 128, 129] {
+                    for height in [0, 1, 3] {
+                        for (operator, truths) in OPERATOR_TRUTHS {
+                            let blits = [
+                                RowBlit {
+                                    source: &first,
+                                    source_x,
+                                    destination_x,
+                                    width,
+                                },
+                                RowBlit {
+                                    source: &second,
+                                    source_x: 7 - source_x,
+                                    destination_x: destination_x + 3,
+                                    width: width.min(61),
+                                },
+                            ];
+                            let mut expected = original.bytes().to_vec();
+                            for row in 0..height {
+                                for blit in &blits {
+                                    for column in 0..blit.width {
+                                        let sx = blit.source_x + column;
+                                        let dx = blit.destination_x + column;
+                                        let source_index = usize::try_from(row + 1).unwrap()
+                                            * blit.source.stride
+                                            + usize::try_from(sx / 8).unwrap();
+                                        let destination_index = usize::try_from(row + 2).unwrap()
+                                            * original.stride
+                                            + usize::try_from(dx / 8).unwrap();
+                                        let incoming = blit.source.bytes()[source_index]
+                                            & (0x80 >> (sx % 8))
+                                            != 0;
+                                        let current =
+                                            expected[destination_index] & (0x80 >> (dx % 8)) != 0;
+                                        let value = truths
+                                            [usize::from(current) * 2 + usize::from(incoming)];
+                                        let mask = 0x80 >> (dx % 8);
+                                        if value {
+                                            expected[destination_index] |= mask;
+                                        } else {
+                                            expected[destination_index] &= !mask;
+                                        }
+                                    }
+                                }
+                            }
+                            let mut actual = original.clone();
+                            actual
+                                .compose_row_batch_chunked(&blits, 1, 2, height, operator)
+                                .unwrap();
+                            assert_eq!(actual.width(), 177);
+                            assert_eq!(actual.height(), 5);
+                            assert_eq!(actual.stride(), 23);
+                            assert_eq!(actual.bytes(), expected);
+                            assert_eq!(first.bytes(), first_before);
+                            assert_eq!(second.bytes(), second_before);
+                            cases += 1;
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 10_560);
+    }
+
+    #[test]
+    fn zero_height_row_batch_never_reads_blit_coordinates() {
+        let source = patterned_bitmap(1, 1, 7);
+        let original = patterned_bitmap(9, 2, 13);
+        for (operator, _) in OPERATOR_TRUTHS {
+            let mut actual = original.clone();
+            actual
+                .compose_row_batch_chunked(
+                    &[RowBlit {
+                        source: &source,
+                        source_x: u32::MAX,
+                        destination_x: u32::MAX,
+                        width: u32::MAX,
+                    }],
+                    u32::MAX,
+                    u32::MAX,
+                    0,
+                    operator,
+                )
+                .unwrap();
+            assert_eq!(actual, original);
+        }
+    }
+
+    #[test]
+    fn zero_width_unaligned_row_blit_preserves_all_storage() {
+        let source = patterned_bitmap(1, 1, 7);
+        let original = patterned_bitmap(9, 1, 13);
+        for (operator, _) in OPERATOR_TRUTHS {
+            let mut actual = original.clone();
+            let result = actual.compose_row_batch_chunked(
+                &[RowBlit {
+                    source: &source,
+                    source_x: 1,
+                    destination_x: 1,
+                    width: 0,
+                }],
+                0,
+                0,
+                1,
+                operator,
+            );
+            assert!(result.is_ok(), "zero-width unaligned blit: {result:?}");
+            assert_eq!(actual, original);
         }
     }
 

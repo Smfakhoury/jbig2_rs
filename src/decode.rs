@@ -4723,6 +4723,98 @@ mod tests {
     }
 
     #[test]
+    fn raw_page_write_bounds_match_wide_intersection_and_error_priority() {
+        let coordinates = [0, 1, 2, u32::MAX - 1, u32::MAX];
+        let mut cases = 0;
+        for (page_width, page_height) in [(0, 0), (1, 1), (9, 3), (u32::MAX, u32::MAX)] {
+            for width in coordinates {
+                for height in coordinates {
+                    for x in coordinates {
+                        for y in coordinates {
+                            for sealed in [None, Some(0), Some(1), Some(u32::MAX)] {
+                                for open in [None, Some(0), Some(2), Some(u32::MAX)] {
+                                    let bottom = u64::from(y) + u64::from(height);
+                                    let expected = if width == 0
+                                        || height == 0
+                                        || x >= page_width
+                                        || y >= page_height
+                                    {
+                                        Ok(open)
+                                    } else if sealed.is_some_and(|row| y <= row) {
+                                        Err(MalformedError::InvalidPageState(
+                                            "region modifies a sealed stripe",
+                                        ))
+                                    } else if bottom > u64::from(u32::MAX) {
+                                        Err(MalformedError::IntegerOverflow)
+                                    } else {
+                                        let last =
+                                            u32::try_from(bottom.min(u64::from(page_height)) - 1)
+                                                .unwrap();
+                                        Ok(Some(open.map_or(last, |old| old.max(last))))
+                                    };
+                                    match checked_page_write_state(
+                                        sealed,
+                                        open,
+                                        width,
+                                        height,
+                                        x,
+                                        y,
+                                        page_width,
+                                        page_height,
+                                    ) {
+                                        Ok(next) => assert_eq!(expected, Ok(next)),
+                                        Err(DecodeError::Malformed(error)) => {
+                                            assert_eq!(expected, Err(error));
+                                        }
+                                        other => panic!("unexpected page-write result: {other:?}"),
+                                    }
+                                    cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 40_000);
+    }
+
+    #[test]
+    fn raw_stripe_sealing_preserves_pixels_and_rejected_page_state() {
+        let limits = Limits::default();
+        for sealed in [None, Some(0), Some(u32::MAX)] {
+            for open in [None, Some(0), Some(2), Some(u32::MAX)] {
+                for row in [0, 1, 2, u32::MAX] {
+                    let mut page =
+                        runtime_test_page(9, 3, true, false, CombinationOperator::Replace, &limits);
+                    page.last_stripe_end = sealed;
+                    page.open_stripe_max_row = open;
+                    let before = page.bitmap.bytes().to_vec();
+                    let result = seal_stripe_on_page(&mut page, row);
+                    if open.is_some_and(|maximum| maximum > row) {
+                        assert!(matches!(
+                            result,
+                            Err(DecodeError::Malformed(MalformedError::InvalidPageState(
+                                "region preceding stripe extends below its end row"
+                            )))
+                        ));
+                        assert_eq!(page.last_stripe_end, sealed);
+                        assert_eq!(page.open_stripe_max_row, open);
+                    } else {
+                        result.unwrap();
+                        assert_eq!(page.last_stripe_end, Some(row));
+                        assert_eq!(page.open_stripe_max_row, None);
+                    }
+                    assert_eq!(page.bitmap.width(), 9);
+                    assert_eq!(page.bitmap.height(), 3);
+                    assert_eq!(page.bitmap.bytes(), before);
+                    assert!(!page.pristine);
+                }
+            }
+        }
+    }
+
+    #[test]
     fn duplicate_buffer_does_not_change_retained_accounting() {
         let limits = Limits::default();
         let region = crate::segment_data::RegionInfo {
