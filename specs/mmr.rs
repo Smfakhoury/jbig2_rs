@@ -195,6 +195,44 @@ pub(super) open spec fn span_result(
     }
 }
 
+pub(super) open spec fn transition_count_at(transitions: Seq<u32>, x: u32) -> nat
+    decreases transitions.len(),
+{
+    if transitions.len() == 0 {
+        0
+    } else {
+        transition_count_at(transitions.subrange(0, transitions.len() - 1), x)
+            + if transitions[transitions.len() - 1] <= x { 1nat } else { 0nat }
+    }
+}
+
+pub(super) open spec fn transition_black_at(transitions: Seq<u32>, x: u32) -> bool {
+    transition_count_at(transitions, x) % 2 == 1
+}
+
+pub(super) open spec fn row_cache_matches(
+    bitmap: &crate::Bitmap, row: u32, transitions: Seq<u32>,
+) -> bool {
+    row < bitmap.height
+        && forall|x: u32| x < bitmap.width ==>
+            #[trigger] crate::spec::bitmap::stored_pixel(bitmap, x, row)
+                == transition_black_at(transitions, x)
+}
+
+pub(super) open spec fn white_reference_cache(transitions: Seq<u32>, width: u32) -> bool {
+    forall|x: u32| x < width ==> !#[trigger] transition_black_at(transitions, x)
+}
+
+pub(super) open spec fn span_pixels(
+    before: &crate::Bitmap, after: &crate::Bitmap,
+    row: u32, start: u32, end: u32, black: bool,
+) -> bool {
+    forall|x: u32, y: u32| x < before.width && y < before.height ==>
+        #[trigger] crate::spec::bitmap::stored_pixel(after, x, y)
+            == ((black && y == row && start <= x < end)
+                || crate::spec::bitmap::stored_pixel(before, x, y))
+}
+
 pub(super) open spec fn exact_eofb(
     bytes: Seq<u8>,
     start: nat,

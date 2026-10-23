@@ -28,6 +28,24 @@ pub(super) open spec fn transition_span_result(
         && after_black == (if start < end { black } else { before_black })
 }
 
+pub(super) open spec fn row_cache_prefix(
+    bitmap: &crate::Bitmap, row: u32, transitions: Seq<u32>,
+    emitted_black: bool, scanned: u32,
+) -> bool {
+    crate::spec::bitmap::storage_valid(bitmap)
+        && row < bitmap.height && scanned <= bitmap.width
+        && emitted_black == (transitions.len() % 2 == 1)
+        && forall|x: u32| x < bitmap.width ==>
+            #[trigger] crate::spec::bitmap::stored_pixel(bitmap, x, row)
+                == (x < scanned && transition_black_at(transitions, x))
+}
+
+pub(super) open spec fn future_rows_white(bitmap: &crate::Bitmap, first: nat) -> bool {
+    crate::spec::bitmap::storage_valid(bitmap)
+        && forall|x: u32, y: u32| x < bitmap.width && first <= y < bitmap.height ==>
+            !#[trigger] crate::spec::bitmap::stored_pixel(bitmap, x, y)
+}
+
 pub(super) open spec fn reference_cursor_matches(
     transitions: Seq<u32>, x: u32, initial: bool, start: int, cursor: int,
 ) -> bool {

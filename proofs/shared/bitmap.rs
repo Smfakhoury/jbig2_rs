@@ -506,7 +506,7 @@ pub(crate) proof fn stride_covers_width(width: u32)
     vstd::arithmetic::div_mod::lemma_mod_bound(width as int + 7, 8);
 }
 
-pub(super) proof fn in_bounds_byte(
+pub(crate) proof fn in_bounds_byte(
     bitmap: &crate::bitmap::Bitmap,
     x: u32,
     y: u32,

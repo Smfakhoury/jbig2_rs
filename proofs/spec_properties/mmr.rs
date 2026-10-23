@@ -2,6 +2,204 @@ use vstd::prelude::*;
 
 verus! {
 
+pub(super) proof fn transition_count_append(before: Seq<u32>, position: u32, x: u32)
+    ensures super::mmr_spec::transition_count_at(before.push(position), x)
+        == super::mmr_spec::transition_count_at(before, x)
+            + if position <= x { 1nat } else { 0nat },
+{
+    assert(before.push(position).subrange(0, before.len() as int) =~= before);
+}
+
+pub(super) proof fn transition_count_all_before(
+    transitions: Seq<u32>, bound: u32, x: u32,
+)
+    requires
+        bound <= x,
+        forall|index: int| 0 <= index < transitions.len() ==>
+            transitions[index] < bound,
+    ensures super::mmr_spec::transition_count_at(transitions, x) == transitions.len(),
+    decreases transitions.len(),
+{
+    if transitions.len() > 0 {
+        let prefix = transitions.subrange(0, transitions.len() - 1);
+        assert forall|index: int| 0 <= index < prefix.len() implies
+            #[trigger] prefix[index] < bound by {
+            assert(prefix[index] == transitions[index]);
+        }
+        transition_count_all_before(prefix, bound, x);
+        assert(transitions[transitions.len() - 1] < bound);
+    }
+}
+
+pub(super) proof fn recorded_span_cache_pixels(
+    before: &crate::Bitmap, after: &crate::Bitmap,
+    row: u32, start: u32, end: u32, black: bool,
+    old_cache: Seq<u32>, new_cache: Seq<u32>, old_emitted: bool, new_emitted: bool,
+    width: u32,
+)
+    requires
+        super::mmr_spec::row_cache_prefix(before, row, old_cache, old_emitted, start),
+        crate::spec::bitmap::storage_valid(after),
+        after.width == before.width, after.height == before.height,
+        after.stride == before.stride, after.data@.len() == before.data@.len(),
+        start <= end <= before.width,
+        super::mmr_spec::transition_prefix_valid(old_cache, start, width),
+        super::mmr_spec::span_result(before, after, row, start, end, black),
+        super::mmr_spec::transition_span_result(
+            old_cache, new_cache, old_emitted, new_emitted, start, end, black,
+        ),
+    ensures super::mmr_spec::row_cache_prefix(after, row, new_cache, new_emitted, end),
+{
+    crate::views::bitmap_fields(before);
+    crate::views::bitmap_fields(after);
+    reveal(super::mmr_spec::row_cache_prefix);
+    reveal(super::mmr_spec::transition_span_result);
+    reveal(super::mmr_spec::transition_prefix_valid);
+    reveal(super::mmr_spec::span_result);
+    reveal(crate::spec::bitmap::black_span_result);
+    assert forall|x: u32| x < before.width implies
+        #[trigger] crate::spec::bitmap::stored_pixel(after, x, row)
+            == (x < end && super::mmr_spec::transition_black_at(new_cache, x)) by {
+        crate::bitmap::bitmap_shared::in_bounds_byte(before, x, row);
+        crate::bitmap::bitmap_shared::in_bounds_byte(after, x, row);
+        assert(crate::spec::bitmap::stored_pixel(before, x, row)
+            == (x < start && super::mmr_spec::transition_black_at(old_cache, x)));
+        if black {
+            assert(crate::spec::bitmap::stored_pixel(after, x, row)
+                == (start <= x < end || crate::spec::bitmap::stored_pixel(before, x, row)));
+        } else {
+            assert(crate::spec::bitmap::stored_pixel(after, x, row)
+                == crate::spec::bitmap::stored_pixel(before, x, row));
+        }
+        if x < start {
+            if start < end && old_emitted != black {
+                transition_count_append(old_cache, start, x);
+            }
+        } else if x < end {
+            transition_count_all_before(old_cache, start, x);
+            if old_emitted != black {
+                transition_count_append(old_cache, start, x);
+            }
+            assert(super::mmr_spec::transition_black_at(new_cache, x) == black);
+        }
+    }
+}
+
+pub(super) proof fn span_pixel_frame(
+    before: &crate::Bitmap, after: &crate::Bitmap,
+    row: u32, start: u32, end: u32, black: bool,
+)
+    requires
+        crate::spec::bitmap::storage_valid(before),
+        crate::spec::bitmap::storage_valid(after),
+        after.width == before.width, after.height == before.height,
+        after.stride == before.stride, after.data@.len() == before.data@.len(),
+        row < before.height, start <= end <= before.width,
+        super::mmr_spec::span_result(before, after, row, start, end, black),
+    ensures super::mmr_spec::span_pixels(before, after, row, start, end, black),
+{
+    crate::views::bitmap_fields(before);
+    crate::views::bitmap_fields(after);
+    reveal(super::mmr_spec::span_result);
+    reveal(crate::spec::bitmap::black_span_result);
+    assert forall|x: u32, y: u32| x < before.width && y < before.height implies
+        #[trigger] crate::spec::bitmap::stored_pixel(after, x, y)
+            == ((black && y == row && start <= x < end)
+                || crate::spec::bitmap::stored_pixel(before, x, y)) by {
+        crate::bitmap::bitmap_shared::in_bounds_byte(before, x, y);
+        crate::bitmap::bitmap_shared::in_bounds_byte(after, x, y);
+    }
+}
+
+pub(super) proof fn span_keeps_future_white(
+    before: &crate::Bitmap, after: &crate::Bitmap,
+    row: u32, start: u32, end: u32, black: bool, first: nat,
+)
+    requires
+        super::mmr_spec::future_rows_white(before, first),
+        crate::spec::bitmap::storage_valid(after),
+        after.width == before.width, after.height == before.height,
+        (row as nat) < first,
+        super::mmr_spec::span_pixels(before, after, row, start, end, black),
+    ensures super::mmr_spec::future_rows_white(after, first),
+{
+    crate::views::bitmap_fields(before);
+    crate::views::bitmap_fields(after);
+    assert forall|x: u32, y: u32| x < before.width && first <= y < before.height implies
+        !#[trigger] crate::spec::bitmap::stored_pixel(after, x, y) by {
+        assert(y != row);
+    }
+}
+
+pub(super) proof fn zeroed_rows_are_white(bitmap: &crate::Bitmap)
+    requires
+        crate::spec::bitmap::storage_valid(bitmap),
+        crate::spec::bitmap::zeroed_storage(bitmap),
+    ensures super::mmr_spec::future_rows_white(bitmap, 0),
+{
+    crate::views::bitmap_fields(bitmap);
+    reveal(crate::spec::bitmap::zeroed_storage);
+    assert forall|x: u32, y: u32| x < bitmap.width && y < bitmap.height implies
+        !#[trigger] crate::spec::bitmap::stored_pixel(bitmap, x, y) by {
+        crate::bitmap::bitmap_shared::in_bounds_byte(bitmap, x, y);
+        assert(crate::views::bitmap_data(bitmap)[
+            crate::spec::bitmap::byte_index(bitmap.stride, x, y) as int
+        ] == 0u8);
+        let mask = crate::spec::bitmap::bit_mask(x);
+        assert((0u8 & mask) == 0u8) by(bit_vector);
+        reveal(crate::spec::bitmap::stored_pixel);
+        reveal(crate::spec::bitmap::byte_bit);
+    }
+}
+
+pub(super) proof fn white_future_advance(bitmap: &crate::Bitmap, first: nat, next: nat)
+    requires super::mmr_spec::future_rows_white(bitmap, first), first <= next,
+    ensures super::mmr_spec::future_rows_white(bitmap, next),
+{
+}
+
+pub(super) proof fn empty_row_cache(bitmap: &crate::Bitmap, row: u32)
+    requires super::mmr_spec::future_rows_white(bitmap, row as nat), row < bitmap.height,
+    ensures super::mmr_spec::row_cache_prefix(bitmap, row, Seq::empty(), false, 0),
+{
+}
+
+pub(super) proof fn complete_row_cache(
+    bitmap: &crate::Bitmap, row: u32, cache: Seq<u32>, emitted: bool,
+)
+    requires super::mmr_spec::row_cache_prefix(bitmap, row, cache, emitted, bitmap.width),
+    ensures super::mmr_spec::row_cache_matches(bitmap, row, cache),
+{
+}
+
+pub(super) proof fn finished_row_cache(
+    bitmap: &crate::Bitmap, row: u32, cache: Seq<u32>, width: u32,
+)
+    requires super::mmr_spec::row_cache_matches(bitmap, row, cache), width == bitmap.width,
+    ensures super::mmr_spec::row_cache_matches(bitmap, row, cache.push(width).push(width)),
+{
+    assert forall|x: u32| x < width implies
+        #[trigger] crate::spec::bitmap::stored_pixel(bitmap, x, row)
+            == super::mmr_spec::transition_black_at(cache.push(width).push(width), x) by {
+        transition_count_append(cache, width, x);
+        transition_count_append(cache.push(width), width, x);
+    }
+}
+
+pub(super) proof fn initial_reference_cache(width: u32)
+    ensures super::mmr_spec::white_reference_cache(
+        Seq::empty().push(width).push(width), width,
+    ),
+{
+    assert forall|x: u32| x < width implies
+        !#[trigger] super::mmr_spec::transition_black_at(
+            Seq::empty().push(width).push(width), x,
+        ) by {
+        transition_count_append(Seq::empty(), width, x);
+        transition_count_append(Seq::empty().push(width), width, x);
+    }
+}
+
 pub(super) open spec fn reference_prefix_skipped(
     transitions: Seq<u32>, x: u32, initial: bool, end: int,
 ) -> bool {
