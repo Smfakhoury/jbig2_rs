@@ -169,7 +169,7 @@ def check_distribution(toolchain: str) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--toolchain", default="1.89.0")
+    parser.add_argument("--toolchain", default="1.88.0")
     parser.add_argument("--output", type=Path)
     arguments = parser.parse_args()
     try:

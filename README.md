@@ -83,12 +83,20 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 cargo doc --no-deps
 cargo package
-python -B tools/check_distribution.py --toolchain 1.89.0
+python -B tools/check_distribution.py --toolchain 1.88.0
 ```
 
-The MSRV is Rust 1.89.0; native distribution CI also tests current stable on
-Linux, Windows and macOS. Distribution checks use Python 3.11+ and the standard
-library, without the additional proof-audit dependencies.
+The runtime MSRV is Rust 1.88.0; native distribution CI tests this minimum and
+current stable on Linux, Windows and macOS. The development compiler remains
+1.89.0 in `toolchain.json`; Verus uses its separate pin. Distribution checks use
+Python 3.11+ and the standard library, without the additional proof-audit
+dependencies. No runtime source changes were needed to support Rust 1.88.0.
+
+```text
+cargo +1.88.0 test --locked --all-targets
+cargo +1.88.0 test --locked --doc
+cargo +1.88.0 check --locked --release --all-targets
+```
 
 Audit tooling additionally requires the pinned development-only dependencies:
 
