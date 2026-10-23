@@ -28,4 +28,14 @@ pub(super) open spec fn transition_span_result(
         && after_black == (if start < end { black } else { before_black })
 }
 
+pub(super) open spec fn reference_cursor_matches(
+    transitions: Seq<u32>, x: u32, initial: bool, start: int, cursor: int,
+) -> bool {
+    0 <= start <= cursor < transitions.len()
+        && (cursor == transitions.len() - 1
+            || reference_position_eligible(transitions[cursor], x, initial))
+        && forall|previous: int| start <= previous < cursor ==>
+            !reference_position_eligible(#[trigger] transitions[previous], x, initial)
+}
+
 }

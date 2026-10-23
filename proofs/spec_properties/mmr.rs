@@ -2,6 +2,71 @@ use vstd::prelude::*;
 
 verus! {
 
+pub(super) open spec fn reference_prefix_skipped(
+    transitions: Seq<u32>, x: u32, initial: bool, end: int,
+) -> bool {
+    0 <= end <= transitions.len()
+        && forall|previous: int| 0 <= previous < end ==>
+            !super::mmr_spec::reference_position_eligible(
+                #[trigger] transitions[previous], x, initial,
+            )
+}
+
+pub(super) proof fn reference_suffix_is_global(
+    transitions: Seq<u32>, x: u32, black: bool, width: u32, initial: bool,
+    start: int, b1: u32, b2: u32,
+)
+    requires
+        0 <= start < transitions.len(),
+        reference_prefix_skipped(transitions, x, initial, start),
+        super::mmr_spec::reference_pair_matches(
+            transitions, x, black, width, initial, start, b1, b2,
+        ),
+    ensures super::mmr_spec::reference_pair_matches(
+        transitions, x, black, width, initial, 0, b1, b2,
+    ),
+{
+    if exists|index: int| super::mmr_spec::first_reference_candidate(
+        transitions, x, black, initial, start, index,
+    ) && b1 == transitions[index] && b2 == transitions[index + 1] {
+        let index = choose|index: int| super::mmr_spec::first_reference_candidate(
+            transitions, x, black, initial, start, index,
+        ) && b1 == transitions[index] && b2 == transitions[index + 1];
+        assert forall|previous: int| 0 <= previous < index implies
+            !super::mmr_spec::reference_position_eligible(
+                #[trigger] transitions[previous], x, initial,
+            ) || (previous % 2 == 0) == black by {
+            if previous < start {
+                assert(!super::mmr_spec::reference_position_eligible(
+                    transitions[previous], x, initial,
+                ));
+            }
+        }
+        assert(super::mmr_spec::first_reference_candidate(
+            transitions, x, black, initial, 0, index,
+        ));
+    } else {
+        assert(b1 == width && b2 == width);
+        assert forall|index: int| !#[trigger] super::mmr_spec::first_reference_candidate(
+            transitions, x, black, initial, 0, index,
+        ) by {
+            if super::mmr_spec::first_reference_candidate(
+                transitions, x, black, initial, 0, index,
+            ) {
+                if index < start {
+                    assert(!super::mmr_spec::reference_position_eligible(
+                        transitions[index], x, initial,
+                    ));
+                } else {
+                    assert(super::mmr_spec::first_reference_candidate(
+                        transitions, x, black, initial, start, index,
+                    ));
+                }
+            }
+        }
+    }
+}
+
 pub(super) proof fn normative_run_value_is_positive_when_makeup(
     black: bool,
     code: super::RunCode,

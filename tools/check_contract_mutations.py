@@ -16,6 +16,14 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "mmr-reference-cursor-update-discarded",
+        "file": "src/mmr.rs",
+        "before": "*search_start = index;",
+        "after": "*search_start = 0;",
+        "target": "lib",
+        "test": "mmr::tests::reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors",
+    },
+    {
         "id": "borrowed-symbol-peak-limit-off-by-one",
         "file": "src/decode.rs",
         "before": (

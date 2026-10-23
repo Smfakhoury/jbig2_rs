@@ -691,6 +691,9 @@ fn decode_bitmap<'a>(
                 mmr_spec::reference_line_valid(transitions@, width),
                 transitions@.len() <= width as nat + 2,
                 reference_index < transitions@.len(),
+                mmr_properties::reference_prefix_skipped(
+                    transitions@, x, initial, reference_index as int,
+                ),
                 mmr_spec::transition_prefix_valid(row_transitions@, x, width),
                 row_transitions@.len() <= x as nat,
                 mmr_spec::reader_valid(&reader),
@@ -707,6 +710,11 @@ fn decode_bitmap<'a>(
             #[cfg(verus_keep_ghost)]
             production_mmr_mode_budget!(mode_count, max_modes);
 
+            #[cfg(verus_keep_ghost)]
+            proof_decl! {
+                let ghost previous_reference_index = reference_index;
+                let ghost reference_x = x;
+            }
             let (b1, b2) = reference_elements_from(
                 transitions,
                 x,
@@ -715,6 +723,24 @@ fn decode_bitmap<'a>(
                 initial,
                 &mut reference_index,
             )?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert forall|previous: int| 0 <= previous < reference_index implies
+                    !mmr_spec::reference_position_eligible(
+                        #[trigger] transitions@[previous], x, initial,
+                    ) by {
+                    if previous < previous_reference_index {
+                        assert(!mmr_spec::reference_position_eligible(
+                            transitions@[previous], x, initial,
+                        ));
+                    }
+                }
+                assert(mmr_spec::reference_pair_matches(
+                    transitions@, x, black, width, initial, 0, b1, b2,
+                ));
+                assert forall|previous: int| 0 <= previous < reference_index implies
+                    #[trigger] transitions@[previous] <= reference_x by {}
+            }
             let mode_offset = reader.bit_position;
             match decode_mode(&mut reader)? {
                 Mode::Extension => {
@@ -799,8 +825,18 @@ fn decode_bitmap<'a>(
             proof! {
                 crate::views::bitmap_fields(&bitmap);
                 reveal(crate::spec::bitmap::storage_valid);
+                assert(reference_x <= x);
             }
             initial = false;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert forall|previous: int| 0 <= previous < reference_index implies
+                    !mmr_spec::reference_position_eligible(
+                        #[trigger] transitions@[previous], x, initial,
+                    ) by {
+                    assert(transitions@[previous] <= reference_x);
+                }
+            }
         }
         #[cfg(verus_keep_ghost)]
         proof! {
@@ -1417,8 +1453,13 @@ fn find_run_code(black: bool, bits: u16, length: u8) -> Option<RunCode> {
     requires
         mmr_spec::reference_line_valid(transitions@, width),
         x <= width,
-    ensures match out {
-        Ok((b1, b2)) => x <= b1 <= b2 <= width,
+    ensures
+    out.is_ok(),
+    match out {
+        Ok((b1, b2)) => x <= b1 <= b2 <= width
+            && mmr_spec::reference_pair_matches(
+                transitions@, x, black, width, initial, 0, b1, b2,
+            ),
         Err(_) => true,
     },
 ))]
@@ -1443,6 +1484,10 @@ fn reference_elements(
             x <= width,
             search_end == transitions@.len() - 1,
             index <= search_end,
+            forall|previous: int| 0 <= previous < index ==>
+                !mmr_spec::reference_position_eligible(
+                    #[trigger] transitions@[previous], x, initial,
+                ) || (previous % 2 == 0) == black,
         decreases search_end - index,
     ))]
     while index < search_end {
@@ -1465,6 +1510,15 @@ fn reference_elements(
                     b2,
                     width
                 );
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    assert(mmr_spec::first_reference_candidate(
+                        transitions@, x, black, initial, 0, index as int,
+                    ));
+                    assert(mmr_spec::reference_pair_matches(
+                        transitions@, x, black, width, initial, 0, position, b2,
+                    ));
+                }
                 return Ok((position, b2));
             }
         }
@@ -1482,11 +1536,26 @@ fn reference_elements(
         *old(search_start) < transitions@.len(),
     ensures
         *final(search_start) < transitions@.len(),
+        out.is_ok(),
         match out {
-            Ok((b1, b2)) => x <= b1 <= b2 <= width,
+            Ok((b1, b2)) => x <= b1 <= b2 <= width
+                && mmr_spec::reference_cursor_matches(
+                    transitions@, x, initial,
+                    *old(search_start) as int, *final(search_start) as int,
+                )
+                && mmr_spec::reference_pair_matches(
+                    transitions@, x, black, width, initial,
+                    *old(search_start) as int, b1, b2,
+                )
+                && (mmr_properties::reference_prefix_skipped(
+                    transitions@, x, initial, *old(search_start) as int,
+                ) ==> mmr_spec::reference_pair_matches(
+                        transitions@, x, black, width, initial, 0, b1, b2,
+                    )),
             Err(_) => true,
         },
 ))]
+#[allow(clippy::too_many_lines)]
 fn reference_elements_from(
     transitions: &[u32],
     x: u32,
@@ -1508,7 +1577,15 @@ fn reference_elements_from(
             mmr_spec::reference_line_valid(transitions@, width),
             x <= width,
             search_end == transitions@.len() - 1,
-            index <= search_end,
+            *old(search_start) <= index <= search_end,
+            forall|previous: int| *old(search_start) <= previous < index ==>
+                !mmr_spec::reference_position_eligible(
+                    #[trigger] transitions@[previous], x, initial,
+                ),
+        ensures
+            mmr_spec::reference_cursor_matches(
+                transitions@, x, initial, *old(search_start) as int, index as int,
+            ),
         decreases search_end - index,
     ))]
     while index < search_end {
@@ -1526,10 +1603,26 @@ fn reference_elements_from(
             search_end == transitions@.len() - 1,
             *search_start <= search_end,
             *search_start <= index <= search_end,
+            mmr_spec::reference_cursor_matches(
+                transitions@, x, initial, *old(search_start) as int, *search_start as int,
+            ),
+            forall|previous: int| *old(search_start) <= previous < index ==>
+                !mmr_spec::reference_position_eligible(
+                    #[trigger] transitions@[previous], x, initial,
+                ) || (previous % 2 == 0) == black,
         decreases search_end - index,
     ))]
     while index < search_end {
         let position = *transitions.get(index).ok_or(MmrError::InvalidTransition)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(mmr_spec::reference_line_valid);
+            reveal(mmr_spec::transitions_ordered);
+            assert(transitions@[*search_start as int] >= x);
+            if *search_start < index {
+                assert(transitions@[*search_start as int] <= transitions@[index as int]);
+            }
+        }
         if position < x {
             return Err(MmrError::InvalidTransition);
         }
@@ -1541,9 +1634,42 @@ fn reference_elements_from(
                 .ok_or(MmrError::InvalidTransition)?;
             #[cfg(verus_keep_ghost)]
             production_mmr_reference_bounds!(transitions, index, next_index, position, b2, width);
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(mmr_spec::first_reference_candidate(
+                    transitions@, x, black, initial, *old(search_start) as int, index as int,
+                ));
+                assert(mmr_spec::reference_pair_matches(
+                    transitions@, x, black, width, initial,
+                    *old(search_start) as int, position, b2,
+                ));
+                if mmr_properties::reference_prefix_skipped(
+                    transitions@, x, initial, *old(search_start) as int,
+                ) {
+                    mmr_properties::reference_suffix_is_global(
+                        transitions@, x, black, width, initial,
+                        *old(search_start) as int, position, b2,
+                    );
+                }
+            }
             return Ok((position, b2));
         }
         index = index.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(mmr_spec::reference_pair_matches(
+            transitions@, x, black, width, initial,
+            *old(search_start) as int, width, width,
+        ));
+        if mmr_properties::reference_prefix_skipped(
+            transitions@, x, initial, *old(search_start) as int,
+        ) {
+            mmr_properties::reference_suffix_is_global(
+                transitions@, x, black, width, initial,
+                *old(search_start) as int, width, width,
+            );
+        }
     }
     Ok((width, width))
 }
@@ -2718,6 +2844,83 @@ mod tests {
                 assert_incremental_transitions_match_scan(&bitmap);
             }
         }
+    }
+
+    #[test]
+    fn reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors() {
+        let mut vectors = 0;
+        let mut full_cases = 0;
+        let mut cursor_cases = 0;
+        for width in 0..=5_u32 {
+            for interior_count in 0..=4 {
+                for mut encoded in 0..(width + 1).pow(interior_count) {
+                    let mut transitions = Vec::new();
+                    for _ in 0..interior_count {
+                        transitions.push(encoded % (width + 1));
+                        encoded /= width + 1;
+                    }
+                    if transitions.windows(2).any(|pair| pair[0] > pair[1]) {
+                        continue;
+                    }
+                    transitions.push(width);
+                    transitions.push(width);
+                    let search_end = transitions.len() - 1;
+                    vectors += 1;
+                    for x in 0..=width {
+                        for black in [false, true] {
+                            for initial in [false, true] {
+                                let eligible =
+                                    |position| position > x || (initial && position == x);
+                                let pair_from = |start| {
+                                    (start..search_end)
+                                        .find(|index| {
+                                            eligible(transitions[*index])
+                                                && (*index % 2 == 0) != black
+                                        })
+                                        .map_or((width, width), |index| {
+                                            (transitions[index], transitions[index + 1])
+                                        })
+                                };
+                                let full =
+                                    reference_elements(&transitions, x, black, width, initial)
+                                        .unwrap();
+                                assert_eq!(full, pair_from(0));
+                                full_cases += 1;
+                                for before_cursor in 0..transitions.len() {
+                                    let expected_cursor = (before_cursor..search_end)
+                                        .find(|index| eligible(transitions[*index]))
+                                        .unwrap_or(search_end);
+                                    let mut cursor = before_cursor;
+                                    let actual = reference_elements_from(
+                                        &transitions,
+                                        x,
+                                        black,
+                                        width,
+                                        initial,
+                                        &mut cursor,
+                                    )
+                                    .unwrap();
+                                    assert_eq!(actual, pair_from(before_cursor));
+                                    assert_eq!(cursor, expected_cursor);
+                                    assert!(
+                                        x <= actual.0 && actual.0 <= actual.1 && actual.1 <= width
+                                    );
+                                    assert!(before_cursor <= cursor && cursor < transitions.len());
+                                    if (0..before_cursor).all(|index| !eligible(transitions[index]))
+                                    {
+                                        assert_eq!(actual, full);
+                                    }
+                                    cursor_cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(vectors, 461);
+        assert_eq!(full_cases, 9240);
+        assert_eq!(cursor_cases, 49_364);
     }
 
     #[test]

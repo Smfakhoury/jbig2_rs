@@ -136,6 +136,36 @@ pub(super) open spec fn reference_line_valid(
         && transitions_ordered(transitions, width)
 }
 
+pub(super) open spec fn reference_position_eligible(
+    position: u32, x: u32, initial: bool,
+) -> bool {
+    position > x || (initial && position == x)
+}
+
+pub(super) open spec fn first_reference_candidate(
+    transitions: Seq<u32>, x: u32, black: bool, initial: bool,
+    start: int, index: int,
+) -> bool {
+    0 <= start <= index < transitions.len() - 1
+        && reference_position_eligible(transitions[index], x, initial)
+        && (index % 2 == 0) != black
+        && forall|previous: int| start <= previous < index ==>
+            !reference_position_eligible(#[trigger] transitions[previous], x, initial)
+                || (previous % 2 == 0) == black
+}
+
+pub(super) open spec fn reference_pair_matches(
+    transitions: Seq<u32>, x: u32, black: bool, width: u32, initial: bool,
+    start: int, b1: u32, b2: u32,
+) -> bool {
+    (exists|index: int|
+        #[trigger] first_reference_candidate(transitions, x, black, initial, start, index)
+            && b1 == transitions[index] && b2 == transitions[index + 1])
+        || (!(exists|index: int|
+            #[trigger] first_reference_candidate(transitions, x, black, initial, start, index))
+            && b1 == width && b2 == width)
+}
+
 pub(super) open spec fn span_byte(
     bitmap: &crate::bitmap::Bitmap,
     row: u32,
