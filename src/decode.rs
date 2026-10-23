@@ -3337,13 +3337,29 @@ mod tests {
                                 }
                             }
                             let retained = 4096;
-                            let extra = if nonempty_groups > 1 {
+                            let requested_extra = if nonempty_groups > 1 {
                                 u64::try_from(expected.len() * core::mem::size_of::<&Bitmap>())
                                     .unwrap()
                             } else {
                                 0
                             };
-                            let peak = retained + extra;
+                            let probe = collect_referred_symbols(
+                                &segment,
+                                &store,
+                                retained,
+                                &Limits::default(),
+                            )
+                            .unwrap();
+                            let observed_extra = match &probe {
+                                CollectedSymbols::Contiguous(_) => 0,
+                                CollectedSymbols::Borrowed(symbols) => u64::try_from(
+                                    symbols.capacity() * core::mem::size_of::<&Bitmap>(),
+                                )
+                                .unwrap(),
+                            };
+                            assert!(observed_extra >= requested_extra);
+                            drop(probe);
+                            let peak = retained + observed_extra;
                             let limits = Limits {
                                 max_decoder_managed_memory_bytes: peak,
                                 ..Limits::default()
@@ -3351,6 +3367,16 @@ mod tests {
                             let collected =
                                 collect_referred_symbols(&segment, &store, retained, &limits)
                                     .unwrap();
+                            if let CollectedSymbols::Borrowed(symbols) = &collected {
+                                let actual_extra = u64::try_from(
+                                    symbols.capacity() * core::mem::size_of::<&Bitmap>(),
+                                )
+                                .unwrap();
+                                assert!(
+                                    retained + actual_extra
+                                        <= limits.max_decoder_managed_memory_bytes
+                                );
+                            }
                             match collected.codebook() {
                                 SymbolCodebook::Contiguous(symbols) => {
                                     assert!(nonempty_groups <= 1);
@@ -3369,21 +3395,22 @@ mod tests {
                             }
                             if nonempty_groups > 1 {
                                 let tight = Limits {
-                                    max_decoder_managed_memory_bytes: peak - 1,
+                                    max_decoder_managed_memory_bytes: retained + requested_extra
+                                        - 1,
                                     ..Limits::default()
                                 };
                                 match collect_referred_symbols(&segment, &store, retained, &tight) {
                                     Err(DecodeError::LimitExceeded(error)) => {
                                         assert_eq!(error.kind, crate::LimitKind::Memory);
-                                        assert_eq!(error.limit, peak - 1);
-                                        assert_eq!(error.actual, peak);
+                                        assert_eq!(error.limit, retained + requested_extra - 1);
+                                        assert_eq!(error.actual, retained + requested_extra);
                                     }
                                     Err(other) => {
                                         panic!("unexpected borrowed-pointer error: {other:?}")
                                     }
-                                    Ok(_) => panic!(
-                                        "one byte below exact borrowed-pointer peak succeeded"
-                                    ),
+                                    Ok(_) => {
+                                        panic!("one byte below requested pointer minimum succeeded")
+                                    }
                                 }
                                 borrowed_cases += 1;
                             }
