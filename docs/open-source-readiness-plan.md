@@ -19,22 +19,30 @@ compilation pass1211/0, including every helper.
 Two independent native tests add7280three-span sequences/21840prefixes and
 literal raster/cache checks using four existing white/black/island vectors,
 including odd/even physical scratch-buffer roles. No encoded-family fixture
-is added. All404native tests/14ignored, strict MSRV lint and30actual compiling
-runtime mutants pass. Both affected semantic groups pass8cases each. New
+is added. All404native tests/14ignored, strict MSRV lint,385tooling tests and
+30actual compiling runtime mutants pass. Offline package audit, unpacked
+package tests and exact downstream output also pass without publication.
+Both affected semantic groups pass8cases each. New
 main-loop controls corrupt a finished raster pixel or the swapped cache while
 preserving bounds; weaker controls remove only the two previous-row agreement
 invariants and retain all proof support. The older recorded-span control now
 rolls back the cache after its proof bridge, so rejection is by real result
 obligations, not a failed helper precondition. The configured full profile is
-27groups187contrasts with the same six shards, four-active limit and22checks;
-fresh complete current-snapshot evidence is still required.
+27groups187contrasts with the same six shards, four-active limit and22checks.
+Complete same-snapshot local collection and same-run hosted acceptance are
+separate requirements; selected-group results alone do not establish either.
 
 These are project representation/composition results, not an exported complete
 input-to-raster, final scratch-buffer parity or independently reviewed T.6
 theorem. All266records remain provisional115functional/125state/26safety.
 The seven official-positive failures, exhaustive denominator/independent model
 review, complete mode/caller/export/stream semantics and90%line/85%branch
-goals remain open. Coverage must be freshly measured, not inferred from tests.
+goals remain open. Fresh rawJSON/LCOV independently recomputes all51metrics,
+equal accepted#77:10800/12636lines,10397/12945regions,2041/2638branches.
+There is no new coverage gain or absolute-coordinate identity claim;573covered
+lines and202branch outcomes are still needed. Fresh approved official
+normal/logging/oracle executions retain2passed/7unresolved/1unsupported and
+zero restored strict-rejection credit.
 The separate native capacity repair remains unpublished and proof-blocked on
 the unsupported getter; no new standard declaration or approval is inferred.
 

@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "bc6d8d658823cd9a38f5c30e0d946dbe95b400b9",
-  "scope": "Fresh existing official diagnostics on exact packed bitmap initialization and partial-byte padding; native operations and old preconditions unchanged, no page-caller/allocator/RSS or normative rejection claim bc6d8d6; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "a21b167780401418e6a9aa33dc73bf8eead777dd",
+  "scope": "Fresh existing official diagnostics on actual MMR row/cache composition with native token streams and old preconditions unchanged; no complete input-to-raster or normative approval a21b167; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 377,
-    "passed": 363,
+    "total": 418,
+    "passed": 404,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "dcea356b2e419fb7d5f3395c7c308cdd109328f7",
-    "scope": "Actual complete pinned ordinary-runtime coverage collection: 363 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from official observations and do not provide normative approval."
+    "source_revision": "a21b167780401418e6a9aa33dc73bf8eead777dd",
+    "scope": "Actual complete pinned ordinary-runtime coverage collection: 404 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from official observations and do not provide normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "c4ea476d47f5ee5a9908ee8ea0bff9f7cf95831fe078772cdb1d971a1e0b6264",
-    "review_sha256": "62ec6a6adad1459966d9edc93ef4961a964e360a8bacf49b06b476b20ac79b3e"
+    "results_sha256": "8391a8210c7e4088cbdad84e0686e5ed13277f065e459e8e5dffcb7b70e89326",
+    "review_sha256": "84798f13b045d0863f6e5df4c22cff2aab300f549c5814d5cfd94b064c70915a"
   },
   "community_regressions": {
     "total": 0,

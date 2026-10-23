@@ -4,7 +4,24 @@ P06 is in progress. This tranche establishes a reproducible baseline and
 non-regression checks; it does not meet or ratify the proposed release goals,
 complete the missing tests, or establish normative correctness.
 
-## Latest numeric quota observations
+## Latest MMR raster/cache observations
+
+Immutable source `a21b167` freshly executes404native tests with14existing
+ignored and30actually compiling/detected runtime mutants. The two new scalar/
+literal tests cover7280three-span sequences/21840prefixes and four existing
+MMR vectors, including actual odd/even scratch-buffer roles. They introduce
+no encoded-family fixture, native algorithm or error/resource-policy change.
+
+All51global/per-file metrics are independently recomputed from rawJSON/LCOV
+and match accepted#77:10800/12636lines (85.4701%),10397/12945regions
+(80.3167%),2041/2638branches (77.3692%). New native/test digests are checked;
+erased proof additions shift source offsets, so absolute-coordinate identity
+is not claimed. No coverage gain, denominator/floor reduction or exclusion is
+claimed. The90%line/85%branch goals still require573covered lines and202branch
+outcomes. Stronger composition proofs are not substitutes for those runtime
+coverage goals.
+
+## Previous numeric quota observations
 
 Immutable source `6d73a9a` freshly executes402native tests with14existing ignored
 and26actually compiling/detected runtime mutants. A360-case independentu128
