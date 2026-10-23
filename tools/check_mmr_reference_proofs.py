@@ -4,6 +4,7 @@
 import argparse
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -16,6 +17,7 @@ FUNCTIONS = {row["id"]: row for row in source_functions(ROOT)}
 FULL = FUNCTIONS["mmr::reference_elements"]["body_text"]
 FROM = FUNCTIONS["mmr::reference_elements_from"]["body_text"]
 RASTER = FUNCTIONS["mmr::decode_bitmap"]["body_text"]
+FINISH = FUNCTIONS["mmr::finish_required_prefix"]["body_text"]
 FULL_PAIR = """&& mmr_spec::reference_pair_matches(
     transitions@, x, black, width, initial, 0, b1, b2,
 )"""
@@ -48,6 +50,33 @@ RASTER_CONTROLS = (
     (WHITE_REFERENCE + "\n" + ROW_REFERENCE, WHITE_REFERENCE),
     (ROW_PREFIX + "\n" + ROW_REFERENCE, ROW_PREFIX),
 )
+TRACE_RESULT = """&& mmr_spec::bitmap_decodes(
+    data@, width, height, &bitmap, reader.bit_position as nat,
+),"""
+TRACE_OUTER = """mmr_spec::raster_outer(
+    data@, width, row, &bitmap, traced_rows, transitions@,
+    reader.bit_position as nat,
+),"""
+TRACE_INNER = """mmr_spec::raster_inner(
+    data@, width, row, &bitmap, traced_rows, transitions@,
+    traced_start, traced_steps, initial,
+    mmr_spec::raster_state(
+        reader.bit_position as nat, x, black, row_transitions@, emitted_black,
+    ),
+),"""
+TRACE_OUTPUT = "production_mmr_trace_output!(data, width, height, bitmap, reader, traced_rows);"
+TRACE_MACRO = re.compile(
+    r"#\[\s*cfg\s*\(\s*verus_keep_ghost\s*\)\s*\]\s*"
+    r"production_mmr_trace_[a-z_]+!\([^;]*?\);",
+)
+PREFIX_MARKER_RESULT = """&& final(reader).bit_position % 8 == 0
+    && mmr_spec::exact_eofb(
+        old(reader).bytes@, old(reader).bit_position as nat,
+    )"""
+PREFIX_FRAME_RESULT = PREFIX_MARKER_RESULT + """
+&& mmr_spec::required_eofb_prefix(
+    old(reader).bytes@, old(reader).bit_position as nat, final(reader).bit_position as nat,
+),"""
 
 
 def case(identity, function, source, replacement, controls):
@@ -56,6 +85,21 @@ def case(identity, function, source, replacement, controls):
         "function": function, "site": source, "replacement": replacement,
         "controls": controls,
     }
+
+def cache_raster_case(identity, corruption):
+    replacement = replace_once(RASTER, RASTER_TAIL, RASTER_TAIL + corruption)
+    weaker = replacement
+    for original, control in RASTER_CONTROLS:
+        weaker = replace_once(weaker, original, control)
+    weaker = replace_once(weaker, TRACE_OUTER, "")
+    weaker = replace_once(weaker, TRACE_INNER, "")
+    weaker, count = TRACE_MACRO.subn("", weaker)
+    if count != 12:
+        raise ValueError("raster cache control must remove exactly the new trace-only bridges")
+    return case(
+        identity, "decode_bitmap", RASTER, replacement,
+        ((replacement, weaker), (TRACE_RESULT, ",")),
+    )
 
 
 CASES = (
@@ -97,29 +141,63 @@ CASES = (
         ),
         ((FROM_ACCEPT, FROM_ACCEPT_CONTROL),),
     ),
-    case(
-        "raster_reference_pixels_corrupted_after_row_finish", "decode_bitmap", RASTER,
-        replace_once(
-            RASTER, RASTER_TAIL,
-            RASTER_TAIL + """
+    cache_raster_case(
+        "raster_reference_pixels_corrupted_after_row_finish",
+        """
             if row == 0 && height == 1 && width > 0 && !bitmap.data.is_empty() {
                 bitmap.data[0] ^= 0x80;
             }
             #[cfg(verus_keep_ghost)]
             proof! { crate::views::bitmap_fields(&bitmap); }""",
-        ),
-        RASTER_CONTROLS,
     ),
-    case(
-        "raster_reference_cache_corrupted_after_row_swap", "decode_bitmap", RASTER,
-        replace_once(
-            RASTER, RASTER_TAIL,
-            RASTER_TAIL + """
+    cache_raster_case(
+        "raster_reference_cache_corrupted_after_row_swap",
+        """
             if row == 0 && transitions.len() > 2 {
                 transitions[0] = 0;
             }""",
+    ),
+    case(
+        "raster_output_discards_actual_input_extent", "decode_bitmap", RASTER,
+        replace_once(RASTER, TRACE_OUTPUT, TRACE_OUTPUT + "\nreader.bit_position = 0;"),
+        ((TRACE_RESULT, ","),),
+    ),
+    case(
+        "raster_output_blackens_a_white_pixel", "decode_bitmap", RASTER,
+        replace_once(
+            RASTER, TRACE_OUTPUT,
+            TRACE_OUTPUT + """
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(&bitmap);
+                reveal(crate::spec::bitmap::storage_valid);
+                assert(bitmap.stride as nat
+                    == crate::spec::bitmap::stride_for_width(bitmap.width as nat));
+                assert(bitmap.data@.len() == bitmap.stride as nat * bitmap.height as nat);
+            }
+            if bitmap.width > 0 && bitmap.height > 0 {
+                bitmap.fill_black_span(0, 0, 1)
+                    .map_err(|_error| MmrError::InvalidTransition)?;
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(&bitmap);
+                reveal(crate::spec::bitmap::storage_valid);
+                assert(crate::spec::bitmap::storage_valid(&bitmap));
+            }""",
         ),
-        RASTER_CONTROLS,
+        ((TRACE_RESULT, ","),),
+    ),
+    case(
+        "required_prefix_accepts_nonzero_alignment_bits", "finish_required_prefix", FINISH,
+        replace_once(
+            FINISH,
+            """if reader.read_bits(padding_count)? != 0 {
+                return Err(MmrError::NonZeroEofbPadding);
+            }""",
+            "let _padding_value = reader.read_bits(padding_count)?;",
+        ),
+        ((PREFIX_FRAME_RESULT, PREFIX_MARKER_RESULT + ","),),
     ),
 )
 
@@ -133,9 +211,10 @@ def main():
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/mmr.rs", "specs/mmr.rs", "proofs/model_support/mmr.rs",
-             "proofs/spec_properties/mmr.rs", "proofs/shared/bitmap.rs"),
+             "proofs/spec_properties/mmr.rs", "proofs/shared/bitmap.rs",
+             "proofs/production_impl/mmr.rs"),
             "jbig2-mmr-reference-",
-            "Exact project reference pair/cursor/acceptance and actual raster-loop reference-cache correspondence to the completed physical row. Shape-preserving pixel/cache corruption is rejected without deleting proof support; controls remove only the two previous-row correspondence invariants. Normative/input-to-raster conformance remains separate",
+            "Exact project reference selection, actual row/cache composition and accepted input-to-raster/extent/EOFB-padding results. Output corruptions retain all loop/trace proofs and remove only the new result; earlier cache controls additionally remove only logically coupled trace-result support in the weaker variant. Independent normative table/coordinate fidelity, complete valid-input acceptance/errors and resource accounting remain separate",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"MMR reference proof sensitivity failed: {error}", file=sys.stderr)

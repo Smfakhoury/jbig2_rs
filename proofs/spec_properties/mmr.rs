@@ -12,6 +12,90 @@ pub(super) proof fn transition_count_append(before: Seq<u32>, position: u32, x: 
     );
 }
 
+pub(super) proof fn raster_step_append(
+    bytes: Seq<u8>, reference: Seq<u32>, width: u32, start: nat,
+    steps: Seq<super::mmr_spec::RasterStep>, step: super::mmr_spec::RasterStep,
+)
+    requires
+        super::mmr_spec::raster_steps(bytes, reference, width, start, steps, step.before),
+        super::mmr_spec::raster_step(bytes, reference, width, steps.len() == 0, step),
+    ensures super::mmr_spec::raster_steps(
+        bytes, reference, width, start, steps.push(step), step.after,
+    ),
+{
+    assert(steps.push(step).drop_last() == steps);
+}
+
+pub(super) proof fn raster_row_append(
+    bytes: Seq<u8>, width: u32, rows: Seq<super::mmr_spec::RasterRow>,
+    row: super::mmr_spec::RasterRow,
+)
+    requires
+        super::mmr_spec::raster_rows(bytes, width, rows),
+        row.start == super::mmr_spec::rows_position(rows),
+        super::mmr_spec::raster_steps(
+            bytes, super::mmr_spec::rows_reference(rows, width), width,
+            row.start, row.steps, row.state,
+        ),
+        row.state.x == width,
+    ensures
+        super::mmr_spec::raster_rows(bytes, width, rows.push(row)),
+        super::mmr_spec::rows_position(rows.push(row)) == row.state.position,
+        super::mmr_spec::rows_reference(rows.push(row), width)
+            == row.state.transitions.push(width).push(width),
+{
+    assert(rows.push(row).drop_last() == rows);
+}
+
+pub(super) proof fn rows_cache_append(
+    bitmap: &crate::Bitmap, rows: Seq<super::mmr_spec::RasterRow>,
+    row: super::mmr_spec::RasterRow,
+)
+    requires
+        super::mmr_spec::rows_cache_pixels(bitmap, rows),
+        rows.len() < bitmap.height,
+        super::mmr_spec::row_cache_matches(
+            bitmap, rows.len() as u32,
+            row.state.transitions.push(bitmap.width).push(bitmap.width),
+        ),
+    ensures super::mmr_spec::rows_cache_pixels(bitmap, rows.push(row)),
+{
+    assert forall|index: int| 0 <= index < rows.push(row).len() implies
+        super::mmr_spec::row_cache_matches(
+            bitmap, index as u32,
+            #[trigger] rows.push(row)[index].state.transitions
+                .push(bitmap.width).push(bitmap.width),
+        ) by {
+        if index < rows.len() {
+            assert(rows.push(row)[index] == rows[index]);
+        } else {
+            assert(index == rows.len());
+        }
+    }
+}
+
+pub(super) proof fn span_row_cache_frame(
+    before: &crate::Bitmap, after: &crate::Bitmap,
+    row: u32, start: u32, end: u32, black: bool,
+)
+    requires
+        crate::spec::bitmap::storage_valid(before),
+        crate::spec::bitmap::storage_valid(after),
+        after.width == before.width, after.height == before.height,
+        super::mmr_spec::span_pixels(before, after, row, start, end, black),
+    ensures forall|other: u32, cache: Seq<u32>|
+        other != row && super::mmr_spec::row_cache_matches(before, other, cache) ==>
+            super::mmr_spec::row_cache_matches(after, other, cache),
+{
+    assert forall|other: u32, cache: Seq<u32>|
+        other != row && super::mmr_spec::row_cache_matches(before, other, cache) implies
+            super::mmr_spec::row_cache_matches(after, other, cache) by {
+        assert forall|x: u32| x < before.width implies
+            #[trigger] crate::spec::bitmap::stored_pixel(after, x, other)
+                == super::mmr_spec::transition_black_at(cache, x) by {}
+    }
+}
+
 pub(super) proof fn transition_count_all_before(
     transitions: Seq<u32>, bound: u32, x: u32,
 )
