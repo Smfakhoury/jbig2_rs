@@ -2149,6 +2149,42 @@ mod tests {
         assert_eq!(prefixes, 21840);
     }
 
+    #[test]
+    fn decoded_reference_cache_matches_the_last_physical_row() {
+        type RasterCase<'a> = (&'a [u8], u32, [[bool; 8]; 2]);
+        let island = [false, false, true, true, false, false, false, false];
+        let cases: [RasterCase<'_>; 4] = [
+            (&[0x80], 1, [[false; 8]; 2]),
+            (&[0x26, 0xA2, 0x80], 1, [[true; 8]; 2]),
+            (&[0x26, 0xA2, 0xE0], 2, [[true; 8]; 2]),
+            (&[0x2F, 0xF8], 2, [island; 2]),
+        ];
+        for (data, height, expected) in cases {
+            let width = 8;
+            let mut scratch = MmrScratch::default();
+            let (bitmap, _) =
+                decode_bitmap(data, width, height, &Limits::default(), &mut scratch).unwrap();
+            let cache = if height % 2 == 0 {
+                &scratch.transitions
+            } else {
+                &scratch.row_transitions
+            };
+            assert_eq!(&cache[cache.len() - 2..], &[width, width]);
+            for row in 0..height {
+                for x in 0..width {
+                    assert_eq!(
+                        bitmap.pixel(x, row),
+                        Some(expected[usize::try_from(row).unwrap()][usize::try_from(x).unwrap()])
+                    );
+                }
+            }
+            for x in 0..width {
+                let black = cache.iter().filter(|&&position| position <= x).count() % 2 == 1;
+                assert_eq!(bitmap.pixel(x, height - 1), Some(black));
+            }
+        }
+    }
+
     fn previous_horizontal_runs(
         reader: &mut BitReader<'_>,
         black: bool,
