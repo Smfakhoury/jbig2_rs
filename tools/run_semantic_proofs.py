@@ -25,7 +25,7 @@ CHECKS = (
     ("bitmap-copy", "check_bitmap_copy_proofs.py", 6, "strong_contract", "weaker_control"),
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("mmr-span", "check_mmr_span_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
     ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
     ("text-batch", "check_text_batch_proofs.py", 4, "strong_contract", "weaker_control"),
     ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),

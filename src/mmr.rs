@@ -1563,6 +1563,12 @@ fn reference_elements_from(
         (start > end || end > old(bitmap).width || row >= old(bitmap).height
             || !black || start == end)
             ==> final(bitmap).data@ == old(bitmap).data@,
+        (crate::spec::bitmap::storage_valid(old(bitmap))
+            && start <= end <= old(bitmap).width && row < old(bitmap).height)
+            ==> out.is_ok(),
+        (out.is_ok() && crate::spec::bitmap::storage_valid(old(bitmap))
+            && start <= end <= old(bitmap).width && row < old(bitmap).height)
+            ==> mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black),
 ))]
 fn fill_span(
     bitmap: &mut Bitmap,
@@ -1591,6 +1597,10 @@ fn fill_span(
         mmr_spec::transition_prefix_valid(final(transitions)@, end, _width),
         final(transitions)@.len() <= old(transitions)@.len() + 1,
         start == end ==> final(transitions)@.len() == old(transitions)@.len(),
+        mmr_spec::transition_span_result(
+            old(transitions)@, final(transitions)@,
+            *old(emitted_black), *final(emitted_black), start, end, black,
+        ),
 ))]
 fn record_transition_span(
     transitions: &mut Vec<u32>,
@@ -1623,7 +1633,8 @@ fn record_transition_span(
         end <= bitmap.width,
         mmr_spec::transition_prefix_valid(old(transitions)@, start, width),
         start <= end <= width,
-    ensures match out {
+    ensures
+    match out {
         Ok(()) =>
             final(bitmap).width == old(bitmap).width
             && final(bitmap).height == old(bitmap).height
@@ -1633,9 +1644,17 @@ fn record_transition_span(
             && mmr_spec::transition_prefix_valid(final(transitions)@, end, width)
             && final(transitions)@.len() <= old(transitions)@.len() + 1
             && (start == end ==>
-                final(transitions)@.len() == old(transitions)@.len()),
-        Err(_) => true,
+                final(transitions)@.len() == old(transitions)@.len())
+            && mmr_spec::transition_span_result(
+                old(transitions)@, final(transitions)@,
+                *old(emitted_black), *final(emitted_black), start, end, black,
+            )
+            && (crate::spec::bitmap::storage_valid(old(bitmap)) ==>
+                mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black)),
+        Err(_) => final(transitions)@ == old(transitions)@
+            && *final(emitted_black) == *old(emitted_black),
     },
+    crate::spec::bitmap::storage_valid(old(bitmap)) ==> out.is_ok(),
 ))]
 #[allow(clippy::too_many_arguments)]
 fn fill_recorded_span(
@@ -2373,6 +2392,115 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn recorded_span_matches_scalar_storage_and_exact_transition_updates() {
+        let mut cases = 0;
+        for width in [0, 1, 7, 8, 9, 17] {
+            let original = span_test_bitmap(width);
+            for row in 0..3 {
+                for start in 0..=width {
+                    for end in start..=width {
+                        for black in [false, true] {
+                            for before_black in [false, true] {
+                                for prefix_shape in 0..3 {
+                                    let before: Vec<_> = match prefix_shape {
+                                        0 => Vec::new(),
+                                        1 => (0..start).collect(),
+                                        _ => (0..start).flat_map(|x| [x, x]).collect(),
+                                    };
+                                    let mut expected_transitions = before.clone();
+                                    if start < end && before_black != black {
+                                        expected_transitions.push(start);
+                                    }
+                                    let mut expected = original.clone();
+                                    if black {
+                                        for x in start..end {
+                                            let index = usize::try_from(row).unwrap()
+                                                * expected.stride
+                                                + usize::try_from(x / 8).unwrap();
+                                            expected.data[index] |= 0x80 >> (x % 8);
+                                        }
+                                    }
+                                    let mut actual = original.clone();
+                                    let mut transitions = before;
+                                    let mut emitted_black = before_black;
+                                    fill_recorded_span(
+                                        &mut actual,
+                                        row,
+                                        start,
+                                        end,
+                                        black,
+                                        width,
+                                        &mut transitions,
+                                        &mut emitted_black,
+                                    )
+                                    .unwrap();
+                                    assert_eq!(actual, expected);
+                                    assert_eq!(transitions, expected_transitions);
+                                    assert_eq!(
+                                        emitted_black,
+                                        if start == end { before_black } else { black },
+                                    );
+                                    cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 11_196);
+    }
+
+    #[test]
+    fn transition_span_complete_output_matrix_preserves_empty_and_same_colour_frames() {
+        let mut cases = 0;
+        for width in 0..=9 {
+            for start in 0..=width {
+                for end in start..=width {
+                    for mask in 0..(1_u32 << start) {
+                        for duplicate in [false, true] {
+                            let mut before = Vec::new();
+                            for x in 0..start {
+                                if mask & (1 << x) != 0 {
+                                    before.push(x);
+                                    if duplicate {
+                                        before.push(x);
+                                    }
+                                }
+                            }
+                            for before_black in [false, true] {
+                                for black in [false, true] {
+                                    let mut expected = before.clone();
+                                    if start < end && before_black != black {
+                                        expected.push(start);
+                                    }
+                                    let mut transitions = before.clone();
+                                    let mut emitted_black = before_black;
+                                    record_transition_span(
+                                        &mut transitions,
+                                        &mut emitted_black,
+                                        start,
+                                        end,
+                                        width,
+                                        black,
+                                    );
+                                    assert_eq!(transitions, expected);
+                                    assert_eq!(
+                                        emitted_black,
+                                        if start == end { before_black } else { black },
+                                    );
+                                    cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 32_136);
     }
 
     #[test]

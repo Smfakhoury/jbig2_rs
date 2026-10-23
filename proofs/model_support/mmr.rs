@@ -15,4 +15,17 @@ pub(super) open spec fn transition_prefix_valid(
                 #[trigger] transitions[left] <= #[trigger] transitions[right]
 }
 
+pub(super) open spec fn transition_span_result(
+    before: Seq<u32>,
+    after: Seq<u32>,
+    before_black: bool,
+    after_black: bool,
+    start: u32,
+    end: u32,
+    black: bool,
+) -> bool {
+    after == (if start < end && before_black != black { before.push(start) } else { before })
+        && after_black == (if start < end { black } else { before_black })
+}
+
 }

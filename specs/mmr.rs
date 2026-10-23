@@ -150,6 +150,21 @@ pub(super) open spec fn bitmap_storage_valid(bitmap: &crate::bitmap::Bitmap) -> 
             == bitmap.stride as nat * bitmap.height as nat
 }
 
+pub(super) open spec fn span_result(
+    before: &crate::bitmap::Bitmap,
+    after: &crate::bitmap::Bitmap,
+    row: u32,
+    start: u32,
+    end: u32,
+    black: bool,
+) -> bool {
+    if black {
+        crate::spec::bitmap::black_span_result(before, after, row, start, end)
+    } else {
+        after.data@ == before.data@
+    }
+}
+
 pub(super) open spec fn exact_eofb(
     bytes: Seq<u8>,
     start: nat,
