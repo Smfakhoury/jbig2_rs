@@ -640,7 +640,7 @@
     "proofs/model_support/huffman.rs": "75ad3133571303f2d0369fb935e5b7dc4a94a16bab0fa65977af35f6a237e503",
     "proofs/model_support/mmr.rs": "0a14b6a4aea6063eb94f819b56f232e276409f98e15f6a6ec2f30ebf99e4c4bc",
     "proofs/production_impl/arithmetic.rs": "7baccbade7a1276a4efbe7de1a34a986d21e88ac7300ce449dd70a561bc0a3c9",
-    "proofs/production_impl/bitmap.rs": "5b344e6374e04c0a3d6d86084cc01c0b98a0d72cadd63fb820c9665d03715303",
+    "proofs/production_impl/bitmap.rs": "89390f3506136194877ee82e6968b93a88e2d0847c4d55b0279f56aa797b1686",
     "proofs/production_impl/document.rs": "be644143f4b507fbf7923af1eadeb051ee6192c94aa99e02d792dc495890646f",
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
@@ -648,7 +648,7 @@
     "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
-    "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
+    "specs/bitmap.rs": "913592795b8b43e3b716f77481b265c3d8ce55be9bce8d1ddb3dce69a865ff0c",
     "specs/decode.rs": "71640bc0bd5731b8a995abdcb34cc3b268c2219609da3f166f8997216e5bd61b",
     "specs/document.rs": "eb45f8c3d9c50f4d0ee87b4268d93065cfb724a7084096e3a15542607742db0e",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
@@ -661,7 +661,7 @@
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
     "specs/symbol_text.rs": "785d9b5ec8d8bb60e2bd4c3b18ec557621467dd42a78ee08dd208bb9ee2c52cf",
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
-    "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
+    "src/bitmap.rs": "dca4537fd36675fb2d6608c5bc50a8ca7be7e8d83a412f647520d310a0e33216",
     "src/decode.rs": "6ed26b570e11b89367a16c422eb21c6b70587903d845cfd09192d9c772166a8c",
     "src/document.rs": "0ac6c357b26f06be01e8e9097f62ae28b17fc994a763ea29efe6c4a4c6c62582",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
@@ -679,7 +679,8 @@
     "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
     "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d",
     "proofs/spec_properties/readers.rs": "ac0e7d3ff3a37da9428c4e95fff9bc242be0cd1de5f39eef5e775d90b019689f",
-    "proofs/spec_properties/mmr.rs": "60e229d7d325c1ede68bbeb29fe0fee0f4f3e09036ff8b37fd0dbc5ed961a9b9"
+    "proofs/spec_properties/mmr.rs": "60e229d7d325c1ede68bbeb29fe0fee0f4f3e09036ff8b37fd0dbc5ed961a9b9",
+    "proofs/shared/bitmap.rs": "12e5d4406a4da6bf8cf3f1c5cca382dffa2130aa8519f5f0b1ff3945a42b4a0e"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -1221,6 +1222,63 @@
       ],
       "name": "zeroed_storage",
       "role": "all stored bytes are zero; an initialization foundation, not caller timing or a complete first-typical-row proof"
+    },
+    "filled-storage-byte": {
+      "kind": "spec",
+      "file": "specs/bitmap.rs",
+      "module_path": [
+        "spec",
+        "bitmap"
+      ],
+      "name": "filled_byte",
+      "role": "Exact project packed row byte for either initial value, including zero-valued partial-byte padding."
+    },
+    "filled-storage-result": {
+      "kind": "spec",
+      "file": "specs/bitmap.rs",
+      "module_path": [
+        "spec",
+        "bitmap"
+      ],
+      "name": "filled_storage",
+      "role": "All stored row bytes match initialization and padding; not a theorem that an unverified renderer routes a parsed page flag correctly."
+    },
+    "filled-storage-prefix": {
+      "kind": "spec",
+      "file": "proofs/shared/bitmap.rs",
+      "module_path": [
+        "bitmap",
+        "bitmap_shared"
+      ],
+      "name": "black_fill_prefix",
+      "role": "Internal processed-row loop support, deliberately outside the auditor-facing initialization model."
+    },
+    "filled-storage-tail-bounds": {
+      "kind": "macro",
+      "file": "proofs/production_impl/bitmap.rs",
+      "module_path": [
+        "bitmap_proofs"
+      ],
+      "name": "production_filled_tail_bounds",
+      "role": "Preserved checked final-byte arithmetic proof, extracted without changing executing operations."
+    },
+    "filled-storage-step": {
+      "kind": "macro",
+      "file": "proofs/production_impl/bitmap.rs",
+      "module_path": [
+        "bitmap_proofs"
+      ],
+      "name": "production_filled_storage_step",
+      "role": "Apply the independently verified processed-row update and exact masked-byte identity."
+    },
+    "filled-storage-finish": {
+      "kind": "macro",
+      "file": "proofs/production_impl/bitmap.rs",
+      "module_path": [
+        "bitmap_proofs"
+      ],
+      "name": "production_filled_storage_result",
+      "role": "Connect completed initialization/padding state to the observable packed-storage result."
     },
     "row-copy-result": {
       "kind": "spec",
@@ -3801,26 +3859,38 @@
       "title": "Interpret the page default-pixel flag before initializing the page",
       "feature": "known_height_pages",
       "runtime": [
-        "segment_data::parse_page_information"
+        "segment_data::parse_page_information",
+        "bitmap::Bitmap::filled"
       ],
       "models": [
-        "page-flags-match"
+        "page-flags-match",
+        "filled-storage-byte",
+        "filled-storage-result",
+        "filled-storage-prefix"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "filled-storage-tail-bounds",
+        "filled-storage-step",
+        "filled-storage-finish"
+      ],
       "tests": [
         {
           "target": "traceability_semantics",
           "name": "page_default_pixel_initializes_the_complete_page"
+        },
+        {
+          "target": "lib",
+          "name": "bitmap::tests::filled_layout_and_padding_are_deterministic"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "On success page_flags_match relates info.default_pixel to input flag bit 2; this is a field contract, not a theorem that all initial page pixels have that value.",
+      "scope_of_formal_result": "Successful page parsing relates info.default_pixel to input flag bit 2. The auxiliary bitmap constructor proves every packed byte for either requested value, including partial-byte padding, without stronger preconditions. These separate results do not prove that the unverified page renderer routes the parsed flag into every actual initial page.",
       "assumptions": [
         "Successful parsing provides the required 19-byte payload; the generated no-region page test observes the later initialization effect."
       ],
       "gaps": [
-        "Prove flag-to-page-allocation pixel propagation for both default values and all heights; retain separate colour/transparency restrictions."
+        "Prove actual flag-to-page-allocation caller propagation for both values and all heights; constructor byte initialization alone is not the complete renderer/stream theorem. Retain separate colour/transparency and observed-capacity restrictions."
       ],
       "functional_evidence": [
         {
@@ -3828,6 +3898,13 @@
           "section": "ensures",
           "tokens": [
             "crate::spec::segments::page_flags_match(info, payload@[16], ((payload@[17] as u16) << 8) | payload@[18] as u16,)"
+          ]
+        },
+        {
+          "runtime": "bitmap::Bitmap::filled",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::bitmap::filled_storage(&bitmap, value)"
           ]
         }
       ],

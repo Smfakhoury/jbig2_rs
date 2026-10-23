@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
-  "scope": "Exact numeric document quota acceptance, tagged payloads and overflow priority; no native body or old precondition changes",
+  "source_revision": "2d5c21f52476a011d28d9f5d8dfc0d21ee22ac4c",
+  "scope": "Exact packed bitmap fill bytes for both values and partial-byte padding; no complete page-caller, observed-memory or allocator/RSS theorem",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/document-preflight-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/bitmap-filled-final-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1192,
+    "verified_obligations": 1198,
     "verified_production_functions": 610,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "9b3302117f43a75510336bc8a97790131ce1073f4a85fdbba8b80e66e542fc45",
+  "production_proof_coverage_sha256": "4ba8023e3b50006b973b6938b2d5f5ccb4d97dbc55bbbb296b2850cf30bf84a9",
   "proof_dispositions_sha256": "42e07f7ab3d791cce80caf31e1a267f8389941eeb172cd950415c9782d8c6272",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo proof/compilation on immutable6d73a9a is1192/0. Four existing result attributes specify exact scalar stream/input-work quotas and next-segment/page count quotas, including inclusive acceptance, overflow-before-limit priority and exact kind/limit/actual fields. All17 native token streams,658declarations/bodies/oldpreconditions and48reviewed boundary bodies/attrs/capacity divergence are unchanged. Source line offsets may shift. All402native tests/14ignored and26actual compiling detected runtime mutants pass. An independent360-caseu128 oracle uses only numeric parameters and bounded stack data, no giant allocation/slice, encoded family fixture or fake allocator failure. All13document-count/metadata/quota contrasts actually compile,reject strongly andaccept original-contract controls; positive original-source baselines are reused only for the same target, as in the shared checker. All51raw global/per-file metrics and digests/source/test hashes are independently recomputed: 10800/12636lines,10397/12945regions,2041/2638branches. Onlydocument gains +2coveredlines/+2regions/+2outcomes; denominators/floors/exclusions unchanged. Coordinate identity is not claimed across erased-line shifts. Requiredprofile27groups183contrasts/sixshards,max4active1worker each; expanded metadata group moves away from the arithmetic caller group without new jobs. Fresh complete same-source receipts/hostedacceptance are separate requirements, not inferred from13targeted cases. All266 selected records stayprovisional115functional125state26safety; project quota models add no selected normative rule/credit. Freshapprovednormal/logged/oracleobservations stay2passed7unresolved1unsupported,zero rejection credit. Numeric preflights do not prove aggregate decoder work/complexity, allocator/RSS or whole-container/stream semantics. Existing4112vs4128 capacity defect/native-only unapproved repair1e2, MMR divergence, independent normative/model review, seven official positives and90/85coveragegoals remain open (573morelines202branch outcomes). No native algorithm/API/error/resource policy, standardtrust, pin, waiver, paused coding family or release approval change.",
+  "note": "Actual immutable2d5c21f unfiltered Cargo proof/compilation verifies1198/0, including every new row-bounds/prefix/completion lemma; selected/module debug reports were never substituted for whole acceptance. All17executing token streams,658production identities/oldpreconditions and48reviewed boundary bodies/attrs remain unchanged. Onlyerasedfilledcontract/loopproofsupport changes; internalprefix/maths remain inprooffiles, observablebyte results inbitmapmodels. No style/verification/termination waiver. Existing scalar filloracle nowcovers1290width/height/value cases/allpadding residues. 402native/14ignored,28actual compilingdetectedruntime mutants and8actual compilingstrong/old-controlcases pass. Filledmutants preserveallloop/math proofs and removeonlyresult-specifichelpercall, so real postconditions detect outputbit/paddingcorruption,notfalsehelperpreconditions. All51raw coverage measures/digests/currentnative/testhashes are recomputed and equalparent10800/12636lines10397/12945regions2041/2638branches;no new coveragegain/coordinateidentity claimed. Requiredfullprofile27groups185contrasts6shardsmax4active stillneedsfreshcompletecurrentheadreceipts. All266selectedrecords stayprovisional115/125/26; page-default-pixel gets auxiliaryconstructorbyte evidence, not a completedactualrendererflag propagation/wholepage/stream theorem. The existinglimits-allow-bitmap predicate chargesrequested layout,notobservedVec capacity. Nativeparentc7 accepts1requestedbitmapbyte underlimit1whilereserving8;borrowedpointer 4112vs4128andMMRcapacitydivergencealsoremain. No stdgetterapproval, nativecapacityrepair1e2,allocator/RSS/exactreserve/stabilityclaim. Independentnormative/modelreview,7officialpositives,fullcaller/raster/cache/export/stream and90/85goals remain open. No pin,resource/error policy,pausedcodingfamily,issue/outreach orreleaseapprovalchange.",
   "release_gate": "blocked"
 }

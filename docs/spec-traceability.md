@@ -40,6 +40,16 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The [filled-storage model](../specs/bitmap.rs) now specifies exact packed bytes
+for either fill value, including partial-byte padding, and the unchanged native
+constructor satisfies it in a1198/0whole proof/compile. Processed-row support
+stays in [proof code](../proofs/shared/bitmap.rs). The page-default-pixel row
+links this auxiliary result without claiming that the unverified renderer
+routes the parsed flag correctly. Its caller/whole-page gap and provisional
+review remain; selected counts are still266records/115functional/125state/
+26safety. Requested-layout limits are not observed-capacity or allocator/RSS
+theorems.
+
 The [document quota models](../specs/document.rs) specify observable project
 numeric preflight results, including accepted boundaries, overflow priority and
 typed quota payloads. Four unchanged native guard bodies satisfy those
@@ -565,7 +575,7 @@ checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
 All twenty-seven semantic groups execute; six deterministic shards reduce
-repeated setup without dropping any of the 183 required strong/weaker compiling
+repeated setup without dropping any of the 185 required strong/weaker compiling
 contrasts. Each shard executes sequentially, at most four run concurrently,
 and the final collector requires
 every configured group exactly once, its selected-case baselines and native

@@ -36,7 +36,7 @@ No local standard-library getter declaration, native capacity repair or
 paused-family expansion is approved or integrated. Preserve those consent
 boundaries in the next session.
 
-The required CI profile now partitions all27groups183contrasts into six
+The required CI profile now partitions all27groups185contrasts into six
 deterministic one-worker shards, with at most four active and unchanged
 20-minute job limits. Both previous four-shard hosted attempts were rejected
 after cancellations; regrouping and a measured3-5%diagnostic-query optimization
@@ -46,7 +46,29 @@ still below the former61, without dropping any platform, proof, mutation or
 coverage protection. Prior four-shard local receipts retain their original
 source identities; fresh six-shard local/hosted execution is required.
 
-The latest numeric document-preflight tranche proves exact scalar stream/input
+The latest filled-bitmap tranche proves every packed row byte for both initial
+values and partial-byte padding. Native filling and every old precondition stay
+unchanged; processed-row and geometry support live in proof files, with no
+style/termination/verification waiver. Fresh whole proof and compilation
+verify1198/0, including every new helper, rather than treating selected debug
+results as whole acceptance. All8copy/blank/padding/fill contrasts compile,
+reject strongly and accept original-contract controls. The existing scalar
+oracle nowcovers1290width/height/value cases/allpadding residues;402native
+tests/14ignored,28actualruntime mutants and383tooling tests pass.
+All51raw coverage metrics equal the preceding quota tranche:10800/12636lines,
+10397/12945regions,2041/2638branches. No new coverage gain or absolute
+coordinate identity is claimed. The required profile is27groups185contrasts
+with the existing six shards/four active workers and unchanged budgets.
+The page-default-pixel record gains auxiliary constructor-byte evidence only;
+actual parsed-flag routing through the renderer remains open. The existing
+layout-memory predicate is requested-size accounting, not observed capacity.
+The1requested/8reservedbitmap gap and4112/4128borrowed-pointer gap remain
+unfixed pending an approved getter boundary; no approval is inferred.
+Official observations remain2/7/1 and all266records provisional115/125/26.
+The next correctness priority is the existing seven official-positive failures,
+not further small numeric-guard expansion or paused-family fixture work.
+
+The preceding numeric document-preflight tranche proves exact scalar stream/input
 work and next-segment/page quotas: inclusive acceptance, overflow priority and
 all kind/limit/actual error fields. Four result attributes and two project
 quota models strengthen unchanged native bodies and old preconditions.

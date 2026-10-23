@@ -28,7 +28,7 @@ CHECKS = (
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
     ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("bitmap-copy", "check_bitmap_copy_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
     ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
