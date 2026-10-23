@@ -31,9 +31,10 @@ rejection/storage-corruption controls. The full configured profile is27groups/
 197contrasts, not a claim of complete local/hosted execution. Swap only the
 bitmap-compose/text-batch checker slots to keep the existing maximum1000-second
 scheduling-estimate ceiling (current maximum996); six one-worker shards,
-max4active,20-minute caps and22checks remain unchanged. Exact immutable-source
-official observations and current-head hosted reconstruction remain separate
-gates. All266selected records remain provisional123functional/117state/
+max4active,20-minute caps and22checks remain unchanged. Actual immutable-source
+official normal/logging/native/Hayro executions still yield2passed/7unresolved/
+1unsupported,zero restoredcredit. Current-head hosted reconstruction remains a
+separate gate. All266selected records remain provisional123functional/117state/
 26safety; full codec/caller/resource semantics, independent normative approval
 and the protected capacity/fixture decisions remain open.
 
