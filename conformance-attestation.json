@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "7118fcf255a016e51d267704714a5c37bb1d6c12",
-  "scope": "Fresh existing official diagnostics on Proof-only exact pattern/halftone header acceptance, fields and cursor postconditions, seventeen consulted provisional field records, eight excluded unpaused control tests and seventeen runtime mutation controls; all native tokens/bodies/preconditions unchanged 7118fcf; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "ec18721f3580373e8ebe63e287cbdcf76212d1fb",
+  "scope": "Fresh existing official diagnostics on Proof-only exact bounded byte/bit reader failures with existing successful value/frame semantics preserved, independent overflow-bound support and one additional direct byte-EOF matrix; all native streams/preconditions unchanged ec18721; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "0991a9b5a3d7930fc915e8d095b858c1571560ecf3acdefa8ba4044798370832",
-    "review_sha256": "b91cc27d46716787fbe4faa233129fc7a1a28572e27ae5d773ebf771b03e5656"
+    "results_sha256": "5e9680731af00a7d561f0fc105f6f99dc29938662e8f1ca5a5b5b93504223adb",
+    "review_sha256": "bc69059a31482efe713ad75e0cceb643ee19fe3464cc93b1293518a41091c0c8"
   },
   "community_regressions": {
     "total": 0,

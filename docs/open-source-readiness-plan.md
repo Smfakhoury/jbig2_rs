@@ -2,6 +2,27 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The reader-error tranche adds exact project EOF offset/needed/remaining fields
+to all four byte-read entry points and exact invalid-count-first/EOF failures
+to bit reads. Existing successful byte/bit values and input/cursor frames are
+preserved, not claimed as new. Independent prefix-bound/monotonicity lemmas in
+proof support exclude false accumulation overflow for the already checked
+maximum of 32 bits; native defensive checks remain present and unexcluded.
+All 17 native token streams and 656 caller preconditions, plus 48 reviewed
+boundaries, are unchanged. Only five postcondition attributes and ghost bit-loop
+support change. Actual unfiltered pinned verification/compilation pass1183/0.
+Nine real compiling contrasts extend the required profile to22groups133contrasts
+in four unchanged shards/jobs. One additional 78-case byte-position/width/EOF
+matrix complements the existing exhaustive bit count/value/error/frame test.
+All382native tests pass with14ignored; actual coverage is unchanged at
+84.56%lines/79.58%regions/76.16%branches and all17runtime mutants compile/detect.
+The266selected records remain provisional111/129/26; API error payloads and
+internal bound support are not new normative rejection claims or approvals.
+Fresh approved observations remain2/7/1. Full caller/stream/raster semantics,
+official positives, capacity integration, exhaustive review and release coverage
+goals remain open. No native, trust, policy, exclusion, paused-family or CI-job
+change is introduced.
+
 The unpaused halftone/pattern control tranche adds eight ordinary tests for
 all typed error-adapter variants, exact constructor input/context budgets,
 coding/template rejection frames, zero-area generic dispatch, noncausal adaptive

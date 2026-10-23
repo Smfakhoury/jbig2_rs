@@ -216,6 +216,21 @@ attributes change. Two new compiled runtime mutants disable the MMR single-use
 and trailing-byte checks; all fifteen existing controls remain for seventeen.
 Floors, release goals and four-shard CI job/cap policy are unchanged.
 
+The reader-error follow-up adds one 78-case byte-position/width/EOF matrix,
+including zero-length and `usize::MAX` requests, partial remainders, exact
+fixed-width values and input borrow/cursor frames. It complements rather than
+duplicates the existing exhaustive bit count/value/error/frame test.
+On immutable source `ec18721f3580373e8ebe63e287cbdcf76212d1fb`, all382native
+tests pass with14ignored and actual measured metrics remain exactly
+**10,679/12,629 lines (84.56%)**, **10,295/12,936 regions (79.58%)** and
+**2,009/2,638 branches (76.16%)**. This is error-contract/test-depth progress,
+not a line/region/branch gain. All seventeen runtime controls still compile and
+are detected. Native tokens, thresholds, denominators and exclusions remain.
+The new internal bound proof excludes checked bit-accumulation overflow under
+the existing valid-reader/count domain; native defensive paths are retained
+and not counted covered or excluded. The full required semantic profile becomes
+twenty-two groups / 133 contrasts in four unchanged shards/jobs.
+
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
 messages and propagated formatter failures. Its new exact-selector mutant

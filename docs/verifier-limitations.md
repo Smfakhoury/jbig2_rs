@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1177 obligations with zero errors and zero native
+Pinned Verus verifies 1183 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 608 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-one logical semantic groups remain complete: four deterministic
+The twenty-two logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-one independently
-hashed report/log pairs and all 124 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty-two independently
+hashed report/log pairs and all 133 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,26 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+All byte-read methods now expose exact project EOF offset/needed/remaining
+fields. Bit reads expose the supplied invalid count before EOF and otherwise
+the exact EOF payload; together with the existing successful value/bound and
+cursor relations, this excludes false rejection of valid 32-bit reads.
+The original `bits_value` output relation and exhaustive bit tests were already
+present and are not counted as new work.
+
+`bits_value_bound` and `bits_limit_monotone` live in implementation-independent
+proof support, not the normative-facing reader model file. Ghost loop support
+derives that each pre-doubling prefix fits 31 bits and the next bit is at most
+one, excluding the native checked-multiply/add overflow branches under the
+unchanged preflight. Those defensive branches remain emitted and uncovered;
+no arithmetic check or caller precondition is removed. All17native streams
+and656preconditions/48reviewed boundaries are unchanged. Five reader attributes
+and only ghost loop support change. Fresh whole Cargo verification and
+compilation pass1183/0. Nine compiling controls distinguish lost EOF fields,
+wrong fixed-width failure projection, lost invalid count, EOF/overflow confusion
+and wrong rejection at the 32-bit boundary. These are project API guarantees,
+not independent standard rejection/marker-fill or complete caller approval.
 
 The pattern and halftone-specific header parsers now expose exact project
 acceptance/rejection, successful raw fields and seven/twenty-one byte cursor

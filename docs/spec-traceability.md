@@ -542,14 +542,23 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty-one semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 124 required strong/weaker compiling
+All twenty-two semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 133 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
 whole-crate source/tool/run/attempt identities. The source-bound receipt
 includes the complete shard assignment. The stable `verify` check fails on a
 missing, failed, duplicate, stale or wrong-shard result.
+
+The bit/word records additionally link exact auxiliary project reader failures.
+Successful MSB-first value semantics and exhaustive bit tests already existed.
+All byte methods now expose EOF payloads; bit reads preserve invalid-count
+priority/value, exact EOF and absence of spurious overflow or valid-width
+rejection. Internal overflow-bound support is separately source-bound under
+proofs, not presented as a normative theorem. No requirement, strength or review
+count changes: all266remain provisional111/129/26. Project error payloads do
+not establish normative rejection/marker-fill rules or downstream conformance.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional

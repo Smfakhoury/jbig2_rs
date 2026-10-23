@@ -847,3 +847,26 @@ membership to266(257normative/9policy), all provisional111functional/129state/
 committed. Exact typed partial errors/cursors, complete segment/caller/resource/
 raster semantics, independent review, official positives, capacity integration
 and coverage goals remain open.
+
+## Exact primitive reader failures
+
+All byte-read entry points now expose exact project EOF payloads. Bit reads
+preserve invalid-count-first classification/value, exact EOF and absence of
+false overflow or false valid-width rejection. Their existing successful
+value/input/cursor guarantees and exhaustive bit tests remain unchanged.
+Independent bound/monotonicity support is outside the normative-facing specs;
+ghost loop facts exclude overflow after the unchanged <=32-bit preflight.
+No native check or caller requirement is removed.
+
+Nine real compiling proof contrasts and one additional 78-case byte matrix
+validate the new properties. All382native tests pass with14ignored. Actual
+coverage remains10679/12629lines,10295/12936regions,2009/2638branches with no gain,
+denominator, floor or exclusion change. All17runtime mutants compile/detect.
+The full required profile is22groups133contrasts/fourunchangedshardsjobs.
+All17native token streams/656preconditions/48reviewed boundaries are unchanged;
+only5reader attributes andghostloop support change. Whole pinned verification
+and compilation pass1183/0. The266selected records remain provisional111/129/26;
+auxiliary error payloads and internal bound models are not normative approval.
+Actual approved normal/logged/native/Hayro observations are rerun and remain
+2/7/1 with zero rejection credit. No stopped family, observer hook, fake
+allocation failure, trust exception, policy, CI-job or publication change.
