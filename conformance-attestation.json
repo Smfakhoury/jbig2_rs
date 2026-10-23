@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "e5142ab1eff3fa841ae68b3920aade29e93a235e",
-  "scope": "Fresh existing official diagnostics on exact symbol content/order and valid representable lookup acceptance; unchanged native tokens and old preconditions, no normative approval e5142ab; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "e3f9f6c015b76f3ab9fad21bc37db6a1903c780b",
+  "scope": "Fresh existing official diagnostics on test-only raw generic framing, bitmap resource and graph controls; unchanged production and proof tokens with no new encoded-family fixture or normative approval e3f9f6c; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 418,
-    "passed": 404,
+    "total": 428,
+    "passed": 414,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "e5142ab1eff3fa841ae68b3920aade29e93a235e",
-    "scope": "Actual complete pinned ordinary-runtime coverage collection: 404 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from official observations and do not provide normative approval."
+    "source_revision": "e3f9f6c015b76f3ab9fad21bc37db6a1903c780b",
+    "scope": "Actual complete pinned ordinary-runtime coverage collection: 414 unit/integration tests pass and 14 existing microbenchmarks remain ignored. Counts are separate from official observations and do not provide normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "cbe5bcc52bfc45a83a335bd95b87d8e06fe0963634548f99fd3288011d19a41a",
-    "review_sha256": "e52ecb33537d953b806212cccdea856a663c700da7187170896d66e2953e0b53"
+    "results_sha256": "8061c4ffede22256a9158327086d12292ffb6712a2af92472a047d0d563cb8e1",
+    "review_sha256": "13b4e067278714a2dbcd376e50efc2ea5bdabe4bc8bf1bf982348c391ed4023a"
   },
   "community_regressions": {
     "total": 0,
