@@ -1081,13 +1081,21 @@ fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
         final(reader).bytes@ == old(reader).bytes@,
         old(reader).bit_position <= final(reader).bit_position,
         match out {
-            Ok(total) => total <= remaining,
+            Ok(total) => total <= remaining
+                && exists|codes: Seq<RunCode>| mmr_spec::complete_run(
+                    black, old(reader).bytes@, old(reader).bit_position as nat,
+                    final(reader).bit_position as nat, total, codes,
+                ),
             Err(_) => true,
         },
 ))]
 fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result<u32, MmrError> {
     let mut total = 0_u32;
     let mut makeup_count = 0_u32;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost mut codes = Seq::<RunCode>::empty();
+    }
     let max_makeups = remaining
         .checked_div(64)
         .and_then(|value| value.checked_add(1))
@@ -1100,10 +1108,31 @@ fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result
             old(reader).bit_position <= reader.bit_position,
             total <= remaining,
             makeup_count <= max_makeups,
+            total as nat == mmr_spec::run_value_sum(codes),
+            reader.bit_position as nat
+                == old(reader).bit_position as nat + mmr_spec::run_bit_length(codes),
+            mmr_spec::run_prefix_matches(
+                black, old(reader).bytes@, old(reader).bit_position as nat, codes,
+            ),
+            mmr_spec::run_all_makeups(codes),
         decreases max_makeups + 1 - makeup_count,
     ))]
     loop {
+        #[cfg(verus_keep_ghost)]
+        proof_decl! {
+            let ghost before_codes = codes;
+            let ghost before_position = reader.bit_position;
+        }
         let code = decode_run_code(reader, black)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            codes = codes.push(code);
+            assert(codes.drop_last() == before_codes);
+            assert(codes.last() == code);
+            assert(mmr_spec::run_prefix_matches(
+                black, old(reader).bytes@, old(reader).bit_position as nat, codes,
+            ));
+        }
         total = total
             .checked_add(u32::from(code.value))
             .ok_or(MmrError::IntegerOverflow)?;
@@ -1111,6 +1140,13 @@ fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result
             return Err(MmrError::RunExceedsRow);
         }
         if code.terminal {
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(mmr_spec::complete_run(
+                    black, old(reader).bytes@, old(reader).bit_position as nat,
+                    reader.bit_position as nat, total, codes,
+                ));
+            }
             return Ok(total);
         }
         #[cfg(verus_keep_ghost)]
@@ -1748,6 +1784,136 @@ fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn run_sequence_bytes(codes: &[RunCode], start: usize) -> ([u8; 8], usize) {
+        let mut packed = 0_u64;
+        let mut count = 0;
+        for code in codes {
+            packed = (packed << code.length) | u64::from(code.bits);
+            count += usize::from(code.length);
+        }
+        assert!(start + count < 64);
+        let leading = if start == 0 {
+            0
+        } else {
+            (0xa5_u64 << 56) & (u64::MAX << (64 - start))
+        };
+        (
+            (leading | (packed << (64 - start - count)) | 1).to_be_bytes(),
+            count,
+        )
+    }
+
+    #[test]
+    fn makeup_terminal_sequences_have_exact_sums_extent_and_overshoot_errors() {
+        let mut cases = 0;
+        for black in [false, true] {
+            let terminating = if black {
+                &BLACK_TERMINATING
+            } else {
+                &WHITE_TERMINATING
+            };
+            let makeup = if black { &BLACK_MAKEUP } else { &WHITE_MAKEUP };
+            let choices = [64, 128, 1728, 2560].map(|value| {
+                *makeup
+                    .iter()
+                    .chain(&COMMON_MAKEUP)
+                    .find(|code| code.value == value)
+                    .expect("project makeup entry")
+            });
+            for count in 0..=3 {
+                for pattern in 0..4_usize.pow(count) {
+                    let mut prefix = Vec::new();
+                    let mut selected = pattern;
+                    for _ in 0..count {
+                        prefix.push(choices[selected % 4]);
+                        selected /= 4;
+                    }
+                    for terminal in terminating {
+                        let mut codes = prefix.clone();
+                        codes.push(*terminal);
+                        let expected: u32 = codes.iter().map(|code| u32::from(code.value)).sum();
+                        for start in 0..8 {
+                            let (encoded, bits) = run_sequence_bytes(&codes, start);
+                            for remaining in [expected, expected + 1] {
+                                let mut reader = BitReader {
+                                    bytes: &encoded,
+                                    bit_position: start,
+                                };
+                                assert_eq!(
+                                    decode_run(&mut reader, black, remaining).unwrap(),
+                                    expected
+                                );
+                                assert_eq!(reader.bit_position(), start + bits);
+                                assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+                            }
+                            if expected > 0 {
+                                let remaining = expected - 1;
+                                let mut sum = 0;
+                                let mut consumed = 0;
+                                for code in &codes {
+                                    sum += u32::from(code.value);
+                                    consumed += usize::from(code.length);
+                                    if sum > remaining {
+                                        break;
+                                    }
+                                }
+                                let mut reader = BitReader {
+                                    bytes: &encoded,
+                                    bit_position: start,
+                                };
+                                assert_kind(
+                                    decode_run(&mut reader, black, remaining).unwrap_err(),
+                                    MmrErrorKind::RunExceedsRow,
+                                );
+                                assert_eq!(reader.bit_position(), start + consumed);
+                                assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+                            }
+                            cases += 1;
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 87_040);
+    }
+
+    #[test]
+    fn makeup_without_terminal_reports_exact_physical_eof_after_the_code() {
+        for black in [false, true] {
+            let makeup = if black { &BLACK_MAKEUP } else { &WHITE_MAKEUP };
+            for value in [64, 128, 1728, 2560] {
+                let code = *makeup
+                    .iter()
+                    .chain(&COMMON_MAKEUP)
+                    .find(|code| code.value == value)
+                    .unwrap();
+                let start = (8 - usize::from(code.length) % 8) % 8;
+                let (encoded, count) = run_sequence_bytes(&[code], start);
+                let end = start + count;
+                let bytes = &encoded[..end / 8];
+                let mut reader = BitReader {
+                    bytes,
+                    bit_position: start,
+                };
+                let MmrError::Reader(error) =
+                    decode_run(&mut reader, black, u32::from(value)).unwrap_err()
+                else {
+                    panic!("terminating code is required")
+                };
+                assert_eq!(
+                    error,
+                    MalformedError::UnexpectedEof {
+                        offset: end as u64,
+                        needed: 1,
+                        remaining: 0,
+                    }
+                );
+                assert_eq!(reader.bit_position(), end);
+                assert_eq!(reader.bytes.as_ptr(), bytes.as_ptr());
+            }
+        }
+    }
 
     fn prefix_window_bytes(window: u16, width: u8, start: usize) -> [u8; 8] {
         let value = u64::from(window) << (64 - start - usize::from(width));

@@ -43,6 +43,60 @@ pub(super) open spec fn reader_valid(reader: &crate::reader::BitReader) -> bool 
         && reader.bit_position <= reader.bytes@.len() * 8
 }
 
+pub(super) open spec fn run_bit_length(codes: Seq<super::RunCode>) -> nat
+    decreases codes.len(),
+{
+    if codes.len() == 0 { 0 } else {
+        run_bit_length(codes.drop_last()) + codes.last().length as nat
+    }
+}
+
+pub(super) open spec fn run_value_sum(codes: Seq<super::RunCode>) -> nat
+    decreases codes.len(),
+{
+    if codes.len() == 0 { 0 } else {
+        run_value_sum(codes.drop_last()) + codes.last().value as nat
+    }
+}
+
+pub(super) open spec fn run_prefix_matches(
+    black: bool, bytes: Seq<u8>, start: nat, codes: Seq<super::RunCode>,
+) -> bool
+    decreases codes.len(),
+{
+    if codes.len() == 0 {
+        start <= bytes.len() * 8
+    } else {
+        let prefix = codes.drop_last();
+        let code = codes.last();
+        run_prefix_matches(black, bytes, start, prefix)
+            && run_code_in_implementation_tables(black, code)
+            && start + run_bit_length(codes) <= bytes.len() * 8
+            && code.bits as nat == crate::spec::readers::bits_value(
+                bytes, start + run_bit_length(prefix), code.length as nat,
+            )
+    }
+}
+
+pub(super) open spec fn run_all_makeups(codes: Seq<super::RunCode>) -> bool
+    decreases codes.len(),
+{
+    codes.len() == 0
+        || (run_all_makeups(codes.drop_last()) && !codes.last().terminal)
+}
+
+pub(super) open spec fn complete_run(
+    black: bool, bytes: Seq<u8>, start: nat, end: nat, total: u32,
+    codes: Seq<super::RunCode>,
+) -> bool {
+    codes.len() > 0
+        && run_prefix_matches(black, bytes, start, codes)
+        && run_all_makeups(codes.drop_last())
+        && codes.last().terminal
+        && end == start + run_bit_length(codes)
+        && total as nat == run_value_sum(codes)
+}
+
 pub(super) open spec fn transitions_ordered(
     transitions: Seq<u32>,
     width: u32,
