@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "815b64694266b035d7de45e43f491a49923ba123",
-  "scope": "Exact project first-match group sizes and complete collected/codebook cardinality, with unchanged existing preconditions and executing operations",
+  "source_revision": "3a8a31651220083725c04d8cabbb5e1e89d367cd",
+  "scope": "Exact valid-cache project T6 reference pair, lower cursor, suffix/global selection and actual raster caller skipped-prefix invariant; no stronger inputs",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/symbol-cardinality-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/mmr-reference-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1191,
+    "verified_obligations": 1192,
     "verified_production_functions": 610,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "19eedb72ac4bf0d3e33c2dc31e47059df609b43dc7641f9358f6641b01db7c35",
-  "proof_dispositions_sha256": "f8c54f576a033b1a01e279bd37f754caecc47770fd5a6321ae6559195681ac96",
+  "production_proof_coverage_sha256": "7548c92ae3cfe3d612288e589cd1dbd6cb39bbdfa7f310d04a4db437988454fa",
+  "proof_dispositions_sha256": "f3c55308b57ee4539c83a81a6734e69dd76167933106a94129dca71607222818",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo proof/compilation pass1191/0 with lifetime/erasure checks. Native first-match index, selected exported-group size, successful complete reference collection and contiguous/borrowed codebook projection now expose exact cardinality. A decreasing finite model sums the first matching group's exports for each complete reference occurrence, counting repeats and ignoring missing groups as the current helper does. Erased exact-prefix/import-count invariants and a uniqueness proof compose the result. All17executing native streams,658existing preconditions and48reviewed boundaries/capacity-divergence flags remain unchanged; one narrow native style-lint annotation accommodates erased source lines, not verification or termination exemption. Inventory658functions610direct/24limitations/23forwarders/1MMRdivergence/0incomplete/0projectassumptions. Six actual compiling strong/weaker controls detect lost contiguous/borrowed length, nonminimal duplicate lookup, wrong group size, dropped borrowed bitmaps and discarded contiguous exports. Required complete profile is26groups158contrasts/fourunchangedshards/CIjobs; local/hosted receipts remain distinct. All396native tests pass with14ignored;20actualruntime mutants compile/detect. New native duplicate-key helper states supplement the existing9207resource scenarios and5460below-requested-minimum errors. Coverage remains10739/12636lines,10352/12945regions,2023/2638branches; no floor/denominator/exclusion change or new coverage credit. The export order row gains auxiliary count links only:266allprovisional114functional/126state26safety. Cardinality is not content/order, normative/caller-stream agreement or observed-capacity correctness. The reproduced4112vs4128 borrowed-capacity defect remains on this source. Separate native-only repair1e2bf67 has396native/21mutants but its whole proof is blocked by unsupportedVec::capacity, with no approved standard trust exception or waiver; it is not integrated. Full ordering/raster/caller/stream, exhaustive independent review, seven official positives, capacity integration and90/85coverage goals remain open. No native algorithm, API, error/resource policy, pin, observer hook, fake allocation, architecture-invalid slice, paused family or release approval change.",
+  "note": "Fresh unfiltered pinned Cargo proof/compilation pass1192/0 with lifetime/erasure checks. Both existing reference helpers now prove valid-input acceptance and exact first eligible opposite-colour b1/followingb2 or width-sentinel fallback. The optimized helper proves exact lower cursor and suffix result, conditionally global when the old prefix was skipped. The actual raster loop maintains that condition across monotone x and initial-flag reset; an independently verified suffix/global lemma and explicit lower-loop result compose the real call site. Cursor/prefix optimization models live in implementation proof support. All17executing streams658oldpreconditions48reviewed boundaries/capacity-divergence flags remain, with one targeted source-line style annotation for erased proofs, not a verification/termination waiver. Inventory658functions610direct/24limitations/23forwarders/1MMRdivergence/0incomplete/0assumptions. Six actual compiling strong/weaker controls detect wrong reference pair, lost cursor and false valid-input rejection while retaining old bounds. Required complete profile27groups164contrasts/fourunchangedshards/CIjobs; local/hosted receipts distinct. Native scalar oracle enumerates461small sorted sentinel vectors,9240full searches and49364cursor searches, including duplicate entries/widthzero/alllegalcursor positions. All397native tests pass with14ignored;21actualruntime mutants compile/detect including discarded cursor update. Coverage10739/12636lines,10352/12945regions,2025/2638branches:only2newbranch outcomes,no denominator/floor/exclusion change. One selected changing-element record gains functional project selection evidence:266allprovisional115functional/125state26safety. Reference-cache/previous-row pixels, independent T6 coordinate/parity interpretation, full raster/caller/stream and normative review remain open. The4112vs4128borrowed-capacity semantic defect also remains on this source. Native-only repair1e2 passes396native21mutants but full proof is blocked by unsupportedVeccapacity; no approved standard declaration or waiver is integrated. Seven official positives, exhaustive independent review, capacity integration and90/85coverage goals remain open. No native algorithm, API, error/resource policy, pin, observer hook, fakeallocationfailure, invalidslice, new encoded family or paused JBIG2 refinement/aggregation/custom-family change.",
   "release_gate": "blocked"
 }

@@ -2,6 +2,27 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The latest T.6 reference-search tranche proves valid-cache acceptance, exact
+first eligible opposite-colour `b1`/following `b2`, width-sentinel fallback
+and the optimized lower cursor. The real raster loop now maintains the
+skipped-prefix condition needed for global selection across monotone position
+updates and initial-flag reset. A verified suffix/global bridge and explicit
+lower-loop result avoid relying on an unused helper theorem. No existing
+precondition or executing operation changes;658preconditions/48boundaries
+remain, with one narrowly scoped style annotation for erased source lines.
+Whole proof/compile1192/0 and six actual compiling contrasts pass. The same
+four-shard profile now requires27groups164contrasts, with no new CI job.
+The native oracle enumerates461sorted sentinel vectors,9240full searches and
+49364cursor searches;397native tests/14ignored and21runtime mutants pass.
+Coverage is10739/12636lines,10352/12945regions,2025/2638branches:only2new
+branch outcomes, no changed denominator/floor/exclusion. One selected
+changing-element record gains project functionality:266allprovisional,
+now115functional125state26safety. Previous-row/cache pixel correspondence,
+independent T.6 mapping and complete raster/stream remain open. This is MMR
+reference-line work, not paused JBIG2 refinement/aggregation-family expansion.
+The observed borrowed-capacity defect and proof-blocked native repair1e2
+remain separate; no standard trust exception or overall completion is claimed.
+
 The latest cardinality tranche proves native first-match lookup, exported
 group size, complete referenced-symbol count and exact contiguous/borrowed
 codebook length. A finite decreasing sum counts repeated references and gives

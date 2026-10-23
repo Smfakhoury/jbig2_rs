@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1191 obligations with zero errors and zero native
+Pinned Verus verifies 1192 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 610 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-six logical semantic groups remain complete: four deterministic
+The twenty-seven logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-six independently
-hashed report/log pairs and all 158 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty-seven independently
+hashed report/log pairs and all 164 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,24 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+Both T.6 reference helpers now expose valid-cache acceptance and exact
+eligible opposite-colour pair/fallback selection. The optimized lower cursor
+and conditional suffix/global theorem are tied to the real raster loop's
+skipped-prefix invariant, preserved across monotone position updates and
+initial reset. An explicit lower-loop result retains the break witness.
+Internal cursor/prefix specifications and the suffix/global bridge are in
+proof support; no ordinary input precondition strengthens. All17executing
+streams658preconditions48reviewed boundaries remain, plus one style-only
+source-line allowance for erased proofs. Whole proof/compile1192/0 passes.
+Six actual compiling contrasts retain old bounds and distinguish wrong pair,
+lost cursor and false rejection. Native461vector/9240full/49364cursor cases
+pass;397native/14ignored and21runtime mutants pass. Only2additional native
+branch outcomes are covered, with unchanged denominators/floors/exclusions.
+The changing-element record becomes functional within this exact project
+cache scope:266allprovisional115/125/26. No previous-row/cache pixel theorem,
+independent coordinate/parity translation or full raster/stream conformance
+is inferred. Existing capacity defects and unapproved native repair stay open.
 
 First-match lookup now exposes its minimum matching index without adding a
 store-key uniqueness precondition. Group projection proves the selected
@@ -331,9 +349,16 @@ on `Vec::capacity` and `Result::unwrap_or`. This is a standard-library
 specification prerequisite, not a reason to count vector length as capacity,
 add project assumptions or declare the source gap closed. Its runtime body
 and accounting policy remain unchanged.
-The upstream capacity prerequisite is
-[verus-lang/verus#3304](https://github.com/verus-lang/verus/issues/3304), still
-open as of 2026-10-22. The merged reservation specification in
+The earlier tracking issue
+[verus-lang/verus#3304](https://github.com/verus-lang/verus/issues/3304) was
+closed manually on 2026-10-22 after the maintainer suggested a minimal
+allocator-generic getter declaration with no postconditions. Its technical
+sufficiency was checked in an isolated probe; neither issue closure nor that
+probe grants a local standard-trust exception or whole-project acceptance.
+The pinned getter is still unsupported, the existing no-local-trusted-spec
+policy has not been explicitly waived, and both the MMR integration and
+native-only borrowed-capacity repair remain blocked. No additional external
+issue/comment is needed or authorized. The merged reservation specification in
 [verus-lang/verus#3094](https://github.com/verus-lang/verus/pull/3094) does not
 itself specify the capacity getter or close this divergence.
 The five primitive value/operator bridges now share their verified executing

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "815b64694266b035d7de45e43f491a49923ba123",
-  "scope": "Fresh existing official diagnostics on exact project first-match imported-symbol/codebook cardinality with unchanged execution and an open observed-capacity defect 815b646; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "3a8a31651220083725c04d8cabbb5e1e89d367cd",
+  "scope": "Fresh existing official diagnostics on exact project T6 reference selection and raster cursor-prefix proof with unchanged native execution 3a8a316; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "d27f8b2a0930abc3b46938027be4e90fa567473ea3e694f0efb2f737b7407405",
-    "review_sha256": "9cdd00a62d3ac8a9ce4f865346b8fb1f791ff5761dc92f31bd6237d92b6df872"
+    "results_sha256": "6825e6bf59d655ce51057e8e1d96d3b833fee99d9accd5d1b0c13ca8c3f22e13",
+    "review_sha256": "c7ba029ebf00e90a013ba7652551d7578805571880790956dcc43e02627fbb66"
   },
   "community_regressions": {
     "total": 0,

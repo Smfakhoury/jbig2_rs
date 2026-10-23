@@ -42,8 +42,8 @@ normative decomposition.
 
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 114 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 126 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 115 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 125 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -542,8 +542,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty-six semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 158 required strong/weaker compiling
+All twenty-seven semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 164 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
@@ -651,6 +651,24 @@ does not establish selected bitmap bytes, order, normative import identity or
 caller/stream agreement. All266records remain provisional114/126/26.
 The native capacity defect is explicitly unchanged, and the separate repair
 still lacks approved standard-boundary integration.
+
+The T.6 search follow-up closes exact project changing-element selection.
+Both helpers accept every input satisfying their unchanged cache/bounds
+preconditions. The full scan exposes the first eligible opposite-colour pair
+or width/width fallback; the optimized path additionally exposes its precise
+lower cursor and suffix pair. Its global result is conditional on a skipped
+prefix, and the actual raster loop now proves that condition on every call.
+Erased loop invariants, an explicit lower-loop result and an independently
+verified suffix/global bridge compose this property without changing execution.
+Cursor/prefix cache machinery remains in proof support, not the normative
+reference-position model. Six actual compiling controls include false
+valid-input rejections;461native vectors cover9240full/49364cursor calls.
+One record gains functional project evidence:266allprovisional115/125/26.
+Previous-row/cache pixel correspondence, independent initial-coordinate and
+colour-parity review, and full mode/raster/stream semantics remain open.
+The existing first-white/next-row records are not upgraded. Two real native
+branch outcomes are additionally covered, with no changed denominator/floor.
+This does not resume any paused JBIG2 refinement/aggregation/custom family.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional

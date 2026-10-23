@@ -73,6 +73,17 @@ are those used by the existing raster caller; dispatch and raster/caller
 composition remain separate. Erased witness selection and normalization
 assertions in the helper are proof support, not extra normative rules.
 
+MMR `reference_position_eligible`, `first_reference_candidate` and
+`reference_pair_matches` expose project changing-element geometry and parity:
+positions strictly after `x`, equality when `initial` is set, even-index
+post-transition black, the following `b2`, and width-sentinel fallback.
+The native first call uses `(x = 0, initial = true)` for the imaginary start;
+that mapping still needs independent comparison with T.6 notation.
+`reference_cursor_matches` and `reference_prefix_skipped` are internal cache
+optimization support. The verified suffix/global bridge is used by the real
+raster caller, which maintains its skipped prefix across position/flag updates.
+No reference-cache/previous-row pixel correspondence follows from these models.
+
 Decode `first_symbol_index`, `symbol_group_count`, `referred_symbol_count` and
 `collected_symbol_count` are project lookup/count semantics. The full result
 uses the complete reference length; prefix calls support the native loops.
@@ -101,7 +112,7 @@ row/raster/caller interpretation remain separate review obligations.
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  26-group/158-contrast required profile is neither added normative coverage nor a fresh
+  27-group/164-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks
