@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "a6217004b43ba9357a0cd41e624cfe9f20fb45e5",
-  "scope": "Fresh existing official diagnostics on native metadata/resource coverage with observed-success/requested-minimum tests and an explicitly open observed-capacity defect a621700; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "815b64694266b035d7de45e43f491a49923ba123",
+  "scope": "Fresh existing official diagnostics on exact project first-match imported-symbol/codebook cardinality with unchanged execution and an open observed-capacity defect 815b646; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
     "total": 377,
     "passed": 363,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "0fb476f15ffffea022c48fa463b327006c04bff01306fbd1cfe44caad99831e1",
-    "review_sha256": "bf0487a7bd34509d32f1d3b7334d0a72f26d260091fea517732d907a24307a0b"
+    "results_sha256": "d27f8b2a0930abc3b46938027be4e90fa567473ea3e694f0efb2f737b7407405",
+    "review_sha256": "9cdd00a62d3ac8a9ce4f865346b8fb1f791ff5761dc92f31bd6237d92b6df872"
   },
   "community_regressions": {
     "total": 0,

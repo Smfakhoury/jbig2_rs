@@ -542,8 +542,8 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All twenty-five semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 152 required strong/weaker compiling
+All twenty-six semantic groups execute; four deterministic shards reduce
+repeated setup without dropping any of the 158 required strong/weaker compiling
 contrasts. Each shard executes sequentially, and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
@@ -638,6 +638,19 @@ A separate native-only repair remains blocked by the unapproved standard
 capacity specification, with no current formal acceptance. This is an
 additional functional resource-accounting gap, not a new standards exception,
 conformance credit or reason to upgrade a provisional record.
+
+The cardinality follow-up proves first matching index/group size and complete
+collected/codebook length, with no stronger existing precondition. Its finite
+model counts every reference occurrence, repeats the first matching group's
+size, and gives missing groups zero, matching current helper behavior.
+The codebook view preserves this count. Six actual compiling controls exercise
+wrong view lengths, nonminimal duplicate lookup, wrong selected group, lost
+borrowed bitmaps and discarded contiguous exports. The export-order record
+gains auxiliary runtime/model/test links but remains state-only: cardinality
+does not establish selected bitmap bytes, order, normative import identity or
+caller/stream agreement. All266records remain provisional114/126/26.
+The native capacity defect is explicitly unchanged, and the separate repair
+still lacks approved standard-boundary integration.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional

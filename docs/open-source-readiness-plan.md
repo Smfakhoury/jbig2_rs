@@ -2,6 +2,25 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+The latest cardinality tranche proves native first-match lookup, exported
+group size, complete referenced-symbol count and exact contiguous/borrowed
+codebook length. A finite decreasing sum counts repeated references and gives
+missing groups zero, matching this private helper's existing behavior.
+Erased prefix/import-count invariants compose the complete success result.
+All17executing native streams,658preconditions and48reviewed boundaries remain;
+one narrow source-line style annotation accommodates the erased invariants,
+not a verification/termination waiver. Whole proof/compile1191/0 passes.
+Six actual compiling contrasts extend the same four-shard profile to
+26groups158cases, without a new CI job. All396native tests pass with14ignored;
+20actualruntime mutants compile/detect. Typed duplicate-key cases complement
+the existing9207resource scenarios. Coverage stays10739/12636lines,
+10352/12945regions,2023/2638branches, with no new coverage credit or floor change.
+Export-order evidence gains auxiliary count links only:266allprovisional
+114/126/26. Count is not content/order or normative caller agreement. The
+observed-capacity defect remains open on this source; native repair1e2bf67
+is separate and not formally accepted. All independent/raster/stream/release
+gates remain open.
+
 The latest resource/reference tranche adds only direct native component tests:
 9,207 collection scenarios check existing bitmap-resource order, pointer
 identity and successful observed-capacity upper bounds, including 5,460

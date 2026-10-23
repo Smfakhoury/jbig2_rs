@@ -1,6 +1,6 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1190 obligations with zero errors and zero native
+Pinned Verus verifies 1191 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
 610 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
@@ -17,10 +17,10 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The twenty-five logical semantic groups remain complete: four deterministic
+The twenty-six logical semantic groups remain complete: four deterministic
 round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all twenty-five independently
-hashed report/log pairs and all 152 required compiling contrasts. Missing,
+collector requires all four same-run shard receipts, all twenty-six independently
+hashed report/log pairs and all 158 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
@@ -34,6 +34,23 @@ live under `proofs/model_support/` with their original logical module ownership;
 the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
+
+First-match lookup now exposes its minimum matching index without adding a
+store-key uniqueness precondition. Group projection proves the selected
+export count; complete contiguous/borrowed collection and codebook projection
+prove exact cardinality against a finite decreasing reference sum. Native
+repeats/missing groups retain their current helper meaning. Four postconditions,
+erased count invariants and a uniqueness proof strengthen; all658existing
+preconditions,17executing streams and48reviewed boundaries remain. A narrow
+too-many-lines annotation is necessary only because erased annotations expand
+the source span; no verification or termination exemption changes.
+Whole proof/compile1191/0 and six actual compiling contrasts pass. Inventory
+remains658/610direct. Typed duplicate-key cases supplement existing native
+resource matrices;396native tests/14ignored and20runtime mutants pass.
+Coverage is unchanged. All266records stayprovisional114/126/26; the export
+order row only gains auxiliary count evidence. No exact output-content/order,
+caller/stream equivalence, normative approval or observed-capacity enforcement
+is inferred. The separate native-only capacity repair remains unintegrated.
 
 The resource/reference coverage tranche leaves all17native streams and
 658production declarations/bodies/attributes/source starts unchanged, as well

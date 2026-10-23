@@ -649,7 +649,7 @@
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "specs/bitmap.rs": "a0eef38f5bcc888166410ad3f5c43ff233e4370602c7d78c99762902986d6315",
-    "specs/decode.rs": "f00e3a481025c5f1fd5637972d283d43a95f85846a3c7e610d8442ad2bb979fe",
+    "specs/decode.rs": "71640bc0bd5731b8a995abdcb34cc3b268c2219609da3f166f8997216e5bd61b",
     "specs/document.rs": "937c78bb6796d5e3c179019c5183ff1c848cece68e26b705cae1f5615ec45480",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "e0a44fd445c416ef57ec05a670820c6a2746a215a1338092a3ac3efcbffc7b6f",
@@ -662,7 +662,7 @@
     "specs/symbol_text.rs": "785d9b5ec8d8bb60e2bd4c3b18ec557621467dd42a78ee08dd208bb9ee2c52cf",
     "src/arithmetic.rs": "e11acd8786be95009bb10c1e4a85359b04068ebfc379e66a8f4249ba862cec35",
     "src/bitmap.rs": "9d2d614c038f66c5117a61993151d94f1dee9cdbeb3e243674fd5dd04f4bde17",
-    "src/decode.rs": "ec2fdf90b4254019438f81fd5266c52a1e571e61ab37aa26cb135141e8b50a2f",
+    "src/decode.rs": "6ed26b570e11b89367a16c422eb21c6b70587903d845cfd09192d9c772166a8c",
     "src/document.rs": "42c4e58ff2b0325a757a555e5782113326e0043235e45c06aa622a880a9e8214",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "f198e034e0ed2382d7a4e198e8c06f72069df3fb598f27c7f0ac58d3dd905bd0",
@@ -780,6 +780,56 @@
       ],
       "name": "export_indices_valid",
       "role": "Each export index is below candidate count; does not specify run interpretation/order."
+    },
+    "collected-symbol-count": {
+      "kind": "spec",
+      "file": "specs/decode.rs",
+      "module_path": [
+        "decode",
+        "decode_spec"
+      ],
+      "name": "collected_symbol_count",
+      "role": "Exact cardinality of either project contiguous or borrowed collected-symbol representation."
+    },
+    "first-symbol-store-index": {
+      "kind": "spec",
+      "file": "specs/decode.rs",
+      "module_path": [
+        "decode",
+        "decode_spec"
+      ],
+      "name": "first_symbol_index",
+      "role": "Project first matching store entry, including duplicate-key helper inputs; not a normative key-uniqueness assumption."
+    },
+    "symbol-resource-group-count": {
+      "kind": "spec",
+      "file": "specs/decode.rs",
+      "module_path": [
+        "decode",
+        "decode_spec"
+      ],
+      "name": "symbol_group_count",
+      "role": "Export count of the first project matching resource, or zero if absent."
+    },
+    "referred-symbol-count": {
+      "kind": "spec",
+      "file": "specs/decode.rs",
+      "module_path": [
+        "decode",
+        "decode_spec"
+      ],
+      "name": "referred_symbol_count",
+      "role": "Finite referenced-group cardinality sum; the success contract supplies the complete reference length. Repeated occurrences count again and missing groups contribute zero."
+    },
+    "project-symbol-codebook-length": {
+      "kind": "spec",
+      "file": "specs/symbol_text.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec"
+      ],
+      "name": "codebook_len",
+      "role": "Existing exact logical length of contiguous/borrowed project codebook views."
     },
     "symbol-bitmaps-valid": {
       "kind": "spec",
@@ -4170,10 +4220,19 @@
       "title": "Assemble exports in the selected order over imported then new symbols",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::assemble_exported_symbols"
+        "symbol_text::assemble_exported_symbols",
+        "decode::symbol_index",
+        "decode::get_symbol_resource",
+        "decode::collect_referred_symbols",
+        "decode::CollectedSymbols::codebook"
       ],
       "models": [
-        "symbol-bitmaps-valid"
+        "symbol-bitmaps-valid",
+        "collected-symbol-count",
+        "first-symbol-store-index",
+        "symbol-resource-group-count",
+        "referred-symbol-count",
+        "project-symbol-codebook-length"
       ],
       "proof_macros": [],
       "tests": [
@@ -4184,19 +4243,56 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::sparse_new_exports_preserve_scalar_order"
+        },
+        {
+          "target": "lib",
+          "name": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget"
+        },
+        {
+          "target": "lib",
+          "name": "decode::tests::first_matching_symbol_group_controls_duplicate_keys_and_collection_count"
         }
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "Successful assembly preserves output storage validity and output index-list length; it does not export equality between each bitmap and its selected imported/new candidate.",
+      "scope_of_formal_result": "Successful assembly preserves output storage validity and output index-list length. Auxiliary imported-resource helpers now prove first-match group cardinality, complete referenced-group count and exact contiguous/borrowed codebook length, preserving existing preconditions and repeated/missing-reference behavior. These count theorems do not export equality between each assembled bitmap and its selected imported/new candidate, so this order record retains state-preservation strength.",
       "assumptions": [
         "Input codebook/bitmaps and all indices are valid; one linked test uses the clone helper in its oracle and is not an independent clone-content proof."
       ],
       "gaps": [
-        "Prove exact candidate selection, sequence order, dimensions and complete bitmap bytes at every output index."
+        "Prove exact candidate selection, sequence order, dimensions and complete bitmap bytes at every output index; cardinality is not sequence-content or normative caller-order equivalence.",
+        "The existing observed-capacity accounting gap is independent of these count results and remains open on this source."
       ],
       "functional_evidence": [],
       "invariant_evidence": [
+        {
+          "runtime": "decode::symbol_index",
+          "section": "ensures",
+          "tokens": [
+            "decode_spec::first_symbol_index(symbols@, number, index as int)"
+          ]
+        },
+        {
+          "runtime": "decode::get_symbol_resource",
+          "section": "ensures",
+          "tokens": [
+            "resource.exported@.len() == decode_spec::symbol_group_count(symbols@, number)"
+          ]
+        },
+        {
+          "runtime": "decode::collect_referred_symbols",
+          "section": "ensures",
+          "tokens": [
+            "decode_spec::collected_symbol_count(&bitmaps) == decode_spec::referred_symbol_count(symbols@, segment.header.referred_segments@, segment.header.referred_segments@.len(),)"
+          ]
+        },
+        {
+          "runtime": "decode::CollectedSymbols::codebook",
+          "section": "ensures",
+          "tokens": [
+            "crate::symbol_text::symbol_text_spec::codebook_len(out) == decode_spec::collected_symbol_count(self)"
+          ]
+        },
         {
           "runtime": "symbol_text::assemble_exported_symbols",
           "section": "ensures",
