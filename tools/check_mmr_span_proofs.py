@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check exact MMR span no-op contracts, not black-pixel functional correctness."""
+"""Check exact conditional MMR span pixels, no-ops and transition-cache updates."""
 
 import argparse
 import json
@@ -17,6 +17,16 @@ NO_OP = """(start > end || end > old(bitmap).width || row >= old(bitmap).height
 FLIP = """if let Some(byte) = bitmap.data.get_mut(0) { *byte ^= 1; }"""
 CALL = """bitmap .fill_black_span(row, start, end)
     .map_err(|_error| MmrError::InvalidTransition)?;"""
+CANONICAL_SUCCESS = """(crate::spec::bitmap::storage_valid(old(bitmap))
+    && start <= end <= old(bitmap).width && row < old(bitmap).height)
+    ==> out.is_ok(),"""
+CANONICAL_RESULT = """(out.is_ok() && crate::spec::bitmap::storage_valid(old(bitmap))
+    && start <= end <= old(bitmap).width && row < old(bitmap).height)
+    ==> mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black),"""
+TRANSITION_RESULT = """mmr_spec::transition_span_result(
+    old(transitions)@, final(transitions)@,
+    *old(emitted_black), *final(emitted_black), start, end, black,
+)"""
 CASES = (
     {
         "id": "invalid_span_mutates_storage", "file": "src/mmr.rs",
@@ -35,14 +45,48 @@ CASES = (
         "module": "mmr", "function": "fill_span",
         "site": "if !black { return Ok(()); }",
         "replacement": f"if !black {{ {FLIP} return Ok(()); }}",
-        "controls": ((NO_OP, ""),),
+        "controls": ((NO_OP, ""), (CANONICAL_RESULT, "")),
     },
     {
         "id": "empty_black_span_mutates_storage", "file": "src/mmr.rs",
         "module": "mmr", "function": "fill_span",
         "site": CALL,
         "replacement": f"if start == end {{ {FLIP} return Ok(()); }}\n{CALL}",
-        "controls": ((NO_OP, ""),),
+        "controls": ((NO_OP, ""), (CANONICAL_RESULT, "")),
+    },
+    {
+        "id": "black_span_is_skipped", "file": "src/mmr.rs",
+        "module": "mmr", "function": "fill_span",
+        "site": CALL, "replacement": "return Ok(());",
+        "controls": ((CANONICAL_RESULT, ""),),
+    },
+    {
+        "id": "canonical_valid_span_is_falsely_rejected", "file": "src/mmr.rs",
+        "module": "mmr", "function": "fill_span",
+        "site": CALL,
+        "replacement": "if start < end { return Err(MmrError::InvalidTransition); }\n" + CALL,
+        "controls": ((CANONICAL_SUCCESS, ""),),
+    },
+    {
+        "id": "recorded_span_discards_cache_update", "file": "src/mmr.rs",
+        "module": "mmr", "function": "fill_recorded_span",
+        "site": "record_transition_span(transitions, emitted_black, start, end, width, black);",
+        "replacement": "",
+        "controls": (("&& " + TRANSITION_RESULT, ""),),
+    },
+    {
+        "id": "transition_cache_stores_wrong_emitted_colour", "file": "src/mmr.rs",
+        "module": "mmr", "function": "record_transition_span",
+        "site": "*emitted_black = black;",
+        "replacement": "*emitted_black = !black;",
+        "controls": ((TRANSITION_RESULT + ",", ""),),
+    },
+    {
+        "id": "empty_span_corrupts_emitted_colour", "file": "src/mmr.rs",
+        "module": "mmr", "function": "record_transition_span",
+        "site": "if start == end { return; }",
+        "replacement": "if start == end { *emitted_black = !*emitted_black; return; }",
+        "controls": ((TRANSITION_RESULT + ",", ""),),
     },
 )
 
@@ -55,8 +99,10 @@ def main():
     try:
         result = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
-            ("src/mmr.rs", "src/bitmap.rs"), "jbig2-mmr-span-proof-",
-            "Executing optimized span dispatch: storage/metadata preservation, typed invalid bounds and invalid/white/empty no-op guarantees only; separate primitive black-span theorem is not a complete MMR caller/polarity proof",
+            ("src/mmr.rs", "src/bitmap.rs", "specs/mmr.rs", "specs/bitmap.rs",
+             "proofs/model_support/mmr.rs", "proofs/production_impl/mmr.rs"),
+            "jbig2-mmr-span-proof-",
+            "Exact canonical-storage-conditional black-span/white-no-op effects and exact internal transition/emitted-state updates; original invalid/white/empty no-op controls retained; no strengthened preconditions or complete raster-loop/polarity claim",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"MMR span proof sensitivity failed: {error}", file=sys.stderr)

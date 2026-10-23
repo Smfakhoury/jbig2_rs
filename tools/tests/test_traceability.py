@@ -890,8 +890,39 @@ class TraceabilityTests(unittest.TestCase):
     def test_checked_repository_ledger_is_schema_valid_and_provisional(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         validate(ledger, "traceability")
-        self.assertEqual(len(ledger["requirements"]), 249)
+        self.assertEqual(len(ledger["requirements"]), 266)
         self.assertTrue(all(entry["review"] == "provisional" for entry in ledger["requirements"]))
+
+    def test_selected_header_fields_are_exact_and_still_provisional(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {
+            row["id"]: row for row in ledger["requirements"]
+            if row["id"].startswith(("T88-PATTERN-HEADER-", "T88-HALFTONE-HEADER-"))
+        }
+        expected = {
+            **{f"T88-PATTERN-HEADER-{name}": "pattern_dictionaries" for name in
+               ("MMR", "TEMPLATE", "RESERVED", "WIDTH", "HEIGHT", "GRAYMAX")},
+            **{f"T88-HALFTONE-HEADER-{name}": "halftone_regions" for name in (
+                "MMR", "TEMPLATE", "SKIP", "OPERATOR", "DEFAULT-PIXEL",
+                "GRID-WIDTH", "GRID-HEIGHT", "GRID-X", "GRID-Y", "VECTOR-X", "VECTOR-Y",
+            )},
+        }
+        self.assertEqual(set(rows), set(expected))
+        for identity, feature in expected.items():
+            with self.subTest(requirement=identity):
+                row = rows[identity]
+                self.assertEqual(row["standard"], "ITU-T T.88 (08/2018)")
+                self.assertEqual(row["feature"], feature)
+                self.assertEqual(row["strength"], "functional_contract")
+                self.assertEqual(row["review"], "provisional")
+                self.assertTrue(row["gaps"])
+                self.assertTrue(row["functional_evidence"])
+                self.assertTrue(row["clause"].startswith(
+                    "7.4.4.1." if feature == "pattern_dictionaries" else "7.4.5.1."
+                ))
+                worklist = next(row for row in ledger["features"] if row["feature"] == feature)
+                self.assertEqual(worklist["decomposition"], "partial")
+                self.assertIn(identity, worklist["requirement_ids"])
 
     def test_selected_arithmetic_algorithm_membership_is_exact_and_unapproved(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
@@ -965,7 +996,30 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertTrue(row["invariant_evidence"])
                 self.assertTrue(row["gaps"])
                 self.assertEqual(row["standard"], "ITU-T T.88 (08/2018)")
-                self.assertTrue(all(name.startswith("arithmetic::") for name in row["runtime"]))
+                callers = {
+                    "symbol_text::IntegerField::slot",
+                    "symbol_text::ArithmeticCodec::decode_integer",
+                    "symbol_text::ArithmeticCodec::decode_symbol_id",
+                } if name in {
+                    "INTEGER-PROCEDURE-BANKS", "IAID-LENGTH", "IAID-STORAGE",
+                } else set()
+                if name == "DRIVER-CONTEXT-SEQUENCE":
+                    callers = {
+                        "generic_region::validate_probability_states",
+                        "generic_region::probability_signal_error",
+                        "generic_region::unexpected_eof",
+                        "generic_region::integer_overflow",
+                    }
+                    self.assertTrue({
+                        "generic-probability-validation-result",
+                        "generic-probability-signal-error",
+                    }.issubset(row["models"]))
+                    self.assertIn("Auxiliary project contracts", row["scope_of_formal_result"])
+                self.assertTrue(callers.issubset(row["runtime"]))
+                self.assertTrue(all(
+                    runtime.startswith("arithmetic::") or runtime in callers
+                    for runtime in row["runtime"]
+                ))
         feature = next(f for f in ledger["features"] if f["feature"] == "arithmetic_coding")
         self.assertEqual(feature["decomposition"], "partial")
         self.assertTrue(feature["remaining_scope"])

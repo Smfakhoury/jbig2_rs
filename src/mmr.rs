@@ -691,6 +691,9 @@ fn decode_bitmap<'a>(
                 mmr_spec::reference_line_valid(transitions@, width),
                 transitions@.len() <= width as nat + 2,
                 reference_index < transitions@.len(),
+                mmr_properties::reference_prefix_skipped(
+                    transitions@, x, initial, reference_index as int,
+                ),
                 mmr_spec::transition_prefix_valid(row_transitions@, x, width),
                 row_transitions@.len() <= x as nat,
                 mmr_spec::reader_valid(&reader),
@@ -707,6 +710,11 @@ fn decode_bitmap<'a>(
             #[cfg(verus_keep_ghost)]
             production_mmr_mode_budget!(mode_count, max_modes);
 
+            #[cfg(verus_keep_ghost)]
+            proof_decl! {
+                let ghost previous_reference_index = reference_index;
+                let ghost reference_x = x;
+            }
             let (b1, b2) = reference_elements_from(
                 transitions,
                 x,
@@ -715,6 +723,24 @@ fn decode_bitmap<'a>(
                 initial,
                 &mut reference_index,
             )?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert forall|previous: int| 0 <= previous < reference_index implies
+                    !mmr_spec::reference_position_eligible(
+                        #[trigger] transitions@[previous], x, initial,
+                    ) by {
+                    if previous < previous_reference_index {
+                        assert(!mmr_spec::reference_position_eligible(
+                            transitions@[previous], x, initial,
+                        ));
+                    }
+                }
+                assert(mmr_spec::reference_pair_matches(
+                    transitions@, x, black, width, initial, 0, b1, b2,
+                ));
+                assert forall|previous: int| 0 <= previous < reference_index implies
+                    #[trigger] transitions@[previous] <= reference_x by {}
+            }
             let mode_offset = reader.bit_position;
             match decode_mode(&mut reader)? {
                 Mode::Extension => {
@@ -741,24 +767,7 @@ fn decode_bitmap<'a>(
                     x = b2;
                 }
                 Mode::Horizontal => {
-                    let remaining = width.checked_sub(x).ok_or(MmrError::InvalidTransition)?;
-                    let first = decode_run(&mut reader, black, remaining)?;
-                    let after_first = x.checked_add(first).ok_or(MmrError::IntegerOverflow)?;
-                    let second_remaining = width
-                        .checked_sub(after_first)
-                        .ok_or(MmrError::RunExceedsRow)?;
-                    let second = decode_run(&mut reader, !black, second_remaining)?;
-                    let end = after_first
-                        .checked_add(second)
-                        .ok_or(MmrError::IntegerOverflow)?;
-                    if end > width {
-                        return Err(MmrError::RunExceedsRow);
-                    }
-                    if end == x {
-                        return Err(MmrError::NonProgress);
-                    }
-                    #[cfg(verus_keep_ghost)]
-                    production_mmr_horizontal_progress!(x, width, first, second);
+                    let (after_first, end) = decode_horizontal_runs(&mut reader, black, x, width)?;
                     fill_recorded_span(
                         &mut bitmap,
                         row,
@@ -816,8 +825,18 @@ fn decode_bitmap<'a>(
             proof! {
                 crate::views::bitmap_fields(&bitmap);
                 reveal(crate::spec::bitmap::storage_valid);
+                assert(reference_x <= x);
             }
             initial = false;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert forall|previous: int| 0 <= previous < reference_index implies
+                    !mmr_spec::reference_position_eligible(
+                        #[trigger] transitions@[previous], x, initial,
+                    ) by {
+                    assert(transitions@[previous] <= reference_x);
+                }
+            }
         }
         #[cfg(verus_keep_ghost)]
         proof! {
@@ -981,6 +1000,18 @@ fn prepare_transition_storage(
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == if prefix as nat * 2 + bit as nat <= u16::MAX {
+        Ok((prefix as nat * 2 + bit as nat) as u16)
+    } else {
+        Err(MmrError::IntegerOverflow)
+    },
+))]
+fn append_code_bit(prefix: u16, bit: u16) -> Result<u16, MmrError> {
+    let doubled = prefix.checked_mul(2).ok_or(MmrError::IntegerOverflow)?;
+    doubled.checked_add(bit).ok_or(MmrError::IntegerOverflow)
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires mmr_spec::reader_valid(old(reader)),
     ensures
         mmr_spec::reader_valid(final(reader)),
@@ -993,7 +1024,10 @@ fn prepare_transition_storage(
                 mmr_spec::mode_code_in_implementation_table(code)
                 && code.mode == mode
                 && final(reader).bit_position
-                    == old(reader).bit_position + code.length as usize,
+                    == old(reader).bit_position + code.length as usize
+                && code.bits as nat == crate::spec::readers::bits_value(
+                    old(reader).bytes@, old(reader).bit_position as nat, code.length as nat,
+                ),
             Err(_) => true,
         },
 ))]
@@ -1009,15 +1043,29 @@ fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
             start == old(reader).bit_position,
             reader.bit_position
                 == start + (length - 1) as usize,
+            prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            ),
         decreases MAX_MODE_CODE_BITS + 1 - length,
     ))]
     while length <= MAX_MODE_CODE_BITS {
+        #[cfg(verus_keep_ghost)]
+        proof_decl! {
+            let ghost previous_prefix = prefix;
+        }
         let bit =
             u16::try_from(reader.read_bits(1)?).map_err(|_error| MmrError::IntegerOverflow)?;
-        prefix = prefix
-            .checked_mul(2)
-            .and_then(|value| value.checked_add(bit))
-            .ok_or(MmrError::IntegerOverflow)?;
+        prefix = append_code_bit(prefix, bit)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::reader_properties::bits_value_append_one(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            );
+            assert(prefix as nat == previous_prefix as nat * 2 + bit as nat);
+            assert(prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, length as nat,
+            ));
+        }
         let mut index = 0_usize;
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
@@ -1026,6 +1074,9 @@ fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
                 reader.bytes@ == old(reader).bytes@,
                 start == old(reader).bit_position,
                 reader.bit_position == start + length as usize,
+                prefix as nat == crate::spec::readers::bits_value(
+                    reader.bytes@, start as nat, length as nat,
+                ),
             decreases MODE_CODES@.len() - index,
         ))]
         while index < MODE_CODES.len() {
@@ -1049,13 +1100,116 @@ fn decode_mode(reader: &mut BitReader<'_>) -> Result<Mode, MmrError> {
         final(reader).bytes@ == old(reader).bytes@,
         old(reader).bit_position <= final(reader).bit_position,
         match out {
-            Ok(total) => total <= remaining,
+            Ok((after_first, end)) =>
+                x <= after_first <= end <= width
+                && x < end
+                && mmr_spec::horizontal_pair(
+                    black, old(reader).bytes@, old(reader).bit_position as nat,
+                    final(reader).bit_position as nat, x, width, after_first, end,
+                ),
+            Err(_) => true,
+        },
+))]
+fn decode_horizontal_runs(
+    reader: &mut BitReader<'_>,
+    black: bool,
+    x: u32,
+    width: u32,
+) -> Result<(u32, u32), MmrError> {
+    let remaining = width.checked_sub(x).ok_or(MmrError::InvalidTransition)?;
+    let first = decode_run(reader, black, remaining)?;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost split = reader.bit_position as nat;
+        let ghost first_codes = choose|codes: Seq<RunCode>|
+            #[trigger] codes.len() > 0
+            && mmr_spec::complete_run(
+                black, old(reader).bytes@, old(reader).bit_position as nat,
+                split, first, codes,
+            );
+    }
+    let after_first = x.checked_add(first).ok_or(MmrError::IntegerOverflow)?;
+    let second_remaining = width
+        .checked_sub(after_first)
+        .ok_or(MmrError::RunExceedsRow)?;
+    let second = decode_run(reader, !black, second_remaining)?;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost second_codes = choose|codes: Seq<RunCode>|
+            #[trigger] codes.len() > 0
+            && mmr_spec::complete_run(
+                !black, old(reader).bytes@, split, reader.bit_position as nat,
+                second, codes,
+            );
+    }
+    let end = after_first
+        .checked_add(second)
+        .ok_or(MmrError::IntegerOverflow)?;
+    if end > width {
+        return Err(MmrError::RunExceedsRow);
+    }
+    if end == x {
+        return Err(MmrError::NonProgress);
+    }
+    #[cfg(verus_keep_ghost)]
+    production_mmr_horizontal_progress!(x, width, first, second);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(after_first - x == first);
+        assert(end - after_first == second);
+        assert(mmr_spec::complete_run(
+            black, old(reader).bytes@, old(reader).bit_position as nat,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            first, first_codes,
+        ));
+        assert(reader.bit_position as nat == old(reader).bit_position as nat
+            + mmr_spec::run_bit_length(first_codes)
+            + mmr_spec::run_bit_length(second_codes));
+        assert(mmr_spec::complete_run(
+            !black, old(reader).bytes@,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            reader.bit_position as nat, second, second_codes,
+        ));
+        assert(mmr_spec::complete_run(
+            black, old(reader).bytes@, old(reader).bit_position as nat,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            (after_first - x) as u32, first_codes,
+        ));
+        assert(mmr_spec::complete_run(
+            !black, old(reader).bytes@,
+            old(reader).bit_position as nat + mmr_spec::run_bit_length(first_codes),
+            reader.bit_position as nat, (end - after_first) as u32, second_codes,
+        ));
+        assert(mmr_spec::horizontal_pair(
+            black, old(reader).bytes@, old(reader).bit_position as nat,
+            reader.bit_position as nat, x, width, after_first, end,
+        ));
+    }
+    Ok((after_first, end))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires mmr_spec::reader_valid(old(reader)),
+    ensures
+        mmr_spec::reader_valid(final(reader)),
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).bit_position <= final(reader).bit_position,
+        match out {
+            Ok(total) => total <= remaining
+                && exists|codes: Seq<RunCode>| mmr_spec::complete_run(
+                    black, old(reader).bytes@, old(reader).bit_position as nat,
+                    final(reader).bit_position as nat, total, codes,
+                ),
             Err(_) => true,
         },
 ))]
 fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result<u32, MmrError> {
     let mut total = 0_u32;
     let mut makeup_count = 0_u32;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! {
+        let ghost mut codes = Seq::<RunCode>::empty();
+    }
     let max_makeups = remaining
         .checked_div(64)
         .and_then(|value| value.checked_add(1))
@@ -1068,10 +1222,31 @@ fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result
             old(reader).bit_position <= reader.bit_position,
             total <= remaining,
             makeup_count <= max_makeups,
+            total as nat == mmr_spec::run_value_sum(codes),
+            reader.bit_position as nat
+                == old(reader).bit_position as nat + mmr_spec::run_bit_length(codes),
+            mmr_spec::run_prefix_matches(
+                black, old(reader).bytes@, old(reader).bit_position as nat, codes,
+            ),
+            mmr_spec::run_all_makeups(codes),
         decreases max_makeups + 1 - makeup_count,
     ))]
     loop {
+        #[cfg(verus_keep_ghost)]
+        proof_decl! {
+            let ghost before_codes = codes;
+            let ghost before_position = reader.bit_position;
+        }
         let code = decode_run_code(reader, black)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            codes = codes.push(code);
+            assert(codes.drop_last() == before_codes);
+            assert(codes.last() == code);
+            assert(mmr_spec::run_prefix_matches(
+                black, old(reader).bytes@, old(reader).bit_position as nat, codes,
+            ));
+        }
         total = total
             .checked_add(u32::from(code.value))
             .ok_or(MmrError::IntegerOverflow)?;
@@ -1079,6 +1254,13 @@ fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result
             return Err(MmrError::RunExceedsRow);
         }
         if code.terminal {
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(mmr_spec::complete_run(
+                    black, old(reader).bytes@, old(reader).bit_position as nat,
+                    reader.bit_position as nat, total, codes,
+                ));
+            }
             return Ok(total);
         }
         #[cfg(verus_keep_ghost)]
@@ -1104,7 +1286,10 @@ fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result
             Ok(code) =>
                 mmr_spec::run_code_in_implementation_tables(black, code)
                 && final(reader).bit_position
-                    == old(reader).bit_position + code.length as usize,
+                    == old(reader).bit_position + code.length as usize
+                && code.bits as nat == crate::spec::readers::bits_value(
+                    old(reader).bytes@, old(reader).bit_position as nat, code.length as nat,
+                ),
             Err(_) => true,
         },
 ))]
@@ -1120,15 +1305,29 @@ fn decode_run_code(reader: &mut BitReader<'_>, black: bool) -> Result<RunCode, M
             start == old(reader).bit_position,
             reader.bit_position
                 == start + (length - 1) as usize,
+            prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            ),
         decreases MAX_RUN_CODE_BITS + 1 - length,
     ))]
     while length <= MAX_RUN_CODE_BITS {
+        #[cfg(verus_keep_ghost)]
+        proof_decl! {
+            let ghost previous_prefix = prefix;
+        }
         let bit =
             u16::try_from(reader.read_bits(1)?).map_err(|_error| MmrError::IntegerOverflow)?;
-        prefix = prefix
-            .checked_mul(2)
-            .and_then(|value| value.checked_add(bit))
-            .ok_or(MmrError::IntegerOverflow)?;
+        prefix = append_code_bit(prefix, bit)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::reader_properties::bits_value_append_one(
+                reader.bytes@, start as nat, (length - 1) as nat,
+            );
+            assert(prefix as nat == previous_prefix as nat * 2 + bit as nat);
+            assert(prefix as nat == crate::spec::readers::bits_value(
+                reader.bytes@, start as nat, length as nat,
+            ));
+        }
         if let Some(code) = find_run_code(black, prefix, length) {
             #[cfg(verus_keep_ghost)]
             production_mmr_run_code_bounds!(black, code);
@@ -1254,8 +1453,13 @@ fn find_run_code(black: bool, bits: u16, length: u8) -> Option<RunCode> {
     requires
         mmr_spec::reference_line_valid(transitions@, width),
         x <= width,
-    ensures match out {
-        Ok((b1, b2)) => x <= b1 <= b2 <= width,
+    ensures
+    out.is_ok(),
+    match out {
+        Ok((b1, b2)) => x <= b1 <= b2 <= width
+            && mmr_spec::reference_pair_matches(
+                transitions@, x, black, width, initial, 0, b1, b2,
+            ),
         Err(_) => true,
     },
 ))]
@@ -1280,6 +1484,10 @@ fn reference_elements(
             x <= width,
             search_end == transitions@.len() - 1,
             index <= search_end,
+            forall|previous: int| 0 <= previous < index ==>
+                !mmr_spec::reference_position_eligible(
+                    #[trigger] transitions@[previous], x, initial,
+                ) || (previous % 2 == 0) == black,
         decreases search_end - index,
     ))]
     while index < search_end {
@@ -1302,6 +1510,15 @@ fn reference_elements(
                     b2,
                     width
                 );
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    assert(mmr_spec::first_reference_candidate(
+                        transitions@, x, black, initial, 0, index as int,
+                    ));
+                    assert(mmr_spec::reference_pair_matches(
+                        transitions@, x, black, width, initial, 0, position, b2,
+                    ));
+                }
                 return Ok((position, b2));
             }
         }
@@ -1319,11 +1536,26 @@ fn reference_elements(
         *old(search_start) < transitions@.len(),
     ensures
         *final(search_start) < transitions@.len(),
+        out.is_ok(),
         match out {
-            Ok((b1, b2)) => x <= b1 <= b2 <= width,
+            Ok((b1, b2)) => x <= b1 <= b2 <= width
+                && mmr_spec::reference_cursor_matches(
+                    transitions@, x, initial,
+                    *old(search_start) as int, *final(search_start) as int,
+                )
+                && mmr_spec::reference_pair_matches(
+                    transitions@, x, black, width, initial,
+                    *old(search_start) as int, b1, b2,
+                )
+                && (mmr_properties::reference_prefix_skipped(
+                    transitions@, x, initial, *old(search_start) as int,
+                ) ==> mmr_spec::reference_pair_matches(
+                        transitions@, x, black, width, initial, 0, b1, b2,
+                    )),
             Err(_) => true,
         },
 ))]
+#[allow(clippy::too_many_lines)]
 fn reference_elements_from(
     transitions: &[u32],
     x: u32,
@@ -1345,7 +1577,15 @@ fn reference_elements_from(
             mmr_spec::reference_line_valid(transitions@, width),
             x <= width,
             search_end == transitions@.len() - 1,
-            index <= search_end,
+            *old(search_start) <= index <= search_end,
+            forall|previous: int| *old(search_start) <= previous < index ==>
+                !mmr_spec::reference_position_eligible(
+                    #[trigger] transitions@[previous], x, initial,
+                ),
+        ensures
+            mmr_spec::reference_cursor_matches(
+                transitions@, x, initial, *old(search_start) as int, index as int,
+            ),
         decreases search_end - index,
     ))]
     while index < search_end {
@@ -1363,10 +1603,26 @@ fn reference_elements_from(
             search_end == transitions@.len() - 1,
             *search_start <= search_end,
             *search_start <= index <= search_end,
+            mmr_spec::reference_cursor_matches(
+                transitions@, x, initial, *old(search_start) as int, *search_start as int,
+            ),
+            forall|previous: int| *old(search_start) <= previous < index ==>
+                !mmr_spec::reference_position_eligible(
+                    #[trigger] transitions@[previous], x, initial,
+                ) || (previous % 2 == 0) == black,
         decreases search_end - index,
     ))]
     while index < search_end {
         let position = *transitions.get(index).ok_or(MmrError::InvalidTransition)?;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(mmr_spec::reference_line_valid);
+            reveal(mmr_spec::transitions_ordered);
+            assert(transitions@[*search_start as int] >= x);
+            if *search_start < index {
+                assert(transitions@[*search_start as int] <= transitions@[index as int]);
+            }
+        }
         if position < x {
             return Err(MmrError::InvalidTransition);
         }
@@ -1378,9 +1634,42 @@ fn reference_elements_from(
                 .ok_or(MmrError::InvalidTransition)?;
             #[cfg(verus_keep_ghost)]
             production_mmr_reference_bounds!(transitions, index, next_index, position, b2, width);
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(mmr_spec::first_reference_candidate(
+                    transitions@, x, black, initial, *old(search_start) as int, index as int,
+                ));
+                assert(mmr_spec::reference_pair_matches(
+                    transitions@, x, black, width, initial,
+                    *old(search_start) as int, position, b2,
+                ));
+                if mmr_properties::reference_prefix_skipped(
+                    transitions@, x, initial, *old(search_start) as int,
+                ) {
+                    mmr_properties::reference_suffix_is_global(
+                        transitions@, x, black, width, initial,
+                        *old(search_start) as int, position, b2,
+                    );
+                }
+            }
             return Ok((position, b2));
         }
         index = index.checked_add(1).ok_or(MmrError::IntegerOverflow)?;
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(mmr_spec::reference_pair_matches(
+            transitions@, x, black, width, initial,
+            *old(search_start) as int, width, width,
+        ));
+        if mmr_properties::reference_prefix_skipped(
+            transitions@, x, initial, *old(search_start) as int,
+        ) {
+            mmr_properties::reference_suffix_is_global(
+                transitions@, x, black, width, initial,
+                *old(search_start) as int, width, width,
+            );
+        }
     }
     Ok((width, width))
 }
@@ -1400,6 +1689,12 @@ fn reference_elements_from(
         (start > end || end > old(bitmap).width || row >= old(bitmap).height
             || !black || start == end)
             ==> final(bitmap).data@ == old(bitmap).data@,
+        (crate::spec::bitmap::storage_valid(old(bitmap))
+            && start <= end <= old(bitmap).width && row < old(bitmap).height)
+            ==> out.is_ok(),
+        (out.is_ok() && crate::spec::bitmap::storage_valid(old(bitmap))
+            && start <= end <= old(bitmap).width && row < old(bitmap).height)
+            ==> mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black),
 ))]
 fn fill_span(
     bitmap: &mut Bitmap,
@@ -1428,6 +1723,10 @@ fn fill_span(
         mmr_spec::transition_prefix_valid(final(transitions)@, end, _width),
         final(transitions)@.len() <= old(transitions)@.len() + 1,
         start == end ==> final(transitions)@.len() == old(transitions)@.len(),
+        mmr_spec::transition_span_result(
+            old(transitions)@, final(transitions)@,
+            *old(emitted_black), *final(emitted_black), start, end, black,
+        ),
 ))]
 fn record_transition_span(
     transitions: &mut Vec<u32>,
@@ -1460,7 +1759,8 @@ fn record_transition_span(
         end <= bitmap.width,
         mmr_spec::transition_prefix_valid(old(transitions)@, start, width),
         start <= end <= width,
-    ensures match out {
+    ensures
+    match out {
         Ok(()) =>
             final(bitmap).width == old(bitmap).width
             && final(bitmap).height == old(bitmap).height
@@ -1470,9 +1770,17 @@ fn record_transition_span(
             && mmr_spec::transition_prefix_valid(final(transitions)@, end, width)
             && final(transitions)@.len() <= old(transitions)@.len() + 1
             && (start == end ==>
-                final(transitions)@.len() == old(transitions)@.len()),
-        Err(_) => true,
+                final(transitions)@.len() == old(transitions)@.len())
+            && mmr_spec::transition_span_result(
+                old(transitions)@, final(transitions)@,
+                *old(emitted_black), *final(emitted_black), start, end, black,
+            )
+            && (crate::spec::bitmap::storage_valid(old(bitmap)) ==>
+                mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black)),
+        Err(_) => final(transitions)@ == old(transitions)@
+            && *final(emitted_black) == *old(emitted_black),
     },
+    crate::spec::bitmap::storage_valid(old(bitmap)) ==> out.is_ok(),
 ))]
 #[allow(clippy::too_many_arguments)]
 fn fill_recorded_span(
@@ -1700,6 +2008,480 @@ fn remaining_bits(reader: &BitReader<'_>) -> Result<usize, MmrError> {
 mod tests {
     use super::*;
 
+    fn previous_horizontal_runs(
+        reader: &mut BitReader<'_>,
+        black: bool,
+        x: u32,
+        width: u32,
+    ) -> Result<(u32, u32), MmrError> {
+        let remaining = width.checked_sub(x).ok_or(MmrError::InvalidTransition)?;
+        let first = decode_run(reader, black, remaining)?;
+        let after_first = x.checked_add(first).ok_or(MmrError::IntegerOverflow)?;
+        let second_remaining = width
+            .checked_sub(after_first)
+            .ok_or(MmrError::RunExceedsRow)?;
+        let second = decode_run(reader, !black, second_remaining)?;
+        let end = after_first
+            .checked_add(second)
+            .ok_or(MmrError::IntegerOverflow)?;
+        if end > width {
+            return Err(MmrError::RunExceedsRow);
+        }
+        if end == x {
+            return Err(MmrError::NonProgress);
+        }
+        Ok((after_first, end))
+    }
+
+    fn horizontal_error(error: MmrError) -> MalformedError {
+        let DecodeError::Malformed(error) = DecodeError::from(error) else {
+            panic!("horizontal runs produce typed malformed errors");
+        };
+        error
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn horizontal_pairs_match_numeric_endpoints_and_previous_inline_procedure() {
+        let mut pairs = 0;
+        let mut comparisons = 0;
+        for black in [false, true] {
+            let (first_table, second_table) = if black {
+                (&BLACK_TERMINATING, &WHITE_TERMINATING)
+            } else {
+                (&WHITE_TERMINATING, &BLACK_TERMINATING)
+            };
+            for first_terminal in first_table {
+                for second_terminal in second_table {
+                    for start in [0, 1, 7] {
+                        for (first_makeup, second_makeup) in [(0, 0), (64, 2560), (2560, 64)] {
+                            let mut codes = Vec::new();
+                            if first_makeup != 0 {
+                                codes.push(
+                                    (if black {
+                                        BLACK_MAKEUP.iter()
+                                    } else {
+                                        WHITE_MAKEUP.iter()
+                                    })
+                                    .chain(COMMON_MAKEUP.iter())
+                                    .copied()
+                                    .find(|code| code.value == first_makeup)
+                                    .unwrap(),
+                                );
+                            }
+                            codes.push(*first_terminal);
+                            if second_makeup != 0 {
+                                codes.push(
+                                    COMMON_MAKEUP
+                                        .iter()
+                                        .chain(if black {
+                                            WHITE_MAKEUP.iter()
+                                        } else {
+                                            BLACK_MAKEUP.iter()
+                                        })
+                                        .copied()
+                                        .find(|code| code.value == second_makeup)
+                                        .unwrap(),
+                                );
+                            }
+                            codes.push(*second_terminal);
+                            let first = u32::from(first_makeup) + u32::from(first_terminal.value);
+                            let second =
+                                u32::from(second_makeup) + u32::from(second_terminal.value);
+                            let total = first + second;
+                            let (bytes, bits) = run_sequence_bytes(&codes, start);
+                            pairs += 1;
+                            for x in [0, u32::MAX - total - 1] {
+                                for spare in 0..=1 {
+                                    let width = x + total + spare;
+                                    let mut reader = bit_reader(&bytes);
+                                    reader.bit_position = start;
+                                    let mut previous = bit_reader(&bytes);
+                                    previous.bit_position = start;
+                                    let actual =
+                                        decode_horizontal_runs(&mut reader, black, x, width)
+                                            .map_err(horizontal_error);
+                                    let expected =
+                                        previous_horizontal_runs(&mut previous, black, x, width)
+                                            .map_err(horizontal_error);
+                                    assert_eq!(actual, expected);
+                                    if total == 0 {
+                                        assert_eq!(
+                                            actual,
+                                            Err(MalformedError::InvalidMmr(
+                                                MmrErrorKind::NonProgress
+                                            ))
+                                        );
+                                    } else {
+                                        assert_eq!(actual.unwrap(), (x + first, x + total));
+                                    }
+                                    assert_eq!(reader.bit_position, start + bits);
+                                    assert_eq!(reader.bit_position, previous.bit_position);
+                                    assert_eq!(reader.bytes, previous.bytes);
+                                    comparisons += 1;
+                                }
+                            }
+                            if total != 0 {
+                                let mut reader = bit_reader(&bytes);
+                                reader.bit_position = start;
+                                let mut previous = bit_reader(&bytes);
+                                previous.bit_position = start;
+                                let error =
+                                    decode_horizontal_runs(&mut reader, black, 0, total - 1)
+                                        .unwrap_err();
+                                let old_error =
+                                    previous_horizontal_runs(&mut previous, black, 0, total - 1)
+                                        .unwrap_err();
+                                assert_eq!(horizontal_error(error), horizontal_error(old_error));
+                                let mut sum = 0;
+                                let mut consumed = start;
+                                for code in &codes {
+                                    sum += u32::from(code.value);
+                                    consumed += usize::from(code.length);
+                                    if sum >= total {
+                                        break;
+                                    }
+                                }
+                                assert_eq!(reader.bit_position, consumed);
+                                assert_eq!(reader.bit_position, previous.bit_position);
+                                assert_eq!(reader.bytes, previous.bytes);
+                                comparisons += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(pairs, 73_728);
+        assert_eq!(comparisons, 368_634);
+    }
+
+    #[test]
+    fn horizontal_pair_partial_failures_preserve_previous_error_fields_and_cursor() {
+        let inputs: &[&[u8]] = &[
+            &[],
+            &[0],
+            &[0xff],
+            &[0x35],
+            &[0x35, 0],
+            &[0x35, 0x01],
+            &[0x03, 0xc0],
+            &[0xde, 0xcd, 0x40],
+        ];
+        let mut errors = 0;
+        let mut cases = 0;
+        for bytes in inputs {
+            for start in 0..=bytes.len() * 8 {
+                for black in [false, true] {
+                    for (x, width) in [
+                        (0, 0),
+                        (0, 1),
+                        (0, 63),
+                        (0, 64),
+                        (0, 4096),
+                        (u32::MAX, u32::MAX),
+                        (1, 0),
+                    ] {
+                        let mut reader = bit_reader(bytes);
+                        reader.bit_position = start;
+                        let mut previous = bit_reader(bytes);
+                        previous.bit_position = start;
+                        let actual = decode_horizontal_runs(&mut reader, black, x, width)
+                            .map_err(horizontal_error);
+                        let expected = previous_horizontal_runs(&mut previous, black, x, width)
+                            .map_err(horizontal_error);
+                        errors += usize::from(actual.is_err());
+                        cases += 1;
+                        assert_eq!(actual, expected);
+                        assert_eq!(reader.bit_position, previous.bit_position);
+                        assert_eq!(reader.bytes, previous.bytes);
+                        if x > width {
+                            assert_eq!(reader.bit_position, start);
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 1456);
+        assert!(errors > 0);
+    }
+
+    fn run_sequence_bytes(codes: &[RunCode], start: usize) -> ([u8; 8], usize) {
+        let mut packed = 0_u64;
+        let mut count = 0;
+        for code in codes {
+            packed = (packed << code.length) | u64::from(code.bits);
+            count += usize::from(code.length);
+        }
+        assert!(start + count < 64);
+        let leading = if start == 0 {
+            0
+        } else {
+            (0xa5_u64 << 56) & (u64::MAX << (64 - start))
+        };
+        (
+            (leading | (packed << (64 - start - count)) | 1).to_be_bytes(),
+            count,
+        )
+    }
+
+    #[test]
+    fn makeup_terminal_sequences_have_exact_sums_extent_and_overshoot_errors() {
+        let mut cases = 0;
+        for black in [false, true] {
+            let terminating = if black {
+                &BLACK_TERMINATING
+            } else {
+                &WHITE_TERMINATING
+            };
+            let makeup = if black { &BLACK_MAKEUP } else { &WHITE_MAKEUP };
+            let choices = [64, 128, 1728, 2560].map(|value| {
+                *makeup
+                    .iter()
+                    .chain(&COMMON_MAKEUP)
+                    .find(|code| code.value == value)
+                    .expect("project makeup entry")
+            });
+            for count in 0..=3 {
+                for pattern in 0..4_usize.pow(count) {
+                    let mut prefix = Vec::new();
+                    let mut selected = pattern;
+                    for _ in 0..count {
+                        prefix.push(choices[selected % 4]);
+                        selected /= 4;
+                    }
+                    for terminal in terminating {
+                        let mut codes = prefix.clone();
+                        codes.push(*terminal);
+                        let expected: u32 = codes.iter().map(|code| u32::from(code.value)).sum();
+                        for start in 0..8 {
+                            let (encoded, bits) = run_sequence_bytes(&codes, start);
+                            for remaining in [expected, expected + 1] {
+                                let mut reader = BitReader {
+                                    bytes: &encoded,
+                                    bit_position: start,
+                                };
+                                assert_eq!(
+                                    decode_run(&mut reader, black, remaining).unwrap(),
+                                    expected
+                                );
+                                assert_eq!(reader.bit_position(), start + bits);
+                                assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+                            }
+                            if expected > 0 {
+                                let remaining = expected - 1;
+                                let mut sum = 0;
+                                let mut consumed = 0;
+                                for code in &codes {
+                                    sum += u32::from(code.value);
+                                    consumed += usize::from(code.length);
+                                    if sum > remaining {
+                                        break;
+                                    }
+                                }
+                                let mut reader = BitReader {
+                                    bytes: &encoded,
+                                    bit_position: start,
+                                };
+                                assert_kind(
+                                    decode_run(&mut reader, black, remaining).unwrap_err(),
+                                    MmrErrorKind::RunExceedsRow,
+                                );
+                                assert_eq!(reader.bit_position(), start + consumed);
+                                assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+                            }
+                            cases += 1;
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 87_040);
+    }
+
+    #[test]
+    fn makeup_without_terminal_reports_exact_physical_eof_after_the_code() {
+        for black in [false, true] {
+            let makeup = if black { &BLACK_MAKEUP } else { &WHITE_MAKEUP };
+            for value in [64, 128, 1728, 2560] {
+                let code = *makeup
+                    .iter()
+                    .chain(&COMMON_MAKEUP)
+                    .find(|code| code.value == value)
+                    .unwrap();
+                let start = (8 - usize::from(code.length) % 8) % 8;
+                let (encoded, count) = run_sequence_bytes(&[code], start);
+                let end = start + count;
+                let bytes = &encoded[..end / 8];
+                let mut reader = BitReader {
+                    bytes,
+                    bit_position: start,
+                };
+                let MmrError::Reader(error) =
+                    decode_run(&mut reader, black, u32::from(value)).unwrap_err()
+                else {
+                    panic!("terminating code is required")
+                };
+                assert_eq!(
+                    error,
+                    MalformedError::UnexpectedEof {
+                        offset: end as u64,
+                        needed: 1,
+                        remaining: 0,
+                    }
+                );
+                assert_eq!(reader.bit_position(), end);
+                assert_eq!(reader.bytes.as_ptr(), bytes.as_ptr());
+            }
+        }
+    }
+
+    fn prefix_window_bytes(window: u16, width: u8, start: usize) -> [u8; 8] {
+        let value = u64::from(window) << (64 - start - usize::from(width));
+        let leading = if start == 0 {
+            0
+        } else {
+            (0xa5_u64 << 56) & (u64::MAX << (64 - start))
+        };
+        (value | leading | 0x5a).to_be_bytes()
+    }
+
+    #[test]
+    fn every_mode_window_and_alignment_matches_scalar_prefix_lookup() {
+        for window in 0..(1_u16 << MAX_MODE_CODE_BITS) {
+            let expected = MODE_CODES
+                .iter()
+                .filter(|code| window >> (MAX_MODE_CODE_BITS - code.length) == code.bits)
+                .min_by_key(|code| code.length);
+            for start in 0..8 {
+                let encoded = prefix_window_bytes(window, MAX_MODE_CODE_BITS, start);
+                let mut reader = BitReader {
+                    bytes: &encoded,
+                    bit_position: start,
+                };
+                if let Some(code) = expected {
+                    assert_eq!(decode_mode(&mut reader).unwrap(), code.mode);
+                    assert_eq!(reader.bit_position(), start + usize::from(code.length));
+                    let packed = u64::from_be_bytes(encoded);
+                    let bits =
+                        (packed >> (64 - reader.bit_position())) & ((1_u64 << code.length) - 1);
+                    assert_eq!(bits, u64::from(code.bits));
+                } else {
+                    assert_kind(
+                        decode_mode(&mut reader).unwrap_err(),
+                        MmrErrorKind::InvalidMode { bit_offset: start },
+                    );
+                    assert_eq!(
+                        reader.bit_position(),
+                        start + usize::from(MAX_MODE_CODE_BITS)
+                    );
+                }
+                assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+            }
+        }
+    }
+
+    #[test]
+    fn every_run_window_colour_and_alignment_matches_scalar_prefix_lookup() {
+        for black in [false, true] {
+            let terminating = if black {
+                &BLACK_TERMINATING
+            } else {
+                &WHITE_TERMINATING
+            };
+            let makeup = if black { &BLACK_MAKEUP } else { &WHITE_MAKEUP };
+            for window in 0..(1_u16 << MAX_RUN_CODE_BITS) {
+                let expected = terminating
+                    .iter()
+                    .chain(makeup)
+                    .chain(&COMMON_MAKEUP)
+                    .filter(|code| window >> (MAX_RUN_CODE_BITS - code.length) == code.bits)
+                    .min_by_key(|code| code.length);
+                for start in 0..8 {
+                    let encoded = prefix_window_bytes(window, MAX_RUN_CODE_BITS, start);
+                    let mut reader = BitReader {
+                        bytes: &encoded,
+                        bit_position: start,
+                    };
+                    if let Some(code) = expected {
+                        let actual = decode_run_code(&mut reader, black).unwrap();
+                        assert_eq!(
+                            (actual.bits, actual.length, actual.value, actual.terminal),
+                            (code.bits, code.length, code.value, code.terminal)
+                        );
+                        assert_eq!(reader.bit_position(), start + usize::from(code.length));
+                        let packed = u64::from_be_bytes(encoded);
+                        let bits = (packed >> (64 - reader.bit_position()))
+                            & ((1_u64 << actual.length) - 1);
+                        assert_eq!(bits, u64::from(actual.bits));
+                    } else {
+                        assert_kind(
+                            decode_run_code(&mut reader, black).unwrap_err(),
+                            MmrErrorKind::InvalidRunCode {
+                                bit_offset: start,
+                                black,
+                            },
+                        );
+                        assert_eq!(
+                            reader.bit_position(),
+                            start + usize::from(MAX_RUN_CODE_BITS)
+                        );
+                    }
+                    assert_eq!(reader.bytes.as_ptr(), encoded.as_ptr());
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn code_constructors_preserve_raw_fields_and_terminal_sense() {
+        for bits in [0, 1, u16::MAX] {
+            for length in [0, 1, MAX_RUN_CODE_BITS, u8::MAX] {
+                for mode in [
+                    Mode::Pass,
+                    Mode::Horizontal,
+                    Mode::Extension,
+                    Mode::Vertical(i8::MIN),
+                    Mode::Vertical(0),
+                    Mode::Vertical(i8::MAX),
+                ] {
+                    let code = ModeCode::new(bits, length, mode);
+                    assert_eq!((code.bits, code.length, code.mode), (bits, length, mode));
+                }
+                for value in [0, 63, 64, u16::MAX] {
+                    let terminal = RunCode::terminal(value, bits, length);
+                    let makeup = RunCode::makeup(value, bits, length);
+                    assert_eq!(
+                        (
+                            terminal.bits,
+                            terminal.length,
+                            terminal.value,
+                            terminal.terminal
+                        ),
+                        (bits, length, value, true)
+                    );
+                    assert_eq!(
+                        (makeup.bits, makeup.length, makeup.value, makeup.terminal),
+                        (bits, length, value, false)
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn sequential_prefix_checks_equal_prior_closure_at_every_u16_value() {
+        for prefix in 0..=u16::MAX {
+            for bit in [0, 1, 2, u16::MAX] {
+                let prior = prefix
+                    .checked_mul(2)
+                    .and_then(|value| value.checked_add(bit));
+                let expanded = append_code_bit(prefix, bit).ok();
+                assert_eq!(expanded, prior);
+            }
+        }
+    }
+
     fn span_test_bitmap(width: u32) -> Bitmap {
         let mut bitmap = Bitmap::blank(width, 3, &Limits::default()).expect("bounded bitmap");
         for (index, byte) in bitmap.data.iter_mut().enumerate() {
@@ -1736,6 +2518,115 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn recorded_span_matches_scalar_storage_and_exact_transition_updates() {
+        let mut cases = 0;
+        for width in [0, 1, 7, 8, 9, 17] {
+            let original = span_test_bitmap(width);
+            for row in 0..3 {
+                for start in 0..=width {
+                    for end in start..=width {
+                        for black in [false, true] {
+                            for before_black in [false, true] {
+                                for prefix_shape in 0..3 {
+                                    let before: Vec<_> = match prefix_shape {
+                                        0 => Vec::new(),
+                                        1 => (0..start).collect(),
+                                        _ => (0..start).flat_map(|x| [x, x]).collect(),
+                                    };
+                                    let mut expected_transitions = before.clone();
+                                    if start < end && before_black != black {
+                                        expected_transitions.push(start);
+                                    }
+                                    let mut expected = original.clone();
+                                    if black {
+                                        for x in start..end {
+                                            let index = usize::try_from(row).unwrap()
+                                                * expected.stride
+                                                + usize::try_from(x / 8).unwrap();
+                                            expected.data[index] |= 0x80 >> (x % 8);
+                                        }
+                                    }
+                                    let mut actual = original.clone();
+                                    let mut transitions = before;
+                                    let mut emitted_black = before_black;
+                                    fill_recorded_span(
+                                        &mut actual,
+                                        row,
+                                        start,
+                                        end,
+                                        black,
+                                        width,
+                                        &mut transitions,
+                                        &mut emitted_black,
+                                    )
+                                    .unwrap();
+                                    assert_eq!(actual, expected);
+                                    assert_eq!(transitions, expected_transitions);
+                                    assert_eq!(
+                                        emitted_black,
+                                        if start == end { before_black } else { black },
+                                    );
+                                    cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 11_196);
+    }
+
+    #[test]
+    fn transition_span_complete_output_matrix_preserves_empty_and_same_colour_frames() {
+        let mut cases = 0;
+        for width in 0..=9 {
+            for start in 0..=width {
+                for end in start..=width {
+                    for mask in 0..(1_u32 << start) {
+                        for duplicate in [false, true] {
+                            let mut before = Vec::new();
+                            for x in 0..start {
+                                if mask & (1 << x) != 0 {
+                                    before.push(x);
+                                    if duplicate {
+                                        before.push(x);
+                                    }
+                                }
+                            }
+                            for before_black in [false, true] {
+                                for black in [false, true] {
+                                    let mut expected = before.clone();
+                                    if start < end && before_black != black {
+                                        expected.push(start);
+                                    }
+                                    let mut transitions = before.clone();
+                                    let mut emitted_black = before_black;
+                                    record_transition_span(
+                                        &mut transitions,
+                                        &mut emitted_black,
+                                        start,
+                                        end,
+                                        width,
+                                        black,
+                                    );
+                                    assert_eq!(transitions, expected);
+                                    assert_eq!(
+                                        emitted_black,
+                                        if start == end { before_black } else { black },
+                                    );
+                                    cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 32_136);
     }
 
     #[test]
@@ -1953,6 +2844,83 @@ mod tests {
                 assert_incremental_transitions_match_scan(&bitmap);
             }
         }
+    }
+
+    #[test]
+    fn reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors() {
+        let mut vectors = 0;
+        let mut full_cases = 0;
+        let mut cursor_cases = 0;
+        for width in 0..=5_u32 {
+            for interior_count in 0..=4 {
+                for mut encoded in 0..(width + 1).pow(interior_count) {
+                    let mut transitions = Vec::new();
+                    for _ in 0..interior_count {
+                        transitions.push(encoded % (width + 1));
+                        encoded /= width + 1;
+                    }
+                    if transitions.windows(2).any(|pair| pair[0] > pair[1]) {
+                        continue;
+                    }
+                    transitions.push(width);
+                    transitions.push(width);
+                    let search_end = transitions.len() - 1;
+                    vectors += 1;
+                    for x in 0..=width {
+                        for black in [false, true] {
+                            for initial in [false, true] {
+                                let eligible =
+                                    |position| position > x || (initial && position == x);
+                                let pair_from = |start| {
+                                    (start..search_end)
+                                        .find(|index| {
+                                            eligible(transitions[*index])
+                                                && (*index % 2 == 0) != black
+                                        })
+                                        .map_or((width, width), |index| {
+                                            (transitions[index], transitions[index + 1])
+                                        })
+                                };
+                                let full =
+                                    reference_elements(&transitions, x, black, width, initial)
+                                        .unwrap();
+                                assert_eq!(full, pair_from(0));
+                                full_cases += 1;
+                                for before_cursor in 0..transitions.len() {
+                                    let expected_cursor = (before_cursor..search_end)
+                                        .find(|index| eligible(transitions[*index]))
+                                        .unwrap_or(search_end);
+                                    let mut cursor = before_cursor;
+                                    let actual = reference_elements_from(
+                                        &transitions,
+                                        x,
+                                        black,
+                                        width,
+                                        initial,
+                                        &mut cursor,
+                                    )
+                                    .unwrap();
+                                    assert_eq!(actual, pair_from(before_cursor));
+                                    assert_eq!(cursor, expected_cursor);
+                                    assert!(
+                                        x <= actual.0 && actual.0 <= actual.1 && actual.1 <= width
+                                    );
+                                    assert!(before_cursor <= cursor && cursor < transitions.len());
+                                    if (0..before_cursor).all(|index| !eligible(transitions[index]))
+                                    {
+                                        assert_eq!(actual, full);
+                                    }
+                                    cursor_cases += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(vectors, 461);
+        assert_eq!(full_cases, 9240);
+        assert_eq!(cursor_cases, 49_364);
     }
 
     #[test]

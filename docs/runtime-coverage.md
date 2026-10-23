@@ -4,6 +4,23 @@ P06 is in progress. This tranche establishes a reproducible baseline and
 non-regression checks; it does not meet or ratify the proposed release goals,
 complete the missing tests, or establish normative correctness.
 
+## Latest numeric quota observations
+
+Immutable source `6d73a9a` freshly executes402native tests with14existing ignored
+and26actually compiling/detected runtime mutants. A360-case independentu128
+oracle checks scalar and next-count quota boundaries, exact errors and overflow
+priority using numeric parameters only, not giant allocated containers or
+architecture-invalid slices.
+
+All51raw global/per-file metrics and report digests/source/test identities are
+recomputed. Only`src/document.rs` gains2covered lines,2regions and2branch
+outcomes. Totals are10800/12636lines (85.4701%),10397/12945regions (80.3167%)
+and2041/2638branches (77.3692%). Every denominator, floor and exclusion stays
+unchanged. Erased result annotations can shift line offsets; absolute coordinate
+identity is not claimed. The90%line/85%branch goals still require573covered
+lines and202branch outcomes. This observation does not ratchet the committed
+baseline or authorize a release exception.
+
 ## Current ratcheted baseline
 
 Pinned compiler: `nightly-2026-10-12`; collector: `cargo-llvm-cov 0.9.1`;
@@ -176,6 +193,81 @@ existing runtime mutants compile and are detected; the required semantic
 profile becomes nineteen groups / 107 contrasts in four unchanged shards/jobs.
 Independent normative interpretation, complete caller/stream composition,
 critical uncovered paths and 90%/85% release goals remain open.
+
+The concrete arithmetic caller follow-up adds two direct-state tests:
+360 integer-field cases across all fifteen banks and 12,288 IAID cases across
+every length byte and bounded bank sizes. They compare values and exact typed
+errors through the old conversion chain, full context banks, public cursor/
+marker and successful continuation. Formal contracts, not public observations,
+establish the private decoder-register equality. Optional refinement fixtures
+remain absent, and no observer hook or new coded stream/family is introduced.
+On immutable source `f625744923200267c504f123dd7fe6c2c6f20cc0`, all 373 native
+tests pass with 14 ignored. Fresh actual coverage is
+**10,537/12,629 lines (83.43%)**, **10,165/12,936 regions (78.58%)** and
+**1,997/2,638 branches (75.70%)**. Only symbol/text gains twelve covered lines
+and thirteen regions, with no branch gain. The equivalent explicit forwarding
+adds three physical line/region denominator entries; all branch denominators,
+floors and exclusions are unchanged. All fifteen runtime mutants still compile
+and are detected. The required profile becomes twenty groups / 115 compiling
+contrasts in four unchanged shards/jobs. Normative caller/stream interpretation,
+critical uncovered paths and release coverage goals remain open.
+
+The unpaused halftone/pattern control follow-up adds eight ordinary tests for
+all generic/MMR/halftone adapter variants and full-width/delegated fields;
+inclusive input/context budgets and error precedence; arithmetic coding/
+template rejection frames, zero-area dispatch and noncausal adaptive-pixel
+rejection; pattern MMR single-use and consecutive real zero-area EOFB prefixes
+with exact trailing-byte checks; and every flag byte/truncation of both headers.
+These are component/control tests, not full valid image-stream conformance.
+No refinement/aggregation/custom-family expansion, observer hook, fake
+allocation failure, new entropy encoder or exclusion is introduced.
+
+On source `7118fcf255a016e51d267704714a5c37bb1d6c12`, all 381 native tests pass
+with 14 ignored. Actual fresh coverage is **10,679/12,629 lines (84.56%)**,
+**10,295/12,936 regions (79.58%)** and **2,009/2,638 branches (76.16%)**.
+Only halftone gains **142 lines / 130 regions / twelve branch outcomes**;
+all denominators and other file metrics are unchanged. Halftone itself reaches
+93.90% lines / 80.58% branches. Every native production body is byte-identical
+to the caller parent; only two successful-field/acceptance postcondition
+attributes change. Two new compiled runtime mutants disable the MMR single-use
+and trailing-byte checks; all fifteen existing controls remain for seventeen.
+Floors, release goals and four-shard CI job/cap policy are unchanged.
+
+The reader-error follow-up adds one 78-case byte-position/width/EOF matrix,
+including zero-length and `usize::MAX` requests, partial remainders, exact
+fixed-width values and input borrow/cursor frames. It complements rather than
+duplicates the existing exhaustive bit count/value/error/frame test.
+On immutable source `ec18721f3580373e8ebe63e287cbdcf76212d1fb`, all382native
+tests pass with14ignored and actual measured metrics remain exactly
+**10,679/12,629 lines (84.56%)**, **10,295/12,936 regions (79.58%)** and
+**2,009/2,638 branches (76.16%)**. This is error-contract/test-depth progress,
+not a line/region/branch gain. All seventeen runtime controls still compile and
+are detected. Native tokens, thresholds, denominators and exclusions remain.
+The new internal bound proof excludes checked bit-accumulation overflow under
+the existing valid-reader/count domain; native defensive paths are retained
+and not counted covered or excluded. The full required semantic profile becomes
+twenty-two groups / 133 contrasts in four unchanged shards/jobs.
+
+The consumed-MMR-prefix tranche adds exhaustive scalar table lookup oracles
+for1,024modewindows and131,072runwindow/colour/alignment cases, plus262,144
+actual shared-helper/prior checked-operation comparisons and constructor
+field/terminal-sense boundaries. These do not independently establish T.6
+table fidelity or valid full-image conformance. Two checked expressions share
+one verified private helper; all guards/errors/order and656existing caller
+preconditions remain. No allocation failure or unreachable state is fabricated.
+
+The initial sequential rewrite removed covered LLVM coordinates and failed the
+reviewed per-file line/region floors. It was not accepted and no floor was
+lowered. A verified shared helper removes duplicate arithmetic, while genuine
+constructor tests exercise previously untested raw-field factory contracts.
+The final collection passes the same reviewed floor and measures
+**10,696/12,627 lines (84.71%)**, **10,310/12,937 regions (79.69%)** and
+**2,009/2,638 branches (76.16%)**. Against the reader parent, only MMR changes:
+seventeen more covered lines, fifteen more regions, no branch gain, two fewer
+line denominator entries and one additional region entry. The MMR file reaches
+96.41%lines/88.14%regions/90.67%branches. These are actual combined counts, not
+summed historical gains. All coverage exclusions, release goals, reviewed floors
+and four-shard CI job/cap policy remain unchanged.
 
 The generic diagnostic follow-up exercises every local error variant's exact
 display fields and source chain, extreme numeric values, redacted delegated I/O
@@ -381,7 +473,7 @@ python -B tools/check_contract_mutations.py --toolchain 1.89.0 \
 ```
 
 CI runs the same check with the pinned coverage nightly. It copies source and
-fixtures outside the checkout, uses a fresh offline Cargo home, and tests fifteen
+fixtures outside the checkout, uses a fresh offline Cargo home, and tests seventeen
 single-site mutations covering I/O classification, inclusive limits, sink
 propagation, reference roles/cardinality, error adapter fields and formatter
 failure propagation, symbol-code length and packed padding. For each case the original exact library/integration test

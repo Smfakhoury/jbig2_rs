@@ -370,7 +370,8 @@ impl ArithmeticContext {
                 && mps <= 1
                 && context.state_index == state_index
                 && context.mps == mps,
-            Err(_) => state_index >= 47 || mps > 1,
+            Err(error) => (state_index >= 47 || mps > 1)
+                && error == ArithmeticError::InvalidContextState { state_index, mps },
         },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
@@ -500,7 +501,9 @@ impl From<MalformedError> for ArithmeticError {
 }
 
 impl ArithmeticError {
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == arithmetic_spec::decode_error(self),
+    ))]
     pub(crate) fn into_decode(self) -> DecodeError {
         match self {
             Self::Malformed(error) => DecodeError::Malformed(error),

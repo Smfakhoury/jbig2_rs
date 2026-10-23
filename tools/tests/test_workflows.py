@@ -231,7 +231,7 @@ class WorkflowPolicyTests(unittest.TestCase):
                 with self.subTest(name=name, change=change), self.assertRaisesRegex(ValueError, "validation runs"):
                     check_workflow(document, f"{name}.yml")
 
-    def test_complete_pr_profile_uses_nineteen_jobs_without_dropping_platforms(self):
+    def test_complete_pr_profile_uses_twenty_one_jobs_without_dropping_platforms(self):
         from run_semantic_proofs import configured_shards
 
         count = 0
@@ -252,7 +252,29 @@ class WorkflowPolicyTests(unittest.TestCase):
                 self.assertEqual(document["jobs"]["distribution"]["strategy"]["matrix"], {
                     "os": expected_os, "toolchain": ["1.89.0", "stable"],
                 })
-        self.assertEqual(count, 19)
+        self.assertEqual(count, 21)
+
+    def test_verus_download_retries_remain_bounded_and_hash_checked(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        for original, replacement in (
+            ("--retry 3", "--retry 30"),
+            ("--retry-max-time 60", ""),
+            ("--connect-timeout 10", ""),
+            ("--max-time 30", ""),
+            ("sha256sum --check", "true"),
+        ):
+            document = copy.deepcopy(actual)
+            for job in ("whole", "semantic"):
+                step = next(
+                    step for step in document["jobs"][job]["steps"]
+                    if step.get("name") == "Download pinned Verus"
+                )
+                self.assertIn(original, step["run"])
+                step["run"] = step["run"].replace(original, replacement)
+            with self.subTest(original=original), self.assertRaisesRegex(
+                ValueError, "bounded retries and integrity",
+            ):
+                check_workflow(document, "verus.yml")
 
     def test_verus_compile_gate_cannot_be_satisfied_by_a_substring_or_comment(self):
         actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())

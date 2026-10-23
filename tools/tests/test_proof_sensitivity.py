@@ -48,6 +48,28 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.verify(report)
 
+    def test_only_expected_failure_skips_additional_error_searches(self):
+        for expected_failure in (False, True):
+            report = self.report()
+            report["verification-results"]["errors"] = int(expected_failure)
+            process = CompletedProcess(
+                [], int(expected_failure), json.dumps(report),
+                "postcondition not satisfied" if expected_failure else "",
+            )
+            with self.subTest(expected_failure=expected_failure), patch(
+                "proof_sensitivity.subprocess.run", return_value=process,
+            ) as run:
+                selected_proof(
+                    Path("/verus"), TOOLS.parent, {}, expected_failure,
+                    "document", "finalize_pages",
+                )
+            command = run.call_args.args[0]
+            self.assertEqual("--multiple-errors" in command, expected_failure)
+            if expected_failure:
+                self.assertEqual(command[-2:], ["--multiple-errors", "0"])
+            self.assertIn("--verify-function", command)
+            self.assertIn("--rlimit", command)
+
     def test_compiler_or_timeout_diagnostics_do_not_count_as_semantic_rejections(self):
         report = self.report()
         report["verification-results"]["errors"] = 1

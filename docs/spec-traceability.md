@@ -1,8 +1,8 @@
 # Provisional statement-level T.88 and T.6 traceability
 
-P04 is in progress. The ledger maps **249 selected requirement records**
+P04 is in progress. The ledger maps **266 selected requirement records**
 to source contracts, project models, proof support and exact test identities.
-These comprise **240 selected normative-rule records and nine explicit project-
+These comprise **257 selected normative-rule records and nine explicit project-
 profile-policy records**. A policy row uses the standard only as context and
 does not increase the normative-rule count.
 It also inventories all **30 support-matrix features** as a decomposition
@@ -30,7 +30,7 @@ the repository. Ledger titles and scope notes are original paraphrases.
   source links, model/proof support, exact tests, assumptions and unresolved gaps.
   CI uploads these instead of committing constantly regenerated reports.
 
-All 249 records are **provisional**, pending owner normative/model review.
+All 266 records are **provisional**, pending owner normative/model review.
 Twenty-nine feature groups now have partial records, none is unstarted, one
 deferred feature is excluded, and none has an approved complete normative
 decomposition. Starting every coarse feature worklist does **not** mean that
@@ -40,10 +40,32 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The [document quota models](../specs/document.rs) specify observable project
+numeric preflight results, including accepted boundaries, overflow priority and
+typed quota payloads. Four unchanged native guard bodies satisfy those
+relations with fresh whole proof/compilation1192/0 and13actual document
+strong/original-contract controls. These are not new selected normative
+records or extra normative credit; the ledger's266provisional records and
+115/125/26strength counts are unchanged. Aggregate decoder work, allocator/RSS,
+complete containers/streams and independent normative review remain distinct.
+
+The [generic probability models](../specs/generic_region.rs) now specify
+valid-bank acceptance, the first invalid raw state/MPS payload and exact
+context/signal error projection. Together with the existing
+[arithmetic error models](../specs/arithmetic.rs), five unchanged native helper
+bodies prove exact constructor, validation, signal, EOF and overflow results.
+Fresh whole verification/compilation is1192/0 and19 compiling contrasts reject
+under the stronger contracts but accept under the original guarantees.
+These auxiliary links belong to the still-state-only
+`T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE` record: they do not prove which context
+the decoder must choose or when the complete stream finishes.
+The record keeps its empty normative functional-evidence list, provisional
+review and open gaps; all266strength counts remain115/125/26.
+
 | Classification | Selected records | What the record establishes |
 |---|---:|---|
-| `functional_contract` | 94 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 129 | Decoder/context/storage invariants, not the requested semantic transformation |
+| `functional_contract` | 115 | Explicit postcondition evidence within the stated narrow property scope |
+| `state_preservation` | 125 | Decoder/context/storage invariants, not the requested semantic transformation |
 | `safety_only` | 26 | A verified body without the claimed functional result postcondition |
 | `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
 
@@ -52,6 +74,21 @@ and header fields, Huffman construction/decoding helpers, selected T.6 mode/run/
 framing rules and JBIG2-specific MMR
 exceptions, selected generic-template parameters, arithmetic reset contracts,
 selected Annex A/E algorithm and table relations, and typical-row copying.
+
+Seventeen additional selected pattern/halftone header-field records now link
+exact project acceptance predicates, successful raw fields and seven/twenty-one
+byte cursor advancement. Their locators were checked locally on 2026-10-23
+against the unchanged approved T.88 hash above: 7.4.4.1.1-7.4.4.1.4 and
+7.4.5.1.1-7.4.5.1.3.2, with Figures 41-46's field layouts/captions.
+Only original paraphrases, identifiers and locators are recorded, not source
+prose, diagrams or vectors. The halftone-specific helper starts after region
+information; signed origins and unsigned vectors retain their encoded
+256-scaled representation. Native parser bodies/preconditions are unchanged.
+Nine real compiling contrasts include deliberately rejecting otherwise valid
+headers, so accepted-field contracts are not the only success guarantee.
+Typed partial-error/cursor contracts, full segment/caller/resource and raster
+composition, exhaustive decomposition and independent normative review remain
+open. Both feature worklists remain partial, and all new records provisional.
 
 Important examples:
 
@@ -153,6 +190,17 @@ contracts. The 31-bit cap is not an Annex A limit; the SBSYMCODELEN caller and
 normative address-space obligations remain open. The two LENGTH/STORAGE rows
 are deliberately **not** upgraded.
 
+The concrete arithmetic codec now exposes exact project value/error forwarding,
+full decoder/selected-bank relations and all other bank/refinement/work frames.
+Its field slot equals the project ordinal, and the arithmetic error adapter
+has an exact field-preserving model. Eight compiling contrasts and 12,648 direct
+caller cases supplement these contracts. This still does not prove that every
+dictionary/text call supplies the normative field or that symbol counts imply
+the supplied SBSYMCODELEN and bank address space. The PROCEDURE-BANKS and two
+IAID LENGTH/STORAGE rows therefore gain links but **retain** state-only strength
+and provisional review. No selected count, normative approval or decomposition
+status changes.
+
 The complete decision-state follow-up gives seven selected E.3.2 records
 functional project-step evidence: interval subtraction, strict code partition,
 upper code subtraction, fast MPS, both exchange/normalization paths and the
@@ -181,7 +229,7 @@ mutants violate individual result relations and pass when only the affected
 postconditions are omitted; input framing, state validity and loop recurrence
 remain in the controls. These results do not approve normative register/pointer
 interpretation, caller sequencing or full arithmetic-stream conformance.
-All 249 records remain provisional, with unchanged selected membership.
+The selected arithmetic membership and its provisional review states are unchanged.
 
 This tranche adds **138 provisional normative records**, bringing the arithmetic
 worklist from three records to **141**, without changing runtime, models, proofs,
@@ -420,7 +468,7 @@ or standards prose are added.
 |---|---|
 | Initial white reference and previous-row reuse | Raster storage/reader invariants, not reference pixel equivalence |
 | Changing elements and pass/vertical/horizontal transitions | Bounded reference positions and safe raster state, not an exact line-transition theorem |
-| Mode prefix dispatch | Implementation-table witness and consumed length, not equality to the actual consumed prefix bits |
+| Mode prefix dispatch | Exact old-input bit-prefix, implementation-table mode and consumed-length witness; independent table fidelity and complete acceptance/errors remain open |
 | White/black run lookup | Matching supplied key and membership in implementation arrays; no independent T.6 table-translation proof |
 | Make-up/terminating accumulation and initial imaginary white run | Reader/row bounds and storage, not run summation or initial-position equivalence |
 | Terminal reference sentinels | Valid width-sentinel representation and two added entries, not preservation of all earlier transitions or full row pixels |
@@ -516,14 +564,148 @@ does this immediately before the checker. Its report marks verifier-report
 checking separately from native CI's Cargo test discovery; listing tests is
 not the same thing as executing them.
 
-All nineteen semantic groups execute; four deterministic shards reduce
-repeated setup without dropping any of the 107 required strong/weaker compiling
-contrasts. Each shard executes sequentially, and the final collector requires
+All twenty-seven semantic groups execute; six deterministic shards reduce
+repeated setup without dropping any of the 183 required strong/weaker compiling
+contrasts. Each shard executes sequentially, at most four run concurrently,
+and the final collector requires
 every configured group exactly once, its selected-case baselines and native
 compilation results, individual report/log/checker hashes, and matching
 whole-crate source/tool/run/attempt identities. The source-bound receipt
 includes the complete shard assignment. The stable `verify` check fails on a
 missing, failed, duplicate, stale or wrong-shard result.
+
+The bit/word records additionally link exact auxiliary project reader failures.
+Successful MSB-first value semantics and exhaustive bit tests already existed.
+All byte methods now expose EOF payloads; bit reads preserve invalid-count
+priority/value, exact EOF and absence of spurious overflow or valid-width
+rejection. Internal overflow-bound support is separately source-bound under
+proofs, not presented as a normative theorem. No requirement, strength or review
+count changes at that reader tranche: all266remain provisional111/129/26. Project error payloads do
+not establish normative rejection/marker-fill rules or downstream conformance.
+
+The subsequent MMR prefix tranche closes a distinct table-witness gap:
+mode and run-code success now prove that the implementation key equals the
+actual old input's consumed `bits_value`, not merely some same-length table
+entry. Four compiling wrong-key contrasts retain old membership/length/reader
+guarantees under their weaker controls. One mode record gains functional
+project input-to-code evidence; the truncation-policy row only gains an
+auxiliary success relation and retains state-only strength. All266remain
+provisional112/128/26. Shared-table scalar windows are not independent T.6
+table approval, complete mode/error/run-total or row/raster/caller theorems.
+
+The run-sequence follow-up proves that each successful `decode_run` has a
+nonempty input-bound implementation-table sequence: preceding codes are
+make-up, the final code is terminating, and its value sum and bit-length sum
+equal the returned total and consumed extent. Four compiling contrasts detect
+lost totals, discarded make-up values, premature make-up termination and
+empty zero-run acceptance. Numeric tests exercise 87,040 colour/alignment/
+make-up/terminal scenarios with exact and spare row remainders, every nonzero
+scenario's first overshoot, and eight exact missing-terminal EOF cases.
+They share implementation tables, not independently translated normative data.
+Only `T6-RUN-MAKEUP-SUM` gains functional strength: all 266 records remain
+provisional, now 113 functional / 127 state / 26 safety. Full acceptance/typed
+errors, horizontal-pair/row/raster/caller composition and table review remain
+separate. All native code, caller preconditions and trust boundaries are
+unchanged; this theorem does not close the complete-scope gate.
+
+The horizontal follow-up extracts the exact existing ordered-run block into
+the actual verified `decode_horizontal_runs` callee. Its output relates both
+opposite-colour input sequences to the intermediate/final endpoints, row
+bounds, progress and combined consumption. No original check, error or order
+changes. Six compiling contrasts retain reader/end-point bounds in weaker
+controls; only the zero-pair contrast also removes strict progress.
+Redundant positive proof support is removed from mutants to avoid a solver
+resource-limit failure masquerading as semantic rejection; the unmodified
+production baseline retains and verifies that support.
+Numeric tests perform 368,634 actual/prior-procedure comparisons over 73,728
+encoded pairs, plus 1,456 partial-input/error/cursor cases. They share
+implementation tables. Only the horizontal-pair record gains functional
+strength: all 266 records remain provisional at 114/126/26. Horizontal-prefix
+dispatch, exact raster spans, full caller/stream composition, independent table
+review and complete acceptance/typed errors remain open.
+
+The recorded-span follow-up propagates exact primitive black-span pixels and
+storage through both wrappers under an explicit canonical-storage condition;
+their existing weaker preconditions are unchanged. White remains a no-op,
+not a clearing theorem. Exact transition-cache/emitted-state results and cache
+frames on error are auxiliary implementation guarantees; their model belongs
+under proof support, not the normative-facing span model. New direct matrices
+cover 11,196 complete pixel/cache cases and 32,136 transition-state cases.
+Five new real contrasts join the existing three no-op contrasts in the same
+`mmr-span` group, reusing its workspace and selected-function baselines.
+All 25 groups remain required, now with 152 contrasts; no new CI job or shard
+is added. The two older affected no-op controls remove only the redundant new
+pixel relation. The polarity record remains state-only, and all 266 records
+remain provisional114/126/26: full raster-loop white initialization,
+disjointness, mode interpretation and caller composition are still open.
+
+The resource/reference coverage follow-up changes no production declaration,
+body, attribute/precondition or source start. Its direct native tests cover
+existing resource borrowing/order/identity, observed-success/requested-minimum
+pointer-memory boundaries and
+general parsed-header retention/reference-depth policy precedence. They do not
+run a new entropy/coding family, exercise paused work, or prove formal output
+ordering. Three added real runtime mutants join the existing seventeen; all
+twenty actually compile and are detected. Identical production coverage
+coordinates demonstrate +34 lines/+32 regions/+14 branch outcomes with zero
+lost coordinates, unchanged denominators and no exclusion/floor changes.
+No requirement, strength or review count changes: all266 remain provisional
+114/126/26. Component-native gains do not close normative/model review or
+complete-stream/raster claims.
+
+Here the borrowing success tests use safe observed vector capacity; rejection
+tests cover the requested minimum only. Requested bytes are not asserted equal
+to reserved capacity. An isolated native counterexample exposes an existing
+4,112-versus-4,128 managed-budget gap, despite the safety proof's success.
+A separate native-only repair remains blocked by the unapproved standard
+capacity specification, with no current formal acceptance. This is an
+additional functional resource-accounting gap, not a new standards exception,
+conformance credit or reason to upgrade a provisional record.
+
+The cardinality follow-up proves first matching index/group size and complete
+collected/codebook length, with no stronger existing precondition. Its finite
+model counts every reference occurrence, repeats the first matching group's
+size, and gives missing groups zero, matching current helper behavior.
+The codebook view preserves this count. Six actual compiling controls exercise
+wrong view lengths, nonminimal duplicate lookup, wrong selected group, lost
+borrowed bitmaps and discarded contiguous exports. The export-order record
+gains auxiliary runtime/model/test links but remains state-only: cardinality
+does not establish selected bitmap bytes, order, normative import identity or
+caller/stream agreement. All266records remain provisional114/126/26.
+The native capacity defect is explicitly unchanged, and the separate repair
+still lacks approved standard-boundary integration.
+
+The T.6 search follow-up closes exact project changing-element selection.
+Both helpers accept every input satisfying their unchanged cache/bounds
+preconditions. The full scan exposes the first eligible opposite-colour pair
+or width/width fallback; the optimized path additionally exposes its precise
+lower cursor and suffix pair. Its global result is conditional on a skipped
+prefix, and the actual raster loop now proves that condition on every call.
+Erased loop invariants, an explicit lower-loop result and an independently
+verified suffix/global bridge compose this property without changing execution.
+Cursor/prefix cache machinery remains in proof support, not the normative
+reference-position model. Six actual compiling controls include false
+valid-input rejections;461native vectors cover9240full/49364cursor calls.
+One record gains functional project evidence:266allprovisional115/125/26.
+Previous-row/cache pixel correspondence, independent initial-coordinate and
+colour-parity review, and full mode/raster/stream semantics remain open.
+The existing first-white/next-row records are not upgraded. Two real native
+branch outcomes are additionally covered, with no changed denominator/floor.
+This does not resume any paused JBIG2 refinement/aggregation/custom family.
+
+The native generic-control follow-up preserves every production declaration,
+body, attribute/precondition and source start. Its independent scalar packed-
+row samples, raw probability validation and error projection tests do not
+decode entropy or introduce a coding-family/refinement/aggregation fixture.
+All401native tests/14ignored and24actual runtime mutants pass. Identical native
+coordinates prove+59lines/+43regions/+14branch outcomes, zero lost covered
+coordinates, unchanged denominators and no weakened floor/exclusion. Queries
+outside the bitmap or with defensive row offsets exercise helper white padding,
+not malformed backing slices; some such guard inputs are not produced by a
+valid decoder caller. These are native component facts, not new formal error-
+projection, normative rejection or full-family conformance theorems.
+All266records remain provisional115/125/26, with no requirement/strength/review
+upgrade. Existing independent-review/raster/stream/capacity gaps remain.
 
 `--require-complete` needs both verifier evidence and test discovery and currently
 retains the full reviewed-functional, gap-free requirement. The additional

@@ -648,6 +648,17 @@ fn template_from_flags(flags: u8) -> u8 {
             && (!header.mmr || header.template == 0),
         Err(_) => true,
         },
+        match out {
+            Ok(header) =>
+                halftone_spec::pattern_header_fields(
+                    header, old(reader).bytes@, old(reader).position as int,
+                )
+                && final(reader).position == old(reader).position + 7,
+            Err(_) => true,
+        },
+        out.is_ok() == halftone_spec::pattern_header_accepted(
+            old(reader).bytes@, old(reader).position as int,
+        ),
 ))]
 pub(crate) fn parse_pattern_dictionary_header(
     reader: &mut ByteReader<'_>,
@@ -759,6 +770,17 @@ fn signed_grid_origin(value: u32) -> i32 {
                 || (header.template == 0 && !header.enable_skip)),
         Err(_) => true,
         },
+        match out {
+            Ok(header) =>
+                halftone_spec::halftone_header_fields(
+                    header, old(reader).bytes@, old(reader).position as int,
+                )
+                && final(reader).position == old(reader).position + 21,
+            Err(_) => true,
+        },
+        out.is_ok() == halftone_spec::halftone_header_accepted(
+            old(reader).bytes@, old(reader).position as int,
+        ),
 ))]
 pub(crate) fn parse_halftone_header(
     reader: &mut ByteReader<'_>,
@@ -2162,6 +2184,693 @@ mod tests {
     use std::collections::VecDeque;
     use std::hint::black_box;
     use std::time::{Duration, Instant};
+
+    fn assert_decode_error_exact(actual: DecodeError, expected: DecodeError) {
+        match (actual, expected) {
+            (DecodeError::Malformed(actual), DecodeError::Malformed(expected)) => {
+                assert_eq!(actual, expected);
+            }
+            (DecodeError::LimitExceeded(actual), DecodeError::LimitExceeded(expected)) => {
+                assert_eq!(actual, expected);
+            }
+            (
+                DecodeError::Allocation {
+                    requested_bytes: actual,
+                },
+                DecodeError::Allocation {
+                    requested_bytes: expected,
+                },
+            ) => assert_eq!(actual, expected),
+            (DecodeError::Io(actual), DecodeError::Io(expected)) => assert_eq!(actual, expected),
+            (DecodeError::Unsupported(actual), DecodeError::Unsupported(expected)) => {
+                assert_eq!(actual, expected);
+            }
+            (actual, expected) => panic!("wrong classification: {actual:?}, expected {expected:?}"),
+        }
+    }
+
+    fn empty_request(coding: GenericRegionCoding) -> GenericRegionRequest<'static> {
+        GenericRegionRequest {
+            width: 0,
+            height: 0,
+            coding,
+            typical_prediction: false,
+            extended_template: false,
+            skip: None,
+        }
+    }
+
+    #[test]
+    fn generic_adapter_preserves_all_variants_and_full_width_fields() {
+        let cases = [
+            (
+                GenericRegionError::ReservedFlags(255),
+                GenericRegionErrorKind::ReservedFlags(255),
+            ),
+            (
+                GenericRegionError::InvalidFlags(255),
+                GenericRegionErrorKind::InvalidFlags(255),
+            ),
+            (
+                GenericRegionError::InvalidAdaptivePixel {
+                    number: 255,
+                    x: i32::MIN,
+                    y: i32::MAX,
+                },
+                GenericRegionErrorKind::InvalidAdaptivePixel {
+                    number: 255,
+                    x: i32::MIN,
+                    y: i32::MAX,
+                },
+            ),
+            (
+                GenericRegionError::InvalidSkipDimensions,
+                GenericRegionErrorKind::InvalidSkipDimensions,
+            ),
+            (
+                GenericRegionError::InvalidArithmeticTerminator,
+                GenericRegionErrorKind::InvalidArithmeticTerminator,
+            ),
+            (
+                GenericRegionError::UnexpectedArithmeticMarker {
+                    offset: usize::MAX,
+                    code: 255,
+                },
+                GenericRegionErrorKind::UnexpectedArithmeticMarker {
+                    offset: usize::MAX,
+                    code: 255,
+                },
+            ),
+            (
+                GenericRegionError::RowCountMismatch {
+                    expected: u32::MAX,
+                    actual: 0,
+                },
+                GenericRegionErrorKind::RowCountMismatch {
+                    expected: u32::MAX,
+                    actual: 0,
+                },
+            ),
+            (
+                GenericRegionError::ContextIndex {
+                    index: usize::MAX,
+                    count: usize::MAX - 1,
+                },
+                GenericRegionErrorKind::ContextIndex {
+                    index: usize::MAX,
+                    count: usize::MAX - 1,
+                },
+            ),
+        ];
+        for (error, expected) in cases {
+            assert_decode_error_exact(
+                generic_error_into_decode(error),
+                DecodeError::Malformed(MalformedError::InvalidGenericRegion(expected)),
+            );
+        }
+        assert_decode_error_exact(
+            generic_error_into_decode(GenericRegionError::Decode(DecodeError::Allocation {
+                requested_bytes: u64::MAX,
+            })),
+            DecodeError::Allocation {
+                requested_bytes: u64::MAX,
+            },
+        );
+        assert_decode_error_exact(
+            generic_error_into_decode(GenericRegionError::Decode(DecodeError::Io(
+                crate::IoErrorKind::PermissionDenied,
+            ))),
+            DecodeError::Io(crate::IoErrorKind::PermissionDenied),
+        );
+    }
+
+    #[test]
+    fn mmr_adapter_preserves_every_kind_and_delegated_error() {
+        let cases = [
+            (
+                MmrError::InvalidMode {
+                    bit_offset: usize::MAX,
+                },
+                MmrErrorKind::InvalidMode {
+                    bit_offset: usize::MAX,
+                },
+            ),
+            (
+                MmrError::ExtensionMode {
+                    bit_offset: usize::MAX,
+                },
+                MmrErrorKind::ExtensionMode {
+                    bit_offset: usize::MAX,
+                },
+            ),
+            (
+                MmrError::InvalidRunCode {
+                    bit_offset: usize::MAX,
+                    black: true,
+                },
+                MmrErrorKind::InvalidRunCode {
+                    bit_offset: usize::MAX,
+                    black: true,
+                },
+            ),
+            (
+                MmrError::InvalidRunCode {
+                    bit_offset: 0,
+                    black: false,
+                },
+                MmrErrorKind::InvalidRunCode {
+                    bit_offset: 0,
+                    black: false,
+                },
+            ),
+            (MmrError::RunExceedsRow, MmrErrorKind::RunExceedsRow),
+            (MmrError::InvalidTransition, MmrErrorKind::InvalidTransition),
+            (MmrError::NonProgress, MmrErrorKind::NonProgress),
+            (MmrError::TooManyModes, MmrErrorKind::TooManyModes),
+            (MmrError::MissingEofb, MmrErrorKind::MissingEofb),
+            (MmrError::InvalidEofb, MmrErrorKind::InvalidEofb),
+            (MmrError::TrailingData, MmrErrorKind::TrailingData),
+            (MmrError::NonZeroEofbPadding, MmrErrorKind::NonZeroPadding),
+        ];
+        for (error, expected) in cases {
+            assert_decode_error_exact(
+                mmr_error_into_decode(error),
+                DecodeError::Malformed(MalformedError::InvalidMmr(expected)),
+            );
+        }
+        assert_decode_error_exact(
+            mmr_error_into_decode(MmrError::IntegerOverflow),
+            DecodeError::Malformed(MalformedError::IntegerOverflow),
+        );
+        assert_decode_error_exact(
+            mmr_error_into_decode(MmrError::Allocation {
+                requested_bytes: u64::MAX,
+            }),
+            DecodeError::Allocation {
+                requested_bytes: u64::MAX,
+            },
+        );
+        assert_decode_error_exact(
+            mmr_error_into_decode(MmrError::Reader(MalformedError::UnexpectedEof {
+                offset: u64::MAX,
+                needed: u64::MAX,
+                remaining: 0,
+            })),
+            DecodeError::Malformed(MalformedError::UnexpectedEof {
+                offset: u64::MAX,
+                needed: u64::MAX,
+                remaining: 0,
+            }),
+        );
+        assert_decode_error_exact(
+            mmr_error_into_decode(MmrError::Bitmap(DecodeError::LimitExceeded(
+                LimitExceeded {
+                    kind: LimitKind::Memory,
+                    limit: u64::MAX - 1,
+                    actual: u64::MAX,
+                },
+            ))),
+            DecodeError::LimitExceeded(LimitExceeded {
+                kind: LimitKind::Memory,
+                limit: u64::MAX - 1,
+                actual: u64::MAX,
+            }),
+        );
+    }
+
+    #[test]
+    fn halftone_adapter_preserves_every_variant_and_standard_forwarder() {
+        let cases = [
+            (
+                HalftoneError::InvalidPatternDictionaryFlags(255),
+                HalftoneErrorKind::InvalidPatternDictionaryFlags(255),
+            ),
+            (
+                HalftoneError::InvalidPatternDimensions {
+                    width: 255,
+                    height: 0,
+                },
+                HalftoneErrorKind::InvalidPatternDimensions {
+                    width: 255,
+                    height: 0,
+                },
+            ),
+            (
+                HalftoneError::InvalidHalftoneFlags(255),
+                HalftoneErrorKind::InvalidHalftoneFlags(255),
+            ),
+            (
+                HalftoneError::InvalidHalftoneConfiguration,
+                HalftoneErrorKind::InvalidConfiguration,
+            ),
+            (
+                HalftoneError::InvalidBitmapDimensions {
+                    expected_width: u32::MAX,
+                    expected_height: 0,
+                    actual_width: 1,
+                    actual_height: u32::MAX - 1,
+                },
+                HalftoneErrorKind::InvalidBitmapDimensions {
+                    expected_width: u32::MAX,
+                    expected_height: 0,
+                    actual_width: 1,
+                    actual_height: u32::MAX - 1,
+                },
+            ),
+            (
+                HalftoneError::InvalidGrayBitDepth(255),
+                HalftoneErrorKind::InvalidGrayBitDepth(255),
+            ),
+            (
+                HalftoneError::EmptyPatternDictionary,
+                HalftoneErrorKind::EmptyPatternDictionary,
+            ),
+            (
+                HalftoneError::InconsistentPatternDimensions,
+                HalftoneErrorKind::InconsistentPatternDimensions,
+            ),
+            (
+                HalftoneError::InvalidPatternIndex {
+                    index: u32::MAX,
+                    pattern_count: u64::MAX,
+                },
+                HalftoneErrorKind::InvalidPatternIndex {
+                    index: u32::MAX,
+                    pattern_count: u64::MAX,
+                },
+            ),
+        ];
+        for (error, expected) in cases {
+            assert_decode_error_exact(
+                DecodeError::from(error),
+                DecodeError::Malformed(MalformedError::InvalidHalftone(expected)),
+            );
+        }
+        assert_decode_error_exact(
+            halftone_error_into_decode(HalftoneError::from(MalformedError::IntegerOverflow)),
+            DecodeError::Malformed(MalformedError::IntegerOverflow),
+        );
+        assert_decode_error_exact(
+            halftone_error_into_decode(HalftoneError::from(LimitExceeded {
+                kind: LimitKind::Work,
+                limit: u64::MAX - 1,
+                actual: u64::MAX,
+            })),
+            DecodeError::LimitExceeded(LimitExceeded {
+                kind: LimitKind::Work,
+                limit: u64::MAX - 1,
+                actual: u64::MAX,
+            }),
+        );
+    }
+
+    #[test]
+    fn arithmetic_state_constructors_enforce_exact_input_and_context_budgets() {
+        let coded = [0, 0, 0xff, 0xac];
+        for (code, template, bits) in [
+            (0, GenericTemplate::Template0, 16),
+            (1, GenericTemplate::Template1, 13),
+            (2, GenericTemplate::Template2, 10),
+            (3, GenericTemplate::Template3, 10),
+        ] {
+            let bytes = 2_u64 << bits;
+            let limits = Limits {
+                max_stream_bytes: 4,
+                max_decoder_managed_memory_bytes: bytes,
+                ..Limits::default()
+            };
+            for pattern in [false, true] {
+                let create = |data, limits: &Limits| {
+                    if pattern {
+                        new_pattern_arithmetic_state(data, template, code, limits)
+                    } else {
+                        new_halftone_arithmetic_state(data, template, code, limits)
+                    }
+                };
+                assert!(create(&coded, &limits).is_ok());
+                for data in [&[][..], &[0][..], &[0, 0][..], &[0xff, 0x90][..]] {
+                    let Err(error) = create(data, &limits) else {
+                        panic!("missing terminator accepted")
+                    };
+                    assert_decode_error_exact(
+                        error,
+                        DecodeError::Malformed(MalformedError::InvalidGenericRegion(
+                            GenericRegionErrorKind::InvalidArithmeticTerminator,
+                        )),
+                    );
+                }
+                let Err(error) = create(
+                    &coded,
+                    &Limits {
+                        max_decoder_managed_memory_bytes: bytes - 1,
+                        ..limits
+                    },
+                ) else {
+                    panic!("context budget exceeded")
+                };
+                assert_decode_error_exact(
+                    error,
+                    DecodeError::LimitExceeded(LimitExceeded {
+                        kind: LimitKind::Memory,
+                        limit: bytes - 1,
+                        actual: bytes,
+                    }),
+                );
+                let Err(error) = create(
+                    &coded,
+                    &Limits {
+                        max_stream_bytes: 3,
+                        max_decoder_managed_memory_bytes: 0,
+                        ..limits
+                    },
+                ) else {
+                    panic!("input budget exceeded")
+                };
+                assert_decode_error_exact(
+                    error,
+                    DecodeError::LimitExceeded(LimitExceeded {
+                        kind: LimitKind::StreamBytes,
+                        limit: 3,
+                        actual: 4,
+                    }),
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn arithmetic_state_rejects_mode_and_template_changes_without_consumption() {
+        let coded = [0, 0, 0xff, 0xac];
+        for (code, template) in [
+            (0, GenericTemplate::Template0),
+            (1, GenericTemplate::Template1),
+            (2, GenericTemplate::Template2),
+            (3, GenericTemplate::Template3),
+        ] {
+            for pattern in [false, true] {
+                let mut state = if pattern {
+                    new_pattern_arithmetic_state(&coded, template, code, &Limits::default())
+                        .unwrap()
+                } else {
+                    new_halftone_arithmetic_state(&coded, template, code, &Limits::default())
+                        .unwrap()
+                };
+                for (coding, reason) in [
+                    (
+                        GenericRegionCoding::Mmr {
+                            require_eofb: false,
+                        },
+                        if pattern {
+                            "pattern dictionary coding mode changed"
+                        } else {
+                            "halftone coding mode changed"
+                        },
+                    ),
+                    (
+                        GenericRegionCoding::Arithmetic {
+                            template: (code + 1) % 4,
+                            adaptive_pixels: [(0, 0); 4],
+                        },
+                        if pattern {
+                            "pattern dictionary template changed"
+                        } else {
+                            "halftone template changed"
+                        },
+                    ),
+                ] {
+                    let Err(error) = state.decode_generic_region(empty_request(coding)) else {
+                        panic!("changed coding accepted")
+                    };
+                    assert_decode_error_exact(
+                        error,
+                        DecodeError::Malformed(MalformedError::InvalidPageState(reason)),
+                    );
+                    let GenericRegionState::Arithmetic { session, .. } = &state else {
+                        panic!("state variant changed")
+                    };
+                    assert_eq!(session.decoder.byte_position(), 1);
+                    assert_eq!(session.decoder.marker(), None);
+                    assert_eq!(session.work_used, 0);
+                }
+                let image = state
+                    .decode_generic_region(empty_request(GenericRegionCoding::Arithmetic {
+                        template: code,
+                        adaptive_pixels: gray_adaptive_pixels(code),
+                    }))
+                    .expect("zero-area helper bitmap");
+                assert_eq!((image.width(), image.height(), image.data.len()), (0, 0, 0));
+                let Err(error) = state.decode_generic_region(GenericRegionRequest {
+                    width: 1,
+                    height: 1,
+                    coding: GenericRegionCoding::Arithmetic {
+                        template: code,
+                        adaptive_pixels: [(0, 0); 4],
+                    },
+                    ..empty_request(GenericRegionCoding::Arithmetic {
+                        template: code,
+                        adaptive_pixels: [(0, 0); 4],
+                    })
+                }) else {
+                    panic!("noncausal adaptive pixel accepted")
+                };
+                assert_decode_error_exact(
+                    error,
+                    DecodeError::Malformed(MalformedError::InvalidGenericRegion(
+                        GenericRegionErrorKind::InvalidAdaptivePixel {
+                            number: 1,
+                            x: 0,
+                            y: 0,
+                        },
+                    )),
+                );
+                state.finish().expect("no wrong marker was observed");
+            }
+        }
+    }
+
+    #[test]
+    fn pattern_mmr_is_single_use_and_mode_errors_do_not_consume_it() {
+        let limits = Limits::default();
+        let correct = empty_request(GenericRegionCoding::Mmr {
+            require_eofb: false,
+        });
+        let mut state = new_pattern_mmr_state(&[], &limits);
+        let Err(error) = state.decode_generic_region(empty_request(GenericRegionCoding::Mmr {
+            require_eofb: true,
+        })) else {
+            panic!("changed mode accepted")
+        };
+        assert_decode_error_exact(
+            error,
+            DecodeError::Malformed(MalformedError::InvalidPageState(
+                "pattern dictionary coding mode changed",
+            )),
+        );
+        let image = state
+            .decode_generic_region(correct)
+            .expect("empty helper bitmap");
+        assert_eq!((image.width(), image.height(), image.data.len()), (0, 0, 0));
+        let Err(error) = state.decode_generic_region(correct) else {
+            panic!("reused MMR bitmap accepted")
+        };
+        assert_decode_error_exact(
+            error,
+            DecodeError::Malformed(MalformedError::InvalidPageState(
+                "pattern dictionary requested multiple MMR bitmaps",
+            )),
+        );
+        state.finish().unwrap();
+        let mut state = new_pattern_mmr_state(&[], &limits);
+        let Err(error) = state.decode_generic_region(GenericRegionRequest {
+            width: 1,
+            height: 1,
+            ..correct
+        }) else {
+            panic!("missing mode accepted")
+        };
+        assert_decode_error_exact(
+            error,
+            DecodeError::Malformed(MalformedError::UnexpectedEof {
+                offset: 0,
+                needed: 1,
+                remaining: 0,
+            }),
+        );
+        let Err(error) = state.decode_generic_region(correct) else {
+            panic!("failed state reused")
+        };
+        assert_decode_error_exact(
+            error,
+            DecodeError::Malformed(MalformedError::InvalidPageState(
+                "pattern dictionary requested multiple MMR bitmaps",
+            )),
+        );
+    }
+
+    #[test]
+    fn gray_mmr_consumes_exact_prefixes_and_requires_all_declared_bytes() {
+        let coded = [0, 0x10, 1, 0, 0x10, 1];
+        let mut state = new_gray_mmr_state(&coded, &Limits::default());
+        assert_decode_error_exact(
+            state.finish().unwrap_err(),
+            DecodeError::Malformed(MalformedError::TrailingData(6)),
+        );
+        let Err(error) = state.decode_generic_region(empty_request(GenericRegionCoding::Mmr {
+            require_eofb: false,
+        })) else {
+            panic!("optional EOFB accepted for gray plane")
+        };
+        assert_decode_error_exact(
+            error,
+            DecodeError::Malformed(MalformedError::InvalidPageState(
+                "halftone coding mode changed",
+            )),
+        );
+        let request = empty_request(GenericRegionCoding::Mmr { require_eofb: true });
+        for expected_offset in [3, 6] {
+            let bitmap = state
+                .decode_generic_region(request)
+                .expect("exact EOFB prefix");
+            assert_eq!((bitmap.width(), bitmap.height()), (0, 0));
+            let GenericRegionState::GrayMmr { offset, .. } = &state else {
+                panic!("wrong state")
+            };
+            assert_eq!(*offset, expected_offset);
+            if expected_offset == 3 {
+                assert_decode_error_exact(
+                    state.finish().unwrap_err(),
+                    DecodeError::Malformed(MalformedError::TrailingData(3)),
+                );
+            }
+        }
+        state.finish().unwrap();
+        let Err(error) = state.decode_generic_region(request) else {
+            panic!("missing EOFB accepted")
+        };
+        assert_decode_error_exact(
+            error,
+            DecodeError::Malformed(MalformedError::InvalidMmr(MmrErrorKind::MissingEofb)),
+        );
+        let GenericRegionState::GrayMmr { offset, .. } = state else {
+            panic!("wrong state")
+        };
+        assert_eq!(offset, 6);
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors() {
+        for flags in 0..=u8::MAX {
+            let pattern = [flags, 1, 2, 0xff, 0xff, 0xff, 0xff];
+            let mut reader = ByteReader::new(&pattern);
+            if flags >= 8 || flags & 1 != 0 && flags & 6 != 0 {
+                assert!(matches!(parse_pattern_dictionary_header(&mut reader),
+                    Err(HalftoneError::InvalidPatternDictionaryFlags(actual)) if actual == flags));
+                assert_eq!(reader.position(), 1);
+            } else {
+                let result = parse_pattern_dictionary_header(&mut reader).unwrap();
+                assert_eq!(
+                    (
+                        result.mmr,
+                        result.template,
+                        result.pattern_width,
+                        result.pattern_height
+                    ),
+                    (flags & 1 != 0, flags >> 1, 1, 2)
+                );
+                assert_eq!(result.pattern_count(), u64::from(u32::MAX) + 1);
+                assert_eq!(reader.position(), 7);
+            }
+            let mut bytes = vec![flags];
+            for value in [u32::MAX, 0, 0x8000_0000, 0x7fff_ffff] {
+                bytes.extend_from_slice(&value.to_be_bytes());
+            }
+            bytes.extend_from_slice(&[0xff, 0xff, 0, 0]);
+            let mut reader = ByteReader::new(&bytes);
+            let result = parse_halftone_header(&mut reader);
+            let operator = (flags >> 4) & 7;
+            if flags & 1 != 0 && flags & 14 != 0 {
+                assert!(
+                    matches!(result, Err(HalftoneError::InvalidHalftoneFlags(actual)) if actual == flags)
+                );
+                assert_eq!(reader.position(), 1);
+            } else if operator > 4 {
+                assert!(
+                    matches!(result, Err(HalftoneError::Decode(DecodeError::Malformed(
+                    MalformedError::InvalidCombinationOperator(actual)))) if actual == operator)
+                );
+                assert_eq!(reader.position(), 1);
+            } else {
+                let result = result.unwrap();
+                assert_eq!(
+                    (
+                        result.grid_width,
+                        result.grid_height,
+                        result.grid_x,
+                        result.grid_y
+                    ),
+                    (u32::MAX, 0, i32::MIN, i32::MAX)
+                );
+                assert_eq!((result.grid_vector_x, result.grid_vector_y), (u16::MAX, 0));
+                assert_eq!(
+                    result.operator,
+                    [
+                        CombinationOperator::Or,
+                        CombinationOperator::And,
+                        CombinationOperator::Xor,
+                        CombinationOperator::Xnor,
+                        CombinationOperator::Replace
+                    ][usize::from(operator)]
+                );
+                assert_eq!(
+                    (
+                        result.mmr,
+                        result.template,
+                        result.enable_skip,
+                        result.default_pixel
+                    ),
+                    (
+                        flags & 1 != 0,
+                        (flags >> 1) & 3,
+                        flags & 8 != 0,
+                        flags & 0x80 != 0
+                    )
+                );
+                assert_eq!(reader.position(), 21);
+            }
+        }
+        for (bytes, lengths) in [
+            (vec![0, 1, 2, 0, 0, 0, 0], vec![1, 1, 1, 4]),
+            (vec![0; 21], vec![1, 4, 4, 4, 4, 2, 2]),
+        ] {
+            for cut in 0..bytes.len() {
+                let mut offset = 0;
+                let needed = *lengths
+                    .iter()
+                    .find(|&&length| {
+                        if offset + length > cut {
+                            true
+                        } else {
+                            offset += length;
+                            false
+                        }
+                    })
+                    .unwrap();
+                let mut reader = ByteReader::new(&bytes[..cut]);
+                let error = if bytes.len() == 7 {
+                    parse_pattern_dictionary_header(&mut reader).unwrap_err()
+                } else {
+                    parse_halftone_header(&mut reader).unwrap_err()
+                };
+                assert!(
+                    matches!(error, HalftoneError::Decode(DecodeError::Malformed(
+                    MalformedError::UnexpectedEof { offset: actual, needed: actual_needed, remaining }
+                )) if actual == offset as u64 && actual_needed == needed as u64 && remaining == (cut - offset) as u64)
+                );
+                assert_eq!(reader.position(), offset);
+            }
+        }
+    }
 
     fn generous_limits() -> Limits {
         Limits {

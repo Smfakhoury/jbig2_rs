@@ -60,6 +60,12 @@ impl<'a> ByteReader<'a> {
                     final(self).position == old(self).position
                     && old(self).bytes@.len() - old(self).position < 1,
             },
+            match out {
+                Err(error) => error == crate::spec::readers::eof_error(
+                    old(self).position, 1, (old(self).bytes@.len() - old(self).position) as usize,
+                ),
+                Ok(_) => true,
+            },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::question_mark)]
@@ -87,6 +93,12 @@ impl<'a> ByteReader<'a> {
                 Err(_) => final(self).position == old(self).position,
             },
             out.is_err() ==> old(self).bytes@.len() - old(self).position < 4,
+            match out {
+                Err(error) => error == crate::spec::readers::eof_error(
+                    old(self).position, 4, (old(self).bytes@.len() - old(self).position) as usize,
+                ),
+                Ok(_) => true,
+            },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn read_u32(&mut self) -> Result<u32, MalformedError> {
@@ -125,6 +137,12 @@ impl<'a> ByteReader<'a> {
                 Err(_) => final(self).position == old(self).position,
             },
             out.is_err() ==> old(self).bytes@.len() - old(self).position < 2,
+            match out {
+                Err(error) => error == crate::spec::readers::eof_error(
+                    old(self).position, 2, (old(self).bytes@.len() - old(self).position) as usize,
+                ),
+                Ok(_) => true,
+            },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::question_mark)]
@@ -154,6 +172,12 @@ impl<'a> ByteReader<'a> {
                 Err(_) =>
                     final(self).position == old(self).position
                     && length > old(self).bytes@.len() - old(self).position,
+            },
+            match out {
+                Err(error) => error == crate::spec::readers::eof_error(
+                    old(self).position, length, (old(self).bytes@.len() - old(self).position) as usize,
+                ),
+                Ok(_) => true,
             },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
@@ -220,6 +244,12 @@ impl BitReader<'_> {
                     ),
                 Err(_) => final(self).bit_position == old(self).bit_position,
             },
+            match out {
+                Err(error) => Some(error) == crate::spec::readers::bit_read_error(
+                    old(self).bytes@, old(self).bit_position, count,
+                ),
+                Ok(_) => true,
+            },
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn read_bits(&mut self, count: u8) -> Result<u32, MalformedError> {
@@ -252,6 +282,7 @@ impl BitReader<'_> {
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 start == old(self).bit_position,
+                count <= 32,
                 start <= position <= end,
                 end == start + count as usize,
                 end <= self.bytes@.len() * 8,
@@ -268,6 +299,17 @@ impl BitReader<'_> {
             let byte = self.bytes[position / 8];
             let shift = 7 - (position % 8);
             let bit = u32::from((byte >> shift) & 1);
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::reader_properties::bits_value_bound(
+                    self.bytes@, start as nat, (position - start) as nat,
+                );
+                crate::reader_properties::bits_limit_monotone((position - start) as nat, 31);
+                assert(crate::reader_properties::bits_limit(31) == 0x8000_0000) by (compute);
+                assert(value <= u32::MAX / 2);
+                assert(((byte >> shift) & 1) <= 1) by (bit_vector);
+                assert(bit <= 1);
+            }
             let Some(doubled) = value.checked_mul(2) else {
                 return Err(MalformedError::IntegerOverflow);
             };
@@ -297,6 +339,67 @@ impl BitReader<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn every_byte_position_and_width_has_exact_eof_fields_and_borrow_frame() {
+        let bytes = [0x12, 0x34, 0x56, 0x78, 0x9a];
+        for start in 0..=bytes.len() {
+            for needed in (0..=8).chain([usize::MAX]) {
+                let mut reader = ByteReader {
+                    bytes: &bytes,
+                    position: start,
+                };
+                if needed <= bytes.len() - start {
+                    let actual = reader.read_bytes(needed).expect("available bytes");
+                    assert_eq!(actual, &bytes[start..start + needed]);
+                    assert_eq!(actual.as_ptr(), bytes[start..].as_ptr());
+                    assert_eq!(reader.position(), start + needed);
+                } else {
+                    assert_eq!(
+                        reader.read_bytes(needed),
+                        Err(MalformedError::UnexpectedEof {
+                            offset: start as u64,
+                            needed: needed as u64,
+                            remaining: (bytes.len() - start) as u64,
+                        })
+                    );
+                    assert_eq!(reader.position(), start);
+                }
+                assert_eq!(reader.bytes.as_ptr(), bytes.as_ptr());
+                assert_eq!(reader.bytes, bytes);
+            }
+            for needed in [1, 2, 4] {
+                let mut reader = ByteReader {
+                    bytes: &bytes,
+                    position: start,
+                };
+                let result = match needed {
+                    1 => reader.read_u8().map(u32::from),
+                    2 => reader.read_u16().map(u32::from),
+                    _ => reader.read_u32(),
+                };
+                if needed <= bytes.len() - start {
+                    let expected = bytes[start..start + needed]
+                        .iter()
+                        .fold(0_u64, |value, byte| value * 256 + u64::from(*byte));
+                    assert_eq!(result, Ok(u32::try_from(expected).unwrap()));
+                    assert_eq!(reader.position(), start + needed);
+                } else {
+                    assert_eq!(
+                        result,
+                        Err(MalformedError::UnexpectedEof {
+                            offset: start as u64,
+                            needed: needed as u64,
+                            remaining: (bytes.len() - start) as u64,
+                        })
+                    );
+                    assert_eq!(reader.position(), start);
+                }
+                assert_eq!(reader.bytes.as_ptr(), bytes.as_ptr());
+                assert_eq!(reader.bytes, bytes);
+            }
+        }
+    }
 
     #[test]
     fn failed_byte_read_preserves_position() {

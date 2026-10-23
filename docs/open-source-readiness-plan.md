@@ -2,6 +2,314 @@
 
 Status: P01/P02/P03 completed; P06 is in progress with measured test improvements
 and targeted public-contract mutation checks.
+
+### Session continuation status
+
+#73 and #74 reached owner-review readiness with22/22successful current-head
+checks each. Their complete six-shard artifacts were independently rebuilt
+byte-for-byte (62canonical files each), including all51raw coverage measures,
+actual runtime mutants and repository/run/attempt/head/merge identities.
+They were not self-approved or merged. #75 carries the numeric quota work;
+its live review/CI state is authoritative for its acceptance, not a local
+targeted proof or an earlier failed run.
+
+The first #75 run39941605340 was correctly rejected: one public pinned-tool
+download returnedHTTP403 and a crowded shard reached its20-minute deadline.
+The unchanged27groups183contrasts are now grouped using actual completed
+run costs, with explicit750-second headroom for the enlarged arithmetic
+caller group. Estimated loads are848/852/849/979/848/846seconds; the regression
+fixture now requires at most1000seconds, not1100. These are scheduling
+estimates, not acceptance. Six shards, at most four active one-worker jobs,
+all20-minute timeouts and21workflow jobs plusCLA remain. Public compiler
+downloads use bounded retries/time limits, the same pinnedURL/SHA256 and
+mandatory hash checking before unpacking; no credentials or trust policy change.
+
+P04/P05/P06 remain in progress. All266selected records are still provisional
+115functional/125state/26safety, with no approved exhaustive normative
+denominator. Official observations remain2passed/7unresolved/1unsupported
+with zero restored rejection credit. Capacity approval/integration and full
+caller/raster/cache/export/stream semantics remain open. In addition to the
+4112/4128borrowed-vector reproduction, an unchanged native parentc7a49d9
+accepts a one-byte bitmap under a one-byte managed limit while reserving
+eightVecbytes. This is observed capacity, not allocator/RSS estimation.
+No local standard-library getter declaration, native capacity repair or
+paused-family expansion is approved or integrated. Preserve those consent
+boundaries in the next session.
+
+The required CI profile now partitions all27groups183contrasts into six
+deterministic one-worker shards, with at most four active and unchanged
+20-minute job limits. Both previous four-shard hosted attempts were rejected
+after cancellations; regrouping and a measured3-5%diagnostic-query optimization
+were insufficient for reliable deadlines. The stable collector now requires
+all six same-run receipts. This uses21workflow jobs plusCLA (about22checks),
+still below the former61, without dropping any platform, proof, mutation or
+coverage protection. Prior four-shard local receipts retain their original
+source identities; fresh six-shard local/hosted execution is required.
+
+The latest numeric document-preflight tranche proves exact scalar stream/input
+work and next-segment/page quotas: inclusive acceptance, overflow priority and
+all kind/limit/actual error fields. Four result attributes and two project
+quota models strengthen unchanged native bodies and old preconditions.
+Fresh whole proof/compilation is1192/0; all13document/metadata/quota contrasts
+actually compile, reject strongly and accept original-contract controls.
+An independent360-caseu128 oracle allocates no giant input;402native tests/
+14ignored,26runtime mutants and381tooling tests pass. All51raw coverage metrics
+are independently checked:onlydocument gains2lines/2regions/2outcomes,
+now10800/12636lines,10397/12945regions,2041/2638branches. Denominators,
+floors and exclusions stay fixed; source-coordinate identity is not claimed
+across erased-line shifts. The90/85goals still need573lines/202outcomes.
+The expanded existing document group moves away from the arithmetic caller
+group without new jobs. Complete current-head183contrast/sixshard hosted
+acceptance remains required. These are project numeric guards, not aggregate
+decoder complexity, allocator/RSS or normative stream theorems. All266selected
+records remain provisional115/125/26; fresh observations remain2/7/1 with zero
+rejection credit and every capacity/review/family/release blocker retained.
+
+The preceding generic probability-result tranche strengthens five existing
+result attributes: invalid context construction, valid-bank acceptance and
+first-invalid state/MPS, context/signal errors, EOF fields and overflow
+identity. Fresh pinned whole proof/compilation is1192/0; all19 compiling
+strong/original-contract controls in the existing arithmetic caller group pass.
+All17native streams,658declarations/bodies,oldpreconditions and48reviewed
+boundary bodies/attributes remain unchanged; erased annotations may shift
+source lines. Fresh401native/14ignored,24runtime mutants and380tooling tests
+pass. All51raw-recomputed coverage metrics equal the accepted native-control
+parent, with no new coverage gain claimed. Fresh normal/logged/oracle
+observations remain2/7/1 with zero rejection credit. The required full profile
+is27groups175contrasts/sixshards; complete current-source receipt collection
+and hosted acceptance remain separate gates. All266records retain provisional
+115functional/125state/26safety classification: auxiliary project diagnostic
+models do not prove the driver's normative context sequence or stop condition.
+No native algorithm, error/resource policy, standard trust, pin, termination
+waiver, coding-family fixture or release approval changes.
+
+The previous native generic-control tranche changes no production declaration,
+body, attribute/precondition or source start:all17streams/658functions and
+48reviewed boundaries remain. Independent MSB sampling checks1085row-byte,
+59675window and4800numeric-edge cases;131072raw probability-state checks cover
+allstate/mpsbytes,94valid-prefix successes and first-error order. Generic
+trait/factory projections cover allvariants,64EOFpayloads and2304failure-signal
+cases. Bounded bitmap storage remains valid; outside query/defensive row
+offsets test existing white padding, not malformed backing slices. No entropy
+decode, new family fixture, paused-family work, hook or allocator failure is
+introduced. Whole proof/compile1192/0 and401native tests/14ignored pass;
+24actualruntime mutants compile/detect, adding3controls in the existing runner.
+Same-coordinate comparison proves+59coveredlines/+43regions/+14branches,
+zero lost coordinates and no changed denominator/floor/exclusion. Only
+generic_region improves:10798/12636lines (85.45%),10395/12945regions (80.30%),
+2039/2638branches (77.29%). Required27groups164contrasts/fourshards and CIjob
+count remain unchanged. All266records stayprovisional115/125/26. Native
+component checks do not imply new formal error/entropy/normative conformance.
+The90%line/85%branch goals still need575coveredlines/204branch outcomes;
+capacity, independent review and full raster/caller/stream gates stay open.
+
+The latest T.6 reference-search tranche proves valid-cache acceptance, exact
+first eligible opposite-colour `b1`/following `b2`, width-sentinel fallback
+and the optimized lower cursor. The real raster loop now maintains the
+skipped-prefix condition needed for global selection across monotone position
+updates and initial-flag reset. A verified suffix/global bridge and explicit
+lower-loop result avoid relying on an unused helper theorem. No existing
+precondition or executing operation changes;658preconditions/48boundaries
+remain, with one narrowly scoped style annotation for erased source lines.
+Whole proof/compile1192/0 and six actual compiling contrasts pass. The same
+four-shard profile at that checkpoint required27groups164contrasts.
+The native oracle enumerates461sorted sentinel vectors,9240full searches and
+49364cursor searches;397native tests/14ignored and21runtime mutants pass.
+Coverage is10739/12636lines,10352/12945regions,2025/2638branches:only2new
+branch outcomes, no changed denominator/floor/exclusion. One selected
+changing-element record gains project functionality:266allprovisional,
+now115functional125state26safety. Previous-row/cache pixel correspondence,
+independent T.6 mapping and complete raster/stream remain open. This is MMR
+reference-line work, not paused JBIG2 refinement/aggregation-family expansion.
+The observed borrowed-capacity defect and proof-blocked native repair1e2
+remain separate; no standard trust exception or overall completion is claimed.
+
+The latest cardinality tranche proves native first-match lookup, exported
+group size, complete referenced-symbol count and exact contiguous/borrowed
+codebook length. A finite decreasing sum counts repeated references and gives
+missing groups zero, matching this private helper's existing behavior.
+Erased prefix/import-count invariants compose the complete success result.
+All17executing native streams,658preconditions and48reviewed boundaries remain;
+one narrow source-line style annotation accommodates the erased invariants,
+not a verification/termination waiver. Whole proof/compile1191/0 passes.
+Six actual compiling contrasts extend the same four-shard profile to
+26groups158cases, without a new CI job. All396native tests pass with14ignored;
+20actualruntime mutants compile/detect. Typed duplicate-key cases complement
+the existing9207resource scenarios. Coverage stays10739/12636lines,
+10352/12945regions,2023/2638branches, with no new coverage credit or floor change.
+Export-order evidence gains auxiliary count links only:266allprovisional
+114/126/26. Count is not content/order or normative caller agreement. The
+observed-capacity defect remains open on this source; native repair1e2bf67
+is separate and not formally accepted. All independent/raster/stream/release
+gates remain open.
+
+The latest resource/reference tranche adds only direct native component tests:
+9,207 collection scenarios check existing bitmap-resource order, pointer
+identity and successful observed-capacity upper bounds, including 5,460
+below-requested-minimum rejections; 20 numeric preflight cases allocate nothing.
+These tests do not equate requested bytes with actual reserved capacity.
+Another 216 parsed-
+header retention graphs produce 2,856 reference/depth budget-precedence cases,
+plus an internal empty-retention guard. No entropy decoder vector, new coding/
+custom/refinement/aggregation family or observer hook is added.
+All 17 native streams and 658 production declarations/bodies/attributes/source
+starts, plus 48 reviewed boundaries, are unchanged. Fresh proof/compile1190/0;
+395 native tests pass with14ignored and20actualruntime mutants compile/detect.
+The three added mutants test inclusive borrowed peaks, dropped later bitmaps
+and inclusive total-reference limits. Same-coordinate comparison proves
+actual +34 covered lines / +32 regions / +14 branch outcomes, zero lost
+coordinates and unchanged denominators:10739/12636lines (84.99%),
+10352/12945regions (79.97%),2023/2638branches (76.69%). Only decode/document
+gain coverage; no floor or exclusion changes. The required proof profile
+remains25groups152contrasts/fourshards, with no additional CI job. All266
+records remain provisional114/126/26. Native component ordering/budget tests
+are not new formal output-order, normative or full-image conformance evidence.
+At current denominators,90%line/85%branch goals still need634covered lines
+and220branch outcomes; all existing owner/raster/stream/capacity gates remain.
+
+An isolated check additionally exposed an existing symbol-borrow accounting
+gap: a 4,112-byte limit can accept a returned vector whose safe observed
+capacity implies a 4,128-byte managed total (16 requested pointer bytes versus
+32 reserved). This is not allocator/RSS estimation. The separate native repair
+at `1e2bf67` rejects the shortfall, passes396native tests/21runtime mutants and
+strict MSRV lint, and its regression fails on the original collector. Full
+pinned verification correctly fails at the unsupported capacity getter.
+No standard-library trust exception or proof waiver is approved/integrated;
+the native-only repair is not ready or formally accepted. Safety verification
+and component coverage on the unchanged production source do not close this
+functional memory-accounting defect.
+
+The latest recorded-span tranche propagates canonical-storage-conditional
+primitive pixel/storage effects and exact cache/emitted-state updates without
+changing any native body or existing weak precondition. White remains a no-op,
+not a clearing theorem; the cache model stays under internal proof support.
+All17native streams,658bodies/preconditions and48reviewed boundaries remain
+unchanged. Whole proof/compile stays1190/0. Five new compiling contrasts extend
+the existing span group from3to8cases, reusing its workspace and per-function
+baselines:25groups152contrasts/fourunchangedshards, no new CI job or checker.
+Direct matrices cover11196completepixel/cache and32136transitionstate cases.
+Native coverage is unchanged at10705/12636lines,10320/12945regions and
+2009/2638branches, with no floor/exclusion change. The polarity record remains
+state-only:266allprovisional114/126/26. Full raster-loop white initialization,
+disjointness, mode interpretation and caller/stream composition stay open.
+
+The latest horizontal-pair tranche extracts the exact existing native block
+without changing guards, errors or their order. The actual helper now proves
+opposite-colour input-bound run sequences, exact ordered endpoints, progress
+and combined input consumption; its caller uses the same returned fields.
+Whole pinned proof/compilation pass1190/0, inventory658/610direct. Six actual
+compiling contrasts extend the unchanged four-shard profile to25groups147cases.
+Tests perform368634numeric/prior-procedure comparisons across73728encodedpairs
+and1456partial-input/error/cursor cases. All657existing preconditions/attributes
+and48reviewed boundaries remain unchanged. All266records stayprovisional,
+now114functional126state26safety. Native coverage passes the same floors at
+10705/12636lines,10320/12945regions,2009/2638branches. The +9coveredlines/
++10regions reflect extraction/new helper coverage, with +9/+8 denominators,
+not new branch outcomes or normative credit. Dispatch, raster/caller/stream,
+table review, official positives and all existing release gates remain open.
+
+The subsequent MMR run-sequence tranche proves exact successful make-up/
+terminal sums and consumed input extent with no executing-code change.
+All 17 native streams, 657 preconditions and 48 reviewed boundaries remain
+unchanged. Whole pinned verification/compilation pass 1189/0; four actual
+compiling contrasts extend the required profile to 24 groups / 141 contrasts
+in the same four shards/jobs. Native tests cover 87,040 sequence scenarios,
+exact/spare/overshooting row remainders and eight missing-terminal EOF cases.
+Only the selected run-sum row gains functional strength: all 266 records remain
+provisional at 113 functional / 127 state / 26 safety. Actual coverage is
+unchanged at 84.71% lines / 79.69% regions / 76.16% branches, with no floor or
+exclusion change. Complete acceptance/errors, independent table review,
+horizontal-pair/row/raster/caller semantics and all existing owner/release
+gates remain open.
+
+The preceding tranche's measurements are retained below as historical context.
+The MMR prefix tranche now binds successful mode/run-code table keys to the
+actual consumed old-input MSB-first prefix, preserving membership/length/reader
+guarantees. An internal one-bit append lemma composes the loop; two identical
+checked closure operations call one directly verified checked helper with the
+same guards/errors/order. All656existing preconditions/48boundaries and the
+capacity-divergence bodies/flags are unchanged;16native streams are identical.
+The inventory now has657functions,609directlyverified, and whole pinned
+verification/compilation pass1185/0. Four compiling wrong-key contrasts extend
+the required profile to23groups137contrasts/fourunchangedshardsjobs.
+Scalar oracles cover1024mode and131072runwindow/colour/alignment cases, and
+262144rawprefix/digit pairs compare the actual helper with the prior operation.
+Constructor-boundary tests check raw fields and terminal sense. These are
+shared-table component checks, not independent T.6 or full-image conformance.
+One selected mode row gains project functionality:266records remain provisional
+112functional/128state/26safety. Reviewed coverage floors are unchanged; initial
+arithmetic decompositions that failed them were not accepted. The final shared
+helper and actual constructor tests pass the same floors at84.71%lines,
+79.69%regions,76.16%branches, with no exclusion. Independent table translation,
+complete mode/errors/run totals/raster/caller semantics, official positives,
+capacity integration, exhaustive review and release goals remain open.
+
+The reader-error tranche adds exact project EOF offset/needed/remaining fields
+to all four byte-read entry points and exact invalid-count-first/EOF failures
+to bit reads. Existing successful byte/bit values and input/cursor frames are
+preserved, not claimed as new. Independent prefix-bound/monotonicity lemmas in
+proof support exclude false accumulation overflow for the already checked
+maximum of 32 bits; native defensive checks remain present and unexcluded.
+All 17 native token streams and 656 caller preconditions, plus 48 reviewed
+boundaries, are unchanged. Only five postcondition attributes and ghost bit-loop
+support change. Actual unfiltered pinned verification/compilation pass1183/0.
+Nine real compiling contrasts extend the required profile to22groups133contrasts
+in four unchanged shards/jobs. One additional 78-case byte-position/width/EOF
+matrix complements the existing exhaustive bit count/value/error/frame test.
+All382native tests pass with14ignored; actual coverage is unchanged at
+84.56%lines/79.58%regions/76.16%branches and all17runtime mutants compile/detect.
+The266selected records remain provisional111/129/26; API error payloads and
+internal bound support are not new normative rejection claims or approvals.
+Fresh approved observations remain2/7/1. Full caller/stream/raster semantics,
+official positives, capacity integration, exhaustive review and release coverage
+goals remain open. No native, trust, policy, exclusion, paused-family or CI-job
+change is introduced.
+
+The unpaused halftone/pattern control tranche adds eight ordinary tests for
+all typed error-adapter variants, exact constructor input/context budgets,
+coding/template rejection frames, zero-area generic dispatch, noncausal adaptive
+pixels, MMR single-use/prefix/trailing-byte policy and every flag/truncated
+header shape. Actual fresh collection passes 381 native tests with 14 ignored,
+measuring 10,679/12,629 lines (84.56%), 10,295/12,936 regions (79.58%) and
+2,009/2,638 branch outcomes (76.16%): an actual +142/+130/+12 with unchanged
+denominators/floors. Seventeen real runtime mutants now compile and are detected.
+Two unchanged native parser bodies gain exact project acceptance/rejection,
+raw-field and seven/twenty-one byte consumption postconditions. Nine actual
+compiling contrasts extend the required profile to 21 groups / 124 contrasts,
+with the same four shards/jobs/cap. Whole pinned proof/compilation remain1177/0.
+Seventeen field records were checked against the approved T.88 source and
+linked to these contracts: 266 selected records, all provisional, now
+111 functional / 129 state / 26 safety. This is not an exhaustive denominator
+or independent normative approval. All 17 native streams and 656 bodies/
+preconditions, plus all 48 reviewed boundaries, remain unchanged. Original
+standard text/diagrams/vectors are not committed. Exact typed partial errors,
+caller/resource/raster semantics, official positives, capacity integration,
+exhaustive review and release coverage goals stay open; paused families and
+the no-local-trusted-specification policy remain unchanged.
+
+The arithmetic caller follow-up now composes integer/IAID results, exact typed
+error projection, complete decoder/selected-bank state and all unselected
+integer/IAID/optional-refinement/work frames on every outcome. Field selection
+equals the project enum ordinal. Eight additional compiling contrasts extend
+the required profile to twenty groups / 115 contrasts in four unchanged shards.
+Actual whole pinned verification and compilation remain 1177/0. Two direct
+caller tests cover 360 integer-field and 12,288 IAID length/bank cases, comparing
+direct callee values/errors/banks, cursor/marker and successful continuation.
+Private register equality is formally proved, not inferred from these public
+observations; no test observer hook is added. All 373 native tests pass with
+14 ignored. Fresh coverage is 10,537/12,629 lines (83.43%), 10,165/12,936
+regions (78.58%) and 1,997/2,638 branches (75.70%). Only symbol/text gains
+12 lines / 13 regions / zero branches; equivalent explicit error forwarding
+adds three physical line/region denominator entries. Sixteen native streams,
+all 656 caller preconditions and 48 reviewed boundary bodies/attributes are
+unchanged. Three bank/caller rows gain accurate links without a strength or
+review upgrade: all 249 remain provisional 94/129/26. The fresh diagnostic
+logger is adapted only around the equivalent forwarding syntax and its exact
+patch hash is recorded; actual normal/logged/oracle observations remain 2/7/1.
+Normative caller-field/SBSYMCODELEN/reset/stream interpretation, seven official
+positives, capacity integration, exhaustive review and release coverage goals
+remain open. No stopped coding-family work or trust exception is introduced.
+
 The complete signed-integer tranche proves the full project seed/sign,
 six-leaf count/offset selection, payload fold, nonnegative/negative/OOB result
 and decoder/context-bank composition, including partial errors. The payload

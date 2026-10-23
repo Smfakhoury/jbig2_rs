@@ -16,6 +16,96 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "generic-probability-state-validation-skipped",
+        "file": "src/generic_region.rs",
+        "before": "if let Err(error) = ArithmeticContext::from_state(context.state_index(), context.mps()) {",
+        "after": "if let Err(error) = ArithmeticContext::from_state(0, 0) {",
+        "target": "lib",
+        "test": "generic_region::tests::probability_state_validation_matches_all_raw_fields_and_first_error",
+    },
+    {
+        "id": "generic-packed-eight-bit-window-rejected",
+        "file": "src/generic_region.rs",
+        "before": "if count == 0 || count > 8 || row < 0 || row >= i64::from(bitmap.height) {",
+        "after": "if count == 0 || count > 7 || row < 0 || row >= i64::from(bitmap.height) {",
+        "target": "lib",
+        "test": "generic_region::tests::packed_rows_match_scalar_msb_windows_padding_and_numeric_edges",
+    },
+    {
+        "id": "generic-probability-context-error-fields-discarded",
+        "file": "src/generic_region.rs",
+        "before": (
+            "if signal == RASTER_SIGNAL_CONTEXT {\n"
+            "        GenericRegionError::ContextIndex {\n"
+            "            index,\n"
+            "            count: context_count,\n"
+            "        }"
+        ),
+        "after": (
+            "if signal == RASTER_SIGNAL_CONTEXT {\n"
+            "        GenericRegionError::ContextIndex {\n"
+            "            index: 0,\n"
+            "            count: 0,\n"
+            "        }"
+        ),
+        "target": "lib",
+        "test": "generic_region::tests::probability_failure_projection_preserves_context_and_decoder_errors",
+    },
+    {
+        "id": "mmr-reference-cursor-update-discarded",
+        "file": "src/mmr.rs",
+        "before": "*search_start = index;",
+        "after": "*search_start = 0;",
+        "target": "lib",
+        "test": "mmr::tests::reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors",
+    },
+    {
+        "id": "borrowed-symbol-peak-limit-off-by-one",
+        "file": "src/decode.rs",
+        "before": (
+            "let (requested_bytes, peak) = borrowed_symbol_memory(count, active_retained_bytes)?;\n"
+            "    if peak > limits.max_decoder_managed_memory_bytes {"
+        ),
+        "after": (
+            "let (requested_bytes, peak) = borrowed_symbol_memory(count, active_retained_bytes)?;\n"
+            "    if peak >= limits.max_decoder_managed_memory_bytes {"
+        ),
+        "target": "lib",
+        "test": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
+    },
+    {
+        "id": "borrowed-symbol-group-loses-later-bitmaps",
+        "file": "src/decode.rs",
+        "before": "imported.push(&resource.exported[bitmap_index]);",
+        "after": "if bitmap_index == 0 { imported.push(&resource.exported[bitmap_index]); }",
+        "target": "lib",
+        "test": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
+    },
+    {
+        "id": "total-reference-limit-off-by-one",
+        "file": "src/document.rs",
+        "before": "if total_references > limits.max_total_references {",
+        "after": "if total_references >= limits.max_total_references {",
+        "target": "lib",
+        "test": "document::tests::reference_graph_retention_and_budget_precedence_match_scalar_policy",
+    },
+    {
+        "id": "halftone-gray-state-trailing-bytes-ignored",
+        "file": "src/halftone.rs",
+        "before": "if *offset != coded.len() {",
+        "after": "if *offset > coded.len() {",
+        "target": "lib",
+        "test": "halftone::tests::gray_mmr_consumes_exact_prefixes_and_requires_all_declared_bytes",
+    },
+    {
+        "id": "pattern-mmr-single-use-check-disabled",
+        "file": "src/halftone.rs",
+        "before": "if *used {",
+        "after": "if *used && 0_u8 == 1_u8 {",
+        "target": "lib",
+        "test": "halftone::tests::pattern_mmr_is_single_use_and_mode_errors_do_not_consume_it",
+    },
+    {
         "id": "symbol-code-length-power-boundary-misclassified",
         "file": "src/symbol_text.rs",
         "before": "else if symbol_count <= 65_536 {",
@@ -141,6 +231,40 @@ MUTATIONS = (
         "target": "public_envelope",
         "test": "table_body_errors_precede_reference_role_checks_without_losing_error_fields",
     },
+    {
+        "id": "document-stream-quota-rejects-inclusive-boundary",
+        "file": "src/document.rs",
+        "before": (
+            "fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Ok(actual) = u64::try_from(length) else {\n"
+            "        return Err(MalformedError::IntegerOverflow.into());\n"
+            "    };\n"
+            "    if actual > limits.max_stream_bytes {"
+        ),
+        "after": (
+            "fn enforce_stream_limit(length: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Ok(actual) = u64::try_from(length) else {\n"
+            "        return Err(MalformedError::IntegerOverflow.into());\n"
+            "    };\n"
+            "    if actual >= limits.max_stream_bytes {"
+        ),
+        "target": "lib",
+        "test": "document::tests::numeric_preflight_quotas_match_wide_results_and_priority",
+    },
+    {
+        "id": "document-page-quota-discards-next-count",
+        "file": "src/document.rs",
+        "before": (
+            "fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Some(next_count) = count.checked_add(1) else {"
+        ),
+        "after": (
+            "fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), DecodeError> {\n"
+            "    let Some(next_count) = count.checked_add(0) else {"
+        ),
+        "target": "lib",
+        "test": "document::tests::numeric_preflight_quotas_match_wide_results_and_priority",
+    },
 )
 
 
@@ -203,7 +327,7 @@ def check_mutations(toolchain: str) -> dict:
                 path.write_bytes(original)
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
-        "scope": "Targeted public API, reference-role, typed-error, formatter-failure and direct symbol code-length/storage contracts, not exhaustive codec mutation coverage",
+        "scope": "Targeted public API, reference-role, typed-error, formatter-failure, symbol storage and halftone state contracts, not exhaustive codec mutation coverage",
         "runtime_source_modified": False, "mutations": results,
     }
 

@@ -54,7 +54,7 @@ Native Linux, Windows and macOS CI, Verus and fuzz smoke checks are operational.
 The readiness audit found that earlier proof coverage overstated exact-source
 verification: some same-named functions were conflated and several cfg-selected
 runtime paths differed from proof paths. These are now explicit, hash-bound
-limitations. The current inventory has 608 directly verified functions, 24
+limitations. The current inventory has 609 directly verified functions, 24
 reviewed boundaries, 23 audited forwarders and 1 runtime/proof divergence.
 The latter blocks a full exact-source proof claim; passing Verus does not alone
 establish normative conformance. See [verifier limitations](docs/verifier-limitations.md).
@@ -67,8 +67,8 @@ The [readiness plan](docs/open-source-readiness-plan.md) tracks the remaining wo
 
 ## Normative traceability
 
-The [provisional T.88/T.6 ledger](docs/spec-traceability.md) links 249 selected
-records (240 normative-rule records and nine project-policy records) to exact
+The [provisional T.88/T.6 ledger](docs/spec-traceability.md) links 266 selected
+records (257 normative-rule records and nine project-policy records) to exact
 contracts, model/proof definitions and test identities. It distinguishes
 functional postconditions from state/bounds-only
 evidence and runtime/proof substitutions. All 30 feature rows have a
@@ -132,16 +132,16 @@ PR's work. Each workflow also supports manual dispatch for branch preflight.
 The daily extended fuzz campaign and trusted-main corpus producer remain
 unchanged.
 
-The seventeen semantic proof groups and all 92 compiling strong/weaker contrasts
-are preserved, but execute in four deterministic, sequential shards rather
+The twenty-seven semantic proof groups and all 183 compiling strong/weaker contrasts
+are preserved, but execute in six deterministic, sequential shards rather
 than one separately initialized job per group. Each shard has one worker; at most
 four run concurrently, under the unchanged 20-minute job cap. The stable
 `verify` collector requires the whole proof and every group exactly once,
 with matching source/tool/run/attempt identities and individual report/log
 hashes. No cached proof result substitutes for execution.
 
-This profile uses 19 workflow jobs per PR, plus the repository's external CLA
-check: about 20 check results rather than the former 61 push-plus-PR results.
+This profile uses 21 workflow jobs per PR, plus the repository's external CLA
+check: about 22 check results rather than the former 61 push-plus-PR results.
 The three native platforms and six isolated distribution combinations remain.
 Workflow policy validates the actual Cargo build invocation and rejects
 check-disabling flags; a `--compile` substring in another argument is not

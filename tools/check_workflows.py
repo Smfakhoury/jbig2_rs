@@ -144,6 +144,22 @@ def check_verus_sharding(document):
     ]
     if setups[0] != setups[1] or len(setups[0]) != 3 or downloads[0] != downloads[1] or len(downloads[0]) != 1:
         raise ValueError("whole and semantic jobs must use identical pinned tool setup")
+    pins = json.loads((ROOT / "toolchain.json").read_text())["verus"]
+    download_run = downloads[0][0].get("run", "").replace("\\\n", " ")
+    download_run = re.sub(r"\|\s*\n\s*", "| ", download_run)
+    download_commands = [
+        shlex.split(line, comments=True)
+        for line in download_run.splitlines()
+        if line.strip()
+    ]
+    if download_commands != [
+        ["curl", "--fail", "--location", "--retry", "3", "--retry-all-errors",
+         "--retry-delay", "2", "--retry-max-time", "60", "--connect-timeout", "10",
+         "--max-time", "30", "--output", "verus.zip", pins["linux_archive_url"]],
+        ["echo", f"{pins['linux_archive_sha256']}  verus.zip", "|", "sha256sum", "--check"],
+        ["unzip", "-q", "verus.zip"],
+    ]:
+        raise ValueError("pinned compiler download requires bounded retries and integrity verification")
     runs = ["\n".join(step.get("run", "") for step in steps) for steps in (
         whole_steps, semantic_steps, verify_steps,
     )]

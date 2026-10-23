@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "d43847b26905656a9b253d9c56fec51bd0906999",
-  "scope": "Complete project signed-integer seed/sign, six-leaf selection, payload fold, signed value/OOB and exact decoder/context/history composition",
+  "source_revision": "6d73a9a7f67bac1a791c99e2cff575c7e76c94ed",
+  "scope": "Exact numeric document quota acceptance, tagged payloads and overflow priority; no native body or old precondition changes",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/integer-state-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/document-preflight-cargo CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1177,
-    "verified_production_functions": 608,
+    "verified_obligations": 1192,
+    "verified_production_functions": 610,
     "errors": 0,
     "proof_build_compiles": true,
     "exact_production_source_compiles": false,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "2cb858fe0096e86c8b9975d7c9258dc50d2a311dfada63d8854fad66cde276d9",
-  "proof_dispositions_sha256": "9564b1caf278cbdad9a45a78505e0a67856cadb98bb81406c74bd2909bf20e56",
+  "production_proof_coverage_sha256": "9b3302117f43a75510336bc8a97790131ce1073f4a85fdbba8b80e66e542fc45",
+  "proof_dispositions_sha256": "42e07f7ab3d791cce80caf31e1a267f8389941eeb172cd950415c9782d8c6272",
   "duplicate_executable_proof_source": true,
-  "note": "Fresh unfiltered pinned Cargo verification and compilation pass1177/0 with lifetime/erasure checks enabled. Complete signed-integer result/full-decoder/full-bank postconditions compose seed/sign, six-leaf count/offset selection, finite payload fold and nonnegative/negative/OOB projection, including partial errors. The payload helper also exposes exact history. Nine new actual compiling strong/weaker controls and all nine updated history/IAID controls pass without weakening validity/bounds; the required profile is19groups107contrasts/fourunchangedshards. Twelve selected algorithm rows gain project-functional evidence; all249remain provisional94/129/26. Procedure-bank/storage and14TableA.1representation rows retain state-only strength. Two direct-state tests compare11280complete integers and19800payload folds with independent numeric/weighted-bit and prior checked procedures, covering all six leaves and positive/negative/zero/OOB/EOF/overflow categories. They share project Qe data and are not valid coded streams or normative table approval. All371native tests pass with14ignored. Actual coverage10525/12626lines,10152/12933regions,1997/2638branches gains11/21/10 in arithmetic only; the equivalent checked-operation expansion adds two covered physical/denominator lines, not an exclusion. All15runtime mutants actually compile/detect. Sixteen native streams, all656preconditions and48reviewed boundary bodies/attributes are unchanged; only explicit equivalent checked-operation/error-constructor expansions execute differently syntactically. Actual approved normal/logging/native/Hayro observations remain2/7/1 with zero rejection credit. Inventory608verified/24limitations/23forwarders/1capacitydivergence/0incomplete/0nativeassumptions remains. No new encoded stream,family,encoder,seed,hook,trust exception,resource policy,exclusion,pin,CIjob or publication change. Independent AnnexA/TableA.1/Qe interpretation,procedure-bank/caller/reset/full-stream composition,seven official positives,capacity integration,exhaustive normative review and90/85release goals remain open.",
+  "note": "Fresh unfiltered pinned Cargo proof/compilation on immutable6d73a9a is1192/0. Four existing result attributes specify exact scalar stream/input-work quotas and next-segment/page count quotas, including inclusive acceptance, overflow-before-limit priority and exact kind/limit/actual fields. All17 native token streams,658declarations/bodies/oldpreconditions and48reviewed boundary bodies/attrs/capacity divergence are unchanged. Source line offsets may shift. All402native tests/14ignored and26actual compiling detected runtime mutants pass. An independent360-caseu128 oracle uses only numeric parameters and bounded stack data, no giant allocation/slice, encoded family fixture or fake allocator failure. All13document-count/metadata/quota contrasts actually compile,reject strongly andaccept original-contract controls; positive original-source baselines are reused only for the same target, as in the shared checker. All51raw global/per-file metrics and digests/source/test hashes are independently recomputed: 10800/12636lines,10397/12945regions,2041/2638branches. Onlydocument gains +2coveredlines/+2regions/+2outcomes; denominators/floors/exclusions unchanged. Coordinate identity is not claimed across erased-line shifts. Requiredprofile27groups183contrasts/sixshards,max4active1worker each; expanded metadata group moves away from the arithmetic caller group without new jobs. Fresh complete same-source receipts/hostedacceptance are separate requirements, not inferred from13targeted cases. All266 selected records stayprovisional115functional125state26safety; project quota models add no selected normative rule/credit. Freshapprovednormal/logged/oracleobservations stay2passed7unresolved1unsupported,zero rejection credit. Numeric preflights do not prove aggregate decoder work/complexity, allocator/RSS or whole-container/stream semantics. Existing4112vs4128 capacity defect/native-only unapproved repair1e2, MMR divergence, independent normative/model review, seven official positives and90/85coveragegoals remain open (573morelines202branch outcomes). No native algorithm/API/error/resource policy, standardtrust, pin, waiver, paused coding family or release approval change.",
   "release_gate": "blocked"
 }

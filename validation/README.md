@@ -787,3 +787,113 @@ constructor expansions. No new encoded stream, family, trust exception,
 resource policy, exclusion or publication change is introduced. Independent
 Annex A/Table A.1/Qe interpretation, caller/reset/stream composition, official
 positive adjudication, capacity integration and coverage goals remain open.
+
+## Concrete arithmetic caller composition
+
+Both concrete arithmetic codec methods now expose exact value/OOB/error
+projection, full decoder and selected bank, all unselected banks and optional
+refinement/work frames on every outcome. Field identity equals the project
+ordinal, and the error adapter exposes a field-preserving four-variant model.
+Only two equivalent explicit forwarding matches execute differently
+syntactically; all sixteen other native streams, 656 preconditions and
+48 reviewed boundary bodies/attributes are unchanged.
+
+Eight actual compiling contrasts and two direct caller tests cover
+360 integer and 12,288 IAID length/bank cases. Tests compare direct callee
+results/errors/banks, cursor/marker and successful continuation; exact private
+register state is a formal guarantee, not an inferred observation.
+All 373 native tests pass with 14 ignored, and whole pinned verification and
+compilation remain1177/0. Fresh coverage is10,537/12,629lines,
+10,165/12,936regions,1,997/2,638branches; only symbol/text gains12/13/0,
+including three new physical line/region denominator entries from the
+equivalent forwarding expansion. Floors/exclusions and all fifteen real runtime
+controls remain unchanged. The required profile is twenty groups / 115 contrasts
+in the same four shards/jobs.
+
+The original private diagnostic patch no longer matched the equivalent new
+forwarding syntax. A separately hashed logging-only adaptation retains every
+existing diagnostic point and records the exact new patch identity; original
+patch/snapshots, standards, vectors and oracle sources remain untouched.
+Actual normal/logged/native/Hayro observations are rerun, not relabeled, and
+remain2/7/1 with zero rejection credit. Three caller/bank rows gain exact links
+without strength/review upgrades; all249remain provisional94/129/26.
+Normative caller-field/count/SBSYMCODELEN/reset/stream interpretation, official
+positives, capacity integration and coverage goals remain open. No stopped
+refinement/aggregation/custom-family expansion or trust exception is introduced.
+
+## Unpaused halftone control and exact header relations
+
+Eight new unit tests exercise every generic/MMR/halftone adapter variant,
+full-width/delegated errors, exact input/context budgets, arithmetic mode/
+template frames and noncausal adaptive-pixel rejection, zero-area generic
+dispatch, MMR single-use/EOFB-prefix/trailing-byte policy and all header flags/
+truncations. They use existing component interfaces without hooks or fake
+allocation failures and do not resume refinement/aggregation/custom families.
+All 381 native tests pass with 14 ignored. Actual fresh coverage is
+10,679/12,629lines,10,295/12,936regions,2,009/2,638branches: +142/+130/+12 in
+halftone only, unchanged denominators/floors and no exclusion.
+
+Native parser bodies gain exact success/rejection predicates, every accepted
+raw field and seven/twenty-one byte consumption. Three pure flag/operator
+models become crate-visible solely for the public postconditions; no native
+API changes. Nine compiling contrasts include false rejection of valid input.
+The full required profile is21groups124contrasts in four unchanged shards/jobs.
+All17native token streams and656bodies/preconditions, plus all48reviewed
+boundary bodies/attributes, are unchanged. Whole proof/compilation remain1177/0.
+Two new real runtime mutants join all fifteen prior controls: seventeen compile
+and are detected. Seventeen locally consulted T.88 field records raise selected
+membership to266(257normative/9policy), all provisional111functional/129state/
+26safety. No original source prose, diagrams, vector bytes or oracle source is
+committed. Exact typed partial errors/cursors, complete segment/caller/resource/
+raster semantics, independent review, official positives, capacity integration
+and coverage goals remain open.
+
+## Exact primitive reader failures
+
+All byte-read entry points now expose exact project EOF payloads. Bit reads
+preserve invalid-count-first classification/value, exact EOF and absence of
+false overflow or false valid-width rejection. Their existing successful
+value/input/cursor guarantees and exhaustive bit tests remain unchanged.
+Independent bound/monotonicity support is outside the normative-facing specs;
+ghost loop facts exclude overflow after the unchanged <=32-bit preflight.
+No native check or caller requirement is removed.
+
+Nine real compiling proof contrasts and one additional 78-case byte matrix
+validate the new properties. All382native tests pass with14ignored. Actual
+coverage remains10679/12629lines,10295/12936regions,2009/2638branches with no gain,
+denominator, floor or exclusion change. All17runtime mutants compile/detect.
+The full required profile is22groups133contrasts/fourunchangedshardsjobs.
+All17native token streams/656preconditions/48reviewed boundaries are unchanged;
+only5reader attributes andghostloop support change. Whole pinned verification
+and compilation pass1183/0. The266selected records remain provisional111/129/26;
+auxiliary error payloads and internal bound models are not normative approval.
+Actual approved normal/logged/native/Hayro observations are rerun and remain
+2/7/1 with zero rejection credit. No stopped family, observer hook, fake
+allocation failure, trust exception, policy, CI-job or publication change.
+
+## Exact consumed MMR code prefixes
+
+Successful mode/run-code lookup now ties its table key and length to the actual
+old-input MSB-first bit prefix. A shared reader append lemma composes the loop;
+two identical opaque closure chains use one verified checked-arithmetic helper
+with unchanged checks/errors/order. All656existing preconditions/48boundaries
+and capacity-divergence bodies/flags remain. The657function inventory has
+609directlyverified functions; whole proof/compilation pass1185/0.
+
+Four real compiling wrong-key controls retain old membership/length/reader
+guarantees under the weaker controls. The required profile is23groups137contrasts
+in the same four shards/jobs/cap. Scalar lookup tests cover1024mode and
+131072runwindow/colour/alignment cases;262144actual helper/prior closure pairs
+and constructor-boundary tests check arithmetic/field consistency.
+One selected mode row gains actual input-to-code functionality; all266records
+remain provisional112/128/26. Run truncation policy retains its old strength.
+
+An initial arithmetic rewrite failed reviewed coverage floors; it was not
+accepted and no floor was lowered. The shared-helper refactor plus actual
+constructor field tests pass the existing floor with coverage10696/12627lines,
+10310/12937regions,2009/2638branches. Only MMR changes; these are actual combined
+counts, not artificial padding, exclusions or a new ratified floor.
+Independent T.6 table fidelity, complete mode/errors/run totals/row/raster/caller
+semantics, official positives, capacity support and release coverage goals remain
+open. No stopped family, trust exception, fake allocation failure, CI job or
+publication change is introduced.

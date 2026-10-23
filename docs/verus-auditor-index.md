@@ -4,7 +4,7 @@ This is a navigation and notation aid, **not normative approval**. The
 [statement ledger](../validation/traceability/requirements.json) remains
 authoritative for exact clause/figure/table locators, assumptions, contracts
 and tests; [traceability](spec-traceability.md) explains evidence strengths.
-All 249 selected records remain provisional, the normative denominator remains
+All 266 selected records remain provisional, the normative denominator remains
 incomplete, and no feature has an approved complete decomposition. No standard
 prose, table entries, diagrams or official vectors are reproduced here.
 
@@ -52,8 +52,11 @@ Consult each requirement's exact locator in the ledger before judging fidelity.
 | E.3.3 normalization output recurrence | `normalized_state` returns `(signal, interval, position, current byte, code, count, marker)`; it composes the project refill model with mathematical doubling and exact partial-error ordering | Both production helpers expose all output fields and preserved input. Numeric oracles and six compiling output-relation controls supplement the proof; normative register/pointer interpretation and caller composition remain unapproved |
 | A.3 IAID prefix and result | `iaid_run` starts from prefix one, composes each exact decision/context update and finite count; `iaid_state` clears the sentinel and exposes project preflight/partial errors | Production `decode_iaid` equals the model for result, full decoder and full context bank. Six compiling contrasts and 3,600 numeric/prior-procedure comparisons supplement this project theorem. The 31-bit cap is project policy; normative caller length, address-space sufficiency and bitstream interpretation remain unapproved |
 | A.1/A.2 signed integer procedure | `integer_step_state` exposes decision/decoder/bank/history; `integer_selection_state` enters at level zero and selects one of six count/offset pairs; `integer_bits_run` is the finite payload fold; `integer_state` composes seed/sign, leaf, payload and signed value/OOB | Production `decode_integer` exposes result/full-decoder/full-bank equality, and `decode_integer_bits` also exposes history. Nine compiling contrasts and 31,080 numeric/prior-procedure comparisons supplement these project contracts. Model totality guards are not native behavior. Procedure-bank/storage, fourteen independent Table A.1 representation relations, Qe/register translation and complete caller/stream interpretation remain unapproved |
-| T.6 2.2.3 / Table 1 mode lookup | [`mode_code_in_implementation_table`](../specs/mmr.rs) is membership in runtime `MODE_CODES`; successful `decode_mode` has a table witness and consumed length | Not an independent normative table proof or a proof that consumed input bits equal the returned key |
-| T.6 2.2.4 / Tables 2–3 run lookup | `run_code_in_implementation_tables` selects the runtime white/black terminating/make-up arrays and common make-up array; `find_run_code` relates a supplied `(bits, length)` key to a returned entry | Membership and key matching, not independent standard-table correctness or complete run accumulation/raster semantics |
+| Concrete arithmetic caller boundary | `integer_field_slot` is the project enum ordinal; `arithmetic_integer_result` and `arithmetic_symbol_id_result` project values/OOB and exact `decode_error` fields | Both concrete codec methods expose full decoder/selected-bank relations and all other bank/refinement/work frames on every outcome. Eight compiling contrasts and 12,648 direct caller cases supplement the proof. These are project backend guarantees, not independent normative call-site field, symbol-count/SBSYMCODELEN, reset or full-stream approval |
+| 7.4.4.1 and 7.4.5.1 selected header fields | `pattern_header_accepted` / `halftone_header_accepted` give exact project success conditions; `*_header_fields` bind raw flags, dimensions/index, signed grid origins and unsigned vector words | Native parsers promise success iff acceptance, exact successful fields and seven/twenty-one byte consumption. The halftone helper excludes previously parsed region information and retains raw 256-scaled quantities. Shared `segments::be_u32_at` supplies word order. Three pure flag/operator helpers become crate-visible solely to expose these postconditions; no native API changes. Nine compiling contrasts supplement the contracts, not independent translation, typed partial-error or full caller/raster approval |
+| Bounded primitive reader API failures | `readers::eof_error` gives the exact offset/needed/remaining payload; `bit_read_error` preserves invalid-count priority and value, EOF data or absence of failure | All byte/bit primitives retain their existing value, input and cursor guarantees. Internal `bits_value_bound`, `bits_limit_monotone` and `bits_limit` live in proof support and exclude accumulation overflow after the existing <=32 preflight; native checks remain. Nine compiling contrasts and a new 78-case byte matrix supplement the existing exhaustive bit tests. Failure units follow the respective byte/bit API; no normative rejection or caller/stream approval is inferred |
+| T.6 2.2.3 / Table 1 mode lookup | [`mode_code_in_implementation_table`](../specs/mmr.rs) is membership in runtime `MODE_CODES`; successful `decode_mode` binds that mode/length witness and its key bits to the actual consumed old-input `bits_value` | Exact project input-to-code relation, not independent normative table translation or complete acceptance/errors. Prefix composition uses an internal reader append lemma; four compiling wrong-key controls retain old membership/length/bounds |
+| T.6 2.2.4 / Tables 2–3 run lookup | `run_code_in_implementation_tables` selects runtime tables; `find_run_code` relates the supplied key and successful `decode_run_code` also binds that key to consumed old-input bits | Exact project lookup-prefix relation, not independent standard-table correctness or complete run accumulation/raster semantics |
 | T.6 framing and T.88 6.2.6 omission context | MMR `exact_eofb` relates successful required framing to local `EOFB` | Constant/model equality does not independently review standard framing, padding applicability or caller omission policy |
 
 `mode_code_is_normative` and `run_code_is_normative` were renamed to the
@@ -64,12 +67,52 @@ implementation data and synthetic semantic mutants are not normative oracles.
 
 ## Evidence and unchanged stop conditions
 
+MMR `horizontal_pair` composes two opposite-colour `complete_run` witnesses
+with exact endpoints, progress and total input extent. Its returned endpoints
+are those used by the existing raster caller; dispatch and raster/caller
+composition remain separate. Erased witness selection and normalization
+assertions in the helper are proof support, not extra normative rules.
+
+MMR `reference_position_eligible`, `first_reference_candidate` and
+`reference_pair_matches` expose project changing-element geometry and parity:
+positions strictly after `x`, equality when `initial` is set, even-index
+post-transition black, the following `b2`, and width-sentinel fallback.
+The native first call uses `(x = 0, initial = true)` for the imaginary start;
+that mapping still needs independent comparison with T.6 notation.
+`reference_cursor_matches` and `reference_prefix_skipped` are internal cache
+optimization support. The verified suffix/global bridge is used by the real
+raster caller, which maintains its skipped prefix across position/flag updates.
+No reference-cache/previous-row pixel correspondence follows from these models.
+
+Decode `first_symbol_index`, `symbol_group_count`, `referred_symbol_count` and
+`collected_symbol_count` are project lookup/count semantics. The full result
+uses the complete reference length; prefix calls support the native loops.
+Repeated references count again and missing groups contribute zero, without
+asserting that a normative caller may supply an invalid reference. The existing
+codebook-length model is reused. These are not sequence-content/order or
+observed-capacity theorems, and the export-order ledger record stays state-only.
+
+MMR `span_result` is conditional project output semantics: the exact existing
+primitive black-span relation or an unchanged white span. It is not a theorem
+that arbitrary old white-span pixels are zero. `transition_span_result` lives
+under model support because its exact vector append/emitted-state result
+describes the internal transition cache, not a complete normative raster rule.
+The existing weaker wrapper preconditions are retained.
+
+MMR `complete_run` is output semantics, not merely an accumulator invariant.
+Its `run_prefix_matches`, `run_bit_length`, `run_value_sum` and
+`run_all_makeups` components define the actual input sequence, consumed extent,
+sum and earlier-code structure. Successful `decode_run` proves this relation
+using an erased sequence accumulator. These models use implementation tables;
+independent T.6 table fidelity, complete acceptance/errors and horizontal-pair/
+row/raster/caller interpretation remain separate review obligations.
+
 - Production `verus_spec` contracts in [`src/`](../src) remain the place to check
   actual preconditions and postconditions. A model definition or field-reveal
   bridge alone is not a production functional theorem.
 - Existing ordinary regression tests and selected strong/weaker semantic
   controls can establish their stated project-contract sensitivity. The
-  19-group/107-contrast required profile is neither added normative coverage nor a fresh
+  27-group/164-contrast required profile is neither added normative coverage nor a fresh
   replay merely because files moved. See the ledger and
   [traceability](spec-traceability.md) for exact linked identities and gaps.
 - Unfiltered pinned verification with compilation, lifetime and erasure checks

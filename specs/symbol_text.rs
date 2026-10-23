@@ -36,6 +36,35 @@ pub(super) open spec fn arithmetic_codec_valid(
         && arithmetic_contexts_valid(arithmetic.iaid@)
 }
 
+pub(super) open spec fn integer_field_slot(field: super::IntegerField) -> usize {
+    field as usize
+}
+
+pub(super) open spec fn arithmetic_integer_result(
+    result: Result<crate::arithmetic::ArithmeticInteger, crate::arithmetic::ArithmeticError>,
+) -> Result<super::EntropyInteger, super::SymbolTextError> {
+    match result {
+        Ok(crate::arithmetic::ArithmeticInteger::Value(value)) =>
+            Ok(super::EntropyInteger::Value(value)),
+        Ok(crate::arithmetic::ArithmeticInteger::OutOfBand) =>
+            Ok(super::EntropyInteger::OutOfBand),
+        Err(error) => Err(super::SymbolTextError::Decode(
+            crate::arithmetic::arithmetic_spec::decode_error(error),
+        )),
+    }
+}
+
+pub(super) open spec fn arithmetic_symbol_id_result(
+    result: Result<u32, crate::arithmetic::ArithmeticError>,
+) -> Result<u32, super::SymbolTextError> {
+    match result {
+        Ok(value) => Ok(value),
+        Err(error) => Err(super::SymbolTextError::Decode(
+            crate::arithmetic::arithmetic_spec::decode_error(error),
+        )),
+    }
+}
+
 pub(super) open spec fn codec_valid(codec: &super::SymbolCodec) -> bool {
     match codec {
         super::SymbolCodec::Arithmetic(arithmetic) =>

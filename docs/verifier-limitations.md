@@ -1,9 +1,38 @@
 # Verifier limitation roadmap
 
-Pinned Verus verifies 1177 obligations with zero errors and zero native
+Pinned Verus verifies 1192 obligations with zero errors and zero native
 assumptions in its proof build. The syntax-audited production inventory contains
-608 directly verified functions, 24 reviewed verifier limitations, 23 audited
+610 directly verified functions, 24 reviewed verifier limitations, 23 audited
 forwarders and 1 explicitly reviewed runtime/proof divergence.
+
+Four numeric document quota results now also expose exact inclusive acceptance,
+overflow-before-limit priority and kind/limit/actual payloads. Fresh whole
+verification/compilation remains1192/0;13actual compiling document controls
+reject strongly and accept original contracts. The original five metadata
+cases remain, with eight quota cases and per-target original-source baseline
+reuse. All402native tests/14ignored,26actual runtime mutants and381tooling
+tests pass. Onlydocument gains2covered lines/2regions/2branch outcomes;
+all51metrics are independently recomputed with unchanged denominators.
+These project models are not new selected normative obligations or proofs of
+aggregate decoder complexity, allocator/RSS, whole streams or release readiness.
+Full current-source27group183contrast/sixshard receipts remain required,
+with at most four active workers and unchanged timeouts.
+
+The preceding five result attributes specify exact project raw-context and
+diagnostic behavior. Valid banks are accepted; invalid banks report the first
+invalid state/MPS pair. Context construction, signal/context errors, EOF fields
+and overflow identity are preserved exactly. The fresh whole proof remains
+1192/0: obligation/function counts alone do not measure this strengthening.
+The existing arithmetic caller checker retains its eight cases and adds eleven
+compiling strong/original-contract controls, all passing. Native bodies,
+all old preconditions and all48reviewed boundary bodies/attributes are unchanged.
+Fresh401native tests/14ignored,24runtime mutants and380tooling tests pass.
+All51raw coverage metrics equal the accepted parent; source line offsets may
+shift and no new coordinate identity or coverage gain is claimed.
+These are auxiliary project error results, not a normative context-sequence,
+complete raster/stream or approved rejection theorem. The full required
+27group175contrast/sixshard receipt collection and hosted acceptance remain
+separate; existing capacity divergences and release blockers are retained.
 
 Cargo verification uses `verification/Cargo.toml` against the same production
 crate root, with a locked development-only `vstd` dependency. This explicit
@@ -17,13 +46,50 @@ argument list, not the legacy `--compile` substring (which could also match
 `--compiled-library`). Lifetime, erasure, trait-conflict and verification
 disabling flags are rejected in workflow commands and environments.
 
-The nineteen logical semantic groups remain complete: four deterministic
-round-robin shards execute each group once with one worker per shard. The
-collector requires all four same-run shard receipts, all nineteen independently
-hashed report/log pairs and all 107 required compiling contrasts. Missing,
+The twenty-seven logical semantic groups remain complete: six deterministic
+round-robin shards over a cost-balanced group order execute each group once
+with one worker per shard. The
+collector requires all six same-run shard receipts, all twenty-seven independently
+hashed report/log pairs and all 183 required compiling contrasts. Missing,
 duplicated, misrouted or stale evidence fails closed. Receipt schema version 3
 binds the shard assignment as well as every source/tool identity; the canonical
 report paths and individual checker schemas remain unchanged.
+
+Hosted run 39926348004 executed all 27 group checkers successfully, but its
+slowest shard used 1158 seconds plus setup/cleanup and received a cancelled
+20-minute job verdict. The collector correctly rejected that run; it is not
+hosted acceptance. Swapping the independent halftone-header and region-dispatch
+groups reduces the largest recorded shard estimate to 1090 seconds, preserving
+all 164 contrasts, four one-worker shards and existing timeouts. A regression
+fixture scales those observed costs when case counts grow and requires setup
+headroom. Estimates are not runtime guarantees: fresh successful jobs and
+independent same-run artifact reconstruction are still required for readiness.
+
+A second run,39930728153, confirmed that regrouping alone is insufficient:
+two shards reached the same deadline while their last groups were incomplete.
+Neither cancelled run is accepted. Expected-failure sensitivity invocations now
+use `--multiple-errors 0`: Verus still finds the first failure, but does not run
+its two default additional error-discovery queries on deliberately bad code.
+Native compilation, the exact qualified target and an actual postcondition or
+loop-invariant rejection remain mandatory. Positive baselines, weaker controls,
+whole-crate verification, resource limits, the four-worker cap and timeouts
+are unchanged. Its measured same-machine improvement was only3-5%, so the
+required work is now split into six smaller shards with at most four active.
+This adds two workflow jobs (21plusCLA, about22checks rather than61); it does
+not add concurrent workers, increase timeouts or remove logical checks.
+Fresh execution, not this optimization's predicted cost, decides
+whether the complete hosted gate passes.
+
+PR75run39941605340 additionally exposed a public-release downloadHTTP403 and
+one overloaded enlarged-caller shard. Its partial artifacts are not acceptance.
+Compiler transport now retries only within fixed retry/connect/total-time
+budgets and retains the exact pinnedURL/SHA256 check before unzip. The workflow
+auditor rejects unbounded retries or removed integrity checks. The same27groups/
+183contrasts are statically reordered using actual completed group costs, with
+750seconds reserved for the enlarged caller group. The largest estimated
+shard is979seconds and the regression ceiling is tightened to1000; actual
+successful hosted execution still decides acceptance. No worker, job timeout,
+positive proof, weaker control or resource/coverage floor is relaxed.
 
 The source audit rejects local trusted-specification APIs, verification
 exclusions and exec termination waivers in runtime, model and proof sources.
@@ -35,6 +101,181 @@ the traceability checker binds the complete literal-include closure.
 See the [auditor index](verus-auditor-index.md) for notation bridges and the
 remaining independent normative-review obligations.
 
+Native generic helper tests now independently cover packed-row MSB/padding
+and numeric query edges, raw probability-state validation/first-error order
+and generic diagnostic projections. All17native streams/658declarations,
+bodies/attributes/preconditions/source starts and48reviewed boundaries remain
+unchanged. Whole proof/compile stays1192/0;401native tests/14ignored and
+24actualruntime mutants pass. Same-coordinate coverage comparison establishes
++59lines/+43regions/+14branches, zero lost covered coordinates and unchanged
+denominators/floors/exclusions; onlygeneric_region gains. No entropy decode,
+new encoded/coding family, paused-family fixture, hook, fake allocation or
+architecture-invalid slice is added. Explicit outside query/defensive offsets
+exercise existing helper white padding, not invalid bitmap backing storage.
+These native facts are not new formal projection/entropy/normative theorems.
+All266records remain provisional115/125/26;27group164contrast/fourshard and
+CIjobcount stay unchanged. Capacity/native-repair and full raster/stream/
+independent normative review gates remain open.
+
+Both T.6 reference helpers now expose valid-cache acceptance and exact
+eligible opposite-colour pair/fallback selection. The optimized lower cursor
+and conditional suffix/global theorem are tied to the real raster loop's
+skipped-prefix invariant, preserved across monotone position updates and
+initial reset. An explicit lower-loop result retains the break witness.
+Internal cursor/prefix specifications and the suffix/global bridge are in
+proof support; no ordinary input precondition strengthens. All17executing
+streams658preconditions48reviewed boundaries remain, plus one style-only
+source-line allowance for erased proofs. Whole proof/compile1192/0 passes.
+Six actual compiling contrasts retain old bounds and distinguish wrong pair,
+lost cursor and false rejection. Native461vector/9240full/49364cursor cases
+pass;397native/14ignored and21runtime mutants pass. Only2additional native
+branch outcomes are covered, with unchanged denominators/floors/exclusions.
+The changing-element record becomes functional within this exact project
+cache scope:266allprovisional115/125/26. No previous-row/cache pixel theorem,
+independent coordinate/parity translation or full raster/stream conformance
+is inferred. Existing capacity defects and unapproved native repair stay open.
+
+First-match lookup now exposes its minimum matching index without adding a
+store-key uniqueness precondition. Group projection proves the selected
+export count; complete contiguous/borrowed collection and codebook projection
+prove exact cardinality against a finite decreasing reference sum. Native
+repeats/missing groups retain their current helper meaning. Four postconditions,
+erased count invariants and a uniqueness proof strengthen; all658existing
+preconditions,17executing streams and48reviewed boundaries remain. A narrow
+too-many-lines annotation is necessary only because erased annotations expand
+the source span; no verification or termination exemption changes.
+Whole proof/compile1191/0 and six actual compiling contrasts pass. Inventory
+remains658/610direct. Typed duplicate-key cases supplement existing native
+resource matrices;396native tests/14ignored and20runtime mutants pass.
+Coverage is unchanged. All266records stayprovisional114/126/26; the export
+order row only gains auxiliary count evidence. No exact output-content/order,
+caller/stream equivalence, normative approval or observed-capacity enforcement
+is inferred. The separate native-only capacity repair remains unintegrated.
+
+The resource/reference coverage tranche leaves all17native streams and
+658production declarations/bodies/attributes/source starts unchanged, as well
+as48reviewed boundaries. Whole proof/compile remains1190/0. Native component
+matrices cover9207resourcecollection scenarios/5460tight-budget errors,
+20allocation-free numeric preflights and216parsed-header retention graphs/
+2856budget-precedence cases. No new entropy-family fixture or paused-family
+work is introduced. All395native tests pass with14ignored;20actualruntime
+mutants compile/detect. Identical coverage coordinates prove+34lines/
++32regions/+14branch outcomes, zero lost coordinates and unchanged
+denominators/floors/exclusions. Native ordering/budget observations are not
+new formal output-order or normative approval;266allprovisional114/126/26.
+The required25group152contrast/fourshard profile and CI job count are unchanged.
+
+Those resource tests check successful observed-capacity upper bounds and
+below-requested-minimum rejection, not complete observed-capacity enforcement.
+The unchanged collector has a reproduced semantic gap: a 4,112-byte accepted
+limit can correspond to a 4,128-byte observed managed total, because its
+pointer reservation requests16bytes but reports32bytes capacity. This is a
+native `Vec::capacity()` observation, not allocator/RSS accounting. Safety
+verification1190/0 does not prove this missing functional bound.
+Native-only repair `1e2bf67` retains requested preflight/error precedence and
+checks actual capacity after reservation; its strict regression fails on the
+old collector and passes after repair, with396native tests/21actual mutants
+and strict MSRV lint passing. Pinned whole verification fails at unsupported
+`Vec::capacity`. No local trusted standard declaration, waiver or accepted
+proof inventory is added for that candidate. Owner approval of the scoped
+standard boundary is still absent, so the repair remains blocked/not ready.
+
+The span/recorded-span wrappers now expose canonical-storage-conditional
+success and exact primitive black-pixel/storage effects, with unchanged weaker
+preconditions. White remains an exact no-op. Exact cached-transition/emitted
+state updates and cache error frames are proved separately from complete
+raster semantics; that cache model lives in implementation proof support.
+All17native streams,658bodies/preconditions and48reviewed boundaries are
+unchanged. Only3postcondition attributes strengthen; whole proof/compile1190/0.
+Five new real controls are merged into the existing three-case span group,
+reusing its workspace and per-function baselines. The full profile remains
+25groups/fourshards, now152contrasts rather than adding another logical group.
+Two affected no-op controls remove only the newly redundant pixel relation.
+Native matrices check11196pixel/cache and32136transition cases. All266records
+stayprovisional114/126/26; full raster-loop/polarity/caller semantics remain open.
+
+The exact native horizontal block is now a directly verified helper exposing
+both opposite-colour run sequences, ordered endpoints, progress and input
+extent. The caller changes only to invoke it; all original guards/errors/order,
+657 existing preconditions/attributes and 48 reviewed boundaries remain.
+Inventory is 658 functions, 610 directly verified; whole proof/compile1190/0.
+Six actual compiling contrasts distinguish lost/shrunken endpoints, wrong
+first/second colours, skipped second decoding and zero-pair acceptance.
+Redundant positive proof support is absent from mutants, avoiding resource-limit
+failures as evidence; production retains and verifies the witness support.
+73,728 encoded pairs yield 368,634 numeric/prior-procedure comparisons, with
+1,456 additional partial-input/error/cursor cases. All 266 records stay
+provisional114/126/26. This does not prove horizontal-mode dispatch, raster
+spans, full caller/stream composition or independent normative table fidelity.
+
+MMR run success now additionally proves a nonempty input-bound sequence of
+make-up codes followed by one terminal code, with exact total and consumed
+extent. Only erased sequence accumulation/invariants and the success
+postcondition change; all 17 native streams, 657 preconditions and 48 reviewed
+boundaries are unchanged. Whole Cargo verification/compilation pass 1189/0.
+Four actual compiling controls distinguish discarded totals/make-up values,
+premature make-up termination and an unconsumed empty zero run. Native tests
+cover 87,040 sequence scenarios plus exact missing-terminal EOF cases.
+One selected summation record gains project functionality, leaving all 266
+records provisional at 113/127/26. Implementation-table review, full
+acceptance/typed errors and horizontal-pair/raster/caller semantics remain open.
+
+The preceding MMR mode/run-code success tranche binds the returned implementation-table key to
+the exact MSB-first old-input prefix, as well as its existing table membership
+and consumed length. Prefix loop invariants compose the existing exact one-bit
+reader result using an internal append lemma. Two opaque checked closure chains
+call one directly verified checked-arithmetic helper with the same multiply/add
+guards, error and ordering; no check is removed or new caller constraint added.
+Sixteen native streams and all656existing preconditions/48reviewed boundaries,
+including capacity-divergence bodies/flags, are unchanged. The inventory now
+has657functions,609directlyverified. Whole Cargo proof/compilation pass1185/0.
+
+Four compiling contrasts query a different prefix key while retaining old
+membership/length/bounds guarantees in the weaker controls. Scalar lookup
+oracles cover1024modewindows and131072runwindow/colour/alignment cases;
+262144checked-operation pairs compare the actual helper with the prior closure.
+Direct constructor-boundary tests additionally assert raw fields and terminal
+sense. These share implementation tables, not an independent T.6 oracle.
+One selected mode record gains actual project input-to-code functionality;
+all266records remain provisional112/128/26. Complete mode acceptance/errors,
+table translation, row/raster/caller semantics and capacity support
+remain separate.
+
+All byte-read methods now expose exact project EOF offset/needed/remaining
+fields. Bit reads expose the supplied invalid count before EOF and otherwise
+the exact EOF payload; together with the existing successful value/bound and
+cursor relations, this excludes false rejection of valid 32-bit reads.
+The original `bits_value` output relation and exhaustive bit tests were already
+present and are not counted as new work.
+
+`bits_value_bound` and `bits_limit_monotone` live in implementation-independent
+proof support, not the normative-facing reader model file. Ghost loop support
+derives that each pre-doubling prefix fits 31 bits and the next bit is at most
+one, excluding the native checked-multiply/add overflow branches under the
+unchanged preflight. Those defensive branches remain emitted and uncovered;
+no arithmetic check or caller precondition is removed. All17native streams
+and656preconditions/48reviewed boundaries are unchanged. Five reader attributes
+and only ghost loop support change. Fresh whole Cargo verification and
+compilation pass1183/0. Nine compiling controls distinguish lost EOF fields,
+wrong fixed-width failure projection, lost invalid count, EOF/overflow confusion
+and wrong rejection at the 32-bit boundary. These are project API guarantees,
+not independent standard rejection/marker-fill or complete caller approval.
+
+The pattern and halftone-specific header parsers now expose exact project
+acceptance/rejection, successful raw fields and seven/twenty-one byte cursor
+advancement. The shared big-endian word model is reused, signed origins retain
+their encoded scale, and region information remains the caller's preceding
+header. Three pure flag/operator helpers become crate-visible because public
+postconditions cannot reference private open models; no native API changes.
+All seventeen native token streams, all 656 production bodies/preconditions
+and all 48 reviewed boundary bodies/attributes remain unchanged. Only two
+production postcondition attributes change, with no termination/trust waiver.
+Nine compiling contrasts include false rejection of valid headers and loss of
+width, maximum index, cursor, grid dimensions/origin, operator and default pixel.
+Seventeen consulted field records gain functional project links but remain
+provisional, and full typed errors/partial cursors, caller/raster composition
+and independent normative approval are not inferred.
+
 The single integer-bit helper now exposes the exact returned decision, growing
 or rolling nine-bit history, error-history frame, complete decoder/error state,
 exact selected-context update and unchanged unselected contexts. The checked
@@ -44,6 +285,27 @@ wrong bits, neighboring-context mutation, error-history loss, code loss and
 IAID preflight classification/frame errors. Runtime numeric checks cover all
 512 histories, all 47 probability rows, both MPS values and actual success,
 EOF and overflow outcomes (144,384 cases).
+
+The concrete arithmetic codec now composes integer/IAID result projection,
+full decoder state and selected context-bank equality. Its contracts preserve
+every unselected integer bank, the other integer/IAID namespace, optional
+refinement state and work counter on success and error. `IntegerField::slot`
+equals the project ordinal; `ArithmeticError::into_decode` equals an explicit
+four-variant project error model. Native changes are only two equivalent
+explicit error-forwarding matches replacing the unchanged audited standard
+conversion chain; no caller precondition is strengthened.
+
+Eight actual compiling contrasts target error fields, field identity, values,
+decoder replacement and cross-bank mutation. Two direct caller tests cover
+360 integer and 12,288 IAID length/bank cases, comparing direct callee
+values/errors/complete banks and public cursor/marker/success continuation.
+The exact private decoder-register relation is proved formally, not inferred
+from those observations. Runtime fixtures keep optional refinement absent;
+no observer hook or stopped refinement/aggregation/custom-family work is added.
+Whole Cargo verification/compilation remain 1177/0, with sixteen native streams,
+656 preconditions and 48 reviewed boundary bodies/attributes unchanged.
+Normative call-site field/SBSYMCODELEN/address-space/reset/stream interpretation
+remains separate, so three caller/bank records keep state-only strength.
 
 The complete signed-integer entry point now equals `integer_state` for
 result, full decoder and complete context bank. It composes the exact
@@ -169,9 +431,16 @@ on `Vec::capacity` and `Result::unwrap_or`. This is a standard-library
 specification prerequisite, not a reason to count vector length as capacity,
 add project assumptions or declare the source gap closed. Its runtime body
 and accounting policy remain unchanged.
-The upstream capacity prerequisite is
-[verus-lang/verus#3304](https://github.com/verus-lang/verus/issues/3304), still
-open as of 2026-10-22. The merged reservation specification in
+The earlier tracking issue
+[verus-lang/verus#3304](https://github.com/verus-lang/verus/issues/3304) was
+closed manually on 2026-10-22 after the maintainer suggested a minimal
+allocator-generic getter declaration with no postconditions. Its technical
+sufficiency was checked in an isolated probe; neither issue closure nor that
+probe grants a local standard-trust exception or whole-project acceptance.
+The pinned getter is still unsupported, the existing no-local-trusted-spec
+policy has not been explicitly waived, and both the MMR integration and
+native-only borrowed-capacity repair remain blocked. No additional external
+issue/comment is needed or authorized. The merged reservation specification in
 [verus-lang/verus#3094](https://github.com/verus-lang/verus/pull/3094) does not
 itself specify the capacity getter or close this divergence.
 The five primitive value/operator bridges now share their verified executing
