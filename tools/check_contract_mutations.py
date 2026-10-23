@@ -16,6 +16,36 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "borrowed-symbol-peak-limit-off-by-one",
+        "file": "src/decode.rs",
+        "before": (
+            "let (requested_bytes, peak) = borrowed_symbol_memory(count, active_retained_bytes)?;\n"
+            "    if peak > limits.max_decoder_managed_memory_bytes {"
+        ),
+        "after": (
+            "let (requested_bytes, peak) = borrowed_symbol_memory(count, active_retained_bytes)?;\n"
+            "    if peak >= limits.max_decoder_managed_memory_bytes {"
+        ),
+        "target": "lib",
+        "test": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
+    },
+    {
+        "id": "borrowed-symbol-group-loses-later-bitmaps",
+        "file": "src/decode.rs",
+        "before": "imported.push(&resource.exported[bitmap_index]);",
+        "after": "if bitmap_index == 0 { imported.push(&resource.exported[bitmap_index]); }",
+        "target": "lib",
+        "test": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
+    },
+    {
+        "id": "total-reference-limit-off-by-one",
+        "file": "src/document.rs",
+        "before": "if total_references > limits.max_total_references {",
+        "after": "if total_references >= limits.max_total_references {",
+        "target": "lib",
+        "test": "document::tests::reference_graph_retention_and_budget_precedence_match_scalar_policy",
+    },
+    {
         "id": "halftone-gray-state-trailing-bytes-ignored",
         "file": "src/halftone.rs",
         "before": "if *offset != coded.len() {",

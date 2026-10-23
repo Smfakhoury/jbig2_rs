@@ -2156,6 +2156,181 @@ mod tests {
         bytes
     }
 
+    fn reference_validation_segment(
+        number: u32,
+        references: &[u32],
+        retention: u8,
+    ) -> ParsedSegment<'static> {
+        assert!(references.len() <= 2);
+        let mut bytes = header(number, 0, 0, 0);
+        bytes[5] = (u8::try_from(references.len()).unwrap() << 5) | retention;
+        for (index, referred) in references.iter().enumerate() {
+            bytes.insert(6 + index, u8::try_from(*referred).unwrap());
+        }
+        let mut reader = crate::reader::ByteReader::new(&bytes);
+        let header =
+            crate::segment_header::parse_segment_header(&mut reader, &Limits::default()).unwrap();
+        assert_eq!(reader.position(), bytes.len());
+        ParsedSegment {
+            header,
+            payload: &[],
+            data: ParsedData::Other,
+        }
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn reference_graph_retention_and_budget_precedence_match_scalar_policy() {
+        let mut graphs = 0;
+        let mut cases = 0;
+        for first in [&[][..], &[0][..]] {
+            for second in [&[][..], &[0][..], &[1][..], &[0, 1][..]] {
+                let references: [&[u32]; 3] = [&[], first, second];
+                let mut last = [None; 3];
+                let mut depths = [1_u32; 3];
+                for (owner, referred) in references.iter().enumerate() {
+                    for number in *referred {
+                        let index = usize::try_from(*number).unwrap();
+                        last[index] = Some(owner);
+                        depths[owner] = depths[owner].max(depths[index] + 1);
+                    }
+                }
+                let total =
+                    u64::try_from(references.iter().map(|refs| refs.len()).sum::<usize>()).unwrap();
+                let maximum_depth = *depths.iter().max().unwrap();
+                for flags0 in 0..2_u8 {
+                    for flags1 in 0..(1_u8 << (first.len() + 1)) {
+                        for flags2 in 0..(1_u8 << (second.len() + 1)) {
+                            let flags = [flags0, flags1, flags2];
+                            let segments = [
+                                reference_validation_segment(0, &[], flags0),
+                                reference_validation_segment(1, first, flags1),
+                                reference_validation_segment(2, second, flags2),
+                            ];
+                            let headers: Vec<_> =
+                                segments.iter().map(|s| s.header.clone()).collect();
+                            let mut retention_error = None;
+                            for owner in 0..3 {
+                                if last[owner].is_some() && flags[owner] & 1 == 0 {
+                                    let number = u64::try_from(owner).unwrap();
+                                    retention_error = Some(("retention", number, number));
+                                    break;
+                                }
+                                for (index, number) in references[owner].iter().enumerate() {
+                                    if last[usize::try_from(*number).unwrap()] != Some(owner)
+                                        && flags[owner] & (1 << (index + 1)) == 0
+                                    {
+                                        retention_error = Some((
+                                            "retention",
+                                            u64::try_from(owner).unwrap(),
+                                            u64::from(*number),
+                                        ));
+                                        break;
+                                    }
+                                }
+                                if retention_error.is_some() {
+                                    break;
+                                }
+                            }
+                            for reference_limit in [total.saturating_sub(1), total, total + 1] {
+                                for depth_limit in 0..=maximum_depth + 1 {
+                                    let expected = if reference_limit < total {
+                                        Some(("references", reference_limit, total))
+                                    } else if retention_error.is_some() {
+                                        retention_error
+                                    } else {
+                                        depths.iter().find(|depth| **depth > depth_limit).map(
+                                            |depth| {
+                                                ("depth", u64::from(depth_limit), u64::from(*depth))
+                                            },
+                                        )
+                                    };
+                                    let limits = Limits {
+                                        max_total_references: reference_limit,
+                                        max_reference_graph_depth: depth_limit,
+                                        ..Limits::default()
+                                    };
+                                    match validate_references(&segments, None, &limits) {
+                                        Ok((types, actual_depths)) => {
+                                            assert_eq!(expected, None);
+                                            assert_eq!(
+                                                types,
+                                                vec![
+                                                    (0, SegmentType::SymbolDictionary),
+                                                    (1, SegmentType::SymbolDictionary),
+                                                    (2, SegmentType::SymbolDictionary),
+                                                ],
+                                            );
+                                            assert_eq!(
+                                                actual_depths,
+                                                vec![
+                                                    (0, depths[0]),
+                                                    (1, depths[1]),
+                                                    (2, depths[2])
+                                                ],
+                                            );
+                                        }
+                                        Err(DecodeError::LimitExceeded(error)) => {
+                                            let kind = match error.kind {
+                                                LimitKind::TotalReferences => "references",
+                                                LimitKind::ReferenceDepth => "depth",
+                                                other => {
+                                                    panic!("unexpected graph limit: {other:?}")
+                                                }
+                                            };
+                                            assert_eq!(
+                                                Some((kind, error.limit, error.actual)),
+                                                expected,
+                                            );
+                                        }
+                                        Err(DecodeError::Malformed(
+                                            MalformedError::InvalidRetentionFlags {
+                                                segment,
+                                                referred,
+                                            },
+                                        )) => {
+                                            assert_eq!(
+                                                Some((
+                                                    "retention",
+                                                    u64::from(segment),
+                                                    u64::from(referred)
+                                                )),
+                                                expected,
+                                            );
+                                        }
+                                        other => panic!("unexpected graph result: {other:?}"),
+                                    }
+                                    assert_eq!(
+                                        segments
+                                            .iter()
+                                            .map(|s| s.header.clone())
+                                            .collect::<Vec<_>>(),
+                                        headers,
+                                    );
+                                    cases += 1;
+                                }
+                            }
+                            graphs += 1;
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(graphs, 216);
+        assert_eq!(cases, 2856);
+        let mut malformed = reference_validation_segment(0, &[], 1);
+        malformed.header.retention_flags.values.clear();
+        assert!(matches!(
+            validate_retention_flags(&[malformed], &[]),
+            Err(DecodeError::Malformed(
+                MalformedError::InvalidRetentionFlags {
+                    segment: 0,
+                    referred: 0,
+                }
+            ))
+        ));
+    }
+
     fn page_data(height: u32) -> [u8; 19] {
         let mut data = [0_u8; 19];
         data[0..4].copy_from_slice(&8_u32.to_be_bytes());
