@@ -2,6 +2,34 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-CONTEXT-GEOMETRY",
+      "transformation": "vary signed raw slot offsets, adaptive indices, literal bitmap samples and unmasked history values",
+      "invariant": "exact planes/offsets/context sizes and scalar context bits, including nominal and nonnominal templates and history masks",
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::raw_template_slots_preserve_offsets_planes_and_context_sizes"},
+        {"target": "lib", "name": "generic_region::tests::raw_context_descriptors_match_literal_sampling_and_history_masks"}
+      ]
+    },
+    {
+      "id": "META-RAW-WIDE-CODE-ARITHMETIC",
+      "transformation": "vary all limbs across zero, high-bit, one and maximum values with carry, borrow, shift, append and distance bounds",
+      "invariant": "independent bit-serial and wide-integer oracles give exact 256-bit results, overflow shape and exclusive distance bounds",
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::raw_wide_code_arithmetic_matches_independent_bit_serial_oracles"},
+        {"target": "lib", "name": "huffman::tests::raw_wide_distances_match_bit_serial_subtraction_and_exclusive_bounds"}
+      ]
+    },
+    {
+      "id": "META-RAW-DECODER-RESOURCE-SELECTION",
+      "transformation": "vary complete template codes, page/region operators, resource key order, duplicate inserts and repeated/missing table references",
+      "invariant": "exact selector policy, key order, borrowed table identity and repeated-reference order; duplicate inserts and repeated releases preserve unrelated state",
+      "tests": [
+        {"target": "lib", "name": "decode::tests::raw_dispatch_selectors_match_complete_codes_and_operator_policy"},
+        {"target": "lib", "name": "decode::tests::raw_resource_maps_preserve_key_order_identity_and_duplicate_state"},
+        {"target": "lib", "name": "decode::tests::raw_referred_tables_preserve_order_repeats_missing_keys_and_retention"}
+      ]
+    },
+    {
       "id": "META-RAW-SYMBOL-FLAG-DOMAINS",
       "transformation": "enumerate every raw dictionary/text flag word, both refinement modes and absent/present/reserved Huffman metadata; no coded-family payload is generated",
       "invariant": "literal independent field policy gives exact accepted fields, signed offsets, strip geometry, selectors and error precedence; colour remains unsupported",

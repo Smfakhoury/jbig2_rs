@@ -7474,6 +7474,95 @@ mod tests {
     }
 
     #[test]
+    fn raw_error_trait_bridges_preserve_all_symbol_variants_and_nested_fields() {
+        for error in [
+            SymbolTextError::InvalidFlags("raw diagnostic"),
+            SymbolTextError::InvalidTableAssociation("raw diagnostic"),
+            SymbolTextError::InvalidCount("raw diagnostic"),
+            SymbolTextError::InvalidEntropyValue("raw diagnostic"),
+            SymbolTextError::UnexpectedOutOfBand("raw diagnostic"),
+            SymbolTextError::InvalidState("raw diagnostic"),
+        ] {
+            assert!(matches!(
+                DecodeError::from(error),
+                DecodeError::Malformed(MalformedError::InvalidSymbolText("raw diagnostic"))
+            ));
+        }
+        for (error, expected) in [
+            (
+                SymbolTextError::InvalidDimensions,
+                MalformedError::InvalidSymbolDimensions,
+            ),
+            (
+                SymbolTextError::SymbolIdOutOfRange {
+                    id: u32::MAX,
+                    available: 1,
+                },
+                MalformedError::SymbolIdOutOfRange {
+                    id: u32::MAX,
+                    available: 1,
+                },
+            ),
+            (
+                SymbolTextError::InvalidSymbolLengthRun,
+                MalformedError::InvalidSymbolText("invalid symbol-code length run"),
+            ),
+        ] {
+            assert!(
+                matches!(DecodeError::from(error), DecodeError::Malformed(actual)
+                if actual == expected)
+            );
+        }
+        let arithmetic: SymbolTextError = ArithmeticError::InvalidContextState {
+            state_index: u8::MAX,
+            mps: u8::MAX,
+        }
+        .into();
+        assert!(matches!(
+            DecodeError::from(arithmetic),
+            DecodeError::Malformed(MalformedError::InvalidArithmeticContextState {
+                state_index: u8::MAX,
+                mps: u8::MAX,
+            })
+        ));
+        let generic: SymbolTextError = GenericRegionError::UnexpectedArithmeticMarker {
+            offset: usize::MAX,
+            code: u8::MAX,
+        }
+        .into();
+        assert!(matches!(
+            DecodeError::from(generic),
+            DecodeError::Malformed(MalformedError::InvalidGenericRegion(
+                crate::GenericRegionErrorKind::UnexpectedArithmeticMarker {
+                    offset: usize::MAX,
+                    code: u8::MAX,
+                }
+            ))
+        ));
+        let mmr: SymbolTextError =
+            MmrError::Bitmap(DecodeError::Io(crate::error::IoErrorKind::PermissionDenied)).into();
+        assert!(matches!(
+            DecodeError::from(mmr),
+            DecodeError::Io(crate::error::IoErrorKind::PermissionDenied)
+        ));
+        let generic: GenericRegionError = MmrError::Bitmap(DecodeError::Allocation {
+            requested_bytes: u64::MAX,
+        })
+        .into();
+        assert!(matches!(
+            generic,
+            GenericRegionError::Decode(DecodeError::Allocation {
+                requested_bytes: u64::MAX
+            })
+        ));
+        let huffman: HuffmanError = DecodeError::Io(crate::error::IoErrorKind::Interrupted).into();
+        assert!(matches!(
+            DecodeError::from(huffman),
+            DecodeError::Io(crate::error::IoErrorKind::Interrupted)
+        ));
+    }
+
+    #[test]
     fn raw_dictionary_flag_words_match_independent_field_policy() {
         for flags in 0..=u16::MAX {
             let huffman = flags & 1 != 0;

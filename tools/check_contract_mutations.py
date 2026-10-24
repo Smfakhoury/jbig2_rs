@@ -35,6 +35,84 @@ MUTATIONS = tuple(
     for case in TEXT_CASES if case["id"] in TEXT_RUNTIME_TESTS
 ) + (
     {
+        "id": "refinement-snapshot-template-policy-inverted",
+        "file": "src/generic_region.rs",
+        "before": (
+            "if self.template != snapshot.template {\n"
+            "            return Err(GenericRegionError::InvalidFlags(refinement_template_code("
+        ),
+        "after": (
+            "if self.template == snapshot.template {\n"
+            "            return Err(GenericRegionError::InvalidFlags(refinement_template_code("
+        ),
+        "target": "lib",
+        "test": "generic_region::tests::raw_refinement_snapshots_preserve_all_states_and_failure_frames",
+    },
+    {
+        "id": "generic-template-one-history-bit-discarded",
+        "file": "src/generic_region.rs",
+        "before": "(((top << 5) | previous) << 4) | (adaptive << 3) | history & 0x07",
+        "after": "(((top << 5) | previous) << 4) | (adaptive << 3) | history & 0x03",
+        "target": "lib",
+        "test": "generic_region::tests::raw_context_descriptors_match_literal_sampling_and_history_masks",
+    },
+    {
+        "id": "halftone-memory-uses-smaller-stage-peak",
+        "file": "src/halftone.rs",
+        "before": "let peak = if gray_peak >= render_peak {",
+        "after": "let peak = if gray_peak <= render_peak {",
+        "target": "lib",
+        "test": "halftone::tests::raw_halftone_memory_peaks_match_wide_stage_arithmetic",
+    },
+    {
+        "id": "collective-slicing-omits-pattern-vector-charge",
+        "file": "src/halftone.rs",
+        "before": "checked_memory_sum(collective_bytes, retained_pattern_bytes, vector_bytes, 0)",
+        "after": "checked_memory_sum(collective_bytes, retained_pattern_bytes, 0, 0)",
+        "target": "lib",
+        "test": "halftone::tests::raw_collective_slicing_matches_literal_pixels_and_exact_budget_boundaries",
+    },
+    {
+        "id": "page-collector-rejects-inclusive-decoded-limit",
+        "file": "src/decode.rs",
+        "before": "if next_bytes > self.decoded_limit {",
+        "after": "if next_bytes >= self.decoded_limit {",
+        "target": "lib",
+        "test": "decode::tests::raw_page_collector_guards_preserve_order_pixels_and_rejected_totals",
+    },
+    {
+        "id": "wide-code-final-carry-capacity-inverted",
+        "file": "src/huffman.rs",
+        "before": "if self.limbs[3] != u64::MAX {",
+        "after": "if self.limbs[3] == u64::MAX {",
+        "target": "lib",
+        "test": "huffman::tests::raw_wide_code_arithmetic_matches_independent_bit_serial_oracles",
+    },
+    {
+        "id": "structural-work-drops-reference-count",
+        "file": "src/document.rs",
+        "before": "let Some(actual) = partial.checked_add(reference_work) else {",
+        "after": "let Some(actual) = partial.checked_add(0) else {",
+        "target": "lib",
+        "test": "document::tests::raw_structural_work_matches_wide_counts_and_exact_rejection_priority",
+    },
+    {
+        "id": "direct-dispatch-ignores-sealed-stripe",
+        "file": "src/decode.rs",
+        "before": "|| page.last_stripe_end.is_some()\n        || page.open_stripe_max_row.is_some()",
+        "after": "|| false && page.last_stripe_end.is_some()\n        || page.open_stripe_max_row.is_some()",
+        "target": "lib",
+        "test": "decode::tests::raw_header_only_direct_dispatch_checks_every_page_gate_without_side_effects",
+    },
+    {
+        "id": "table-reference-gathering-discards-earlier-results",
+        "file": "src/decode.rs",
+        "before": "result.push(table);",
+        "after": "result.clear();\n            result.push(table);",
+        "target": "lib",
+        "test": "decode::tests::raw_referred_tables_preserve_order_repeats_missing_keys_and_retention",
+    },
+    {
         "id": "dictionary-reserved-bit-thirteen-accepted",
         "file": "src/symbol_text.rs",
         "before": (

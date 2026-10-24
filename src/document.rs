@@ -2145,6 +2145,118 @@ fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn raw_structural_work_matches_wide_counts_and_exact_rejection_priority() {
+        for count in 0..=2 {
+            for references in [&[][..], &[0][..], &[0, 1][..]] {
+                let segments: Vec<_> = (0..count)
+                    .map(|index| reference_validation_segment(index + 2, references, 1))
+                    .collect();
+                let headers: Vec<_> = segments
+                    .iter()
+                    .map(|segment| segment.header.clone())
+                    .collect();
+                for input in [
+                    0,
+                    1,
+                    8,
+                    usize::MAX / 2,
+                    usize::MAX - 3,
+                    usize::MAX - 1,
+                    usize::MAX,
+                ] {
+                    let expected = input as u128
+                        + u128::from(count)
+                        + u128::from(count) * references.len() as u128;
+                    for limit in [0, 1, 8, u64::MAX] {
+                        let limits = Limits {
+                            max_work_units: limit,
+                            ..Limits::default()
+                        };
+                        let result = enforce_work_limit(input, &segments, &limits);
+                        if expected > u128::from(u64::MAX) {
+                            assert!(matches!(
+                                result,
+                                Err(DecodeError::Malformed(MalformedError::IntegerOverflow))
+                            ));
+                        } else if expected > u128::from(limit) {
+                            assert!(matches!(result, Err(DecodeError::LimitExceeded(
+                                LimitExceeded { kind: LimitKind::Work, limit: actual_limit, actual }
+                            )) if actual_limit == limit && u128::from(actual) == expected));
+                        } else {
+                            result.unwrap();
+                        }
+                        assert_eq!(
+                            segments
+                                .iter()
+                                .map(|s| s.header.clone())
+                                .collect::<Vec<_>>(),
+                            headers
+                        );
+                    }
+                }
+            }
+        }
+        for count in [0, 1, usize::MAX / 8, usize::MAX / 8 + 1, usize::MAX] {
+            let bytes = count as u128 * 8;
+            match allocation_size::<u64>(count) {
+                Ok(actual) => assert_eq!(u128::from(actual), bytes),
+                Err(MalformedError::IntegerOverflow) => {
+                    assert!(bytes > usize::MAX as u128 || bytes > u128::from(u64::MAX));
+                }
+                other => panic!("unexpected allocation arithmetic: {other:?}"),
+            }
+            assert_eq!(allocation_size::<()>(count).unwrap(), 0);
+        }
+    }
+
+    #[test]
+    fn raw_profile_and_retention_metadata_rejects_inconsistent_tags_and_frames() {
+        let mut global = reference_validation_segment(1, &[], 1);
+        global.header.segment_type = SegmentType::Profiles;
+        global.data = ParsedData::Other;
+        assert!(matches!(
+            validate_profiles(&[global]),
+            Err(DecodeError::Malformed(
+                MalformedError::InvalidProfilesSegment(1)
+            ))
+        ));
+        let mut page = reference_validation_segment(2, &[], 1);
+        page.header.segment_type = SegmentType::Profiles;
+        page.header.page_association = 1;
+        let mut profiles = Vec::new();
+        assert!(matches!(
+            validate_page_profiles(&[page], 0, &[17], &mut profiles),
+            Err(DecodeError::Malformed(
+                MalformedError::InvalidProfilesSegment(2)
+            ))
+        ));
+        assert_eq!(profiles, vec![(1, 2)]);
+        for number in [0, 1, u32::MAX] {
+            for retained in [false, true] {
+                for last in [number.saturating_sub(1), number, number.saturating_add(1)] {
+                    let mut segment = reference_validation_segment(number, &[], u8::from(retained));
+                    let before = segment.header.clone();
+                    let result =
+                        validate_retention_flags(std::slice::from_ref(&segment), &[(number, last)]);
+                    if retained && last > number {
+                        result.unwrap();
+                    } else {
+                        assert!(matches!(result, Err(DecodeError::Malformed(
+                            MalformedError::InvalidRetentionFlags { segment: owner, referred }
+                        )) if owner == number && referred == number));
+                    }
+                    assert_eq!(segment.header, before);
+                    segment.header.retention_flags.values.clear();
+                    assert!(matches!(validate_retention_flags(&[segment], &[]),
+                        Err(DecodeError::Malformed(MalformedError::InvalidRetentionFlags {
+                            segment: owner, referred,
+                        })) if owner == number && referred == number));
+                }
+            }
+        }
+    }
+
     fn quota_view(
         result: Result<(), DecodeError>,
     ) -> Result<Option<LimitExceeded>, MalformedError> {

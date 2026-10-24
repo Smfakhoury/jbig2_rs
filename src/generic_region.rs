@@ -7294,6 +7294,274 @@ mod tests {
     }
 
     #[test]
+    fn raw_template_slots_preserve_offsets_planes_and_context_sizes() {
+        for x in [i32::MIN, -1, 0, 1, i32::MAX] {
+            for y in [i32::MIN, -1, 0, 1, i32::MAX] {
+                let generic = generic_slot(x, y);
+                assert_eq!(generic.nominal, TemplateOffset { x, y });
+                assert_eq!(generic.adaptive, None);
+                let target = target_slot(x, y);
+                assert!(matches!(target.plane, RefinementPlane::Target));
+                assert_eq!(target.nominal, TemplateOffset { x, y });
+                assert_eq!(target.adaptive, None);
+                let reference = reference_slot(x, y);
+                assert!(matches!(reference.plane, RefinementPlane::Reference));
+                assert_eq!(reference.nominal, TemplateOffset { x, y });
+                assert_eq!(reference.adaptive, None);
+                for number in [0, 1, 2, u8::MAX] {
+                    let generic = generic_at(x, y, number);
+                    assert_eq!(generic.nominal, TemplateOffset { x, y });
+                    assert_eq!(generic.adaptive, Some(number));
+                    let target = target_at(x, y, number);
+                    assert!(matches!(target.plane, RefinementPlane::Target));
+                    assert_eq!(target.nominal, TemplateOffset { x, y });
+                    assert_eq!(target.adaptive, Some(number));
+                    let reference = reference_at(x, y, number);
+                    assert!(matches!(reference.plane, RefinementPlane::Reference));
+                    assert_eq!(reference.nominal, TemplateOffset { x, y });
+                    assert_eq!(reference.adaptive, Some(number));
+                }
+            }
+        }
+        for (template, bits, sltp) in [
+            (GenericTemplate::Template0, 16, 0x9b25),
+            (GenericTemplate::Template1, 13, 0x0795),
+            (GenericTemplate::Template2, 10, 0x00e5),
+            (GenericTemplate::Template3, 10, 0x0195),
+        ] {
+            assert_eq!(template.context_bits(), bits);
+            assert_eq!(template.sltp_context(), sltp);
+        }
+        for (template, bits, sltp) in [
+            (RefinementTemplate::Template0, 13, 0x10),
+            (RefinementTemplate::Template1, 10, 0x08),
+        ] {
+            assert_eq!(template.context_bits(), bits);
+            assert_eq!(template.sltp_context(), sltp);
+        }
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn raw_refinement_snapshots_preserve_all_states_and_failure_frames() {
+        let limits = Limits::default();
+        for (template, count, code) in [
+            (RefinementTemplate::Template0, 8192, 0),
+            (RefinementTemplate::Template1, 1024, 1),
+        ] {
+            let mut source = RefinementContexts::new(template, &limits).unwrap();
+            for (index, context) in source.contexts.iter_mut().enumerate() {
+                *context = ArithmeticContext::from_state(
+                    u8::try_from(index % 47).unwrap(),
+                    u8::try_from((index / 47) % 2).unwrap(),
+                )
+                .unwrap();
+            }
+            let bytes = u64::try_from(count).unwrap() * 2;
+            let exact = Limits {
+                max_retained_state_bytes: bytes,
+                max_decoder_managed_memory_bytes: bytes * 2,
+                ..limits
+            };
+            let snapshot = source.try_snapshot(&exact).unwrap();
+            assert_eq!(snapshot.contexts, source.contexts);
+            assert_ne!(snapshot.contexts.as_ptr(), source.contexts.as_ptr());
+            source.reset().unwrap();
+            assert!(source
+                .contexts
+                .iter()
+                .all(|c| *c == ArithmeticContext::new()));
+            source.restore(&snapshot, &exact).unwrap();
+            assert_eq!(source.contexts, snapshot.contexts);
+            assert_eq!(source.storage_bytes, bytes);
+            for target_template in [RefinementTemplate::Template0, RefinementTemplate::Template1] {
+                let mut target = RefinementContexts::new(target_template, &limits).unwrap();
+                target
+                    .contexts
+                    .fill(ArithmeticContext::from_state(46, 1).unwrap());
+                let before = target.contexts.clone();
+                let result = target.restore(&snapshot, &exact);
+                if target_template == template {
+                    result.unwrap();
+                    assert_eq!(target.contexts, snapshot.contexts);
+                } else {
+                    assert!(
+                        matches!(result, Err(GenericRegionError::InvalidFlags(c)) if c == code)
+                    );
+                    assert_eq!(target.contexts, before);
+                }
+            }
+            for (limited, kind, limit, actual) in [
+                (
+                    Limits {
+                        max_retained_state_bytes: bytes - 1,
+                        ..exact
+                    },
+                    LimitKind::RetainedState,
+                    bytes - 1,
+                    bytes,
+                ),
+                (
+                    Limits {
+                        max_decoder_managed_memory_bytes: bytes * 2 - 1,
+                        ..exact
+                    },
+                    LimitKind::Memory,
+                    bytes * 2 - 1,
+                    bytes * 2,
+                ),
+            ] {
+                let before = source.contexts.clone();
+                assert_raw_guard_result(
+                    source.try_snapshot(&limited).map(|_| ()),
+                    Err(Some(LimitExceeded {
+                        kind,
+                        limit,
+                        actual,
+                    })),
+                );
+                assert_raw_guard_result(
+                    source.restore(&snapshot, &limited),
+                    Err(Some(LimitExceeded {
+                        kind,
+                        limit,
+                        actual,
+                    })),
+                );
+                assert_eq!(source.contexts, before);
+            }
+            source.contexts.pop();
+            let before = source.contexts.clone();
+            assert!(matches!(source.restore(&snapshot, &exact),
+                Err(GenericRegionError::ContextIndex { index, count: actual })
+                    if index == count && actual == count - 1));
+            assert_eq!(source.contexts, before);
+            let mut invalid = RefinementContexts::new(template, &limits)
+                .unwrap()
+                .try_snapshot(&limits)
+                .unwrap();
+            invalid.contexts.pop();
+            assert!(matches!(source.restore(&invalid, &exact),
+                Err(GenericRegionError::ContextIndex { index, count: actual })
+                    if index == count && actual == count - 1));
+            assert_eq!(source.contexts, before);
+        }
+        let mut generic = GenericContexts::new(GenericTemplate::Template3, false, &limits).unwrap();
+        let snapshot = generic.try_snapshot(&limits).unwrap();
+        generic.contexts.pop();
+        let before = generic.contexts.clone();
+        assert!(matches!(
+            generic.restore(&snapshot, &limits),
+            Err(GenericRegionError::ContextIndex {
+                index: 1024,
+                count: 1023
+            })
+        ));
+        assert_eq!(generic.contexts, before);
+    }
+
+    #[test]
+    fn raw_context_descriptors_match_literal_sampling_and_history_masks() {
+        let pixels = [
+            [true, false, true, true, false, false, true, false, true],
+            [false, true, false, false, true, true, false, true, false],
+            [true, true, false, true, false, true, true, false, false],
+            [false, false, true, false, true, false, false, true, true],
+        ];
+        let mut bitmap = Bitmap::blank(9, 4, &Limits::default()).unwrap();
+        for (y, row) in pixels.iter().enumerate() {
+            for (x, value) in row.iter().enumerate() {
+                bitmap
+                    .set_pixel(u32::try_from(x).unwrap(), u32::try_from(y).unwrap(), *value)
+                    .unwrap();
+            }
+        }
+        let offset = TemplateOffset::new(-5, -3);
+        for (descriptor, top, previous, adaptive, history_bits) in [
+            (
+                GenericContextDescriptor::NominalTemplate0,
+                (-2, 5),
+                (-3, 7),
+                false,
+                4,
+            ),
+            (
+                GenericContextDescriptor::NominalTemplate1,
+                (-1, 4),
+                (-2, 6),
+                false,
+                3,
+            ),
+            (
+                GenericContextDescriptor::NominalTemplate2,
+                (-1, 3),
+                (-2, 5),
+                false,
+                2,
+            ),
+            (
+                GenericContextDescriptor::NominalTemplate3,
+                (0, 0),
+                (-3, 6),
+                false,
+                4,
+            ),
+            (
+                GenericContextDescriptor::Template1(offset),
+                (-1, 4),
+                (-2, 5),
+                true,
+                3,
+            ),
+            (
+                GenericContextDescriptor::Template2(offset),
+                (-1, 3),
+                (-2, 4),
+                true,
+                2,
+            ),
+            (
+                GenericContextDescriptor::Template3(offset),
+                (0, 0),
+                (-3, 5),
+                true,
+                4,
+            ),
+        ] {
+            for y in 0..6 {
+                for x in 0..12 {
+                    for history in [0, 1, 0x55, usize::MAX] {
+                        let mut expected = 0;
+                        for (row_delta, (left, count)) in [(-2, top), (-1, previous)] {
+                            for column_delta in left..left + count {
+                                let px = i64::from(x) + column_delta;
+                                let py = i64::from(y) + row_delta;
+                                let value = (0..9).contains(&px)
+                                    && (0..4).contains(&py)
+                                    && pixels[usize::try_from(py).unwrap()]
+                                        [usize::try_from(px).unwrap()];
+                                expected = (expected << 1) | usize::from(value);
+                            }
+                        }
+                        if adaptive {
+                            let px = i64::from(x) - 5;
+                            let py = i64::from(y) - 3;
+                            let value = (0..9).contains(&px)
+                                && (0..4).contains(&py)
+                                && pixels[usize::try_from(py).unwrap()]
+                                    [usize::try_from(px).unwrap()];
+                            expected = (expected << 1) | usize::from(value);
+                        }
+                        expected =
+                            (expected << history_bits) | (history & ((1 << history_bits) - 1));
+                        assert_eq!(descriptor.context(&bitmap, x, y, history), expected);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     #[allow(clippy::too_many_lines)]
     fn generic_snapshots_copy_all_states_and_preserve_rejected_targets() {
         let limits = Limits::default();

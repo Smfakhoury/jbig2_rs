@@ -5,6 +5,38 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The current raw context/raster/metadata tranche adds 18 controls without changing
+any of the 658 production bodies, attributes, preconditions or postconditions.
+Proved models and reviewed boundaries are unchanged. New cases cover raw slot
+constructors and context sampling/history masks, complete refinement snapshots
+and rejected restore frames, wide bit-serial Huffman arithmetic, resource lookup/
+duplicate/reference retention order, page collector/structural-work quotas,
+profile and diagnostic trait routes, raw halftone slicing/peaks/clipping, and
+every header-only generic direct-dispatch gate. The latter uses metadata only:
+no raster entropy or generated encoded-family fixture is introduced.
+
+Actual preliminary pinned coverage now meets BOTH protected numerical goals:
+11383/12639 runtime lines (90.0625%), 10967/12948 regions (84.7003%) and
+2245/2640 branch outcomes (85.0379%). Against accepted #85 this adds 187 covered
+lines, 207 regions and 62 outcomes. Every denominator, exclusion, floor and
+threshold is unchanged. This closes the numerical 90% line/85% branch gap,
+not P06's broader acceptance or the semantic/normative review gates.
+All new raw controls and strict lint/format checks pass. Nine native regression
+mutations are configured, preserving the previous 67; full actual immutable
+execution and source-bound proof/evidence are required before publication.
+Seven executable catalog entries bring the total to 74 cases/126 unique tests.
+No CI job, shard, timeout, pin, release setting or trust declaration is changed.
+The same 27 semantic groups/204 contrasts, six one-worker shards, max four active
+and 22 hosted checks remain required before readiness.
+
+The owner merged #85 into main at 24de9bd after its actual 22 checks and
+independent hosted reconstruction passed. The current tranche targets main,
+not a detached former parent branch. P04/P05/P06 remain incomplete; all 266
+selected records remain provisional at 123 functional/117 state/26 safety.
+The seven official-positive cases, complete codec/caller/resource semantics,
+exhaustive decomposition/independent review, capacity authorization and paused
+encoded refinement/aggregation/custom-Huffman fixture decisions remain open.
+
 The current raw symbol/table metadata tranche adds ten independent controls
 without changing any of the 658 production functions, their attributes,
 preconditions, postconditions or reviewed boundaries. Every dictionary flag
