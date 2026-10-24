@@ -15,12 +15,20 @@ Proof-only bridges are separate from the normative-facing model, which is
 explicitly unfolded only at the parser return. All native operations and prior
 preconditions are preserved.
 
-Actual unfiltered whole verification and compiled production library pass
-1219/0. All ten real compiling field/content regressions are rejected strongly
+Actual immutable 81dbe33 unfiltered whole verification and compiled production
+library pass 1219/0. All ten real compiling field/content regressions are rejected strongly
 and accepted when only the new public result relation is removed, preserving
 old reader bounds/bytes/progress and exact private helper guarantees. A new raw
 metadata oracle checks 10,680 nonzero-cursor headers and their untouched suffix;
-all 19 existing/new header tests and strict native lint pass. No encoded raster,
+all 463 native tests pass with 14 existing ignored microbenchmarks. All 86
+actual native mutants compile and are detected, reusing the ten semantic
+regressions. All 395 tooling tests, strict lint/format, isolated MSRV 1.88
+package/exact downstream output and source-bound discovery/provenance/workflow/
+both normative-document hash gates pass. Existing approved official normal/
+logging/native/Hayro observations were freshly executed on 81dbe33 and remain
+2 passed/7 unresolved/1 unsupported, with zero restored rejection credit.
+The diagnostic edits are byte-identical; only ghost-context lines changed.
+No encoded raster,
 refinement, aggregation or custom-Huffman fixture is added.
 
 Nine existing P04 records gain parser correspondence, with no extra selected
@@ -36,8 +44,10 @@ Whole groups are rebalanced using the latest independently accepted #86 group
 timings plus 10% scheduling headroom and the new complete 252.722-second local
 header run plus 10%; the maximum estimate stays996seconds below the existing
 1000-second ceiling. These estimates are not current-head hosted acceptance.
-Source-bound immutable reruns and all actual hosted guards remain required
-before this tranche is marked ready.
+Immutable reruns are complete; all actual current-head hosted guards remain
+required before this tranche is marked ready. Numerical coverage remains
+11383/12639 lines (90.0625%) and 2245/2640 outcomes (85.0379%), with unchanged
+denominators, floors, thresholds and exclusions.
 
 PR86's first hosted coverage run measured the same passing 90.0625% line/
 85.0379% branch ratios, but the mutation step exceeded the existing 15-minute
