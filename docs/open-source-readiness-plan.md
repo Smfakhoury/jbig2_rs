@@ -5,7 +5,46 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
-The current raw-state tranche fixes a reproduced **zero-width unaligned row
+The current placement/resource tranche strengthens six existing executing
+interfaces without changing their ordinary Rust operations or preconditions.
+Compiler-expanded native Rust exactly matches accepted#83source616b177,
+including runtime attributes and literal values. Work/bitmap charges now prove
+both acceptance and exact counter effects: representable attempted charges
+remain recorded on limit rejection, while dimension/overflow failures preserve
+the primary counter. Dimension checks and text initialization have bidirectional
+acceptance; initialization also gives exact checked strip scaling. Current
+placement now forbids arbitrary valid-input rejection under its explicit
+coordinate/count/work domain. Clipping preflight gives exact intersection
+geometry, selected source contents, counter effects and Some/None acceptance.
+Error payload identities, full partial-error state, prior entropy deltas and
+general rendering pixels/order remain separate claims.
+
+Ten new raw controls include216work,8640bitmap-budget,22464clipping,
+153compatibility,140independent batch-pixel,324initialization,2500strip-update
+and125440current-placement cases, plus exact ordering/error frames. No paused
+encoded-family fixture or local standard declaration is introduced. Genuine
+unfiltered Cargo proof and actual library compilation pass1219/0;434native
+tests/14existing ignored pass. All59native mutants compile and are detected.
+The affected text group passes11real strong/weaker contrasts, preserving old4
+and adding7counter/geometry/valid-acceptance regressions. Full configured
+profile is27groups/204contrasts, not inferred full local/hosted execution.
+Two checker-pair swaps (text-batch/integer-state and reader-error/bitmap-compose)
+retain the maximum1000-second estimate ceiling, maximum996; six one-worker
+shards,max4active,20-minute caps and22checks stay unchanged.
+
+Actual pinned coverage is11012/12639lines(87.1271%),
+10617/12948regions(81.9972%),2124/2640outcomes(80.4545%). Relative to accepted#83,
+22lines34regions14outcomes gain coverage with unchanged denominators/floors/
+exclusions. Protected90%line/85%branch goals still require364covered lines and
+120outcomes. The selected coordinate row gains current-state acceptance evidence
+but stays functional/provisional; all266remain123functional117state26safety,
+not an exhaustive denominator or independent normative approval. Actual
+immutable-source official normal/logged/native/Hayro observations remain
+2passed/7unresolved/1unsupported,zero restoredcredit; current-head hosted
+acceptance remains separately required. Capacity, fixture, conformance and broader
+caller/resource/semantic gaps remain open; P04/P05/P06 are not complete.
+
+The preceding ready-for-owner-review#83 raw-state tranche fixes a reproduced **zero-width unaligned row
 blit** error. The minimal regression actually fails with IntegerOverflow on
 unchanged parent production code, then passes with a width-zero no-op guard.
 The same executing helper now proves success and exact storage preservation

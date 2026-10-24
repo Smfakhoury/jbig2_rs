@@ -102,6 +102,48 @@
       ]
     },
     {
+      "id": "META-RAW-PLACEMENT-PREFLIGHT",
+      "transformation": "vary signed origins, empty/nonempty raw bitmaps and resource-counter limits",
+      "invariant": "wide rectangle intersections determine exact source/destination geometry and work; bounded-coordinate errors and attempted-charge states match independently computed expectations",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::placement_preflight_matches_wide_geometry_and_resource_failure_frames"}
+      ]
+    },
+    {
+      "id": "META-TEXT-BATCH-GROUPING-ORDER",
+      "transformation": "vary compatible grouping, modulo alignment, capacity boundaries, overlapping blits, operators and empty spans",
+      "invariant": "rejected groups preserve state; flush matches independent ordered bit truths, clears pending entries and preserves source/padding bytes",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::placement_batch_compatibility_uses_group_geometry_modulo_alignment_and_cap"},
+        {"target": "lib", "name": "symbol_text::tests::placement_batch_flush_matches_independent_bit_truths_and_preserves_sources"}
+      ]
+    },
+    {
+      "id": "META-TEXT-INITIAL-SCALING",
+      "transformation": "vary raw initial strip values, valid strip sizes, declared counts and work limits",
+      "invariant": "wide checked intermediate scaling and negation determine exact initialization and error priority",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::text_state_initialization_matches_wide_checked_scaling_and_work_priority"}
+      ]
+    },
+    {
+      "id": "META-TEXT-STRIP-PROGRESS",
+      "transformation": "vary raw strip deltas, numeric boundaries and legal/illegal operation ordering",
+      "invariant": "exact success and partial-error state/counter effects remain stable without resetting attempted charges",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::begin_strip_preserves_exact_partial_updates_on_checked_arithmetic_errors"},
+        {"target": "lib", "name": "symbol_text::tests::text_strip_order_guards_preserve_their_exact_state_and_charge_frames"}
+      ]
+    },
+    {
+      "id": "META-TEXT-CURRENT-PLACEMENT",
+      "transformation": "vary raw strip/reference-corner metadata, transposition, extents, within-strip coordinates and resource limits",
+      "invariant": "independent wide-coordinate arithmetic agrees on accepted placements and exact partial failure frames",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::current_text_placement_matches_wide_coordinates_and_partial_failure_state"}
+      ]
+    },
+    {
       "id": "META-ROW-BATCH-ORDERED-BITS",
       "transformation": "vary row-blit alignment, widths around byte/word boundaries, overlap order, operators and empty spans",
       "invariant": "all bytes match independent ordered bit updates, source bytes remain unchanged and zero-area requests are successful no-ops",

@@ -16,7 +16,7 @@ from rust_tests import test_inventory as inventory_tests
 class ContractMutationTests(unittest.TestCase):
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
-        self.assertEqual(len(identifiers), 52)
+        self.assertEqual(len(identifiers), 59)
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):
@@ -40,6 +40,16 @@ class ContractMutationTests(unittest.TestCase):
             with self.subTest(source=source), self.assertRaisesRegex(ValueError, "missing or ambiguous"):
                 mutate(source, mutation)
 
+    def test_whitespace_flexible_sites_still_fail_closed(self):
+        mutation = {
+            "id": "flexible-example", "before": "before site", "after": "after",
+            "whitespace_flexible": True,
+        }
+        self.assertEqual(mutate("before\n    site", mutation), "after")
+        for source in ("", "before site before\nsite"):
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                mutate(source, mutation)
+
     def test_mutation_filters_name_real_nonignored_tests(self):
         tests = inventory_tests(TOOLS.parent)
         for mutation in MUTATIONS:
@@ -60,7 +70,7 @@ class ContractMutationTests(unittest.TestCase):
                     identity = (reference["target"], reference["name"])
                     self.assertIn(identity, tests, case["id"])
                     self.assertFalse(tests[identity]["ignored"], case["id"])
-        self.assertEqual(structured, 56)
+        self.assertEqual(structured, 63)
 
 
 if __name__ == "__main__":

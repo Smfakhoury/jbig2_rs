@@ -11,10 +11,29 @@ import tempfile
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
+from check_text_batch_proofs import CASES as TEXT_CASES
+from proof_sensitivity import replace_once
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MUTATIONS = (
+TEXT_RUNTIME_TESTS = {
+    "rejected_work_charge_is_silently_rolled_back": "work_charges_match_wide_results_and_attempted_charge_failure_state",
+    "rejected_bitmap_charge_is_silently_rolled_back": "bitmap_charges_match_wide_priority_and_attempted_charge_failure_state",
+    "valid_empty_dimensions_are_rejected": "bitmap_charges_match_wide_priority_and_attempted_charge_failure_state",
+    "preflight_selects_wrong_in_bounds_source_column": "placement_preflight_matches_wide_geometry_and_resource_failure_frames",
+    "preflight_rejects_valid_origin": "placement_preflight_matches_wide_geometry_and_resource_failure_frames",
+    "initialization_rejects_valid_zero_instances": "text_state_initialization_matches_wide_checked_scaling_and_work_priority",
+    "current_placement_rejects_valid_single_pixel": "current_text_placement_matches_wide_coordinates_and_partial_failure_state",
+}
+MUTATIONS = tuple(
+    {
+        "id": "text-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": "symbol_text::tests::" + TEXT_RUNTIME_TESTS[case["id"]],
+        "whitespace_flexible": True,
+    }
+    for case in TEXT_CASES if case["id"] in TEXT_RUNTIME_TESTS
+) + (
     {
         "id": "empty-unaligned-row-blit-rejected",
         "file": "src/bitmap.rs",
@@ -552,6 +571,8 @@ MUTATIONS = (
 
 
 def mutate(source: str, mutation: dict) -> str:
+    if mutation.get("whitespace_flexible", False):
+        return replace_once(source, mutation["before"], mutation["after"])
     if source.count(mutation["before"]) != 1:
         raise ValueError(f"mutation site is missing or ambiguous: {mutation['id']}")
     return source.replace(mutation["before"], mutation["after"], 1)
