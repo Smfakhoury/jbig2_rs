@@ -43,7 +43,8 @@
         "A.1-A.3; Figure A.1; Table A.1",
         "E.2.5; Table E.1 (decoder-shared estimator rules only)",
         "E.3-E.3.5; Figures E.13-E.20",
-        "7.4.4.1.1-7.4.4.1.4; 7.4.5.1.1-7.4.5.1.3.2; Figures 41-46 (selected header fields, locally consulted 2026-10-23)"
+        "7.4.4.1.1-7.4.4.1.4; 7.4.5.1.1-7.4.5.1.3.2; Figures 41-46 (selected header fields, locally consulted 2026-10-23)",
+        "7.2.3-7.2.7 (selected raw header/window correspondence, locally consulted 2026-10-24)"
       ]
     },
     {
@@ -76,7 +77,7 @@
         "T88-SEGMENT-UNKNOWN-LENGTH"
       ],
       "remaining_scope": [
-        "Complete segment syntax, payload dispatch and decoder-wide normative enumeration remain open; selected helper contracts do not prove parser output fields."
+        "Successful raw header fields and byte extent are now composed through the parser. Complete segment/payload dispatch, valid-input and typed-error/resource semantics, container/caller composition and independently reviewed exhaustive normative enumeration remain open."
       ]
     },
     {
@@ -646,7 +647,7 @@
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/mmr.rs": "9c65c21afeb76ee1014f50ed8e03d9bfc8fb129a309d254cfc45089fcba128cc",
     "proofs/production_impl/readers.rs": "26b53a1efab0a41d1ea7311914d4325b76d1aacfd2e285781f473fcdac8660c8",
-    "proofs/production_impl/segment_header.rs": "46b966c90fba394c01a7ebb35198f45038d9664d58a99f33e7100ead0d6bc73c",
+    "proofs/production_impl/segment_header.rs": "04be2cd14f69e45b3f1d297da7b08ce3e4951b411b4d2553e51b340bd613def8",
     "proofs/production_impl/symbol_text.rs": "8668f869c5c1ede704ca751406ad7cbc94146db43aa2c8cd507ac25a0f09ce84",
     "proofs/spec_properties/arithmetic.rs": "3c4c535a7b942ef8bf232502d290bb42b08bc6bd9275671f04802c205b8552d2",
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
@@ -660,7 +661,7 @@
     "specs/mmr.rs": "3ec0ed58d02fef9cb56b8e692b478c1a0770be576353aaf77eb72fa07bd49402",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
-    "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
+    "specs/segments.rs": "939fe5f2d5c8d30792bc8ea456613ad109630fd6b1b59ad6300d22fd0e2a6831",
     "specs/symbol_text.rs": "180372b5ab9cc251dff8c2234021ce6e64fa3ae4eaea48677e2bc90c3eac4ef5",
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
@@ -674,7 +675,7 @@
     "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
-    "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
+    "src/segment_header.rs": "43d615759d2c2d1043952dbe145e74ccb260e6b15232593f58ba4087b7492e39",
     "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
@@ -2144,6 +2145,46 @@
       ],
       "name": "bits_limit",
       "role": "Internal prefix bound used with the independently verified bound/monotonicity lemmas in this source-bound proof-support file; not a normative model or independent standards theorem."
+    },
+    "segment-header-fields": {
+      "kind": "spec",
+      "file": "specs/segments.rs",
+      "module_path": [
+        "spec",
+        "segments"
+      ],
+      "name": "segment_header_fields",
+      "role": "exact accepted raw header fields, reference/retention contents and relative byte extent"
+    },
+    "segment-referred-header-fields": {
+      "kind": "spec",
+      "file": "specs/segments.rs",
+      "module_path": [
+        "spec",
+        "segments"
+      ],
+      "name": "referred_header_fields",
+      "role": "raw short/long count and flag windows, exact reference values and field extent"
+    },
+    "segment-header-field-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/segment_header.rs",
+      "module_path": [
+        "segment_header",
+        "segment_header_proofs"
+      ],
+      "name": "production_segment_header_fields",
+      "role": "unfold the exact accepted header relation at the native return; no assumption"
+    },
+    "segment-reference-field-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/segment_header.rs",
+      "module_path": [
+        "segment_header",
+        "segment_header_proofs"
+      ],
+      "name": "production_segment_reference_fields",
+      "role": "prove raw count/retention window and reference-prefix composition"
     }
   },
   "requirements": [
@@ -5224,26 +5265,35 @@
       "title": "Classify recognized segment type numbers using the project type mapping",
       "feature": "decoder",
       "runtime": [
-        "segment_header::SegmentType::from_number"
+        "segment_header::SegmentType::from_number",
+        "segment_header::parse_segment_header"
       ],
       "models": [
-        "segment-type"
+        "segment-type",
+        "segment-header-fields"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "segment-header-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "segment_header::tests::every_flag_byte_has_exact_type_page_and_deferred_fields"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The helper accepts exactly the entries in the local segment_type model; it does not establish that the parser extracts the low six flag bits.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "The local number-to-variant mapping needs independent review against 7.3; helper input is already an extracted number."
       ],
       "gaps": [
-        "Prove extraction and caller propagation and review the complete type mapping and reserved-type policy."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -5252,6 +5302,13 @@
           "tokens": [
             "crate::spec::segments::segment_type(number) == Some(segment_type)",
             "Err(_) => crate::spec::segments::segment_type(number).is_none()"
+          ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
           ]
         }
       ],
@@ -5266,24 +5323,41 @@
       "runtime": [
         "segment_header::parse_segment_header"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "segment-header-fields"
+      ],
+      "proof_macros": [
+        "segment-header-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "segment_header::tests::every_flag_byte_has_exact_type_page_and_deferred_fields"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The parser preserves reader bytes, bounds and successful progress, but does not promise exact returned flag fields.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "The all-flag-byte regression observes field extraction; deferred retention lifecycle meaning is a separate obligation."
       ],
       "gaps": [
-        "Add exact parsed flag-field postconditions and caller linkage; attached-extension and deferred-release semantics remain open under retention_flags."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -5293,26 +5367,35 @@
       "title": "Read short or four-byte page associations according to the selected field size",
       "feature": "decoder",
       "runtime": [
-        "segment_header::read_page_association"
+        "segment_header::read_page_association",
+        "segment_header::parse_segment_header"
       ],
       "models": [
-        "segment-be-u32"
+        "segment-be-u32",
+        "segment-header-fields"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "segment-header-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "segment_header::tests::every_flag_byte_has_exact_type_page_and_deferred_fields"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful reads return the exact one-byte or big-endian four-byte value and advance by the selected size; failure preserves reader position.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "The caller supplies the correct long-field Boolean and a valid reader; helper correctness does not prove that flag extraction."
       ],
       "gaps": [
-        "Prove parser field propagation and separately decompose zero/global association, page numbering and cross-page reference rules."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -5326,6 +5409,13 @@
             "value == old(reader).bytes@[old(reader).position as int] as u32",
             "Err(_) => final(reader).position == old(reader).position"
           ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
+          ]
         }
       ],
       "invariant_evidence": []
@@ -5337,24 +5427,34 @@
       "title": "Preserve an ordinary segment data length as its known byte count",
       "feature": "decoder",
       "runtime": [
-        "segment_header::decode_data_length"
+        "segment_header::decode_data_length",
+        "segment_header::parse_segment_header"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "segment-header-fields"
+      ],
+      "proof_macros": [
+        "segment-header-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "segment_header::tests::count_and_length_boundaries_preserve_exact_error_values"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "A successful Some length equals the supplied non-sentinel encoded value; other branches constrain the sentinel/type case.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "The helper receives an already decoded 32-bit field; the contract is branch-conditional, not a complete acceptance theorem."
       ],
       "gaps": [
-        "Prove field extraction, successful acceptance of every ordinary value and exact payload slicing or truncation behavior."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -5363,6 +5463,13 @@
           "tokens": [
             "Some(value) => encoded != 0xffff_ffffu32 && value == encoded",
             "Err(_) => encoded == 0xffff_ffffu32 && segment_type != SegmentType::ImmediateGenericRegion"
+          ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
           ]
         }
       ],
@@ -5375,24 +5482,34 @@
       "title": "Restrict the unknown-length sentinel to the immediate generic region type",
       "feature": "decoder",
       "runtime": [
-        "segment_header::decode_data_length"
+        "segment_header::decode_data_length",
+        "segment_header::parse_segment_header"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "segment-header-fields"
+      ],
+      "proof_macros": [
+        "segment-header-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "segment_header::tests::accepts_unknown_length_only_for_immediate_generic_regions"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "A successful None result requires the sentinel and ImmediateGenericRegion; any error requires the sentinel with a different type.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "This record concerns the header helper only, not discovery of the true body length."
       ],
       "gaps": [
-        "Prove raw field-to-helper propagation and complete acceptance; decompose arithmetic/MMR terminator detection and row-count validation separately."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -5401,6 +5518,13 @@
           "tokens": [
             "None => encoded == 0xffff_ffffu32 && segment_type == SegmentType::ImmediateGenericRegion",
             "Err(_) => encoded == 0xffff_ffffu32 && segment_type != SegmentType::ImmediateGenericRegion"
+          ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
           ]
         }
       ],
@@ -6153,13 +6277,21 @@
       "runtime": [
         "segment_header::read_retention_flag",
         "segment_header::fill_retention_values",
-        "segment_header::RetentionFlags::from_bytes"
+        "segment_header::RetentionFlags::from_bytes",
+        "segment_header::parse_segment_header",
+        "segment_header::parse_referred_segments",
+        "segment_header::read_referred_segments_into"
       ],
       "models": [
         "retention-wire-bit",
-        "retention-values-match"
+        "retention-values-match",
+        "segment-header-fields",
+        "segment-referred-header-fields"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "segment-header-field-proof",
+        "segment-reference-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
@@ -6176,18 +6308,23 @@
         {
           "target": "lib",
           "name": "segment_header::tests::parses_long_form_header"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Given supplied flag bytes, successful construction produces exactly count+1 entries and every entry equals the forward wire-bit model. The private append helper starts empty and preserves the relation for every completed entry.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "Interpretation follows the explicit 7.2.4 field definitions. The reversed 7.2.8 worked example conflicts; owner normative adjudication is pending.",
         "The verified constructor discharges the private materializer's empty-vector precondition."
       ],
       "gaps": [
-        "Complete the raw header-window/field-slice correspondence contract through the parser.",
-        "Review the worked-example discrepancy and complete retention lifecycle/caller obligations; helper equality is not full retention-policy conformance."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle.",
+        "The 7.2.4 versus 7.2.8 worked-example discrepancy still requires owner adjudication; no interpretation change or conformance credit is introduced."
       ],
       "functional_evidence": [
         {
@@ -6212,6 +6349,13 @@
             "flags.values@.len() == count as nat + 1",
             "crate::spec::segments::retention_values_match(flags.values@, bytes@)"
           ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
+          ]
         }
       ],
       "invariant_evidence": []
@@ -6224,13 +6368,21 @@
       "feature": "retention_flags",
       "runtime": [
         "segment_header::validate_short_count",
-        "segment_header::validate_unused_retention_bits"
+        "segment_header::validate_unused_retention_bits",
+        "segment_header::parse_segment_header",
+        "segment_header::parse_referred_segments",
+        "segment_header::read_referred_segments_into"
       ],
       "models": [
         "short-count-valid",
-        "retention-unused-zero"
+        "retention-unused-zero",
+        "segment-header-fields",
+        "segment-referred-header-fields"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "segment-header-field-proof",
+        "segment-reference-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
@@ -6243,17 +6395,23 @@
         {
           "target": "lib",
           "name": "segment_header::tests::unused_long_retention_bits_validate_only_the_last_byte"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The short-form guard and long-form final-byte guard accept exactly their field-validity models. Long-form byte ordering follows 7.2.4, not the conflicting worked example.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "Long-form byte count and supplied field boundaries remain caller obligations.",
         "The 7.2.4 versus 7.2.8 inconsistency is explicit and not resolved by a dual-order heuristic."
       ],
       "gaps": [
-        "Owner normative/model review and complete parser/caller correspondence remain pending."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle.",
+        "The 7.2.4 versus 7.2.8 worked-example discrepancy still requires owner adjudication; no interpretation change or conformance credit is introduced."
       ],
       "functional_evidence": [
         {
@@ -6271,6 +6429,13 @@
             "Ok(()) => crate::spec::segments::unused_retention_bits_zero(bit_count, bytes@)",
             "Err(_) => !crate::spec::segments::unused_retention_bits_zero(bit_count, bytes@)"
           ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
+          ]
         }
       ],
       "invariant_evidence": []
@@ -6282,13 +6447,20 @@
       "title": "Reference-number width follows inclusive segment-number boundaries",
       "feature": "referred_to_segment_handling",
       "runtime": [
-        "segment_header::reference_width"
+        "segment_header::reference_width",
+        "segment_header::parse_segment_header",
+        "segment_header::parse_referred_segments",
+        "segment_header::read_referred_segments_into"
       ],
       "models": [
-        "reference-width"
+        "reference-width",
+        "segment-header-fields",
+        "segment-referred-header-fields"
       ],
       "proof_macros": [
-        "reference-width-facts"
+        "reference-width-facts",
+        "segment-header-field-proof",
+        "segment-reference-field-proof"
       ],
       "tests": [
         {
@@ -6298,16 +6470,21 @@
         {
           "target": "lib",
           "name": "segment_header::tests::every_generated_header_prefix_is_a_typed_truncation"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The helper returns the one/two/four-byte model at the 256 and 65536 inclusive boundaries.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "The model is a provisional translation of the field definition, not a complete parser proof."
       ],
       "gaps": [
-        "Propagate width selection through raw field-consumption contracts and complete normative review."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -6315,6 +6492,13 @@
           "section": "ensures",
           "tokens": [
             "out == crate::spec::segments::reference_width(segment_number)"
+          ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
           ]
         }
       ],
@@ -6327,10 +6511,19 @@
       "title": "A reference names a strictly lower-numbered segment",
       "feature": "referred_to_segment_handling",
       "runtime": [
-        "segment_header::require_lower_reference"
+        "segment_header::require_lower_reference",
+        "segment_header::parse_segment_header",
+        "segment_header::parse_referred_segments",
+        "segment_header::read_referred_segments_into"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "segment-header-fields",
+        "segment-referred-header-fields"
+      ],
+      "proof_macros": [
+        "segment-header-field-proof",
+        "segment-reference-field-proof"
+      ],
       "tests": [
         {
           "target": "lib",
@@ -6339,16 +6532,21 @@
         {
           "target": "lib",
           "name": "segment_header::tests::rejects_nonpreceding_references"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The scalar guard succeeds exactly when the referred number is below the current segment number.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
       "assumptions": [
         "Reference existence, type, page association and lifetime require separate records."
       ],
       "gaps": [
-        "Complete caller validation and normative review; this scalar comparison does not establish graph validity."
+        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
+        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -6357,6 +6555,13 @@
           "tokens": [
             "Ok(()) => referred < segment",
             "Err(_) => referred >= segment"
+          ]
+        },
+        {
+          "runtime": "segment_header::parse_segment_header",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
           ]
         }
       ],

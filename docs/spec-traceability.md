@@ -40,7 +40,34 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
-The current [symbol result models](../specs/symbol_text.rs) now state exact
+The latest [segment-header relation](../specs/segments.rs) composes exact scalar
+and retention helpers into the [accepted parser result](../src/segment_header.rs).
+It relates the returned number, type, deferred flag, count/retention windows,
+every ordered reference and retention bit, page association, encoded length and
+relative byte extent to the actual input and initial cursor. The reference
+append helper additionally preserves its old vector prefix and ties each new
+value to its consumed one/two/four-byte window. Proof-only count/slice/append
+bridges remain in [production proof support](../proofs/production_impl/segment_header.rs);
+the result model is opaque and explicitly unfolded at the native return rather
+than expanded in unrelated callers.
+
+Nine existing selected records gain complete accepted-parser linkage, without
+creating duplicate requirements. The flag-fields row moves from safety-only to
+functional evidence: **124 functional/117 state/25 safety**, all **266 still
+provisional**. Actual unfiltered proof and compiled library pass 1219/0; all ten
+compiling regressions reject under the exact result contract and pass with only
+that new public guarantee removed. A raw metadata oracle checks 10,680 headers
+at a nonzero cursor, including complete returned contents, consumed extent and
+an untouched suffix. Native operations, all prior preconditions and reviewed
+boundaries are unchanged.
+
+This is accepted-result correspondence, not complete valid-input acceptance,
+typed partial errors, payload/container/graph/deferred-retention lifecycle,
+resource capacity accounting, independent normative approval or an exhaustive
+denominator. In particular, the 7.2.4/7.2.8 worked-example discrepancy remains
+pending; no interpretation or official-vector credit is changed.
+
+The preceding [symbol result models](../specs/symbol_text.rs) now state exact
 codebook position content for contiguous/borrowed storage, imported/new ID
 mapping and every owned export position's width/height/stride/allpackedbytes.
 Successful [assembly](../src/symbol_text.rs) preserves supplied selection order
@@ -54,7 +81,7 @@ production clone as its expected result.
 The existing `T88-DICTIONARY-EXPORT-ORDER` record gains project functional
 evidence. Its encoded export-run flag derivation/order and complete dictionary/
 caller streams remain explicit gaps, not assumptions. Current selected
-strengths are **123functional/117state/26safety**, all266provisional.
+strengths at that stage were **123functional/117state/26safety**, all266provisional.
 Neither exact helper contents nor the independent raw oracle approves an
 exhaustive denominator, normative translation, allocator/capacity bound or
 complete no-substitution rendering pipeline.

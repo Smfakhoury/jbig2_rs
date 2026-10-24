@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
+from check_segment_header_proofs import CASES as HEADER_CASES
 from check_text_batch_proofs import CASES as TEXT_CASES
 from proof_sensitivity import replace_once
 
@@ -33,6 +34,15 @@ MUTATIONS = tuple(
         "whitespace_flexible": True,
     }
     for case in TEXT_CASES if case["id"] in TEXT_RUNTIME_TESTS
+) + tuple(
+    {
+        "id": "header-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib",
+        "test": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent",
+        "whitespace_flexible": True,
+    }
+    for case in HEADER_CASES
 ) + (
     {
         "id": "refinement-snapshot-template-policy-inverted",

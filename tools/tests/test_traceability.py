@@ -1062,6 +1062,32 @@ class TraceabilityTests(unittest.TestCase):
             self.assertTrue({"arithmetic-binary-value", "arithmetic-pow2"} <= set(row["models"]))
             self.assertTrue(any("assumed decision sequence" in text for text in row["assumptions"]))
 
+    def test_complete_header_results_are_linked_without_normative_approval(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for identity in [
+            "T88-SEGMENT-TYPE-FIELD", "T88-SEGMENT-FLAG-FIELDS",
+            "T88-SEGMENT-PAGE-ASSOCIATION", "T88-SEGMENT-KNOWN-LENGTH",
+            "T88-SEGMENT-UNKNOWN-LENGTH", "T88-SEGMENT-RETENTION-WIRE-ORDER",
+            "T88-SEGMENT-RETENTION-UNUSED-BITS", "T88-SEGMENT-REFERENCE-WIDTH",
+            "T88-SEGMENT-REFERENCE-PRECEDENCE",
+        ]:
+            row = rows[identity]
+            with self.subTest(requirement=identity):
+                self.assertEqual(row["review"], "provisional")
+                self.assertEqual(row["strength"], "functional_contract")
+                self.assertIn("segment-header-fields", row["models"])
+                self.assertIn("segment-header-field-proof", row["proof_macros"])
+                self.assertTrue(row["gaps"])
+                claims = [claim for claim in row["functional_evidence"]
+                          if claim["runtime"] == "segment_header::parse_segment_header"]
+                self.assertEqual(len(claims), 1)
+                self.assertTrue(any("segment_header_fields(" in token for token in claims[0]["tokens"]))
+        definition = ledger["definitions"]["segment-header-fields"]
+        self.assertEqual(definition["module_path"], ["spec", "segments"])
+        self.assertEqual(definition["name"], "segment_header_fields")
+        self.assertEqual(len(ledger["requirements"]), 266)
+
     def test_repository_feature_accounting_is_exact_but_still_incomplete(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         features = {feature["feature"]: feature for feature in ledger["features"]}

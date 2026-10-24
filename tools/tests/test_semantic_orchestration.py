@@ -185,24 +185,24 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertFalse((self.output / runner.SUMMARY).exists())
 
     def test_measured_complete_profile_leaves_timeout_headroom(self):
-        # Worst completed costs from runs 39937231524/39941605340.
-        # The enlarged caller group gets explicit 750-second headroom.
+        # Accepted source-bound run 40127148868 plus 10% scheduling headroom.
+        # The header group uses its complete 252.722-second local run plus 10%.
         # Scheduling estimates are not hosted acceptance.
         measured = {
-            "reset": (2, 44), "document-count": (13, 391),
-            "bitmap-copy": (6, 204), "retention": (3, 100),
-            "value-bridge": (5, 181), "mmr-span": (8, 245),
-            "region-dispatch": (3, 85), "text-batch": (4, 109),
-            "bitmap-chunk": (4, 130), "bitmap-compose": (5, 125),
-            "black-span": (6, 155), "arithmetic-decision": (15, 442),
-            "arithmetic-refill": (6, 123), "arithmetic-initialization": (6, 140),
-            "arithmetic-normalization": (6, 155), "operator-bit": (4, 115),
-            "arithmetic-integer": (9, 220), "iaid-state": (6, 167),
-            "integer-state": (9, 190), "arithmetic-codec": (19, 750),
-            "halftone-header": (9, 179), "reader-error": (9, 249),
-            "mmr-prefix": (4, 117), "mmr-run": (4, 119),
-            "mmr-horizontal": (6, 135), "symbol-cardinality": (6, 178),
-            "mmr-reference": (6, 174),
+            "reset": (2, 62), "document-count": (13, 445),
+            "bitmap-copy": (8, 204), "retention": (3, 110),
+            "value-bridge": (5, 152), "mmr-span": (8, 243),
+            "region-dispatch": (3, 91), "text-batch": (11, 400),
+            "bitmap-chunk": (4, 98), "bitmap-compose": (7, 158),
+            "black-span": (6, 175), "arithmetic-decision": (15, 302),
+            "arithmetic-refill": (6, 173), "arithmetic-initialization": (6, 111),
+            "arithmetic-normalization": (6, 116), "operator-bit": (4, 125),
+            "arithmetic-integer": (9, 184), "iaid-state": (6, 160),
+            "integer-state": (9, 201), "arithmetic-codec": (19, 619),
+            "halftone-header": (9, 184), "reader-error": (9, 198),
+            "mmr-prefix": (4, 98), "mmr-run": (4, 96),
+            "mmr-horizontal": (6, 186), "symbol-cardinality": (11, 387),
+            "mmr-reference": (11, 292), "segment-header": (10, 278),
         }
         checks = runner.configured_checks()
         self.assertEqual({check[0] for check in checks}, set(measured))
@@ -214,6 +214,28 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 seconds += (cases * observed_seconds + observed_cases - 1) // observed_cases
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
+
+    def test_completed_header_profile_has_measured_job_headroom_without_relaxed_estimates(self):
+        # Completed checker receipts from 40136114305; the canceled shard is not accepted CI.
+        observed = {
+            "arithmetic-codec": 565, "arithmetic-decision": 356,
+            "arithmetic-initialization": 148, "arithmetic-integer": 247,
+            "arithmetic-normalization": 158, "arithmetic-refill": 158,
+            "bitmap-chunk": 104, "bitmap-compose": 175, "bitmap-copy": 263,
+            "black-span": 168, "document-count": 287, "halftone-header": 241,
+            "iaid-state": 104, "integer-state": 275, "mmr-horizontal": 153,
+            "mmr-prefix": 131, "mmr-reference": 404, "mmr-run": 119,
+            "mmr-span": 196, "operator-bit": 124, "reader-error": 174,
+            "region-dispatch": 82, "reset": 61, "retention": 72,
+            "segment-header": 256, "symbol-cardinality": 371,
+            "text-batch": 362, "value-bridge": 201,
+        }
+        self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 214)
+        self.assertLessEqual(max(
+            sum(observed[row[0]] for row in shard)
+            for shard in runner.configured_shards()
+        ), 1050)
 
     def test_matrix_is_generated_from_current_complete_checks(self):
         future_checks = self.checks + (("future-decision", "future.py", 4, "strong_contract", "weaker_control"),)

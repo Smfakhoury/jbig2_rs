@@ -5,6 +5,56 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The current segment-header semantic tranche closes the missing accepted-result
+link through three existing parser interfaces. Exact count/retention windows,
+ordered reference values and reader extent compose with scalar field readers
+into the returned number/type/deferred flag, page association, encoded length
+and relative header size. The reference append helper preserves existing
+contents and relates each new entry to its actual one/two/four-byte input.
+Proof-only bridges are separate from the normative-facing model, which is
+explicitly unfolded only at the parser return. All native operations and prior
+preconditions are preserved.
+
+Actual immutable 81dbe33 unfiltered whole verification and compiled production
+library pass 1219/0. All ten real compiling field/content regressions are rejected strongly
+and accepted when only the new public result relation is removed, preserving
+old reader bounds/bytes/progress and exact private helper guarantees. A new raw
+metadata oracle checks 10,680 nonzero-cursor headers and their untouched suffix;
+all 463 native tests pass with 14 existing ignored microbenchmarks. All 86
+actual native mutants compile and are detected, reusing the ten semantic
+regressions. All 395 tooling tests, strict lint/format, isolated MSRV 1.88
+package/exact downstream output and source-bound discovery/provenance/workflow/
+both normative-document hash gates pass. Existing approved official normal/
+logging/native/Hayro observations were freshly executed on 81dbe33 and remain
+2 passed/7 unresolved/1 unsupported, with zero restored rejection credit.
+The diagnostic edits are byte-identical; only ghost-context lines changed.
+No encoded raster,
+refinement, aggregation or custom-Huffman fixture is added.
+
+Nine existing P04 records gain parser correspondence, with no extra selected
+records or approved denominator. The one flag-fields row gains functional
+strength: all 266 remain provisional, now124functional/117state/25safety.
+Full valid-input acceptance, typed partial errors, capacity, complete container/
+caller/deferred-retention semantics, the seven official positives and independent
+normative/model review remain open.
+
+The profile is expanded without dropping old contrasts: 28 groups/214 cases,
+six one-worker shards/max four active and the same 22 checks/timeouts/pins.
+The first #87 run completed all 28 checker receipts and 214 contrasts, but an
+overloaded shard exceeded the 20-minute job cap during completion/upload.
+The collector correctly rejected that canceled job; completed checker results
+are not complete hosted acceptance. Whole groups are now rebalanced using those
+actual per-group timings, retaining the prior 1000-second estimate ceiling.
+The unchanged-budget estimates are990/993/944/965/990/966seconds. Replaying all
+recorded checker costs gives942/1010/1018/982/1012/982seconds, leaving job setup/
+upload headroom. A new regression also bounds measured replay at1050seconds.
+No source, case, solver setting, shard count or timeout is removed or relaxed.
+These measurements still do not replace actual current-head hosted acceptance.
+Immutable reruns are complete; all actual current-head hosted guards remain
+required before this tranche is marked ready. Numerical coverage remains
+11383/12639 lines (90.0625%) and 2245/2640 outcomes (85.0379%), with unchanged
+denominators, floors, thresholds and exclusions.
+
 PR86's first hosted coverage run measured the same passing 90.0625% line/
 85.0379% branch ratios, but the mutation step exceeded the existing 15-minute
 job limit. That canceled run receives no whole-job acceptance credit. The
