@@ -728,6 +728,39 @@ def mutate(source: str, mutation: dict) -> str:
     return source.replace(mutation["before"], mutation["after"], 1)
 
 
+def build_test_binary(cargo: list[str], directory: Path, environment: dict, target: str) -> Path:
+    selector = ["--lib"] if target == "lib" else ["--test", target]
+    output = run(cargo + [
+        "test", "--offline", "--locked", *selector, "--no-run", "--message-format=json",
+    ], directory, environment, capture=True)
+    executables = []
+    for line in output.splitlines():
+        message = json.loads(line)
+        if not isinstance(message, dict):
+            raise ValueError("invalid Cargo artifact message")
+        if message.get("reason") != "compiler-artifact":
+            continue
+        metadata, profile = message.get("target", {}), message.get("profile", {})
+        if not isinstance(metadata, dict) or not isinstance(profile, dict):
+            raise ValueError("invalid Cargo test artifact metadata")
+        selected = (
+            metadata.get("kind") == (["lib"] if target == "lib" else ["test"])
+            and metadata.get("name") == ("jbig2_rs" if target == "lib" else target)
+        )
+        if not selected or profile.get("test") is not True:
+            continue
+        executable = message.get("executable")
+        if not isinstance(executable, str):
+            raise ValueError(f"missing Cargo test executable: {target}")
+        path = Path(executable).resolve()
+        if not path.is_relative_to(directory / "target") or not path.is_file():
+            raise ValueError(f"missing or out-of-tree Cargo test executable: {target}")
+        executables.append(path)
+    if len(executables) != 1:
+        raise ValueError(f"missing or ambiguous Cargo test executable: {target}")
+    return executables[0]
+
+
 def check_mutations(toolchain: str) -> dict:
     if not MUTATIONS or len({case["id"] for case in MUTATIONS}) != len(MUTATIONS):
         raise ValueError("missing or duplicate contract mutations")
@@ -745,24 +778,28 @@ def check_mutations(toolchain: str) -> dict:
         for name in ("Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE"):
             shutil.copyfile(ROOT / name, directory / name)
         environment = isolated_environment(directory)
+        baseline_directory = directory / "baseline-tests"
+        baseline_directory.mkdir()
+        baselines = {}
+        for target in dict.fromkeys(mutation["target"] for mutation in MUTATIONS):
+            executable = build_test_binary(cargo, directory, environment, target)
+            baseline = baseline_directory / (target + executable.suffix)
+            shutil.copy2(executable, baseline)
+            baselines[target] = baseline
         for mutation in MUTATIONS:
-            selector = ["--lib"] if mutation["target"] == "lib" else ["--test", mutation["target"]]
-            command = cargo + [
-                "test", "--offline", "--locked", *selector,
-                mutation["test"], "--", "--exact",
-            ]
-            baseline = run(command, directory, environment, capture=True)
+            baseline = run(
+                [str(baselines[mutation["target"]]), mutation["test"], "--exact"],
+                directory, environment, capture=True,
+            )
             if not re.search(r"test result: ok\. 1 passed; 0 failed;", baseline):
                 raise ValueError(f"baseline did not run exactly one passing test: {mutation['id']}")
             path = directory / mutation["file"]
             original = path.read_bytes()
             try:
                 path.write_text(mutate(original.decode("utf-8"), mutation), encoding="utf-8")
-                run(cargo + [
-                    "test", "--offline", "--locked", *selector, "--no-run",
-                ], directory, environment, capture=True)
+                executable = build_test_binary(cargo, directory, environment, mutation["target"])
                 process = subprocess.run(
-                    command, cwd=directory, env=environment,
+                    [str(executable), mutation["test"], "--exact"], cwd=directory, env=environment,
                     capture_output=True, text=True, check=False,
                 )
                 if process.returncode == 0 or not re.search(

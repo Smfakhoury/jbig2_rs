@@ -5,6 +5,20 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+PR86's first hosted coverage run measured the same passing 90.0625% line/
+85.0379% branch ratios, but the mutation step exceeded the existing 15-minute
+job limit. That canceled run receives no whole-job acceptance credit. The
+runner-only repair compiles pristine baseline test executables once per target,
+copies them outside Cargo's mutable output directory, and still runs exactly
+one passing baseline test and one freshly compiled failing mutant test for
+every control. Strict Cargo artifact target/profile/path/uniqueness checks and
+unit regressions prevent missing binaries or mutated baselines from receiving
+credit. All 76 actual controls pass with the exact CI nightly toolchain; the
+full strict optimized local run completed in 115.645 seconds. All 390 tooling
+tests pass, including three new artifact/baseline regressions. No control, test, job, shard, timeout,
+pin, coverage denominator or threshold is removed or relaxed. Current-head
+hosted acceptance remains mandatory before marking ready.
+
 The current raw context/raster/metadata tranche adds 18 controls without changing
 any of the 658 production bodies, attributes, preconditions or postconditions.
 Proved models and reviewed boundaries are unchanged. New cases cover raw slot
