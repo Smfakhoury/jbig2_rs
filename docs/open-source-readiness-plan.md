@@ -40,10 +40,16 @@ normative/model review remain open.
 
 The profile is expanded without dropping old contrasts: 28 groups/214 cases,
 six one-worker shards/max four active and the same 22 checks/timeouts/pins.
-Whole groups are rebalanced using the latest independently accepted #86 group
-timings plus 10% scheduling headroom and the new complete 252.722-second local
-header run plus 10%; the maximum estimate stays996seconds below the existing
-1000-second ceiling. These estimates are not current-head hosted acceptance.
+The first #87 run completed all 28 checker receipts and 214 contrasts, but an
+overloaded shard exceeded the 20-minute job cap during completion/upload.
+The collector correctly rejected that canceled job; completed checker results
+are not complete hosted acceptance. Whole groups are now rebalanced using those
+actual per-group timings, retaining the prior 1000-second estimate ceiling.
+The unchanged-budget estimates are990/993/944/965/990/966seconds. Replaying all
+recorded checker costs gives942/1010/1018/982/1012/982seconds, leaving job setup/
+upload headroom. A new regression also bounds measured replay at1050seconds.
+No source, case, solver setting, shard count or timeout is removed or relaxed.
+These measurements still do not replace actual current-head hosted acceptance.
 Immutable reruns are complete; all actual current-head hosted guards remain
 required before this tranche is marked ready. Numerical coverage remains
 11383/12639 lines (90.0625%) and 2245/2640 outcomes (85.0379%), with unchanged

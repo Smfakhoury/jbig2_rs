@@ -215,6 +215,28 @@ class SemanticOrchestrationTests(unittest.TestCase):
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
 
+    def test_completed_header_profile_has_measured_job_headroom_without_relaxed_estimates(self):
+        # Completed checker receipts from 40136114305; the canceled shard is not accepted CI.
+        observed = {
+            "arithmetic-codec": 565, "arithmetic-decision": 356,
+            "arithmetic-initialization": 148, "arithmetic-integer": 247,
+            "arithmetic-normalization": 158, "arithmetic-refill": 158,
+            "bitmap-chunk": 104, "bitmap-compose": 175, "bitmap-copy": 263,
+            "black-span": 168, "document-count": 287, "halftone-header": 241,
+            "iaid-state": 104, "integer-state": 275, "mmr-horizontal": 153,
+            "mmr-prefix": 131, "mmr-reference": 404, "mmr-run": 119,
+            "mmr-span": 196, "operator-bit": 124, "reader-error": 174,
+            "region-dispatch": 82, "reset": 61, "retention": 72,
+            "segment-header": 256, "symbol-cardinality": 371,
+            "text-batch": 362, "value-bridge": 201,
+        }
+        self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 214)
+        self.assertLessEqual(max(
+            sum(observed[row[0]] for row in shard)
+            for shard in runner.configured_shards()
+        ), 1050)
+
     def test_matrix_is_generated_from_current_complete_checks(self):
         future_checks = self.checks + (("future-decision", "future.py", 4, "strong_contract", "weaker_control"),)
         with patch.object(runner, "CHECKS", future_checks), patch.object(
