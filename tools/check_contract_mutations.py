@@ -796,7 +796,7 @@ def check_mutations(toolchain: str) -> dict:
             path = directory / mutation["file"]
             original = path.read_bytes()
             try:
-                path.write_text(mutate(original.decode("utf-8"), mutation), encoding="utf-8")
+                path.write_bytes(mutate(original.decode("utf-8"), mutation).encode("utf-8"))
                 executable = build_test_binary(cargo, directory, environment, mutation["target"])
                 process = subprocess.run(
                     [str(executable), mutation["test"], "--exact"], cwd=directory, env=environment,

@@ -82,7 +82,8 @@ class ContractMutationTests(unittest.TestCase):
             for name in ("src", "tests", "tools"):
                 (root / name).mkdir()
             original = "before one\nbefore two\n"
-            (root / "src/lib.rs").write_text(original)
+            original_bytes = original.replace("\n", "\r\n").encode("utf-8")
+            (root / "src/lib.rs").write_bytes(original_bytes)
             for name in (
                 "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
                 "tools/distribution_consumer.rs",
@@ -100,7 +101,7 @@ class ContractMutationTests(unittest.TestCase):
                 builds.append(source)
                 executable = directory / "target" / "test-binary"
                 executable.parent.mkdir(exist_ok=True)
-                executable.write_text(source)
+                executable.write_bytes(source.encode("utf-8"))
                 return executable
 
             def baseline(command, directory, _environment, capture):
@@ -115,10 +116,21 @@ class ContractMutationTests(unittest.TestCase):
                 self.assertNotEqual(Path(command[0]).parent.name, "baseline-tests")
                 self.assertEqual(Path(command[0]).read_text(),
                     original.replace("before " + command[1], "after " + command[1]))
+                self.assertEqual((kwargs["cwd"] / "src/lib.rs").read_bytes(),
+                    original_bytes.replace(
+                        ("before " + command[1]).encode("utf-8"),
+                        ("after " + command[1]).encode("utf-8"),
+                    ))
                 executions.append(command[1])
                 return check_contract_mutations.subprocess.CompletedProcess(
                     command, 101, "test result: FAILED. 0 passed; 1 failed;", "",
                 )
+
+            write_text = Path.write_text
+
+            def windows_write_text(path, data, encoding=None, errors=None, newline=None):
+                return write_text(path, data, encoding=encoding, errors=errors,
+                    newline="\r\n" if newline is None else newline)
 
             with (
                 patch.object(check_contract_mutations, "ROOT", root),
@@ -126,13 +138,14 @@ class ContractMutationTests(unittest.TestCase):
                 patch.object(check_contract_mutations, "build_test_binary", side_effect=build),
                 patch.object(check_contract_mutations, "run", side_effect=baseline),
                 patch.object(check_contract_mutations.subprocess, "run", side_effect=execute),
+                patch.object(Path, "write_text", windows_write_text),
             ):
                 result = check_contract_mutations.check_mutations("test")
             self.assertEqual(builds, [original, "after one\nbefore two\n", "before one\nafter two\n"])
             self.assertEqual(baselines, ["one", "two"])
             self.assertEqual(executions, ["one", "two"])
             self.assertEqual(len(result["mutations"]), 2)
-            self.assertEqual((root / "src/lib.rs").read_text(), original)
+            self.assertEqual((root / "src/lib.rs").read_bytes(), original_bytes)
 
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
