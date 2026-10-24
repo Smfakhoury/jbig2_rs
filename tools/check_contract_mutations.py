@@ -35,6 +35,78 @@ MUTATIONS = tuple(
     for case in TEXT_CASES if case["id"] in TEXT_RUNTIME_TESTS
 ) + (
     {
+        "id": "dictionary-reserved-bit-thirteen-accepted",
+        "file": "src/symbol_text.rs",
+        "before": (
+            "if flags & 0xe000 != 0 {\n"
+            "        return Err(SymbolTextError::InvalidFlags(\n"
+            "            \"reserved symbol-dictionary flags\","
+        ),
+        "after": (
+            "if flags & 0xc000 != 0 {\n"
+            "        return Err(SymbolTextError::InvalidFlags(\n"
+            "            \"reserved symbol-dictionary flags\","
+        ),
+        "target": "lib",
+        "test": "symbol_text::tests::raw_dictionary_flag_words_match_independent_field_policy",
+    },
+    {
+        "id": "text-eight-row-strip-shrunk",
+        "file": "src/symbol_text.rs",
+        "before": "2 => 4,\n        _ => 8,",
+        "after": "2 => 4,\n        _ => 4,",
+        "target": "lib",
+        "test": "symbol_text::tests::raw_text_flag_words_preserve_geometry_and_error_precedence",
+    },
+    {
+        "id": "text-refinement-height-selector-aliased",
+        "file": "src/symbol_text.rs",
+        "before": "let refinement_height = refinement_choice(text_huffman_selector(flags, 8))?;",
+        "after": "let refinement_height = refinement_choice(text_huffman_selector(flags, 6))?;",
+        "target": "lib",
+        "test": "symbol_text::tests::raw_text_table_selectors_match_complete_word_domain",
+    },
+    {
+        "id": "custom-table-oob-policy-inverted",
+        "file": "src/symbol_text.rs",
+        "before": "if supplied.has_oob != requires_oob {",
+        "after": "if supplied.has_oob == requires_oob {",
+        "target": "lib",
+        "test": "symbol_text::tests::raw_table_bindings_preserve_selector_order_identity_and_oob_policy",
+    },
+    {
+        "id": "dictionary-bitmap-size-table-aliased-to-refinement",
+        "file": "src/symbol_text.rs",
+        "before": "IntegerField::DictionaryBitmapSize => self.dictionary_bitmap_size.as_ref(),",
+        "after": "IntegerField::DictionaryBitmapSize => self.refinement_size.as_ref(),",
+        "target": "lib",
+        "test": "symbol_text::tests::raw_table_associations_reject_missing_fields_and_preserve_borrowed_tables",
+    },
+    {
+        "id": "standard-table-d-stored-in-e-slot",
+        "file": "src/symbol_text.rs",
+        "before": "StandardHuffmanTable::D => self.d = materialized,",
+        "after": "StandardHuffmanTable::D => self.e = materialized,",
+        "target": "lib",
+        "test": "symbol_text::tests::raw_standard_table_cache_covers_every_slot_and_failed_materialization",
+    },
+    {
+        "id": "huffman-normal-partition-skips-one-value",
+        "file": "src/huffman.rs",
+        "before": "if previous.checked_add(1) != Some(line.range_low) {",
+        "after": "if previous.checked_add(2) != Some(line.range_low) {",
+        "target": "lib",
+        "test": "huffman::tests::raw_normal_ranges_match_wide_endpoint_and_contiguity_rules",
+    },
+    {
+        "id": "huffman-duplicate-low-line-accepted",
+        "file": "src/huffman.rs",
+        "before": "if lower.is_some() {",
+        "after": "if false && lower.is_some() {",
+        "target": "lib",
+        "test": "huffman::tests::raw_special_line_metadata_rejects_order_duplicates_and_invalid_fields",
+    },
+    {
         "id": "empty-unaligned-row-blit-rejected",
         "file": "src/bitmap.rs",
         "before": (

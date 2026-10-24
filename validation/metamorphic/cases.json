@@ -2,6 +2,26 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-SYMBOL-FLAG-DOMAINS",
+      "transformation": "enumerate every raw dictionary/text flag word, both refinement modes and absent/present/reserved Huffman metadata; no coded-family payload is generated",
+      "invariant": "literal independent field policy gives exact accepted fields, signed offsets, strip geometry, selectors and error precedence; colour remains unsupported",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::raw_dictionary_flag_words_match_independent_field_policy"},
+        {"target": "lib", "name": "symbol_text::tests::raw_text_flag_words_preserve_geometry_and_error_precedence"},
+        {"target": "lib", "name": "symbol_text::tests::raw_text_table_selectors_match_complete_word_domain"}
+      ]
+    },
+    {
+      "id": "META-RAW-TABLE-METADATA-LIFECYCLE",
+      "transformation": "vary all eight-slot custom/standard masks and each missing field, then materialize all fifteen standard tables and reuse borrowed standard-table objects",
+      "invariant": "exact selector order, table pointer identity, OOB metadata, missing-field diagnostics, raw-bit field exclusion, independent cache slots and preserved failed-materialization state",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::raw_table_bindings_preserve_selector_order_identity_and_oob_policy"},
+        {"target": "lib", "name": "symbol_text::tests::raw_table_associations_reject_missing_fields_and_preserve_borrowed_tables"},
+        {"target": "lib", "name": "symbol_text::tests::raw_standard_table_cache_covers_every_slot_and_failed_materialization"}
+      ]
+    },
+    {
       "id": "META-PUBLIC-ENVELOPE-METADATA",
       "transformation": "sequential/random-access/embedded documents, known/unknown declared counts, reversed page encounter order, zero dimensions and known/unknown stripe heights",
       "invariant": "all public metadata fields match literal declarations; metadata is page-number sorted while decoded/sink pages retain stream order; complete packed bytes and padding match literal expectations",

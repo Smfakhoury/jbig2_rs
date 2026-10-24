@@ -5,6 +5,38 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The current raw symbol/table metadata tranche adds ten independent controls
+without changing any of the 658 production functions, their attributes,
+preconditions, postconditions or reviewed boundaries. Every dictionary flag
+word, every text flag word with absent/present/reserved Huffman metadata and
+colour precedence, and every text-table selector word in both refinement modes
+is checked against literal field policies. All 256 eight-slot selector masks
+check association order, borrowed table identity and OOB capability. Further
+controls cover every standard-table cache slot, failed materialization,
+missing-field diagnostics, raw-bit field exclusion, wide count/delta/code-length
+boundaries and raw Huffman line order/partition/memory arithmetic.
+These are raw metadata/numeric controls using existing standard-table objects,
+not generated refinement, aggregation or custom-Huffman encoded fixtures.
+
+Actual preliminary pinned coverage measures 11196/12639 lines (88.5830%),
+10760/12948 regions (83.1016%) and 2183/2640 outcomes (82.6894%): gains of 184 lines,
+143 regions and 59 outcomes against accepted #84, with unchanged denominators,
+floors and exclusions. Protected 90% line/85% branch goals still require 180 covered
+lines and 61 outcomes. Four executable catalog entries and eight native mutation
+controls bring the totals to 67 each; actual 67 native mutants compile and are
+detected. Immutable source-bound validation and current-head hosted acceptance
+are required separately before publication/readiness. No semantic group,
+shard, timeout, pin or workflow job is added: the 27 groups/204 contrasts,
+six one-worker shards, max 4 active, 20-minute caps and 22 checks remain unchanged.
+All 266 selected requirements remain provisional: 123 functional/117 state/26 safety;
+capacity, fixture and independent normative/release approvals remain open.
+
+Preceding #84 is ready for owner review after all 22 actual hosted checks passed
+at abb1fdb. Independent current-run reconstruction passed 1219/0,
+27 groups/204 contrasts, 225 source bindings, 62 canonical files and 59 actual native
+mutants. No self-approval or merge was performed. Owner-merged #83 is on main
+at 61c1d1a; #84 targets main rather than a detached parent branch.
+
 The current placement/resource tranche strengthens six existing executing
 interfaces without changing their ordinary Rust operations or preconditions.
 Compiler-expanded native Rust exactly matches accepted#83source616b177,

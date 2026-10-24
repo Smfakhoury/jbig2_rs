@@ -2,6 +2,24 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-RAW-HUFFMAN-LINE-METADATA",
+      "surface": "raw normal and special line descriptors only, without encoded custom-Huffman fixtures",
+      "expected": "wide endpoint/contiguity policy and explicit order, duplicate, active/disabled lower-bound and field cases produce exact overflow, partition and special-line classifications",
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::raw_normal_ranges_match_wide_endpoint_and_contiguity_rules"},
+        {"target": "lib", "name": "huffman::tests::raw_special_line_metadata_rejects_order_duplicates_and_invalid_fields"}
+      ]
+    },
+    {
+      "id": "NEG-RAW-SYMBOL-TABLE-NUMERIC-LIMITS",
+      "surface": "raw imported/new/exported counts, unsigned deltas, symbol-code-length boundaries and table-memory arithmetic",
+      "expected": "independent wide arithmetic preserves inclusive limits, exact actual/limit fields, overflow and rejection precedence; no large allocation or entropy payload is required",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::raw_symbol_counts_and_deltas_match_wide_integer_domains"},
+        {"target": "lib", "name": "huffman::tests::raw_table_memory_limits_match_wide_sizes_and_error_priority"}
+      ]
+    },
+    {
       "id": "NEG-PUBLIC-REFERENCE-ROLE-CONTRACT",
       "surface": "local and immutable-global segment reference roles and cardinalities",
       "expected": "exact InvalidSegmentReferences consumer numbers for disallowed roles, zero/multiple required references and table counts above four/eight; no page delivery on rejection, shared globals remain unchanged and subsequent decoding recovers; positive controls assert inspection metadata only",
