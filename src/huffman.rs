@@ -2367,6 +2367,247 @@ mod tests {
     }
 
     #[test]
+    fn raw_normal_ranges_match_wide_endpoint_and_contiguity_rules() {
+        for low in [
+            i64::MIN,
+            i64::from(i32::MIN) - 1,
+            i64::from(i32::MIN),
+            -1,
+            0,
+            i64::from(i32::MAX) - 1,
+            i64::from(i32::MAX),
+            i64::from(i32::MAX) + 1,
+            i64::MAX,
+        ] {
+            for range_len in [0, 1, 2, 31, 32, 33, u8::MAX] {
+                let lines = [HuffmanLine {
+                    prefix_len: 1,
+                    range_len,
+                    range_low: low,
+                    kind: LineKind::Normal,
+                }];
+                let result = validate_lines(HuffmanLines::Borrowed(&lines));
+                if range_len > 32 {
+                    assert!(matches!(result, Err(HuffmanError::InvalidTable(
+                        HuffmanTableError::InvalidRangeLength(actual)
+                    )) if actual == range_len));
+                    continue;
+                }
+                let end = i128::from(low) + (1_i128 << range_len) - 1;
+                if end > i128::from(i64::MAX) {
+                    assert!(matches!(
+                        result,
+                        Err(HuffmanError::Decode(DecodeError::Malformed(
+                            MalformedError::IntegerOverflow
+                        )))
+                    ));
+                } else if i32::try_from(low).is_err() || i32::try_from(end).is_err() {
+                    assert!(matches!(
+                        result,
+                        Err(HuffmanError::InvalidTable(
+                            HuffmanTableError::InvalidRangePartition
+                        ))
+                    ));
+                } else {
+                    result.unwrap();
+                    for displacement in [-1, 0, 1] {
+                        let mut adjacent = lines.to_vec();
+                        adjacent.push(HuffmanLine {
+                            prefix_len: 1,
+                            range_len: 0,
+                            range_low: i64::try_from(end + 1 + displacement).unwrap(),
+                            kind: LineKind::Normal,
+                        });
+                        let result = validate_lines(HuffmanLines::Borrowed(&adjacent));
+                        let valid = displacement == 0 && end < i128::from(i32::MAX);
+                        assert_eq!(result.is_ok(), valid, "{adjacent:?}");
+                        if !valid {
+                            assert!(matches!(
+                                result,
+                                Err(HuffmanError::InvalidTable(
+                                    HuffmanTableError::InvalidRangePartition
+                                ))
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn raw_special_line_metadata_rejects_order_duplicates_and_invalid_fields() {
+        let normal = HuffmanLine::normal(0, 2, 0);
+        let lower = HuffmanLine::lower(-1, 2);
+        let upper = HuffmanLine::upper(1, 2);
+        let oob = HuffmanLine::out_of_band(2);
+        let cases = [
+            (vec![], Some(HuffmanTableError::NoCodes)),
+            (
+                vec![lower, upper, oob],
+                Some(HuffmanTableError::InvalidRangePartition),
+            ),
+            (vec![normal, lower, upper, oob], None),
+            (vec![normal, lower], None),
+            (vec![normal, upper], None),
+            (vec![normal, oob], None),
+            (
+                vec![normal, lower, normal],
+                Some(HuffmanTableError::InvalidLineOrder),
+            ),
+            (
+                vec![normal, upper, lower],
+                Some(HuffmanTableError::InvalidLineOrder),
+            ),
+            (
+                vec![normal, oob, lower],
+                Some(HuffmanTableError::InvalidLineOrder),
+            ),
+            (
+                vec![normal, oob, upper],
+                Some(HuffmanTableError::InvalidLineOrder),
+            ),
+            (
+                vec![normal, lower, lower],
+                Some(HuffmanTableError::DuplicateSpecialLine),
+            ),
+            (
+                vec![normal, upper, upper],
+                Some(HuffmanTableError::DuplicateSpecialLine),
+            ),
+            (
+                vec![normal, oob, oob],
+                Some(HuffmanTableError::DuplicateSpecialLine),
+            ),
+            (
+                vec![
+                    normal,
+                    HuffmanLine {
+                        range_len: 0,
+                        ..lower
+                    },
+                ],
+                Some(HuffmanTableError::InvalidLineOrder),
+            ),
+            (
+                vec![
+                    normal,
+                    HuffmanLine {
+                        range_len: 0,
+                        ..upper
+                    },
+                ],
+                Some(HuffmanTableError::InvalidLineOrder),
+            ),
+            (
+                vec![
+                    normal,
+                    HuffmanLine {
+                        range_len: 1,
+                        ..oob
+                    },
+                ],
+                Some(HuffmanTableError::InvalidSpecialLine),
+            ),
+            (
+                vec![normal, HuffmanLine::lower(-2, 2)],
+                Some(HuffmanTableError::InvalidSpecialLine),
+            ),
+            (
+                vec![normal, HuffmanLine::upper(2, 2)],
+                Some(HuffmanTableError::InvalidSpecialLine),
+            ),
+            (
+                vec![
+                    normal,
+                    HuffmanLine {
+                        range_low: i64::MIN,
+                        ..upper
+                    },
+                ],
+                Some(HuffmanTableError::InvalidSpecialLine),
+            ),
+            (
+                vec![
+                    HuffmanLine::normal(i32::MAX, 2, 0),
+                    HuffmanLine {
+                        range_low: i64::from(i32::MAX) + 1,
+                        ..upper
+                    },
+                ],
+                Some(HuffmanTableError::InvalidSpecialLine),
+            ),
+            (
+                vec![
+                    HuffmanLine::normal(i32::MIN, 2, 0),
+                    HuffmanLine::lower(i64::from(i32::MIN) - 1, 2),
+                ],
+                Some(HuffmanTableError::InvalidSpecialLine),
+            ),
+            (
+                vec![
+                    HuffmanLine::normal(i32::MIN, 2, 0),
+                    HuffmanLine::lower(i64::from(i32::MIN) - 1, 0),
+                ],
+                None,
+            ),
+        ];
+        for (lines, expected) in cases {
+            match (validate_lines(HuffmanLines::Borrowed(&lines)), expected) {
+                (Ok(()), None) => {}
+                (Err(HuffmanError::InvalidTable(actual)), Some(expected)) => {
+                    assert_eq!(actual, expected, "{lines:?}");
+                }
+                (actual, expected) => panic!("{lines:?}: got {actual:?}, expected {expected:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn raw_table_memory_limits_match_wide_sizes_and_error_priority() {
+        for line_count in [0, 1, 15, 256, u32::MAX as usize, usize::MAX] {
+            for prefix_lookup in [false, true] {
+                let bytes = size_of::<HuffmanTable>() as u128
+                    + line_count as u128 * (size_of::<HuffmanLine>() + size_of::<u32>()) as u128
+                    + if prefix_lookup { 256 * 2 } else { 0 };
+                for symbol_limit in [0, 15, u32::MAX] {
+                    for memory_limit in [0, u64::try_from(bytes).unwrap_or(u64::MAX), u64::MAX] {
+                        let limits = Limits {
+                            max_symbols: symbol_limit,
+                            max_decoder_managed_memory_bytes: memory_limit,
+                            ..Limits::default()
+                        };
+                        let result = check_table_memory(line_count, prefix_lookup, &limits);
+                        if line_count as u128 > u128::from(symbol_limit) {
+                            assert!(matches!(result, Err(HuffmanError::Decode(
+                                DecodeError::LimitExceeded(LimitExceeded {
+                                    kind: LimitKind::Symbols, limit, actual,
+                                })
+                            )) if limit == u64::from(symbol_limit) && u128::from(actual) == line_count as u128));
+                        } else if bytes > usize::MAX as u128 || bytes > u128::from(u64::MAX) {
+                            assert!(matches!(
+                                result,
+                                Err(HuffmanError::Decode(DecodeError::Malformed(
+                                    MalformedError::IntegerOverflow
+                                )))
+                            ));
+                        } else if bytes > u128::from(memory_limit) {
+                            assert!(matches!(result, Err(HuffmanError::Decode(
+                                DecodeError::LimitExceeded(LimitExceeded {
+                                    kind: LimitKind::Memory, limit, actual,
+                                })
+                            )) if limit == memory_limit && u128::from(actual) == bytes));
+                        } else {
+                            result.unwrap();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
     fn rejects_oversubscribed_and_structurally_invalid_tables() {
         let oversubscribed = [
             HuffmanLine::normal(0, 1, 0),

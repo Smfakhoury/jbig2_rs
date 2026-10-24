@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "dfa02bc5760f544945e97b90e3af8041ba82589e",
-  "scope": "Fresh existing official diagnostics on exact resource effects and text placement/preflight acceptance contracts with unchanged ordinary compiler expansion, old preconditions and trust boundaries; no encoded-family fixture expansion or normative approval dfa02bc; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "e6ff31f03f679cb43fa52d71cca53ccd2e8c096e",
+  "scope": "Fresh existing official diagnostics on raw metadata and numeric controls with all 658 production functions, attributes and compiler-expanded ordinary Rust unchanged; no encoded-family fixture expansion or normative approval e6ff31f; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 448,
-    "passed": 434,
+    "total": 458,
+    "passed": 444,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "dfa02bc5760f544945e97b90e3af8041ba82589e",
-    "scope": "Actual complete immutable pinned runtime collection:434unit/integration tests pass;14existing microbenchmarks ignored. Not official conformance or normative approval."
+    "source_revision": "e6ff31f03f679cb43fa52d71cca53ccd2e8c096e",
+    "scope": "Actual complete immutable pinned runtime collection: 444 unit/integration tests pass; 14 existing microbenchmarks ignored. Not official conformance or normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "2ecb84257df16367ef2e129768395d8eca9b47c38b54b5a44d61375491139507",
-    "review_sha256": "4971b0945baf43df95c1e1923db7d6f346a8cbb9a42a3d7b9ad39284e40f6178"
+    "results_sha256": "082b0910739995d02f2a61b38b122982185335ed51b50380a70692e4f354c9b7",
+    "review_sha256": "70a81fefb8959668a653190073283b116a140d3b0465c74a47f141c97675f103"
   },
   "community_regressions": {
     "total": 0,
