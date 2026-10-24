@@ -18,14 +18,21 @@ boundaries and raw Huffman line order/partition/memory arithmetic.
 These are raw metadata/numeric controls using existing standard-table objects,
 not generated refinement, aggregation or custom-Huffman encoded fixtures.
 
-Actual preliminary pinned coverage measures 11196/12639 lines (88.5830%),
+Actual immutable e6ff31f pinned coverage measures 11196/12639 lines (88.5830%),
 10760/12948 regions (83.1016%) and 2183/2640 outcomes (82.6894%): gains of 184 lines,
 143 regions and 59 outcomes against accepted #84, with unchanged denominators,
 floors and exclusions. Protected 90% line/85% branch goals still require 180 covered
 lines and 61 outcomes. Four executable catalog entries and eight native mutation
 controls bring the totals to 67 each; actual 67 native mutants compile and are
-detected. Immutable source-bound validation and current-head hosted acceptance
-are required separately before publication/readiness. No semantic group,
+detected on that immutable source. Genuine unfiltered whole Cargo proof plus
+actual library compilation passes 1219/0; 444 native tests pass with 14 existing
+ignored microbenchmarks. All 658 production bodies/attributes and 48 reviewed
+boundaries remain unchanged; actual ordinary compiler expansion exactly matches
+accepted #84. Runtime MSRV 1.88 native/doc tests and isolated proof-free package/
+exact downstream output pass. Approved existing official normal/logging/native/
+Hayro observations were actually refreshed: 2 passed/7 unresolved/1 unsupported,
+with zero restored rejection credit. Current-head hosted acceptance remains a
+separate readiness gate. No semantic group,
 shard, timeout, pin or workflow job is added: the 27 groups/204 contrasts,
 six one-worker shards, max 4 active, 20-minute caps and 22 checks remain unchanged.
 All 266 selected requirements remain provisional: 123 functional/117 state/26 safety;
