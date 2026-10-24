@@ -38,9 +38,10 @@ Actual pinned coverage is11012/12639lines(87.1271%),
 exclusions. Protected90%line/85%branch goals still require364covered lines and
 120outcomes. The selected coordinate row gains current-state acceptance evidence
 but stays functional/provisional; all266remain123functional117state26safety,
-not an exhaustive denominator or independent normative approval. Exact
-immutable-source official observations and current-head hosted acceptance
-remain separately required. Capacity, fixture, conformance and broader
+not an exhaustive denominator or independent normative approval. Actual
+immutable-source official normal/logged/native/Hayro observations remain
+2passed/7unresolved/1unsupported,zero restoredcredit; current-head hosted
+acceptance remains separately required. Capacity, fixture, conformance and broader
 caller/resource/semantic gaps remain open; P04/P05/P06 are not complete.
 
 The preceding ready-for-owner-review#83 raw-state tranche fixes a reproduced **zero-width unaligned row

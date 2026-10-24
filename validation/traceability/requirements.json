@@ -661,7 +661,7 @@
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
     "specs/segments.rs": "2af078df6aa443b1d62f1664f1908af65b91a926797b2e48e8538ec76590c1e5",
-    "specs/symbol_text.rs": "8338692a6630fa322c02173a241a933e9f545e532ef9f26eecffaafa107e5c2c",
+    "specs/symbol_text.rs": "180372b5ab9cc251dff8c2234021ce6e64fa3ae4eaea48677e2bc90c3eac4ef5",
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
     "src/decode.rs": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
@@ -675,7 +675,7 @@
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
     "src/segment_header.rs": "d480ca075bd9d9193d5bf4e1045499ca15b0d999a505ba25f6ffe14289813da5",
-    "src/symbol_text.rs": "d501771af7c5014b890288cd774c42a5130def97aad9ae8610f950645abc78a0",
+    "src/symbol_text.rs": "d299e733e810ddf93cbb6ad1a25a44d537ee1478997be279036e1797f180d739",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
     "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
@@ -908,14 +908,20 @@
     "text-current-placement-acceptance": {
       "kind": "spec",
       "file": "specs/symbol_text.rs",
-      "module_path": ["symbol_text", "symbol_text_spec"],
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec"
+      ],
       "name": "text_placement_allowed",
       "role": "Exact current-placement acceptance under count, strip, work and checked-coordinate bounds; not entropy-to-state or whole rendering correctness."
     },
     "text-current-placement-witness": {
       "kind": "macro",
       "file": "proofs/production_impl/symbol_text.rs",
-      "module_path": ["symbol_text", "symbol_text_proofs"],
+      "module_path": [
+        "symbol_text",
+        "symbol_text_proofs"
+      ],
       "name": "production_symbol_current_placement_witness",
       "role": "Erased proved witness of the existing coordinate relation used to establish nonvacuous acceptance; not a trusted declaration."
     },
@@ -4932,7 +4938,7 @@
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::placement_for_current(old(self), within_strip_t, width, height, placement)",
-            "out.is_ok() == symbol_text_spec::text_placement_allowed(old(self), within_strip_t, width, height, old(resources), limits)"
+            "out.is_ok() == symbol_text_spec::text_placement_allowed(old(self), within_strip_t, width, height, old(resources), limits,)"
           ]
         }
       ],
