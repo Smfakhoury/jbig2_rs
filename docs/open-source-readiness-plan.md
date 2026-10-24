@@ -5,6 +5,62 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+PR86's first hosted coverage run measured the same passing 90.0625% line/
+85.0379% branch ratios, but the mutation step exceeded the existing 15-minute
+job limit. That canceled run receives no whole-job acceptance credit. The
+runner-only repair compiles pristine baseline test executables once per target,
+copies them outside Cargo's mutable output directory, and still runs exactly
+one passing baseline test and one freshly compiled failing mutant test for
+every control. Strict Cargo artifact target/profile/path/uniqueness checks and
+unit regressions prevent missing binaries or mutated baselines from receiving
+credit. All 76 actual controls pass with the exact CI nightly toolchain; the
+full strict byte-preserving local run completed in 112.915 seconds. All 390
+tooling tests pass, including deterministic Windows newline-translation
+emulation: mutation writes preserve original CRLF bytes rather than expanding
+them through text-mode I/O. No control, test, job, shard, timeout,
+pin, coverage denominator or threshold is removed or relaxed. Current-head
+hosted acceptance remains mandatory before marking ready.
+
+The current raw context/raster/metadata tranche adds 18 controls without changing
+any of the 658 production bodies, attributes, preconditions or postconditions.
+Proved models and reviewed boundaries are unchanged. New cases cover raw slot
+constructors and context sampling/history masks, complete refinement snapshots
+and rejected restore frames, wide bit-serial Huffman arithmetic, resource lookup/
+duplicate/reference retention order, page collector/structural-work quotas,
+profile and diagnostic trait routes, raw halftone slicing/peaks/clipping, and
+every header-only generic direct-dispatch gate. The latter uses metadata only:
+no raster entropy or generated encoded-family fixture is introduced.
+
+Actual immutable 58a16fc pinned coverage now meets BOTH protected numerical goals:
+11383/12639 runtime lines (90.0625%), 10967/12948 regions (84.7003%) and
+2245/2640 branch outcomes (85.0379%). Against accepted #85 this adds 187 covered
+lines, 207 regions and 62 outcomes. Every denominator, exclusion, floor and
+threshold is unchanged. This closes the numerical 90% line/85% branch gap,
+not P06's broader acceptance or the semantic/normative review gates.
+Actual unfiltered whole Cargo proof and nonempty compiled production library
+pass 1219/0. The complete immutable runtime collection passes 462 native tests,
+with 14 existing ignored microbenchmarks. All 76 actual native mutants compile
+and are detected, preserving the previous 67 and adding nine regressions.
+All 658 production bodies/attributes/contracts and 48 reviewed boundaries are
+unchanged; actual ordinary compiler expansion exactly matches accepted #85.
+Strict lint/format and isolated MSRV 1.88 proof-free package/exact downstream
+output checks pass. Existing approved official normal/logging/native/Hayro
+observations were freshly executed: 2 passed/7 unresolved/1 unsupported, with
+zero restored rejection credit. Current-head hosted acceptance remains required
+before marking ready, separately from draft publication.
+Seven executable catalog entries bring the total to 74 cases/126 unique tests.
+No CI job, shard, timeout, pin, release setting or trust declaration is changed.
+The same 27 semantic groups/204 contrasts, six one-worker shards, max four active
+and 22 hosted checks remain required before readiness.
+
+The owner merged #85 into main at 24de9bd after its actual 22 checks and
+independent hosted reconstruction passed. The current tranche targets main,
+not a detached former parent branch. P04/P05/P06 remain incomplete; all 266
+selected records remain provisional at 123 functional/117 state/26 safety.
+The seven official-positive cases, complete codec/caller/resource semantics,
+exhaustive decomposition/independent review, capacity authorization and paused
+encoded refinement/aggregation/custom-Huffman fixture decisions remain open.
+
 The current raw symbol/table metadata tranche adds ten independent controls
 without changing any of the 658 production functions, their attributes,
 preconditions, postconditions or reviewed boundaries. Every dictionary flag

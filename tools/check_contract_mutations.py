@@ -35,6 +35,84 @@ MUTATIONS = tuple(
     for case in TEXT_CASES if case["id"] in TEXT_RUNTIME_TESTS
 ) + (
     {
+        "id": "refinement-snapshot-template-policy-inverted",
+        "file": "src/generic_region.rs",
+        "before": (
+            "if self.template != snapshot.template {\n"
+            "            return Err(GenericRegionError::InvalidFlags(refinement_template_code("
+        ),
+        "after": (
+            "if self.template == snapshot.template {\n"
+            "            return Err(GenericRegionError::InvalidFlags(refinement_template_code("
+        ),
+        "target": "lib",
+        "test": "generic_region::tests::raw_refinement_snapshots_preserve_all_states_and_failure_frames",
+    },
+    {
+        "id": "generic-template-one-history-bit-discarded",
+        "file": "src/generic_region.rs",
+        "before": "(((top << 5) | previous) << 4) | (adaptive << 3) | history & 0x07",
+        "after": "(((top << 5) | previous) << 4) | (adaptive << 3) | history & 0x03",
+        "target": "lib",
+        "test": "generic_region::tests::raw_context_descriptors_match_literal_sampling_and_history_masks",
+    },
+    {
+        "id": "halftone-memory-uses-smaller-stage-peak",
+        "file": "src/halftone.rs",
+        "before": "let peak = if gray_peak >= render_peak {",
+        "after": "let peak = if gray_peak <= render_peak {",
+        "target": "lib",
+        "test": "halftone::tests::raw_halftone_memory_peaks_match_wide_stage_arithmetic",
+    },
+    {
+        "id": "collective-slicing-omits-pattern-vector-charge",
+        "file": "src/halftone.rs",
+        "before": "checked_memory_sum(collective_bytes, retained_pattern_bytes, vector_bytes, 0)",
+        "after": "checked_memory_sum(collective_bytes, retained_pattern_bytes, 0, 0)",
+        "target": "lib",
+        "test": "halftone::tests::raw_collective_slicing_matches_literal_pixels_and_exact_budget_boundaries",
+    },
+    {
+        "id": "page-collector-rejects-inclusive-decoded-limit",
+        "file": "src/decode.rs",
+        "before": "if next_bytes > self.decoded_limit {",
+        "after": "if next_bytes >= self.decoded_limit {",
+        "target": "lib",
+        "test": "decode::tests::raw_page_collector_guards_preserve_order_pixels_and_rejected_totals",
+    },
+    {
+        "id": "wide-code-final-carry-capacity-inverted",
+        "file": "src/huffman.rs",
+        "before": "if self.limbs[3] != u64::MAX {",
+        "after": "if self.limbs[3] == u64::MAX {",
+        "target": "lib",
+        "test": "huffman::tests::raw_wide_code_arithmetic_matches_independent_bit_serial_oracles",
+    },
+    {
+        "id": "structural-work-drops-reference-count",
+        "file": "src/document.rs",
+        "before": "let Some(actual) = partial.checked_add(reference_work) else {",
+        "after": "let Some(actual) = partial.checked_add(0) else {",
+        "target": "lib",
+        "test": "document::tests::raw_structural_work_matches_wide_counts_and_exact_rejection_priority",
+    },
+    {
+        "id": "direct-dispatch-ignores-sealed-stripe",
+        "file": "src/decode.rs",
+        "before": "|| page.last_stripe_end.is_some()\n        || page.open_stripe_max_row.is_some()",
+        "after": "|| false && page.last_stripe_end.is_some()\n        || page.open_stripe_max_row.is_some()",
+        "target": "lib",
+        "test": "decode::tests::raw_header_only_direct_dispatch_checks_every_page_gate_without_side_effects",
+    },
+    {
+        "id": "table-reference-gathering-discards-earlier-results",
+        "file": "src/decode.rs",
+        "before": "result.push(table);",
+        "after": "result.clear();\n            result.push(table);",
+        "target": "lib",
+        "test": "decode::tests::raw_referred_tables_preserve_order_repeats_missing_keys_and_retention",
+    },
+    {
         "id": "dictionary-reserved-bit-thirteen-accepted",
         "file": "src/symbol_text.rs",
         "before": (
@@ -650,6 +728,39 @@ def mutate(source: str, mutation: dict) -> str:
     return source.replace(mutation["before"], mutation["after"], 1)
 
 
+def build_test_binary(cargo: list[str], directory: Path, environment: dict, target: str) -> Path:
+    selector = ["--lib"] if target == "lib" else ["--test", target]
+    output = run(cargo + [
+        "test", "--offline", "--locked", *selector, "--no-run", "--message-format=json",
+    ], directory, environment, capture=True)
+    executables = []
+    for line in output.splitlines():
+        message = json.loads(line)
+        if not isinstance(message, dict):
+            raise ValueError("invalid Cargo artifact message")
+        if message.get("reason") != "compiler-artifact":
+            continue
+        metadata, profile = message.get("target", {}), message.get("profile", {})
+        if not isinstance(metadata, dict) or not isinstance(profile, dict):
+            raise ValueError("invalid Cargo test artifact metadata")
+        selected = (
+            metadata.get("kind") == (["lib"] if target == "lib" else ["test"])
+            and metadata.get("name") == ("jbig2_rs" if target == "lib" else target)
+        )
+        if not selected or profile.get("test") is not True:
+            continue
+        executable = message.get("executable")
+        if not isinstance(executable, str):
+            raise ValueError(f"missing Cargo test executable: {target}")
+        path = Path(executable).resolve()
+        if not path.is_relative_to(directory / "target") or not path.is_file():
+            raise ValueError(f"missing or out-of-tree Cargo test executable: {target}")
+        executables.append(path)
+    if len(executables) != 1:
+        raise ValueError(f"missing or ambiguous Cargo test executable: {target}")
+    return executables[0]
+
+
 def check_mutations(toolchain: str) -> dict:
     if not MUTATIONS or len({case["id"] for case in MUTATIONS}) != len(MUTATIONS):
         raise ValueError("missing or duplicate contract mutations")
@@ -667,24 +778,28 @@ def check_mutations(toolchain: str) -> dict:
         for name in ("Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE"):
             shutil.copyfile(ROOT / name, directory / name)
         environment = isolated_environment(directory)
+        baseline_directory = directory / "baseline-tests"
+        baseline_directory.mkdir()
+        baselines = {}
+        for target in dict.fromkeys(mutation["target"] for mutation in MUTATIONS):
+            executable = build_test_binary(cargo, directory, environment, target)
+            baseline = baseline_directory / (target + executable.suffix)
+            shutil.copy2(executable, baseline)
+            baselines[target] = baseline
         for mutation in MUTATIONS:
-            selector = ["--lib"] if mutation["target"] == "lib" else ["--test", mutation["target"]]
-            command = cargo + [
-                "test", "--offline", "--locked", *selector,
-                mutation["test"], "--", "--exact",
-            ]
-            baseline = run(command, directory, environment, capture=True)
+            baseline = run(
+                [str(baselines[mutation["target"]]), mutation["test"], "--exact"],
+                directory, environment, capture=True,
+            )
             if not re.search(r"test result: ok\. 1 passed; 0 failed;", baseline):
                 raise ValueError(f"baseline did not run exactly one passing test: {mutation['id']}")
             path = directory / mutation["file"]
             original = path.read_bytes()
             try:
-                path.write_text(mutate(original.decode("utf-8"), mutation), encoding="utf-8")
-                run(cargo + [
-                    "test", "--offline", "--locked", *selector, "--no-run",
-                ], directory, environment, capture=True)
+                path.write_bytes(mutate(original.decode("utf-8"), mutation).encode("utf-8"))
+                executable = build_test_binary(cargo, directory, environment, mutation["target"])
                 process = subprocess.run(
-                    command, cwd=directory, env=environment,
+                    [str(executable), mutation["test"], "--exact"], cwd=directory, env=environment,
                     capture_output=True, text=True, check=False,
                 )
                 if process.returncode == 0 or not re.search(

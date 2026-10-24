@@ -2,6 +2,45 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-RAW-CONTEXT-RESTORE-FRAMES",
+      "surface": "raw refinement context snapshots, template/layout compatibility and retained/managed limits",
+      "expected": "all retained states copy exactly and remain independent; wrong-template/layout and limit failures preserve complete destination statistics and exact diagnostic fields",
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::raw_refinement_snapshots_preserve_all_states_and_failure_frames"}
+      ]
+    },
+    {
+      "id": "NEG-RAW-RASTER-BUDGET-GEOMETRY",
+      "surface": "raw halftone grid arithmetic, pattern headers, bitmap shapes, collective slicing and signed clipping; no coded-family fixture",
+      "expected": "wide stage peaks and exact inclusive memory/work limits; complete literal sliced pixels and padding; exact shape/header fields and preserved storage on overflow; half-open skip geometry",
+      "tests": [
+        {"target": "lib", "name": "halftone::tests::raw_halftone_memory_peaks_match_wide_stage_arithmetic"},
+        {"target": "lib", "name": "halftone::tests::raw_pattern_and_bitmap_preflights_preserve_exact_fields_and_priority"},
+        {"target": "lib", "name": "halftone::tests::raw_collective_slicing_matches_literal_pixels_and_exact_budget_boundaries"},
+        {"target": "lib", "name": "halftone::tests::raw_render_extreme_coordinates_preserve_storage_on_checked_overflow"},
+        {"target": "lib", "name": "halftone::tests::raw_gray_shape_guards_and_skip_rectangles_use_exact_half_open_geometry"}
+      ]
+    },
+    {
+      "id": "NEG-RAW-COLLECTOR-METADATA-FRAMES",
+      "surface": "page collector quotas, structural-work arithmetic, profile/retention metadata and header-only generic direct-dispatch preflight",
+      "expected": "exact overflow/limit/tag/retention diagnostics and counter effects; accepted page order/pixels; every direct-page gate and exact work boundary with no raster entropy input or mutation",
+      "tests": [
+        {"target": "lib", "name": "decode::tests::raw_page_collector_guards_preserve_order_pixels_and_rejected_totals"},
+        {"target": "lib", "name": "document::tests::raw_structural_work_matches_wide_counts_and_exact_rejection_priority"},
+        {"target": "lib", "name": "document::tests::raw_profile_and_retention_metadata_rejects_inconsistent_tags_and_frames"},
+        {"target": "lib", "name": "decode::tests::raw_header_only_direct_dispatch_checks_every_page_gate_without_side_effects"}
+      ]
+    },
+    {
+      "id": "NEG-RAW-TRAIT-ERROR-BRIDGES",
+      "surface": "actual From trait routes for symbol/text, arithmetic, generic, MMR and Huffman errors",
+      "expected": "every symbol variant and complete nested marker/context/I/O/allocation payload is preserved without a success-shaped fallback",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::raw_error_trait_bridges_preserve_all_symbol_variants_and_nested_fields"}
+      ]
+    },
+    {
       "id": "NEG-RAW-HUFFMAN-LINE-METADATA",
       "surface": "raw normal and special line descriptors only, without encoded custom-Huffman fixtures",
       "expected": "wide endpoint/contiguity policy and explicit order, duplicate, active/disabled lower-bound and field cases produce exact overflow, partition and special-line classifications",

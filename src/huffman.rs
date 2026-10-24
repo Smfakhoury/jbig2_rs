@@ -2367,6 +2367,148 @@ mod tests {
     }
 
     #[test]
+    fn raw_wide_code_arithmetic_matches_independent_bit_serial_oracles() {
+        for low in [0, 1, 1_u64 << 63, u64::MAX] {
+            for middle in [0, 1, u64::MAX] {
+                for high in [0, 1, u64::MAX] {
+                    for top in [0, 1, 1_u64 << 63, u64::MAX] {
+                        let value = WideCode {
+                            limbs: [low, middle, high, top],
+                        };
+                        for increment in [0, 1, 2, u32::MAX] {
+                            let mut expected = [0_u64; 4];
+                            let mut carry = false;
+                            for bit in 0..256 {
+                                let a = value.limbs[bit / 64] & (1 << (bit % 64)) != 0;
+                                let b = bit < 32 && increment & (1 << bit) != 0;
+                                if a ^ b ^ carry {
+                                    expected[bit / 64] |= 1 << (bit % 64);
+                                }
+                                carry = u8::from(a) + u8::from(b) + u8::from(carry) >= 2;
+                            }
+                            assert_eq!(
+                                value.checked_add_small(increment),
+                                if carry {
+                                    None
+                                } else {
+                                    Some(WideCode { limbs: expected })
+                                }
+                            );
+                        }
+                        let expected = [
+                            low.wrapping_mul(2),
+                            middle.wrapping_mul(2) | u64::from(low >= 1 << 63),
+                            high.wrapping_mul(2) | u64::from(middle >= 1 << 63),
+                            top.wrapping_mul(2) | u64::from(high >= 1 << 63),
+                        ];
+                        assert_eq!(
+                            value.checked_shift_left_one(),
+                            if top >= 1 << 63 {
+                                None
+                            } else {
+                                Some(WideCode { limbs: expected })
+                            }
+                        );
+                        for bit in [0, 1] {
+                            let mut appended = expected;
+                            appended[0] |= u64::from(bit);
+                            assert_eq!(
+                                value.append_bit(bit),
+                                if top >= 1 << 63 {
+                                    None
+                                } else {
+                                    Some(WideCode { limbs: appended })
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        for left in [0, 1, 2, 1_u64 << 63, u64::MAX] {
+            for right in [0, 1, 2, 1_u64 << 63, u64::MAX] {
+                for borrow in [false, true] {
+                    let subtrahend = u128::from(right) + u128::from(borrow);
+                    let difference = u128::from(left) + (1_u128 << 64) - subtrahend;
+                    assert_eq!(
+                        subtract_limb(left, right, borrow),
+                        (
+                            u64::try_from(difference & u128::from(u64::MAX)).unwrap(),
+                            u128::from(left) < subtrahend,
+                        )
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn raw_wide_distances_match_bit_serial_subtraction_and_exclusive_bounds() {
+        let values = [
+            WideCode {
+                limbs: [0, 0, 0, 0],
+            },
+            WideCode {
+                limbs: [1, 0, 0, 0],
+            },
+            WideCode {
+                limbs: [u64::from(u32::MAX), 0, 0, 0],
+            },
+            WideCode {
+                limbs: [u64::from(u32::MAX) + 1, 0, 0, 0],
+            },
+            WideCode {
+                limbs: [u64::MAX, 0, 0, 0],
+            },
+            WideCode {
+                limbs: [0, 1, 0, 0],
+            },
+            WideCode {
+                limbs: [u64::MAX, u64::MAX, 0, 0],
+            },
+            WideCode {
+                limbs: [0, 0, 1, 0],
+            },
+            WideCode {
+                limbs: [0, 0, 0, 1],
+            },
+            WideCode {
+                limbs: [u64::MAX; 4],
+            },
+        ];
+        for upper in values {
+            for lower in values {
+                let mut difference = [false; 256];
+                let mut borrow = false;
+                for (bit, output) in difference.iter_mut().enumerate() {
+                    let a = upper.limbs[bit / 64] & (1 << (bit % 64)) != 0;
+                    let b = lower.limbs[bit / 64] & (1 << (bit % 64)) != 0;
+                    *output = a ^ b ^ borrow;
+                    borrow = u8::from(a) < u8::from(b) + u8::from(borrow);
+                }
+                let small = if borrow || difference[32..].iter().any(|bit| *bit) {
+                    None
+                } else {
+                    Some(
+                        difference[..32]
+                            .iter()
+                            .enumerate()
+                            .fold(0_u32, |value, (index, bit)| {
+                                value | (u32::from(*bit) << index)
+                            }),
+                    )
+                };
+                for bound in [0, 1, 2, u32::MAX] {
+                    assert_eq!(
+                        upper.small_distance_from(lower, bound),
+                        small.filter(|value| *value < bound)
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
     fn raw_normal_ranges_match_wide_endpoint_and_contiguity_rules() {
         for low in [
             i64::MIN,
