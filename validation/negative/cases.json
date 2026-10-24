@@ -252,6 +252,23 @@
       ]
     },
     {
+      "id": "NEG-RAW-CONTEXT-MEMORY-WORK",
+      "surface": "raw statistics memory and raster-work guard inputs",
+      "expected": "wide-arithmetic overflow priority and exact inclusive retained, managed-memory and work limits without allocating large images",
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::raw_context_memory_guards_match_wide_arithmetic_and_priority"},
+        {"target": "lib", "name": "generic_region::tests::raw_raster_work_guards_cover_exact_addition_overflow_boundaries"}
+      ]
+    },
+    {
+      "id": "NEG-GENERIC-SESSION-PREFLIGHT",
+      "surface": "existing marker prefix with raw row counts, skip geometry and resource limits",
+      "expected": "exact preflight errors preserve the stream registers, statistics, work counter and direct bitmap",
+      "tests": [
+        {"target": "lib", "name": "generic_region::tests::generic_preflight_errors_preserve_stream_statistics_work_and_direct_bytes"}
+      ]
+    },
+    {
       "id": "NEG-GENERIC-FRAMING-CONTROLS",
       "surface": "raw generic framing and zero-row constructor preflight",
       "expected": "exact terminator, row-count, EOF and normalization-memory errors; rejected direct targets unchanged",

@@ -26,77 +26,77 @@
     {
       "id": "decode::PageSink::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::F::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::Decoder::decode_reader_with_sink",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::PageCollector::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "decode::write_page_to_sink",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::decode_segments",
       "file": "src/decode.rs",
-      "file_sha256": "2b788dc381403b81388aaf8e1c03594e17606ef89d058d3a16a276fc25da4318",
+      "file_sha256": "5f8dd8365e79cb4bf362925911361837798bff4bad29eed95596b875288cc5f6",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "193fea07ab59f2c5030051cbb17ec2635dabfbabd6f966cfc0877d6de4ee41cb",
+      "file_sha256": "2e81d66977d7586726bf5e8d53c685427a7541fe2771e74a952cd0531825f05e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::default",
       "file": "src/document.rs",
-      "file_sha256": "193fea07ab59f2c5030051cbb17ec2635dabfbabd6f966cfc0877d6de4ee41cb",
+      "file_sha256": "2e81d66977d7586726bf5e8d53c685427a7541fe2771e74a952cd0531825f05e",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "document::read_bounded_input",
       "file": "src/document.rs",
-      "file_sha256": "193fea07ab59f2c5030051cbb17ec2635dabfbabd6f966cfc0877d6de4ee41cb",
+      "file_sha256": "2e81d66977d7586726bf5e8d53c685427a7541fe2771e74a952cd0531825f05e",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
@@ -159,42 +159,42 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "db632bf1feb7079f8fbc723d354ad703877719ee8f3c0a68a38ce8ac08d1c00f",
+      "file_sha256": "952e252de64e8e0ef829ad8bdb878328a7cdf5fdef4cbe552ff65ed0170a34f1",
       "status": "reviewed-verifier-limitation",
       "reason": "Standard Display formatting uses formatting machinery not directly verified by pinned Verus; this is not a raster-kernel or fallible-allocation limitation."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "db632bf1feb7079f8fbc723d354ad703877719ee8f3c0a68a38ce8ac08d1c00f",
+      "file_sha256": "952e252de64e8e0ef829ad8bdb878328a7cdf5fdef4cbe552ff65ed0170a34f1",
       "status": "reviewed-verifier-limitation",
       "reason": "The standard Error trait source method is not directly verified by pinned Verus; raster algorithms and allocation specifications are accounted for separately."
     },
     {
       "id": "generic_region::GenericRegionError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "db632bf1feb7079f8fbc723d354ad703877719ee8f3c0a68a38ce8ac08d1c00f",
+      "file_sha256": "952e252de64e8e0ef829ad8bdb878328a7cdf5fdef4cbe552ff65ed0170a34f1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#2",
       "file": "src/generic_region.rs",
-      "file_sha256": "db632bf1feb7079f8fbc723d354ad703877719ee8f3c0a68a38ce8ac08d1c00f",
+      "file_sha256": "952e252de64e8e0ef829ad8bdb878328a7cdf5fdef4cbe552ff65ed0170a34f1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::GenericRegionError::from#3",
       "file": "src/generic_region.rs",
-      "file_sha256": "db632bf1feb7079f8fbc723d354ad703877719ee8f3c0a68a38ce8ac08d1c00f",
+      "file_sha256": "952e252de64e8e0ef829ad8bdb878328a7cdf5fdef4cbe552ff65ed0170a34f1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "generic_region::DecodeError::from",
       "file": "src/generic_region.rs",
-      "file_sha256": "db632bf1feb7079f8fbc723d354ad703877719ee8f3c0a68a38ce8ac08d1c00f",
+      "file_sha256": "952e252de64e8e0ef829ad8bdb878328a7cdf5fdef4cbe552ff65ed0170a34f1",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     },

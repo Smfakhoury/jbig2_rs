@@ -16,6 +16,77 @@ from check_distribution import isolated_environment, run
 ROOT = Path(__file__).resolve().parents[1]
 MUTATIONS = (
     {
+        "id": "empty-unaligned-row-blit-rejected",
+        "file": "src/bitmap.rs",
+        "before": (
+            "if width == 0 {\n"
+            "            return Ok(());\n"
+            "        }\n"
+            "        let mut source_bit = source_x;"
+        ),
+        "after": (
+            "if width == 0 {\n"
+            "            return Err(MalformedError::IntegerOverflow);\n"
+            "        }\n"
+            "        let mut source_bit = source_x;"
+        ),
+        "target": "lib",
+        "test": "bitmap::tests::zero_width_unaligned_row_blit_preserves_all_storage",
+    },
+    {
+        "id": "row-blit-source-bit-alignment-discarded",
+        "file": "src/bitmap.rs",
+        "before": (
+            "let source_chunk = read_shifted_chunk(&source.data, source_byte, source_bit % 8)\n"
+            "                .ok_or(MalformedError::IntegerOverflow)?;\n"
+            "            let destination_chunk =\n"
+            "                read_chunk(&self.data, destination_index).ok_or(MalformedError::IntegerOverflow)?;"
+        ),
+        "after": (
+            "let source_chunk = read_shifted_chunk(&source.data, source_byte, 0)\n"
+            "                .ok_or(MalformedError::IntegerOverflow)?;\n"
+            "            let destination_chunk =\n"
+            "                read_chunk(&self.data, destination_index).ok_or(MalformedError::IntegerOverflow)?;"
+        ),
+        "target": "lib",
+        "test": "bitmap::tests::row_batch_chunking_matches_independent_ordered_bit_updates",
+    },
+    {
+        "id": "generic-snapshot-rejects-inclusive-retained-limit",
+        "file": "src/generic_region.rs",
+        "before": "if storage_bytes > limits.max_retained_state_bytes {",
+        "after": "if storage_bytes >= limits.max_retained_state_bytes {",
+        "target": "lib",
+        "test": "generic_region::tests::generic_snapshots_copy_all_states_and_preserve_rejected_targets",
+    },
+    {
+        "id": "generic-typical-work-row-charge-lost",
+        "file": "src/generic_region.rs",
+        "before": "work = next_work;\n    }\n    Ok(work)\n}",
+        "after": "work = next_work - u64::from(rows);\n    }\n    Ok(work)\n}",
+        "target": "lib",
+        "test": "generic_region::tests::raw_raster_work_guards_cover_exact_addition_overflow_boundaries",
+    },
+    {
+        "id": "reference-role-rejects-inclusive-table-count",
+        "file": "src/document.rs",
+        "before": "if table_count > maximum_tables {",
+        "after": "if table_count >= maximum_tables {",
+        "target": "lib",
+        "test": "document::tests::raw_reference_role_matrix_matches_numeric_tag_policy_locally_and_globally",
+    },
+    {
+        "id": "failed-stripe-seal-clobbers-last-end",
+        "file": "src/decode.rs",
+        "before": "let next_open = checked_seal_stripe_state(page.open_stripe_max_row, row)?;",
+        "after": (
+            "page.last_stripe_end = Some(row);\n"
+            "    let next_open = checked_seal_stripe_state(page.open_stripe_max_row, row)?;"
+        ),
+        "target": "lib",
+        "test": "decode::tests::raw_stripe_sealing_preserves_pixels_and_rejected_page_state",
+    },
+    {
         "id": "owned-generic-normalization-appends-wrong-marker",
         "file": "src/generic_region.rs",
         "before": (
