@@ -175,6 +175,13 @@ pub(crate) struct SegmentHeader {
         final(reader).bytes@ == old(reader).bytes@,
         final(reader).position <= final(reader).bytes@.len(),
         out.is_ok() ==> final(reader).position > old(reader).position,
+        match out {
+            Ok(header) => crate::spec::segments::segment_header_fields(
+                &header, old(reader).bytes@, old(reader).position as int,
+                final(reader).position as int,
+            ),
+            Err(_) => true,
+        },
 ))]
 pub(crate) fn parse_segment_header(
     reader: &mut ByteReader<'_>,
@@ -193,6 +200,8 @@ pub(crate) fn parse_segment_header(
     let data_length = decode_data_length(segment_type, encoded_data_length)?;
     let byte_length = header_byte_length(start, reader.position())?;
 
+    #[cfg(verus_keep_ghost)]
+    production_segment_header_fields!();
     Ok(SegmentHeader {
         number,
         segment_type,
@@ -205,18 +214,29 @@ pub(crate) fn parse_segment_header(
     })
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires old(reader).position <= old(reader).bytes@.len(),
     ensures
         final(reader).bytes@ == old(reader).bytes@,
         final(reader).position <= final(reader).bytes@.len(),
         final(reader).position >= old(reader).position,
+        match out {
+            Ok((references, retention)) =>
+                crate::spec::segments::referred_header_fields(
+                    old(reader).bytes@, old(reader).position as int, segment_number,
+                    references@, retention.values@, final(reader).position as int,
+                )
+                && references@.len() <= limits.max_references_per_segment,
+            Err(_) => true,
+        },
 ))]
 fn parse_referred_segments(
     reader: &mut ByteReader<'_>,
     segment_number: u32,
     limits: &Limits,
 ) -> Result<(Vec<u32>, RetentionFlags), DecodeError> {
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost start = reader.position; }
     let first_count_byte = reader.read_u8()?;
     let count_code = first_count_byte >> 5;
     validate_count_code(count_code)?;
@@ -224,6 +244,8 @@ fn parse_referred_segments(
         0..=4 => {
             let count = validate_short_count(first_count_byte)?;
             let bytes = [first_count_byte];
+            #[cfg(verus_keep_ghost)]
+            production_segment_short_flags!(reader, start, bytes);
             (count, RetentionFlags::from_bytes(count, &bytes)?)
         }
         7 => {
@@ -242,6 +264,8 @@ fn parse_referred_segments(
         }
         _ => return Err(MalformedError::IntegerOverflow.into()),
     };
+    #[cfg(verus_keep_ghost)]
+    production_segment_count_fields!(reader, start, count, retention_flags);
     enforce_reference_limit(count, limits)?;
 
     let Ok(count_usize) = usize::try_from(count) else {
@@ -257,6 +281,12 @@ fn parse_referred_segments(
             requested_bytes: allocation_bytes,
         });
     }
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost references_begin = reader.position; }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(referred_segments@.len() == 0);
+    }
     read_referred_segments_into(
         reader,
         segment_number,
@@ -264,15 +294,42 @@ fn parse_referred_segments(
         reference_bytes,
         &mut referred_segments,
     )?;
+    #[cfg(verus_keep_ghost)]
+    production_segment_reference_fields!(
+        reader,
+        start,
+        count,
+        segment_number,
+        reference_bytes,
+        references_begin,
+        referred_segments,
+        retention_flags,
+    );
     Ok((referred_segments, retention_flags))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires old(reader).position <= old(reader).bytes@.len(),
     ensures
         final(reader).bytes@ == old(reader).bytes@,
         final(reader).position <= final(reader).bytes@.len(),
         final(reader).position >= old(reader).position,
+        out.is_ok() ==> {
+            &&& final(reader).position == old(reader).position
+                + count as nat * reference_bytes as nat
+            &&& final(referred_segments)@.len() == old(referred_segments)@.len() + count
+            &&& final(referred_segments)@.subrange(0, old(referred_segments)@.len() as int)
+                == old(referred_segments)@
+            &&& forall|index: int| 0 <= index < count ==>
+                #[trigger] final(referred_segments)@[old(referred_segments)@.len() + index]
+                    < segment_number
+                && final(referred_segments)@[old(referred_segments)@.len() + index]
+                    == crate::spec::segments::reference_value_at(
+                        old(reader).bytes@,
+                        old(reader).position + index * reference_bytes,
+                        reference_bytes,
+                    )
+        },
 ))]
 fn read_referred_segments_into(
     reader: &mut ByteReader<'_>,
@@ -288,6 +345,19 @@ fn read_referred_segments_into(
             reader.position <= reader.bytes@.len(),
             reader.bytes@ == old(reader).bytes@,
             reader.position >= old(reader).position,
+            reader.position == old(reader).position + index as nat * reference_bytes as nat,
+            referred_segments@.len() == old(referred_segments)@.len() + index,
+            referred_segments@.subrange(0, old(referred_segments)@.len() as int)
+                == old(referred_segments)@,
+            forall|completed: int| 0 <= completed < index ==>
+                #[trigger] referred_segments@[old(referred_segments)@.len() + completed]
+                    < segment_number
+                && referred_segments@[old(referred_segments)@.len() + completed]
+                    == crate::spec::segments::reference_value_at(
+                        old(reader).bytes@,
+                        old(reader).position + completed * reference_bytes,
+                        reference_bytes,
+                    ),
         decreases count - index,
     ))]
     while index < count {
@@ -661,6 +731,76 @@ mod tests {
         }
         input.extend_from_slice(&length.to_be_bytes());
         input
+    }
+
+    #[test]
+    fn complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent() {
+        let mut cases = 0;
+        for number in [256_u32, 257, 65_536, 65_537, u32::MAX] {
+            for count in [0, 1, 4, 5, 8, 9] {
+                let references: Vec<_> = (0..count)
+                    .map(|index| if index % 2 == 0 { 0 } else { number - 1 })
+                    .collect();
+                let retained: Vec<_> = (0..=count)
+                    .map(|index| (index * 7 + count) % 3 == 1)
+                    .collect();
+                for (code, kind) in DEFINED_TYPES {
+                    for deferred in [false, true] {
+                        for long_page in [false, true] {
+                            for length in [0, 1, 0x0102_0304, u32::MAX - 1, u32::MAX] {
+                                if length == u32::MAX && kind != SegmentType::ImmediateGenericRegion
+                                {
+                                    continue;
+                                }
+                                let flags =
+                                    code | (u8::from(deferred) << 7) | (u8::from(long_page) << 6);
+                                let page = if long_page { 0x0102_0304 } else { 0xfe };
+                                let encoded = generated_header(
+                                    number,
+                                    flags,
+                                    page,
+                                    &references,
+                                    &retained,
+                                    length,
+                                );
+                                let mut input = vec![0x11, 0x22, 0x33];
+                                input.extend_from_slice(&encoded);
+                                input.extend_from_slice(&[0xaa, 0x55, 0x5a]);
+                                let mut reader = ByteReader::new(&input);
+                                reader.read_bytes(3).unwrap();
+                                let header =
+                                    parse_segment_header(&mut reader, &Limits::default()).unwrap();
+                                assert_eq!(header.number, number);
+                                assert_eq!(header.segment_type, kind);
+                                assert_eq!(header.deferred_non_retain, deferred);
+                                assert_eq!(header.referred_segments, references);
+                                assert_eq!(
+                                    header.retention_flags.values,
+                                    retained
+                                        .iter()
+                                        .map(|value| u8::from(*value))
+                                        .collect::<Vec<_>>()
+                                );
+                                assert_eq!(header.page_association, page);
+                                assert_eq!(
+                                    header.data_length,
+                                    if length == u32::MAX {
+                                        None
+                                    } else {
+                                        Some(length)
+                                    }
+                                );
+                                assert_eq!(header.byte_length, encoded.len());
+                                assert_eq!(reader.position(), 3 + encoded.len());
+                                assert_eq!(reader.remaining_bytes(), &[0xaa, 0x55, 0x5a]);
+                                cases += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(cases, 10_680);
     }
 
     #[test]

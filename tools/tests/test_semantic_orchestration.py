@@ -185,24 +185,24 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertFalse((self.output / runner.SUMMARY).exists())
 
     def test_measured_complete_profile_leaves_timeout_headroom(self):
-        # Worst completed costs from runs 39937231524/39941605340.
-        # The enlarged caller group gets explicit 750-second headroom.
+        # Accepted source-bound run 40127148868 plus 10% scheduling headroom.
+        # The header group uses its complete 252.722-second local run plus 10%.
         # Scheduling estimates are not hosted acceptance.
         measured = {
-            "reset": (2, 44), "document-count": (13, 391),
-            "bitmap-copy": (6, 204), "retention": (3, 100),
-            "value-bridge": (5, 181), "mmr-span": (8, 245),
-            "region-dispatch": (3, 85), "text-batch": (4, 109),
-            "bitmap-chunk": (4, 130), "bitmap-compose": (5, 125),
-            "black-span": (6, 155), "arithmetic-decision": (15, 442),
-            "arithmetic-refill": (6, 123), "arithmetic-initialization": (6, 140),
-            "arithmetic-normalization": (6, 155), "operator-bit": (4, 115),
-            "arithmetic-integer": (9, 220), "iaid-state": (6, 167),
-            "integer-state": (9, 190), "arithmetic-codec": (19, 750),
-            "halftone-header": (9, 179), "reader-error": (9, 249),
-            "mmr-prefix": (4, 117), "mmr-run": (4, 119),
-            "mmr-horizontal": (6, 135), "symbol-cardinality": (6, 178),
-            "mmr-reference": (6, 174),
+            "reset": (2, 62), "document-count": (13, 445),
+            "bitmap-copy": (8, 204), "retention": (3, 110),
+            "value-bridge": (5, 152), "mmr-span": (8, 243),
+            "region-dispatch": (3, 91), "text-batch": (11, 400),
+            "bitmap-chunk": (4, 98), "bitmap-compose": (7, 158),
+            "black-span": (6, 175), "arithmetic-decision": (15, 302),
+            "arithmetic-refill": (6, 173), "arithmetic-initialization": (6, 111),
+            "arithmetic-normalization": (6, 116), "operator-bit": (4, 125),
+            "arithmetic-integer": (9, 184), "iaid-state": (6, 160),
+            "integer-state": (9, 201), "arithmetic-codec": (19, 619),
+            "halftone-header": (9, 184), "reader-error": (9, 198),
+            "mmr-prefix": (4, 98), "mmr-run": (4, 96),
+            "mmr-horizontal": (6, 186), "symbol-cardinality": (11, 387),
+            "mmr-reference": (11, 292), "segment-header": (10, 278),
         }
         checks = runner.configured_checks()
         self.assertEqual({check[0] for check in checks}, set(measured))

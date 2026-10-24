@@ -15,3 +15,86 @@ macro_rules! production_count_code_partition {
         }
     };
 }
+
+macro_rules! production_segment_short_flags {
+    ($reader:ident, $start:ident, $bytes:ident) => {
+        proof! {
+            vstd::assert_seqs_equal!(
+                $bytes@, $reader.bytes@.subrange($start as int, $start as int + 1),
+            );
+        }
+    };
+}
+
+macro_rules! production_segment_header_fields {
+    () => {
+        proof! {
+            reveal(crate::spec::segments::segment_header_fields);
+        }
+    };
+}
+
+macro_rules! production_segment_count_fields {
+    ($reader:ident, $start:ident, $count:ident, $retention:ident) => {
+        proof! {
+            assert($count == crate::spec::segments::header_reference_count(
+                $reader.bytes@, $start as int,
+            ));
+            assert($reader.position as int == crate::spec::segments::header_references_start(
+                $reader.bytes@, $start as int,
+            ));
+            assert(crate::spec::segments::retention_values_match(
+                $retention.values@,
+                $reader.bytes@.subrange(
+                    crate::spec::segments::header_retention_start($reader.bytes@, $start as int),
+                    $reader.position as int,
+                ),
+            ));
+        }
+    };
+}
+
+macro_rules! production_segment_reference_fields {
+    ($reader:ident, $start:ident, $count:ident, $number:ident, $width:ident,
+        $references_begin:ident, $references:ident, $retention:ident $(,)?) => {
+        proof! {
+            let data = $reader.bytes@;
+            let flags_start = crate::spec::segments::header_retention_start(data, $start as int);
+            let references_start = crate::spec::segments::header_references_start(data, $start as int);
+            assert($references@.len() == $count);
+            assert(references_start == $references_begin as int);
+            assert(flags_start <= references_start <= $reader.position <= data.len());
+            assert($count <= 0x1fff_ffff);
+            assert(data[$start as int] >> 5 <= 4 || data[$start as int] >> 5 == 7);
+            assert(data[$start as int] >> 5 <= 4 || $start + 4 <= data.len());
+            assert(if data[$start as int] >> 5 == 7 {
+                $count > 4
+            } else {
+                crate::spec::segments::short_count_valid(data[$start as int])
+            });
+            assert($retention.values@.len() == $count as nat + 1);
+            assert(data[$start as int] >> 5 == 7 ==>
+                crate::spec::segments::unused_retention_bits_zero(
+                    ($count + 1) as u32, data.subrange(flags_start, references_start),
+                ));
+            assert($reader.position as int == references_start
+                + $references@.len() * crate::spec::segments::reference_width($number));
+            assert forall|index: int| 0 <= index < $references@.len() implies
+                #[trigger] $references@[index] < $number
+                    && $references@[index] == crate::spec::segments::reference_value_at(
+                        data, references_start + index * $width, $width,
+                    ) by {
+                assert(0 <= index < $count);
+                assert($references@[0 + index] < $number);
+                assert($references@[0 + index]
+                    == crate::spec::segments::reference_value_at(
+                        data, $references_begin + index * $width, $width,
+                    ));
+            }
+            assert(crate::spec::segments::referred_header_fields(
+                $reader.bytes@, $start as int, $number,
+                $references@, $retention.values@, $reader.position as int,
+            ));
+        }
+    };
+}

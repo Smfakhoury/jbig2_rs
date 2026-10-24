@@ -131,6 +131,129 @@ pub(crate) open spec fn be_u32_at(bytes: Seq<u8>, start: int) -> u32
         | (bytes[start + 3] as u32)
 }
 
+pub(crate) open spec fn reference_value_at(bytes: Seq<u8>, start: int, width: u8) -> u32
+    recommends
+        width == 1 || width == 2 || width == 4,
+        0 <= start,
+        start + width <= bytes.len(),
+{
+    if width == 1 {
+        bytes[start] as u32
+    } else if width == 2 {
+        (((bytes[start] as u16) << 8) | bytes[start + 1] as u16) as u32
+    } else {
+        be_u32_at(bytes, start)
+    }
+}
+
+pub(crate) open spec fn header_reference_count(bytes: Seq<u8>, start: int) -> u32
+    recommends
+        0 <= start < bytes.len(),
+        bytes[start] >> 5 <= 4 || start + 4 <= bytes.len(),
+{
+    if bytes[start] >> 5 <= 4 {
+        (bytes[start] >> 5) as u32
+    } else {
+        be_u32_at(bytes, start) & 0x1fff_ffff
+    }
+}
+
+pub(crate) open spec fn header_retention_start(bytes: Seq<u8>, start: int) -> int
+    recommends 0 <= start < bytes.len(),
+{
+    if bytes[start] >> 5 == 7 { start + 4 } else { start }
+}
+
+pub(crate) open spec fn header_references_start(bytes: Seq<u8>, start: int) -> int
+    recommends
+        0 <= start < bytes.len(),
+        bytes[start] >> 5 <= 4 || start + 4 <= bytes.len(),
+{
+    if bytes[start] >> 5 == 7 {
+        start + 4 + (header_reference_count(bytes, start) as int + 8) / 8
+    } else {
+        start + 1
+    }
+}
+
+pub(crate) open spec fn referred_header_fields(
+    bytes: Seq<u8>,
+    start: int,
+    number: u32,
+    references: Seq<u32>,
+    retention: Seq<u8>,
+    end: int,
+) -> bool {
+    &&& 0 <= start < bytes.len()
+    &&& bytes[start] >> 5 <= 4 || bytes[start] >> 5 == 7
+    &&& bytes[start] >> 5 <= 4 || start + 4 <= bytes.len()
+    &&& {
+        let count = header_reference_count(bytes, start);
+        let flags_start = header_retention_start(bytes, start);
+        let references_start = header_references_start(bytes, start);
+        let width = reference_width(number);
+        &&& count <= 0x1fff_ffff
+        &&& if bytes[start] >> 5 == 7 {
+            count > 4
+        } else {
+            short_count_valid(bytes[start])
+        }
+        &&& flags_start <= references_start <= end <= bytes.len()
+        &&& references.len() == count
+        &&& retention.len() == count as nat + 1
+        &&& retention_values_match(retention, bytes.subrange(flags_start, references_start))
+        &&& (bytes[start] >> 5 == 7 ==> unused_retention_bits_zero(
+            (count + 1) as u32, bytes.subrange(flags_start, references_start),
+        ))
+        &&& end == references_start + references.len() * width
+        &&& forall|index: int| 0 <= index < references.len() ==>
+            #[trigger] references[index] < number
+                && references[index] == reference_value_at(
+                    bytes, references_start + index * width, width,
+                )
+    }
+}
+
+#[verifier::opaque]
+pub(crate) open spec fn segment_header_fields(
+    header: &crate::segment_header::SegmentHeader,
+    bytes: Seq<u8>,
+    start: int,
+    end: int,
+) -> bool {
+    &&& 0 <= start
+    &&& start + 6 <= bytes.len()
+    &&& bytes[start + 5] >> 5 <= 4 || start + 9 <= bytes.len()
+    &&& header.number == be_u32_at(bytes, start)
+    &&& segment_type(bytes[start + 4] & 0x3f) == Some(header.segment_type)
+    &&& header.deferred_non_retain == (bytes[start + 4] & 0x80 != 0)
+    &&& {
+        let references_start = header_references_start(bytes, start + 5);
+        let page_start = references_start + header.referred_segments@.len()
+            * reference_width(header.number);
+        let long_page = bytes[start + 4] & 0x40 != 0;
+        let length_start = page_start + if long_page { 4int } else { 1int };
+        &&& referred_header_fields(
+            bytes, start + 5, header.number, header.referred_segments@,
+            header.retention_flags.values@, page_start,
+        )
+        &&& end == length_start + 4
+        &&& end <= bytes.len()
+        &&& header.page_association == if long_page {
+            be_u32_at(bytes, page_start)
+        } else {
+            bytes[page_start] as u32
+        }
+        &&& match header.data_length {
+            Some(length) => length == be_u32_at(bytes, length_start)
+                && length != 0xffff_ffff,
+            None => be_u32_at(bytes, length_start) == 0xffff_ffff
+                && header.segment_type == crate::segment_header::SegmentType::ImmediateGenericRegion,
+        }
+        &&& header.byte_length == end - start
+    }
+}
+
 pub(crate) open spec fn profiles_payload_valid(bytes: Seq<u8>) -> bool {
     bytes.len() >= 4
         && bytes.len() as nat

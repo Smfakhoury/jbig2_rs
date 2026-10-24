@@ -5,6 +5,40 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The current segment-header semantic tranche closes the missing accepted-result
+link through three existing parser interfaces. Exact count/retention windows,
+ordered reference values and reader extent compose with scalar field readers
+into the returned number/type/deferred flag, page association, encoded length
+and relative header size. The reference append helper preserves existing
+contents and relates each new entry to its actual one/two/four-byte input.
+Proof-only bridges are separate from the normative-facing model, which is
+explicitly unfolded only at the parser return. All native operations and prior
+preconditions are preserved.
+
+Actual unfiltered whole verification and compiled production library pass
+1219/0. All ten real compiling field/content regressions are rejected strongly
+and accepted when only the new public result relation is removed, preserving
+old reader bounds/bytes/progress and exact private helper guarantees. A new raw
+metadata oracle checks 10,680 nonzero-cursor headers and their untouched suffix;
+all 19 existing/new header tests and strict native lint pass. No encoded raster,
+refinement, aggregation or custom-Huffman fixture is added.
+
+Nine existing P04 records gain parser correspondence, with no extra selected
+records or approved denominator. The one flag-fields row gains functional
+strength: all 266 remain provisional, now124functional/117state/25safety.
+Full valid-input acceptance, typed partial errors, capacity, complete container/
+caller/deferred-retention semantics, the seven official positives and independent
+normative/model review remain open.
+
+The profile is expanded without dropping old contrasts: 28 groups/214 cases,
+six one-worker shards/max four active and the same 22 checks/timeouts/pins.
+Whole groups are rebalanced using the latest independently accepted #86 group
+timings plus 10% scheduling headroom and the new complete 252.722-second local
+header run plus 10%; the maximum estimate stays996seconds below the existing
+1000-second ceiling. These estimates are not current-head hosted acceptance.
+Source-bound immutable reruns and all actual hosted guards remain required
+before this tranche is marked ready.
+
 PR86's first hosted coverage run measured the same passing 90.0625% line/
 85.0379% branch ratios, but the mutation step exceeded the existing 15-minute
 job limit. That canceled run receives no whole-job acceptance credit. The

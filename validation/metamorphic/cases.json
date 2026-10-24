@@ -2,6 +2,14 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-COMPLETE-RAW-SEGMENT-HEADER",
+      "transformation": "raw headers at a nonzero reader cursor across all recognized types, short/long page fields, deferred flags, reference-width boundaries, short/long retention groups and ordinary/sentinel lengths",
+      "invariant": "all returned fields, every reference and retention bit, relative header length, final cursor and untouched suffix match literal descriptors in10680cases; metadata only, without encoded raster-family fixtures",
+      "tests": [
+        {"target": "lib", "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"}
+      ]
+    },
+    {
       "id": "META-RAW-CONTEXT-GEOMETRY",
       "transformation": "vary signed raw slot offsets, adaptive indices, literal bitmap samples and unmasked history values",
       "invariant": "exact planes/offsets/context sizes and scalar context bits, including nominal and nonnominal templates and history masks",
