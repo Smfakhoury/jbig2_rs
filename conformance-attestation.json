@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "e6ff31f03f679cb43fa52d71cca53ccd2e8c096e",
-  "scope": "Fresh existing official diagnostics on raw metadata and numeric controls with all 658 production functions, attributes and compiler-expanded ordinary Rust unchanged; no encoded-family fixture expansion or normative approval e6ff31f; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "58a16fc5a0be8237c986671e2c5c062693d0f112",
+  "scope": "Fresh existing official diagnostics on raw context, bitmap, metadata and numeric boundary controls meeting unchanged numerical coverage goals; all 658 production bodies, attributes, contracts and ordinary compiler expansion unchanged; no encoded-family fixture expansion or normative approval 58a16fc; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 458,
-    "passed": 444,
+    "total": 476,
+    "passed": 462,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "e6ff31f03f679cb43fa52d71cca53ccd2e8c096e",
-    "scope": "Actual complete immutable pinned runtime collection: 444 unit/integration tests pass; 14 existing microbenchmarks ignored. Not official conformance or normative approval."
+    "source_revision": "58a16fc5a0be8237c986671e2c5c062693d0f112",
+    "scope": "Actual complete immutable pinned runtime collection:462 unit/integration tests pass;14 existing microbenchmarks ignored. Not official conformance or normative approval."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "082b0910739995d02f2a61b38b122982185335ed51b50380a70692e4f354c9b7",
-    "review_sha256": "70a81fefb8959668a653190073283b116a140d3b0465c74a47f141c97675f103"
+    "results_sha256": "fe3cb8a6e874ad5e4a9212b06260fcd6ad3b84b5db0aa99f2be884b0d3eda498",
+    "review_sha256": "7ff3cf5f324d97d31ec1b248dd5d1c42e12ce4380b681dfd0136283853444c46"
   },
   "community_regressions": {
     "total": 0,

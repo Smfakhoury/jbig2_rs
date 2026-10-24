@@ -15,15 +15,23 @@ profile and diagnostic trait routes, raw halftone slicing/peaks/clipping, and
 every header-only generic direct-dispatch gate. The latter uses metadata only:
 no raster entropy or generated encoded-family fixture is introduced.
 
-Actual preliminary pinned coverage now meets BOTH protected numerical goals:
+Actual immutable 58a16fc pinned coverage now meets BOTH protected numerical goals:
 11383/12639 runtime lines (90.0625%), 10967/12948 regions (84.7003%) and
 2245/2640 branch outcomes (85.0379%). Against accepted #85 this adds 187 covered
 lines, 207 regions and 62 outcomes. Every denominator, exclusion, floor and
 threshold is unchanged. This closes the numerical 90% line/85% branch gap,
 not P06's broader acceptance or the semantic/normative review gates.
-All new raw controls and strict lint/format checks pass. Nine native regression
-mutations are configured, preserving the previous 67; full actual immutable
-execution and source-bound proof/evidence are required before publication.
+Actual unfiltered whole Cargo proof and nonempty compiled production library
+pass 1219/0. The complete immutable runtime collection passes 462 native tests,
+with 14 existing ignored microbenchmarks. All 76 actual native mutants compile
+and are detected, preserving the previous 67 and adding nine regressions.
+All 658 production bodies/attributes/contracts and 48 reviewed boundaries are
+unchanged; actual ordinary compiler expansion exactly matches accepted #85.
+Strict lint/format and isolated MSRV 1.88 proof-free package/exact downstream
+output checks pass. Existing approved official normal/logging/native/Hayro
+observations were freshly executed: 2 passed/7 unresolved/1 unsupported, with
+zero restored rejection credit. Current-head hosted acceptance remains required
+before marking ready, separately from draft publication.
 Seven executable catalog entries bring the total to 74 cases/126 unique tests.
 No CI job, shard, timeout, pin, release setting or trust declaration is changed.
 The same 27 semantic groups/204 contrasts, six one-worker shards, max four active

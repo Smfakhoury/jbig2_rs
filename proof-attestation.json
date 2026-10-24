@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "e6ff31f03f679cb43fa52d71cca53ccd2e8c096e",
-  "scope": "Raw symbol/table metadata and numeric controls only; all 658 production functions, contracts, attributes and ordinary compiler expansion unchanged from accepted PR84. Not new functional proof strength, exhaustive coverage, conformance or normative approval.",
+  "source_revision": "58a16fc5a0be8237c986671e2c5c062693d0f112",
+  "scope": "Raw context/raster/metadata/numeric controls meeting unchanged numerical coverage goals; all 658 production bodies/contracts/attributes and ordinary compiler expansion unchanged from accepted PR85. Not new formal proof strength, exhaustive semantic coverage or normative approval.",
   "toolchain": {
     "manifest": "toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/raw-metadata/whole-e6ff31f/cargo-target CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=target/raw-context/whole-58a16fc/cargo-target CARGO_BUILD_JOBS=1 TMPDIR=/workspace/jbig2-proof-temporaries cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1219,
     "verified_production_functions": 610,
@@ -24,9 +24,9 @@
     "runtime_proof_divergences": 1,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "8a3294678238c5c89fddbac75823c8f7938ba3cec907999f12f9b6f5556d1abb",
-  "proof_dispositions_sha256": "3b864cf001f598c1c60280307001a7c1faee0c00c1df0902598b0ca1ddfa3762",
+  "production_proof_coverage_sha256": "95bf9b82bc8f1ae5710d0efab166383572f0a2b8b4b865d01575ccd98b2f9c50",
+  "proof_dispositions_sha256": "0545b0e32cf888f4e37dd9307afb78366b91d5c9199e9ad8846bbf4c505bcef2",
   "duplicate_executable_proof_source": true,
-  "note": "Actual immutable e6ff31f unfiltered whole Cargo proof plus nonempty compiled production rlib pass 1219/0. All 658 production bodies/attributes and all 48 reviewed boundary bodies/attributes/reasons/classifications are unchanged; actual ordinary compiler expansion exactly matches accepted PR84 abb1fdb. No precondition, postcondition, ghost model, trusted declaration, assumption, termination policy, pin or encoded-family fixture is changed. Ten independent raw controls enumerate complete dictionary/text flag and selector domains, all 256 eight-slot custom/standard masks, exact borrowed table identity/OOB/missing-field policy, every standard cache slot, failed materialization, wide count/delta/code-length boundaries, and raw Huffman line/partition/memory rules. Actual immutable full coverage collection passes 444 native tests with 14 existing ignored microbenchmarks. All 67 actual native mutants compile and are detected, preserving the old 59 plus eight metadata regressions. Coverage: 11196/12639 lines, 10760/12948 regions, 2183/2640 outcomes; gains 184 lines/143 regions/59 outcomes against accepted PR84, with unchanged denominators, floors and exclusions. Protected 90% line/85% branch goals still need 180 lines/61 outcomes. Actual MSRV 1.88 native/doc tests and isolated proof-free package/exact downstream output pass. Approved existing official normal/logging/native/Hayro observations freshly executed on e6ff31f remain 2 passed/7 unresolved/1 unsupported, with no restored rejection credit. Configured 27 semantic groups/204 contrasts, six one-worker shards/max four active, 20-minute caps and 22 CI checks remain unchanged and require their own current-head hosted acceptance. All 266 selected requirements remain provisional 123 functional/117 state/26 safety. No capacity/fixture authorization, independent normative approval, issue/outreach, self-approval/merge, release enablement or global P04/P05/P06 completion is inferred.",
+  "note": "Actual immutable 58a16fc whole Cargo proof plus nonempty compiled production rlib pass 1219/0. All 658 production bodies/attributes/contracts and all 48 reviewed boundary bodies/attributes/reasons/classifications are unchanged. Actual ordinary compiler expansion equals accepted PR85 2e5a5c9. Eighteen independent raw controls cover context slots/sampling/history, full refinement snapshots and failure frames, wide bit-serial Huffman arithmetic, resource selection/reference retention, collector/structural-work quotas, profiles and trait error routes, raw halftone slicing/peaks/clipping and header-only direct dispatch. No raster entropy or paused encoded-family fixture is added. Actual immutable full coverage collection passes 462 native tests with 14 existing ignored microbenchmarks. All76 native mutants actually compile and are detected, preserving the old67 plus9 regressions. Coverage 11383/12639 lines,10967/12948 regions,2245/2640 outcomes meets BOTH protected 90% line/85% branch goals:90.0625%/85.0379%. Gains187 lines/207 regions/62 outcomes versus accepted PR85; every denominator, exclusion, floor and threshold is unchanged. Numerical targets are not full P06 acceptance or a coverage denominator for the standard. Existing approved official normal/logging/native/Hayro observations freshly executed on58a16fc remain2passed/7unresolved/1unsupported,zero restored rejection credit. Configured27groups/204contrasts/sixoneworker shards/max4active/unchanged timeouts/22checks require actual current-head hosted acceptance. All266selected records remain provisional123functional/117state/26safety. No local standard declaration, assumption, termination waiver, pin change, capacity/fixture approval, independent normative approval, issue/outreach, self-approval/merge, release enablement or global P04/P05/P06 completion is inferred.",
   "release_gate": "blocked"
 }
