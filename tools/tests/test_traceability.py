@@ -1106,8 +1106,7 @@ class TraceabilityTests(unittest.TestCase):
     def test_parser_only_records_stay_weak_and_mmr_requires_input_raster_evidence(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
-        for name in ("T88-RANDOM-HEADER-PAYLOAD-LAYOUT",
-                     "T88-HUFFMAN-CANONICAL-ASSIGNMENT", "T88-HUFFMAN-STANDARD-TABLES"):
+        for name in ("T88-HUFFMAN-CANONICAL-ASSIGNMENT", "T88-HUFFMAN-STANDARD-TABLES"):
             self.assertEqual(rows[name]["strength"], "safety_only")
             self.assertEqual(rows[name]["functional_evidence"], [])
             self.assertTrue(rows[name]["gaps"])
@@ -1156,6 +1155,25 @@ class TraceabilityTests(unittest.TestCase):
         self.assertTrue(any(
             "terminator" in gap for gap in rows["T88-SEGMENT-UNKNOWN-LENGTH"]["gaps"]
         ))
+        self.assertEqual(len(rows), 266)
+
+    def test_random_access_records_require_separate_windows_order_eof_and_caller_evidence(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for name in (
+            "T88-RANDOM-HEADER-PAYLOAD-LAYOUT", "T88-RANDOM-EOF-DELIMITER", "T88-RANDOM-NUMBER-ORDER",
+        ):
+            row = rows[name]
+            with self.subTest(requirement=name):
+                self.assertEqual(row["strength"], "functional_contract")
+                self.assertEqual(row["review"], "provisional")
+                self.assertIn("document-random-access-fields", row["models"])
+                self.assertIn("document-random-access-segment-fields", row["models"])
+                self.assertIn("document-random-complete-proof", row["proof_macros"])
+                claims = {claim["runtime"]: claim["tokens"] for claim in row["functional_evidence"]}
+                for function in ("document::parse_random_access", "document::parse_standalone_document"):
+                    self.assertTrue(any("random_access_container_fields(" in token for token in claims[function]))
+                self.assertTrue(row["gaps"])
         self.assertEqual(len(rows), 266)
 
     def test_all_feature_worklists_have_started_without_claiming_full_decomposition(self):

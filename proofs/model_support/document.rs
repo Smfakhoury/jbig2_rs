@@ -24,6 +24,50 @@ pub(super) open spec fn sequential_windows(
     }
 }
 
+pub(super) open spec fn random_header_windows(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    windows: Seq<(int, int)>,
+    end: int,
+) -> bool {
+    &&& headers.len() == windows.len()
+    &&& 0 <= end <= bytes.len()
+    &&& if headers.len() == 0 { end == 0 } else { windows.last().1 == end }
+    &&& forall|index: int| 0 <= index < headers.len() ==> {
+        let window = #[trigger] windows[index];
+        &&& 0 <= window.0 < window.1 <= end
+        &&& window.0 == if index == 0 { 0 } else { windows[index - 1].1 }
+        &&& crate::spec::segments::segment_header_fields(
+            &headers[index], bytes, window.0, window.1,
+        )
+        &&& (index > 0 ==> headers[index - 1].number < headers[index].number)
+        &&& (index + 1 < headers.len() ==>
+            headers[index].segment_type != crate::segment_header::SegmentType::EndOfFile)
+    }
+}
+
+pub(super) open spec fn random_payload_windows(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    header_end: int,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    windows: Seq<(int, int)>,
+    end: int,
+) -> bool {
+    &&& segments.len() <= headers.len()
+    &&& segments.len() == windows.len()
+    &&& 0 <= header_end <= end <= bytes.len()
+    &&& if segments.len() == 0 { end == header_end } else { windows.last().1 == end }
+    &&& forall|index: int| 0 <= index < segments.len() ==> {
+        let segment = #[trigger] segments[index];
+        let window = windows[index];
+        &&& segment.header == headers[index]
+        &&& header_end <= window.0 <= window.1 <= end
+        &&& window.0 == if index == 0 { header_end } else { windows[index - 1].1 }
+        &&& payload_window(&segment.header, bytes, window.0, window.1, segment.payload@)
+    }
+}
+
 pub(super) proof fn decoder_fields(decoder: &crate::document::Decoder)
     ensures decoder_limits(decoder) == decoder.limits,
 {}
@@ -147,6 +191,228 @@ pub(super) proof fn sequential_complete_fields(
         let window = windows[index];
         reveal(crate::spec::segments::segment_header_fields);
         assert(segments[index].header.byte_length == window.1 - window.0);
+    }
+}
+
+pub(super) proof fn random_header_window_append(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    windows: Seq<(int, int)>,
+    end: int,
+    header: crate::segment_header::SegmentHeader,
+    next_end: int,
+)
+    requires
+        random_header_windows(bytes, headers, windows, end),
+        end < next_end <= bytes.len(),
+        crate::spec::segments::segment_header_fields(&header, bytes, end, next_end),
+        headers.len() > 0 ==> headers.last().number < header.number,
+        headers.len() > 0 ==>
+            headers.last().segment_type != crate::segment_header::SegmentType::EndOfFile,
+    ensures random_header_windows(
+        bytes, headers.push(header), windows.push((end, next_end)), next_end,
+    ),
+{
+    let extended = windows.push((end, next_end));
+    let appended = headers.push(header);
+    assert forall|index: int| 0 <= index < appended.len() implies {
+        let window = #[trigger] extended[index];
+        &&& 0 <= window.0 < window.1 <= next_end
+        &&& window.0 == if index == 0 { 0 } else { extended[index - 1].1 }
+        &&& crate::spec::segments::segment_header_fields(
+            &appended[index], bytes, window.0, window.1,
+        )
+        &&& (index > 0 ==> appended[index - 1].number < appended[index].number)
+        &&& (index + 1 < appended.len() ==>
+            appended[index].segment_type != crate::segment_header::SegmentType::EndOfFile)
+    } by {
+        if index < headers.len() {
+            assert(extended[index] == windows[index]);
+            assert(appended[index] == headers[index]);
+            assert(crate::spec::segments::segment_header_fields(
+                &headers[index], bytes, windows[index].0, windows[index].1,
+            ));
+            if index > 0 {
+                assert(extended[index - 1] == windows[index - 1]);
+                assert(appended[index - 1] == headers[index - 1]);
+            }
+            if index + 1 == headers.len() {
+                assert(headers[index] == headers.last());
+            }
+        } else {
+            assert(index == headers.len());
+            assert(appended[index] == header);
+            assert(extended[index] == (end, next_end));
+            if index > 0 {
+                assert(extended[index - 1].1 == end);
+                assert(appended[index - 1] == headers.last());
+            }
+        }
+    }
+}
+
+pub(super) proof fn random_payload_window_append<'a>(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    header_end: int,
+    segments: Seq<crate::document::ParsedSegment<'a>>,
+    windows: Seq<(int, int)>,
+    end: int,
+    segment: crate::document::ParsedSegment<'a>,
+    next_end: int,
+)
+    requires
+        random_payload_windows(bytes, headers, header_end, segments, windows, end),
+        segments.len() < headers.len(),
+        segment.header == headers[segments.len() as int],
+        payload_window(&segment.header, bytes, end, next_end, segment.payload@),
+    ensures random_payload_windows(
+        bytes, headers, header_end, segments.push(segment),
+        windows.push((end, next_end)), next_end,
+    ),
+{
+    let appended = segments.push(segment);
+    let extended = windows.push((end, next_end));
+    assert forall|index: int| 0 <= index < appended.len() implies {
+        let current = #[trigger] appended[index];
+        let window = extended[index];
+        &&& current.header == headers[index]
+        &&& header_end <= window.0 <= window.1 <= next_end
+        &&& window.0 == if index == 0 { header_end } else { extended[index - 1].1 }
+        &&& payload_window(&current.header, bytes, window.0, window.1, current.payload@)
+    } by {
+        if index < segments.len() {
+            assert(appended[index] == segments[index]);
+            assert(extended[index] == windows[index]);
+        } else if index > 0 {
+            assert(extended[index - 1].1 == end);
+        }
+    }
+}
+
+pub(super) proof fn random_header_offset_window(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    windows: Seq<(int, int)>,
+    end: int,
+    prefix: nat,
+)
+    requires random_header_windows(bytes, headers, windows, end),
+        prefix <= headers.len(),
+    ensures header_byte_offset(headers, prefix) == if prefix == 0 {
+        0int
+    } else {
+        windows[(prefix - 1) as int].1
+    },
+    decreases prefix,
+{
+    reveal_with_fuel(header_byte_offset, 1);
+    if prefix > 0 {
+        random_header_offset_window(bytes, headers, windows, end, (prefix - 1) as nat);
+        let window = windows[(prefix - 1) as int];
+        reveal(crate::spec::segments::segment_header_fields);
+        assert(headers[(prefix - 1) as int].byte_length == window.1 - window.0);
+    }
+}
+
+pub(super) proof fn random_payload_offset_window(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    header_end: int,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    windows: Seq<(int, int)>,
+    end: int,
+    prefix: nat,
+)
+    requires random_payload_windows(bytes, headers, header_end, segments, windows, end),
+        prefix <= segments.len(),
+    ensures payload_byte_offset(segments, prefix) == if prefix == 0 {
+        0int
+    } else {
+        windows[(prefix - 1) as int].1 - header_end
+    },
+    decreases prefix,
+{
+    reveal_with_fuel(payload_byte_offset, 1);
+    if prefix > 0 {
+        random_payload_offset_window(
+            bytes, headers, header_end, segments, windows, end, (prefix - 1) as nat,
+        );
+        let window = windows[(prefix - 1) as int];
+        assert(segments[(prefix - 1) as int].payload@.len() == window.1 - window.0);
+    }
+}
+
+pub(super) proof fn random_access_segment_from_windows(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    header_windows: Seq<(int, int)>,
+    header_end: int,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    payload_windows: Seq<(int, int)>,
+    index: int,
+)
+    requires
+        random_header_windows(bytes, headers, header_windows, header_end),
+        random_payload_windows(
+            bytes, headers, header_end, segments, payload_windows, bytes.len() as int,
+        ),
+        segments.len() == headers.len(),
+        segment_headers(segments) == headers,
+        0 <= index < segments.len(),
+    ensures random_access_segment_fields(bytes, segments, index),
+{
+    random_header_offset_window(bytes, headers, header_windows, header_end, headers.len());
+    random_header_offset_window(bytes, headers, header_windows, header_end, index as nat);
+    random_header_offset_window(bytes, headers, header_windows, header_end, (index + 1) as nat);
+    random_payload_offset_window(
+        bytes, headers, header_end, segments, payload_windows, bytes.len() as int, index as nat,
+    );
+    random_payload_offset_window(
+        bytes, headers, header_end, segments, payload_windows, bytes.len() as int, (index + 1) as nat,
+    );
+    assert(segments[index].header == headers[index]);
+    assert(crate::spec::segments::segment_header_fields(
+        &headers[index], bytes, header_windows[index].0, header_windows[index].1,
+    ));
+    assert(header_windows[index].0 == header_byte_offset(headers, index as nat));
+    assert(payload_windows[index].0 == header_end + payload_byte_offset(segments, index as nat));
+    reveal(random_access_segment_fields);
+}
+
+pub(super) proof fn random_access_complete_fields(
+    bytes: Seq<u8>,
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    header_windows: Seq<(int, int)>,
+    header_end: int,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    payload_windows: Seq<(int, int)>,
+)
+    requires
+        random_header_windows(bytes, headers, header_windows, header_end),
+        headers.len() > 0,
+        headers.last().segment_type == crate::segment_header::SegmentType::EndOfFile,
+        random_payload_windows(
+            bytes, headers, header_end, segments, payload_windows, bytes.len() as int,
+        ),
+        segments.len() == headers.len(),
+    ensures random_access_container_fields(bytes, segments),
+{
+    assert forall|index: int| 0 <= index < segments.len() implies
+        #[trigger] segment_headers(segments)[index] == headers[index] by {
+        assert(segments[index].header == headers[index]);
+    }
+    vstd::assert_seqs_equal!(segment_headers(segments), headers);
+    random_header_offset_window(bytes, headers, header_windows, header_end, headers.len());
+    random_payload_offset_window(
+        bytes, headers, header_end, segments, payload_windows, bytes.len() as int, segments.len(),
+    );
+    reveal(random_access_container_fields);
+    assert forall|index: int| 0 <= index < segments.len() implies
+        #[trigger] random_access_segment_fields(bytes, segments, index) by {
+        random_access_segment_from_windows(
+            bytes, headers, header_windows, header_end, segments, payload_windows, index,
+        );
     }
 }
 

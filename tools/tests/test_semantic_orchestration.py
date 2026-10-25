@@ -89,6 +89,37 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
 
+    def test_shared_document_baseline_requires_all_configured_function_identities(self):
+        cases = [{"id": name, "function": name} for name in ("first", "second")]
+        (self.root / "tools/document.py").write_text("CASES = " + repr(cases) + "\n")
+        report = evidence()
+        report.update(
+            schema_version=1,
+            baseline_verification_scope="document::*",
+            baseline_selected_functions=["first", "second"],
+            source_bindings={"src/example.rs": runner.digest(self.root / "src/example.rs")},
+        )
+        report["counterexamples"] = []
+        for case in cases:
+            record = copy.deepcopy(evidence()["counterexamples"][0])
+            record.update(id=case["id"], function=case["function"], strong_count_contract="rejected")
+            record["baseline_selected_verification"]["verified"] = 2
+            report["counterexamples"].append(record)
+        check = ("document-count", "document.py", 2, "strong_count_contract", "weaker_control")
+        runner.check_bound_report(self.root, check, report, report["source_bindings"])
+        for mutation in ("missing-scope", "missing-function", "duplicate-function", "too-few-proofs"):
+            broken = copy.deepcopy(report)
+            if mutation == "missing-scope":
+                del broken["baseline_verification_scope"]
+            elif mutation == "missing-function":
+                broken["baseline_selected_functions"].pop()
+            elif mutation == "duplicate-function":
+                broken["baseline_selected_functions"] = ["first", "first"]
+            else:
+                broken["counterexamples"][0]["baseline_selected_verification"]["verified"] = 1
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                runner.check_bound_report(self.root, check, broken, report["source_bindings"])
+
     def test_actual_work_overlaps_but_never_exceeds_two_children(self):
         lock = threading.Lock()
         active = 0
@@ -185,11 +216,11 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertFalse((self.output / runner.SUMMARY).exists())
 
     def test_measured_complete_profile_leaves_timeout_headroom(self):
-        # Accepted source-bound run 40139497931, rounded up.
-        # The expanded document group uses its complete 632-second local run plus 10%.
+        # Preserve unchanged-group planning costs from accepted 40139497931.
+        # The expanded document group uses its complete 621-second local run plus 10%.
         # Scheduling estimates are not hosted acceptance.
         measured = {
-            "reset": (2, 58), "document-count": (20, 696),
+            "reset": (2, 58), "document-count": (25, 684),
             "bitmap-copy": (8, 209), "retention": (3, 95),
             "value-bridge": (5, 174), "mmr-span": (8, 207),
             "region-dispatch": (3, 73), "text-batch": (11, 364),
@@ -216,22 +247,22 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(estimates), 1000)
 
     def test_completed_profile_has_measured_job_headroom_without_relaxed_limits(self):
-        # Accepted 40139497931 receipts plus the actual complete 20-case local group.
+        # Latest accepted 40147100209 receipts plus the actual complete 25-case local group.
         observed = {
-            "arithmetic-codec": 510, "arithmetic-decision": 281,
-            "arithmetic-initialization": 114, "arithmetic-integer": 208,
-            "arithmetic-normalization": 126, "arithmetic-refill": 157,
-            "bitmap-chunk": 111, "bitmap-compose": 149, "bitmap-copy": 209,
-            "black-span": 121, "document-count": 632, "halftone-header": 230,
-            "iaid-state": 151, "integer-state": 217, "mmr-horizontal": 174,
-            "mmr-prefix": 121, "mmr-reference": 364, "mmr-run": 95,
-            "mmr-span": 207, "operator-bit": 117, "reader-error": 186,
-            "region-dispatch": 73, "reset": 58, "retention": 95,
-            "segment-header": 237, "symbol-cardinality": 329,
-            "text-batch": 364, "value-bridge": 174,
+            "arithmetic-codec": 474, "arithmetic-decision": 392,
+            "arithmetic-initialization": 111, "arithmetic-integer": 228,
+            "arithmetic-normalization": 114, "arithmetic-refill": 142,
+            "bitmap-chunk": 91, "bitmap-compose": 202, "bitmap-copy": 258,
+            "black-span": 145, "document-count": 621, "halftone-header": 239,
+            "iaid-state": 149, "integer-state": 241, "mmr-horizontal": 174,
+            "mmr-prefix": 109, "mmr-reference": 355, "mmr-run": 98,
+            "mmr-span": 232, "operator-bit": 89, "reader-error": 253,
+            "region-dispatch": 87, "reset": 52, "retention": 88,
+            "segment-header": 240, "symbol-cardinality": 371,
+            "text-batch": 346, "value-bridge": 186,
         }
         self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 221)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 226)
         self.assertLessEqual(max(
             sum(observed[row[0]] for row in shard)
             for shard in runner.configured_shards()

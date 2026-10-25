@@ -83,3 +83,39 @@ macro_rules! production_sequential_complete {
         }
     };
 }
+
+macro_rules! production_random_header_append {
+    ($input:ident, $headers:ident, $windows:ident, $before:ident, $reader:ident) => {
+        proof! {
+            document_spec::random_header_window_append(
+                $input@, $before.1, $windows, $before.0,
+                $headers@.last(), $reader.position as int,
+            );
+            $windows = $windows.push(($before.0, $reader.position as int));
+        }
+    };
+}
+
+macro_rules! production_random_payload {
+    ($headers:ident, $header_end:ident, $segments:ident,
+        $windows:ident, $before:ident, $reader:ident) => {
+        proof! {
+            document_spec::random_payload_window_append(
+                $reader.bytes@, $headers, $header_end, $before.1, $windows, $before.0,
+                $segments@.last(), $reader.position as int,
+            );
+            $windows = $windows.push(($before.0, $reader.position as int));
+        }
+    };
+}
+
+macro_rules! production_random_access_complete {
+    ($input:ident, $headers:ident, $header_windows:ident, $header_end:ident,
+        $segments:ident, $payload_windows:ident) => {
+        proof! {
+            document_spec::random_access_complete_fields(
+                $input@, $headers, $header_windows, $header_end, $segments@, $payload_windows,
+            );
+        }
+    };
+}

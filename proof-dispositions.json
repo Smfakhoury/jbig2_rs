@@ -82,21 +82,21 @@
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "b6a211880c5bb5bca2d3536585cb34af036918f6117bd7f523594b4f6053d543",
+      "file_sha256": "b3b6a68f8a8ee898ca31a07a3cda8ae22c18874b74e73fbaaa8bebbd25472ea1",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::default",
       "file": "src/document.rs",
-      "file_sha256": "b6a211880c5bb5bca2d3536585cb34af036918f6117bd7f523594b4f6053d543",
+      "file_sha256": "b3b6a68f8a8ee898ca31a07a3cda8ae22c18874b74e73fbaaa8bebbd25472ea1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "document::read_bounded_input",
       "file": "src/document.rs",
-      "file_sha256": "b6a211880c5bb5bca2d3536585cb34af036918f6117bd7f523594b4f6053d543",
+      "file_sha256": "b3b6a68f8a8ee898ca31a07a3cda8ae22c18874b74e73fbaaa8bebbd25472ea1",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },

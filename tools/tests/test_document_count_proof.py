@@ -19,8 +19,8 @@ class DocumentCountProofFixtureTests(unittest.TestCase):
         return self.models if case.get("control_file") == "specs/document.rs" else self.source
 
     def test_each_mutant_changes_one_semantic_site_and_retains_its_contract(self):
-        self.assertEqual(len(CASES), 20)
-        self.assertEqual(len({case["id"] for case in CASES}), 20)
+        self.assertEqual(len(CASES), 25)
+        self.assertEqual(len({case["id"] for case in CASES}), 25)
         for case in CASES:
             with self.subTest(case=case["id"]):
                 changed = mutated_document(self.source, case)
@@ -107,6 +107,21 @@ class DocumentCountProofFixtureTests(unittest.TestCase):
         self.assertIn("reveal(sequential_container_fields);", support)
         self.assertIn("document_spec::sequential_complete_fields(", bridge)
         self.assertNotIn("reveal(document_spec::sequential_container_fields);", bridge)
+
+    def test_random_controls_keep_internal_history_and_the_other_organization_guarantee(self):
+        for case in CASES:
+            if case["function"] == "parse_random_access":
+                control = weaker_contract(self.source, case)
+                self.assertIn("document_spec::random_header_windows(", control)
+                self.assertIn("document_spec::random_payload_windows(", control)
+                self.assertIn("production_random_access_complete!", control)
+                self.assertIn("document_spec::sequential_container_fields(", control)
+            if case["id"] == "standalone_disables_sequential_number_order":
+                control = weaker_contract(self.source, case)
+                self.assertIn("Organization::RandomAccess => document_spec::random_access_container_fields(", control)
+            if case["id"] == "standalone_random_access_discards_first_body_byte":
+                control = weaker_contract(self.source, case)
+                self.assertIn("Organization::Sequential => document_spec::sequential_container_fields(", control)
 
 
 if __name__ == "__main__":

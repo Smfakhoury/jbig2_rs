@@ -42,12 +42,21 @@ def proof_workspace(root: Path, executable: Path, prefix: str):
 
 def selected_proof(
     executable: Path, directory: Path, environment: dict, expect_failure: bool,
-    module: str, function: str,
+    module: str, function: str | tuple[str, ...],
 ):
+    functions = (function,) if isinstance(function, str) else function
+    if (
+        not isinstance(functions, tuple) or not functions
+        or any(not isinstance(name, str) or not name for name in functions)
+        or len(set(functions)) != len(functions)
+        or expect_failure and not isinstance(function, str)
+    ):
+        raise ValueError("selected proof needs unique targets; failures must select one function")
     command = [
         str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
         "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
-        "--verify-only-module", module, "--verify-function", function,
+        "--verify-only-module", module, "--verify-function",
+        function if isinstance(function, str) else "*",
         "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
     ]
     if expect_failure:
@@ -62,9 +71,12 @@ def selected_proof(
     except ValueError as error:
         raise ValueError("verifier did not produce semantic proof evidence:\n" + process.stderr) from error
     result = report["verification-results"]
-    identity = f"jbig2_rs_production::{module}::{function}"
-    if result["is-verifying-entire-crate"] is not False or identity not in report["func-details"]:
-        raise ValueError(f"selected verification did not target {identity}")
+    identities = {f"jbig2_rs_production::{module}::{name}" for name in functions}
+    if (
+        result["is-verifying-entire-crate"] is not False
+        or not identities <= set(report["func-details"])
+    ):
+        raise ValueError(f"selected verification did not target {sorted(identities)}")
     if expect_failure:
         if (
             process.returncode == 0 or result["errors"] < 1
@@ -74,7 +86,10 @@ def selected_proof(
             ))
         ):
             raise ValueError("mutant was not rejected by semantic obligations:\n" + process.stderr)
-    elif process.returncode != 0 or result["errors"] != 0 or result["verified"] < 1:
+    elif (
+        process.returncode != 0 or result["errors"] != 0
+        or type(result["verified"]) is not int or result["verified"] < len(functions)
+    ):
         raise ValueError("baseline/control proof did not pass:\n" + process.stderr)
     return result
 

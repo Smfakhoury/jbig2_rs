@@ -22,16 +22,21 @@ PAYLOAD_FIELDS = """document_spec::payload_window(
 SEQUENTIAL_FIELDS = """document_spec::sequential_container_fields(
     input@, segments@, require_local_references,
 )"""
-STANDALONE_WINDOWS = """&& match crate::file_header::file_header_spec::organization(input@) {
-    Organization::Sequential => document_spec::sequential_container_fields(
+RANDOM_FIELDS = "document_spec::random_access_container_fields(input@, segments@)"
+STANDALONE_WINDOWS = """Organization::Sequential => document_spec::sequential_container_fields(
         input@.subrange(
             crate::file_header::file_header_spec::byte_length(input@) as int,
             input@.len() as int,
         ),
         result.1@, true,
-    ),
-    Organization::RandomAccess => true,
-}"""
+    ),"""
+STANDALONE_RANDOM_WINDOWS = """Organization::RandomAccess => document_spec::random_access_container_fields(
+        input@.subrange(
+            crate::file_header::file_header_spec::byte_length(input@) as int,
+            input@.len() as int,
+        ),
+        result.1@,
+    ),"""
 EMBEDDED_WINDOWS = "&& document_spec::sequential_container_fields(input@, result.1@, false)"
 
 
@@ -60,12 +65,12 @@ def quota_cases(function, comparison, postcondition):
     )
 
 
-def sequential_case(identity, replacement):
-    original = FUNCTIONS["document::parse_sequential"]["body_text"]
+def result_case(identity, function, contract, replacement):
+    original = FUNCTIONS[f"document::{function}"]["body_text"]
     return {
-        "id": identity, "function": "parse_sequential", "site": original,
+        "id": identity, "function": function, "site": original,
         "replacement": replace_once(original, "Ok(segments)", replacement),
-        "control_site": SEQUENTIAL_FIELDS, "control_replacement": "true",
+        "control_site": contract, "control_replacement": "true",
     }
 
 
@@ -157,14 +162,14 @@ CASES = (
             Ok(&[])""",
         "control_site": PAYLOAD_FIELDS, "control_replacement": "true",
     },
-    sequential_case("sequential_discards_consumed_segments", "Ok(Vec::new())"),
-    sequential_case("sequential_rebinds_payload_after_validation", """if !segments.is_empty() {
+    result_case("sequential_discards_consumed_segments", "parse_sequential", SEQUENTIAL_FIELDS, "Ok(Vec::new())"),
+    result_case("sequential_rebinds_payload_after_validation", "parse_sequential", SEQUENTIAL_FIELDS, """if !segments.is_empty() {
         let mut first = segments.remove(0);
         first.payload = &[];
         segments.insert(0, first);
     }
     Ok(segments)"""),
-    sequential_case("sequential_corrupts_header_after_validation", """if !segments.is_empty() {
+    result_case("sequential_corrupts_header_after_validation", "parse_sequential", SEQUENTIAL_FIELDS, """if !segments.is_empty() {
         let mut first = segments.remove(0);
         first.header.number ^= 1;
         segments.insert(0, first);
@@ -175,7 +180,8 @@ CASES = (
         "function": "parse_standalone_document",
         "site": "Organization::Sequential => parse_sequential(body, limits, true)?,",
         "replacement": "Organization::Sequential => parse_sequential(body, limits, false)?,",
-        "control_site": STANDALONE_WINDOWS, "control_replacement": "",
+        "control_site": STANDALONE_WINDOWS,
+        "control_replacement": "Organization::Sequential => true,",
     },
     {
         "id": "embedded_discards_first_input_byte",
@@ -187,6 +193,33 @@ CASES = (
             parse_sequential(&input[1..], limits, false)?
         };""",
         "control_site": EMBEDDED_WINDOWS, "control_replacement": "",
+    },
+    result_case("random_access_discards_consumed_segments", "parse_random_access", RANDOM_FIELDS, "Ok(Vec::new())"),
+    result_case("random_access_rebinds_payload_after_validation", "parse_random_access", RANDOM_FIELDS, """if !segments.is_empty() {
+        let mut first = segments.remove(0);
+        first.payload = &[];
+        segments.insert(0, first);
+    }
+    Ok(segments)"""),
+    result_case("random_access_corrupts_header_after_validation", "parse_random_access", RANDOM_FIELDS, """if !segments.is_empty() {
+        let mut first = segments.remove(0);
+        first.header.number ^= 1;
+        segments.insert(0, first);
+    }
+    Ok(segments)"""),
+    result_case("random_access_drops_eof_after_validation", "parse_random_access", RANDOM_FIELDS, """segments.pop();
+    Ok(segments)"""),
+    {
+        "id": "standalone_random_access_discards_first_body_byte",
+        "function": "parse_standalone_document",
+        "site": "Organization::RandomAccess => parse_random_access(body, limits)?,",
+        "replacement": """Organization::RandomAccess => if body.is_empty() {
+            parse_random_access(body, limits)?
+        } else {
+            parse_random_access(&body[1..], limits)?
+        },""",
+        "control_site": STANDALONE_RANDOM_WINDOWS,
+        "control_replacement": "Organization::RandomAccess => true,",
     },
 )
 PREFIX_INVARIANT = """page_states@.len()
@@ -208,6 +241,7 @@ def check_document_count_proof(executable: Path) -> dict:
     files = (
         "src/document.rs", "specs/document.rs", "proofs/production_impl/document.rs",
         "src/file_header.rs", "specs/file_header.rs", "proofs/model_support/document.rs",
+        "src/segment_header.rs", "specs/segments.rs",
     )
     sources = {name: (ROOT / name).read_bytes() for name in files}
     results = []
@@ -216,16 +250,16 @@ def check_document_count_proof(executable: Path) -> dict:
     ):
         path = directory / "src/document.rs"
         original = path.read_text(encoding="utf-8")
-        baselines = {}
+        functions = tuple(sorted({case["function"] for case in CASES}))
+        if any(not FUNCTIONS[f"document::{name}"]["verification_requested"] for name in functions):
+            raise ValueError("document baseline contains an unverified production function")
+        baseline = selected_proof(
+            executable, directory, environment, False, "document", functions,
+        )
         for case in CASES:
             print(f"document contrast: {case['id']}", file=sys.stderr, flush=True)
             control_path = directory / case.get("control_file", "src/document.rs")
             control_original = control_path.read_text(encoding="utf-8")
-            if case["function"] not in baselines:
-                baselines[case["function"]] = selected_proof(
-                    executable, directory, environment, False, "document", case["function"],
-                )
-            baseline = baselines[case["function"]]
             source = mutated_document(original, case)
             path.write_text(source, encoding="utf-8")
             run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
@@ -252,7 +286,9 @@ def check_document_count_proof(executable: Path) -> dict:
         raise ValueError("production source changed during document proof sensitivity checks")
     return {
         "schema_version": 1, "status": "passed", "verus_version": expected,
-        "scope": "Document count/metadata, accepted sequential raw byte windows/order and exact project numeric preflight quotas; not complete input acceptance/errors, random-access layout, decoded ParsedData, allocator/RSS or normative approval",
+        "baseline_verification_scope": "document::*",
+        "baseline_selected_functions": list(functions),
+        "scope": "Document count/metadata, accepted sequential/random-access raw byte windows/order/EOF and exact project numeric preflight quotas; not complete input acceptance/errors, decoded ParsedData, unknown-length termination, allocator/RSS or normative approval",
         "production_sources_modified": False, "counterexamples": results,
         "source_bindings": {
             name: hashlib.sha256(data).hexdigest() for name, data in sources.items()

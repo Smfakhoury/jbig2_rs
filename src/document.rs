@@ -634,7 +634,13 @@ pub(crate) enum ParsedData {
                     ),
                     result.1@, true,
                 ),
-                Organization::RandomAccess => true,
+                Organization::RandomAccess => document_spec::random_access_container_fields(
+                    input@.subrange(
+                        crate::file_header::file_header_spec::byte_length(input@) as int,
+                        input@.len() as int,
+                    ),
+                    result.1@,
+                ),
             },
         Err(_) => true,
     },
@@ -748,7 +754,7 @@ fn parse_sequential<'a>(
         #[cfg(verus_keep_ghost)]
         proof_decl! { let ghost payload_start = reader.position as int; }
         let payload = read_payload(&mut reader, &header)?;
-        let is_end = header.segment_type == SegmentType::EndOfFile;
+        let is_end = matches!(header.segment_type, SegmentType::EndOfFile);
         let data = parse_known_segment_data(&header, payload, limits)?;
         let new_len = segments
             .len()
@@ -790,7 +796,12 @@ fn parse_sequential<'a>(
     Ok(segments)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(segments) => document_spec::random_access_container_fields(input@, segments@),
+        Err(_) => true,
+    },
+))]
 fn parse_random_access<'a>(
     input: &'a [u8],
     limits: &Limits,
@@ -798,10 +809,22 @@ fn parse_random_access<'a>(
     let mut reader = ByteReader::new(input);
     let mut headers = Vec::new();
     let mut previous_number = None;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost mut header_windows = Seq::<(int, int)>::empty(); }
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
-            reader.position <= reader.bytes@.len(),
-            reader.bytes@ == input@,
+            reader.position <= reader.bytes@.len() && reader.bytes@ == input@,
+            document_spec::random_header_windows(input@, headers@, header_windows, reader.position as int),
+            match previous_number {
+                Some(number) => headers@.len() > 0 && headers@.last().number == number,
+                None => headers@.len() == 0,
+            },
+        invariant_except_break
+            Seq::<SegmentHeader>::len(headers@) > 0 ==> headers@.last().segment_type != SegmentType::EndOfFile,
+        ensures
+            reader.position <= reader.bytes@.len() && reader.bytes@ == input@,
+            document_spec::random_header_windows(input@, headers@, header_windows, reader.position as int),
+            headers@.len() > 0 && headers@.last().segment_type == SegmentType::EndOfFile,
         decreases reader.bytes@.len() - reader.position,
     ))]
     loop {
@@ -809,6 +832,8 @@ fn parse_random_access<'a>(
             return Err(MalformedError::MissingEndOfFile.into());
         }
         enforce_segment_limit(headers.len(), limits)?;
+        #[cfg(verus_keep_ghost)]
+        proof_decl! { let ghost header_before = (reader.position as int, headers@); }
         let header = parse_segment_header(&mut reader, limits)?;
         if let Some(previous) = previous_number {
             if header.number <= previous {
@@ -820,12 +845,14 @@ fn parse_random_access<'a>(
             }
         }
         previous_number = Some(header.number);
-        let is_end = header.segment_type == SegmentType::EndOfFile;
+        let is_end = matches!(header.segment_type, SegmentType::EndOfFile);
         let requested_bytes = allocation_size::<SegmentHeader>(1)?;
         if headers.try_reserve(1).is_err() {
             return Err(DecodeError::Allocation { requested_bytes });
         }
         headers.push(header);
+        #[cfg(verus_keep_ghost)]
+        production_random_header_append!(input, headers, header_windows, header_before, reader);
         if is_end {
             break;
         }
@@ -838,12 +865,24 @@ fn parse_random_access<'a>(
             requested_bytes: segment_allocation,
         });
     }
-    #[cfg_attr(verus_keep_ghost, verus_spec(
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost header_seq = headers@; }
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost header_end = reader.position as int; }
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost mut spans = Seq::<(int, int)>::empty(); }
+    #[cfg_attr(verus_keep_ghost, verus_spec(header_iter =>
         invariant
-            reader.position <= reader.bytes@.len(),
-            reader.bytes@ == input@,
+            reader.position <= reader.bytes@.len() && reader.bytes@ == input@,
+            header_iter.seq() == header_seq,
+            segments@.len() == header_iter.index(),
+            document_spec::random_header_windows(input@, header_seq, header_windows, header_end),
+            header_seq.len() > 0 && header_seq.last().segment_type == SegmentType::EndOfFile,
+            document_spec::random_payload_windows(input@, header_seq, header_end, segments@, spans, reader.position as int),
     ))]
     for header in headers {
+        #[cfg(verus_keep_ghost)]
+        proof_decl! { let ghost before = (reader.position as int, segments@); }
         let payload = read_payload(&mut reader, &header)?;
         let data = parse_known_segment_data(&header, payload, limits)?;
         segments.push(ParsedSegment {
@@ -851,10 +890,21 @@ fn parse_random_access<'a>(
             payload,
             data,
         });
+        #[cfg(verus_keep_ghost)]
+        production_random_payload!(header_seq, header_end, segments, spans, before, reader);
     }
     if reader.remaining() != 0 {
         return Err(MalformedError::TrailingData(reader.remaining() as u64).into());
     }
+    #[cfg(verus_keep_ghost)]
+    production_random_access_complete!(
+        input,
+        header_seq,
+        header_windows,
+        header_end,
+        segments,
+        spans
+    );
     Ok(segments)
 }
 
@@ -2232,6 +2282,29 @@ mod tests {
         (input, expected)
     }
 
+    fn raw_random_extension_windows(numbers: &[u32]) -> (Vec<u8>, Vec<LiteralPayloadWindow>) {
+        let (_, mut expected) = raw_extension_windows(numbers, false);
+        let eof_number = numbers
+            .last()
+            .map_or(0, |number| number.checked_add(1).unwrap());
+        expected.push((eof_number, Vec::new(), 0, 0));
+        let mut input = Vec::new();
+        for (index, (number, payload, _, _)) in expected.iter().enumerate() {
+            input.extend(header(
+                *number,
+                if index < numbers.len() { 62 } else { 51 },
+                0,
+                u32::try_from(payload.len()).unwrap(),
+            ));
+        }
+        for (_, payload, start, end) in &mut expected {
+            *start = input.len();
+            input.extend_from_slice(payload);
+            *end = input.len();
+        }
+        (input, expected)
+    }
+
     #[test]
     fn raw_payload_windows_keep_exact_known_and_existing_unknown_extents() {
         for length in 0..=32_u32 {
@@ -2362,6 +2435,101 @@ mod tests {
                     current: 7,
                 }
             ))
+        ));
+    }
+
+    #[test]
+    fn raw_random_access_layout_matches_separate_literal_headers_and_payloads() {
+        let limits = Limits::default();
+        for numbers in [
+            &[][..],
+            &[0][..],
+            &[2, 7, 42][..],
+            &[0, 255, 65_535, 16_777_215][..],
+        ] {
+            let (input, expected) = raw_random_extension_windows(numbers);
+            let segments = parse_random_access(&input, &limits).unwrap();
+            assert_eq!(segments.len(), expected.len());
+            assert_eq!(expected[0].2, expected.len() * 11);
+            for (index, (segment, (number, payload, start, end))) in
+                segments.iter().zip(&expected).enumerate()
+            {
+                assert_eq!(segment.header.number, *number);
+                assert_eq!(
+                    segment.header.segment_type,
+                    if index < numbers.len() {
+                        SegmentType::Extension
+                    } else {
+                        SegmentType::EndOfFile
+                    }
+                );
+                assert_eq!(segment.header.byte_length, 11);
+                assert_eq!(
+                    segment.header.data_length,
+                    Some(u32::try_from(payload.len()).unwrap())
+                );
+                assert_eq!(segment.header.page_association, 0);
+                assert!(segment.header.referred_segments.is_empty());
+                assert_eq!(segment.payload, payload);
+                assert_eq!(segment.payload, &input[*start..*end]);
+            }
+            assert_eq!(expected.last().unwrap().3, input.len());
+        }
+    }
+
+    #[test]
+    fn standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata() {
+        let limits = Limits::default();
+        let (body, expected) = raw_random_extension_windows(&[2, 7, 42]);
+        for known_count in [false, true] {
+            let mut input = SIGNATURE.to_vec();
+            input.push(if known_count { 0 } else { 2 });
+            if known_count {
+                input.extend_from_slice(&0_u32.to_be_bytes());
+            }
+            let body_start = input.len();
+            assert_eq!(body_start, if known_count { 13 } else { 9 });
+            input.extend_from_slice(&body);
+            let (info, segments) = parse_standalone_document(&input, &limits).unwrap();
+            assert_eq!(info.organization(), Organization::RandomAccess);
+            assert_eq!(info.segment_count(), 4);
+            assert!(info.pages().is_empty());
+            assert_eq!(segments.len(), expected.len());
+            for (segment, (number, payload, start, end)) in segments.iter().zip(&expected) {
+                assert_eq!(segment.header.number, *number);
+                assert_eq!(segment.payload, payload);
+                assert_eq!(
+                    segment.payload,
+                    &input[body_start + *start..body_start + *end]
+                );
+            }
+        }
+        for numbers in [&[42, 7, 2][..], &[2, 2][..]] {
+            let (unordered, _) = raw_random_extension_windows(numbers);
+            assert!(matches!(
+                parse_random_access(&unordered, &limits),
+                Err(DecodeError::Malformed(
+                    MalformedError::NonIncreasingSegmentNumber { previous, current }
+                )) if previous == numbers[0] && current == numbers[1]
+            ));
+        }
+        for missing in [Vec::new(), header(2, 62, 0, 4)] {
+            assert!(matches!(
+                parse_random_access(&missing, &limits),
+                Err(DecodeError::Malformed(MalformedError::MissingEndOfFile))
+            ));
+        }
+        let mut trailing = body;
+        trailing.push(0xaa);
+        assert!(matches!(
+            parse_random_access(&trailing, &limits),
+            Err(DecodeError::Malformed(MalformedError::TrailingData(1)))
+        ));
+        let mut early_eof = header(0, 51, 0, 0);
+        early_eof.extend(header(1, 51, 0, 0));
+        assert!(matches!(
+            parse_random_access(&early_eof, &limits),
+            Err(DecodeError::Malformed(MalformedError::TrailingData(11)))
         ));
     }
 

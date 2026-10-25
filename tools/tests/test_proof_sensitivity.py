@@ -21,11 +21,11 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             weakened_contract("unchanged", {"controls": ()})
 
-    def verify(self, report, returncode=0, stderr="", expect_failure=False):
+    def verify(self, report, returncode=0, stderr="", expect_failure=False, function="finalize_pages"):
         process = CompletedProcess([], returncode, json.dumps(report), stderr)
         with patch("proof_sensitivity.subprocess.run", return_value=process):
             return selected_proof(
-                Path("/verus"), TOOLS.parent, {}, expect_failure, "document", "finalize_pages",
+                Path("/verus"), TOOLS.parent, {}, expect_failure, "document", function,
             )
 
     def report(self):
@@ -85,6 +85,38 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         self.assertEqual(
             self.verify(report, 1, "loop invariant not satisfied", True)["errors"], 1,
         )
+
+    def test_shared_positive_module_baseline_requires_every_exact_target_and_partial_proofs(self):
+        functions = ("finalize_pages", "build_document_info")
+        report = self.report()
+        report["verification-results"]["verified"] = 2
+        report["func-details"]["jbig2_rs_production::document::build_document_info"] = {}
+        process = CompletedProcess([], 0, json.dumps(report), "")
+        with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+            selected_proof(Path("/verus"), TOOLS.parent, {}, False, "document", functions)
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("--verify-function") + 1], "*")
+        self.assertEqual(command[command.index("--verify-only-module") + 1], "document")
+        self.assertEqual(command[command.index("--num-threads") + 1], "1")
+        self.assertEqual(command[command.index("--rlimit") + 1], "30")
+        for changed in ("missing-target", "too-few-proofs", "whole-report"):
+            broken = json.loads(json.dumps(report))
+            if changed == "missing-target":
+                del broken["func-details"]["jbig2_rs_production::document::build_document_info"]
+            elif changed == "too-few-proofs":
+                broken["verification-results"]["verified"] = 1
+            else:
+                broken["verification-results"]["is-verifying-entire-crate"] = True
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                self.verify(broken, function=functions)
+
+    def test_shared_baseline_rejects_empty_duplicate_and_failure_groups_before_execution(self):
+        for functions, failure in (((), False), (("same", "same"), False), (("one",), True)):
+            with self.subTest(functions=functions, failure=failure), patch(
+                "proof_sensitivity.subprocess.run",
+            ) as run, self.assertRaises(ValueError):
+                selected_proof(Path("/verus"), TOOLS.parent, {}, failure, "document", functions)
+            run.assert_not_called()
 
 
 if __name__ == "__main__":
