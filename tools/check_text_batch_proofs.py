@@ -12,6 +12,11 @@ from rust_source import source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("symbol_text", (
+    "ResourceTracker::charge_bitmap", "ResourceTracker::charge_work",
+    "TextRegionState::new", "TextRegionState::place_current",
+    "check_dimensions", "flush_placement_batch", "prepare_placement",
+)),)
 FLIP = """if let Some(byte) = destination.data.get_mut(0) { *byte ^= 1; }
 #[cfg(verus_keep_ghost)]
 proof! {
@@ -190,6 +195,7 @@ def main():
              "proofs/production_impl/symbol_text.rs"),
             "jbig2-text-batch-",
             "Executing text resource/state/preflight and batch results: exact counter/acceptance effects, interval clipping geometry and retained source contents, nonvacuous initialization/current-placement acceptance, retained clearing/no-op contracts; typed error payloads and general composition pixels/order remain separately tested, not fully derived",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"text batch proof sensitivity failed: {error}", file=sys.stderr)

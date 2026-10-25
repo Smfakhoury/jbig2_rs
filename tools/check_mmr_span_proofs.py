@@ -12,6 +12,7 @@ from rust_source import source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("mmr", ("fill_recorded_span", "fill_span")),)
 NO_OP = """(start > end || end > old(bitmap).width || row >= old(bitmap).height
     || !black || start == end)
     ==> final(bitmap).data@ == old(bitmap).data@,"""
@@ -127,6 +128,7 @@ def main():
              "proofs/spec_properties/mmr.rs", "proofs/shared/bitmap.rs"),
             "jbig2-mmr-span-proof-",
             "Exact canonical-storage-conditional black-span/white-no-op effects and exact internal transition/emitted-state updates; original invalid/white/empty no-op controls retained; no strengthened preconditions or complete raster-loop/polarity claim",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"MMR span proof sensitivity failed: {error}", file=sys.stderr)

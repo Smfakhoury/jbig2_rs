@@ -4,6 +4,21 @@ P06 is in progress. Reproducible coverage and non-regression checks do not
 complete the missing tests, ratify release approval or establish normative
 correctness.
 
+## Latest immutable typed-metadata observation
+
+Immutable `bf3d525` freshly executes 473 native tests / 14 existing ignored and 108 real
+compiling/detected native mutants. Four raw metadata oracles add complete page
+fields/height encodings, profile prefix/cursor/suffix preservation and typed
+results through leaf/container parsing. No encoded-family fixture is added.
+
+All 51 global/per-file metrics are compared against accepted #89: 49 are unchanged.
+Only document/global covered-region counts increase by two, with all denominators
+identical. Totals **11383/12639 lines (90.0625%)**, **10971/12950 regions
+(84.7181%)**, **2245/2640 outcomes (85.0379%)** preserve both unchanged numerical
+targets. No floor/exclusion/threshold is reduced. Native compiler expansion
+is identical; coverage gains come from the new tests, not erased proof code.
+Actual current-head hosted reconstruction remains required.
+
 ## Latest immutable random-access observation
 
 Immutable90faeb6 freshly executes469native tests/14existingignored and98real

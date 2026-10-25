@@ -12,12 +12,25 @@ from pathlib import Path
 
 from check_distribution import isolated_environment, run
 from check_document_count_proof import CASES as DOCUMENT_CASES
+from check_segment_data_proofs import CASES as SEGMENT_DATA_CASES
 from check_segment_header_proofs import CASES as HEADER_CASES
 from check_text_batch_proofs import CASES as TEXT_CASES
 from proof_sensitivity import replace_once
 
 
 ROOT = Path(__file__).resolve().parents[1]
+SEGMENT_DATA_TESTS = {
+    "page_width_discarded": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding",
+    "known_page_height_discarded": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding",
+    "page_resolutions_swapped": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding",
+    "profile_wire_values_discarded": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix",
+    "profile_existing_prefix_corrupted": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix",
+    "page_dispatch_returns_wrong_variant": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
+    "profile_dispatch_returns_wrong_variant": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
+    "stripe_dispatch_corrupts_value": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
+    "parse_sequential_discards_typed_page_metadata": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition",
+    "parse_random_access_discards_typed_page_metadata": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition",
+}
 TEXT_RUNTIME_TESTS = {
     "rejected_work_charge_is_silently_rolled_back": "work_charges_match_wide_results_and_attempted_charge_failure_state",
     "rejected_bitmap_charge_is_silently_rolled_back": "bitmap_charges_match_wide_priority_and_attempted_charge_failure_state",
@@ -42,6 +55,14 @@ DOCUMENT_WINDOW_TESTS = {
     "embedded_discards_first_input_byte": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
 }
 MUTATIONS = tuple(
+    {
+        "id": "segment-data-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": SEGMENT_DATA_TESTS[case["id"]],
+        "whitespace_flexible": True,
+    }
+    for case in SEGMENT_DATA_CASES
+) + tuple(
     {
         "id": "text-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],

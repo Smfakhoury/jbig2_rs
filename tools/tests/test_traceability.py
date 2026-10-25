@@ -1176,6 +1176,34 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertTrue(row["gaps"])
         self.assertEqual(len(rows), 266)
 
+    def test_page_metadata_fields_require_input_correspondence_and_stay_provisional(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for name in (
+            "T88-PAGE-KNOWN-DIMENSIONS", "T88-PAGE-RESOLUTION-FIELDS",
+            "T88-PAGE-UNKNOWN-HEIGHT-SENTINEL",
+        ):
+            row = rows[name]
+            with self.subTest(requirement=name):
+                self.assertEqual(row["strength"], "functional_contract")
+                self.assertEqual(row["review"], "provisional")
+                self.assertIn("page-information-fields", row["models"])
+                self.assertIn("known-segment-data-fields", row["models"])
+                claims = {claim["runtime"]: claim["tokens"] for claim in row["functional_evidence"]}
+                self.assertTrue(any(
+                    "page_information_fields(" in token
+                    for token in claims["segment_data::parse_page_information"]
+                ))
+                self.assertTrue(row["gaps"])
+        for name in (
+            "T88-SEQUENTIAL-SEGMENT-LAYOUT", "T88-RANDOM-HEADER-PAYLOAD-LAYOUT",
+            "T88-EMBEDDED-SEGMENT-LAYOUT",
+        ):
+            self.assertIn("container-segment-metadata", rows[name]["models"])
+            self.assertIn("profiles-payload-fields", rows[name]["models"])
+            self.assertEqual(rows[name]["review"], "provisional")
+        self.assertEqual(len(rows), 266)
+
     def test_all_feature_worklists_have_started_without_claiming_full_decomposition(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         self.assertEqual(sum(feature["decomposition"] == "partial" for feature in ledger["features"]), 29)

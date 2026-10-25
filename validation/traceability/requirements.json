@@ -77,7 +77,7 @@
         "T88-SEGMENT-UNKNOWN-LENGTH"
       ],
       "remaining_scope": [
-        "Accepted sequential/random-access header/payload and standalone/embedded caller correspondence is proved. Complete segment-data/codec dispatch, valid-input and typed-error/resource semantics, graph/deferred lifecycle and independently reviewed exhaustive normative enumeration remain open."
+        "Accepted sequential/random-access raw windows and typed structural ParsedData correspondence compose through callers. Full valid-input/typed-error/resource semantics, complete codec/raster/page/graph/deferred lifecycle and independently reviewed exhaustive normative decomposition remain open."
       ]
     },
     {
@@ -636,13 +636,13 @@
   "bindings": {
     "proofs/model_support/arithmetic.rs": "2a564c7a80acf17401f877352abba023be522d3e1b3a4ef0b0c3dba1ddaa56bb",
     "proofs/model_support/decode.rs": "67e54d341dcb57f6b4ad8b2c8a489fa52928fd4f7e3c39406139c46dc3d5c2b4",
-    "proofs/model_support/document.rs": "df0f2d35597506f5161eb9238dcbbbac03dea7f9e2be9648cae107d3a7ad8be4",
+    "proofs/model_support/document.rs": "f829b13ba4c4adf86714aa42e474109e3f06d60f6e8f5e886e633d7ef46afcc5",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
     "proofs/model_support/huffman.rs": "75ad3133571303f2d0369fb935e5b7dc4a94a16bab0fa65977af35f6a237e503",
     "proofs/model_support/mmr.rs": "0f1423997f6ebf4cc72faae5bcb8a2a774071853d929bfc10a9e7542b6bd9995",
     "proofs/production_impl/arithmetic.rs": "7baccbade7a1276a4efbe7de1a34a986d21e88ac7300ce449dd70a561bc0a3c9",
     "proofs/production_impl/bitmap.rs": "89390f3506136194877ee82e6968b93a88e2d0847c4d55b0279f56aa797b1686",
-    "proofs/production_impl/document.rs": "8b5e5b1bc4c4ed0a0b2fab0cc3e174dc1ad0698d9e94ec87802c133feaf3f7be",
+    "proofs/production_impl/document.rs": "5c9d8c19a1bbd705546690e87d40f11382bd54c98ce8d08ca944457a84be5ad8",
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/mmr.rs": "9c65c21afeb76ee1014f50ed8e03d9bfc8fb129a309d254cfc45089fcba128cc",
@@ -653,7 +653,7 @@
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "specs/bitmap.rs": "913592795b8b43e3b716f77481b265c3d8ce55be9bce8d1ddb3dce69a865ff0c",
     "specs/decode.rs": "71640bc0bd5731b8a995abdcb34cc3b268c2219609da3f166f8997216e5bd61b",
-    "specs/document.rs": "8411d29e4e400d8dffa11307eb43369015781efebb48d07dd66135f57045000a",
+    "specs/document.rs": "f7bfd3028e9b7a28da424d07764bd42b11a883b9b15ad44b62aaaea8d808cceb",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "8f368daad98291eb31f1ccc5914ab836fcdbaa5c820f70ca71317a29140d22b9",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
@@ -661,12 +661,12 @@
     "specs/mmr.rs": "3ec0ed58d02fef9cb56b8e692b478c1a0770be576353aaf77eb72fa07bd49402",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
-    "specs/segments.rs": "939fe5f2d5c8d30792bc8ea456613ad109630fd6b1b59ad6300d22fd0e2a6831",
+    "specs/segments.rs": "f3d5dcd478a860a2f0f263e9a4783e0fa5696870e04fdb52a9856b702a74f5e6",
     "specs/symbol_text.rs": "180372b5ab9cc251dff8c2234021ce6e64fa3ae4eaea48677e2bc90c3eac4ef5",
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
     "src/decode.rs": "07ad6f08c7e5ac66716cf469971d98f6f44360ec8d49b04f7500711ccf35092d",
-    "src/document.rs": "b3b6a68f8a8ee898ca31a07a3cda8ae22c18874b74e73fbaaa8bebbd25472ea1",
+    "src/document.rs": "597b2ef2c78cb24d712fc5c62fb4f21dda6148741816b08edb676788ddbb4527",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",
     "src/halftone.rs": "0553be77a782a78a095af866311e4c9d629491be553bbc69b7bedf3e2ed4a051",
@@ -674,7 +674,7 @@
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
-    "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
+    "src/segment_data.rs": "0a36d1c56dc09f5fa97ed71eb6bc141b7b30ada19489236f07d79e6402e00869",
     "src/segment_header.rs": "f2feb925f74669044cdad201c8a787cba7d373f06bcdc8b3c7204ec6e436a439",
     "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
@@ -683,7 +683,8 @@
     "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d",
     "proofs/spec_properties/readers.rs": "ac0e7d3ff3a37da9428c4e95fff9bc242be0cd1de5f39eef5e775d90b019689f",
     "proofs/spec_properties/mmr.rs": "66601def9b50fbdf81baea1c4a5488f55ed76018af112898c004054b91b5d310",
-    "proofs/shared/bitmap.rs": "7d53fd64f7ddfdb6417be0233e64a864aa88804845cca20165e8a11ceb1b2522"
+    "proofs/shared/bitmap.rs": "7d53fd64f7ddfdb6417be0233e64a864aa88804845cca20165e8a11ceb1b2522",
+    "proofs/production_impl/segment_data.rs": "db8c0ddcef3abdaa004246d73b3d913cd31bceac894ab96ace2f0f5e4c40e212"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -2310,6 +2311,65 @@
       ],
       "name": "production_random_access_complete",
       "role": "use fully proved per-entry and complete result lemmas without an assumption"
+    },
+    "page-information-fields": {
+      "kind": "spec",
+      "file": "specs/segments.rs",
+      "module_path": [
+        "spec",
+        "segments"
+      ],
+      "name": "page_information_fields",
+      "role": "complete accepted raw page fields and height encoding"
+    },
+    "profiles-payload-fields": {
+      "kind": "spec",
+      "file": "specs/segments.rs",
+      "module_path": [
+        "spec",
+        "segments"
+      ],
+      "name": "profiles_payload_fields",
+      "role": "project raw profile count and every ordered wire value"
+    },
+    "known-segment-data-fields": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "known_segment_data_fields",
+      "role": "accepted typed structural metadata variant and raw field correspondence"
+    },
+    "container-segment-metadata": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "segment_metadata",
+      "role": "typed metadata for every returned container segment"
+    },
+    "profile-field-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/segment_data.rs",
+      "module_path": [
+        "segment_data",
+        "segment_data_proofs"
+      ],
+      "name": "production_profiles_fields",
+      "role": "instantiate exact appended wire-value correspondence"
+    },
+    "known-segment-data-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": [
+        "document_proofs"
+      ],
+      "name": "production_known_segment_data_fields",
+      "role": "unfold typed dispatch result at the native return"
     }
   },
   "requirements": [
@@ -4342,26 +4402,62 @@
       "title": "Interpret known page width and height as the page bitmap dimensions",
       "feature": "known_height_pages",
       "runtime": [
-        "segment_data::parse_page_information"
+        "segment_data::parse_page_information",
+        "document::parse_known_segment_data"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "page-information-fields"
+      ],
+      "proof_macros": [
+        "known-segment-data-proof"
+      ],
       "tests": [
         {
           "target": "traceability_semantics",
           "name": "known_dimensions_and_resolution_preserve_page_fields"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The parser proves accepted dimensions satisfy project limits, but not that width/height equal the input four-byte fields.",
+      "scope_of_formal_result": "The parser proves accepted dimensions satisfy project limits, but not that width/height equal the input four-byte fields. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "Project resource bounds are not normative dimension constants; the generated test uses a known non-square page."
       ],
       "gaps": [
-        "Prove byte-to-field equality and page-buffer dimension propagation; enumerate zero/extreme dimension acceptance separately from resource policy."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
+          ]
+        },
+        {
+          "runtime": "segment_data::parse_page_information",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::page_information_fields(payload@, info)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -4372,18 +4468,23 @@
       "feature": "known_height_pages",
       "runtime": [
         "segment_data::parse_page_information",
-        "bitmap::Bitmap::filled"
+        "bitmap::Bitmap::filled",
+        "document::parse_known_segment_data"
       ],
       "models": [
         "page-flags-match",
         "filled-storage-byte",
         "filled-storage-result",
-        "filled-storage-prefix"
+        "filled-storage-prefix",
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "page-information-fields"
       ],
       "proof_macros": [
         "filled-storage-tail-bounds",
         "filled-storage-step",
-        "filled-storage-finish"
+        "filled-storage-finish",
+        "known-segment-data-proof"
       ],
       "tests": [
         {
@@ -4393,30 +4494,51 @@
         {
           "target": "lib",
           "name": "bitmap::tests::filled_layout_and_padding_are_deterministic"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful page parsing relates info.default_pixel to input flag bit 2. The auxiliary bitmap constructor proves every packed byte for either requested value, including partial-byte padding, without stronger preconditions. These separate results do not prove that the unverified page renderer routes the parsed flag into every actual initial page.",
+      "scope_of_formal_result": "Successful page parsing relates info.default_pixel to input flag bit 2. The auxiliary bitmap constructor proves every packed byte for either requested value, including partial-byte padding, without stronger preconditions. These separate results do not prove that the unverified page renderer routes the parsed flag into every actual initial page. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "Successful parsing provides the required 19-byte payload; the generated no-region page test observes the later initialization effect."
       ],
       "gaps": [
-        "Prove actual flag-to-page-allocation caller propagation for both values and all heights; constructor byte initialization alone is not the complete renderer/stream theorem. Retain separate colour/transparency and observed-capacity restrictions."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
       "functional_evidence": [
-        {
-          "runtime": "segment_data::parse_page_information",
-          "section": "ensures",
-          "tokens": [
-            "crate::spec::segments::page_flags_match(info, payload@[16], ((payload@[17] as u16) << 8) | payload@[18] as u16,)"
-          ]
-        },
         {
           "runtime": "bitmap::Bitmap::filled",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::filled_storage(&bitmap, value)"
+          ]
+        },
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
+          ]
+        },
+        {
+          "runtime": "segment_data::parse_page_information",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::page_information_fields(payload@, info)"
           ]
         }
       ],
@@ -4429,26 +4551,62 @@
       "title": "Preserve encoded horizontal and vertical page resolutions",
       "feature": "known_height_pages",
       "runtime": [
-        "segment_data::parse_page_information"
+        "segment_data::parse_page_information",
+        "document::parse_known_segment_data"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "page-information-fields"
+      ],
+      "proof_macros": [
+        "known-segment-data-proof"
+      ],
       "tests": [
         {
           "target": "traceability_semantics",
           "name": "known_dimensions_and_resolution_preserve_page_fields"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified bounded parsing does not export equality for the two resolution fields.",
+      "scope_of_formal_result": "Verified bounded parsing does not export equality for the two resolution fields. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "Resolution is metadata in pixels per metre; it is not a request to resample bitmap output."
       ],
       "gaps": [
-        "Prove exact unsigned field values and zero-as-unknown interpretation through PageInfo; add zero/extreme-resolution tests."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
+          ]
+        },
+        {
+          "runtime": "segment_data::parse_page_information",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::page_information_fields(payload@, info)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -4458,10 +4616,17 @@
       "title": "Interpret the unknown-height sentinel without treating it as a fixed bitmap height",
       "feature": "unknown_height_pages",
       "runtime": [
-        "segment_data::parse_page_information"
+        "segment_data::parse_page_information",
+        "document::parse_known_segment_data"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "page-information-fields"
+      ],
+      "proof_macros": [
+        "known-segment-data-proof"
+      ],
       "tests": [
         {
           "target": "lib",
@@ -4470,18 +4635,47 @@
         {
           "target": "traceability_semantics",
           "name": "unknown_height_uses_the_last_inclusive_stripe_row"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The postcondition distinguishes Some/None output shapes but does not relate None to the raw all-ones height field.",
+      "scope_of_formal_result": "The postcondition distinguishes Some/None output shapes but does not relate None to the raw all-ones height field. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "Only header sentinel interpretation is selected here; final height is separately tracked under striped_pages."
       ],
       "gaps": [
-        "Prove the exact encoded sentinel/None equivalence and known-value branch, including rejection/resource boundaries."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
+          ]
+        },
+        {
+          "runtime": "segment_data::parse_page_information",
+          "section": "ensures",
+          "tokens": [
+            "crate::spec::segments::page_information_fields(payload@, info)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -4491,34 +4685,60 @@
       "title": "Require striping in successful unknown-height page information",
       "feature": "unknown_height_pages",
       "runtime": [
-        "segment_data::parse_page_information"
+        "segment_data::parse_page_information",
+        "document::parse_known_segment_data"
       ],
       "models": [
-        "page-flags-match"
+        "page-flags-match",
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "page-information-fields"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "known-segment-data-proof"
+      ],
       "tests": [
         {
           "target": "lib",
           "name": "segment_data::tests::unknown_height_requires_striping"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "On success, None height implies info.striped; page_flags_match independently relates striped to the high bit of the striping field.",
+      "scope_of_formal_result": "On success, None height implies info.striped; page_flags_match independently relates striped to the high bit of the striping field. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "The separate sentinel-to-None relation is not proved by this success implication; width bounds in the same branch are project policy."
       ],
       "gaps": [
-        "Prove exact UnknownHeightWithoutStriping rejection and compose this implication with sentinel parsing and later lifecycle rules."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
       "functional_evidence": [
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
+          ]
+        },
         {
           "runtime": "segment_data::parse_page_information",
           "section": "ensures",
           "tokens": [
-            "None => info.width <= limits.max_width && info.striped",
-            "crate::spec::segments::page_flags_match(info, payload@[16], ((payload@[17] as u16) << 8) | payload@[18] as u16,)"
+            "crate::spec::segments::page_information_fields(payload@, info)"
           ]
         }
       ],
@@ -4531,12 +4751,17 @@
       "title": "Decode the four-byte inclusive end-row coordinate of a stripe",
       "feature": "striped_pages",
       "runtime": [
-        "segment_data::parse_end_of_stripe"
+        "segment_data::parse_end_of_stripe",
+        "document::parse_known_segment_data"
       ],
       "models": [
-        "segment-be-u32"
+        "segment-be-u32",
+        "known-segment-data-fields",
+        "container-segment-metadata"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "known-segment-data-proof"
+      ],
       "tests": [
         {
           "target": "traceability_semantics",
@@ -4545,16 +4770,30 @@
         {
           "target": "lib",
           "name": "segment_data::tests::fixed_size_segments_reject_wrong_lengths"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful parsing requires exactly four bytes and returns their project big-endian value.",
+      "scope_of_formal_result": "Successful parsing requires exactly four bytes and returns their project big-endian value. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "The helper does not validate page ownership, row progression or the semantic effect of sealing an inclusive row."
       ],
       "gaps": [
-        "Propagate the parsed coordinate into page state and prove complete malformed-length rejection; ordering and final-height relations remain separate."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
       "functional_evidence": [
         {
@@ -4563,6 +4802,13 @@
           "tokens": [
             "payload@.len() == 4",
             "value == crate::spec::segments::be_u32_at(payload@, 0)"
+          ]
+        },
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
           ]
         }
       ],
@@ -5201,16 +5447,24 @@
       "runtime": [
         "document::parse_sequential",
         "document::read_payload",
-        "document::parse_standalone_document"
+        "document::parse_standalone_document",
+        "document::parse_known_segment_data",
+        "segment_data::parse_profiles",
+        "segment_data::read_profiles_into"
       ],
       "models": [
         "document-payload-window",
         "document-sequential-offset",
-        "document-sequential-fields"
+        "document-sequential-fields",
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "profiles-payload-fields"
       ],
       "proof_macros": [
         "document-window-append-proof",
-        "document-sequential-complete-proof"
+        "document-sequential-complete-proof",
+        "profile-field-proof",
+        "known-segment-data-proof"
       ],
       "tests": [
         {
@@ -5228,17 +5482,34 @@
         {
           "target": "lib",
           "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
+      "scope_of_formal_result": "Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "The standalone header has already selected the sequential parser; the generated two-page example is not an exhaustive syntax oracle."
       ],
       "gaps": [
-        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
-        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
       "functional_evidence": [
         {
@@ -5260,6 +5531,13 @@
           "section": "ensures",
           "tokens": [
             "Organization::Sequential => document_spec::sequential_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@, true,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
           ]
         }
       ],
@@ -5343,7 +5621,10 @@
       "runtime": [
         "document::parse_random_access",
         "document::read_payload",
-        "document::parse_standalone_document"
+        "document::parse_standalone_document",
+        "document::parse_known_segment_data",
+        "segment_data::parse_profiles",
+        "segment_data::read_profiles_into"
       ],
       "models": [
         "document-payload-window",
@@ -5351,12 +5632,17 @@
         "document-header-byte-offset",
         "document-payload-byte-offset",
         "document-random-access-segment-fields",
-        "document-random-access-fields"
+        "document-random-access-fields",
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "profiles-payload-fields"
       ],
       "proof_macros": [
         "document-random-header-proof",
         "document-random-payload-proof",
-        "document-random-complete-proof"
+        "document-random-complete-proof",
+        "profile-field-proof",
+        "known-segment-data-proof"
       ],
       "tests": [
         {
@@ -5374,17 +5660,34 @@
         {
           "target": "lib",
           "name": "segment_header::tests::recognized_segment_type_equality_matches_all_literal_codes_and_eof"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful random-access results retain the exact original separately stored header and payload windows at deterministic offsets covering the complete body. Every returned header is the one consumed by the unchanged native vector iterator. Numbers strictly increase, the nonempty header section ends with EOF and contains no earlier EOF. The standalone caller uses the exact file-header body origin; sequential guarantees remain independent. The only native changes replace two enum-equality EOF checks with equivalent pattern matches, allowing direct variant reasoning without an added equality specification. All recognized type comparisons are checked against literal codes; no local standard declaration is added. This is accepted-result correspondence, not complete acceptance, typed rejection, decoded ParsedData or unknown-length termination.",
+      "scope_of_formal_result": "Successful random-access results retain the exact original separately stored header and payload windows at deterministic offsets covering the complete body. Every returned header is the one consumed by the unchanged native vector iterator. Numbers strictly increase, the nonempty header section ends with EOF and contains no earlier EOF. The standalone caller uses the exact file-header body origin; sequential guarantees remain independent. The only native changes replace two enum-equality EOF checks with equivalent pattern matches, allowing direct variant reasoning without an added equality specification. All recognized type comparisons are checked against literal codes; no local standard declaration is added. This is accepted-result correspondence, not complete acceptance, typed rejection, decoded ParsedData or unknown-length termination. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "The file header selects random-access parsing; the generated example uses distinct page dimensions to observe payload order."
       ],
       "gaps": [
-        "Independent normative/model review and exhaustive D.2/7.2.7/7.4.11 decomposition remain required; all selected records remain provisional.",
-        "Prove complete valid-input acceptance and exact typed rejection/partial-error/resource behavior, decoded ParsedData and codec/caller/graph/deferred-retention/attached-extension lifecycle."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
       "functional_evidence": [
         {
@@ -5399,6 +5702,13 @@
           "section": "ensures",
           "tokens": [
             "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
           ]
         }
       ],
@@ -5559,17 +5869,25 @@
       "runtime": [
         "document::parse_embedded_document",
         "document::parse_sequential",
-        "document::read_payload"
+        "document::read_payload",
+        "document::parse_known_segment_data",
+        "segment_data::parse_profiles",
+        "segment_data::read_profiles_into"
       ],
       "models": [
         "embedded-metadata",
         "document-payload-window",
         "document-sequential-offset",
-        "document-sequential-fields"
+        "document-sequential-fields",
+        "known-segment-data-fields",
+        "container-segment-metadata",
+        "profiles-payload-fields"
       ],
       "proof_macros": [
         "document-window-append-proof",
-        "document-sequential-complete-proof"
+        "document-sequential-complete-proof",
+        "profile-field-proof",
+        "known-segment-data-proof"
       ],
       "tests": [
         {
@@ -5587,17 +5905,34 @@
         {
           "target": "lib",
           "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+        },
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
+      "scope_of_formal_result": "Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
       "assumptions": [
         "The embedding application supplies contiguous segment pairs; arbitrary surrounding container bytes and suggested markers are not decoder input."
       ],
       "gaps": [
-        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
-        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle."
+        "Independent normative/model review and exhaustive structural segment/caller decomposition remain required; all selected records remain provisional.",
+        "Prove full valid-input acceptance, exact typed partial errors/resources, complete page/stripe lifecycle and codec/raster/graph/deferred-retention/attached-extension composition.",
+        "Auxiliary raw profile value correspondence does not replace independent normative profile enumeration or allowed-profile interpretation."
       ],
       "functional_evidence": [
         {
@@ -5619,6 +5954,13 @@
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, result.1@, false)"
+          ]
+        },
+        {
+          "runtime": "document::parse_known_segment_data",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
           ]
         }
       ],

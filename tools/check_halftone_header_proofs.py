@@ -11,6 +11,9 @@ from proof_sensitivity import check_semantic_cases
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("halftone", (
+    "parse_halftone_header", "parse_pattern_dictionary_header",
+)),)
 PATTERN = """Ok(PatternDictionaryHeader {
     mmr, template, pattern_width, pattern_height, gray_max,
 })"""
@@ -108,6 +111,7 @@ def main():
             ("src/halftone.rs", "specs/halftone.rs", "specs/segments.rs"),
             "jbig2-halftone-headers-",
             "Exact project header acceptance/rejection, successful fields and consumed lengths; typed partial errors and independent normative translation remain separate",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"halftone header proof sensitivity failed: {error}", file=sys.stderr)

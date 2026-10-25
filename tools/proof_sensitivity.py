@@ -5,6 +5,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from contextlib import contextmanager
 from os.path import commonprefix
@@ -71,13 +72,17 @@ def selected_proof(
         report = json.loads(process.stdout)
     except ValueError as error:
         raise ValueError("verifier did not produce semantic proof evidence:\n" + process.stderr) from error
-    result = report["verification-results"]
+    result = report.get("verification-results")
     identities = {f"jbig2_rs_production::{module}::{name}" for name in functions}
     if (
-        result["is-verifying-entire-crate"] is not False
+        not isinstance(result, dict)
+        or result.get("is-verifying-entire-crate") is not False
+        or not isinstance(report.get("func-details"), dict)
         or not identities <= set(report["func-details"])
     ):
-        raise ValueError(f"selected verification did not target {sorted(identities)}")
+        raise ValueError(
+            f"selected verification did not target {sorted(identities)}:\n{process.stderr}"
+        )
     if expect_failure:
         if (
             process.returncode == 0 or result["errors"] < 1
@@ -133,6 +138,8 @@ def check_semantic_cases(
                 baselines[(module, function)] = baseline
                 baseline_targets[(module, function)] = list(functions)
         for case in cases:
+            print(f"semantic contrast: {case['module']}::{case['function']} / {case['id']}",
+                  file=sys.stderr, flush=True)
             if case["file"] not in sources:
                 raise ValueError("semantic counterexample edits an unbound source")
             path = directory / case["file"]

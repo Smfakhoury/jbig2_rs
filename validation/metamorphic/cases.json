@@ -2,6 +2,43 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-PAGE-INFORMATION-FIELDS",
+      "transformation": "literal wide dimensions, known/unknown height encodings, every binary page flag and stripe metadata",
+      "invariant": "all returned page fields match original metadata and unknown height retains the existing striping rejection",
+      "tests": [
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding"
+        }
+      ]
+    },
+    {
+      "id": "META-RAW-PROFILE-LIST-CONTENTS",
+      "transformation": "literal profile IDs at nonzero reader cursors with an existing output prefix and untouched suffix",
+      "invariant": "wire values and order, original prefix, exact consumed extent and remaining bytes",
+      "tests": [
+        {
+          "target": "lib",
+          "name": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix"
+        }
+      ]
+    },
+    {
+      "id": "META-TYPED-SEGMENT-METADATA-COMPOSITION",
+      "transformation": "raw page/stripe/profile/control metadata through leaf dispatch and sequential/random/embedded containers",
+      "invariant": "typed returned variants and literal field values remain attached to their original header and payload",
+      "tests": [
+        {
+          "target": "lib",
+          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+        }
+      ]
+    },
+    {
       "id": "META-RAW-RANDOM-ACCESS-WINDOWS",
       "transformation": "literal optional-extension headers stored before their payloads, with varied standalone body origins and boundary metadata",
       "invariant": "returned header and payload order, separate original byte windows, final EOF and exact input extent; bounded malformed metadata preserves its typed error",

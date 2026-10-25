@@ -71,6 +71,34 @@ implementation data and synthetic semantic mutants are not normative oracles.
 
 ## Evidence and unchanged stop conditions
 
+Structural `page_information_fields` states exact raw dimensions, height
+encoding, resolutions and flags. `profiles_payload_fields` states the count
+and every ordered wire ID. The append helper preserves the original prefix
+and reader frame; each quantified postcondition is separately parenthesized,
+so an empty original prefix does not make new-value correspondence vacuous.
+Typed `known_segment_data_fields` and `segment_metadata` connect these to
+the returned enum variants and both complete container result models.
+Ordinary proved support handles append/completion; observable models are not
+replaced by internal loop bookkeeping. Whole proof/compilation **1232/0** and
+10 new + 25 retained real compiling contrasts pass without a new native operation,
+standard declaration, assumption, termination waiver or precondition.
+Other table/entropy payloads remain opaque, not a codec-validity theorem.
+
+The #90 hosted timeout repair changes only checker configuration and group
+placement. Symbol/cardinality, text batch and reader-error positive baselines
+use five pristine queries instead of 19. The two module-wide positive probes
+actually verified 111 decode and 164 symbol-text functions with partial scope
+and every requested exact identity present. All 31 compiling contrasts retain
+their 62 individual strong/weaker queries and freshly pass. Source contracts,
+native execution, proof limits, cases and collector acceptance are unchanged.
+
+After the completion-boundary cancellation of another producer job, two
+additional narrow MMR-span/halftone-header baselines are shared. Their 17
+contrasts / 34 individual queries freshly pass. The combined reduction across
+five checker configurations is 24 pristine launches to eight, saving 16
+startups. Complete reports from the canceled job are timing observations only,
+never substitutes for a successful producer and collector.
+
 Document `segment_headers`, `header_byte_offset`, `payload_byte_offset` and the
 opaque random-access entry/result predicates describe accepted separate header
 and payload sections, exact original windows, increasing numbers and final EOF.

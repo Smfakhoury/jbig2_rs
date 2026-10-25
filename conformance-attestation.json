@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "90faeb6c24d68cf72001d710e52c23a5d5c324ea",
-  "scope": "Fresh existing official diagnostics on accepted-random-access-container-composition 90faeb6; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
+  "scope": "Fresh existing official diagnostics on accepted-typed-structural-segment-metadata bf3d525; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
   "implementation_tests": {
-    "total": 483,
-    "passed": 469,
+    "total": 487,
+    "passed": 473,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "90faeb6c24d68cf72001d710e52c23a5d5c324ea",
-    "scope": "Actual complete immutable pinned runtime collection:469unit/integration tests pass;14existing microbenchmarks ignored. Not normative approval or official conformance."
+    "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
+    "scope": "Actual complete immutable pinned runtime collection:473unit/integration tests pass;14existing microbenchmarks ignored. Not normative approval or official conformance."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "63531726525fd9b288615efd6ce1038c7f312c98eea079814a5e3f99edb643f4",
-    "review_sha256": "86d9f15a6fd584373ed8f4aa828e3ea5d6f389f483bf9597164c41c7482dc29c"
+    "results_sha256": "63bd747e331697d80be486a28ee95f7dcf603c71332130ee8cd29866773800a0",
+    "review_sha256": "5073004ee6f651b6b4ecbb01fb34528387e630b4fd2bad9572570ec05d642d74"
   },
   "community_regressions": {
     "total": 0,

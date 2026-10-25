@@ -106,7 +106,8 @@ pub(crate) struct PageInformation {
                     info,
                     payload@[16],
                     ((payload@[17] as u16) << 8) | payload@[18] as u16,
-                ),
+                )
+                && crate::spec::segments::page_information_fields(payload@, info),
         Err(_) => true,
     },
 ))]
@@ -184,7 +185,12 @@ pub(crate) fn require_empty(segment_type: u8, payload: &[u8]) -> Result<(), Deco
     require_length(segment_type, payload, 0)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(profiles) => crate::spec::segments::profiles_payload_fields(payload@, profiles@),
+        Err(_) => true,
+    },
+))]
 pub(crate) fn parse_profiles(payload: &[u8]) -> Result<Vec<u32>, DecodeError> {
     if payload.len() < 4 {
         return Err(MalformedError::InvalidSegmentDataLength {
@@ -210,11 +216,31 @@ pub(crate) fn parse_profiles(payload: &[u8]) -> Result<Vec<u32>, DecodeError> {
         });
     }
     read_profiles_into(&mut reader, count, &mut profiles)?;
+    #[cfg(verus_keep_ghost)]
+    production_profiles_fields!(payload, profiles, count);
     Ok(profiles)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires old(reader).position <= old(reader).bytes@.len(),
+    ensures
+        final(reader).bytes@ == old(reader).bytes@,
+        old(reader).position <= final(reader).position <= final(reader).bytes@.len(),
+        match out {
+            Ok(()) =>
+                final(reader).position == old(reader).position as int + count as int * 4
+                && final(profiles)@.len() == old(profiles)@.len() + count
+                && (forall|index: int| 0 <= index < old(profiles)@.len() ==>
+                    #[trigger] final(profiles)@[index] == old(profiles)@[index])
+                && (forall|index: int| 0 <= index < count ==>
+                    0 <= old(reader).position as int + index * 4
+                    && old(reader).position as int + index * 4 + 4 <= old(reader).bytes@.len()
+                    && #[trigger] final(profiles)@[old(profiles)@.len() + index]
+                        == crate::spec::segments::be_u32_at(
+                            old(reader).bytes@, old(reader).position as int + index * 4,
+                        )),
+            Err(_) => true,
+        },
 ))]
 fn read_profiles_into(
     reader: &mut ByteReader<'_>,
@@ -222,10 +248,26 @@ fn read_profiles_into(
     profiles: &mut Vec<u32>,
 ) -> Result<(), DecodeError> {
     let mut index = 0_u32;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost start = reader.position as int; }
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost original_profiles = profiles@; }
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             index <= count,
             reader.position <= reader.bytes@.len(),
+            start == old(reader).position as int,
+            original_profiles == old(profiles)@,
+            reader.bytes@ == old(reader).bytes@,
+            reader.position == start + index as int * 4,
+            profiles@.len() == original_profiles.len() + index,
+            forall|position: int| 0 <= position < original_profiles.len() ==>
+                #[trigger] profiles@[position] == original_profiles[position],
+            forall|position: int| 0 <= position < index ==>
+                #[trigger] profiles@[original_profiles.len() + position]
+                    == crate::spec::segments::be_u32_at(
+                        reader.bytes@, start + position * 4,
+                    ),
         decreases count - index,
     ))]
     while index < count {
@@ -522,6 +564,87 @@ fn require_length(segment_type: u8, payload: &[u8], expected: usize) -> Result<(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn raw_page_information_preserves_every_literal_field_and_height_encoding() {
+        let limits = Limits {
+            max_width: u32::MAX,
+            max_height: u32::MAX,
+            max_pixels_per_page: u64::MAX,
+            ..Limits::default()
+        };
+        for width in [0_u32, 17, u32::MAX] {
+            for height in [23_u32, u32::MAX] {
+                for flags in 0..=127_u8 {
+                    for striping in [0_u16, 1, 0x7fff, 0x8000, 0x8001, 0xffff] {
+                        let mut payload = [0_u8; 19];
+                        payload[..4].copy_from_slice(&width.to_be_bytes());
+                        payload[4..8].copy_from_slice(&height.to_be_bytes());
+                        payload[8..12].copy_from_slice(&0x0123_4567_u32.to_be_bytes());
+                        payload[12..16].copy_from_slice(&0x89ab_cdef_u32.to_be_bytes());
+                        payload[16] = flags;
+                        payload[17..].copy_from_slice(&striping.to_be_bytes());
+                        let result = parse_page_information(&payload, &limits);
+                        if height == u32::MAX && striping & 0x8000 == 0 {
+                            assert!(matches!(
+                                result,
+                                Err(DecodeError::Malformed(
+                                    MalformedError::UnknownHeightWithoutStriping
+                                ))
+                            ));
+                            continue;
+                        }
+                        let info = result.unwrap();
+                        assert_eq!(info.width, width);
+                        assert_eq!(info.height, (height != u32::MAX).then_some(height));
+                        assert_eq!(info.x_resolution, 0x0123_4567);
+                        assert_eq!(info.y_resolution, 0x89ab_cdef);
+                        assert_eq!(info.eventually_lossless, flags & 1 != 0);
+                        assert_eq!(info.might_contain_refinements, flags & 2 != 0);
+                        assert_eq!(info.default_pixel, flags & 4 != 0);
+                        assert_eq!(
+                            info.default_operator,
+                            [
+                                CombinationOperator::Or,
+                                CombinationOperator::And,
+                                CombinationOperator::Xor,
+                                CombinationOperator::Xnor,
+                            ][usize::from((flags >> 3) & 3)]
+                        );
+                        assert_eq!(info.requires_auxiliary_buffers, flags & 0x20 != 0);
+                        assert_eq!(info.combination_operator_override, flags & 0x40 != 0);
+                        assert_eq!(info.striped, striping & 0x8000 != 0);
+                        assert_eq!(info.max_stripe_size, striping & 0x7fff);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix() {
+        for count in [0_u32, 1, 2, 5, 17] {
+            let values: Vec<u32> = (0..count)
+                .map(|index| [0, u32::MAX, 0x0123_4567, 0x89ab_cdef][index as usize % 4])
+                .collect();
+            let mut payload = count.to_be_bytes().to_vec();
+            for value in &values {
+                payload.extend_from_slice(&value.to_be_bytes());
+            }
+            assert_eq!(parse_profiles(&payload).unwrap(), values);
+            let mut bytes = vec![0xaa, 0xbb, 0xcc];
+            bytes.extend_from_slice(&payload[4..]);
+            bytes.extend_from_slice(&[0x55, 0x66]);
+            let mut reader = ByteReader::new(&bytes);
+            reader.read_bytes(3).unwrap();
+            let mut profiles = vec![17, 33];
+            read_profiles_into(&mut reader, count, &mut profiles).unwrap();
+            assert_eq!(&profiles[..2], &[17, 33]);
+            assert_eq!(&profiles[2..], values);
+            assert_eq!(reader.position(), 3 + count as usize * 4);
+            assert_eq!(reader.remaining_bytes(), &[0x55, 0x66]);
+        }
+    }
 
     #[test]
     fn parses_known_height_page_information() {

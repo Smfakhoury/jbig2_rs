@@ -51,6 +51,12 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.verify(report)
 
+    def test_missing_scope_reports_the_actual_verifier_diagnostic(self):
+        report = self.report()
+        del report["verification-results"]["is-verifying-entire-crate"]
+        with self.assertRaisesRegex(ValueError, "trigger diagnostic"):
+            self.verify(report, 1, "trigger diagnostic")
+
     def test_only_expected_failure_skips_additional_error_searches(self):
         for expected_failure in (False, True):
             report = self.report()

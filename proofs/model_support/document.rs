@@ -72,6 +72,29 @@ pub(super) proof fn decoder_fields(decoder: &crate::document::Decoder)
     ensures decoder_limits(decoder) == decoder.limits,
 {}
 
+pub(super) proof fn segment_metadata_append<'a>(
+    segments: Seq<crate::document::ParsedSegment<'a>>,
+    segment: crate::document::ParsedSegment<'a>,
+)
+    requires
+        segment_metadata(segments),
+        known_segment_data_fields(segment.header.segment_type, segment.payload@, segment.data),
+    ensures segment_metadata(segments.push(segment)),
+{
+    let appended = segments.push(segment);
+    assert forall|index: int| 0 <= index < appended.len() implies
+        #[trigger] known_segment_data_fields(
+            appended[index].header.segment_type, appended[index].payload@, appended[index].data,
+        ) by {
+        if index < segments.len() {
+            assert(appended[index] == segments[index]);
+        } else {
+            assert(index == segments.len());
+            assert(appended[index] == segment);
+        }
+    }
+}
+
 pub(super) proof fn document_fields(document: &crate::document::DocumentInfo)
     ensures
         document_organization(document) == document.organization,
@@ -170,6 +193,7 @@ pub(super) proof fn sequential_complete_fields(
     ordered: bool,
 )
     requires sequential_windows(bytes, segments, windows, bytes.len() as int, ordered),
+        segment_metadata(segments),
     ensures sequential_container_fields(bytes, segments, ordered),
 {
     sequential_offset_window(bytes, segments, windows, bytes.len() as int, ordered, segments.len());
@@ -396,6 +420,7 @@ pub(super) proof fn random_access_complete_fields(
             bytes, headers, header_end, segments, payload_windows, bytes.len() as int,
         ),
         segments.len() == headers.len(),
+        segment_metadata(segments),
     ensures random_access_container_fields(bytes, segments),
 {
     assert forall|index: int| 0 <= index < segments.len() implies

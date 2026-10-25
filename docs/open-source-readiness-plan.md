@@ -5,6 +5,70 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+After actual #89 hosted acceptance and owner merge `63ebdcb`, immutable `bf3d525`
+adds exact accepted typed structural metadata. Page information now preserves
+the literal width, known/sentinel height, both resolutions and all existing
+flags. Profile readers preserve each ordered raw ID, the prior vector prefix,
+reader bytes/bounds/progress and exact consumed extent. Structural dispatch
+preserves the Page/Stripe/Profiles variants and values, empty EOP/EOF and the
+existing extension flag shape. Both complete container result models include
+typed metadata for every returned segment and carry it through standalone and
+embedded callers. Other entropy/table payloads remain opaque, not claimed valid.
+
+Actual immutable whole Cargo proof and production library pass **1232/0**.
+Ten new real compiling strong/weaker contrasts pass in 269 seconds, and every
+previous 25 document contrasts freshly passes. All 108 native mutants compile and
+are detected; 473 native tests pass / 14 existing ignored. All 414 tooling tests,
+strict lint/format, provenance, isolated MSRV package/exact downstream output
+and both approved normative-document hash gates pass. Four raw metadata tests
+include 4608 page field/height/flag/stripe combinations, literal profile prefix/
+cursor/suffix checks and typed results through all container organizations.
+Native compiler expansion exactly equals accepted #89; all 658 prior preconditions
+and 48 reviewed boundary bodies/attributes/reasons/classifications are unchanged.
+No standard/equality specification, assumption or termination waiver is added.
+
+Nine existing structural records gain links; page dimensions, resolutions and
+unknown-height encoding become functional: **133 functional / 117 state / 16 safety**,
+all **266 still provisional**. Profile correspondence is auxiliary project evidence,
+not a new selected normative claim or an approved denominator. The profile is
+29 groups / 236 contrasts / 229 bindings, still six one-worker shards / max four active /
+21 jobs + CLA = 22 checks and unchanged caps. Actual accepted #89 costs plus the complete
+new group + 10% now give 997/999/987/1000/990/995 seconds under the same historical
+1000-second estimate guard. Fresh measured replay gives
+966/983/795/996/985/988, below the unchanged 1050-second guard.
+Actual current-head hosted acceptance is
+still required before readiness.
+
+The first evidence-bound #90 run completed the whole proof and five shards,
+but shard 1 timed out; the collector correctly rejected it. No hosted
+acceptance is credited. Actual checker receipts identified the imbalance.
+Three checker configurations now share pristine positive baselines:
+19 launches become five, removing 14 redundant verifier startups. Every one
+of the 31 affected compiling contrasts retains its individual strong and
+weaker query; all 62 queries freshly pass. The unchanged five-case value
+bridge also freshly passes. Whole groups are redistributed, without more
+jobs, workers, solver resources, cases omitted or raised time/budget limits.
+
+The repair run completed all 29 checker reports / 236 contrasts, but shard 4
+was canceled at the completion boundary. The collector again correctly
+rejected the job; complete reports are useful timing observations, not hosted
+acceptance. Fresh costs reveal the remaining imbalance. Two more existing
+MMR-span/halftone-header positive baselines are shared; all 17 affected
+contrasts / 34 individual queries freshly pass. Across five configurations,
+24 pristine launches become eight: 16 redundant startups removed. The latest
+replay conservatively retains the slower pre-optimization hosted costs for
+those two groups, and preserves both original guards and every job limit.
+
+All 51 raw coverage metrics are checked: 49 unchanged, only document/global covered
+regions increase by two with identical denominators. Totals 11383/12639 lines,
+10971/12950 regions, 2245/2640 outcomes keep unchanged 90/85 numerical goals met.
+Approved existing official normal/logging/native/Hayro observations were
+freshly executed: 2 passed / 7 unresolved / 1 unsupported, zero restored rejection credit.
+Complete acceptance, typed partial errors/resources, full page/stripe/codec/
+raster/graph/deferred lifecycle, independent review and P04/P05/P06 remain open.
+Paused encoded-family fixtures, capacity/reviewer decisions and release holds
+are not bypassed.
+
 The owner merged #88 at 8153375 after all 22 checks and independent hosted
 reconstruction passed. The next immutable implementation, 90faeb6, closes
 accepted random-access composition: the separate original header and payload

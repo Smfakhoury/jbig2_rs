@@ -40,6 +40,31 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The [structural metadata models](../specs/segments.rs) now bind accepted page
+width, known/sentinel height, both resolutions and all flags to the original
+bytes. Profile parsing/appending preserves the count, every ordered raw ID,
+old output prefix and exact reader extent. The
+[typed dispatch model](../specs/document.rs) attaches Page/Stripe/Profiles
+variants and values to their header kind and payload; empty EOP/EOF and
+accepted extension flag correspondence are explicit. Both existing container
+result models now include typed metadata for every returned segment.
+
+The ordinary proved append/completion support composes this through the
+[unchanged native parsers](../src/document.rs), including standalone/embedded
+callers. Whole proof/compiled library **1232/0**, all ten new real compiling strong/
+weaker controls and every prior 25 document controls pass. Page controls retain
+the old flags/dimensions; profile controls retain independent prefix/newvalue/
+count/reader frames. Container controls retain internal typed and byte-window
+proofs while removing only their selected complete public result guarantee.
+No native operation, existing precondition or reviewed boundary changes.
+
+Nine existing records gain links. Three page field rows become functional:
+**133 functional / 117 state / 16 safety**, all **266 provisional**. Auxiliary raw
+profile correspondence is not invented selected normative credit. Complete
+acceptance/errors/resources, profile interpretation, full page/stripe/codec/
+raster/caller/lifecycle semantics and independent normative/model review
+remain open. Opaque Other table/entropy results do not prove codec validity.
+
 The [random-access model](../specs/document.rs) now relates every accepted
 returned header and payload to the separate original storage sections,
 deterministic offsets and complete body extent. Numbers strictly increase;

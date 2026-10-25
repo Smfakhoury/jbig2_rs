@@ -11,6 +11,10 @@ from proof_sensitivity import check_semantic_cases
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("reader", (
+    "ByteReader::read_bytes", "ByteReader::read_u16",
+    "ByteReader::read_u32", "ByteReader::read_u8",
+)),)
 BYTE_EOF = """MalformedError::UnexpectedEof {
     offset: self.position as u64,
     needed: length as u64,
@@ -101,6 +105,7 @@ def main():
              "proofs/production_impl/readers.rs"),
             "jbig2-reader-errors-",
             "Exact project byte/bit reader failure fields, count priority, no false overflow or false valid-width rejection; original input/value/cursor bounds remain",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"reader error proof sensitivity failed: {error}", file=sys.stderr)

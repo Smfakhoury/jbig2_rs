@@ -122,6 +122,47 @@ pub(crate) open spec fn payload_window(
     }
 }
 
+#[verifier::opaque]
+pub(crate) open spec fn known_segment_data_fields(
+    segment_type: crate::segment_header::SegmentType,
+    payload: Seq<u8>,
+    data: crate::document::ParsedData,
+) -> bool {
+    match segment_type {
+        crate::segment_header::SegmentType::PageInformation => match data {
+            crate::document::ParsedData::Page(info) =>
+                crate::spec::segments::page_information_fields(payload, info),
+            _ => false,
+        },
+        crate::segment_header::SegmentType::EndOfStripe => match data {
+            crate::document::ParsedData::EndOfStripe(row) =>
+                payload.len() == 4 && row == crate::spec::segments::be_u32_at(payload, 0),
+            _ => false,
+        },
+        crate::segment_header::SegmentType::Profiles => match data {
+            crate::document::ParsedData::Profiles(profiles) =>
+                crate::spec::segments::profiles_payload_fields(payload, profiles@),
+            _ => false,
+        },
+        crate::segment_header::SegmentType::EndOfPage
+        | crate::segment_header::SegmentType::EndOfFile =>
+            payload.len() == 0 && data is Other,
+        crate::segment_header::SegmentType::Extension =>
+            crate::spec::segments::extension_payload_flags_valid(payload) && data is Other,
+        crate::segment_header::SegmentType::ColourPalette => false,
+        _ => data is Other,
+    }
+}
+
+pub(crate) open spec fn segment_metadata(
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+) -> bool {
+    forall|index: int| 0 <= index < segments.len() ==>
+        #[trigger] known_segment_data_fields(
+            segments[index].header.segment_type, segments[index].payload@, segments[index].data,
+        )
+}
+
 pub(crate) open spec fn sequential_offset(
     segments: Seq<crate::document::ParsedSegment<'_>>,
     prefix: nat,
@@ -144,6 +185,7 @@ pub(crate) open spec fn sequential_container_fields(
     segments: Seq<crate::document::ParsedSegment<'_>>,
     ordered: bool,
 ) -> bool {
+    &&& segment_metadata(segments)
     &&& sequential_offset(segments, segments.len()) == bytes.len()
     &&& forall|index: int| 0 <= index < segments.len() ==> {
         let segment = #[trigger] segments[index];
@@ -229,6 +271,7 @@ pub(crate) open spec fn random_access_container_fields(
 ) -> bool {
     let headers = segment_headers(segments);
     let header_end = header_byte_offset(headers, headers.len());
+    &&& segment_metadata(segments)
     &&& segments.len() > 0
     &&& headers.last().segment_type == crate::segment_header::SegmentType::EndOfFile
     &&& header_end + payload_byte_offset(segments, segments.len()) == bytes.len()
