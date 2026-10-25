@@ -5,6 +5,55 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The owner merged #88 at 8153375 after all 22 checks and independent hosted
+reconstruction passed. The next immutable implementation, 90faeb6, closes
+accepted random-access composition: the separate original header and payload
+sections, every returned pair's deterministic windows, increasing numbers,
+mandatory final EOF with no preceding EOF, and the exact standalone body
+origin. The native vector for-loop is unchanged and its named ghost iterator
+preserves the original headers. Observable offsets/entry/result models stay
+separate from internal histories and proved append/offset/completion support.
+
+The EOF proof exposed a real gap in native-derived enum equality. Rather than
+adding an equality/standard specification, exactly two EOF checks now use
+equivalent pattern matching. The 22 recognized literal codes test the old
+equality and new classification. Actual ordinary compiler expansion matches
+accepted #88 after precisely those two substitutions; no other native
+operation changes. All 658 prior preconditions and 48 reviewed boundary
+bodies/attributes/reasons/classifications remain unchanged.
+
+Actual immutable unfiltered whole Cargo proof and production library pass
+1231/0. All 25 compiling document contrasts reject strongly and accept their
+intended weaker controls, retaining the prior 20. All 469 native tests pass,
+with 14 existing ignored microbenchmarks; all 98 real native mutants compile
+and are detected. All 404 tooling tests, provenance, strict lint/format and
+isolated MSRV package/exact downstream output pass. Approved official
+normal/logging/native/Hayro observations were freshly executed: 2 passed/
+7 unresolved/1 unsupported, zero restored rejection credit.
+
+Smart execution avoids adding checks: one fresh 108/0 partial document-module
+baseline includes all 12 mutated production bodies, with exact target,
+partialness and nonvacuity validation. Every one of the 50 strong/weaker
+queries still executes individually at unchanged budgets; no mutant is
+cached or removed. The complete expanded 25-case group took 621 seconds.
+Whole-group estimates are 967/987/960/993/958/997 seconds, retaining the
+1000-second ceiling. Independently replaying latest accepted #88 costs plus
+the current group gives 1039/1012/1038/1037/916/1045 seconds, under the unchanged
+1050-second guard. The profile is 28 groups/226 contrasts, still six one-worker
+shards/max four active, 21 jobs plus CLA = 22 checks, and unchanged timeouts.
+Actual current-head hosted acceptance remains required before readiness.
+
+Five existing records gain links; three random-access rows become functional:
+130 functional/117 state/19 safety, all 266 still provisional. Coverage checks
+all 51 metrics: 49 are unchanged, and document/global region counts each gain
+two covered regions from the two EOF expressions. Totals are11383/12639lines,
+10969/12950regions and2245/2640outcomes; unchanged90/85numericalgoals remain met.
+No floor, exclusion or threshold is reduced. Complete valid-input acceptance,
+typed partial errors/resources, decoded `ParsedData`/codec/caller/lifecycle
+semantics, the seven official positives and independent normative/model review
+remain open. No new fixture family, local standard/equality specification,
+assumption, termination waiver, capacity/review approval or release enablement.
+
 The owner merged #87 at e7fb693 after all 22 checks and independent hosted
 reconstruction passed. The next tranche closes accepted sequential container
 composition through four existing interfaces: payload reading, sequential

@@ -71,13 +71,30 @@ implementation data and synthetic semantic mutants are not normative oracles.
 
 ## Evidence and unchanged stop conditions
 
+Document `segment_headers`, `header_byte_offset`, `payload_byte_offset` and the
+opaque random-access entry/result predicates describe accepted separate header
+and payload sections, exact original windows, increasing numbers and final EOF.
+The standalone caller uses the exact file-header body origin. Internal header/
+payload histories and proved append/offset/entry/completion support are not
+additional normative rules. The native vector for-loop retains its operations
+and uses the pinned named-iterator contract to preserve header identity.
+
+Native Rust-derived enum equality was not connected to logical variant identity.
+Exactly two EOF comparisons therefore use equivalent `matches!` expressions
+instead of adding a `StructuralEq`, local standard specification or assumption.
+The compiler-expansion audit permits only those two explicit substitutions,
+and all22recognized literal codes check both classifications. Current whole
+proof/compilation1231/0 and25real strong/weaker document contrasts include this
+no-added-spec source. The shared fresh108/0partial document baseline covers all
+12mutated bodies; every strong/weaker query remains separately executed.
+
 Document `payload_window` binds an accepted payload to its original consumed
 slice and, when present, the declared known length. `sequential_offset` and
 `sequential_container_fields` describe adjacent header/payload extents covering
 the complete accepted body. Standalone sequential results also guarantee
 increasing numbers at the exact file-header body origin; embedded results
 preserve supplied order without imposing that standalone policy. Unknown-length
-termination, random-access layout and decoded `ParsedData` are not proved here.
+termination and decoded `ParsedData` are not proved by that sequential layer.
 `sequential_windows` is an internal loop history in model support, not a
 normative-facing rule. The ordinary proved completion lemma unfolds the opaque
 result and relates it to that history; the native bridge consumes its result
