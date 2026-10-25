@@ -25,7 +25,8 @@ lets all three post-validation return corruptions reject semantically and
 accept with only that public guarantee removed. No solver limit, termination
 check or unrelated contract is weakened.
 
-Actual preliminary whole proof and compiled library pass 1223/0. All 466
+Actual immutable 3d32ab4 unfiltered whole proof and compiled library pass
+1223/0. All 466
 native tests pass, with 14 existing ignored microbenchmarks; all 93 actual
 native mutants compile and are detected. The isolated MSRV package check,
 native erasure/precondition/boundary audit, exact test discovery and both local
@@ -39,7 +40,12 @@ group plus 10% headroom: 978/954/995/995/970/982 estimated seconds, retaining
 the 1000-second estimate and 1050-second replay guards. The profile is now
 28 groups/221 contrasts, with the same six one-worker shards, maximum four
 active, 22 checks and unchanged timeouts. Frozen evidence and current-head
-hosted acceptance remain required before readiness. No capacity, fixture,
+hosted acceptance are separate: the frozen reruns, all 399 tooling tests and
+provenance pass; all 51 raw global/per-file coverage metrics exactly match
+accepted #87. The unchanged 90% line/85% branch goals remain met. Existing
+approved official normal/logging/native/Hayro observations were freshly run
+on 3d32ab4: 2 passed/7 unresolved/1 unsupported, zero restored rejection credit.
+Current-head hosted acceptance remains required before readiness. No capacity, fixture,
 normative-review or release approval is inferred from these results.
 
 The current segment-header semantic tranche closes the missing accepted-result

@@ -54,7 +54,7 @@ Loop window histories and their append/offset/completion lemmas remain in
 [proof support](../proofs/model_support/document.rs). The completion lemma
 proves the opaque result model, and the [native bridge](../proofs/production_impl/document.rs)
 uses that proved result without re-expanding its quantified layout in callers.
-Actual preliminary whole proof and compiled library pass 1223/0; all 20 real
+Actual immutable 3d32ab4 whole proof and compiled library pass 1223/0; all 20 real
 compiling document contrasts reject strongly and accept their intended weaker
 contracts. Three post-validation result corruptions retain every loop proof
 and remove only the new private-parser result relation. The original 13

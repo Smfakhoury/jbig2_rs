@@ -16,8 +16,11 @@ denominators, exclusions and thresholds were not reduced.
 The sequential container tranche adds three raw metadata tests and seven
 native controls: all **466 native tests pass / 14 existing microbenchmarks
 ignored**, and **93 actual native mutants compile and are detected**.
-Its fresh immutable coverage and current-head hosted collection remain
-required; these test/control counts are not a claim of additional coverage.
+Its fresh immutable 3d32ab4 collection checks all 51 metrics against accepted
+#87: every value is unchanged. Raw source/test/tool/report identities are
+checked separately; erased proof additions shift offsets, so absolute source
+coordinates are not claimed identical. Current-head hosted reconstruction
+remains required. These test/control counts do not claim additional coverage.
 The broader P04/P05/P06 semantic, fixture and independent-review gaps remain
 open even though the protected numerical goals are met.
 
