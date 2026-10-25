@@ -29,6 +29,14 @@ is needed by an ordinary consumer. The Verus workflow uses the same
 See [proof-free distribution](docs/distribution.md) for the isolated archive
 checks and the distinction between cfg erasure and textual source stripping.
 
+The runtime crate forbids unsafe Rust at its root and has no dependencies.
+This applies to crate-authored Rust; generated derives and standard-library
+internals remain part of the compiler/library trust boundary.
+The distribution gate also exercises that prohibition in the extracted
+archive: an isolated unsafe probe must fail to compile, and the same probe
+with only the prohibition weakened must compile. The original source is
+restored before the downstream consumer runs.
+
 ## Current status
 
 The decoder implements:
@@ -48,13 +56,15 @@ The decoder implements:
 
 The owner has reported CELA approval for open-source project publication, and
 the repository includes the MIT license. Crates.io publication remains disabled.
+The recorded project approval does not authorize crate publication or
+redistribution of restricted standards, official assets, or native oracles.
 Official ITU assets stay external under their separately recorded permissions.
 Native Linux, Windows and macOS CI, Verus and fuzz smoke checks are operational.
 
 The readiness audit found that earlier proof coverage overstated exact-source
 verification: some same-named functions were conflated and several cfg-selected
 runtime paths differed from proof paths. These are now explicit, hash-bound
-limitations. The current inventory has 609 directly verified functions, 24
+limitations. The current inventory has 610 directly verified functions, 24
 reviewed boundaries, 23 audited forwarders and 1 runtime/proof divergence.
 The latter blocks a full exact-source proof claim; passing Verus does not alone
 establish normative conformance. See [verifier limitations](docs/verifier-limitations.md).
@@ -140,7 +150,7 @@ PR's work. Each workflow also supports manual dispatch for branch preflight.
 The daily extended fuzz campaign and trusted-main corpus producer remain
 unchanged.
 
-The twenty-seven semantic proof groups and all 185 compiling strong/weaker contrasts
+The twenty-nine semantic proof groups and all 236 compiling strong/weaker contrasts
 are preserved, but execute in six deterministic, sequential shards rather
 than one separately initialized job per group. Each shard has one worker; at most
 four run concurrently, under the unchanged 20-minute job cap. The stable

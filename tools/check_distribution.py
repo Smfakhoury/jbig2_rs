@@ -92,6 +92,46 @@ def check_package_metadata(document: dict, extracted: Path, msrv: str) -> None:
         raise ValueError("unexpected isolated package metadata or proof/validation features")
 
 
+def require_rejected_check(
+    cargo: list[str], directory: Path, environment: dict, code: str, message: str,
+) -> None:
+    negative = subprocess.run(
+        cargo + ["check", "--offline", "--locked", "--message-format=json"],
+        cwd=directory, env=environment, text=True, capture_output=True, check=False,
+    )
+    diagnostics = [
+        json.loads(line) for line in negative.stdout.splitlines() if line.strip()
+    ]
+    if negative.returncode == 0 or not any(
+        entry.get("reason") == "compiler-message"
+        and (entry["message"].get("code") or {}).get("code") == code
+        and message in entry["message"]["message"]
+        for entry in diagnostics
+    ):
+        raise ValueError(
+            f"expected compilation rejection {code} for {message!r}:\n"
+            + negative.stdout + negative.stderr
+        )
+
+
+def check_unsafe_policy(cargo: list[str], extracted: Path, environment: dict) -> None:
+    library = extracted / "src" / "lib.rs"
+    original = library.read_bytes()
+    guard = b"#![forbid(unsafe_code)]"
+    if original.count(guard) != 1:
+        raise ValueError("packaged crate must have one explicit unsafe-code prohibition")
+    probe = b"\n#[allow(dead_code, unused_unsafe)]\nfn unsafe_policy_probe() { unsafe {} }\n"
+    try:
+        library.write_bytes(original + probe)
+        require_rejected_check(
+            cargo, extracted, environment, "unsafe_code", "usage of an `unsafe` block",
+        )
+        library.write_bytes(original.replace(guard, b"#![allow(unsafe_code)]", 1) + probe)
+        run(cargo + ["check", "--offline", "--locked"], extracted, environment, capture=True)
+    finally:
+        library.write_bytes(original)
+
+
 def check_distribution(toolchain: str) -> dict:
     manifest = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))["package"]
     if manifest.get("publish") is not False:
@@ -117,6 +157,7 @@ def check_distribution(toolchain: str) -> dict:
             raise ValueError("proof or validation assets leaked into the extracted package")
         run(cargo + ["test", "--offline", "--locked", "--all-targets"], extracted, environment)
         run(cargo + ["test", "--offline", "--locked", "--doc"], extracted, environment)
+        check_unsafe_policy(cargo, extracted, environment)
 
         consumer = directory / "consumer"
         (consumer / "src").mkdir(parents=True)
@@ -135,23 +176,7 @@ def check_distribution(toolchain: str) -> dict:
         run(cargo + ["run", "--offline", "--locked"], consumer, environment)
 
         main.write_text("use jbig2_rs::runtime_access;\nfn main() {}\n", encoding="utf-8")
-        negative = subprocess.run(
-            cargo + ["check", "--offline", "--locked", "--message-format=json"],
-            cwd=consumer, env=environment, text=True, capture_output=True, check=False,
-        )
-        diagnostics = [
-            json.loads(line) for line in negative.stdout.splitlines() if line.strip()
-        ]
-        if negative.returncode == 0 or not any(
-            entry.get("reason") == "compiler-message"
-            and (entry["message"].get("code") or {}).get("code") == "E0432"
-            and "runtime_access" in entry["message"]["message"]
-            for entry in diagnostics
-        ):
-            raise ValueError(
-                "normal downstream validation API visibility check did not fail as expected:\n"
-                + negative.stdout + negative.stderr
-            )
+        require_rejected_check(cargo, consumer, environment, "E0432", "runtime_access")
         return {
             "schema_version": 1, "status": "passed",
             "toolchain": toolchain,
@@ -163,6 +188,7 @@ def check_distribution(toolchain: str) -> dict:
             "normal_dependencies": [], "cargo_home": "fresh", "cargo_network": "offline",
             "separate_proof_assets": "absent",
             "proof_annotations": "cfg_inactive_source",
+            "unsafe_policy": "compiler_rejected_probe_and_accepted_weaker_control",
             "publication_enabled": False,
         }
 
