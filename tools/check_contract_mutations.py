@@ -11,6 +11,7 @@ import tempfile
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
+from check_document_count_proof import CASES as DOCUMENT_CASES
 from check_segment_header_proofs import CASES as HEADER_CASES
 from check_text_batch_proofs import CASES as TEXT_CASES
 from proof_sensitivity import replace_once
@@ -25,6 +26,15 @@ TEXT_RUNTIME_TESTS = {
     "preflight_rejects_valid_origin": "placement_preflight_matches_wide_geometry_and_resource_failure_frames",
     "initialization_rejects_valid_zero_instances": "text_state_initialization_matches_wide_checked_scaling_and_work_priority",
     "current_placement_rejects_valid_single_pixel": "current_text_placement_matches_wide_coordinates_and_partial_failure_state",
+}
+DOCUMENT_WINDOW_TESTS = {
+    "known_payload_returns_wrong_bytes": "raw_payload_windows_keep_exact_known_and_existing_unknown_extents",
+    "unknown_payload_returns_wrong_bytes": "raw_payload_windows_keep_exact_known_and_existing_unknown_extents",
+    "sequential_discards_consumed_segments": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
+    "sequential_rebinds_payload_after_validation": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
+    "sequential_corrupts_header_after_validation": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
+    "standalone_disables_sequential_number_order": "standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected",
+    "embedded_discards_first_input_byte": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
 }
 MUTATIONS = tuple(
     {
@@ -43,6 +53,14 @@ MUTATIONS = tuple(
         "whitespace_flexible": True,
     }
     for case in HEADER_CASES
+) + tuple(
+    {
+        "id": "document-window-" + case["id"],
+        "file": "src/document.rs", "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": "document::tests::" + DOCUMENT_WINDOW_TESTS[case["id"]],
+        "whitespace_flexible": True,
+    }
+    for case in DOCUMENT_CASES if case["id"] in DOCUMENT_WINDOW_TESTS
 ) + (
     {
         "id": "refinement-snapshot-template-policy-inverted",

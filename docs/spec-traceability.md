@@ -40,6 +40,35 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The [sequential container model](../specs/document.rs) now relates every
+accepted [payload and sequential parser result](../src/document.rs) to the
+original header/payload windows, their adjacent offsets and the complete body
+extent. Offsets are derived from preceding returned header extents and payload
+lengths, not an unconstrained existential layout. The standalone caller uses
+the exact file-header body origin and additionally guarantees increasing
+segment numbers. The embedded caller preserves input order without requiring
+increasing numbers. The accepted payload window has the declared known length;
+an unknown length identifies the existing chosen original slice only.
+
+Loop window histories and their append/offset/completion lemmas remain in
+[proof support](../proofs/model_support/document.rs). The completion lemma
+proves the opaque result model, and the [native bridge](../proofs/production_impl/document.rs)
+uses that proved result without re-expanding its quantified layout in callers.
+Actual preliminary whole proof and compiled library pass 1223/0; all 20 real
+compiling document contrasts reject strongly and accept their intended weaker
+contracts. Three post-validation result corruptions retain every loop proof
+and remove only the new private-parser result relation. The original 13
+count/metadata/quota controls are retained.
+
+Five existing records gain composition links, without adding requirements.
+Sequential layout, conditional standalone number order and embedded layout
+move from safety-only to functional evidence: **127 functional/117 state/
+22 safety**, all **266 provisional**. Random-access layout, decoded
+`ParsedData`, full valid-input acceptance, exact typed rejection/partial errors,
+unknown-length terminator interpretation, graph/deferred-retention lifecycle,
+capacity and independent normative/model review remain open. EOF remains
+optional; no native acceptance policy changes.
+
 The latest [segment-header relation](../specs/segments.rs) composes exact scalar
 and retention helpers into the [accepted parser result](../src/segment_header.rs).
 It relates the returned number, type, deferred flag, count/retention windows,

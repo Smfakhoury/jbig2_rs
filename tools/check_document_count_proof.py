@@ -15,6 +15,24 @@ from rust_source import source_functions
 
 ROOT = Path(__file__).resolve().parents[1]
 FUNCTIONS = {entry["id"]: entry for entry in source_functions(ROOT)}
+PAYLOAD_FIELDS = """document_spec::payload_window(
+    header, old(reader).bytes@, old(reader).position as int,
+    final(reader).position as int, payload@,
+)"""
+SEQUENTIAL_FIELDS = """document_spec::sequential_container_fields(
+    input@, segments@, require_local_references,
+)"""
+STANDALONE_WINDOWS = """&& match crate::file_header::file_header_spec::organization(input@) {
+    Organization::Sequential => document_spec::sequential_container_fields(
+        input@.subrange(
+            crate::file_header::file_header_spec::byte_length(input@) as int,
+            input@.len() as int,
+        ),
+        result.1@, true,
+    ),
+    Organization::RandomAccess => true,
+}"""
+EMBEDDED_WINDOWS = "&& document_spec::sequential_container_fields(input@, result.1@, false)"
 
 
 def quota_cases(function, comparison, postcondition):
@@ -40,6 +58,15 @@ def quota_cases(function, comparison, postcondition):
             "control_replacement": "",
         },
     )
+
+
+def sequential_case(identity, replacement):
+    original = FUNCTIONS["document::parse_sequential"]["body_text"]
+    return {
+        "id": identity, "function": "parse_sequential", "site": original,
+        "replacement": replace_once(original, "Ok(segments)", replacement),
+        "control_site": SEQUENTIAL_FIELDS, "control_replacement": "true",
+    }
 
 
 CASES = (
@@ -113,6 +140,54 @@ CASES = (
             count, limits.max_pages, LimitKind::Pages,
         ),""",
     ),
+    {
+        "id": "known_payload_returns_wrong_bytes",
+        "function": "read_payload",
+        "site": "return Ok(reader.read_bytes(length)?);",
+        "replacement": "reader.read_bytes(length)?;\n        return Ok(&[]);",
+        "control_site": PAYLOAD_FIELDS, "control_replacement": "true",
+    },
+    {
+        "id": "unknown_payload_returns_wrong_bytes",
+        "function": "read_payload",
+        "site": """let length = find_unknown_generic_length(reader.remaining_bytes())?;
+            Ok(reader.read_bytes(length)?)""",
+        "replacement": """let length = find_unknown_generic_length(reader.remaining_bytes())?;
+            reader.read_bytes(length)?;
+            Ok(&[])""",
+        "control_site": PAYLOAD_FIELDS, "control_replacement": "true",
+    },
+    sequential_case("sequential_discards_consumed_segments", "Ok(Vec::new())"),
+    sequential_case("sequential_rebinds_payload_after_validation", """if !segments.is_empty() {
+        let mut first = segments.remove(0);
+        first.payload = &[];
+        segments.insert(0, first);
+    }
+    Ok(segments)"""),
+    sequential_case("sequential_corrupts_header_after_validation", """if !segments.is_empty() {
+        let mut first = segments.remove(0);
+        first.header.number ^= 1;
+        segments.insert(0, first);
+    }
+    Ok(segments)"""),
+    {
+        "id": "standalone_disables_sequential_number_order",
+        "function": "parse_standalone_document",
+        "site": "Organization::Sequential => parse_sequential(body, limits, true)?,",
+        "replacement": "Organization::Sequential => parse_sequential(body, limits, false)?,",
+        "control_site": STANDALONE_WINDOWS, "control_replacement": "",
+    },
+    {
+        "id": "embedded_discards_first_input_byte",
+        "function": "parse_embedded_document",
+        "site": "let segments = parse_sequential(input, limits, false)?;",
+        "replacement": """let segments = if input.is_empty() {
+            parse_sequential(input, limits, false)?
+        } else {
+            parse_sequential(&input[1..], limits, false)?
+        };""",
+        "control_site": EMBEDDED_WINDOWS, "control_replacement": "",
+    },
 )
 PREFIX_INVARIANT = """page_states@.len()
                 == document_spec::page_information_count(segments@, segment_index as nat),"""
@@ -132,7 +207,7 @@ def weaker_contract(source: str, case: dict) -> str:
 def check_document_count_proof(executable: Path) -> dict:
     files = (
         "src/document.rs", "specs/document.rs", "proofs/production_impl/document.rs",
-        "src/file_header.rs", "specs/file_header.rs",
+        "src/file_header.rs", "specs/file_header.rs", "proofs/model_support/document.rs",
     )
     sources = {name: (ROOT / name).read_bytes() for name in files}
     results = []
@@ -143,6 +218,7 @@ def check_document_count_proof(executable: Path) -> dict:
         original = path.read_text(encoding="utf-8")
         baselines = {}
         for case in CASES:
+            print(f"document contrast: {case['id']}", file=sys.stderr, flush=True)
             control_path = directory / case.get("control_file", "src/document.rs")
             control_original = control_path.read_text(encoding="utf-8")
             if case["function"] not in baselines:
@@ -176,7 +252,7 @@ def check_document_count_proof(executable: Path) -> dict:
         raise ValueError("production source changed during document proof sensitivity checks")
     return {
         "schema_version": 1, "status": "passed", "verus_version": expected,
-        "scope": "Selected document count/metadata and exact project numeric preflight quota results; no whole-container, decoder work-complexity, allocator/RSS or normative stream claim",
+        "scope": "Document count/metadata, accepted sequential raw byte windows/order and exact project numeric preflight quotas; not complete input acceptance/errors, random-access layout, decoded ParsedData, allocator/RSS or normative approval",
         "production_sources_modified": False, "counterexamples": results,
         "source_bindings": {
             name: hashlib.sha256(data).hexdigest() for name, data in sources.items()

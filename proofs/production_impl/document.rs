@@ -58,3 +58,28 @@ macro_rules! production_document_policy_bundle {
         }
     };
 }
+
+macro_rules! production_sequential_window_append {
+    ($input:ident, $segments:ident, $old_segments:ident, $windows:ident,
+        $header_start:ident, $payload_start:ident, $reader:ident, $ordered:ident) => {
+        proof! {
+            let segment = $segments@.last();
+            document_spec::sequential_window_append(
+                $input@, $old_segments, $windows, $header_start, segment,
+                $payload_start, $reader.position as int, $ordered,
+            );
+            $windows = $windows.push((
+                $header_start, $payload_start, $reader.position as int,
+            ));
+        }
+    };
+}
+
+macro_rules! production_sequential_complete {
+    ($input:ident, $segments:ident, $windows:ident, $reader:ident, $ordered:ident) => {
+        proof! {
+            assert($reader.position == $input@.len());
+            document_spec::sequential_complete_fields($input@, $segments@, $windows, $ordered);
+        }
+    };
+}

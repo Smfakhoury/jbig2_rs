@@ -107,6 +107,58 @@ pub open spec fn embedded_metadata(
     &&& document_declared_page_count(document) == None
 }
 
+pub(crate) open spec fn payload_window(
+    header: &crate::segment_header::SegmentHeader,
+    bytes: Seq<u8>,
+    start: int,
+    end: int,
+    payload: Seq<u8>,
+) -> bool {
+    &&& 0 <= start <= end <= bytes.len()
+    &&& payload == bytes.subrange(start, end)
+    &&& match header.data_length {
+        Some(length) => end - start == length,
+        None => true,
+    }
+}
+
+pub(crate) open spec fn sequential_offset(
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    prefix: nat,
+) -> nat
+    recommends prefix <= segments.len(),
+    decreases prefix,
+{
+    if prefix == 0 {
+        0
+    } else {
+        sequential_offset(segments, (prefix - 1) as nat)
+            + segments[(prefix - 1) as int].header.byte_length as nat
+            + segments[(prefix - 1) as int].payload@.len()
+    }
+}
+
+#[verifier::opaque]
+pub(crate) open spec fn sequential_container_fields(
+    bytes: Seq<u8>,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    ordered: bool,
+) -> bool {
+    &&& sequential_offset(segments, segments.len()) == bytes.len()
+    &&& forall|index: int| 0 <= index < segments.len() ==> {
+        let segment = #[trigger] segments[index];
+        let start = sequential_offset(segments, index as nat) as int;
+        let payload_start = start + segment.header.byte_length;
+        let end = sequential_offset(segments, (index + 1) as nat) as int;
+        &&& 0 <= start < payload_start <= end <= bytes.len()
+        &&& crate::spec::segments::segment_header_fields(
+            &segment.header, bytes, start, payload_start,
+        )
+        &&& payload_window(&segment.header, bytes, payload_start, end, segment.payload@)
+        &&& (ordered && index > 0 ==> segments[index - 1].header.number < segment.header.number)
+    }
+}
+
 pub(crate) open spec fn page_information_count(
     segments: Seq<crate::document::ParsedSegment<'_>>,
     prefix: nat,
