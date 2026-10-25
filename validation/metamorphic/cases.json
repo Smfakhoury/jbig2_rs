@@ -2,6 +2,32 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-RANDOM-ACCESS-WINDOWS",
+      "transformation": "literal optional-extension headers stored before their payloads, with varied standalone body origins and boundary metadata",
+      "invariant": "returned header and payload order, separate original byte windows, final EOF and exact input extent; bounded malformed metadata preserves its typed error",
+      "tests": [
+        {
+          "target": "lib",
+          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+        }
+      ]
+    },
+    {
+      "id": "META-SEGMENT-TYPE-STRUCTURAL-EQUALITY",
+      "transformation": "all pairs of the 22 recognized literal type codes and the EOF comparison",
+      "invariant": "Rust-derived equality and inequality agree with literal code identity, including EOF code 51",
+      "tests": [
+        {
+          "target": "lib",
+          "name": "segment_header::tests::recognized_segment_type_equality_matches_all_literal_codes_and_eof"
+        }
+      ]
+    },
+    {
       "id": "META-RAW-PAYLOAD-SOURCE-WINDOWS",
       "transformation": "known raw lengths zero through32 at nonzero cursor and the existing approved unknown-length terminator metadata",
       "invariant": "returned bytes equal the original selected source window, cursor advances exactly and untouched suffix remains; no encoded-family fixture expansion",

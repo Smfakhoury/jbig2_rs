@@ -20,34 +20,34 @@ WORKERS = 2
 CI_SHARDS = 6
 RECEIPT_SCHEMA = 3
 CHECKS = (
-    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
     ("text-batch", "check_text_batch_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("document-count", "check_document_count_proof.py", 20, "strong_count_contract", "weaker_control"),
     ("mmr-reference", "check_mmr_reference_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
     ("segment-header", "check_segment_header_proofs.py", 10, "strong_contract", "weaker_control"),
+    ("document-count", "check_document_count_proof.py", 25, "strong_count_contract", "weaker_control"),
+    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
+    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
     ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
-    ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
-    ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
     ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
-    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
-    ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
-    ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
     ("black-span", "check_black_span_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
     ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
+    ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -215,6 +215,36 @@ def check_bound_report(root, check, report, bindings):
             for case in cases
         ]:
             raise ValueError("missing, duplicate or stale selected cases/baselines")
+        if identity == "document-count":
+            functions = sorted({case["function"] for case in cases})
+            if (
+                report.get("baseline_verification_scope") != "document::*"
+                or report.get("baseline_selected_functions") != functions
+                or any(
+                    row["baseline_selected_verification"]["verified"] < len(functions)
+                    for row in report["counterexamples"]
+                )
+            ):
+                raise ValueError("missing or incomplete shared document-module baseline")
+        baseline_groups = getattr(module, "BASELINE_GROUPS", ())
+        if baseline_groups:
+            expected_groups = [
+                {"module": name, "functions": list(functions)}
+                for name, functions in baseline_groups
+            ]
+            if report.get("baseline_groups") != expected_groups:
+                raise ValueError("missing or stale shared positive baseline groups")
+            for case, record in zip(cases, report["counterexamples"]):
+                expected_functions = next(
+                    (list(functions) for name, functions in baseline_groups
+                     if name == case["module"] and case["function"] in functions),
+                    [case["function"]],
+                )
+                if (
+                    record.get("baseline_selected_functions") != expected_functions
+                    or record["baseline_selected_verification"]["verified"] < len(expected_functions)
+                ):
+                    raise ValueError("shared positive baseline omits a selected function")
         if any(case["file"] not in sources for case in cases if "file" in case):
             raise ValueError("semantic case edits an unbound production source")
 

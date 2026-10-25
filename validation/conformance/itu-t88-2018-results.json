@@ -56,7 +56,7 @@
       "pages": [],
       "stderr": "Error: Malformed(UnexpectedEof { offset: 192, needed: 1, remaining: 0 })",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-sequential-container-composition 3d32ab4 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Fresh accepted-random-access-container-composition 90faeb6 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest1_TT2",
@@ -66,7 +66,7 @@
       "pages": [],
       "stderr": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-sequential-container-composition 3d32ab4 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Fresh accepted-random-access-container-composition 90faeb6 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest1_TT3",
@@ -76,7 +76,7 @@
       "pages": [],
       "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-sequential-container-composition 3d32ab4 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Fresh accepted-random-access-container-composition 90faeb6 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest1_TT4",
@@ -86,7 +86,7 @@
       "pages": [],
       "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-sequential-container-composition 3d32ab4 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Fresh accepted-random-access-container-composition 90faeb6 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest1_TT5",
@@ -96,7 +96,7 @@
       "pages": [],
       "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-sequential-container-composition 3d32ab4 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Fresh accepted-random-access-container-composition 90faeb6 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest1_TT7",
@@ -106,7 +106,7 @@
       "pages": [],
       "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-sequential-container-composition 3d32ab4 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Fresh accepted-random-access-container-composition 90faeb6 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest2_TT6",
@@ -116,7 +116,7 @@
       "pages": [],
       "stderr": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-sequential-container-composition 3d32ab4 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Fresh accepted-random-access-container-composition 90faeb6 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest3_TT8",

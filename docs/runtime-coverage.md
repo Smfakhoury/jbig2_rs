@@ -4,7 +4,24 @@ P06 is in progress. Reproducible coverage and non-regression checks do not
 complete the missing tests, ratify release approval or establish normative
 correctness.
 
-## Latest accepted numerical coverage
+## Latest immutable random-access observation
+
+Immutable90faeb6 freshly executes469native tests/14existingignored and98real
+compiling/detected native mutants. Three raw metadata tests cover separate
+header/payload storage, standalone body origins, order/EOF/trailing metadata
+and all22recognized type comparisons. No encoded-family fixture is added.
+
+All51global/per-file raw metrics are compared with accepted #88:49are unchanged.
+Only document/global region metrics each gain2covered/count regions from two
+equivalent native EOF pattern expressions. Totals are **11383/12639lines
+(90.0625%)**, **10969/12950regions (84.7027%)** and **2245/2640outcomes
+(85.0379%)**. No denominator is reduced and no floor/exclusion/threshold changes.
+The unchanged90%line/85%branch numerical targets remain met. Source/test/tool/
+report identities are checked separately; absolute coordinates are not claimed
+identical. Current-head hosted reconstruction remains required, and the broader
+P04/P05/P06 semantic/fixture/review gaps remain open.
+
+## Previously accepted numerical coverage
 
 The independently reconstructed hosted collections for #86 and #87 meet both
 unchanged numerical targets: **11,383/12,639 lines (90.0625%)** and

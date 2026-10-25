@@ -77,7 +77,7 @@
         "T88-SEGMENT-UNKNOWN-LENGTH"
       ],
       "remaining_scope": [
-        "Accepted sequential header/payload and standalone/embedded caller correspondence is proved. Random-access, complete segment-data/codec dispatch, valid-input and typed-error/resource semantics, graph/deferred lifecycle and independently reviewed exhaustive normative enumeration remain open."
+        "Accepted sequential/random-access header/payload and standalone/embedded caller correspondence is proved. Complete segment-data/codec dispatch, valid-input and typed-error/resource semantics, graph/deferred lifecycle and independently reviewed exhaustive normative enumeration remain open."
       ]
     },
     {
@@ -636,13 +636,13 @@
   "bindings": {
     "proofs/model_support/arithmetic.rs": "2a564c7a80acf17401f877352abba023be522d3e1b3a4ef0b0c3dba1ddaa56bb",
     "proofs/model_support/decode.rs": "67e54d341dcb57f6b4ad8b2c8a489fa52928fd4f7e3c39406139c46dc3d5c2b4",
-    "proofs/model_support/document.rs": "b4992f05bd58449896c481b831ff2a1e81fe0bd657b4028d8796eb3b4415a87c",
+    "proofs/model_support/document.rs": "df0f2d35597506f5161eb9238dcbbbac03dea7f9e2be9648cae107d3a7ad8be4",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
     "proofs/model_support/huffman.rs": "75ad3133571303f2d0369fb935e5b7dc4a94a16bab0fa65977af35f6a237e503",
     "proofs/model_support/mmr.rs": "0f1423997f6ebf4cc72faae5bcb8a2a774071853d929bfc10a9e7542b6bd9995",
     "proofs/production_impl/arithmetic.rs": "7baccbade7a1276a4efbe7de1a34a986d21e88ac7300ce449dd70a561bc0a3c9",
     "proofs/production_impl/bitmap.rs": "89390f3506136194877ee82e6968b93a88e2d0847c4d55b0279f56aa797b1686",
-    "proofs/production_impl/document.rs": "ab8ae1801890f432600f7562ba961c4ff0144f7c0617cdf479e443713dfcd02c",
+    "proofs/production_impl/document.rs": "8b5e5b1bc4c4ed0a0b2fab0cc3e174dc1ad0698d9e94ec87802c133feaf3f7be",
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/mmr.rs": "9c65c21afeb76ee1014f50ed8e03d9bfc8fb129a309d254cfc45089fcba128cc",
@@ -653,7 +653,7 @@
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "specs/bitmap.rs": "913592795b8b43e3b716f77481b265c3d8ce55be9bce8d1ddb3dce69a865ff0c",
     "specs/decode.rs": "71640bc0bd5731b8a995abdcb34cc3b268c2219609da3f166f8997216e5bd61b",
-    "specs/document.rs": "ecbb9aeac8842cb24dd040efbe0c23c18d307612b4ba8d6229267a368016b381",
+    "specs/document.rs": "8411d29e4e400d8dffa11307eb43369015781efebb48d07dd66135f57045000a",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "8f368daad98291eb31f1ccc5914ab836fcdbaa5c820f70ca71317a29140d22b9",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
@@ -666,7 +666,7 @@
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
     "src/decode.rs": "07ad6f08c7e5ac66716cf469971d98f6f44360ec8d49b04f7500711ccf35092d",
-    "src/document.rs": "b6a211880c5bb5bca2d3536585cb34af036918f6117bd7f523594b4f6053d543",
+    "src/document.rs": "b3b6a68f8a8ee898ca31a07a3cda8ae22c18874b74e73fbaaa8bebbd25472ea1",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",
     "src/halftone.rs": "0553be77a782a78a095af866311e4c9d629491be553bbc69b7bedf3e2ed4a051",
@@ -675,7 +675,7 @@
     "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
     "src/segment_data.rs": "b9ba8b6aeaf074f06ace98dbdee1cf030700ca2f5a65611b0ed39f3119d8e84a",
-    "src/segment_header.rs": "43d615759d2c2d1043952dbe145e74ccb260e6b15232593f58ba4087b7492e39",
+    "src/segment_header.rs": "f2feb925f74669044cdad201c8a787cba7d373f06bcdc8b3c7204ec6e436a439",
     "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
@@ -2233,6 +2233,83 @@
       ],
       "name": "production_sequential_complete",
       "role": "derive deterministic full-input offsets from the proved loop history; no assumption"
+    },
+    "document-header-sequence": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "segment_headers",
+      "role": "ordered returned header projection"
+    },
+    "document-header-byte-offset": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "header_byte_offset",
+      "role": "prefix extent of the separate header section"
+    },
+    "document-payload-byte-offset": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "payload_byte_offset",
+      "role": "prefix extent within the separate payload section"
+    },
+    "document-random-access-segment-fields": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "random_access_segment_fields",
+      "role": "one accepted original header/payload pair, number order and pre-final non-EOF rule"
+    },
+    "document-random-access-fields": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "random_access_container_fields",
+      "role": "complete accepted separate header/payload sections, increasing numbers and final EOF"
+    },
+    "document-random-header-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": [
+        "document_proofs"
+      ],
+      "name": "production_random_header_append",
+      "role": "prove original ordered header windows while preserving the prior prefix"
+    },
+    "document-random-payload-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": [
+        "document_proofs"
+      ],
+      "name": "production_random_payload",
+      "role": "prove exact payload-window append and identity with the original header iterator"
+    },
+    "document-random-complete-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": [
+        "document_proofs"
+      ],
+      "name": "production_random_access_complete",
+      "role": "use fully proved per-entry and complete result lemmas without an assumption"
     }
   },
   "requirements": [
@@ -5265,26 +5342,66 @@
       "feature": "random_access_organization",
       "runtime": [
         "document::parse_random_access",
-        "document::read_payload"
+        "document::read_payload",
+        "document::parse_standalone_document"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "document-payload-window",
+        "document-header-sequence",
+        "document-header-byte-offset",
+        "document-payload-byte-offset",
+        "document-random-access-segment-fields",
+        "document-random-access-fields"
+      ],
+      "proof_macros": [
+        "document-random-header-proof",
+        "document-random-payload-proof",
+        "document-random-complete-proof"
+      ],
       "tests": [
         {
           "target": "traceability_organization",
           "name": "random_access_payloads_follow_all_headers_in_header_order"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::recognized_segment_type_equality_matches_all_literal_codes_and_eof"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified traversal and bounded payload reads; no returned-vector contract binds each saved header to its body bytes.",
+      "scope_of_formal_result": "Successful random-access results retain the exact original separately stored header and payload windows at deterministic offsets covering the complete body. Every returned header is the one consumed by the unchanged native vector iterator. Numbers strictly increase, the nonempty header section ends with EOF and contains no earlier EOF. The standalone caller uses the exact file-header body origin; sequential guarantees remain independent. The only native changes replace two enum-equality EOF checks with equivalent pattern matches, allowing direct variant reasoning without an added equality specification. All recognized type comparisons are checked against literal codes; no local standard declaration is added. This is accepted-result correspondence, not complete acceptance, typed rejection, decoded ParsedData or unknown-length termination.",
       "assumptions": [
         "The file header selects random-access parsing; the generated example uses distinct page dimensions to observe payload order."
       ],
       "gaps": [
-        "Prove header/body pairing, exact byte offsets and returned order for arbitrary accepted input; full D.2 decomposition remains open."
+        "Independent normative/model review and exhaustive D.2/7.2.7/7.4.11 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance and exact typed rejection/partial-error/resource behavior, decoded ParsedData and codec/caller/graph/deferred-retention/attached-extension lifecycle."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::parse_random_access",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::random_access_container_fields(input@, segments@)"
+          ]
+        },
+        {
+          "runtime": "document::parse_standalone_document",
+          "section": "ensures",
+          "tokens": [
+            "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -5294,10 +5411,22 @@
       "title": "Use an end-of-file segment header to terminate the random-access header block",
       "feature": "random_access_organization",
       "runtime": [
-        "document::parse_random_access"
+        "document::parse_random_access",
+        "document::parse_standalone_document"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "document-payload-window",
+        "document-header-sequence",
+        "document-header-byte-offset",
+        "document-payload-byte-offset",
+        "document-random-access-segment-fields",
+        "document-random-access-fields"
+      ],
+      "proof_macros": [
+        "document-random-header-proof",
+        "document-random-payload-proof",
+        "document-random-complete-proof"
+      ],
       "tests": [
         {
           "target": "traceability_organization",
@@ -5306,18 +5435,46 @@
         {
           "target": "traceability_organization",
           "name": "random_access_payloads_follow_all_headers_in_header_order"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::recognized_segment_type_equality_matches_all_literal_codes_and_eof"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The loop is verified for safety, not for the presence, placement or exact error semantics of the EOF delimiter.",
+      "scope_of_formal_result": "Successful random-access results retain the exact original separately stored header and payload windows at deterministic offsets covering the complete body. Every returned header is the one consumed by the unchanged native vector iterator. Numbers strictly increase, the nonempty header section ends with EOF and contains no earlier EOF. The standalone caller uses the exact file-header body origin; sequential guarantees remain independent. The only native changes replace two enum-equality EOF checks with equivalent pattern matches, allowing direct variant reasoning without an added equality specification. All recognized type comparisons are checked against literal codes; no local standard declaration is added. This is accepted-result correspondence, not complete acceptance, typed rejection, decoded ParsedData or unknown-length termination.",
       "assumptions": [
         "The generated missing-delimiter case ends immediately after a complete non-EOF header; malformed and truncated delimiters are different cases."
       ],
       "gaps": [
-        "Prove accepted header blocks end at EOF and missing delimiters fail; enumerate delimiter/body/trailing-data interactions."
+        "Independent normative/model review and exhaustive D.2/7.2.7/7.4.11 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance and exact typed rejection/partial-error/resource behavior, decoded ParsedData and codec/caller/graph/deferred-retention/attached-extension lifecycle."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::parse_random_access",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::random_access_container_fields(input@, segments@)"
+          ]
+        },
+        {
+          "runtime": "document::parse_standalone_document",
+          "section": "ensures",
+          "tokens": [
+            "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -5327,10 +5484,22 @@
       "title": "Enforce increasing random-access segment numbers",
       "feature": "random_access_organization",
       "runtime": [
-        "document::parse_random_access"
+        "document::parse_random_access",
+        "document::parse_standalone_document"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "document-payload-window",
+        "document-header-sequence",
+        "document-header-byte-offset",
+        "document-payload-byte-offset",
+        "document-random-access-segment-fields",
+        "document-random-access-fields"
+      ],
+      "proof_macros": [
+        "document-random-header-proof",
+        "document-random-payload-proof",
+        "document-random-complete-proof"
+      ],
       "tests": [
         {
           "target": "traceability_organization",
@@ -5339,18 +5508,46 @@
         {
           "target": "catalog_contracts",
           "name": "duplicate_local_wire_numbers_have_exact_order_errors"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::recognized_segment_type_equality_matches_all_literal_codes_and_eof"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified parser body without an exported number-order or rejection postcondition.",
+      "scope_of_formal_result": "Successful random-access results retain the exact original separately stored header and payload windows at deterministic offsets covering the complete body. Every returned header is the one consumed by the unchanged native vector iterator. Numbers strictly increase, the nonempty header section ends with EOF and contains no earlier EOF. The standalone caller uses the exact file-header body origin; sequential guarantees remain independent. The only native changes replace two enum-equality EOF checks with equivalent pattern matches, allowing direct variant reasoning without an added equality specification. All recognized type comparisons are checked against literal codes; no local standard declaration is added. This is accepted-result correspondence, not complete acceptance, typed rejection, decoded ParsedData or unknown-length termination.",
       "assumptions": [
         "This is wire header order, not a promise to expose arbitrary-order page decoding through the API."
       ],
       "gaps": [
-        "Prove increasing accepted numbers and complete rejection behavior; do not infer arbitrary-access API semantics from D.2 storage support."
+        "Independent normative/model review and exhaustive D.2/7.2.7/7.4.11 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance and exact typed rejection/partial-error/resource behavior, decoded ParsedData and codec/caller/graph/deferred-retention/attached-extension lifecycle."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::parse_random_access",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::random_access_container_fields(input@, segments@)"
+          ]
+        },
+        {
+          "runtime": "document::parse_standalone_document",
+          "section": "ensures",
+          "tokens": [
+            "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -5599,18 +5796,28 @@
         "segment_header::decode_data_length",
         "segment_header::parse_segment_header",
         "document::read_payload",
-        "document::parse_sequential"
+        "document::parse_sequential",
+        "document::parse_random_access",
+        "document::parse_standalone_document"
       ],
       "models": [
         "segment-header-fields",
         "document-payload-window",
         "document-sequential-offset",
-        "document-sequential-fields"
+        "document-sequential-fields",
+        "document-header-sequence",
+        "document-header-byte-offset",
+        "document-payload-byte-offset",
+        "document-random-access-segment-fields",
+        "document-random-access-fields"
       ],
       "proof_macros": [
         "segment-header-field-proof",
         "document-window-append-proof",
-        "document-sequential-complete-proof"
+        "document-sequential-complete-proof",
+        "document-random-header-proof",
+        "document-random-payload-proof",
+        "document-random-complete-proof"
       ],
       "tests": [
         {
@@ -5632,17 +5839,29 @@
         {
           "target": "lib",
           "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::recognized_segment_type_equality_matches_all_literal_codes_and_eof"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics. Sequential composition: Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics. Sequential composition: Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed. Random-access composition: Successful random-access results retain the exact original separately stored header and payload windows at deterministic offsets covering the complete body. Every returned header is the one consumed by the unchanged native vector iterator. Numbers strictly increase, the nonempty header section ends with EOF and contains no earlier EOF. The standalone caller uses the exact file-header body origin; sequential guarantees remain independent. The only native changes replace two enum-equality EOF checks with equivalent pattern matches, allowing direct variant reasoning without an added equality specification. All recognized type comparisons are checked against literal codes; no local standard declaration is added. This is accepted-result correspondence, not complete acceptance, typed rejection, decoded ParsedData or unknown-length termination.",
       "assumptions": [
         "The helper receives an already decoded 32-bit field; the contract is branch-conditional, not a complete acceptance theorem."
       ],
       "gaps": [
-        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
-        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle."
+        "Independent normative/model review and exhaustive D.2/7.2.7/7.4.11 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance and exact typed rejection/partial-error/resource behavior, decoded ParsedData and codec/caller/graph/deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -5673,6 +5892,20 @@
           "tokens": [
             "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
           ]
+        },
+        {
+          "runtime": "document::parse_random_access",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::random_access_container_fields(input@, segments@)"
+          ]
+        },
+        {
+          "runtime": "document::parse_standalone_document",
+          "section": "ensures",
+          "tokens": [
+            "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
+          ]
         }
       ],
       "invariant_evidence": []
@@ -5687,18 +5920,28 @@
         "segment_header::decode_data_length",
         "segment_header::parse_segment_header",
         "document::read_payload",
-        "document::parse_sequential"
+        "document::parse_sequential",
+        "document::parse_random_access",
+        "document::parse_standalone_document"
       ],
       "models": [
         "segment-header-fields",
         "document-payload-window",
         "document-sequential-offset",
-        "document-sequential-fields"
+        "document-sequential-fields",
+        "document-header-sequence",
+        "document-header-byte-offset",
+        "document-payload-byte-offset",
+        "document-random-access-segment-fields",
+        "document-random-access-fields"
       ],
       "proof_macros": [
         "segment-header-field-proof",
         "document-window-append-proof",
-        "document-sequential-complete-proof"
+        "document-sequential-complete-proof",
+        "document-random-header-proof",
+        "document-random-payload-proof",
+        "document-random-complete-proof"
       ],
       "tests": [
         {
@@ -5720,17 +5963,29 @@
         {
           "target": "lib",
           "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "segment_header::tests::recognized_segment_type_equality_matches_all_literal_codes_and_eof"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics. Sequential composition: Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics. Sequential composition: Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed. Random-access composition: Successful random-access results retain the exact original separately stored header and payload windows at deterministic offsets covering the complete body. Every returned header is the one consumed by the unchanged native vector iterator. Numbers strictly increase, the nonempty header section ends with EOF and contains no earlier EOF. The standalone caller uses the exact file-header body origin; sequential guarantees remain independent. The only native changes replace two enum-equality EOF checks with equivalent pattern matches, allowing direct variant reasoning without an added equality specification. All recognized type comparisons are checked against literal codes; no local standard declaration is added. This is accepted-result correspondence, not complete acceptance, typed rejection, decoded ParsedData or unknown-length termination.",
       "assumptions": [
         "This record concerns the header helper only, not discovery of the true body length."
       ],
       "gaps": [
-        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
-        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle.",
+        "Independent normative/model review and exhaustive D.2/7.2.7/7.4.11 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance and exact typed rejection/partial-error/resource behavior, decoded ParsedData and codec/caller/graph/deferred-retention/attached-extension lifecycle.",
         "The exact chosen original byte window does not prove complete unknown-length terminator/row-count interpretation or acceptance."
       ],
       "functional_evidence": [
@@ -5761,6 +6016,20 @@
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_random_access",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::random_access_container_fields(input@, segments@)"
+          ]
+        },
+        {
+          "runtime": "document::parse_standalone_document",
+          "section": "ensures",
+          "tokens": [
+            "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
           ]
         }
       ],

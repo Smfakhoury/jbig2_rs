@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import tempfile
 from contextlib import contextmanager
+from os.path import commonprefix
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
@@ -42,12 +43,21 @@ def proof_workspace(root: Path, executable: Path, prefix: str):
 
 def selected_proof(
     executable: Path, directory: Path, environment: dict, expect_failure: bool,
-    module: str, function: str,
+    module: str, function: str | tuple[str, ...],
 ):
+    functions = (function,) if isinstance(function, str) else function
+    if (
+        not isinstance(functions, tuple) or not functions
+        or any(not isinstance(name, str) or not name for name in functions)
+        or len(set(functions)) != len(functions)
+        or expect_failure and not isinstance(function, str)
+    ):
+        raise ValueError("selected proof needs unique targets; failures must select one function")
     command = [
         str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
         "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
-        "--verify-only-module", module, "--verify-function", function,
+        "--verify-only-module", module, "--verify-function",
+        function if isinstance(function, str) else commonprefix(functions) + "*",
         "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
     ]
     if expect_failure:
@@ -62,9 +72,12 @@ def selected_proof(
     except ValueError as error:
         raise ValueError("verifier did not produce semantic proof evidence:\n" + process.stderr) from error
     result = report["verification-results"]
-    identity = f"jbig2_rs_production::{module}::{function}"
-    if result["is-verifying-entire-crate"] is not False or identity not in report["func-details"]:
-        raise ValueError(f"selected verification did not target {identity}")
+    identities = {f"jbig2_rs_production::{module}::{name}" for name in functions}
+    if (
+        result["is-verifying-entire-crate"] is not False
+        or not identities <= set(report["func-details"])
+    ):
+        raise ValueError(f"selected verification did not target {sorted(identities)}")
     if expect_failure:
         if (
             process.returncode == 0 or result["errors"] < 1
@@ -74,7 +87,10 @@ def selected_proof(
             ))
         ):
             raise ValueError("mutant was not rejected by semantic obligations:\n" + process.stderr)
-    elif process.returncode != 0 or result["errors"] != 0 or result["verified"] < 1:
+    elif (
+        process.returncode != 0 or result["errors"] != 0
+        or type(result["verified"]) is not int or result["verified"] < len(functions)
+    ):
         raise ValueError("baseline/control proof did not pass:\n" + process.stderr)
     return result
 
@@ -90,13 +106,32 @@ def weakened_contract(source: str, case: dict) -> str:
 
 def check_semantic_cases(
     root: Path, executable: Path, cases: tuple, files: tuple, prefix: str, scope: str,
+    *, baseline_groups: tuple = (),
 ) -> dict:
+    targets = {(case["module"], case["function"]) for case in cases}
+    covered = set()
+    for module, functions in baseline_groups:
+        group = {(module, function) for function in functions}
+        if (
+            not isinstance(functions, tuple) or len(functions) < 2
+            or len(group) != len(functions) or not group <= targets or covered & group
+        ):
+            raise ValueError("shared baseline needs disjoint existing function targets")
+        covered.update(group)
     sources = {name: (root / name).read_bytes() for name in files}
     results = []
     with proof_workspace(root, executable, prefix) as (
         directory, environment, expected, rust,
     ):
         baselines = {}
+        baseline_targets = {}
+        for module, functions in baseline_groups:
+            baseline = selected_proof(
+                executable, directory, environment, False, module, functions,
+            )
+            for function in functions:
+                baselines[(module, function)] = baseline
+                baseline_targets[(module, function)] = list(functions)
         for case in cases:
             if case["file"] not in sources:
                 raise ValueError("semantic counterexample edits an unbound source")
@@ -107,6 +142,7 @@ def check_semantic_cases(
                 baselines[target] = selected_proof(
                     executable, directory, environment, False, *target,
                 )
+                baseline_targets[target] = [case["function"]]
             source = replace_once(original, case["site"], case["replacement"])
             path.write_text(source, encoding="utf-8")
             run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
@@ -120,6 +156,7 @@ def check_semantic_cases(
                 "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
                 "control_verifier_errors": control["errors"],
                 "baseline_selected_verification": baselines[target],
+                "baseline_selected_functions": baseline_targets[target],
             })
             path.write_text(original, encoding="utf-8")
     if any((root / name).read_bytes() != data for name, data in sources.items()):
@@ -127,6 +164,10 @@ def check_semantic_cases(
     return {
         "schema_version": 2, "status": "passed", "verus_version": expected,
         "scope": scope, "production_sources_modified": False, "counterexamples": results,
+        "baseline_groups": [
+            {"module": module, "functions": list(functions)}
+            for module, functions in baseline_groups
+        ],
         "source_bindings": {
             name: hashlib.sha256(data).hexdigest() for name, data in sources.items()
         },

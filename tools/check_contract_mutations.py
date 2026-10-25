@@ -28,6 +28,11 @@ TEXT_RUNTIME_TESTS = {
     "current_placement_rejects_valid_single_pixel": "current_text_placement_matches_wide_coordinates_and_partial_failure_state",
 }
 DOCUMENT_WINDOW_TESTS = {
+    "random_access_discards_consumed_segments": "raw_random_access_layout_matches_separate_literal_headers_and_payloads",
+    "random_access_rebinds_payload_after_validation": "raw_random_access_layout_matches_separate_literal_headers_and_payloads",
+    "random_access_corrupts_header_after_validation": "raw_random_access_layout_matches_separate_literal_headers_and_payloads",
+    "random_access_drops_eof_after_validation": "raw_random_access_layout_matches_separate_literal_headers_and_payloads",
+    "standalone_random_access_discards_first_body_byte": "standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata",
     "known_payload_returns_wrong_bytes": "raw_payload_windows_keep_exact_known_and_existing_unknown_extents",
     "unknown_payload_returns_wrong_bytes": "raw_payload_windows_keep_exact_known_and_existing_unknown_extents",
     "sequential_discards_consumed_segments": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",

@@ -658,6 +658,23 @@ fn validate_unused_retention_bits(bit_count: u32, bytes: &[u8]) -> Result<(), Ma
 mod tests {
     use super::*;
 
+    #[test]
+    fn recognized_segment_type_equality_matches_all_literal_codes_and_eof() {
+        let codes = [
+            0, 4, 6, 7, 16, 20, 22, 23, 36, 38, 39, 40, 42, 43, 48, 49, 50, 51, 52, 53, 54, 62,
+        ];
+        for left in codes {
+            let left_type = SegmentType::from_number(left).unwrap();
+            assert_eq!(left_type == SegmentType::EndOfFile, left == 51);
+            assert_eq!(matches!(left_type, SegmentType::EndOfFile), left == 51);
+            for right in codes {
+                let right_type = SegmentType::from_number(right).unwrap();
+                assert_eq!(left_type == right_type, left == right);
+                assert_eq!(left_type != right_type, left != right);
+            }
+        }
+    }
+
     fn parse(input: &[u8]) -> Result<SegmentHeader, DecodeError> {
         parse_segment_header(&mut ByteReader::new(input), &Limits::default())
     }

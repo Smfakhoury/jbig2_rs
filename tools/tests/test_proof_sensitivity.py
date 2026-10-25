@@ -1,6 +1,9 @@
 import json
+import shutil
 import sys
+import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 from subprocess import CompletedProcess
 from unittest.mock import patch
@@ -9,7 +12,7 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from proof_sensitivity import selected_proof, weakened_contract
+from proof_sensitivity import check_semantic_cases, selected_proof, weakened_contract
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
@@ -21,11 +24,11 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             weakened_contract("unchanged", {"controls": ()})
 
-    def verify(self, report, returncode=0, stderr="", expect_failure=False):
+    def verify(self, report, returncode=0, stderr="", expect_failure=False, function="finalize_pages"):
         process = CompletedProcess([], returncode, json.dumps(report), stderr)
         with patch("proof_sensitivity.subprocess.run", return_value=process):
             return selected_proof(
-                Path("/verus"), TOOLS.parent, {}, expect_failure, "document", "finalize_pages",
+                Path("/verus"), TOOLS.parent, {}, expect_failure, "document", function,
             )
 
     def report(self):
@@ -85,6 +88,111 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         self.assertEqual(
             self.verify(report, 1, "loop invariant not satisfied", True)["errors"], 1,
         )
+
+    def test_shared_positive_module_baseline_requires_every_exact_target_and_partial_proofs(self):
+        functions = ("finalize_pages", "build_document_info")
+        report = self.report()
+        report["verification-results"]["verified"] = 2
+        report["func-details"]["jbig2_rs_production::document::build_document_info"] = {}
+        process = CompletedProcess([], 0, json.dumps(report), "")
+        with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+            selected_proof(Path("/verus"), TOOLS.parent, {}, False, "document", functions)
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("--verify-function") + 1], "*")
+        self.assertEqual(command[command.index("--verify-only-module") + 1], "document")
+        self.assertEqual(command[command.index("--num-threads") + 1], "1")
+        self.assertEqual(command[command.index("--rlimit") + 1], "30")
+        for changed in ("missing-target", "too-few-proofs", "whole-report"):
+            broken = json.loads(json.dumps(report))
+            if changed == "missing-target":
+                del broken["func-details"]["jbig2_rs_production::document::build_document_info"]
+            elif changed == "too-few-proofs":
+                broken["verification-results"]["verified"] = 1
+            else:
+                broken["verification-results"]["is-verifying-entire-crate"] = True
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                self.verify(broken, function=functions)
+
+    def test_shared_baseline_rejects_empty_duplicate_and_failure_groups_before_execution(self):
+        for functions, failure in (((), False), (("same", "same"), False), (("one",), True)):
+            with self.subTest(functions=functions, failure=failure), patch(
+                "proof_sensitivity.subprocess.run",
+            ) as run, self.assertRaises(ValueError):
+                selected_proof(Path("/verus"), TOOLS.parent, {}, failure, "document", functions)
+            run.assert_not_called()
+
+    def test_shared_baseline_uses_narrow_common_prefix_and_keeps_individual_failures(self):
+        report = self.report()
+        names = ("widen_u8_i32", "widen_u8_i64")
+        report["verification-results"]["verified"] = 2
+        report["func-details"] = {
+            f"jbig2_rs_production::symbol_text::{name}": {} for name in names
+        }
+        process = CompletedProcess([], 0, json.dumps(report), "")
+        with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+            selected_proof(Path("/verus"), TOOLS.parent, {}, False, "symbol_text", names)
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("--verify-function") + 1], "widen_u8_i*")
+        for name in names:
+            with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+                selected_proof(Path("/verus"), TOOLS.parent, {}, False, "symbol_text", name)
+            command = run.call_args.args[0]
+            self.assertEqual(command[command.index("--verify-function") + 1], name)
+
+    def test_shared_baseline_runs_once_on_pristine_source_and_keeps_every_case_query(self):
+        with tempfile.TemporaryDirectory() as path:
+            root = Path(path) / "source"
+            directory = Path(path) / "proof"
+            root.mkdir()
+            directory.mkdir()
+            original = "first second contract"
+            (root / "fixture.rs").write_text(original)
+            shutil.copyfile(root / "fixture.rs", directory / "fixture.rs")
+            cases = tuple({
+                "id": name, "file": "fixture.rs", "module": "module", "function": name,
+                "site": name, "replacement": "bad_" + name, "controls": (("contract", "weak"),),
+            } for name in ("first", "second"))
+            calls = []
+
+            @contextmanager
+            def workspace(*args):
+                yield directory, {}, "pinned", "rust"
+
+            def verify(executable, checkout, environment, failure, module, function):
+                calls.append((failure, module, function))
+                if isinstance(function, tuple):
+                    self.assertEqual((directory / "fixture.rs").read_text(), original)
+                return {"verified": 2, "errors": int(failure)}
+
+            groups = (("module", ("first", "second")),)
+            with patch("proof_sensitivity.proof_workspace", workspace), patch(
+                "proof_sensitivity.selected_proof", side_effect=verify,
+            ), patch("proof_sensitivity.run"):
+                result = check_semantic_cases(
+                    root, Path("/verus"), cases, ("fixture.rs",), "fixture-", "scope",
+                    baseline_groups=groups,
+                )
+            self.assertEqual(calls, [
+                (False, "module", ("first", "second")),
+                (True, "module", "first"), (False, "module", "first"),
+                (True, "module", "second"), (False, "module", "second"),
+            ])
+            self.assertEqual((directory / "fixture.rs").read_text(), original)
+            self.assertTrue(all(row["baseline_selected_functions"] == ["first", "second"]
+                                for row in result["counterexamples"]))
+            for invalid in (
+                (("module", ("first", "unknown")),),
+                (("module", ("first", "first")),),
+                groups + groups,
+            ):
+                with self.subTest(invalid=invalid), patch(
+                    "proof_sensitivity.proof_workspace",
+                ) as workspace, self.assertRaises(ValueError):
+                    check_semantic_cases(
+                        root, Path("/verus"), cases, ("fixture.rs",), "fixture-", "scope",
+                        baseline_groups=invalid,
+                    )
+                workspace.assert_not_called()
 
 
 if __name__ == "__main__":

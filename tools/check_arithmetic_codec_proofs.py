@@ -12,6 +12,13 @@ from rust_source import source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (
+    ("arithmetic", ("ArithmeticContext::from_state", "ArithmeticError::into_decode")),
+    ("generic_region", (
+        "integer_overflow", "probability_signal_error", "unexpected_eof", "validate_probability_states",
+    )),
+    ("symbol_text", ("ArithmeticCodec::decode_integer", "ArithmeticCodec::decode_symbol_id")),
+)
 ERROR_POST = "out == arithmetic_spec::decode_error(self),"
 SLOT_POST = "out == symbol_text_spec::integer_field_slot(self),"
 INTEGER_CALL = """crate::arithmetic::arithmetic_spec::integer_state(
@@ -245,6 +252,7 @@ def main():
              "specs/arithmetic.rs", "specs/symbol_text.rs", "specs/generic_region.rs"),
             "jbig2-arithmetic-codec-",
             "Exact project arithmetic error/value projection, integer field/bank identity, integer/IAID decoder/bank frames and generic raw-context first-failure/signal/EOF/overflow diagnostics; normative call-site identity, entropy/raster and full streams remain separate",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"arithmetic codec proof sensitivity failed: {error}", file=sys.stderr)

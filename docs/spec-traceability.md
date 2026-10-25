@@ -40,6 +40,37 @@ normative decomposition.
 
 ## Evidence strength is not inferred from a function count
 
+The [random-access model](../specs/document.rs) now relates every accepted
+returned header and payload to the separate original storage sections,
+deterministic offsets and complete body extent. Numbers strictly increase;
+the nonempty header section ends with EOF and has no preceding EOF. The
+[standalone caller](../src/document.rs) composes the exact file-header body
+origin without weakening its independent sequential guarantee. The native
+vector for-loop is unchanged; its named ghost iterator links each original
+header to its returned segment.
+
+Internal histories and append/offset/per-entry/completion lemmas stay in
+[proof support](../proofs/model_support/document.rs). The per-entry and full
+result relations are opaque and unfolded in their ordinary proved lemmas,
+not repeatedly in native callers. Two EOF equality expressions become
+equivalent native pattern matches, avoiding an added enum-equality or standard
+specification. A bounded compiler-expansion audit permits exactly those two
+changes; all prior preconditions and reviewed boundaries are preserved.
+
+Actual immutable 90faeb6 whole proof and compiled library pass1231/0.
+All25real compiling document contrasts reject strongly and accept their
+intended weaker guarantees, retaining all old20. Post-validation corruptions
+keep every internal proof; each organization-arm control retains the opposite
+arm's guarantee. The fresh108/0partial module baseline includes all12mutated
+bodies, while all50strong/weaker queries still run separately.
+
+Five existing records gain correspondence, and three random-access rows move
+from safety-only to functional evidence: **130 functional/117 state/19 safety**,
+all **266 provisional**. Typed rejection/partial errors, complete valid-input
+acceptance, decoded `ParsedData`, unknown-length termination, broader
+codec/caller/graph/deferred lifecycle, capacity and independent normative/model
+review remain open. Strong accepted layout is not exhaustive conformance.
+
 The [sequential container model](../specs/document.rs) now relates every
 accepted [payload and sequential parser result](../src/document.rs) to the
 original header/payload windows, their adjacent offsets and the complete body

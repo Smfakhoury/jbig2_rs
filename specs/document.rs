@@ -159,6 +159,83 @@ pub(crate) open spec fn sequential_container_fields(
     }
 }
 
+pub(crate) open spec fn segment_headers(
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+) -> Seq<crate::segment_header::SegmentHeader> {
+    Seq::new(segments.len(), |index: int| segments[index].header)
+}
+
+pub(crate) open spec fn header_byte_offset(
+    headers: Seq<crate::segment_header::SegmentHeader>,
+    prefix: nat,
+) -> nat
+    recommends prefix <= headers.len(),
+    decreases prefix,
+{
+    if prefix == 0 {
+        0
+    } else {
+        header_byte_offset(headers, (prefix - 1) as nat)
+            + headers[(prefix - 1) as int].byte_length as nat
+    }
+}
+
+pub(crate) open spec fn payload_byte_offset(
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    prefix: nat,
+) -> nat
+    recommends prefix <= segments.len(),
+    decreases prefix,
+{
+    if prefix == 0 {
+        0
+    } else {
+        payload_byte_offset(segments, (prefix - 1) as nat)
+            + segments[(prefix - 1) as int].payload@.len()
+    }
+}
+
+#[verifier::opaque]
+pub(crate) open spec fn random_access_segment_fields(
+    bytes: Seq<u8>,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    index: int,
+) -> bool
+    recommends 0 <= index < segments.len(),
+{
+    let headers = segment_headers(segments);
+    let header_end = header_byte_offset(headers, headers.len());
+    let segment = segments[index];
+    let start = header_byte_offset(headers, index as nat) as int;
+    let end = header_byte_offset(headers, (index + 1) as nat) as int;
+    let payload_start = header_end + payload_byte_offset(segments, index as nat);
+    let payload_end = header_end + payload_byte_offset(segments, (index + 1) as nat);
+    &&& 0 <= start < end <= header_end <= payload_start <= payload_end <= bytes.len()
+    &&& crate::spec::segments::segment_header_fields(
+        &segment.header, bytes, start, end,
+    )
+    &&& payload_window(
+        &segment.header, bytes, payload_start as int, payload_end as int, segment.payload@,
+    )
+    &&& (index > 0 ==> headers[index - 1].number < segment.header.number)
+    &&& (index + 1 < segments.len() ==>
+        segment.header.segment_type != crate::segment_header::SegmentType::EndOfFile)
+}
+
+#[verifier::opaque]
+pub(crate) open spec fn random_access_container_fields(
+    bytes: Seq<u8>,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+) -> bool {
+    let headers = segment_headers(segments);
+    let header_end = header_byte_offset(headers, headers.len());
+    &&& segments.len() > 0
+    &&& headers.last().segment_type == crate::segment_header::SegmentType::EndOfFile
+    &&& header_end + payload_byte_offset(segments, segments.len()) == bytes.len()
+    &&& forall|index: int| 0 <= index < segments.len() ==>
+        #[trigger] random_access_segment_fields(bytes, segments, index)
+}
+
 pub(crate) open spec fn page_information_count(
     segments: Seq<crate::document::ParsedSegment<'_>>,
     prefix: nat,
