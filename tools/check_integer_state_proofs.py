@@ -11,6 +11,9 @@ from proof_sensitivity import check_semantic_cases
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("arithmetic", (
+    "ArithmeticDecoder::decode_integer", "ArithmeticDecoder::decode_integer_bits",
+)),)
 RESULT = "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0,"
 DECODER = "*final(self) == arithmetic_spec::integer_state(*old(self), old(contexts)@).1,"
 CONTEXTS = "final(contexts)@ == arithmetic_spec::integer_state(*old(self), old(contexts)@).2,"
@@ -108,6 +111,7 @@ def main():
             ("src/arithmetic.rs", "specs/arithmetic.rs", "proofs/model_support/arithmetic.rs"),
             "jbig2-integer-state-",
             "Complete project signed-integer and payload result, history, decoder and bank composition; independent normative procedure/table/caller interpretation remains separate",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"integer state proof sensitivity failed: {error}", file=sys.stderr)

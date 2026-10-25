@@ -26,7 +26,7 @@ Actual immutable unfiltered whole Cargo proof and production library pass
 1231/0. All 25 compiling document contrasts reject strongly and accept their
 intended weaker controls, retaining the prior 20. All 469 native tests pass,
 with 14 existing ignored microbenchmarks; all 98 real native mutants compile
-and are detected. All 404 tooling tests, provenance, strict lint/format and
+and are detected. All 407 tooling tests, provenance, strict lint/format and
 isolated MSRV package/exact downstream output pass. Approved official
 normal/logging/native/Hayro observations were freshly executed: 2 passed/
 7 unresolved/1 unsupported, zero restored rejection credit.
@@ -36,12 +36,25 @@ baseline includes all 12 mutated production bodies, with exact target,
 partialness and nonvacuity validation. Every one of the 50 strong/weaker
 queries still executes individually at unchanged budgets; no mutant is
 cached or removed. The complete expanded 25-case group took 621 seconds.
-Whole-group estimates are 967/987/960/993/958/997 seconds, retaining the
+Whole-group estimates are 967/972/960/993/995/975 seconds, retaining the
 1000-second ceiling. Independently replaying latest accepted #88 costs plus
-the current group gives 1039/1012/1038/1037/916/1045 seconds, under the unchanged
+the current group gives 1039/989/1038/1037/952/1032 seconds, under the unchanged
 1050-second guard. The profile is 28 groups/226 contrasts, still six one-worker
 shards/max four active, 21 jobs plus CLA = 22 checks, and unchanged timeouts.
 Actual current-head hosted acceptance remains required before readiness.
+
+The first #89 hosted run passed whole proof, native platforms, coverage, fuzz
+and performance, but semantic shards 3 and 5 exceeded the unchanged 20-minute
+cap. Those jobs and their partial receipts receive no readiness credit.
+Measured positive-baseline probes identified repeated same-source verifier
+startups. Six existing checker groups now share explicit, exact positive
+target sets, narrowed by their common function prefix. This removes 15
+pristine-baseline launches, not a single negative or weaker-control query.
+All 63 affected compiling contrasts pass; all 126 strong/weaker queries remain
+individual. Collector and unit checks reject missing, duplicate, unrelated or
+incomplete baseline coverage. Whole groups are also rebalanced within the same
+six one-worker shards. No native source/model/contract, case, solver limit,
+job, concurrency cap or timeout is changed by this runner-only repair.
 
 Five existing records gain links; three random-access rows become functional:
 130 functional/117 state/19 safety, all 266 still provisional. Coverage checks

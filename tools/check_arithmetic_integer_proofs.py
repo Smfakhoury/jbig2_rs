@@ -11,6 +11,9 @@ from proof_sensitivity import check_semantic_cases, replace_once
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("arithmetic", (
+    "ArithmeticDecoder::decode_iaid", "ArithmeticDecoder::decode_integer_bit",
+)),)
 CALL = "let decision = self.decode(&mut contexts[context_index])?;"
 HISTORY = """*previous = if prior < 256 {
     shifted
@@ -161,6 +164,7 @@ def main():
             ("src/arithmetic.rs", "specs/arithmetic.rs", "proofs/model_support/arithmetic.rs"),
             "jbig2-arithmetic-integer-",
             "Exact single integer-bit decision/history, context frames and decoder/error step; exact IAID preflight errors and unchanged state; complete integer/IAID folds and normative interpretation remain separate",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"arithmetic integer proof sensitivity failed: {error}", file=sys.stderr)

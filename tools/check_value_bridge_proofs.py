@@ -11,6 +11,9 @@ from proof_sensitivity import check_semantic_cases
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("symbol_text", (
+    "widen_bool_i64", "widen_u32_i64", "widen_u8_i32", "widen_u8_i64",
+)),)
 
 
 def numeric_case(name, argument, result):
@@ -62,6 +65,7 @@ def main():
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/symbol_text.rs", "src/decode.rs"), "jbig2-value-bridges-",
             "Exact lossless primitive widening and combination-operator equality only; no caller or normative conformance closure",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"value bridge proof sensitivity failed: {error}", file=sys.stderr)

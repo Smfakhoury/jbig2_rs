@@ -88,6 +88,14 @@ proof/compilation1231/0 and25real strong/weaker document contrasts include this
 no-added-spec source. The shared fresh108/0partial document baseline covers all
 12mutated bodies; every strong/weaker query remains separately executed.
 
+The timing repair additionally shares pristine positive baselines across
+explicit target sets in six existing arithmetic/helper groups. Narrow
+common-prefix selectors still require every exact target identity and a
+successful nonempty partial proof. Every mutation and weaker contract is
+verified separately at the original limit. The collector checks configured
+group membership and per-case baseline coverage; broader positive selection
+does not admit unproved source or substitute for the whole-crate gate.
+
 Document `payload_window` binds an accepted payload to its original consumed
 slice and, when present, the declared known length. `sequential_offset` and
 `sequential_container_fields` describe adjacent header/payload extents covering

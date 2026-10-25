@@ -11,6 +11,9 @@ from proof_sensitivity import check_semantic_cases
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("arithmetic", (
+    "ArithmeticDecoder::byte_in", "ArithmeticDecoder::byte_in_signal",
+)),)
 FIELDS = {
     "position": "final(self).byte_position == arithmetic_spec::refill_step(old(self)).1,",
     "current": "final(self).current_byte == arithmetic_spec::refill_step(old(self)).2,",
@@ -110,6 +113,7 @@ def main():
             ("src/arithmetic.rs", "specs/arithmetic.rs"),
             "jbig2-arithmetic-refill-",
             "Exact project byte-input signal, consumption, code, counter and marker outputs; initialization/renormalization composition and normative equivalence remain separate",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"arithmetic refill proof sensitivity failed: {error}", file=sys.stderr)

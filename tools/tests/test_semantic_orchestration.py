@@ -120,6 +120,39 @@ class SemanticOrchestrationTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 runner.check_bound_report(self.root, check, broken, report["source_bindings"])
 
+    def test_shared_group_baselines_cannot_omit_or_invent_target_coverage(self):
+        cases = [{"id": name, "module": "module", "function": name} for name in ("first", "second")]
+        groups = (("module", ("first", "second")),)
+        (self.root / "tools/shared.py").write_text(
+            "CASES = " + repr(cases) + "\nBASELINE_GROUPS = " + repr(groups) + "\n"
+        )
+        report = evidence()
+        report.update(
+            baseline_groups=[{"module": "module", "functions": ["first", "second"]}],
+            source_bindings={"src/example.rs": runner.digest(self.root / "src/example.rs")},
+        )
+        report["counterexamples"] = []
+        for case in cases:
+            row = copy.deepcopy(evidence()["counterexamples"][0])
+            row.update(id=case["id"], function="module::" + case["function"],
+                       baseline_selected_functions=["first", "second"])
+            row["baseline_selected_verification"]["verified"] = 2
+            report["counterexamples"].append(row)
+        check = ("shared", "shared.py", 2, "strong_contract", "weaker_control")
+        runner.check_bound_report(self.root, check, report, report["source_bindings"])
+        for mutation in ("missing-group", "missing-function", "extra-function", "too-few-proofs"):
+            broken = copy.deepcopy(report)
+            if mutation == "missing-group":
+                del broken["baseline_groups"]
+            elif mutation == "missing-function":
+                broken["counterexamples"][0]["baseline_selected_functions"].pop()
+            elif mutation == "extra-function":
+                broken["baseline_groups"][0]["functions"].append("unknown")
+            else:
+                broken["counterexamples"][0]["baseline_selected_verification"]["verified"] = 1
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                runner.check_bound_report(self.root, check, broken, report["source_bindings"])
+
     def test_actual_work_overlaps_but_never_exceeds_two_children(self):
         lock = threading.Lock()
         active = 0

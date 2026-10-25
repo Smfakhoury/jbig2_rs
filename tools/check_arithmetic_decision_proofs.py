@@ -11,6 +11,11 @@ from proof_sensitivity import check_semantic_cases
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (("arithmetic", (
+    "ArithmeticDecoder::decode", "ArithmeticDecoder::decode_lower_signal",
+    "ArithmeticDecoder::decode_signal", "ArithmeticDecoder::decode_upper_signal",
+    "ArithmeticDecoder::signal_error",
+)),)
 CONTEXT_POST = """final(context).state_index == arithmetic_spec::entry_index(
     old(self).interval, old(self).code, old(context).state_index,
 ),
@@ -204,6 +209,7 @@ def main():
             ("src/arithmetic.rs", "specs/arithmetic.rs", "proofs/model_support/arithmetic.rs"),
             "jbig2-arithmetic-decision-",
             "Exact decision signal/register/input-position/current-byte/count/marker and typed failure projection, unconditional context updates and input frame; stream/caller composition and independent normative interpretation remain separate",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"arithmetic decision proof sensitivity failed: {error}", file=sys.stderr)
