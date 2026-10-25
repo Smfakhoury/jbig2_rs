@@ -92,6 +92,13 @@ and every requested exact identity present. All 31 compiling contrasts retain
 their 62 individual strong/weaker queries and freshly pass. Source contracts,
 native execution, proof limits, cases and collector acceptance are unchanged.
 
+After the completion-boundary cancellation of another producer job, two
+additional narrow MMR-span/halftone-header baselines are shared. Their 17
+contrasts / 34 individual queries freshly pass. The combined reduction across
+five checker configurations is 24 pristine launches to eight, saving 16
+startups. Complete reports from the canceled job are timing observations only,
+never substitutes for a successful producer and collector.
+
 Document `segment_headers`, `header_byte_offset`, `payload_byte_offset` and the
 opaque random-access entry/result predicates describe accepted separate header
 and payload sections, exact original windows, increasing numbers and final EOF.

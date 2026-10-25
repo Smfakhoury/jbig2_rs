@@ -281,21 +281,22 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(estimates), 1000)
 
     def test_completed_profile_has_measured_job_headroom_without_relaxed_limits(self):
-        # Complete 40231097187 receipts; three shard-1 costs conservatively bound
-        # archived timestamps. The three optimized groups and value bridge use
-        # fresh complete local runs, not acceptance credit for the canceled job.
+        # All 40235511935 checker receipts completed, but the shard-4 job was
+        # canceled at completion and is not accepted. Its measured costs remain
+        # useful for scheduling; two further positive-only optimizations are
+        # conservatively charged their earlier, slower complete hosted costs.
         observed = {
-            "arithmetic-codec": 377, "arithmetic-decision": 355,
-            "arithmetic-initialization": 148, "arithmetic-integer": 156,
-            "arithmetic-normalization": 151, "arithmetic-refill": 149,
-            "bitmap-chunk": 105, "bitmap-compose": 191, "bitmap-copy": 255,
-            "black-span": 141, "document-count": 526, "halftone-header": 163,
-            "iaid-state": 156, "integer-state": 217, "mmr-horizontal": 177,
-            "mmr-prefix": 123, "mmr-reference": 380, "mmr-run": 115,
-            "mmr-span": 234, "operator-bit": 83, "reader-error": 244,
-            "region-dispatch": 88, "reset": 51, "retention": 106,
-            "segment-header": 240, "symbol-cardinality": 333,
-            "text-batch": 327, "value-bridge": 163, "segment-data": 259,
+            "arithmetic-codec": 345, "arithmetic-decision": 318,
+            "arithmetic-initialization": 99, "arithmetic-integer": 218,
+            "arithmetic-normalization": 155, "arithmetic-refill": 149,
+            "bitmap-chunk": 110, "bitmap-compose": 192, "bitmap-copy": 230,
+            "black-span": 162, "document-count": 609, "halftone-header": 245,
+            "iaid-state": 118, "integer-state": 263, "mmr-horizontal": 178,
+            "mmr-prefix": 96, "mmr-reference": 370, "mmr-run": 71,
+            "mmr-span": 235, "operator-bit": 82, "reader-error": 222,
+            "region-dispatch": 73, "reset": 58, "retention": 81,
+            "segment-header": 214, "symbol-cardinality": 226,
+            "text-batch": 224, "value-bridge": 100, "segment-data": 270,
         }
         self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
         self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)

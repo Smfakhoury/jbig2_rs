@@ -33,9 +33,9 @@ all **266 still provisional**. Profile correspondence is auxiliary project evide
 not a new selected normative claim or an approved denominator. The profile is
 29 groups / 236 contrasts / 229 bindings, still six one-worker shards / max four active /
 21 jobs + CLA = 22 checks and unchanged caps. Actual accepted #89 costs plus the complete
-new group + 10% now give 989/996/998/997/993/995 seconds under the same historical
+new group + 10% now give 997/999/987/1000/990/995 seconds under the same historical
 1000-second estimate guard. Fresh measured replay gives
-1043/1045/886/972/1024/1043, below the unchanged 1050-second guard.
+966/983/795/996/985/988, below the unchanged 1050-second guard.
 Actual current-head hosted acceptance is
 still required before readiness.
 
@@ -48,6 +48,16 @@ of the 31 affected compiling contrasts retains its individual strong and
 weaker query; all 62 queries freshly pass. The unchanged five-case value
 bridge also freshly passes. Whole groups are redistributed, without more
 jobs, workers, solver resources, cases omitted or raised time/budget limits.
+
+The repair run completed all 29 checker reports / 236 contrasts, but shard 4
+was canceled at the completion boundary. The collector again correctly
+rejected the job; complete reports are useful timing observations, not hosted
+acceptance. Fresh costs reveal the remaining imbalance. Two more existing
+MMR-span/halftone-header positive baselines are shared; all 17 affected
+contrasts / 34 individual queries freshly pass. Across five configurations,
+24 pristine launches become eight: 16 redundant startups removed. The latest
+replay conservatively retains the slower pre-optimization hosted costs for
+those two groups, and preserves both original guards and every job limit.
 
 All 51 raw coverage metrics are checked: 49 unchanged, only document/global covered
 regions increase by two with identical denominators. Totals 11383/12639 lines,
