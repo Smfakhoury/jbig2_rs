@@ -84,6 +84,14 @@ replaced by internal loop bookkeeping. Whole proof/compilation **1232/0** and
 standard declaration, assumption, termination waiver or precondition.
 Other table/entropy payloads remain opaque, not a codec-validity theorem.
 
+The #90 hosted timeout repair changes only checker configuration and group
+placement. Symbol/cardinality, text batch and reader-error positive baselines
+use five pristine queries instead of 19. The two module-wide positive probes
+actually verified 111 decode and 164 symbol-text functions with partial scope
+and every requested exact identity present. All 31 compiling contrasts retain
+their 62 individual strong/weaker queries and freshly pass. Source contracts,
+native execution, proof limits, cases and collector acceptance are unchanged.
+
 Document `segment_headers`, `header_byte_offset`, `payload_byte_offset` and the
 opaque random-access entry/result predicates describe accepted separate header
 and payload sections, exact original windows, increasing numbers and final EOF.

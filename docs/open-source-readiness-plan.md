@@ -33,9 +33,21 @@ all **266 still provisional**. Profile correspondence is auxiliary project evide
 not a new selected normative claim or an approved denominator. The profile is
 29 groups / 236 contrasts / 229 bindings, still six one-worker shards / max four active /
 21 jobs + CLA = 22 checks and unchanged caps. Actual accepted #89 costs plus the complete
-new group + 10% give 992/995/998/989/997/997 seconds under the same 1000-second estimate guard;
-measured replay stays below 1050. Actual current-head hosted acceptance is
+new group + 10% now give 989/996/998/997/993/995 seconds under the same historical
+1000-second estimate guard. Fresh measured replay gives
+1043/1045/886/972/1024/1043, below the unchanged 1050-second guard.
+Actual current-head hosted acceptance is
 still required before readiness.
+
+The first evidence-bound #90 run completed the whole proof and five shards,
+but shard 1 timed out; the collector correctly rejected it. No hosted
+acceptance is credited. Actual checker receipts identified the imbalance.
+Three checker configurations now share pristine positive baselines:
+19 launches become five, removing 14 redundant verifier startups. Every one
+of the 31 affected compiling contrasts retains its individual strong and
+weaker query; all 62 queries freshly pass. The unchanged five-case value
+bridge also freshly passes. Whole groups are redistributed, without more
+jobs, workers, solver resources, cases omitted or raised time/budget limits.
 
 All 51 raw coverage metrics are checked: 49 unchanged, only document/global covered
 regions increase by two with identical denominators. Totals 11383/12639 lines,

@@ -281,19 +281,21 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(estimates), 1000)
 
     def test_completed_profile_has_measured_job_headroom_without_relaxed_limits(self):
-        # Accepted 40222911541 receipts plus the actual complete new metadata group.
+        # Complete 40231097187 receipts; three shard-1 costs conservatively bound
+        # archived timestamps. The three optimized groups and value bridge use
+        # fresh complete local runs, not acceptance credit for the canceled job.
         observed = {
-            "arithmetic-codec": 531, "arithmetic-decision": 370,
-            "arithmetic-initialization": 150, "arithmetic-integer": 157,
-            "arithmetic-normalization": 160, "arithmetic-refill": 112,
-            "bitmap-chunk": 123, "bitmap-compose": 192, "bitmap-copy": 259,
-            "black-span": 137, "document-count": 511, "halftone-header": 189,
-            "iaid-state": 155, "integer-state": 165, "mmr-horizontal": 180,
-            "mmr-prefix": 96, "mmr-reference": 371, "mmr-run": 93,
-            "mmr-span": 183, "operator-bit": 120, "reader-error": 270,
-            "region-dispatch": 66, "reset": 62, "retention": 86,
-            "segment-header": 171, "symbol-cardinality": 271,
-            "text-batch": 388, "value-bridge": 104, "segment-data": 269,
+            "arithmetic-codec": 377, "arithmetic-decision": 355,
+            "arithmetic-initialization": 148, "arithmetic-integer": 156,
+            "arithmetic-normalization": 151, "arithmetic-refill": 149,
+            "bitmap-chunk": 105, "bitmap-compose": 191, "bitmap-copy": 255,
+            "black-span": 141, "document-count": 526, "halftone-header": 163,
+            "iaid-state": 156, "integer-state": 217, "mmr-horizontal": 177,
+            "mmr-prefix": 123, "mmr-reference": 380, "mmr-run": 115,
+            "mmr-span": 234, "operator-bit": 83, "reader-error": 244,
+            "region-dispatch": 88, "reset": 51, "retention": 106,
+            "segment-header": 240, "symbol-cardinality": 333,
+            "text-batch": 327, "value-bridge": 163, "segment-data": 259,
         }
         self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
         self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)

@@ -12,6 +12,15 @@ from rust_source import source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
+BASELINE_GROUPS = (
+    ("decode", (
+        "CollectedSymbols::codebook", "collect_referred_symbols",
+        "get_symbol_resource", "symbol_index",
+    )),
+    ("symbol_text", (
+        "SymbolCodebook::get", "assemble_exported_symbols", "symbol_by_id",
+    )),
+)
 FUNCTIONS = {row["id"]: row for row in source_functions(ROOT)}
 GET = FUNCTIONS["symbol_text::SymbolCodebook::get"]["body_text"]
 LOOKUP = FUNCTIONS["symbol_text::symbol_by_id"]["body_text"]
@@ -171,6 +180,7 @@ def main():
              "specs/symbol_text.rs", "src/bitmap.rs", "specs/bitmap.rs"),
             "jbig2-symbol-cardinality-",
             "Exact project group/cardinality plus contiguous/borrowed bitmap content selection, imported/new ID mapping and all ordered/repeated owned export bytes/dimensions. Original shape controls remain; no encoded export-run selection, observed-capacity, independent normative or caller-stream claim",
+            baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"Symbol cardinality proof sensitivity failed: {error}", file=sys.stderr)
