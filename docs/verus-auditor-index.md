@@ -71,6 +71,19 @@ implementation data and synthetic semantic mutants are not normative oracles.
 
 ## Evidence and unchanged stop conditions
 
+Structural `page_information_fields` states exact raw dimensions, height
+encoding, resolutions and flags. `profiles_payload_fields` states the count
+and every ordered wire ID. The append helper preserves the original prefix
+and reader frame; each quantified postcondition is separately parenthesized,
+so an empty original prefix does not make new-value correspondence vacuous.
+Typed `known_segment_data_fields` and `segment_metadata` connect these to
+the returned enum variants and both complete container result models.
+Ordinary proved support handles append/completion; observable models are not
+replaced by internal loop bookkeeping. Whole proof/compilation **1232/0** and
+10 new + 25 retained real compiling contrasts pass without a new native operation,
+standard declaration, assumption, termination waiver or precondition.
+Other table/entropy payloads remain opaque, not a codec-validity theorem.
+
 Document `segment_headers`, `header_byte_offset`, `payload_byte_offset` and the
 opaque random-access entry/result predicates describe accepted separate header
 and payload sections, exact original windows, increasing numbers and final EOF.

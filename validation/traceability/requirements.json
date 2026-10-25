@@ -683,7 +683,8 @@
     "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d",
     "proofs/spec_properties/readers.rs": "ac0e7d3ff3a37da9428c4e95fff9bc242be0cd1de5f39eef5e775d90b019689f",
     "proofs/spec_properties/mmr.rs": "66601def9b50fbdf81baea1c4a5488f55ed76018af112898c004054b91b5d310",
-    "proofs/shared/bitmap.rs": "7d53fd64f7ddfdb6417be0233e64a864aa88804845cca20165e8a11ceb1b2522"
+    "proofs/shared/bitmap.rs": "7d53fd64f7ddfdb6417be0233e64a864aa88804845cca20165e8a11ceb1b2522",
+    "proofs/production_impl/segment_data.rs": "db8c0ddcef3abdaa004246d73b3d913cd31bceac894ab96ace2f0f5e4c40e212"
   },
   "definitions": {
     "mmr-mode-table-entry": {
