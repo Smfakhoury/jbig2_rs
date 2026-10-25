@@ -320,4 +320,27 @@ pub(crate) open spec fn page_flags_match(
     &&& info.max_stripe_size == striping & 0x7fff
 }
 
+pub(crate) open spec fn page_information_fields(
+    bytes: Seq<u8>,
+    info: crate::segment_data::PageInformation,
+) -> bool {
+    &&& bytes.len() == 19
+    &&& info.width == be_u32_at(bytes, 0)
+    &&& info.height == if be_u32_at(bytes, 4) == 0xffff_ffff {
+        None
+    } else {
+        Some(be_u32_at(bytes, 4))
+    }
+    &&& info.x_resolution == be_u32_at(bytes, 8)
+    &&& info.y_resolution == be_u32_at(bytes, 12)
+    &&& page_flags_match(info, bytes[16], ((bytes[17] as u16) << 8) | bytes[18] as u16)
+}
+
+pub(crate) open spec fn profiles_payload_fields(bytes: Seq<u8>, profiles: Seq<u32>) -> bool {
+    &&& profiles_payload_valid(bytes)
+    &&& profiles.len() == be_u32_at(bytes, 0)
+    &&& forall|index: int| 0 <= index < profiles.len() ==>
+        #[trigger] profiles[index] == be_u32_at(bytes, 4 + index * 4)
+}
+
 }

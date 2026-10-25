@@ -724,6 +724,7 @@ fn parse_sequential<'a>(
             document_spec::sequential_windows(
                 input@, segments@, windows, reader.position as int, require_local_references,
             ),
+            document_spec::segment_metadata(segments@),
             match previous_number {
                 Some(number) => segments@.len() > 0 && segments@.last().header.number == number,
                 None => segments@.len() == 0,
@@ -734,6 +735,7 @@ fn parse_sequential<'a>(
             document_spec::sequential_windows(
                 input@, segments@, windows, reader.position as int, require_local_references,
             ),
+            document_spec::segment_metadata(segments@),
         decreases reader.bytes@.len() - reader.position,
     ))]
     while reader.remaining() != 0 {
@@ -879,6 +881,7 @@ fn parse_random_access<'a>(
             document_spec::random_header_windows(input@, header_seq, header_windows, header_end),
             header_seq.len() > 0 && header_seq.last().segment_type == SegmentType::EndOfFile,
             document_spec::random_payload_windows(input@, header_seq, header_end, segments@, spans, reader.position as int),
+            document_spec::segment_metadata(segments@),
     ))]
     for header in headers {
         #[cfg(verus_keep_ghost)]
@@ -997,7 +1000,12 @@ fn read_be_u32_at(bytes: &[u8], offset: usize) -> u32 {
         | u32::from(bytes[offset + 3])
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(data) => document_spec::known_segment_data_fields(header.segment_type, payload@, data),
+        Err(_) => true,
+    },
+))]
 fn parse_known_segment_data(
     header: &SegmentHeader,
     payload: &[u8],
@@ -1036,6 +1044,8 @@ fn parse_known_segment_data(
         }
         _ => ParsedData::Other,
     };
+    #[cfg(verus_keep_ghost)]
+    production_known_segment_data_fields!();
     Ok(data)
 }
 
@@ -2253,6 +2263,87 @@ fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values() {
+        let limits = Limits::default();
+        let mut header = reference_validation_segment(0, &[], 1).header;
+        let mut page = page_data(23);
+        page[8..12].copy_from_slice(&0x0123_4567_u32.to_be_bytes());
+        page[12..16].copy_from_slice(&0x89ab_cdef_u32.to_be_bytes());
+        header.segment_type = SegmentType::PageInformation;
+        match parse_known_segment_data(&header, &page, &limits).unwrap() {
+            ParsedData::Page(info) => {
+                assert_eq!(info.width, 8);
+                assert_eq!(info.height, Some(23));
+                assert_eq!(info.x_resolution, 0x0123_4567);
+                assert_eq!(info.y_resolution, 0x89ab_cdef);
+            }
+            other => panic!("expected literal page metadata, got {other:?}"),
+        }
+        header.segment_type = SegmentType::EndOfStripe;
+        assert!(matches!(
+            parse_known_segment_data(&header, &0x0123_4567_u32.to_be_bytes(), &limits).unwrap(),
+            ParsedData::EndOfStripe(0x0123_4567)
+        ));
+        header.segment_type = SegmentType::Profiles;
+        let mut profiles = 3_u32.to_be_bytes().to_vec();
+        for value in [0, u32::MAX, 0x0123_4567_u32] {
+            profiles.extend_from_slice(&value.to_be_bytes());
+        }
+        match parse_known_segment_data(&header, &profiles, &limits).unwrap() {
+            ParsedData::Profiles(values) => assert_eq!(values, [0, u32::MAX, 0x0123_4567]),
+            other => panic!("expected literal profile metadata, got {other:?}"),
+        }
+        for kind in [SegmentType::EndOfPage, SegmentType::EndOfFile] {
+            header.segment_type = kind;
+            assert!(matches!(
+                parse_known_segment_data(&header, &[], &limits).unwrap(),
+                ParsedData::Other
+            ));
+            assert!(parse_known_segment_data(&header, &[1], &limits).is_err());
+        }
+        header.segment_type = SegmentType::Extension;
+        assert!(matches!(
+            parse_known_segment_data(&header, &0x100_u32.to_be_bytes(), &limits).unwrap(),
+            ParsedData::Other
+        ));
+    }
+
+    #[test]
+    fn raw_page_metadata_survives_sequential_random_and_embedded_container_composition() {
+        let limits = Limits::default();
+        let sequential = valid_sequential_document();
+        let body = &sequential[13..];
+        let mut random = SIGNATURE.to_vec();
+        random.push(0);
+        random.extend_from_slice(&1_u32.to_be_bytes());
+        random.extend(header(0, 48, 1, 19));
+        random.extend(header(1, 49, 1, 0));
+        random.extend(header(2, 51, 0, 0));
+        random.extend_from_slice(&page_data(8));
+        let mut collections = vec![
+            parse_sequential(body, &limits, true).unwrap(),
+            parse_random_access(&random[13..], &limits).unwrap(),
+        ];
+        collections.push(parse_standalone_document(&sequential, &limits).unwrap().1);
+        collections.push(parse_standalone_document(&random, &limits).unwrap().1);
+        collections.push(parse_embedded_document(body, &limits, None).unwrap().1);
+        for segments in collections {
+            assert_eq!(segments.len(), 3);
+            match &segments[0].data {
+                ParsedData::Page(info) => {
+                    assert_eq!(info.width, 8);
+                    assert_eq!(info.height, Some(8));
+                    assert_eq!(info.x_resolution, 0);
+                    assert_eq!(info.y_resolution, 0);
+                }
+                other => panic!("expected original page metadata, got {other:?}"),
+            }
+            assert!(matches!(segments[1].data, ParsedData::Other));
+            assert!(matches!(segments[2].data, ParsedData::Other));
+        }
+    }
 
     type LiteralPayloadWindow = (u32, Vec<u8>, usize, usize);
 

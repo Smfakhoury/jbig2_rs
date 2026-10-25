@@ -59,11 +59,20 @@ macro_rules! production_document_policy_bundle {
     };
 }
 
+macro_rules! production_known_segment_data_fields {
+    () => {
+        proof! {
+            reveal(document_spec::known_segment_data_fields);
+        }
+    };
+}
+
 macro_rules! production_sequential_window_append {
     ($input:ident, $segments:ident, $old_segments:ident, $windows:ident,
         $header_start:ident, $payload_start:ident, $reader:ident, $ordered:ident) => {
         proof! {
             let segment = $segments@.last();
+            document_spec::segment_metadata_append($old_segments, segment);
             document_spec::sequential_window_append(
                 $input@, $old_segments, $windows, $header_start, segment,
                 $payload_start, $reader.position as int, $ordered,
@@ -100,6 +109,7 @@ macro_rules! production_random_payload {
     ($headers:ident, $header_end:ident, $segments:ident,
         $windows:ident, $before:ident, $reader:ident) => {
         proof! {
+            document_spec::segment_metadata_append($before.1, $segments@.last());
             document_spec::random_payload_window_append(
                 $reader.bytes@, $headers, $header_end, $before.1, $windows, $before.0,
                 $segments@.last(), $reader.position as int,
