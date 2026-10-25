@@ -1,10 +1,30 @@
 # Runtime coverage: measurement and remaining gaps
 
-P06 is in progress. This tranche establishes a reproducible baseline and
-non-regression checks; it does not meet or ratify the proposed release goals,
-complete the missing tests, or establish normative correctness.
+P06 is in progress. Reproducible coverage and non-regression checks do not
+complete the missing tests, ratify release approval or establish normative
+correctness.
 
-## Latest symbol-content and MMR observations
+## Latest accepted numerical coverage
+
+The independently reconstructed hosted collections for #86 and #87 meet both
+unchanged numerical targets: **11,383/12,639 lines (90.0625%)** and
+**2,245/2,640 branch outcomes (85.0379%)**. Regions are
+**10,967/12,948 (84.7003%)**. All 51 global/per-file raw metrics and source,
+test, tool and report identities were checked. The committed baseline,
+denominators, exclusions and thresholds were not reduced.
+
+The sequential container tranche adds three raw metadata tests and seven
+native controls: all **466 native tests pass / 14 existing microbenchmarks
+ignored**, and **93 actual native mutants compile and are detected**.
+Its fresh immutable 3d32ab4 collection checks all 51 metrics against accepted
+#87: every value is unchanged. Raw source/test/tool/report identities are
+checked separately; erased proof additions shift offsets, so absolute source
+coordinates are not claimed identical. Current-head hosted reconstruction
+remains required. These test/control counts do not claim additional coverage.
+The broader P04/P05/P06 semantic, fixture and independent-review gaps remain
+open even though the protected numerical goals are met.
+
+## Earlier symbol-content and MMR observations
 
 The later symbol-content source `e5142ab` freshly executes404native tests/
 14ignored and38real compiling/detected runtime mutants. Its expanded existing

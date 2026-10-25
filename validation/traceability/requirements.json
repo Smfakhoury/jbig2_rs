@@ -77,7 +77,7 @@
         "T88-SEGMENT-UNKNOWN-LENGTH"
       ],
       "remaining_scope": [
-        "Successful raw header fields and byte extent are now composed through the parser. Complete segment/payload dispatch, valid-input and typed-error/resource semantics, container/caller composition and independently reviewed exhaustive normative enumeration remain open."
+        "Accepted sequential header/payload and standalone/embedded caller correspondence is proved. Random-access, complete segment-data/codec dispatch, valid-input and typed-error/resource semantics, graph/deferred lifecycle and independently reviewed exhaustive normative enumeration remain open."
       ]
     },
     {
@@ -636,13 +636,13 @@
   "bindings": {
     "proofs/model_support/arithmetic.rs": "2a564c7a80acf17401f877352abba023be522d3e1b3a4ef0b0c3dba1ddaa56bb",
     "proofs/model_support/decode.rs": "67e54d341dcb57f6b4ad8b2c8a489fa52928fd4f7e3c39406139c46dc3d5c2b4",
-    "proofs/model_support/document.rs": "5ed88c2393d098a357af93e686ea0d393b60849bee89b73a09f4a915dc5b85b6",
+    "proofs/model_support/document.rs": "b4992f05bd58449896c481b831ff2a1e81fe0bd657b4028d8796eb3b4415a87c",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
     "proofs/model_support/huffman.rs": "75ad3133571303f2d0369fb935e5b7dc4a94a16bab0fa65977af35f6a237e503",
     "proofs/model_support/mmr.rs": "0f1423997f6ebf4cc72faae5bcb8a2a774071853d929bfc10a9e7542b6bd9995",
     "proofs/production_impl/arithmetic.rs": "7baccbade7a1276a4efbe7de1a34a986d21e88ac7300ce449dd70a561bc0a3c9",
     "proofs/production_impl/bitmap.rs": "89390f3506136194877ee82e6968b93a88e2d0847c4d55b0279f56aa797b1686",
-    "proofs/production_impl/document.rs": "be644143f4b507fbf7923af1eadeb051ee6192c94aa99e02d792dc495890646f",
+    "proofs/production_impl/document.rs": "ab8ae1801890f432600f7562ba961c4ff0144f7c0617cdf479e443713dfcd02c",
     "proofs/production_impl/file_header.rs": "1b17af66fb2e16a8ef46a8e1cf9d87b710a0e60a2186fbcc70c009b7592bc109",
     "proofs/production_impl/generic_region.rs": "52f07e52ecf5e8c2edc65a120e5d98c93a1538fcec459edf13f0238c0193dfc7",
     "proofs/production_impl/mmr.rs": "9c65c21afeb76ee1014f50ed8e03d9bfc8fb129a309d254cfc45089fcba128cc",
@@ -653,7 +653,7 @@
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "specs/bitmap.rs": "913592795b8b43e3b716f77481b265c3d8ce55be9bce8d1ddb3dce69a865ff0c",
     "specs/decode.rs": "71640bc0bd5731b8a995abdcb34cc3b268c2219609da3f166f8997216e5bd61b",
-    "specs/document.rs": "eb45f8c3d9c50f4d0ee87b4268d93065cfb724a7084096e3a15542607742db0e",
+    "specs/document.rs": "ecbb9aeac8842cb24dd040efbe0c23c18d307612b4ba8d6229267a368016b381",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "8f368daad98291eb31f1ccc5914ab836fcdbaa5c820f70ca71317a29140d22b9",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
@@ -666,7 +666,7 @@
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
     "src/decode.rs": "07ad6f08c7e5ac66716cf469971d98f6f44360ec8d49b04f7500711ccf35092d",
-    "src/document.rs": "e4fee3c933f5a367a4aa334014cc3053c1c686b39fea05b6e0900b9124dcce4d",
+    "src/document.rs": "b6a211880c5bb5bca2d3536585cb34af036918f6117bd7f523594b4f6053d543",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",
     "src/halftone.rs": "0553be77a782a78a095af866311e4c9d629491be553bbc69b7bedf3e2ed4a051",
@@ -2185,6 +2185,54 @@
       ],
       "name": "production_segment_reference_fields",
       "role": "prove raw count/retention window and reference-prefix composition"
+    },
+    "document-payload-window": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "payload_window",
+      "role": "exact accepted original byte slice and declared known payload length"
+    },
+    "document-sequential-offset": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "sequential_offset",
+      "role": "prefix byte offset from each preceding header extent and payload length"
+    },
+    "document-sequential-fields": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
+      "name": "sequential_container_fields",
+      "role": "full accepted sequential header/payload input correspondence and conditional number order"
+    },
+    "document-window-append-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": [
+        "document_proofs"
+      ],
+      "name": "production_sequential_window_append",
+      "role": "prove header/payload window append and prior-prefix preservation"
+    },
+    "document-sequential-complete-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/document.rs",
+      "module_path": [
+        "document_proofs"
+      ],
+      "name": "production_sequential_complete",
+      "role": "derive deterministic full-input offsets from the proved loop history; no assumption"
     }
   },
   "requirements": [
@@ -5075,26 +5123,69 @@
       "feature": "sequential_organization",
       "runtime": [
         "document::parse_sequential",
-        "document::read_payload"
+        "document::read_payload",
+        "document::parse_standalone_document"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "document-payload-window",
+        "document-sequential-offset",
+        "document-sequential-fields"
+      ],
+      "proof_macros": [
+        "document-window-append-proof",
+        "document-sequential-complete-proof"
+      ],
       "tests": [
         {
           "target": "traceability_organization",
           "name": "sequential_payloads_are_interleaved_with_their_headers"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified parser/helper bodies establish safety and reader bounds; parse_sequential has no postcondition relating returned segment payloads to their input byte spans.",
+      "scope_of_formal_result": "Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
       "assumptions": [
         "The standalone header has already selected the sequential parser; the generated two-page example is not an exhaustive syntax oracle."
       ],
       "gaps": [
-        "Prove input header/body span correspondence and returned order, not merely safe traversal; complete D.1 enumeration remains open."
+        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::read_payload",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_sequential",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_standalone_document",
+          "section": "ensures",
+          "tokens": [
+            "Organization::Sequential => document_spec::sequential_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@, true,)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -5104,10 +5195,18 @@
       "title": "Enforce increasing standalone sequential segment numbers",
       "feature": "sequential_organization",
       "runtime": [
-        "document::parse_sequential"
+        "document::parse_sequential",
+        "document::parse_standalone_document"
       ],
-      "models": [],
-      "proof_macros": [],
+      "models": [
+        "document-payload-window",
+        "document-sequential-offset",
+        "document-sequential-fields"
+      ],
+      "proof_macros": [
+        "document-window-append-proof",
+        "document-sequential-complete-proof"
+      ],
       "tests": [
         {
           "target": "traceability_organization",
@@ -5116,18 +5215,46 @@
         {
           "target": "catalog_contracts",
           "name": "duplicate_local_wire_numbers_have_exact_order_errors"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The parser body is verified, but no exported relation states increasing returned numbers or exact rejection of non-increasing input.",
+      "scope_of_formal_result": "Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
       "assumptions": [
         "require_local_references is true for standalone sequential parsing; embedded use of the same helper intentionally differs."
       ],
       "gaps": [
-        "Prove ordering and rejection under the standalone caller condition; bounded duplicate/descending examples do not establish rejection completeness."
+        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::parse_sequential",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_standalone_document",
+          "section": "ensures",
+          "tokens": [
+            "Organization::Sequential => document_spec::sequential_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@, true,)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -5234,28 +5361,70 @@
       "feature": "embedded_organization",
       "runtime": [
         "document::parse_embedded_document",
-        "document::parse_sequential"
+        "document::parse_sequential",
+        "document::read_payload"
       ],
       "models": [
-        "embedded-metadata"
+        "embedded-metadata",
+        "document-payload-window",
+        "document-sequential-offset",
+        "document-sequential-fields"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "document-window-append-proof",
+        "document-sequential-complete-proof"
+      ],
       "tests": [
         {
           "target": "traceability_organization",
           "name": "embedded_segments_need_no_file_header_or_wire_number_order"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified parsing bodies and an auxiliary embedded metadata shape; that shape does not prove byte-level embedded storage or arbitrary container-order reassembly.",
+      "scope_of_formal_result": "Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
       "assumptions": [
         "The embedding application supplies contiguous segment pairs; arbitrary surrounding container bytes and suggested markers are not decoder input."
       ],
       "gaps": [
-        "Prove pair-to-input correspondence and clarify container reassembly/lifecycle obligations; the internal Sequential metadata label is not a D.3 wire-order restriction."
+        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::read_payload",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_sequential",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_embedded_document",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::sequential_container_fields(input@, result.1@, false)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -5428,13 +5597,20 @@
       "feature": "decoder",
       "runtime": [
         "segment_header::decode_data_length",
-        "segment_header::parse_segment_header"
+        "segment_header::parse_segment_header",
+        "document::read_payload",
+        "document::parse_sequential"
       ],
       "models": [
-        "segment-header-fields"
+        "segment-header-fields",
+        "document-payload-window",
+        "document-sequential-offset",
+        "document-sequential-fields"
       ],
       "proof_macros": [
-        "segment-header-field-proof"
+        "segment-header-field-proof",
+        "document-window-append-proof",
+        "document-sequential-complete-proof"
       ],
       "tests": [
         {
@@ -5444,17 +5620,29 @@
         {
           "target": "lib",
           "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics. Sequential composition: Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
       "assumptions": [
         "The helper receives an already decoded 32-bit field; the contract is branch-conditional, not a complete acceptance theorem."
       ],
       "gaps": [
-        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
-        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
+        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle."
       ],
       "functional_evidence": [
         {
@@ -5471,6 +5659,20 @@
           "tokens": [
             "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
           ]
+        },
+        {
+          "runtime": "document::read_payload",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_sequential",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
+          ]
         }
       ],
       "invariant_evidence": []
@@ -5483,13 +5685,20 @@
       "feature": "decoder",
       "runtime": [
         "segment_header::decode_data_length",
-        "segment_header::parse_segment_header"
+        "segment_header::parse_segment_header",
+        "document::read_payload",
+        "document::parse_sequential"
       ],
       "models": [
-        "segment-header-fields"
+        "segment-header-fields",
+        "document-payload-window",
+        "document-sequential-offset",
+        "document-sequential-fields"
       ],
       "proof_macros": [
-        "segment-header-field-proof"
+        "segment-header-field-proof",
+        "document-window-append-proof",
+        "document-sequential-complete-proof"
       ],
       "tests": [
         {
@@ -5499,17 +5708,30 @@
         {
           "target": "lib",
           "name": "segment_header::tests::complete_headers_at_nonzero_cursors_match_literal_fields_and_exact_extent"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics.",
+      "scope_of_formal_result": "Successful parse_segment_header results now satisfy the complete raw-input field relation: number, recognized low-six-bit type, deferred flag, short/long count and retention window, every ordered reference/retention bit, selected page-field width, encoded data length and relative byte extent. The append helper preserves existing contents and relates every new reference to its actual consumed byte window. This composes the existing scalar models through the parser; it is not independent normative approval or complete error/acceptance semantics. Sequential composition: Successful read_payload returns exactly the original consumed slice; known lengths equal the declared field. Every accepted sequential segment retains its original complete header and payload at deterministic, adjacent byte offsets covering the full body. Standalone sequential results additionally have strictly increasing numbers and use the exact file-header body origin; embedded results preserve input order without imposing standalone number order. Unknown lengths retain the existing chosen window only, not a new terminator theorem. Random-access and decoded ParsedData correspondence are not claimed.",
       "assumptions": [
         "This record concerns the header helper only, not discovery of the true body length."
       ],
       "gaps": [
-        "Independent review of the local type/width/retention/sentinel interpretation against T.88 remains required; the selected ledger is not an exhaustive normative denominator.",
-        "Prove complete valid-input acceptance and typed partial-error/resource behavior, payload/container/caller composition, page/reference graph policy and deferred-retention/attached-extension lifecycle."
+        "Independent normative/model review and exhaustive D.1/D.3 and 7.2.7 decomposition remain required; all selected records remain provisional.",
+        "Prove complete valid-input acceptance, exact typed rejection/partial-error/resource behavior, random-access composition, decoded ParsedData and graph/deferred-retention/attached-extension lifecycle.",
+        "The exact chosen original byte window does not prove complete unknown-length terminator/row-count interpretation or acceptance."
       ],
       "functional_evidence": [
         {
@@ -5525,6 +5747,20 @@
           "section": "ensures",
           "tokens": [
             "crate::spec::segments::segment_header_fields(&header, old(reader).bytes@, old(reader).position as int, final(reader).position as int,)"
+          ]
+        },
+        {
+          "runtime": "document::read_payload",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
+          ]
+        },
+        {
+          "runtime": "document::parse_sequential",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
           ]
         }
       ],

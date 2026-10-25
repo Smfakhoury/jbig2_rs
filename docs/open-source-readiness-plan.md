@@ -5,6 +5,49 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+The owner merged #87 at e7fb693 after all 22 checks and independent hosted
+reconstruction passed. The next tranche closes accepted sequential container
+composition through four existing interfaces: payload reading, sequential
+parsing, standalone sequential parsing and embedded parsing. Each returned
+header and payload is tied to deterministic, adjacent original byte offsets,
+covering the entire body. Standalone results use the exact file-header body
+origin and have strictly increasing numbers; embedded results retain input
+order without imposing standalone number order. Unknown-length payloads retain
+the existing chosen original window, not a new terminator/row-count theorem.
+Random-access results and decoded `ParsedData` remain explicitly unclaimed.
+
+The normative-facing model describes offsets, header fields and payload
+windows. Loop histories and their append/completion lemmas stay in proof
+support. A proved completion lemma establishes the opaque public relation;
+unnecessarily unfolding it again in the native parser made genuine corruption
+controls exhaust the solver budget. Retaining the already-proved opaque result
+lets all three post-validation return corruptions reject semantically and
+accept with only that public guarantee removed. No solver limit, termination
+check or unrelated contract is weakened.
+
+Actual immutable 3d32ab4 unfiltered whole proof and compiled library pass
+1223/0. All 466
+native tests pass, with 14 existing ignored microbenchmarks; all 93 actual
+native mutants compile and are detected. The isolated MSRV package check,
+native erasure/precondition/boundary audit, exact test discovery and both local
+normative-document hash checks pass. Five existing selected records gain
+composition links; three move from safety-only to functional evidence:
+127 functional/117 state/22 safety, all 266 still provisional. All 20 actual
+compiling document contrasts reject strongly and accept their intended weaker
+contracts, preserving the original 13 controls. The complete run took 632
+seconds. Rebalanced whole groups use accepted #87 timings and that expanded
+group plus 10% headroom: 978/954/995/995/970/982 estimated seconds, retaining
+the 1000-second estimate and 1050-second replay guards. The profile is now
+28 groups/221 contrasts, with the same six one-worker shards, maximum four
+active, 22 checks and unchanged timeouts. Frozen evidence and current-head
+hosted acceptance are separate: the frozen reruns, all 399 tooling tests and
+provenance pass; all 51 raw global/per-file coverage metrics exactly match
+accepted #87. The unchanged 90% line/85% branch goals remain met. Existing
+approved official normal/logging/native/Hayro observations were freshly run
+on 3d32ab4: 2 passed/7 unresolved/1 unsupported, zero restored rejection credit.
+Current-head hosted acceptance remains required before readiness. No capacity, fixture,
+normative-review or release approval is inferred from these results.
+
 The current segment-header semantic tranche closes the missing accepted-result
 link through three existing parser interfaces. Exact count/retention windows,
 ordered reference values and reader extent compose with scalar field readers

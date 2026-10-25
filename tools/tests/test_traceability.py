@@ -1106,7 +1106,7 @@ class TraceabilityTests(unittest.TestCase):
     def test_parser_only_records_stay_weak_and_mmr_requires_input_raster_evidence(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
-        for name in ("T88-SEQUENTIAL-SEGMENT-LAYOUT", "T88-RANDOM-HEADER-PAYLOAD-LAYOUT",
+        for name in ("T88-RANDOM-HEADER-PAYLOAD-LAYOUT",
                      "T88-HUFFMAN-CANONICAL-ASSIGNMENT", "T88-HUFFMAN-STANDARD-TABLES"):
             self.assertEqual(rows[name]["strength"], "safety_only")
             self.assertEqual(rows[name]["functional_evidence"], [])
@@ -1128,6 +1128,35 @@ class TraceabilityTests(unittest.TestCase):
         self.assertTrue(any("mmr_spec::bitmap_decodes(" in token for token in claims["mmr::decode_bitmap"]))
         self.assertTrue(any("mmr_spec::bounded_bitmap_decodes(" in token for token in claims["mmr::decode_mmr"]))
         self.assertIn("T.6", " ".join(polarity["assumptions"]))
+
+    def test_sequential_records_require_exact_payload_layout_and_conditional_caller_evidence(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for name, caller in (
+            ("T88-SEQUENTIAL-SEGMENT-LAYOUT", "document::parse_standalone_document"),
+            ("T88-SEQUENTIAL-NUMBER-ORDER", "document::parse_standalone_document"),
+            ("T88-EMBEDDED-SEGMENT-LAYOUT", "document::parse_embedded_document"),
+        ):
+            row = rows[name]
+            with self.subTest(requirement=name):
+                self.assertEqual(row["strength"], "functional_contract")
+                self.assertEqual(row["review"], "provisional")
+                self.assertIn("document-sequential-fields", row["models"])
+                self.assertIn("document-sequential-complete-proof", row["proof_macros"])
+                claims = {claim["runtime"]: claim["tokens"] for claim in row["functional_evidence"]}
+                self.assertIn("document::parse_sequential", claims)
+                self.assertTrue(any("sequential_container_fields(" in token for token in claims[caller]))
+                self.assertTrue(row["gaps"])
+        for name in ("T88-SEGMENT-KNOWN-LENGTH", "T88-SEGMENT-UNKNOWN-LENGTH"):
+            claims = {
+                claim["runtime"]: claim["tokens"]
+                for claim in rows[name]["functional_evidence"]
+            }
+            self.assertTrue(any("payload_window(" in token for token in claims["document::read_payload"]))
+        self.assertTrue(any(
+            "terminator" in gap for gap in rows["T88-SEGMENT-UNKNOWN-LENGTH"]["gaps"]
+        ))
+        self.assertEqual(len(rows), 266)
 
     def test_all_feature_worklists_have_started_without_claiming_full_decomposition(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")

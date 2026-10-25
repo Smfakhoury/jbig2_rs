@@ -625,7 +625,17 @@ pub(crate) enum ParsedData {
             document_spec::standalone_metadata(input@, &result.0)
             && document_spec::document_segment_count(&result.0) as nat == result.1@.len()
             && document_spec::document_pages(&result.0).len()
-                == document_spec::page_information_count(result.1@, result.1@.len()),
+                == document_spec::page_information_count(result.1@, result.1@.len())
+            && match crate::file_header::file_header_spec::organization(input@) {
+                Organization::Sequential => document_spec::sequential_container_fields(
+                    input@.subrange(
+                        crate::file_header::file_header_spec::byte_length(input@) as int,
+                        input@.len() as int,
+                    ),
+                    result.1@, true,
+                ),
+                Organization::RandomAccess => true,
+            },
         Err(_) => true,
     },
 ))]
@@ -665,7 +675,8 @@ pub(crate) fn parse_standalone_document<'a>(
             document_spec::embedded_metadata(&result.0)
             && document_spec::document_segment_count(&result.0) as nat == result.1@.len()
             && document_spec::document_pages(&result.0).len()
-                == document_spec::page_information_count(result.1@, result.1@.len()),
+                == document_spec::page_information_count(result.1@, result.1@.len())
+            && document_spec::sequential_container_fields(input@, result.1@, false),
         Err(_) => true,
     },
 ))]
@@ -682,7 +693,14 @@ pub(crate) fn parse_embedded_document<'a>(
     Ok((info, segments))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(segments) => document_spec::sequential_container_fields(
+            input@, segments@, require_local_references,
+        ),
+        Err(_) => true,
+    },
+))]
 fn parse_sequential<'a>(
     input: &'a [u8],
     limits: &Limits,
@@ -691,14 +709,31 @@ fn parse_sequential<'a>(
     let mut reader = ByteReader::new(input);
     let mut segments = Vec::new();
     let mut previous_number = None;
+    #[cfg(verus_keep_ghost)]
+    proof_decl! { let ghost mut windows = Seq::<(int, int, int)>::empty(); }
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             reader.position <= reader.bytes@.len(),
             reader.bytes@ == input@,
+            document_spec::sequential_windows(
+                input@, segments@, windows, reader.position as int, require_local_references,
+            ),
+            match previous_number {
+                Some(number) => segments@.len() > 0 && segments@.last().header.number == number,
+                None => segments@.len() == 0,
+            },
+        ensures
+            reader.bytes@ == input@,
+            reader.position == input@.len(),
+            document_spec::sequential_windows(
+                input@, segments@, windows, reader.position as int, require_local_references,
+            ),
         decreases reader.bytes@.len() - reader.position,
     ))]
     while reader.remaining() != 0 {
         enforce_segment_limit(segments.len(), limits)?;
+        #[cfg(verus_keep_ghost)]
+        proof_decl! { let ghost header_start = reader.position as int; }
         let header = parse_segment_header(&mut reader, limits)?;
         if let Some(previous) = previous_number {
             if require_local_references && header.number <= previous {
@@ -710,6 +745,8 @@ fn parse_sequential<'a>(
             }
         }
         previous_number = Some(header.number);
+        #[cfg(verus_keep_ghost)]
+        proof_decl! { let ghost payload_start = reader.position as int; }
         let payload = read_payload(&mut reader, &header)?;
         let is_end = header.segment_type == SegmentType::EndOfFile;
         let data = parse_known_segment_data(&header, payload, limits)?;
@@ -723,11 +760,24 @@ fn parse_sequential<'a>(
                 requested_bytes: segment_allocation,
             });
         }
+        #[cfg(verus_keep_ghost)]
+        proof_decl! { let ghost old_segments = segments@; }
         segments.push(ParsedSegment {
             header,
             payload,
             data,
         });
+        #[cfg(verus_keep_ghost)]
+        production_sequential_window_append!(
+            input,
+            segments,
+            old_segments,
+            windows,
+            header_start,
+            payload_start,
+            reader,
+            require_local_references
+        );
         if is_end {
             if reader.remaining() != 0 {
                 return Err(MalformedError::TrailingData(reader.remaining() as u64).into());
@@ -735,6 +785,8 @@ fn parse_sequential<'a>(
             break;
         }
     }
+    #[cfg(verus_keep_ghost)]
+    production_sequential_complete!(input, segments, windows, reader, require_local_references);
     Ok(segments)
 }
 
@@ -806,12 +858,19 @@ fn parse_random_access<'a>(
     Ok(segments)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires old(reader).position <= old(reader).bytes@.len(),
     ensures
         final(reader).bytes@ == old(reader).bytes@,
         final(reader).position <= final(reader).bytes@.len(),
         final(reader).position >= old(reader).position,
+        match out {
+            Ok(payload) => document_spec::payload_window(
+                header, old(reader).bytes@, old(reader).position as int,
+                final(reader).position as int, payload@,
+            ),
+            Err(_) => true,
+        },
 ))]
 fn read_payload<'a>(
     reader: &mut ByteReader<'a>,
@@ -2144,6 +2203,167 @@ fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    type LiteralPayloadWindow = (u32, Vec<u8>, usize, usize);
+
+    fn raw_extension_windows(numbers: &[u32], eof: bool) -> (Vec<u8>, Vec<LiteralPayloadWindow>) {
+        let mut input = Vec::new();
+        let mut expected = Vec::new();
+        for (index, number) in numbers.iter().enumerate() {
+            let mut payload = 0x100_u32.to_be_bytes().to_vec();
+            payload.extend(std::iter::repeat_n(
+                u8::try_from(index + 1).unwrap(),
+                index + 1,
+            ));
+            input.extend(header(
+                *number,
+                62,
+                0,
+                u32::try_from(payload.len()).unwrap(),
+            ));
+            let start = input.len();
+            input.extend_from_slice(&payload);
+            expected.push((*number, payload, start, input.len()));
+        }
+        if eof {
+            input.extend(header(43, 51, 0, 0));
+            expected.push((43, Vec::new(), input.len(), input.len()));
+        }
+        (input, expected)
+    }
+
+    #[test]
+    fn raw_payload_windows_keep_exact_known_and_existing_unknown_extents() {
+        for length in 0..=32_u32 {
+            let mut header = reference_validation_segment(100, &[], 1).header;
+            header.data_length = Some(length);
+            let mut input = vec![0x11, 0x22, 0x33];
+            input.extend((0..length).map(|index| u8::try_from(index * 7 % 256).unwrap()));
+            input.extend_from_slice(&[0xaa, 0x55]);
+            let mut reader = ByteReader::new(&input);
+            reader.read_bytes(3).unwrap();
+            let payload = read_payload(&mut reader, &header).unwrap();
+            assert_eq!(payload, &input[3..3 + usize::try_from(length).unwrap()]);
+            assert_eq!(reader.position(), 3 + usize::try_from(length).unwrap());
+            assert_eq!(reader.remaining_bytes(), &[0xaa, 0x55]);
+        }
+        let mut existing = vec![0_u8; 18];
+        existing[4..8].copy_from_slice(&3_u32.to_be_bytes());
+        existing.extend_from_slice(&[0x11, 0x22, 0xff, 0xac]);
+        existing.extend_from_slice(&3_u32.to_be_bytes());
+        existing.extend_from_slice(&[0xaa, 0xbb]);
+        let mut input = vec![0x11, 0x22, 0x33];
+        input.extend_from_slice(&existing);
+        let mut header = reference_validation_segment(100, &[], 1).header;
+        header.segment_type = SegmentType::ImmediateGenericRegion;
+        header.data_length = None;
+        let mut reader = ByteReader::new(&input);
+        reader.read_bytes(3).unwrap();
+        assert_eq!(read_payload(&mut reader, &header).unwrap(), &existing[..26]);
+        assert_eq!(reader.position(), 29);
+        assert_eq!(reader.remaining_bytes(), &[0xaa, 0xbb]);
+    }
+
+    #[test]
+    fn raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy() {
+        let limits = Limits::default();
+        for numbers in [&[2_u32, 7, 42][..], &[42_u32, 7, 2][..]] {
+            for eof in [false, true] {
+                let (input, expected) = raw_extension_windows(numbers, eof);
+                for ordered in [false, true] {
+                    let result = parse_sequential(&input, &limits, ordered);
+                    if ordered && numbers[0] > numbers[1] {
+                        assert!(matches!(
+                            result,
+                            Err(DecodeError::Malformed(
+                                MalformedError::NonIncreasingSegmentNumber {
+                                    previous: 42,
+                                    current: 7
+                                }
+                            ))
+                        ));
+                        continue;
+                    }
+                    let segments = result.unwrap();
+                    assert_eq!(segments.len(), expected.len());
+                    for (index, (segment, (number, payload, start, end))) in
+                        segments.iter().zip(&expected).enumerate()
+                    {
+                        assert_eq!(segment.header.number, *number);
+                        assert_eq!(
+                            segment.header.segment_type,
+                            if index < numbers.len() {
+                                SegmentType::Extension
+                            } else {
+                                SegmentType::EndOfFile
+                            }
+                        );
+                        assert_eq!(segment.header.byte_length, 11);
+                        assert_eq!(
+                            segment.header.data_length,
+                            Some(u32::try_from(payload.len()).unwrap())
+                        );
+                        assert_eq!(segment.payload, payload);
+                        assert_eq!(segment.payload, &input[*start..*end]);
+                    }
+                }
+                let (info, embedded) = parse_embedded_document(&input, &limits, None).unwrap();
+                assert_eq!(info.segment_count(), u32::try_from(expected.len()).unwrap());
+                assert!(info.pages().is_empty());
+                for (segment, (number, payload, _, _)) in embedded.iter().zip(&expected) {
+                    assert_eq!(segment.header.number, *number);
+                    assert_eq!(segment.payload, payload);
+                }
+                if eof {
+                    let mut trailing = input.clone();
+                    trailing.push(0xaa);
+                    assert!(matches!(
+                        parse_sequential(&trailing, &limits, false),
+                        Err(DecodeError::Malformed(MalformedError::TrailingData(1)))
+                    ));
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected() {
+        let limits = Limits::default();
+        let (body, expected) = raw_extension_windows(&[2, 7, 42], true);
+        for known_count in [false, true] {
+            let mut input = SIGNATURE.to_vec();
+            input.push(if known_count { 1 } else { 3 });
+            if known_count {
+                input.extend_from_slice(&0_u32.to_be_bytes());
+            }
+            let body_start = input.len();
+            input.extend_from_slice(&body);
+            let (info, segments) = parse_standalone_document(&input, &limits).unwrap();
+            assert_eq!(info.segment_count(), 4);
+            assert!(info.pages().is_empty());
+            for (segment, (number, payload, start, end)) in segments.iter().zip(&expected) {
+                assert_eq!(segment.header.number, *number);
+                assert_eq!(segment.payload, payload);
+                assert_eq!(
+                    segment.payload,
+                    &input[body_start + *start..body_start + *end]
+                );
+            }
+        }
+        let (unordered, _) = raw_extension_windows(&[42, 7, 2], true);
+        let mut input = SIGNATURE.to_vec();
+        input.push(3);
+        input.extend_from_slice(&unordered);
+        assert!(matches!(
+            parse_standalone_document(&input, &limits),
+            Err(DecodeError::Malformed(
+                MalformedError::NonIncreasingSegmentNumber {
+                    previous: 42,
+                    current: 7,
+                }
+            ))
+        ));
+    }
 
     #[test]
     fn raw_structural_work_matches_wide_counts_and_exact_rejection_priority() {

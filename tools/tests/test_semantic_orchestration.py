@@ -185,24 +185,24 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertFalse((self.output / runner.SUMMARY).exists())
 
     def test_measured_complete_profile_leaves_timeout_headroom(self):
-        # Accepted source-bound run 40127148868 plus 10% scheduling headroom.
-        # The header group uses its complete 252.722-second local run plus 10%.
+        # Accepted source-bound run 40139497931, rounded up.
+        # The expanded document group uses its complete 632-second local run plus 10%.
         # Scheduling estimates are not hosted acceptance.
         measured = {
-            "reset": (2, 62), "document-count": (13, 445),
-            "bitmap-copy": (8, 204), "retention": (3, 110),
-            "value-bridge": (5, 152), "mmr-span": (8, 243),
-            "region-dispatch": (3, 91), "text-batch": (11, 400),
-            "bitmap-chunk": (4, 98), "bitmap-compose": (7, 158),
-            "black-span": (6, 175), "arithmetic-decision": (15, 302),
-            "arithmetic-refill": (6, 173), "arithmetic-initialization": (6, 111),
-            "arithmetic-normalization": (6, 116), "operator-bit": (4, 125),
-            "arithmetic-integer": (9, 184), "iaid-state": (6, 160),
-            "integer-state": (9, 201), "arithmetic-codec": (19, 619),
-            "halftone-header": (9, 184), "reader-error": (9, 198),
-            "mmr-prefix": (4, 98), "mmr-run": (4, 96),
-            "mmr-horizontal": (6, 186), "symbol-cardinality": (11, 387),
-            "mmr-reference": (11, 292), "segment-header": (10, 278),
+            "reset": (2, 58), "document-count": (20, 696),
+            "bitmap-copy": (8, 209), "retention": (3, 95),
+            "value-bridge": (5, 174), "mmr-span": (8, 207),
+            "region-dispatch": (3, 73), "text-batch": (11, 364),
+            "bitmap-chunk": (4, 111), "bitmap-compose": (7, 149),
+            "black-span": (6, 121), "arithmetic-decision": (15, 281),
+            "arithmetic-refill": (6, 157), "arithmetic-initialization": (6, 114),
+            "arithmetic-normalization": (6, 126), "operator-bit": (4, 117),
+            "arithmetic-integer": (9, 208), "iaid-state": (6, 151),
+            "integer-state": (9, 217), "arithmetic-codec": (19, 510),
+            "halftone-header": (9, 230), "reader-error": (9, 186),
+            "mmr-prefix": (4, 121), "mmr-run": (4, 95),
+            "mmr-horizontal": (6, 174), "symbol-cardinality": (11, 329),
+            "mmr-reference": (11, 364), "segment-header": (10, 237),
         }
         checks = runner.configured_checks()
         self.assertEqual({check[0] for check in checks}, set(measured))
@@ -215,23 +215,23 @@ class SemanticOrchestrationTests(unittest.TestCase):
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
 
-    def test_completed_header_profile_has_measured_job_headroom_without_relaxed_estimates(self):
-        # Completed checker receipts from 40136114305; the canceled shard is not accepted CI.
+    def test_completed_profile_has_measured_job_headroom_without_relaxed_limits(self):
+        # Accepted 40139497931 receipts plus the actual complete 20-case local group.
         observed = {
-            "arithmetic-codec": 565, "arithmetic-decision": 356,
-            "arithmetic-initialization": 148, "arithmetic-integer": 247,
-            "arithmetic-normalization": 158, "arithmetic-refill": 158,
-            "bitmap-chunk": 104, "bitmap-compose": 175, "bitmap-copy": 263,
-            "black-span": 168, "document-count": 287, "halftone-header": 241,
-            "iaid-state": 104, "integer-state": 275, "mmr-horizontal": 153,
-            "mmr-prefix": 131, "mmr-reference": 404, "mmr-run": 119,
-            "mmr-span": 196, "operator-bit": 124, "reader-error": 174,
-            "region-dispatch": 82, "reset": 61, "retention": 72,
-            "segment-header": 256, "symbol-cardinality": 371,
-            "text-batch": 362, "value-bridge": 201,
+            "arithmetic-codec": 510, "arithmetic-decision": 281,
+            "arithmetic-initialization": 114, "arithmetic-integer": 208,
+            "arithmetic-normalization": 126, "arithmetic-refill": 157,
+            "bitmap-chunk": 111, "bitmap-compose": 149, "bitmap-copy": 209,
+            "black-span": 121, "document-count": 632, "halftone-header": 230,
+            "iaid-state": 151, "integer-state": 217, "mmr-horizontal": 174,
+            "mmr-prefix": 121, "mmr-reference": 364, "mmr-run": 95,
+            "mmr-span": 207, "operator-bit": 117, "reader-error": 186,
+            "region-dispatch": 73, "reset": 58, "retention": 95,
+            "segment-header": 237, "symbol-cardinality": 329,
+            "text-batch": 364, "value-bridge": 174,
         }
         self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 214)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 221)
         self.assertLessEqual(max(
             sum(observed[row[0]] for row in shard)
             for shard in runner.configured_shards()

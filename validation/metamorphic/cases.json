@@ -2,6 +2,23 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-PAYLOAD-SOURCE-WINDOWS",
+      "transformation": "known raw lengths zero through32 at nonzero cursor and the existing approved unknown-length terminator metadata",
+      "invariant": "returned bytes equal the original selected source window, cursor advances exactly and untouched suffix remains; no encoded-family fixture expansion",
+      "tests": [
+        {"target": "lib", "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"}
+      ]
+    },
+    {
+      "id": "META-SEQUENTIAL-RAW-CONTAINER-LAYOUT",
+      "transformation": "original optional-extension metadata with ordered/unordered numbers, optional EOF and known/unknown zero-page standalone headers versus embedded organization",
+      "invariant": "exact literal header/payload windows, full input extent and public caller body origin; embedded order preserved, standalone number-order and trailing-byte errors remain exact",
+      "tests": [
+        {"target": "lib", "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"},
+        {"target": "lib", "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"}
+      ]
+    },
+    {
       "id": "META-COMPLETE-RAW-SEGMENT-HEADER",
       "transformation": "raw headers at a nonzero reader cursor across all recognized types, short/long page fields, deferred flags, reference-width boundaries, short/long retention groups and ordinary/sentinel lengths",
       "invariant": "all returned fields, every reference and retention bit, relative header length, final cursor and untouched suffix match literal descriptors in10680cases; metadata only, without encoded raster-family fixtures",

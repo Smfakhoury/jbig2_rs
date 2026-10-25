@@ -71,6 +71,19 @@ implementation data and synthetic semantic mutants are not normative oracles.
 
 ## Evidence and unchanged stop conditions
 
+Document `payload_window` binds an accepted payload to its original consumed
+slice and, when present, the declared known length. `sequential_offset` and
+`sequential_container_fields` describe adjacent header/payload extents covering
+the complete accepted body. Standalone sequential results also guarantee
+increasing numbers at the exact file-header body origin; embedded results
+preserve supplied order without imposing that standalone policy. Unknown-length
+termination, random-access layout and decoded `ParsedData` are not proved here.
+`sequential_windows` is an internal loop history in model support, not a
+normative-facing rule. The ordinary proved completion lemma unfolds the opaque
+result and relates it to that history; the native bridge consumes its result
+without unfolding it a second time. This keeps genuine result-corruption
+queries within the unchanged solver budget without removing any guarantee.
+
 MMR `horizontal_pair` composes two opposite-colour `complete_run` witnesses
 with exact endpoints, progress and total input extent. Its returned endpoints
 are those used by the existing raster caller; dispatch and raster/caller
