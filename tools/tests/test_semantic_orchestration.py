@@ -325,6 +325,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         # Document partitions project the same 25-case family, charging 20 extra
         # seconds for a duplicated baseline measured at 15.45 seconds.
         # Scheduling estimates are not hosted acceptance.
+        # Huffman: complete local four-case run 236.25 seconds, plus 10%.
         measured = {
             "reset": (2, 62), "document-count": (25, 511), "document-layout": (25, 511),
             "bitmap-copy": (8, 259), "retention": (3, 86),
@@ -341,6 +342,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "mmr-horizontal": (6, 180), "symbol-cardinality": (11, 271),
             "mmr-reference": (11, 371), "segment-header": (10, 171),
             "segment-data": (10, 296),
+            "huffman-assignment": (4, 260),
         }
         checks = runner.configured_checks()
         self.assertEqual({check[0] for check in checks}, set(measured))
@@ -359,6 +361,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         # Completed 40303484174 attempt-2 groups, with conservative ZIP-time
         # bounds for its three leading shard-5 groups; canceled jobs get no
         # acceptance credit. Document partitions use fresh complete local runs.
+        # Huffman uses its complete 236.25-second local run, rounded up.
         observed = {
             "arithmetic-codec": 540, "arithmetic-decision": 308,
             "arithmetic-initialization": 160, "arithmetic-integer": 227,
@@ -371,9 +374,10 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "reader-error": 169, "region-dispatch": 89, "reset": 46,
             "retention": 91, "segment-header": 207, "symbol-cardinality": 322,
             "text-batch": 312, "value-bridge": 120, "segment-data": 266,
+            "huffman-assignment": 237,
         }
         self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 240)
         self.assertLessEqual(max(
             sum(observed[row[0]] for row in shard)
             for shard in runner.configured_shards()
@@ -382,7 +386,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
     def test_document_partitions_use_different_shards_without_more_jobs_or_cases(self):
         shards = runner.configured_shards()
         self.assertEqual(len(shards), 6)
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 240)
         groups = [{row[0] for row in shard} for shard in shards]
         self.assertNotEqual(
             next(i for i, names in enumerate(groups) if "document-count" in names),
