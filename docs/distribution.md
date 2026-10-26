@@ -2,13 +2,16 @@
 
 The crate has no runtime dependencies, uses the MIT license, and declares Rust
 1.88.0 as its minimum supported Rust version (MSRV). Crates.io publication is
-still disabled while the readiness plan and proof/conformance gaps are open.
+still disabled while the [release gates](../RELEASING.md) and
+proof/conformance gaps are open. The accepted revision-qualified native reports
+are identified in [publication readiness](publication-readiness.md).
 
 ## What is packaged
 
 Cargo's explicit include list contains the runtime Rust sources, README,
 security policy and license. Cargo adds its normalized manifest, original
-manifest, lockfile and VCS metadata. The current archive has 24 files.
+manifest, lockfile and VCS metadata. The archive inventory is checked against
+the real package, not inferred from a successful build.
 
 The separate `proofs/`, `specs/`, `validation/`, `fuzz/`, `tools/` and benchmark
 directories are not included. Neither Verus nor `vstd` is a Cargo dependency.
@@ -74,8 +77,9 @@ hash. Different Cargo versions can normalize manifests differently, so the
 archive hashes are not expected to match across toolchains.
 The safety controls use these existing jobs; they do not add another CI policy.
 
-The development compiler in `toolchain.json` remains 1.89.0, independently of
-the runtime minimum. Verus, coverage and fuzz toolchain pins are unchanged.
+The development compiler in
+[`config/toolchain.json`](../config/toolchain.json) remains 1.89.0, independently
+of the runtime minimum. Verus, coverage and fuzz use their separate pins.
 
 ## What this does not prove
 

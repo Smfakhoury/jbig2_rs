@@ -1,1061 +1,216 @@
-# Provisional statement-level T.88 and T.6 traceability
+# Provisional T.88/T.6 statement traceability
 
-P04 is in progress. The ledger maps **266 selected requirement records**
-to source contracts, project models, proof support and exact test identities.
-These comprise **257 selected normative-rule records and nine explicit project-
-profile-policy records**. A policy row uses the standard only as context and
-does not increase the normative-rule count.
-It also inventories all **30 support-matrix features** as a decomposition
-worklist. That worklist is not a count of all normative obligations.
+The [requirements ledger](../validation/traceability/requirements.json) maps
+selected requirements to exact runtime contracts, models, proof support and
+executable tests. **P04 is incomplete.** All records are provisional; the
+selected denominator is not exhaustive and no feature has an approved complete
+normative decomposition. See [publication readiness](publication-readiness.md)
+for revision-qualified counts and accepted runs.
 
-The sources are ITU-T T.88 (08/2018), edition 2.0, and the separately recorded
-ITU-T T.6 (1988) normative reference. Their distinct document hashes are already
-in `source-provenance.json`. T.6's reference has no separate edition field;
-the ledger records `edition: null`, not an invented edition or a reused T.88
-value. Both approved documents were consulted locally.
-No standards text, diagrams, sample software or official vectors are added to
-the repository. Ledger titles and scope notes are original paraphrases.
+## Authorities and scope
 
-## Authoritative inputs and generated views
+- [`config/support-matrix.json`](../config/support-matrix.json) defines required,
+  unsupported and deferred profile behavior. A coarse feature worklist is not
+  an enumeration of every normative obligation.
+- [`validation/source-provenance.json`](../validation/source-provenance.json)
+  identifies approved sources and hashes: T.88 (08/2018), edition 2.0 /
+  ISO/IEC 14492:2019, and the distinct T.6 (1988) reference for MMR.
+  T.6 has no separately recorded edition: `null` is intentional, not a copied
+  T.88 edition. Document identities and permissions are not interchangeable.
+- [`verification/production-proof-coverage.json`](../verification/production-proof-coverage.json)
+  accounts for qualified runtime identities. It is not a normative percentage.
+- The ledger records stable IDs, exact clause/figure/table/step locators,
+  original paraphrases, applicability, assumptions, gaps, contracts,
+  models/proofs, exact tests, review state and source bindings.
+- Reports under `target/traceability/` are generated views, not another
+  independently maintained requirements database.
 
-- [Requirements ledger](../validation/traceability/requirements.json): stable
-  requirement IDs, exact clause/step references, scope, assumptions, gaps,
-  definitions, contract evidence, tests and source bindings.
-- `support-matrix.json`: authoritative feature/profile policy. Deferred encoder
-  work can be excluded; required behavior, unsupported-feature rejection and
-  prohibited substitutions cannot silently disappear from the worklist.
-- `production-proof-coverage.json`: accounted-for runtime identities and current
-  proof/disposition status, not a normative-conformance percentage.
-- `target/traceability/*.json` and matching Markdown: generated reports with
-  source links, model/proof support, exact tests, assumptions and unresolved gaps.
-  CI uploads these instead of committing constantly regenerated reports.
+Project resource limits and typed Rust error policies are explicitly separate
+from normative rules; a policy row does not increase normative coverage.
+The first milestone is broad bi-level decoding, not colour or encoding, and
+does not claim full Annex F profile 1 conformance. Standards prose, diagrams,
+table contents, sample software and official vectors are not reproduced.
 
-All 266 records are **provisional**, pending owner normative/model review.
-Twenty-nine feature groups now have partial records, none is unstarted, one
-deferred feature is excluded, and none has an approved complete normative
-decomposition. Starting every coarse feature worklist does **not** mean that
-every normative requirement has been enumerated. This work does not complete
-P04. Three worklists contain only project-policy records, not a completed
-normative decomposition.
+## What an evidence label means
 
-## Evidence strength is not inferred from a function count
+| Evidence | Establishes | Does not establish |
+| --- | --- | --- |
+| Safety/bounds | Valid storage, ranges, checked arithmetic under stated preconditions | Intended decoded value or complete rejection behavior |
+| State preservation | Selected invariants/frames across an operation | The required transformation merely because state stays valid |
+| Termination | A local decreasing measure, conditional on callees terminating | Aggregate CPU/work bound or conformance |
+| Functional project contract | Exact relation between input/state and the specified result | Independent fidelity of that model to the standard |
+| Runtime test | Assertions on executed first-party/approved cases | Universal proof, exhaustive requirements or normative approval |
+| Strong/weaker contrast | A compiling counterexample is rejected by a selected strong proof but accepted with only the selected guarantee removed | Correctness of the standard translation or fresh whole-crate proof |
+| Reference/hash audit | Bound definitions, contracts, test names and source identities | Semantic truth, test adequacy or execution |
 
-The [structural metadata models](../specs/segments.rs) now bind accepted page
-width, known/sentinel height, both resolutions and all flags to the original
-bytes. Profile parsing/appending preserves the count, every ordered raw ID,
-old output prefix and exact reader extent. The
-[typed dispatch model](../specs/document.rs) attaches Page/Stripe/Profiles
-variants and values to their header kind and payload; empty EOP/EOF and
-accepted extension flag correspondence are explicit. Both existing container
-result models now include typed metadata for every returned segment.
+Functional evidence must come from actual production `ensures` and proved
+support, not a model's name, a precondition, `true`, or an unrelated same-named
+function. A function may verify storage safety while a selected requirement
+still lacks output semantics. Never promote a record solely because all its
+functions appear in a successful Verus report.
 
-The ordinary proved append/completion support composes this through the
-[unchanged native parsers](../src/document.rs), including standalone/embedded
-callers. Whole proof/compiled library **1232/0**, all ten new real compiling strong/
-weaker controls and every prior 25 document controls pass. Page controls retain
-the old flags/dimensions; profile controls retain independent prefix/newvalue/
-count/reader frames. Container controls retain internal typed and byte-window
-proofs while removing only their selected complete public result guarantee.
-No native operation, existing precondition or reviewed boundary changes.
+## Current model surface and its limits
 
-Nine existing records gain links. Three page field rows become functional:
-**133 functional / 117 state / 16 safety**, all **266 provisional**. Auxiliary raw
-profile correspondence is not invented selected normative credit. Complete
-acceptance/errors/resources, profile interpretation, full page/stripe/codec/
-raster/caller/lifecycle semantics and independent normative/model review
-remain open. Opaque Other table/entropy results do not prove codec validity.
+The [auditor index](verus-auditor-index.md) gives parameter/notation bridges and
+source entry points. The following summarizes consequential distinctions rather
+than a chronology of contract changes.
 
-The [random-access model](../specs/document.rs) now relates every accepted
-returned header and payload to the separate original storage sections,
-deterministic offsets and complete body extent. Numbers strictly increase;
-the nonempty header section ends with EOF and has no preceding EOF. The
-[standalone caller](../src/document.rs) composes the exact file-header body
-origin without weakening its independent sequential guarantee. The native
-vector for-loop is unchanged; its named ghost iterator links each original
-header to its returned segment.
+### Arithmetic, integer and IAID
 
-Internal histories and append/offset/per-entry/completion lemmas stay in
-[proof support](../proofs/model_support/document.rs). The per-entry and full
-result relations are opaque and unfolded in their ordinary proved lemmas,
-not repeatedly in native callers. Two EOF equality expressions become
-equivalent native pattern matches, avoiding an added enum-equality or standard
-specification. A bounded compiler-expansion audit permits exactly those two
-changes; all prior preconditions and reviewed boundaries are preserved.
+Project contracts cover initialization, BYTEIN, normalization and complete
+decision register/context state, including partial errors and unchanged input.
+`entry_*` models use the runtime Qe arrays: consistency with implementation data
+is **not** independent Table E.1 fidelity.
 
-Actual immutable 90faeb6 whole proof and compiled library pass1231/0.
-All25real compiling document contrasts reject strongly and accept their
-intended weaker guarantees, retaining all old20. Post-validation corruptions
-keep every internal proof; each organization-arm control retains the opposite
-arm's guarantee. The fresh108/0partial module baseline includes all12mutated
-bodies, while all50strong/weaker queries still run separately.
-
-Five existing records gain correspondence, and three random-access rows move
-from safety-only to functional evidence: **130 functional/117 state/19 safety**,
-all **266 provisional**. Typed rejection/partial errors, complete valid-input
-acceptance, decoded `ParsedData`, unknown-length termination, broader
-codec/caller/graph/deferred lifecycle, capacity and independent normative/model
-review remain open. Strong accepted layout is not exhaustive conformance.
-
-The [sequential container model](../specs/document.rs) now relates every
-accepted [payload and sequential parser result](../src/document.rs) to the
-original header/payload windows, their adjacent offsets and the complete body
-extent. Offsets are derived from preceding returned header extents and payload
-lengths, not an unconstrained existential layout. The standalone caller uses
-the exact file-header body origin and additionally guarantees increasing
-segment numbers. The embedded caller preserves input order without requiring
-increasing numbers. The accepted payload window has the declared known length;
-an unknown length identifies the existing chosen original slice only.
-
-Loop window histories and their append/offset/completion lemmas remain in
-[proof support](../proofs/model_support/document.rs). The completion lemma
-proves the opaque result model, and the [native bridge](../proofs/production_impl/document.rs)
-uses that proved result without re-expanding its quantified layout in callers.
-Actual immutable 3d32ab4 whole proof and compiled library pass 1223/0; all 20 real
-compiling document contrasts reject strongly and accept their intended weaker
-contracts. Three post-validation result corruptions retain every loop proof
-and remove only the new private-parser result relation. The original 13
-count/metadata/quota controls are retained.
-
-Five existing records gain composition links, without adding requirements.
-Sequential layout, conditional standalone number order and embedded layout
-move from safety-only to functional evidence: **127 functional/117 state/
-22 safety**, all **266 provisional**. Random-access layout, decoded
-`ParsedData`, full valid-input acceptance, exact typed rejection/partial errors,
-unknown-length terminator interpretation, graph/deferred-retention lifecycle,
-capacity and independent normative/model review remain open. EOF remains
-optional; no native acceptance policy changes.
-
-The latest [segment-header relation](../specs/segments.rs) composes exact scalar
-and retention helpers into the [accepted parser result](../src/segment_header.rs).
-It relates the returned number, type, deferred flag, count/retention windows,
-every ordered reference and retention bit, page association, encoded length and
-relative byte extent to the actual input and initial cursor. The reference
-append helper additionally preserves its old vector prefix and ties each new
-value to its consumed one/two/four-byte window. Proof-only count/slice/append
-bridges remain in [production proof support](../proofs/production_impl/segment_header.rs);
-the result model is opaque and explicitly unfolded at the native return rather
-than expanded in unrelated callers.
-
-Nine existing selected records gain complete accepted-parser linkage, without
-creating duplicate requirements. The flag-fields row moves from safety-only to
-functional evidence: **124 functional/117 state/25 safety**, all **266 still
-provisional**. Actual unfiltered proof and compiled library pass 1219/0; all ten
-compiling regressions reject under the exact result contract and pass with only
-that new public guarantee removed. A raw metadata oracle checks 10,680 headers
-at a nonzero cursor, including complete returned contents, consumed extent and
-an untouched suffix. Native operations, all prior preconditions and reviewed
-boundaries are unchanged.
-
-This is accepted-result correspondence, not complete valid-input acceptance,
-typed partial errors, payload/container/graph/deferred-retention lifecycle,
-resource capacity accounting, independent normative approval or an exhaustive
-denominator. In particular, the 7.2.4/7.2.8 worked-example discrepancy remains
-pending; no interpretation or official-vector credit is changed.
-
-The preceding [symbol result models](../specs/symbol_text.rs) now state exact
-codebook position content for contiguous/borrowed storage, imported/new ID
-mapping and every owned export position's width/height/stride/allpackedbytes.
-Successful [assembly](../src/symbol_text.rs) preserves supplied selection order
-and repeats through the already exact fallible clone; representable valid
-lookups cannot falsely reject. Native operations and all old preconditions
-remain unchanged. Actual whole proof/compilation is1219/0, with eleven real
-old/new cardinality/content/order/acceptance contrasts and38runtime mutants.
-The raw oracle now uses independent literal descriptors rather than the
-production clone as its expected result.
-
-The existing `T88-DICTIONARY-EXPORT-ORDER` record gains project functional
-evidence. Its encoded export-run flag derivation/order and complete dictionary/
-caller streams remain explicit gaps, not assumptions. Current selected
-strengths at that stage were **123functional/117state/26safety**, all266provisional.
-Neither exact helper contents nor the independent raw oracle approves an
-exhaustive denominator, normative translation, allocator/capacity bound or
-complete no-substitution rendering pipeline.
-
-The preceding [accepted MMR result models](../specs/mmr.rs) linked actual
-mode/run input prefixes, reference pairs, span/cache/colour state and the
-reader extent through finite step/row histories to **every visible output
-row**. Public bounded/prefix results also compose exact EOFB/zero-padding
-framing and returned byte extent. These public models are closed so private
-native Mode types need not be widened; two ordinary proved same-owner
-[witness helpers](../proofs/model_support/mmr.rs) establish them. Internal
-`raster_outer`/`raster_inner` remain proof support, not extra normative rules.
-The unchanged span-state formula is shared by the public result model and
-the old private wrapper relation.
-
-Actual unfiltered whole proof and compilation are1219/0. Eleven reference/
-raster/framing contrasts and all eight old span cases compile, reject strongly
-and accept the intended weaker guarantees. Reader rewind, a wrong rendered
-pixel and ignored nonzero alignment bits are rejected by real result
-postconditions with all loop/trace proofs retained. Four reused literal
-vectors additionally assert input-bit extents1/17/19/13; no encoded-family
-fixture is added. Seven existing selected records gain project accepted-result
-functionality: first-white reference, next-row reuse, pass, vertical,
-imaginary-start, padding and binary polarity. Current selected strengths are
-**122functional/118state/26safety**, all266stillprovisional.
-
-This does **not** establish independent normative mode-table/coordinate/policy
-translation, complete valid-input acceptance or rejection/error conditions,
-broader codec/container/caller semantics, resource accounting, an exhaustive
-denominator or release readiness. The seven official-positive failures remain
-unresolved. Stronger successful MMR contracts are not new conformance credit.
-
-The preceding [MMR raster-loop tranche](../src/mmr.rs) composed a project
-[row/cache pixel relation](../specs/mmr.rs) through blank initialization,
-recorded spans, exact sentinel appends and live-reference swaps. Internal
-[prefix/future-white invariants](../proofs/model_support/mmr.rs) and
-[composition lemmas](../proofs/spec_properties/mmr.rs) stay outside the
-normative-facing model file. The next reference cache agrees with the preceding
-physical bitmap row; the first reference is project-white. Fresh whole proof
-and actual library compilation pass1211/0. Existing first-white, next-row,
-imaginary-element and polarity rows gain auxiliary loop/model/test links only:
-their exported result still states storage validity, not complete
-input/mode-to-raster or caller semantics. No selected strength or review status
-is upgraded; all266records remain provisional115/125/26. Independent T.6
-parity/coordinate review and complete stream semantics remain separate.
-
-The [filled-storage model](../specs/bitmap.rs) now specifies exact packed bytes
-for either fill value, including partial-byte padding, and the unchanged native
-constructor satisfies it in a1198/0whole proof/compile. Processed-row support
-stays in [proof code](../proofs/shared/bitmap.rs). The page-default-pixel row
-links this auxiliary result without claiming that the unverified renderer
-routes the parsed flag correctly. Its caller/whole-page gap and provisional
-review remain; selected counts are still266records/115functional/125state/
-26safety. Requested-layout limits are not observed-capacity or allocator/RSS
-theorems.
-
-The [document quota models](../specs/document.rs) specify observable project
-numeric preflight results, including accepted boundaries, overflow priority and
-typed quota payloads. Four unchanged native guard bodies satisfy those
-relations with fresh whole proof/compilation1192/0 and13actual document
-strong/original-contract controls. These are not new selected normative
-records or extra normative credit; the ledger's266provisional records and
-115/125/26strength counts are unchanged. Aggregate decoder work, allocator/RSS,
-complete containers/streams and independent normative review remain distinct.
-
-The [generic probability models](../specs/generic_region.rs) now specify
-valid-bank acceptance, the first invalid raw state/MPS payload and exact
-context/signal error projection. Together with the existing
-[arithmetic error models](../specs/arithmetic.rs), five unchanged native helper
-bodies prove exact constructor, validation, signal, EOF and overflow results.
-Fresh whole verification/compilation is1192/0 and19 compiling contrasts reject
-under the stronger contracts but accept under the original guarantees.
-These auxiliary links belong to the still-state-only
-`T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE` record: they do not prove which context
-the decoder must choose or when the complete stream finishes.
-The record keeps its empty normative functional-evidence list, provisional
-review and open gaps; all266strength counts remain115/125/26.
-
-| Classification | Selected records | What the record establishes |
-|---|---:|---|
-| `functional_contract` | 123 | Explicit postcondition evidence within the stated narrow property scope |
-| `state_preservation` | 117 | Decoder/context/storage invariants, not the requested semantic transformation |
-| `safety_only` | 26 | A verified body without the claimed functional result postcondition |
-| `runtime_divergence` | 0 | An executing/proof-body substitution already tracked by P05 |
-
-The mapped areas are packed-bit/word order, selected file/segment organization
-and header fields, Huffman construction/decoding helpers, selected T.6 mode/run/
-framing rules and JBIG2-specific MMR
-exceptions, selected generic-template parameters, arithmetic reset contracts,
-selected Annex A/E algorithm and table relations, and typical-row copying.
-
-Seventeen additional selected pattern/halftone header-field records now link
-exact project acceptance predicates, successful raw fields and seven/twenty-one
-byte cursor advancement. Their locators were checked locally on 2026-10-23
-against the unchanged approved T.88 hash above: 7.4.4.1.1-7.4.4.1.4 and
-7.4.5.1.1-7.4.5.1.3.2, with Figures 41-46's field layouts/captions.
-Only original paraphrases, identifiers and locators are recorded, not source
-prose, diagrams or vectors. The halftone-specific helper starts after region
-information; signed origins and unsigned vectors retain their encoded
-256-scaled representation. Native parser bodies/preconditions are unchanged.
-Nine real compiling contrasts include deliberately rejecting otherwise valid
-headers, so accepted-field contracts are not the only success guarantee.
-Typed partial-error/cursor contracts, full segment/caller/resource and raster
-composition, exhaustive decomposition and independent normative review remain
-open. Both feature worklists remain partial, and all new records provisional.
-
-Important examples:
-
-- `inspect_file_header` has an explicit relation to its local syntax/field
-  models, including validity rejection and optional count interpretation.
-  This does not prove complete-document page-count agreement.
-- `build_document_info` now promises that accepted page-vector length equals
-  both the positive-page-associated PageInformation count in its parsed-segment
-  input and any declared count. Collection maintains prefix cardinality and
-  finalization preserves order length. Both parser results now retain that
-  relation to their returned parsed segments. `Decoder::inspect` and
-  `DecoderContext::inspect` expose successful metadata's organization and count
-  relation to the original standalone header bytes, including known-count
-  agreement. This does not prove body-byte parsing, page identity or complete
-  lifecycle semantics, rejection completeness or decoded output-page contracts.
-  Embedded inspection wrappers also preserve the project's sequential/unknown-
-  declaration metadata shape; this auxiliary API invariant is not an
-  independent interpretation of D.4.3.
-- `ArithmeticContext::reset` explicitly promises zero index and MPS fields.
-  The initial batch `reset_contexts` contract promised validity only. The P05
-  reset tranche now proves all selected output indices and MPS fields are zero,
-  preserves slice length, and retains the validity guarantee without adding an
-  input-validity precondition. Reset call-site timing is still outside this
-  helper-level record, and normative review remains provisional.
-- Arithmetic decision decoding now relates the successful bit and next
-  probability-context index/MPS to the project Qe-table model and entry
-  interval/code. Exchange helpers additionally specify context updates on
-  error. Exact renormalized registers, byte consumption, initialization/refill
-  and normative translation are not yet proved. The aggregate record retains
-  state-preservation strength rather than claiming the complete transition.
-- Generic SLTP indices match the project's lookup model. Context-gathering
-  order is implementation-defined; those numeric indices are not universal
-  normative constants. The diagram-to-gather-order bridge and caller timing
-  need separate evidence.
-- The row-copy substitution is now removed. The actual native slice-copy path
-  preserves every non-destination byte, copies the complete stored row and
-  explicitly relates each visible destination pixel to the old source pixel.
-  Typical-prediction timing, caller-loop semantics and the first-row zero edge
-  remain separate gaps. Blank construction now also proves zeroed storage as a
-  foundation for, not a complete proof of, the first-row caller rule.
-  See the current audited inventory for remaining runtime/proof substitutions.
-  A caller's storage contract is not independent exact-source evidence for
-  every transitive kernel it invokes.
-- The executing optimized `Bitmap::fill_black_span` now proves valid-storage
-  success, exact black requested pixels, and preservation of all other stored
-  bits, including dirty padding, with a derived outside-byte frame. This
-  auxiliary primitive result is not yet a complete MMR raster-loop/polarity
-  theorem: the wrapper's weaker storage predicate and the decoder's caller
-  composition remain separate obligations. The polarity record remains
-  `state_preservation`, and all normative records remain provisional.
-
-The ledger records these distinctions rather than upgrading weaker evidence.
-Definitions are not independent correctness theorems, and a model matching
-implementation data is not by itself proof of a faithful standards translation.
-
-The arithmetic refill tranche adds an exact project-step relation for
-`byte_in_signal` and its checked wrapper: return classification and all
-position/current-byte/code/count/marker outputs, including EOF and partial
-overflow consumption. The BYTEIN interface record links this shared model and
-the all-byte-pair/boundary tests. Its ten leaf records now distinguish these
-project guarantees from remaining normative/caller gaps instead of saying the
-postconditions are absent. All eleven retain provisional state-preservation
-strength; no requirement count, review approval or full-stream claim changes.
-
-The initialization tranche composes the project seed/refill transition and
-exposes exact constructor acceptance and returned state for every supplied
-slice. A proved arithmetic bound excludes code-scaling overflow for all
-two-byte prefixes. The six INITDEC records now distinguish this complete
-project-constructor relation from still-unreviewed normative register
-interpretation, caller slice selection and later decoding. They retain their
-prior strengths and provisional reviews; the new model and exhaustive prefix
-tests do not constitute six independent normative proofs.
-
-## Selected Annex A/E arithmetic enumeration
-
-Three selected Annex A integer-history/context records now link exact
-single-step output contracts: the returned bit and full decoder/error state,
-selected-context update and unselected-bank frame, growing/rolling history,
-and unchanged history on error. Nine actual compiling contrasts and 144,384
-numeric/frame scenarios supplement the proofs. The records remain provisional;
-independent normative interpretation stays open.
-The complete signed-integer follow-up now composes the seed/sign, all six
-leaf counts/offsets, MSB-first payload and signed value/OOB against
 `integer_step_state`, `integer_selection_state`, `integer_bits_run` and
-`integer_state`. The entry point exposes exact result/full-decoder/full-bank
-equality; the payload helper additionally exposes its complete history.
-Twelve selected algorithm rows gain actual functional project evidence.
-Procedure-bank/storage and all fourteen Table A.1 rows deliberately remain
-state-only: complete project composition is not an independent caller or
-representation theorem. Nine additional compiling contrasts and 31,080
-numeric/state/prior-procedure comparisons supplement the contracts.
-IAID preflight rejections now have exact project classification and state frames,
-and the complete IAID follow-up proves the positive prefix/value fold and all
-decoder/context outputs against `iaid_run` and `iaid_state`. Six selected rows
-now link the production result/decoder/bank equalities, covering seed, context,
-history, iteration count, sentinel removal and result. Six additional compiling
-contrasts and 3,600 numeric/state/prior-procedure comparisons supplement these
-contracts. The 31-bit cap is not an Annex A limit; the SBSYMCODELEN caller and
-normative address-space obligations remain open. The two LENGTH/STORAGE rows
-are deliberately **not** upgraded.
+`integer_state` compose sign/selection/payload/history/value or OOB.
+`iaid_run` and `iaid_state` compose the prefix/value fold, decoder and full
+context bank. Concrete codec callers preserve selected and unselected banks,
+refinement/work state and exact project error fields. Reset states every
+selected context index and MPS becomes zero; validity alone would be weaker.
 
-The concrete arithmetic codec now exposes exact project value/error forwarding,
-full decoder/selected-bank relations and all other bank/refinement/work frames.
-Its field slot equals the project ordinal, and the arithmetic error adapter
-has an exact field-preserving model. Eight compiling contrasts and 12,648 direct
-caller cases supplement these contracts. This still does not prove that every
-dictionary/text call supplies the normative field or that symbol counts imply
-the supplied SBSYMCODELEN and bank address space. The PROCEDURE-BANKS and two
-IAID LENGTH/STORAGE rows therefore gain links but **retain** state-only strength
-and provisional review. No selected count, normative approval or decomposition
-status changes.
+Independent register/pointer/table interpretation, procedure-bank placement,
+Table A.1 representations, caller field selection, SBSYMCODELEN/address-space
+sufficiency and complete stream composition remain open. The IAID 31-bit cap
+is project policy, not an invented Annex A limit.
 
-The complete decision-state follow-up gives seven selected E.3.2 records
-functional project-step evidence: interval subtraction, strict code partition,
-upper code subtraction, fast MPS, both exchange/normalization paths and the
-returned decision. Production contracts expose the full signal/register/history
-tuple against the closed `decision_state` model and its scalar
-`decision_registers`/`exchange_normalization` composition. Context and input
-frames remain, and checked errors have a typed project projection.
-Fifteen actual compiling decision contrasts and wide numeric state oracles
-supplement these theorems. All seven records remain provisional: independent
-Qe/register/pointer interpretation and complete stream/caller semantics remain
-open. The ledger is still a selected, nonexhaustive denominator.
+### Readers, bitmap and raster primitives
 
-The normalization follow-up gives six selected records explicit functional
-evidence against the project `normalized_state` model: the low-input register
-row and all five `RENORM-*` rows. Both signal and checked helpers expose exact
-signal/acceptance, interval, consumed position/current byte, code, counter and
-marker state, including EOF/refill overflow and interval-before-code-overflow
-ordering. Bytes remain unchanged, and existing preconditions are not
-strengthened. The decreasing measure remains termination support; the new
-recursive output model supplies the register recurrence.
+Byte/bit reader contracts preserve exact input, cursor, value and project
+failure payload/priority. Bit accumulation lemmas do not remove native checked
+operations or establish normative rejection rules.
 
-Two independent numeric tests use a closed-form leading-zero shift count and
-wide arithmetic across every byte pair, normalized no-op states, shift limits,
-real marker fills, stuffing, EOF and partial overflow. Six native-compiling
-mutants violate individual result relations and pass when only the affected
-postconditions are omitted; input framing, state validity and loop recurrence
-remain in the controls. These results do not approve normative register/pointer
-interpretation, caller sequencing or full arithmetic-stream conformance.
-The selected arithmetic membership and its provisional review states are unchanged.
+Packed row/prefix copying uses the same native safe slice path in runtime and
+proof builds. Contracts describe complete copied contents and untouched
+frames; blank/fill/padding results describe stored bytes, including partial-byte
+padding. Black spans have exact bit/pixel/frame results; white spans are no-ops,
+not claims that arbitrary old white pixels were already zero. Byte/word
+operators relate every result bit to the Boolean combination model.
 
-This tranche adds **138 provisional normative records**, bringing the arithmetic
-worklist from three records to **141**, without changing runtime, models, proofs,
-coverage floors or trust/attestation metadata. The two existing reset records
-retain their narrow functional classification; the aggregate decision record
-retains state-preservation strength. At initial enumeration all 138 additions
-were **state-preservation** records with explicit missing functional relations.
-Thirty-four additions now have narrow functional project evidence across
-normalization, decision composition, integer history/procedure and IAID.
-The remaining 104 retain their original state-preservation classification.
-The original 111 IDs and review states are preserved.
+These are helper semantics. SLTP timing, first-row caller edges, clipping,
+placement, masks and full generic/refinement/page composition need their own
+proof and independent normative review. Standard slice-copy contracts and the
+compiler/library remain trusted boundaries.
 
-| Consulted source / selected membership | Added records | Accounting boundary |
-|---|---:|---|
-| A.1/A.2 procedure namespaces, history, sign, six magnitude leaves, payload order, three result cases | 17 | Fifteen now link functional project history/procedure contracts; caller namespace/storage obligations remain state-only and unapproved |
-| A.2 Table A.1, each of its 14 representation rows | 14 | Separate row locators, including negative unit and OOB; no copied encodings or independent table-to-output proof |
-| A.3 fixed length, seed, context, recurrence, iteration count, sentinel removal, return and storage | 8 | Six rows now link complete project result/decoder/bank contracts; normative caller length and address-space sufficiency remain state-only and unapproved |
-| E.3/E.3.1 interface, stream/context loop and register conventions | 6 | Caller sequence/stream agreement and logical code-register interpretation remain gaps |
-| E.3.2 Figure E.15 decision steps | 8 | Lookup, interval subtraction, strict partition, high-code subtraction, fast MPS, both exchange/renormalization paths and return |
-| E.3.2 Figures E.16/E.17 exchange branches | 11 | Both comparisons, old-sense decisions, NMPS/NLPS, switch/no-switch and lower-path interval replacement |
-| E.3.3 Figure E.18 normalization steps | 5 | Exact project refill/shift/counter/exit recurrence now linked; normative register interpretation and caller composition remain open |
-| E.3.4 Figure E.19 input branches | 11 | FF/marker tests and each branch's pointer, code alignment/fill and exact bit count |
-| E.3.5 Figure E.20 initialization steps | 6 | Pointer, code seed, BYTEIN, alignment shift, counter adjustment and initial interval |
-| Decoder-shared E.2.5 estimator rules and each Table E.1 index 0–46 | 52 | Five rule records plus 47 four-field row relations; bounded transitions are not table fidelity |
+### MMR/T.6
 
-`T88-ARITHMETIC-INTEGER-*`, `IAID-*`, `DECODE-*`, `EXCHANGE-*`,
-`RENORM-*`, `BYTEIN-*`, `INITDEC-*` and `QE-*` are stable selected membership
-under the arithmetic prefix, not new feature groups or an exhaustive denominator.
-Exact table locators and finite selected membership are regression-tested.
-The ordinary reference checker validates every runtime/model/macro definition,
-postcondition token, source binding and test identity; Cargo discovery and a
-fresh pinned-Verus report validate executable/proof membership. No unchecked
-parallel requirements format or completion flag is introduced.
+Mode/run lookup binds consumed old-input bits and length to the implementation
+tables. `complete_run` additionally states actual prefix, bit extent,
+make-up/terminating structure and sum; `horizontal_pair` composes opposite
+colour runs. Reference search models expose changing-element parity,
+initial-position equality and width-sentinel fallback.
 
-**Source consultation, 2026-10-21:** the approved shared local T.88 PDF was
-read without modifying the shared assets. Its SHA-256 was
-`dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6`;
-the recorded official package also independently hashed to
-`e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f`.
-Acquisition provenance remains the ledger's
-[official ITU package URL](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items),
-not a new download or a third-party source. Consultation used local text for
-A.1–A.3 (printed pages 89–92), decoder-shared E.2.5/Table E.1 (115–116),
-E.3–E.3.5 (117–122) and E.3.7 (123). Figure A.1 and Figures E.13–E.20
-were also rendered and visually read from PDF pages 102 and 130–134;
-their flowchart branches were **not** inferred from missing extracted text.
-Every new row's exact clause/step/table locator resolves through its standard
-identity to this hash. T.6 was not freshly consulted for this tranche;
-its existing consultation history and records are unchanged. This consultation
-is not owner approval or an independent formal standard-translation review.
+`row_cache_matches` connects actual previous-row pixels to transitions.
+Finite `RasterState`/`RasterStep`/`RasterRow` result histories connect input,
+mode/run/reference/cache state and completed visible rows; they are observable
+result semantics, not just accumulator invariants. Required framing describes
+the immediate EOFB and zero alignment bits.
 
-The existing integer/IAID scripted tests run callback reference procedures.
-The concrete comparison test runs both production helpers on an existing
-stream. The complete IAID test additionally compares 3,600 direct states to
-an independently accumulated numeric value/context-address oracle and the
-prior checked procedure, including zero length, success and partial errors.
-The signed-integer follow-up adds 11,280 complete-procedure and 19,800
-payload-fold comparisons, exercising every leaf and positive/negative/zero/OOB/
-EOF/overflow outcomes. These direct states are not claimed as valid encoded
-streams or exhaustive representation-range tests. The randomized
-decision oracle repeats the implementation algorithm; the table test repeats a
-project-local constant list; neither is an independent normative specification.
-The older IAID pure-model lemmas start from an assumed decision sequence.
-The new production postconditions instead equal the complete `iaid_state`
-model, which composes the exact decision state with each context update.
-Neither this composition nor shared Qe data independently approves normative
-bitstream interpretation. Records distinguish these claims rather than
-treating test names or bounds lemmas as functional proof.
+Independent table/coordinate fidelity, complete valid-input acceptance and
+errors, T.88 omission/known-extent/fixed-block padding applicability and broader
+caller/resource composition remain open. Names such as
+`mode_code_in_implementation_table` deliberately avoid claiming normative
+table certification. Tests sharing implementation arrays are not independent
+normative oracles.
 
-Selected-section accounting is now substantially finer grained, but remains
-**provisional and partial**. Owner review must check for omissions and confirm
-the paraphrases and contract strengths. Procedure-bank/caller identity,
-initialization/reset timing and cross-clause composition remain open.
-E.3.6 recovery (explicitly not standardized), E.3.8 GB/GR save/restore,
-encoder algorithms and non-normative Annex G are outside this tranche, not
-newly completed features. Other P04 feature worklists retain their existing
-undecomposed scope. The owner PR #47 separation is preserved:
-`--require-reviewed-decomposition` still fails for these unreviewed partial
-records; `--require-complete` still additionally requires functional semantic
-closure. Neither P04 completion nor full P05/conformance is claimed.
+### Organization, metadata and lifecycle
 
-## Initial bounded organization, Huffman and MMR decomposition
+Sequential relations connect adjacent original header/payload windows and
+complete body extent. Standalone results preserve file-header organization,
+body origin, increasing numbers and declared/page-information cardinality;
+embedded results preserve supplied order without importing standalone ordering.
+Random-access relations connect separate header and payload sections,
+deterministic offsets, increasing numbers and a final EOF header.
 
-The initial bounded P04 tranche added **28 records** without changing runtime, models,
-proofs or production-proof accounting. It starts six previously unmapped
-feature worklists: sequential, random-access and embedded organization, standard
-and custom Huffman tables, and MMR. It also adds five selected segment-header
-records under the decoder worklist.
+Typed metadata relates accepted page dimensions, height encoding, resolutions,
+flags and ordered profile IDs to original bytes and returned variants.
+Opaque table/entropy `Other` payloads are not codec-validity theorems.
+Unknown-length termination, complete acceptance/errors/resources, full
+page/stripe/profile interpretation and lifecycle/decoded output remain separate.
 
-| Selected area | New records | Evidence boundary |
-|---|---:|---|
-| D.1/D.2/D.3 organization | 6 | Verified parser bodies, not input-to-returned-segment layout/order theorems |
-| 7.2.3/7.2.6/7.2.7 segment fields | 5 | Four narrow type/page/length helper contracts; flag extraction remains safety-only |
-| B.2/B.3 custom tables | 8 | Three exact flag-field contracts; bound/line parsing and complete canonical assignment remain safety-only |
-| B.4/B.5 shared decoding and predefined tables | 5 | Selected-line integer/OOB contracts and reader validity; no complete prefix-selection or independently checked table theorem |
-| 6.2.6 JBIG2 MMR exceptions | 4 | Finishing/alignment helper contracts and bitmap storage validity; no complete raster/polarity result |
+Retention uses forward wire-byte order, least-significant bit first within each
+byte, and unused bits in the final long-form byte under the recorded 7.2.4
+interpretation. The conflicting 7.2.8 worked-example fixture remains an explicit
+strict rejection, not a dual-order heuristic or an approved normative exception.
+Owner adjudication and full retention/caller semantics remain open.
 
-All references in this tranche were checked against the hash-pinned T.88
-document, reacquired from its official public recommendation page through the
-[official package link](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items).
-The package and PDF matched the existing provenance hashes. Only the PDF was
-extracted for consultation; no sample software or conformance payload was used
-or added. No T.6 document was consulted in this tranche, so it does not invent
-T.6 mode/run clause decomposition.
+### Huffman, symbol/text and halftone
 
-Five ordinary Cargo tests added in `tests/traceability_organization.rs` use
-project-generated segment/page fields to check distinct sequential and
-random-access two-page layouts, missing random-access EOF, descending standalone
-numbers and headerless/non-monotonic embedded input. Existing exact test
-identities backed the other rows; that first tranche referenced 67 distinct
-non-ignored Cargo tests. The current ledger now references **134**. Discovery
-lists names; executing these tests is a
-separate validation step. Neither operation establishes test adequacy.
+Selected-line value/OOB and implementation-table membership do not prove
+complete canonical assignment, prefix selection, custom-table range partition
+or independent predefined-table translation.
 
-The ledger explicitly leaves custom-table range-partition overshoot rejection
-and T.6/T.88 padding applicability open. The later approved T.6 consultation
-establishes that its post-EOFB pad format uses zero bits; whether every T.88
-prefix/known-extent case inherits that rule still needs review, as does fixed-
-block versus octet-only framing. Existing behavior is not changed or granted
-normative approval here. The prior retention example
-conflict also remains unresolved. B.5 is only a selected family record:
-per-table normative review and complete enumeration are still required.
+Symbol lookup/export content relations bind selected geometry, stride and
+packed bytes, including ordered/repeated supplied selections. They do not
+identify encoded export-run flags, physical capacity, complete dictionary
+refinement/aggregation or text placement. Pattern/halftone header models bind
+raw fields and exact parser extent, not full grid/raster/caller interpretation.
+Protected encoded-family fixture expansion remains held.
 
-Every feature now records its exact selected `requirement_ids` and an explicit
-`remaining_scope` worklist. The checker cross-checks membership in both
-directions, disallows records under `not_started`/`excluded`, and disallows empty
-`partial` features. Incomplete features must retain nonblank remaining scope;
-the excluded encoder retains an explicit policy boundary. A `complete`
-decomposition requires nonempty, reviewed records and no remaining enumeration
-scope. It can account explicitly for known semantic gaps and weaker proofs:
-P04's map must represent those honestly rather than require P05 to finish
-before P04 can complete. This is still a review declaration, not a proof of
-exhaustive enumeration. No actual feature is marked complete or newly approved.
+## Checker contract
 
-The separate `semantic_claims_complete` gate additionally requires every
-record to have functional evidence, no semantic gaps and approved review.
-The existing `--require-complete`, overall report status and legacy
-`normative_decomposition_complete` field retain that stronger meaning.
-`decomposition_review_complete` and `--require-reviewed-decomposition` expose
-the narrower P04 milestone without closing any P05 obligation. A reviewed map
-with known unproved transformations can pass the latter but must fail the
-full gate and retain `semantic_claims_review_required` as its release state.
+`tools/check_traceability.py` validates:
 
-## Continued family-specific mapping
+1. Schema, unique IDs, exact support-feature membership, standards editions/
+   hashes, consultation identities and separate policy accounting.
+2. Bidirectional feature worklists and nonblank remaining scope for partial
+   features; excluded/deferred features cannot hide required behavior.
+3. Hashes of referenced source and module-declaration files. Changes invalidate
+   review; there is no automatic reapproval.
+4. Runtime IDs against syntax-level inventory and proof accounting.
+   Unverified/divergent bodies cannot support a direct functional claim.
+5. Actual module namespaces and qualified model/proof symbols; supplied
+   verifier reports must contain those exact identities.
+6. Proof-macro definitions and lexical calls from the recorded runtime body.
+7. Contract evidence in the declared `requires`/`ensures` section of actual
+   ghost-conditioned attributes. It rejects duplicate/aliased evidence,
+   whitespace-equivalent duplicates, commented-out clauses, vacuous replacements,
+   functional evidence mislabeled weaker and unused definitions.
+8. Exact non-ignored ordinary-test source identities and, with
+   `--discover-tests`, compiled Cargo target/name discovery.
 
-The second bounded tranche added **46 records** across the 16 worklists that previously had
-no records. They are not feature-label placeholders: each has a clause/context,
-exact runtime/test identities, a scoped contract assessment, assumptions and
-unresolved obligations.
+Unresolved/ambiguous module paths and unsupported bindings fail closed instead
+of being guessed. Reference checking does not infer complete call graphs, prove
+test adequacy, execute tests or approve standard translations.
 
-| Worklist | Added records | Selected obligations and boundary |
-|---|---:|---|
-| Known-height pages | 3 | Dimensions/resolutions remain safety-only; default-pixel flag interpretation is proved, initialization pixels are not |
-| Unknown-height pages | 2 | Sentinel interpretation remains unproved; successful unknown-height metadata requires striping |
-| Striped pages | 3 | Exact end-row field helper; row progression/max-size and final-height lifecycle results remain unproved |
-| Generic refinement | 4 | Context-size/SLTP lookups; adaptive geometry and reference-neighbourhood prediction remain open |
-| Symbol dictionaries | 4 | Selected flags/export count, bounded class state and export assembly; complete run/order/pixel semantics remain open |
-| Text regions | 4 | Selected flags/current-state placement/checked ID; clipped raster and full strip recurrences remain open |
-| Pattern dictionaries | 3 | Count and collective-width helpers; per-pattern output pixels/order remain unproved |
-| Halftone regions | 5 | Grid/depth/nonintersection helpers; executing Gray-plane reconstruction and rendering have storage-only contracts |
-| Immediate regions | 3 | Caller storage plus sealed-stripe guard; not a kernel-equivalence or composed-pixel theorem |
-| Intermediate regions | 2 | Auxiliary storage validity and permission checking; exact buffer identity/lifetime remain open |
-| Refinement aggregation | 2 | Mode flag and shared multi-instance text-refinement geometry; count-one dispatch/parameters and aggregate pixels remain open |
-| Global segments | 2 | Page association and reference scope checks; no complete global-resource/lifetime theorem |
-| Combination operators | 3 | Boolean operator, wire-code helper and page override guard; packed/caller pixel semantics remain separate |
-| Colour profile rejection | 2 policy | Typed page/palette rejection, not colour decoding conformance |
-| No lossy decoder substitution | 2 policy | Exact checked-ID and bitmap-clone helper results, not end-to-end symbol selection/rendering |
-| Globals-backed embedded API | 2 policy | Reusable resource API and embedded metadata shape, not PDF container semantics |
+`decomposition_review_complete` / `--require-reviewed-decomposition` express
+the narrower P04 map-review gate: a reviewed exhaustive map may explicitly
+contain unproved transformations. `semantic_claims_complete`, `--require-complete`
+and the legacy `normative_decomposition_complete` retain the stronger meaning:
+functional evidence, approved review and no semantic gaps. Passing the former
+must not silently close P05 or the latter.
 
-Thirteen additional generated public-API tests in
-`tests/traceability_semantics.rs` check page fields/default pixels, all operator
-codes against a Boolean oracle, override permission, clipped page effects,
-intermediate non-page effects/permissions, stripe errors/final height, global
-scope and typed colour exclusion. At that stage the ledger linked 90 library tests,
-nine `spec_header`, one `catalog_contracts`, five `traceability_organization`
-and 13 `traceability_semantics` tests at that 94-record stage, all ordinary and
-non-ignored. The T.6 extension below adds 16 existing library-test identities.
+## Reproduction
 
-The checker now distinguishes `normative_rule` from `project_profile_policy`.
-Policy evidence must name an existing explicit support-matrix policy and match
-its hash. The six feature policies bind their exact feature rows; the three
-T.6-context typed-error policies explicitly select and hash the approved
-`public_api` section containing the typed-errors requirement. Changing the
-selected policy note, failure policy, approval or scope
-invalidates the policy evidence. Policy rows remain visible in both generated
-views, separately counted from normative rules. Informative 0.2 is not promoted
-to a new normative prohibition, and a reusable globals API is not presented as
-a PDF-standard requirement.
-
-`source_consultations` retains the exact official acquisition URL, approved
-package/PDF hashes and consulted clause families even after local source
-intermediates are removed. The checker rejects missing/duplicate consultations,
-stale identities, nonofficial URLs and URLs naming another publication/package.
-It checks recorded identity, not whether a human translation is correct or
-every clause has been enumerated. No document contents are stored in the ledger.
-
-Immediate-region records deliberately reference unchanged caller storage
-contracts, not a scalar composition substitute or a claim that all transitive
-kernels are source-identical. See the current audited inventory for remaining
-substitutions. The new mappings do not use `compose_scalar_verified` as evidence
-and do not infer visible-pixel correctness from storage preservation.
-
-Owner adjudication is still needed for the retention worked-example conflict,
-custom Huffman overshoot rejection and T.6/T.88 padding applicability.
-Independent model/diagram/table review, complete clause enumeration and
-functional caller/raster composition remain unresolved. T.6 now has separately
-consulted approved source evidence and selected records, but its complete
-decomposition remains open. Any actual PDF-container normative claim still
-needs its own approved source. These are real boundaries, not closed by having
-started every feature worklist.
-
-## Approved T.6 MMR source and bounded decomposition
-
-The concrete T.6 prerequisite used **only the recorded official acquisition**:
-
-```text
-https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items
-SHA-256: 8ccbe2d203e03ee2ac37478d50d2d946bab49dfb45376eb0f773009d183a7767
-```
-
-It returned HTTP 200 at that exact URL and matched the approved
-`normative_references` document hash. No fallback or new permission was used.
-No package identity is invented for this direct PDF, and no T.88 hash or edition
-is reused. The checker resolves the explicitly selected provenance collection,
-rejects ambiguous/missing identities, and treats an unrecorded edition as
-explicit `null`. Generated rows now identify their standard so T.6 clause 2.x
-cannot be mistaken for T.88.
-
-Seventeen records are added: **14 selected T.6 rules and three separately
-hash-bound project typed-error policies**. Consulted families are 2.2.1–2.2.2,
-2.2.3.1–2.2.3.3/Table 1, 2.2.4/Tables 2–3, 2.2.5.1–2.2.5.2, 2.3.1 (optional-
-mode context only) and 2.4.1.1–2.4.1.3. No table entries, diagrams, bit vectors
-or standards prose are added.
-
-| Selected obligation | Boundary actually established |
-|---|---|
-| Initial white reference and previous-row reuse | Raster storage/reader invariants, not reference pixel equivalence |
-| Changing elements and pass/vertical/horizontal transitions | Bounded reference positions and safe raster state, not an exact line-transition theorem |
-| Mode prefix dispatch | Exact old-input bit-prefix, implementation-table mode and consumed-length witness; independent table fidelity and complete acceptance/errors remain open |
-| White/black run lookup | Matching supplied key and membership in implementation arrays; no independent T.6 table-translation proof |
-| Make-up/terminating accumulation and initial imaginary white run | Reader/row bounds and storage, not run summation or initial-position equivalence |
-| Terminal reference sentinels | Valid width-sentinel representation and two added entries, not preservation of all earlier transitions or full row pixels |
-| Required EOFB | Exact local marker predicate on successful required framing; T.88 omission exceptions remain explicit |
-| Post-EOFB padding | Reader/framing invariants; zero-padding values and T.88/fixed-block applicability remain open |
-| Truncated runs, row overshoot and required-marker truncation | Executable private typed-error regressions and bounded reader state, not T.6-mandated Rust diagnostics or a proved public-error mapping |
-
-The names `mode_code_in_implementation_table` and
-`run_code_in_implementation_tables` explicitly denote project array-membership
-predicates. Naming does not make those arrays independently
-faithful to T.6. Ordinary table-driven tests can share the implementation tables;
-the ledger records that limitation rather than promoting them to a normative
-oracle. All new records remain provisional with explicit gaps.
-
-There are now **134 linked ordinary non-ignored tests**: 106 library, nine
-`spec_header`, one `catalog_contracts`, five `traceability_organization` and
-13 `traceability_semantics`. The T.6 tranche adds no production source, proof,
-table data or official test assets.
-
-## Checks and limits
-
-The checker validates:
-
-1. Schema, exact support-matrix worklist, normative edition/hash identity,
-   unique requirement IDs, exact per-feature requirement membership, explicit
-   remaining scope and consistent decomposition/review states; source
-   consultation identity and separate hash-bound policy accounting.
-2. Hash bindings for every referenced source and module-declaration file.
-   A source change invalidates the affected review; no automatic reapproval
-   or hash-refresh workflow is provided.
-3. Runtime IDs against the syntax inventory and source-bound proof accounting.
-   Unverified/divergent bodies cannot back a direct functional claim.
-4. Model namespaces by following actual Rust module declarations, then matching
-   named spec/proof definitions. With a verifier report, exact qualified symbols
-   must be present; same-named definitions in other modules do not suffice.
-5. Proof-macro definitions and lexical calls from the recorded runtime body.
-6. Recorded contract fragments in their declared section. Preconditions cannot
-   satisfy output-equivalence or state-preservation claims. Functional evidence
-   cannot be hidden under a weaker strength label. Duplicate runtime, model,
-   test, claim and whitespace-equivalent token evidence is rejected, as are
-   unused or aliased duplicate model/proof definitions. Commented-out clauses
-   and bare `true` cannot replace genuine functional/state evidence after
-   source hashes are refreshed. Evidence must come from the actual
-   ghost-conditioned `verus_spec` attribute, not matching text in documentation.
-7. Test source identities, ordinary test cfgs and non-ignored status.
-   `--discover-tests` additionally compiles/lists the exact Cargo targets and
-   verifies the names actually exist in compiler discovery.
-
-These checks establish reference integrity and preserve a reviewed strength
-assessment. They do **not** decide semantic truth, infer complete call graphs,
-prove test adequacy, establish that a requirement was tested merely from its
-name, or certify that a model faithfully translates a clause. Owner review
-and the actual proofs/tests remain essential.
-
-The source scanner rejects unresolved/ambiguous paths and unsupported bindings
-rather than guessing. The initial definition resolver supports external module
-chains; inline model-module bindings require an explicit extension.
-
-## Local and CI use
-
-Prepare the existing development dependencies, then:
-
-```text
-python -m pip install -r tools/requirements.txt
-python -B tools/check_traceability.py --discover-tests \
+```sh
+python3 -m pip install -r tools/requirements.txt
+python3 -B tools/check_traceability.py --discover-tests \
   --output target/traceability/reference-report.json
-python -B tools/check_traceability.py --verus-json verus-production.json \
+python3 -B tools/check_traceability.py --verus-json target/verification/verus-production.json \
   --discover-tests --output target/traceability/combined-report.json
 ```
 
-Approved local normative documents can additionally be hash-checked by explicit
-identity, for example:
+A supplied report must come from the pinned whole verifier on the same source;
+loading a successful JSON file is not a fresh proof. CI separately records proof
+checking, test discovery and test execution.
 
-```text
-python -B tools/check_traceability.py --discover-tests \
+For an already approved local document, explicit identity can also be checked:
+
+```sh
+python3 -B tools/check_traceability.py --discover-tests \
   --standard-document 'ITU-T T.6 (1988)=/path/to/approved-t6.pdf' \
   --output target/traceability/t6-report.json
 ```
 
-Repeat `--standard-document STANDARD_ID=PATH` for each available document.
-`--standard-pdf /path/to/approved-document.pdf` retains its legacy meaning:
-the first declared standard, not an inferred PDF identity. Unknown/duplicate
-selections and cross-standard hash substitutions fail. Reports expose
-`normative_document_hash_checks` separately for each standard; the aggregate
-`normative_document_hash_checked` is true only when **all** declared documents
-were checked in that invocation. A T.6-only check does not claim the deleted
-T.88 local copy was rechecked. Absence in CI is explicit; provenance identity
-is still checked. The checker does not acquire or redistribute documents.
+Repeat `--standard-document STANDARD_ID=PATH` for available documents.
+Legacy `--standard-pdf` means the first declared standard, not inferred identity.
+Unknown/duplicate selections and cross-standard substitutions fail. Per-standard
+hash checks are separate; the aggregate flag is true only when every declared
+document was checked in that invocation. CI absence is explicit; provenance
+checking does not claim to reacquire documents or grant redistribution.
 
-A supplied successful Verus report is not inherently fresh just because it was
-loaded: the caller must run the pinned verifier on the same source. Verus CI
-does this immediately before the checker. Its report marks verifier-report
-checking separately from native CI's Cargo test discovery; listing tests is
-not the same thing as executing them.
-
-All twenty-seven semantic groups execute; six deterministic shards reduce
-repeated setup without dropping any of the 185 required strong/weaker compiling
-contrasts. Each shard executes sequentially, at most four run concurrently,
-and the final collector requires
-every configured group exactly once, its selected-case baselines and native
-compilation results, individual report/log/checker hashes, and matching
-whole-crate source/tool/run/attempt identities. The source-bound receipt
-includes the complete shard assignment. The stable `verify` check fails on a
-missing, failed, duplicate, stale or wrong-shard result.
-
-The bit/word records additionally link exact auxiliary project reader failures.
-Successful MSB-first value semantics and exhaustive bit tests already existed.
-All byte methods now expose EOF payloads; bit reads preserve invalid-count
-priority/value, exact EOF and absence of spurious overflow or valid-width
-rejection. Internal overflow-bound support is separately source-bound under
-proofs, not presented as a normative theorem. No requirement, strength or review
-count changes at that reader tranche: all266remain provisional111/129/26. Project error payloads do
-not establish normative rejection/marker-fill rules or downstream conformance.
-
-The subsequent MMR prefix tranche closes a distinct table-witness gap:
-mode and run-code success now prove that the implementation key equals the
-actual old input's consumed `bits_value`, not merely some same-length table
-entry. Four compiling wrong-key contrasts retain old membership/length/reader
-guarantees under their weaker controls. One mode record gains functional
-project input-to-code evidence; the truncation-policy row only gains an
-auxiliary success relation and retains state-only strength. All266remain
-provisional112/128/26. Shared-table scalar windows are not independent T.6
-table approval, complete mode/error/run-total or row/raster/caller theorems.
-
-The run-sequence follow-up proves that each successful `decode_run` has a
-nonempty input-bound implementation-table sequence: preceding codes are
-make-up, the final code is terminating, and its value sum and bit-length sum
-equal the returned total and consumed extent. Four compiling contrasts detect
-lost totals, discarded make-up values, premature make-up termination and
-empty zero-run acceptance. Numeric tests exercise 87,040 colour/alignment/
-make-up/terminal scenarios with exact and spare row remainders, every nonzero
-scenario's first overshoot, and eight exact missing-terminal EOF cases.
-They share implementation tables, not independently translated normative data.
-Only `T6-RUN-MAKEUP-SUM` gains functional strength: all 266 records remain
-provisional, now 113 functional / 127 state / 26 safety. Full acceptance/typed
-errors, horizontal-pair/row/raster/caller composition and table review remain
-separate. All native code, caller preconditions and trust boundaries are
-unchanged; this theorem does not close the complete-scope gate.
-
-The horizontal follow-up extracts the exact existing ordered-run block into
-the actual verified `decode_horizontal_runs` callee. Its output relates both
-opposite-colour input sequences to the intermediate/final endpoints, row
-bounds, progress and combined consumption. No original check, error or order
-changes. Six compiling contrasts retain reader/end-point bounds in weaker
-controls; only the zero-pair contrast also removes strict progress.
-Redundant positive proof support is removed from mutants to avoid a solver
-resource-limit failure masquerading as semantic rejection; the unmodified
-production baseline retains and verifies that support.
-Numeric tests perform 368,634 actual/prior-procedure comparisons over 73,728
-encoded pairs, plus 1,456 partial-input/error/cursor cases. They share
-implementation tables. Only the horizontal-pair record gains functional
-strength: all 266 records remain provisional at 114/126/26. Horizontal-prefix
-dispatch, exact raster spans, full caller/stream composition, independent table
-review and complete acceptance/typed errors remain open.
-
-The recorded-span follow-up propagates exact primitive black-span pixels and
-storage through both wrappers under an explicit canonical-storage condition;
-their existing weaker preconditions are unchanged. White remains a no-op,
-not a clearing theorem. Exact transition-cache/emitted-state results and cache
-frames on error are auxiliary implementation guarantees; their model belongs
-under proof support, not the normative-facing span model. New direct matrices
-cover 11,196 complete pixel/cache cases and 32,136 transition-state cases.
-Five new real contrasts join the existing three no-op contrasts in the same
-`mmr-span` group, reusing its workspace and selected-function baselines.
-All 25 groups remain required, now with 152 contrasts; no new CI job or shard
-is added. The two older affected no-op controls remove only the redundant new
-pixel relation. The polarity record remains state-only, and all 266 records
-remain provisional114/126/26: full raster-loop white initialization,
-disjointness, mode interpretation and caller composition are still open.
-
-The resource/reference coverage follow-up changes no production declaration,
-body, attribute/precondition or source start. Its direct native tests cover
-existing resource borrowing/order/identity, observed-success/requested-minimum
-pointer-memory boundaries and
-general parsed-header retention/reference-depth policy precedence. They do not
-run a new entropy/coding family, exercise paused work, or prove formal output
-ordering. Three added real runtime mutants join the existing seventeen; all
-twenty actually compile and are detected. Identical production coverage
-coordinates demonstrate +34 lines/+32 regions/+14 branch outcomes with zero
-lost coordinates, unchanged denominators and no exclusion/floor changes.
-No requirement, strength or review count changes: all266 remain provisional
-114/126/26. Component-native gains do not close normative/model review or
-complete-stream/raster claims.
-
-Here the borrowing success tests use safe observed vector capacity; rejection
-tests cover the requested minimum only. Requested bytes are not asserted equal
-to reserved capacity. An isolated native counterexample exposes an existing
-4,112-versus-4,128 managed-budget gap, despite the safety proof's success.
-A separate native-only repair remains blocked by the unapproved standard
-capacity specification, with no current formal acceptance. This is an
-additional functional resource-accounting gap, not a new standards exception,
-conformance credit or reason to upgrade a provisional record.
-
-The cardinality follow-up proves first matching index/group size and complete
-collected/codebook length, with no stronger existing precondition. Its finite
-model counts every reference occurrence, repeats the first matching group's
-size, and gives missing groups zero, matching current helper behavior.
-The codebook view preserves this count. Six actual compiling controls exercise
-wrong view lengths, nonminimal duplicate lookup, wrong selected group, lost
-borrowed bitmaps and discarded contiguous exports. The export-order record
-gains auxiliary runtime/model/test links but remains state-only: cardinality
-does not establish selected bitmap bytes, order, normative import identity or
-caller/stream agreement. All266records remain provisional114/126/26.
-The native capacity defect is explicitly unchanged, and the separate repair
-still lacks approved standard-boundary integration.
-
-The T.6 search follow-up closes exact project changing-element selection.
-Both helpers accept every input satisfying their unchanged cache/bounds
-preconditions. The full scan exposes the first eligible opposite-colour pair
-or width/width fallback; the optimized path additionally exposes its precise
-lower cursor and suffix pair. Its global result is conditional on a skipped
-prefix, and the actual raster loop now proves that condition on every call.
-Erased loop invariants, an explicit lower-loop result and an independently
-verified suffix/global bridge compose this property without changing execution.
-Cursor/prefix cache machinery remains in proof support, not the normative
-reference-position model. Six actual compiling controls include false
-valid-input rejections;461native vectors cover9240full/49364cursor calls.
-One record gains functional project evidence:266allprovisional115/125/26.
-That search tranche alone did not establish previous-row pixel correspondence;
-the later raster/cache composition above supplies that project loop relation.
-Independent initial-coordinate/colour-parity review and complete input/mode/
-raster/stream semantics remain open. The existing first-white/next-row records
-are not upgraded. Two real native
-branch outcomes are additionally covered, with no changed denominator/floor.
-This does not resume any paused JBIG2 refinement/aggregation/custom family.
-
-The native generic-control follow-up preserves every production declaration,
-body, attribute/precondition and source start. Its independent scalar packed-
-row samples, raw probability validation and error projection tests do not
-decode entropy or introduce a coding-family/refinement/aggregation fixture.
-All401native tests/14ignored and24actual runtime mutants pass. Identical native
-coordinates prove+59lines/+43regions/+14branch outcomes, zero lost covered
-coordinates, unchanged denominators and no weakened floor/exclusion. Queries
-outside the bitmap or with defensive row offsets exercise helper white padding,
-not malformed backing slices; some such guard inputs are not produced by a
-valid decoder caller. These are native component facts, not new formal error-
-projection, normative rejection or full-family conformance theorems.
-All266records remain provisional115/125/26, with no requirement/strength/review
-upgrade. Existing independent-review/raster/stream/capacity gaps remain.
-
-`--require-complete` needs both verifier evidence and test discovery and currently
-retains the full reviewed-functional, gap-free requirement. The additional
-`--require-reviewed-decomposition` also requires both inputs, but checks only
-the reviewed, exhaustive-enumeration declaration. Neither flag passes for
-the actual provisional ledger today. Known semantic gaps may be accounted
-for by a fully reviewed P04 map, but cannot satisfy the full flag or close
-the corresponding P05 claims.
-
-The current complete-scope gate still
-fails because decomposition, review and semantic gaps remain incomplete. A normal
-reference-check pass is not a release/conformance pass.
-
-## Next work
-
-Complete enumeration of the partially mapped organizations/coding families and
-decompose the remaining coding families and page/resource rules;
-extend the ledger with exact table/step mappings and model/contract assessments.
-Keep T.6/MMR obligations and project-only resource policy distinct. Review
-model adequacy, caller obligations and official-vector disagreements, then close
-the semantic and exact-source gaps under P05. P06 coverage/mutation evidence
-can strengthen testing but cannot substitute for those proofs.
-
-## Document-count semantic sensitivity
-
-`tools/check_document_count_proof.py` runs five isolated counterexamples:
-accepting an inconsistent declared count, dropping a finalized page, and
-collecting a PageInformation payload with a non-PageInformation header, plus
-discarding the standalone header count and inventing an embedded declaration. Each
-compiles as ordinary Rust, fails its selected strong contract and passes a
-control removing only the relevant cardinality clauses. Other metadata and
-collection length-agreement guarantees remain in those controls. The
-non-PageInformation-header case deliberately separates parsed header/data consistency from counting;
-it is not evidence that such input can pass the raw-byte parser.
-
-The parser controls remove only the corresponding declaration relation in the
-isolated metadata model, retaining header validity, organization and known-count
-agreement. The proof-only file-header model module is crate-visible so the
-document predicate reuses the already verified field interpretation rather
-than duplicating header parsing. All runtime statements are unchanged in this
-public-contract propagation tranche. Generated tests exercise all six slice
-inspection APIs, reuse after failures, both organizations, known/unknown counts,
-extended flags, embedded globals and colour-header rejection. Reader results
-are tested but `std::io::Read` remains a reviewed formal boundary.
-
-The collection guard uses an equivalent `matches!` pattern instead of generated
-enum `PartialEq`: the latter did not expose the structural equality needed by
-the proof. Mutable keyed access now exports preservation of slice length.
-There are no new assumptions or runtime/proof substitutions. The result is
-still provisional, scoped evidence for D.4.3, not full conformance.
-
-## Executing typical-row copy
-
-`Bitmap::copy_row` now uses safe disjoint slices and `copy_from_slice`, not a
-word loop paired with a different ghost scalar helper. Bounds and disjointness
-follow from valid storage and in-range row numbers. Runtime checks retain typed
-errors for invalid ranges; self-copy and zero-stride rows remain no-ops.
-`copy_bitmap_row` calls the same implementation in both builds. The obsolete
-proof-only scalar row copier is deleted.
-
-The shared packed-byte helper proves complete slice equality, including its short
-0-2 byte and 65-128 byte fixed-block paths. Those paths avoid measured small-row
-library-call overhead without architecture-specific unsafe code. Kernel timing
-is informational on a shared host, not a substitute for P09's dedicated gate.
-
-The functional byte model specifies the entire output buffer, including
-unchanged bytes outside the destination row. A proved bitmap-layout bridge
-establishes the wrapper's explicit visible-pixel equality. Pinned vstd's
-`split_at_mut`/`copy_from_slice` specifications, Rust's standard library and the
-compiler are part of the trust boundary; this does not prove their internals.
-
-`tools/check_bitmap_copy_proofs.py` skips the row copy or corrupts a different row in
-isolated copies. Both mutants compile normally, fail the strong byte-result
-contract and pass the control removing only that result while retaining
-storage validity, metadata, length and success. CI uploads the selected
-semantic evidence separately from its required whole-crate proof. Exact tests
-cover arbitrary stored bytes, padding, both row orders, self-copy, zero width,
-large rows and invalid ranges; existing scalar-oracle comparisons remain.
-
-This closes the helper-level row-content and exact-execution gap, not SLTP
-state/timing, caller-loop output semantics, first-row caller zero-edge semantics or
-full generic-region conformance. All requirement reviews remain provisional.
-
-## Segment-header retention field interpretation
-
-The approved edition's explicit field definitions in 7.2.4 assign flag bits
-from the first wire byte onward, least-significant bit first within each byte.
-Unused positions are in the final long-form flag byte. The previous runtime
-and model traversed bytes in reverse and checked padding in the first byte.
-Generated independent tests failed before correcting both sides.
-
-There is an **unresolved inconsistency with the worked example in 7.2.8**:
-its existing two-byte fixture has the opposite order to the field definitions
-and its accompanying interpretation. This branch follows 7.2.4, preserves the
-existing fixture as an explicit strict rejection, then tests the field-order
-correction. It does not add a guessed dual-order acceptance heuristic.
-Owner normative adjudication remains a recorded gap, not an assumed approval.
-
-This intentionally changes multi-byte long-form retention behavior. Short
-fields and one-byte long fields retain their interpretation. Successful
-materialization now proves the exact count and wire-bit relation for every
-flag, rather than just vector bounds. The private helper's empty-vector
-precondition is discharged by its verified constructor.
-
-Four provisional records cover flag order/materialization, unused bits,
-reference-width boundaries and strictly lower reference numbers. They are
-helper-level results: raw header-window correspondence, reference graph
-validity and retention lifecycle/caller rules still need separate work.
-Generated tests cover all flag/count bytes, all 65,536 two-byte flag patterns,
-field-width boundaries, page forms, truncations and exact errors. The three
-compiled controls in `tools/check_retention_proofs.py` reject reversed order,
-first-byte padding checks and inverted materialized flags; weaker controls
-retain bounds/length safety without those semantic guarantees.
-
-The approved official-vector classification was re-executed locally and remains
-two exact outputs, seven reviewed strict rejections and one unsupported colour
-case. That unchanged classification does not adjudicate this worked-example
-conflict or establish full conformance. No standards text or vector assets
-are added to the repository.
-
-## Exact prefix and zero-padding implementation contracts
-
-The same packed-byte helper now serves `Bitmap::copy_prefix_from`. The old
-normal chunked helper and proof-only scalar helper are deleted. Accepted copies
-promise the exact source prefix and unchanged destination suffix; rejected
-counts promise the exact error and no destination mutation. `Bitmap::blank`
-and false-filled construction promise zero stored bytes, and height padding
-preserves decoded bytes while zeroing the newly added storage.
-An eight-byte prefix specialization uses a fixed-size standard slice copy;
-the existing row-copy implementation and shared helper bodies are unchanged.
-
-The generalized bitmap sensitivity tool runs six compiled counterexamples:
-skipping a row, corrupting another row, skipping a prefix, corrupting an
-uncopied suffix, creating a nonzero blank bitmap, and discarding decoded rows
-during padding. Each fails its strong selected proof and passes a control
-removing only the corresponding output clause, retaining storage/dimensions
-and, where applicable, exact error/non-mutation guarantees. The report is
-`bitmap-copy-proof-sensitivity.json` in Verus CI artifacts; it is explicitly
-partial and cannot replace normal whole-crate verification.
-
-These prefix/padding statements are project implementation contracts, not
-newly approved T.88 requirement records. The existing typical-row record links
-zero initialization as supporting evidence while retaining first-row caller
-and SLTP timing/loop gaps. Its classification and all provisional owner-review
-states remain unchanged. The tool replaces the former row-only checker; no
-ordinary crate API changes.
-
-## Batch-reset semantic sensitivity
-
-`tools/check_reset_proof.py` validates that the stronger reset proof is not a
-label-only promotion. In isolated copies it replaces the zeroing assignment with
-valid but nonzero contexts `(I=1, MPS=0)` and `(I=0, MPS=1)`. Both compile as
-ordinary Rust, fail the selected strong Verus reset proof, and pass the control
-that removes only the zero-result postcondition/invariant while retaining
-length and context validity. Thus validity alone does not prove E.3.7's selected
-reset transformation.
-
-```text
-python -B tools/check_reset_proof.py \
-  --verus-executable /path/to/pinned/verus \
-  --output target/traceability/reset-proof-sensitivity.json
-```
-
-Verus CI runs this after normal whole-crate verification. The tool's selected
-function report is explicitly partial and cannot replace the whole-crate gate.
-No mutation or weakened contract is written to the repository's source tree.
-Runtime regressions also cover all 65,536 stored byte pairs, idempotence, empty
-slices and every subslice of a distinct-state array with unchanged neighbours.
+The required semantic groups execute in same-source shards with selected
+positive baselines and separately executed compiling strong/weaker controls.
+The collector rejects missing, stale, duplicate, misrouted or wrong-tool/run/
+attempt evidence; no partial report replaces whole proof and compilation.
+See [limitations](verifier-limitations.md) and the [snapshot](publication-readiness.md).

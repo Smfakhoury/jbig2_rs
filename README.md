@@ -1,184 +1,109 @@
 # jbig2_rs
 
-`jbig2_rs` is a production-oriented, memory-safe Rust implementation of a
-strict JBIG2 decoder. It is under active development and is not yet suitable
-for decoding untrusted production documents.
+`jbig2_rs` is a strict, dependency-free Rust JBIG2 decoder under active
+development. **It is not yet suitable for untrusted production documents.**
+The repository remains private; the crate is unpublished, version `0.0.1`,
+with `publish = false`.
 
-The approved first milestone is decoder-only. Its exact feature and resource
-contract is recorded in `support-matrix.json`. Publication is disabled, and
-the project does not currently claim full JBIG2 or Annex F profile
-conformance.
+The approved first milestone is a broad **bi-level decoder**, not an encoder.
+Colour is unsupported and encoder work is deferred. Implemented features are
+not a claim of full JBIG2 or Annex F profile 1 conformance. The authoritative
+feature and resource policy is [the support matrix](config/support-matrix.json).
 
-## Architecture
+## Decoder scope
 
-- `src/` is the sole executable implementation and Cargo source of truth.
-- `specs/` contains functional models used by Verus.
-- `proofs/shared/` contains abstract views and representation invariants.
-- `proofs/spec_properties/` contains implementation-independent theorems.
-- `proofs/production_impl/` contains proof bodies and proof macros attached to
-  the exact implementation under `src/`.
-- `validation/` contains conformance, differential, negative, metamorphic, and
-  performance validation.
-- `fuzz/` contains arbitrary-input and structured-input fuzz targets.
+- Standalone sequential and random-access files; embedded/PDF page streams
+  with reusable validated globals.
+- Known/unknown-height, multi-page and striped pages.
+- Arithmetic decisions, integers and IAID; standard/custom Huffman; MMR.
+- Generic/refinement regions, symbol dictionaries, text, patterns and halftones.
+- Retention, clipping, combination operators, and owned/reader/page-sink APIs.
 
-Ordinary Cargo builds do not compile proof-only items. Packages exclude the
-separate proof/model and validation assets, while inactive proof annotations
-and inline ghost blocks remain in the Rust source. No Verus or `vstd` dependency
-is needed by an ordinary consumer. The Verus workflow uses the same
-`src/lib.rs` crate root, with the runtime/proof differences disclosed below.
-See [proof-free distribution](docs/distribution.md) for the isolated archive
-checks and the distinction between cfg erasure and textual source stripping.
+See [`src/lib.rs`](src/lib.rs) for public API documentation and
+[the threat model](docs/threat-model.md) for limits and hostile-input policy.
+Unsupported syntax, malformed input, resource limits, allocation failure and
+I/O failure have distinct typed errors.
 
-The runtime crate forbids unsafe Rust at its root and has no dependencies.
-This applies to crate-authored Rust; generated derives and standard-library
-internals remain part of the compiler/library trust boundary.
-The distribution gate also exercises that prohibition in the extracted
-archive: an isolated unsafe probe must fail to compile, and the same probe
-with only the prohibition weakened must compile. The original source is
-restored before the downstream consumer runs.
+## Build and test
 
-## Current status
+The runtime MSRV is **Rust 1.88.0**. Development uses a separate compiler;
+all tool pins are in [`config/toolchain.json`](config/toolchain.json).
 
-The decoder implements:
-
-- standalone sequential and random-access organizations;
-- contiguous embedded/PDF page streams and reusable validated globals;
-- known-height, unknown-height, multi-page, and striped pages;
-- arithmetic coding, arithmetic integers, IAID, standard/custom Huffman, and
-  MMR;
-- generic and generic-refinement regions;
-- symbol dictionaries and text regions, including Huffman/arithmetic variants
-  and refinement aggregation;
-- pattern dictionaries, Gray reconstruction, and halftone regions;
-- immediate/intermediate region buffers, retention, clipping, and all
-  combination operators;
-- owned, bounded-reader, and page-sink APIs.
-
-The owner has reported CELA approval for open-source project publication, and
-the repository includes the MIT license. Crates.io publication remains disabled.
-The recorded project approval does not authorize crate publication or
-redistribution of restricted standards, official assets, or native oracles.
-Official ITU assets stay external under their separately recorded permissions.
-Native Linux, Windows and macOS CI, Verus and fuzz smoke checks are operational.
-
-The readiness audit found that earlier proof coverage overstated exact-source
-verification: some same-named functions were conflated and several cfg-selected
-runtime paths differed from proof paths. These are now explicit, hash-bound
-limitations. The current inventory has 610 directly verified functions, 24
-reviewed boundaries, 23 audited forwarders and 1 runtime/proof divergence.
-The latter blocks a full exact-source proof claim; passing Verus does not alone
-establish normative conformance. See [verifier limitations](docs/verifier-limitations.md).
-
-Approved local validation has executed official ITU vectors and independent
-black-box oracles: two exact positives, seven unresolved official positives and
-one unsupported case, with no reviewed rejection credit. These differences
-remain under `validation/` and require normative re-evaluation before stronger claims.
-The [readiness plan](docs/open-source-readiness-plan.md) tracks the remaining work.
-
-## Normative traceability
-
-The [provisional T.88/T.6 ledger](docs/spec-traceability.md) links 266 selected
-records (257 normative-rule records and nine project-policy records) to exact
-contracts, model/proof definitions and test identities. It distinguishes
-functional postconditions from state/bounds-only
-evidence and runtime/proof substitutions. All 30 feature rows have a
-decomposition worklist, but requirement decomposition and owner review remain
-incomplete; passing the reference checker is not a conformance certificate.
-
-## Local checks
-
-```text
+```sh
 cargo fmt --all --check
 cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 cargo doc --no-deps
-cargo package
-python -B tools/check_distribution.py --toolchain 1.88.0
+cargo package --locked
+python3 -B tools/check_distribution.py --toolchain 1.88.0
 ```
 
-The runtime MSRV is Rust 1.88.0; native distribution CI tests this minimum and
-current stable on Linux, Windows and macOS. The development compiler remains
-1.89.0 in `toolchain.json`; Verus uses its separate pin. Distribution checks use
-Python 3.11+ and the standard library, without the additional proof-audit
-dependencies. No runtime source changes were needed to support Rust 1.88.0.
+For explicit MSRV checks:
 
-```text
+```sh
 cargo +1.88.0 test --locked --all-targets
 cargo +1.88.0 test --locked --doc
 cargo +1.88.0 check --locked --release --all-targets
 ```
 
-Audit tooling additionally requires the pinned development-only dependencies:
+Distribution CI executes natively on Linux, Windows and macOS with MSRV and
+current stable. The extracted archive is tested offline with a fresh Cargo
+home and an independent exact-output consumer. It exposes no validation-access
+module and needs neither Verus nor repository proof files. See
+[distribution](docs/distribution.md) for reproduction and compiler safety controls.
 
-```text
-python -m pip install -r tools/requirements.txt
-python -B -m unittest discover -s tools/tests -v
-```
+## Implementation and proof boundary
 
-### Cargo-Verus verification
+[`src/`](src) is the sole executable implementation and Cargo source of truth.
+[`specs/`](specs) defines project models; [`proofs/`](proofs) supplies invariants,
+model-support lemmas and proof bodies attached to that implementation.
+Separate proof/model directories are excluded from the package. Proof
+annotations and inline ghost blocks remain as **cfg-inactive source** in an
+ordinary archive; they are not textually stripped.
 
-With the pinned Verus release and its bundled `cargo-verus` on `PATH`, run from
-the repository root:
+The runtime crate forbids handwritten unsafe Rust. Compiler-generated derives,
+standard-library internals, the compiler and pinned Verus/vstd contracts remain
+trust boundaries. This is **not** a binary-wide no-unsafe or no-panic proof.
+Some verified contracts establish bounds or state preservation rather than
+decoded-output semantics, and a disclosed runtime/proof divergence still
+blocks a complete exact-source claim.
 
-```text
+With the pinned Verus release and bundled `cargo-verus` on `PATH`:
+
+```sh
 cargo +1.98.1 verus verify --manifest-path verification/Cargo.toml --locked -- --num-threads 1 --rlimit 30
 ```
 
-The isolated verification manifest targets the exact same `src/lib.rs`, with
-the audited crate identity `jbig2_rs_production`. Its locked `vstd` dependency
-does not enter the ordinary runtime manifest or the 24-file Cargo archive.
-The explicit manifest path is intentional: bare `cargo verus verify` against
-the runtime manifest does not verify this project and is not an acceptance
-gate. For local module debugging, use `--verus-args-to roots` before `--` and
-`--verify-module` after it, so selectors do not affect upstream dependencies.
-Such partial results are never whole-crate evidence. CI uses `cargo verus build` with the same manifest to
-also check compilation and proof erasure, then requires the exact complete
-production inventory and every semantic contrast group.
+The isolated manifest targets the same `src/lib.rs` as Cargo. Bare
+`cargo verus verify` against the runtime manifest is not an acceptance gate.
+CI also builds the verified library and checks complete production accounting
+and every required semantic contrast. Selected-module results are debugging
+evidence only. See [verifier limitations](docs/verifier-limitations.md) and
+[the auditor index](docs/verus-auditor-index.md).
+For bounded remote proof work, see [proof delegation](docs/github-proof-delegation.md);
+delegation does not replace the required verification gates.
 
-The runtime audit rejects project-local trust-introducing specifications and
-termination waivers. Exec-loop decreases checks are lightweight and conditional
-on callees terminating; they are not an end-to-end CPU bound or normative
-correctness proof. See the [auditor index](docs/verus-auditor-index.md) for
-standard-to-model notation bridges and the separate implementation-only
-`proofs/model_support/` lemmas.
+## Evidence and publication status
 
-### CI execution profile
+[Publication readiness](docs/publication-readiness.md) is the single
+revision-qualified numerical snapshot, including actual proof, coverage and
+native distribution runs. Machine records remain authoritative for their
+bound source revisions; a green workflow does not approve a new source,
+normative interpretation or release.
 
-Every pull request runs the complete validation profile once. Push validation
-runs on `main` and all tags; feature-branch pushes do not duplicate the same
-PR's work. Each workflow also supports manual dispatch for branch preflight.
-The daily extended fuzz campaign and trusted-main corpus producer remain
-unchanged.
+- [Traceability](docs/spec-traceability.md): selected T.88/T.6 requirements,
+  evidence strength and incomplete normative decomposition.
+- [Runtime coverage](docs/runtime-coverage.md): ordinary-code measurements,
+  enforced non-regression floors and remaining test gaps.
+- [Validation](validation/README.md): official cases, differential evidence,
+  exact test catalogs, mutation controls, fuzzing and informational performance.
+- [Readiness gates P01–P12](docs/open-source-readiness-plan.md): complete
+  acceptance criteria and dependencies, not a session log.
+- [Repository layout](docs/repository-layout.md): retained policy, baselines,
+  evidence and generated-artifact roles.
 
-The twenty-nine semantic proof groups and all 236 compiling strong/weaker contrasts
-are preserved, but execute in six deterministic, sequential shards rather
-than one separately initialized job per group. Each shard has one worker; at most
-four run concurrently, under the unchanged 20-minute job cap. The stable
-`verify` collector requires the whole proof and every group exactly once,
-with matching source/tool/run/attempt identities and individual report/log
-hashes. No cached proof result substitutes for execution.
-
-This profile uses 21 workflow jobs per PR, plus the repository's external CLA
-check: about 22 check results rather than the former 61 push-plus-PR results.
-The three native platforms and six isolated distribution combinations remain.
-Workflow policy validates the actual Cargo build invocation and rejects
-check-disabling flags; a `--compile` substring in another argument is not
-compilation evidence.
-
-Do not use standards documents, sample software, or conformance assets unless
-their entry in `source-provenance.json` records the required legal approval.
-
-The [generated fuzz corpus lifecycle](docs/fuzz-corpus-lifecycle.md) documents
-bounded validation, owned-copy minimization, exact replay and trusted-main-only
-cache promotion for the existing nine targets.
-
-## Runtime coverage
-
-The pinned Linux coverage workflow measures ordinary runtime code, excluding
-inline tests/oracles and ghost items. Its ratcheted baseline is **81.96% lines,
-77.04% regions and 72.37% branch outcomes**. CI checks aggregate/per-file
-non-regression; the proposed 90% line / 85% branch release goals remain unmet.
-See [runtime coverage](docs/runtime-coverage.md) for reproduction, scope,
-uncovered-code artifacts and the remaining P06 test-improvement work. Public
-reader/sink/error regressions and thirteen isolated mutation checks guard critical
-failure contracts without changing decoder behavior.
+The owner-reported CELA project publication approval and MIT license do **not**
+authorize crate publication or redistribution of standards, official vectors
+or native oracle assets. Official assets remain external under their recorded
+permissions. [Release requirements](RELEASING.md) and
+[security reporting](SECURITY.md) remain separate gates.

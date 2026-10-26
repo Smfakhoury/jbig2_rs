@@ -194,7 +194,7 @@ def comparison(arguments, root=ROOT):
         head = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root, text=True, capture_output=True, check=True,
         ).stdout.strip()
-        manifest = json.loads((root / "toolchain.json").read_text())
+        manifest = json.loads((root / "config/toolchain.json").read_text())
         rust = manifest["cargo_rust_toolchain"]
         policy = json.loads((root / "validation/performance/scenarios.json").read_text())["threshold_approval"]
         if policy["status"] != "approved_delegated_default":

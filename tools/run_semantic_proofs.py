@@ -116,17 +116,19 @@ def artifact_prefix():
 
 def manifest(root):
     checks = configured_checks()
-    # Whole-job outputs do not exist in clean semantic/collector checkouts.
-    paths = {path for path in root.glob("*.json") if path.name not in {
-        "verus-production.json", "production-proof-coverage-ci.json",
-    }}
+    paths = set()
     for directory, patterns in (
+        ("config", ("*.json",)), ("verification", ("*.json",)),
         ("src", ("*.rs",)), ("specs", ("*.rs",)), ("proofs", ("*.rs",)),
         ("tools", ("*.py", "*.txt", "*.json")), ("docs", ("*.md",)),
-        ("validation", ("*.json", "*.md")), (".github", ("*.yml", "*.yaml")),
+        ("validation", ("*.json", "*.md")), (".github", ("*.yml", "*.yaml", "*.md")),
     ):
         for pattern in patterns:
-            paths.update((root / directory).rglob(pattern))
+            paths.update(
+                path for path in (root / directory).rglob(pattern)
+                if not any(part in {"target", "__pycache__", "corpus", "artifacts"}
+                           for part in path.relative_to(root).parts)
+            )
     paths.update(root / name for name in (
         "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
         "verification/Cargo.toml", "verification/Cargo.lock",
@@ -139,7 +141,7 @@ def manifest(root):
             for identity, script, expected, strong, weak in checks
         ],
         "shards": [[check[0] for check in shard] for shard in configured_shards()],
-        "verus": read_json(root / "toolchain.json")["verus"],
+        "verus": read_json(root / "config/toolchain.json")["verus"],
         "source_bindings": {
             path.relative_to(root).as_posix(): digest(path) for path in sorted(paths)
         },
@@ -185,7 +187,7 @@ def check_report(report, expected, strong, weak, version):
 
 def check_bound_report(root, check, report, bindings):
     identity, script, expected, strong, weak = check
-    check_report(report, expected, strong, weak, read_json(root / "toolchain.json")["verus"]["version"])
+    check_report(report, expected, strong, weak, read_json(root / "config/toolchain.json")["verus"]["version"])
     if report.get("schema_version") != (1 if identity in {"reset", "document-count"} else 2):
         raise ValueError("incompatible semantic report schema")
     if identity == "reset":
@@ -335,7 +337,7 @@ def validate_whole(root, directory):
 
     report = read_json(directory / "verus-production.json")
     inventory = directory / "production-proof-coverage-ci.json"
-    if inventory.read_bytes() != (root / "production-proof-coverage.json").read_bytes():
+    if inventory.read_bytes() != (root / "verification/production-proof-coverage.json").read_bytes():
         raise ValueError("whole-crate production inventory differs from checked-in inventory")
     coverage = read_json(inventory)
     try:
@@ -343,7 +345,7 @@ def validate_whole(root, directory):
         validate(coverage, "coverage")
     except ValidationError as error:
         raise ValueError(f"invalid whole-crate evidence: {error.message}") from error
-    tool = read_json(root / "toolchain.json")["verus"]
+    tool = read_json(root / "config/toolchain.json")["verus"]
     actual_tool = report.get("verus", {})
     if (
         actual_tool.get("version") != tool["version"]

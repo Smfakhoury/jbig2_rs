@@ -13,11 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--coverage", type=Path, default=ROOT / "production-proof-coverage.json")
+    parser.add_argument("--coverage", type=Path, default=ROOT / "verification/production-proof-coverage.json")
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
     if arguments.output.resolve() in {
-        (ROOT / "proof-dispositions.json").resolve(), arguments.coverage.resolve()
+        (ROOT / "verification/proof-dispositions.json").resolve(), arguments.coverage.resolve()
     }:
         parser.error("templates must not overwrite reviewed dispositions or coverage")
     coverage = read_evidence(arguments.coverage, "coverage")

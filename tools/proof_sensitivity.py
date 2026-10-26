@@ -23,7 +23,7 @@ def replace_once(source: str, original: str, replacement: str) -> str:
 
 @contextmanager
 def proof_workspace(root: Path, executable: Path, prefix: str):
-    manifest = json.loads((root / "toolchain.json").read_text())
+    manifest = json.loads((root / "config/toolchain.json").read_text())
     expected = manifest["verus"]["version"]
     rust = manifest["verus"]["rust_toolchain"]
     with tempfile.TemporaryDirectory(prefix=prefix) as temporary:

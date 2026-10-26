@@ -66,6 +66,25 @@ def load_workflow(text):
     return document
 
 
+def check_proof_agent(text):
+    if not text.startswith("---\n"):
+        raise ValueError("proof agent needs YAML frontmatter")
+    frontmatter, separator, body = text[4:].partition("\n---\n")
+    if not separator or not body.strip():
+        raise ValueError("proof agent needs closed frontmatter and instructions")
+    profile = load_workflow(frontmatter)
+    expected = {
+        "name": "verus-proof-worker", "target": "github-copilot",
+        "model": "gpt-6.1-sol", "tools": ["read", "edit", "search", "execute"],
+        "disable-model-invocation": "true", "user-invocable": "true",
+    }
+    if any(profile.get(key) != value for key, value in expected.items()):
+        raise ValueError("proof agent must retain the exact model, explicit dispatch and bounded tools")
+    if not isinstance(profile.get("description"), str) or not profile["description"].strip():
+        raise ValueError("proof agent needs a meaningful description")
+    return profile
+
+
 def read_permissions(permissions):
     if not isinstance(permissions, dict) or set(permissions) - {"contents"}:
         raise ValueError("only contents read/none permissions are allowed by current CI policy")
@@ -144,7 +163,7 @@ def check_verus_sharding(document):
     ]
     if setups[0] != setups[1] or len(setups[0]) != 3 or downloads[0] != downloads[1] or len(downloads[0]) != 1:
         raise ValueError("whole and semantic jobs must use identical pinned tool setup")
-    pins = json.loads((ROOT / "toolchain.json").read_text())["verus"]
+    pins = json.loads((ROOT / "config/toolchain.json").read_text())["verus"]
     download_run = downloads[0][0].get("run", "").replace("\\\n", " ")
     download_run = re.sub(r"\|\s*\n\s*", "| ", download_run)
     download_commands = [
@@ -189,9 +208,36 @@ def check_verus_sharding(document):
         "target/verus-production/cargo-reports.jsons",
     ]]:
         raise ValueError("whole-crate gate requires the exact pinned Cargo verification-and-build invocation")
+    report_commands = {
+        "tools/extract_cargo_verus_report.py": [
+            "python", "tools/extract_cargo_verus_report.py",
+            "--input", "target/verus-production/cargo-reports.jsons",
+            "--output", "target/verification/verus-production.json",
+            "--compiled-library", "target/verus-cargo/debug/libjbig2_rs_production.rlib",
+        ],
+        "tools/audit_production_coverage.py": [
+            "python", "tools/audit_production_coverage.py",
+            "--verus-json", "target/verification/verus-production.json",
+            "--output", "target/verification/production-proof-coverage-ci.json",
+            "--require-complete",
+        ],
+        "tools/check_traceability.py": [
+            "python", "tools/check_traceability.py",
+            "--verus-json", "target/verification/verus-production.json",
+            "--output", "target/traceability/verifier-report.json",
+        ],
+    }
+    if any(
+        [command for command in commands[0] if command[:2] == ["python", script]] != [expected]
+        for script, expected in report_commands.items()
+    ) or [command for command in commands[0] if command[:2] == ["diff", "-u"]] != [[
+        "diff", "-u", "verification/production-proof-coverage.json",
+        "target/verification/production-proof-coverage-ci.json",
+    ]]:
+        raise ValueError("whole proof reports must stay under target with exact extraction/audit/comparison")
     for text in (
         "--require-complete",
-        "diff -u production-proof-coverage.json", "tools/check_traceability.py",
+        "diff -u verification/production-proof-coverage.json", "tools/check_traceability.py",
         "--seal-whole target/semantic-ci/whole", "tools/run_semantic_proofs.py --matrix",
     ):
         if text not in runs[0]:
@@ -322,14 +368,18 @@ def main():
         policy = ROOT / ".github/dependabot.yml"
         check_updates(load_workflow(policy.read_text()))
         bindings[policy.relative_to(ROOT).as_posix()] = hashlib.sha256(policy.read_bytes()).hexdigest()
+        agent = ROOT / ".github/agents/verus-proof-worker.agent.md"
+        profile = check_proof_agent(agent.read_text())
+        bindings[agent.relative_to(ROOT).as_posix()] = hashlib.sha256(agent.read_bytes()).hexdigest()
         report = {
             "schema_version": 1, "status": "workflow_policy_passed",
             "workflow_count": len(paths), "action_count": len(actions), "actions": actions,
             "source_bindings": bindings,
+            "configured_proof_agent_model": profile["model"],
             "source_revision": subprocess.run(
                 ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True,
             ).stdout.strip(),
-            "note": "Checks configuration pins, explicit toolchains, read-only permissions, job budgets, bounded complete Verus sharding/fail-closed collection, fuzz producer serialization/isolation and update configuration. Not upstream code approval, protected-branch enforcement, trigger execution or full readiness evidence.",
+            "note": "Checks configuration pins, explicit toolchains, read-only permissions, job budgets, bounded complete Verus sharding/fail-closed collection, fuzz producer serialization/isolation, update configuration and requested proof-agent profile. Not serving-model confirmation, upstream code approval, protected-branch enforcement, trigger execution or full readiness evidence.",
         }
         arguments.output.parent.mkdir(parents=True, exist_ok=True)
         arguments.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

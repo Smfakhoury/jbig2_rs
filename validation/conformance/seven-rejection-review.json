@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "The source-provenance binding was refreshed only to clarify recorded owner-reported project publication approval versus separately gated crate/asset publication. All runtime source, asset permissions, seven classifications and original bf3d525 execution receipts remain unchanged. This is not a new official-vector execution or normative approval.",
+  "metadata_only_update": "Publication layout and documentation update only. Policy/baseline paths and validator references were relocated; all runtime, asset permissions, seven classifications and original bf3d525 execution receipts remain unchanged. The refreshed metadata/tool hashes do not claim a new official-vector run, normative approval or release permission.",
   "recorded_at": "2026-10-25T20:20:57.607829+00:00",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
@@ -64,11 +64,11 @@
     "validation/conformance/run_itu.py": "a5a29e1f004ea1dacaee963478b363c6cadf23b8b38460abceb64226eb188e89",
     "validation/differential/run_oracles.py": "0ddc98d3d9a443b9a3b0ee1241916d7096fab90198a27e08a55caa5f9b373c8c",
     "tools/tests/test_validation_gates.py": "a69271c3cfea29f2ebf8521048d9865d333aa8f1a8df724ecfe47c589907a42e",
-    "tools/tests/test_proof_audits.py": "2c6511c3702195351d0217c18d778a2f78b701e5b6a24372fd9956401cf9ea59",
+    "tools/tests/test_proof_audits.py": "e14b757e71af4adb43fc448c664175b1b071de785a2dfd9c6cd6a70d56461e55",
     "tools/evidence.schema.json": "62fdb207f78b8a18a9ad0833f20f4f1ed36abbb2e8a084ec59df64ae37dd1016",
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
-    "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
-    "source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
+    "tools/verify_provenance.py": "d0cc2c988fac932c8ce2582e730a8c86dc31844c7c95f72fbd2c239451d4688d",
+    "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
     "validation/conformance/expected-differences.json": "47964e771248b90a9eab617c041210ee9542f029fc957857884ec3eced918197"
   },
   "normalization_controls": {

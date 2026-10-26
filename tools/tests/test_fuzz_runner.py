@@ -106,7 +106,7 @@ class FuzzRunnerTests(unittest.TestCase):
                 "src/lib.rs", "fuzz/fuzz_targets/example.rs", "Cargo.toml", "Cargo.lock",
                 "fuzz/Cargo.toml", "fuzz/Cargo.lock", "validation/runtime_access.rs",
                 "examples/fuzz_seeds.rs", "tools/distribution_consumer.rs",
-                "tools/run_fuzz.py", "toolchain.json",
+                "tools/run_fuzz.py", "config/toolchain.json",
                 "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
                 "tests/support/codec_scenarios.rs",
                 "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",
@@ -163,7 +163,7 @@ class FuzzRunnerTests(unittest.TestCase):
 @unittest.skipUnless(sys.platform == "linux", "bounded process-group fuzz runner is Linux-only")
 class FuzzExecutionEvidenceTests(unittest.TestCase):
     def fixture(self, logs, mode="run", exit_code=0):
-        configuration = json.loads((ROOT / "toolchain.json").read_text())
+        configuration = json.loads((ROOT / "config/toolchain.json").read_text())
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
             corpus = directory / "corpus"

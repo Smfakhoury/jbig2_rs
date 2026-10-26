@@ -13,7 +13,7 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_workflows import check_updates, check_workflow, load_workflow, main
+from check_workflows import check_proof_agent, check_updates, check_workflow, load_workflow, main
 
 
 class WorkflowPolicyTests(unittest.TestCase):
@@ -38,6 +38,33 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertEqual(actions[0]["uses"], "owner/action@" + "a" * 40)
         self.assertIn("on", self.document)
         self.assertNotIn(True, self.document)
+
+    def test_proof_agent_pins_model_and_cannot_silently_inherit_or_fallback(self):
+        path = TOOLS.parent / ".github/agents/verus-proof-worker.agent.md"
+        text = path.read_text()
+        self.assertEqual(check_proof_agent(text)["model"], "gpt-6.1-sol")
+        for changed in (
+            text.replace("model: gpt-6.1-sol\n", ""),
+            text.replace("model: gpt-6.1-sol", "model: default"),
+            text.replace("model: gpt-6.1-sol", "model: [gpt-6.1-sol, default]"),
+            text.replace("disable-model-invocation: true", "disable-model-invocation: false"),
+            text.replace("tools: [read, edit, search, execute]", "tools: [read, agent]"),
+        ):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                check_proof_agent(changed)
+
+    def test_proof_agent_rejects_invalid_frontmatter_missing_description_and_empty_body(self):
+        text = (TOOLS.parent / ".github/agents/verus-proof-worker.agent.md").read_text()
+        frontmatter = text.split("\n---\n", 1)[0] + "\n---\n"
+        for changed in (
+            text.removeprefix("---\n"),
+            text.replace("\n---\n", "\n", 1),
+            frontmatter,
+            text.replace('description: "', 'description: ""\nignored: "', 1),
+            text.replace("model: gpt-6.1-sol", "model: gpt-6.1-sol\nmodel: default"),
+        ):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                check_proof_agent(changed)
 
     def test_empty_nonmapping_and_duplicate_key_yaml_is_rejected(self):
         for text in ("", "{}", "[]", "name: one\nname: two\n"):
@@ -167,7 +194,7 @@ class WorkflowPolicyTests(unittest.TestCase):
 
     def test_repository_workflows_preserve_declared_toolchain_selections(self):
         root = TOOLS.parent
-        toolchains = json.loads((root / "toolchain.json").read_text())
+        toolchains = json.loads((root / "config/toolchain.json").read_text())
         selections = {}
         for path in sorted((root / ".github/workflows").glob("*.yml")):
             for entry in check_workflow(load_workflow(path.read_text()), path.name):
@@ -210,6 +237,20 @@ class WorkflowPolicyTests(unittest.TestCase):
             document = copy.deepcopy(actual)
             mutate(document["jobs"])
             with self.subTest(mutate=mutate), self.assertRaises(ValueError):
+                check_workflow(document, "verus.yml")
+
+    def test_verus_generated_reports_cannot_return_to_root_or_skip_compiled_library_checks(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        for before, after in (
+            ("target/verification/verus-production.json", "verus-production.json"),
+            ("target/verification/production-proof-coverage-ci.json", "coverage.json"),
+            ("--compiled-library", "--unused-library"),
+        ):
+            document = copy.deepcopy(actual)
+            for step in document["jobs"]["whole"]["steps"]:
+                if "run" in step:
+                    step["run"] = step["run"].replace(before, after)
+            with self.subTest(before=before), self.assertRaisesRegex(ValueError, "reports must stay"):
                 check_workflow(document, "verus.yml")
 
     def test_validation_events_avoid_duplicate_pushes_without_filtering_prs_or_tags(self):

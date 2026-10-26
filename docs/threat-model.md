@@ -26,6 +26,15 @@ Proof-only code, standards documents, test vectors, fuzz corpora, native
 oracles, and adapters are outside the published package. Reusable PDF global
 state is immutable after validation.
 
+The controls below describe required behavior, not a claim of complete
+normative, no-panic or resource-accounting proof. Compiler-generated derives
+and standard-library internals remain trusted; the crate's unsafe prohibition
+does not prove binary-wide unsafe absence. The known observed-capacity defects
+and MMR runtime/proof divergence remain open, as described in
+[verification limitations](verifier-limitations.md). Current revision-qualified
+evidence and remaining release blockers are in
+[publication readiness](publication-readiness.md).
+
 ## Threats and controls
 
 ### Decompression and dimension bombs
@@ -118,4 +127,3 @@ Release evidence must include:
   duration;
 - performance and peak-memory results at policy limits;
 - an audited proof-free package and immutable release attestation.
-

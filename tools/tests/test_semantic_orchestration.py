@@ -41,8 +41,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.root = Path(self.temporary.name).resolve()
         (self.root / "tools").mkdir()
         (self.root / "src").mkdir()
+        (self.root / "config").mkdir()
         (self.root / "src/example.rs").write_text("// source fixture\n")
-        (self.root / "toolchain.json").write_text(json.dumps({"verus": {"version": "pinned"}}))
+        (self.root / "config/toolchain.json").write_text(json.dumps({"verus": {"version": "pinned"}}))
         self.checks = tuple((str(index), f"{index}.py", 1, "strong_contract", "weaker_control") for index in range(8))
         for _, script, *_ in self.checks:
             (self.root / "tools" / script).write_text(
@@ -88,6 +89,19 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("verification/Cargo.toml", bindings)
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
+
+    def test_manifest_binds_relocated_metadata_and_agent_profiles_but_not_generated_json(self):
+        (self.root / "verification/target").mkdir(parents=True)
+        (self.root / ".github/agents").mkdir(parents=True)
+        (self.root / "verification/proof-dispositions.json").write_text("{}")
+        (self.root / "verification/target/generated.json").write_text("{}")
+        (self.root / ".github/agents/worker.agent.md").write_text("agent fixture")
+        with patch.object(runner, "CHECKS", self.checks):
+            bindings = runner.manifest(self.root)["source_bindings"]
+        self.assertIn("config/toolchain.json", bindings)
+        self.assertIn("verification/proof-dispositions.json", bindings)
+        self.assertIn(".github/agents/worker.agent.md", bindings)
+        self.assertNotIn("verification/target/generated.json", bindings)
 
     def test_shared_document_baseline_requires_all_configured_function_identities(self):
         cases = [{"id": name, "function": name} for name in ("first", "second")]
@@ -373,7 +387,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
                            "status": "verified", "visibility": "pub", "disposition_reason": None,
                            "verus_functions": list(details)}],
         }
-        runner.write_json(self.root / "production-proof-coverage.json", coverage)
+        runner.write_json(self.root / "verification/production-proof-coverage.json", coverage)
         runner.write_json(whole / "production-proof-coverage-ci.json", coverage)
         runner.write_json(whole / "verus-production.json", {
             "verification-results": {
@@ -539,7 +553,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         inventory.write_text(inventory.read_text() + " ")
         with self.assertRaisesRegex(ValueError, "inventory differs"):
             self.collect(inputs)
-        inventory.write_bytes((self.root / "production-proof-coverage.json").read_bytes())
+        inventory.write_bytes((self.root / "verification/production-proof-coverage.json").read_bytes())
         trace = whole / runner.TRACE / "verifier-report.json"
         changed = runner.read_json(trace)
         changed["ledger_sha256"] = "0" * 64

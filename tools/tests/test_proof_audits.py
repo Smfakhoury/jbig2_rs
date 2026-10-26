@@ -86,10 +86,10 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
         paths = {
             ".gitattributes",
             "tools/verify_provenance.py", "tools/evidence.py", "tools/evidence.schema.json",
-            "support-matrix.json", "source-provenance.json", "proof-attestation.json",
-            "conformance-attestation.json", "fuzz-attestation.json",
-            "release-attestation.schema.json", "toolchain.json",
-            "production-proof-coverage.json", "proof-dispositions.json",
+            "config/support-matrix.json", "validation/source-provenance.json", "verification/proof-attestation.json",
+            "validation/conformance/attestation.json",
+            "validation/schemas/release-attestation.schema.json", "config/toolchain.json",
+            "verification/production-proof-coverage.json", "verification/proof-dispositions.json",
             "validation/conformance/expected-differences.json",
             "validation/conformance/itu-t88-2018-manifest.json",
             "validation/conformance/itu-t88-2018-results.json", review_path,
@@ -101,7 +101,7 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                 destination = root / relative
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(source / relative, destination)
-            attestation_path = root / "conformance-attestation.json"
+            attestation_path = root / "validation/conformance/attestation.json"
             original_attestation = attestation_path.read_text()
             original_review_bytes = (root / review_path).read_bytes()
             original_review = original_review_bytes.decode("utf-8")
@@ -125,6 +125,7 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                 "crlf": "stale conformance review identity: tools/evidence.py",
                 "policy": "stale conformance checkout policy identity",
                 "live_source": "pending review source hash mismatch: codeStreamTest1_TT1: src/reader.rs",
+                "root_artifact": "repository-root JSON belongs in",
             }
             for mutation, expected_error in failures.items():
                 with self.subTest(mutation=mutation):
@@ -136,6 +137,8 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                     attributes.write_bytes((source / ".gitattributes").read_bytes())
                     reader = root / "src/reader.rs"
                     reader.write_bytes((source / "src/reader.rs").read_bytes())
+                    tracking = root / "tracking.json"
+                    tracking.unlink(missing_ok=True)
                     if mutation == "hash":
                         document["normative_vectors"]["review_sha256"] = "0" * 64
                     elif mutation == "count":
@@ -146,6 +149,8 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                         attributes.write_bytes(attributes.read_bytes() + b"# fixture mutation\n")
                     elif mutation == "live_source":
                         reader.write_bytes(reader.read_bytes() + b"// fixture mutation\n")
+                    elif mutation == "root_artifact":
+                        tracking.write_text("{}")
                     else:
                         changed = json.loads(original_review)
                         if mutation == "source_inventory":
@@ -158,6 +163,7 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                         ).hexdigest()
                     attestation_path.write_text(json.dumps(document))
                     result = audit()
+                    tracking.unlink(missing_ok=True)
                     self.assertNotEqual(result.returncode, 0)
                     self.assertIn("provenance audit failed", result.stderr)
                     self.assertIn(expected_error, result.stderr)
@@ -402,14 +408,14 @@ class EvidenceTests(unittest.TestCase):
     def test_disposition_templates_cannot_overwrite_reviewed_file(self):
         process = subprocess.run(
             [sys.executable, str(TOOLS / "update_proof_dispositions.py"),
-             "--output", str(TOOLS.parent / "proof-dispositions.json")],
+             "--output", str(TOOLS.parent / "verification/proof-dispositions.json")],
             capture_output=True, text=True, check=False,
         )
         self.assertNotEqual(process.returncode, 0)
         self.assertIn("must not overwrite", process.stderr)
 
     def test_coverage_counts_and_verified_matches_are_not_invented(self):
-        document = load_json(TOOLS.parent / "production-proof-coverage.json")
+        document = load_json(TOOLS.parent / "verification/production-proof-coverage.json")
         validate(document, "coverage")
         broken = copy.deepcopy(document)
         broken["counts"]["verified"] += 1
@@ -422,7 +428,7 @@ class EvidenceTests(unittest.TestCase):
             validate(broken, "coverage")
 
     def test_disposition_generator_emits_only_unreviewed_templates(self):
-        document = load_json(TOOLS.parent / "production-proof-coverage.json")
+        document = load_json(TOOLS.parent / "verification/production-proof-coverage.json")
         entry = next(entry for entry in document["functions"] if entry["status"] == "verified")
         entry["status"] = "incomplete"
         entry["verus_functions"] = []

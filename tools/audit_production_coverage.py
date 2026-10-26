@@ -25,7 +25,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--verus-json", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--dispositions", type=Path, default=ROOT / "proof-dispositions.json")
+    parser.add_argument("--dispositions", type=Path, default=ROOT / "verification/proof-dispositions.json")
     parser.add_argument("--require-complete", action="store_true")
     parser.add_argument("--require-exact", action="store_true",
                         help="also reject reviewed runtime/proof substitutions")

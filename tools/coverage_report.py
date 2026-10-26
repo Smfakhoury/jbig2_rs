@@ -267,7 +267,7 @@ def main() -> int:
         document = load_json(arguments.json)
         report = scoped_report(document, arguments.lcov.read_text(), ROOT)
         baseline = read_evidence(arguments.baseline, "coverage_baseline")
-        configuration = load_json(ROOT / "toolchain.json")["coverage"]
+        configuration = load_json(ROOT / "config/toolchain.json")["coverage"]
         collection = load_json(arguments.collection)
         if (
             collection["source_sha256"] != report["source_sha256"]
