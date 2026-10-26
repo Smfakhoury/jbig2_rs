@@ -364,7 +364,7 @@
         "T88-HUFFMAN-CANONICAL-ASSIGNMENT"
       ],
       "remaining_scope": [
-        "Complete B.2/B.3 enumeration, encoded-table output relation, canonical prefix assignment theorem and caller selection remain open; shared B.4 helper evidence is recorded under standard_huffman_tables, not independently duplicated here."
+        "Raw-line success now carries a provisional histogram, checked-wide first-prefix recurrence, bucket-start and stable original-order result. Complete B.2/B.3 enumeration, encoded-table output relation, mathematical prefix-freedom, independent model review and caller selection remain open; shared B.4 helper evidence is recorded under standard_huffman_tables, not independently duplicated here."
       ]
     },
     {
@@ -638,7 +638,7 @@
     "proofs/model_support/decode.rs": "67e54d341dcb57f6b4ad8b2c8a489fa52928fd4f7e3c39406139c46dc3d5c2b4",
     "proofs/model_support/document.rs": "f829b13ba4c4adf86714aa42e474109e3f06d60f6e8f5e886e633d7ef46afcc5",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
-    "proofs/model_support/huffman.rs": "75ad3133571303f2d0369fb935e5b7dc4a94a16bab0fa65977af35f6a237e503",
+    "proofs/model_support/huffman.rs": "e7b4e8f3494999cab4bdfda6065778698decb1b9af3ea65b3be73b1f653b9df5",
     "proofs/model_support/mmr.rs": "0f1423997f6ebf4cc72faae5bcb8a2a774071853d929bfc10a9e7542b6bd9995",
     "proofs/production_impl/arithmetic.rs": "7baccbade7a1276a4efbe7de1a34a986d21e88ac7300ce449dd70a561bc0a3c9",
     "proofs/production_impl/bitmap.rs": "89390f3506136194877ee82e6968b93a88e2d0847c4d55b0279f56aa797b1686",
@@ -657,7 +657,7 @@
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "8f368daad98291eb31f1ccc5914ab836fcdbaa5c820f70ca71317a29140d22b9",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
-    "specs/huffman.rs": "fe0cca185e75966a67834cc01c44ac080eb7eee5374fffcc9fbaf790c81e0a58",
+    "specs/huffman.rs": "566f2701fdc602c916c9c1a9e55c2b344a5ba8a7f2e7a21e5f6f9cf902989d43",
     "specs/mmr.rs": "3ec0ed58d02fef9cb56b8e692b478c1a0770be576353aaf77eb72fa07bd49402",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
@@ -670,7 +670,7 @@
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",
     "src/halftone.rs": "0553be77a782a78a095af866311e4c9d629491be553bbc69b7bedf3e2ed4a051",
-    "src/huffman.rs": "be45bed95b51c96cad077b2e1d8f035374f7e30059522bc8d79dff7d3190826b",
+    "src/huffman.rs": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
@@ -1086,6 +1086,41 @@
       ],
       "name": "reader_valid",
       "role": "Bit reader bounds only, not correct prefix selection."
+    },
+    "huffman-canonical-assignment": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "canonical_assignment",
+      "role": "Conjunction of independent raw-source content/histogram/extent, checked-wide first-prefix, bucket-start and original-order results; success-only and provisional."
+    },
+    "huffman-assignment-contents": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_contents",
+      "role": "Exact original raw lines, zero-excluding histogram, maximum active length and ordered extent, retained by each code/start/order weaker control."
+    },
+    "huffman-assignment-codes": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_codes",
+      "role": "Literal zero seed and exact checked-wide first-prefix recurrence computed from original raw-line buckets, with accepted active ranges fitting their widths."
+    },
+    "huffman-assignment-starts": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_starts",
+      "role": "Every active bucket starts after all original lines with shorter nonzero lengths."
+    },
+    "huffman-assignment-order": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_order",
+      "role": "Exact concatenation of original raw-line index selections by increasing nonzero length and original order."
     },
     "huffman-decoded-value": {
       "kind": "spec",
@@ -6627,9 +6662,17 @@
       "title": "Assign canonical prefixes by length and original table-line order",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::from_line_source"
+        "huffman::HuffmanTable::from_line_source",
+        "huffman::HuffmanTable::new",
+        "huffman::WideCode::zero"
       ],
-      "models": [],
+      "models": [
+        "huffman-canonical-assignment",
+        "huffman-assignment-contents",
+        "huffman-assignment-codes",
+        "huffman-assignment-starts",
+        "huffman-assignment-order"
+      ],
       "proof_macros": [],
       "tests": [
         {
@@ -6651,18 +6694,48 @@
         {
           "target": "lib",
           "name": "huffman::tests::canonical_width_boundaries_reject_oversubscription_and_preserve_valid_codes"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::raw_canonical_assignment_matches_numeric_histogram_and_stable_order"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::wide_zero_constructor_matches_default_and_array_initialization"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified construction and bounded wide arithmetic do not export a theorem for the entire histogram/first-code/line-order recurrence.",
+      "scope_of_formal_result": "On success for an original Borrowed raw line source, construction and new export exact copied lines, zero-length-excluding histogram, maximum active width, checked-wide canonical first-prefix recurrence from the raw source, active bucket starts/range checks, and stable original-line index order. The same literal zero constructor executes in Rust and Verus; Default remains derived. The dedicated huffman-assignment semantic group has individual code/start/order controls retaining content/count/extent and the other assignment guarantees, plus a literal-zero control; all four are also registered native mutations. This is not an encoded parser, entropy decoder or normative conformance result.",
       "assumptions": [
-        "The project supports wide prefixes; safety of wide arithmetic helpers is not independent proof of the complete canonical algorithm."
+        "The project supports wide prefixes through 255 bits and reuses its existing checked-wide arithmetic models. The raw-source recurrence is independent of returned storage, but independent normative/model approval remains open. Non-Borrowed sources retain their prior guarantees without an added assignment theorem."
       ],
       "gaps": [
-        "Prove canonical code assignment, zero-length exclusion and prefix-freedom for accepted tables; independently review invalid-table rejection policy."
+        "Prove mathematical prefix-freedom and complete acceptance/typed rejection policy, connect encoded/symbol-length/standard sources and prefix lookup/entropy decoding, and independently review the model and invalid-table policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "huffman::HuffmanTable::from_line_source",
+          "section": "ensures",
+          "tokens": [
+            "huffman_spec::is_raw(lines)",
+            "huffman_spec::assignment_contents(huffman_spec::raw_lines(lines), &table)",
+            "huffman_spec::assignment_codes(huffman_spec::raw_lines(lines), &table)",
+            "huffman_spec::assignment_starts(huffman_spec::raw_lines(lines), &table)",
+            "huffman_spec::assignment_order(huffman_spec::raw_lines(lines), &table)"
+          ]
+        },
+        {
+          "runtime": "huffman::HuffmanTable::new",
+          "section": "ensures",
+          "tokens": ["huffman_spec::canonical_assignment(lines@, &table)"]
+        },
+        {
+          "runtime": "huffman::WideCode::zero",
+          "section": "ensures",
+          "tokens": ["out.limbs@ == seq![0u64, 0u64, 0u64, 0u64]"]
+        }
+      ],
       "invariant_evidence": []
     },
     {

@@ -12,6 +12,7 @@ from pathlib import Path
 
 from check_distribution import isolated_environment, run
 from check_document_count_proof import CASES as DOCUMENT_CASES
+from check_huffman_assignment_proofs import CASES as HUFFMAN_ASSIGNMENT_CASES
 from check_segment_data_proofs import CASES as SEGMENT_DATA_CASES
 from check_segment_header_proofs import CASES as HEADER_CASES
 from check_text_batch_proofs import CASES as TEXT_CASES
@@ -55,6 +56,19 @@ DOCUMENT_WINDOW_TESTS = {
     "embedded_discards_first_input_byte": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
 }
 MUTATIONS = tuple(
+    {
+        "id": "huffman-assignment-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib",
+        "test": "huffman::tests::" + (
+            "wide_zero_constructor_matches_default_and_array_initialization"
+            if case["function"] == "WideCode::zero"
+            else "raw_canonical_assignment_matches_numeric_histogram_and_stable_order"
+        ),
+        "whitespace_flexible": True,
+    }
+    for case in HUFFMAN_ASSIGNMENT_CASES
+) + tuple(
     {
         "id": "segment-data-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],
