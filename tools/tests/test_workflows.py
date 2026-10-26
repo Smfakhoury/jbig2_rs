@@ -288,6 +288,21 @@ class WorkflowPolicyTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 check_workflow(document, "verus.yml")
 
+    def test_whole_job_retains_its_serial_semantic_groups_inside_the_same_artifact(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        for before, after in (
+            ("--whole-groups", "--skip-groups"),
+            ("--whole-baseline target/semantic-ci/whole", "--whole-baseline target/previous"),
+            ("--output-dir target/semantic-ci/whole/semantic-groups/target/traceability",
+             "--output-dir target/semantic-ci/whole/target/traceability"),
+        ):
+            document = copy.deepcopy(actual)
+            for step in document["jobs"]["whole"]["steps"]:
+                if "run" in step:
+                    step["run"] = step["run"].replace(before, after)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                check_workflow(document, "verus.yml")
+
     def test_validation_events_avoid_duplicate_pushes_without_filtering_prs_or_tags(self):
         for name in ("ci", "coverage", "fuzz", "performance", "verus"):
             actual = load_workflow((TOOLS.parent / f".github/workflows/{name}.yml").read_text())
