@@ -6,7 +6,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_document_count_proof import CASES, mutated_document, weaker_contract
+from check_document_count_proof import CASES, CASE_GROUPS, LAYOUT_CASE_IDS, mutated_document, weaker_contract
 from rust_source import parse
 
 
@@ -17,6 +17,18 @@ class DocumentCountProofFixtureTests(unittest.TestCase):
 
     def control_source(self, case):
         return self.models if case.get("control_file") == "specs/document.rs" else self.source
+
+    def test_group_partition_retains_every_original_case_exactly_once(self):
+        self.assertEqual(set(CASE_GROUPS), {"document-count", "document-layout"})
+        self.assertEqual([len(group) for group in CASE_GROUPS.values()], [13, 12])
+        selected = [case for group in CASE_GROUPS.values() for case in group]
+        self.assertEqual(len(selected), len(CASES))
+        self.assertEqual({case["id"] for case in selected}, {case["id"] for case in CASES})
+        self.assertEqual(len({case["id"] for case in selected}), len(selected))
+        self.assertEqual(
+            {case["id"] for case in CASE_GROUPS["document-layout"]}, LAYOUT_CASE_IDS,
+        )
+        self.assertTrue(all(case in CASES for case in selected))
 
     def test_each_mutant_changes_one_semantic_site_and_retains_its_contract(self):
         self.assertEqual(len(CASES), 25)

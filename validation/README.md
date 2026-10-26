@@ -156,6 +156,15 @@ compilation/lifetime/erasure and complete same-run receipts remain mandatory.
 See [limitations](../docs/verifier-limitations.md) and
 [the auditor index](../docs/verus-auditor-index.md).
 
+Large checkers can expose explicit, disjoint case partitions without adding
+another script or CI job. The document checker keeps its complete case set for
+a standalone invocation; the runner passes a named `--case-group` and the
+collector requires that exact group marker, ordered case IDs, target functions
+and baseline coverage. Its metadata/quota and byte-layout partitions run on
+different existing shards. Every original strong/weaker query is retained;
+logical group count is not CI check count, and a partial/canceled producer
+still cannot support complete acceptance.
+
 Native mutation controls likewise require an exact passing original test,
 compiling mutant and failure of that selected test. Zero-test success,
 compilation failure, ambiguous sites and survivors are not detection.

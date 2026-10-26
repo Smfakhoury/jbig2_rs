@@ -134,6 +134,63 @@ class SemanticOrchestrationTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 runner.check_bound_report(self.root, check, broken, report["source_bindings"])
 
+    def test_document_partition_rejects_missing_wrong_or_cross_group_evidence(self):
+        cases = [{"id": name, "function": name} for name in ("first", "second")]
+        (self.root / "tools/document.py").write_text(
+            "CASES = " + repr(cases) + "\nCASE_GROUPS = "
+            + repr({"document-count": cases[:1], "document-layout": cases[1:]}) + "\n"
+        )
+        report = evidence()
+        report.update(
+            schema_version=1, case_group="document-count",
+            baseline_verification_scope="document::*", baseline_selected_functions=["first"],
+            source_bindings={"src/example.rs": runner.digest(self.root / "src/example.rs")},
+        )
+        report["counterexamples"][0].update(
+            id="first", function="first", strong_count_contract="rejected",
+        )
+        check = ("document-count", "document.py", 1, "strong_count_contract", "weaker_control")
+        runner.check_bound_report(self.root, check, report, report["source_bindings"])
+        for mutation in ("missing-group", "wrong-group", "cross-group", "duplicate"):
+            broken = copy.deepcopy(report)
+            if mutation == "missing-group":
+                del broken["case_group"]
+            elif mutation == "wrong-group":
+                broken["case_group"] = "document-layout"
+            elif mutation == "cross-group":
+                broken["counterexamples"][0].update(id="second", function="second")
+            else:
+                broken["counterexamples"].append(copy.deepcopy(broken["counterexamples"][0]))
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                runner.check_bound_report(self.root, check, broken, report["source_bindings"])
+
+    def test_document_partition_is_explicitly_forwarded_to_the_shared_checker(self):
+        script = "check_document_count_proof.py"
+        (self.root / "tools" / script).write_text(
+            "CASES = ({'id': 'case', 'function': 'function'},)\n"
+            "CASE_GROUPS = {'document-count': CASES}\n"
+        )
+        check = ("document-count", script, 1, "strong_count_contract", "weaker_control")
+
+        def process(command, **_keywords):
+            self.assertEqual(command[command.index("--case-group") + 1], "document-count")
+            report = evidence()
+            report.update(
+                schema_version=1, case_group="document-count",
+                baseline_verification_scope="document::*", baseline_selected_functions=["function"],
+                source_bindings={"src/example.rs": runner.digest(self.root / "src/example.rs")},
+            )
+            report["counterexamples"][0].update(function="function", strong_count_contract="rejected")
+            Path(command[-1]).write_text(json.dumps(report))
+            return SimpleNamespace(returncode=0)
+
+        with patch.object(runner, "CHECKS", (check,)), patch.object(
+            runner.subprocess, "run", side_effect=process,
+        ):
+            result = runner.run_checks(self.root, self.root / "verus", self.output, only="document-count")
+        self.assertEqual(result["status"], "passed")
+        self.assertEqual(result["checks"][0]["counterexamples"], 1)
+
     def test_shared_group_baselines_cannot_omit_or_invent_target_coverage(self):
         cases = [{"id": name, "module": "module", "function": name} for name in ("first", "second")]
         groups = (("module", ("first", "second")),)
@@ -265,9 +322,11 @@ class SemanticOrchestrationTests(unittest.TestCase):
     def test_measured_complete_profile_leaves_timeout_headroom(self):
         # Accepted current baseline 40222911541, rounded up.
         # The new metadata group uses its complete 269-second local run plus 10%.
+        # Document partitions project the same 25-case family, charging 20 extra
+        # seconds for a duplicated baseline measured at 15.45 seconds.
         # Scheduling estimates are not hosted acceptance.
         measured = {
-            "reset": (2, 62), "document-count": (25, 511),
+            "reset": (2, 62), "document-count": (25, 511), "document-layout": (25, 511),
             "bitmap-copy": (8, 259), "retention": (3, 86),
             "value-bridge": (5, 104), "mmr-span": (8, 183),
             "region-dispatch": (3, 66), "text-batch": (11, 388),
@@ -291,26 +350,27 @@ class SemanticOrchestrationTests(unittest.TestCase):
             for identity, _, cases, *_ in shard:
                 observed_cases, observed_seconds = measured[identity]
                 seconds += (cases * observed_seconds + observed_cases - 1) // observed_cases
+                if identity == "document-layout":
+                    seconds += 20
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
 
     def test_completed_profile_has_measured_job_headroom_without_relaxed_limits(self):
-        # All 40235511935 checker receipts completed, but the shard-4 job was
-        # canceled at completion and is not accepted. Its measured costs remain
-        # useful for scheduling; two further positive-only optimizations are
-        # conservatively charged their earlier, slower complete hosted costs.
+        # Completed 40303484174 attempt-2 groups, with conservative ZIP-time
+        # bounds for its three leading shard-5 groups; canceled jobs get no
+        # acceptance credit. Document partitions use fresh complete local runs.
         observed = {
-            "arithmetic-codec": 345, "arithmetic-decision": 318,
-            "arithmetic-initialization": 99, "arithmetic-integer": 218,
-            "arithmetic-normalization": 155, "arithmetic-refill": 149,
-            "bitmap-chunk": 110, "bitmap-compose": 192, "bitmap-copy": 230,
-            "black-span": 162, "document-count": 609, "halftone-header": 245,
-            "iaid-state": 118, "integer-state": 263, "mmr-horizontal": 178,
-            "mmr-prefix": 96, "mmr-reference": 370, "mmr-run": 71,
-            "mmr-span": 235, "operator-bit": 82, "reader-error": 222,
-            "region-dispatch": 73, "reset": 58, "retention": 81,
-            "segment-header": 214, "symbol-cardinality": 226,
-            "text-batch": 224, "value-bridge": 100, "segment-data": 270,
+            "arithmetic-codec": 540, "arithmetic-decision": 308,
+            "arithmetic-initialization": 160, "arithmetic-integer": 227,
+            "arithmetic-normalization": 153, "arithmetic-refill": 155,
+            "bitmap-chunk": 128, "bitmap-compose": 179, "bitmap-copy": 256,
+            "black-span": 169, "document-count": 332, "document-layout": 327,
+            "halftone-header": 225, "iaid-state": 163, "integer-state": 265,
+            "mmr-horizontal": 155, "mmr-prefix": 124, "mmr-reference": 300,
+            "mmr-run": 118, "mmr-span": 177, "operator-bit": 134,
+            "reader-error": 169, "region-dispatch": 89, "reset": 46,
+            "retention": 91, "segment-header": 207, "symbol-cardinality": 322,
+            "text-batch": 312, "value-bridge": 120, "segment-data": 266,
         }
         self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
         self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)
@@ -318,6 +378,17 @@ class SemanticOrchestrationTests(unittest.TestCase):
             sum(observed[row[0]] for row in shard)
             for shard in runner.configured_shards()
         ), 1050)
+
+    def test_document_partitions_use_different_shards_without_more_jobs_or_cases(self):
+        shards = runner.configured_shards()
+        self.assertEqual(len(shards), 6)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)
+        groups = [{row[0] for row in shard} for shard in shards]
+        self.assertNotEqual(
+            next(i for i, names in enumerate(groups) if "document-count" in names),
+            next(i for i, names in enumerate(groups) if "document-layout" in names),
+        )
+        self.assertLessEqual(max(sum(row[2] for row in shard) for shard in shards), 42)
 
     def test_matrix_is_generated_from_current_complete_checks(self):
         future_checks = self.checks + (("future-decision", "future.py", 4, "strong_contract", "weaker_control"),)
