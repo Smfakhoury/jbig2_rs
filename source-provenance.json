@@ -195,6 +195,6 @@
     "conformance_vector_use": "approved for internal/private-CI execution",
     "conformance_vector_redistribution": "prohibited pending public-repository review",
     "sample_software_use": "pending",
-    "cela_publication": "internal work approved; publication pending separate review"
+    "cela_publication": "Owner-reported CELA approval for open-source project publication is recorded in README; separate crate-publication and restricted-asset redistribution approvals are not inferred."
   }
 }

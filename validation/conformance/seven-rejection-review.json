@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
+  "metadata_only_update": "The source-provenance binding was refreshed only to clarify recorded owner-reported project publication approval versus separately gated crate/asset publication. All runtime source, asset permissions, seven classifications and original bf3d525 execution receipts remain unchanged. This is not a new official-vector execution or normative approval.",
   "recorded_at": "2026-10-25T20:20:57.607829+00:00",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
@@ -67,7 +68,7 @@
     "tools/evidence.schema.json": "62fdb207f78b8a18a9ad0833f20f4f1ed36abbb2e8a084ec59df64ae37dd1016",
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "f71de10cb82976fd6c80bb3742ce7db214c3c49f0afb32e167c9bc18c5a7999d",
-    "source-provenance.json": "98e7b5390912d6d8dce068a851c1afbcd2bedf4856c64cbe9678bc7dcef1bf49",
+    "source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
     "validation/conformance/expected-differences.json": "47964e771248b90a9eab617c041210ee9542f029fc957857884ec3eced918197"
   },
   "normalization_controls": {

@@ -4433,7 +4433,7 @@
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The parser proves accepted dimensions satisfy project limits, but not that width/height equal the input four-byte fields. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
+      "scope_of_formal_result": "Successful page parsing preserves the literal wire width and known height while enforcing project dimension limits. Typed Page dispatch and both complete container result models preserve these metadata values through standalone/embedded callers. This is accepted raw-field correspondence, not a complete theorem about page allocation, lifecycle or rendered bitmap dimensions.",
       "assumptions": [
         "Project resource bounds are not normative dimension constants; the generated test uses a known non-square page."
       ],
@@ -4582,7 +4582,7 @@
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified bounded parsing does not export equality for the two resolution fields. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
+      "scope_of_formal_result": "Successful page parsing exports equality between both returned resolution fields and their original big-endian wire values. Typed Page dispatch and both complete container result models preserve those metadata values through standalone/embedded callers. Resolution interpretation and complete normative/model review remain separate from this raw-field correspondence.",
       "assumptions": [
         "Resolution is metadata in pixels per metre; it is not a request to resample bitmap output."
       ],
@@ -4651,7 +4651,7 @@
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The postcondition distinguishes Some/None output shapes but does not relate None to the raw all-ones height field. Typed structural metadata: accepted Page information retains literal width, encoded known/unknown height, both resolutions and all existing flags. Structural dispatch retains Page/Stripe/Profiles variants and raw values, empty EOP/EOF and existing extension flag correspondence. Both container result models now preserve typed metadata for every returned segment, including standalone/embedded callers. Raw profile count/order/content is auxiliary project correspondence, not new selected normative credit. Other entropy/table payloads remain opaque; complete codec validity is not claimed.",
+      "scope_of_formal_result": "Successful page parsing relates None exactly to the raw all-ones height sentinel and Some(height) to the literal known wire height. Typed Page dispatch and both complete container result models preserve that encoding correspondence through standalone/embedded callers. Final unknown-height resolution from stripe lifecycle and rendered page output remain separate obligations.",
       "assumptions": [
         "Only header sentinel interpretation is selected here; final height is separately tracked under striped_pages."
       ],

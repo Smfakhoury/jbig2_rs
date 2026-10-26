@@ -51,11 +51,15 @@ The check:
 5. Confirms the extracted package has no dependencies or proof/validation
    features, the expected license/MSRV, and publication remains disabled.
 6. Executes the extracted archive's unit tests and doc tests.
-7. Creates an independent downstream project depending only on the extracted
+7. Appends an isolated unsafe probe to the extracted crate and requires the
+   compiler's `unsafe_code` rejection. The same probe must compile when only
+   the crate-level prohibition is weakened. Restores the original source even
+   when either control fails; the checkout and `.crate` archive are untouched.
+8. Creates an independent downstream project depending only on the extracted
    crate. It checks exact dimensions and pixels for a generated MMR stream via
    slice, reader, sink, reusable-context and embedded/global APIs. It also
    checks recovery after an invalid input.
-8. Verifies that importing `runtime_access` from that normal consumer fails
+9. Verifies that importing `runtime_access` from that normal consumer fails
    with the expected unresolved-import diagnostic.
 
 All package/consumer Cargo operations are offline and use locked dependencies.
@@ -68,6 +72,7 @@ CI runs this gate natively on Linux, Windows and macOS, using both MSRV and
 current stable. Each report records the actual compiler version and archive
 hash. Different Cargo versions can normalize manifests differently, so the
 archive hashes are not expected to match across toolchains.
+The safety controls use these existing jobs; they do not add another CI policy.
 
 The development compiler in `toolchain.json` remains 1.89.0, independently of
 the runtime minimum. Verus, coverage and fuzz toolchain pins are unchanged.
@@ -79,3 +84,9 @@ of repository proof files and tools. It does not establish full JBIG2
 conformance or close the remaining runtime/proof divergence tracked in
 [verifier-limitations.md](verifier-limitations.md). Those remain separate,
 release-blocking P05 work.
+
+The unsafe-code control checks crate-authored source. Compiler-generated
+derives can contain internal unsafe implementations/intrinsics, and the
+standard library uses unsafe internally. Those are compiler/library trust
+boundaries, not evidence that the decoder contains handwritten unsafe or that
+the control establishes a binary-wide absence of unsafe operations.

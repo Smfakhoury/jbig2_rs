@@ -5,6 +5,27 @@ and targeted public-contract mutation checks.
 
 ### Session continuation status
 
+PR #90 is ready for owner review at `51d3939`, with all 22 checks successful.
+Proof run 40239247517 and coverage run 40239247474 were independently consumed:
+1232/0, 29 groups / 236 compiling contrasts, 229 source bindings, 66 exact
+canonical files, all 51 raw coverage metrics/hashes and 108 detected native
+mutants. The actual synthetic merge is `7e46139c2b438cadac8130bc7d9d59fece264fa1`.
+This is accepted hosted evidence, not an owner merge or release authorization.
+
+The subsequent release-safety review preserves every production, model and
+proof byte. It adds compiler-backed safe-Rust controls to the existing isolated
+distribution jobs: an unsafe probe must be rejected, its guard-only weaker
+control must compile, and original extracted source must be restored before
+downstream execution. No additional CI policy or runtime dependency is added.
+README counts and three obsolete page-contract descriptions are synchronized
+with the accepted evidence. Owner-reported project publication approval is
+distinguished from separately gated crate/asset publication; no new approval
+is inferred. All selected records remain provisional and every release hold
+remains. The reviewed reader-error tests intentionally propagate `Interrupted`;
+that behavior is preserved, not silently changed.
+Actual MSRV archive controls and downstream output pass, as do all 418 tooling
+tests, including four new diagnostic/control/restoration regressions.
+
 After actual #89 hosted acceptance and owner merge `63ebdcb`, immutable `bf3d525`
 adds exact accepted typed structural metadata. Page information now preserves
 the literal width, known/sentinel height, both resolutions and all existing

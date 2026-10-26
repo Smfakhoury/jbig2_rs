@@ -17,6 +17,12 @@ A release requires:
    output;
 8. completed attestations bound to one immutable source revision.
 
+The distribution gate must also demonstrate that the extracted crate rejects
+an unsafe probe and accepts the guard-only weaker control, then restores the
+original source before downstream execution. These controls run in the
+existing distribution jobs; they neither alter the shipped decoder nor
+establish full codec conformance.
+
 The readiness proof audit found runtime/proof substitutions. Before a release,
 run the coverage audit with both `--require-complete` and `--require-exact`.
 The first checks inventory accounting; the second rejects known substitutions.

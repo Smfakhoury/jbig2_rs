@@ -1,6 +1,8 @@
 import copy
 import io
+import json
 import os
+import subprocess
 import sys
 import tarfile
 import tempfile
@@ -13,7 +15,10 @@ TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
 from audit_package import REQUIRED
-from check_distribution import check_package_metadata, extract_archive, isolated_environment
+from check_distribution import (
+    check_package_metadata, check_unsafe_policy, extract_archive, isolated_environment,
+    require_rejected_check,
+)
 
 
 class DistributionTests(unittest.TestCase):
@@ -116,6 +121,91 @@ class DistributionTests(unittest.TestCase):
             broken["packages"][0].update(change)
             with self.subTest(change=change), self.assertRaises(ValueError):
                 check_package_metadata(broken, extracted, "1.89.0")
+
+    def test_rejected_check_requires_failure_and_the_exact_compiler_diagnostic(self):
+        diagnostic = {
+            "reason": "compiler-message",
+            "message": {"code": {"code": "unsafe_code"}, "message": "usage of an `unsafe` block"},
+        }
+        for exit_code, entries, accepted in (
+            (1, [diagnostic], True),
+            (0, [diagnostic], False),
+            (1, [], False),
+            (1, [{"reason": "build-finished"}], False),
+            (1, [{**diagnostic, "message": {
+                "code": {"code": "E0432"}, "message": "unrelated failure",
+            }}], False),
+        ):
+            process = subprocess.CompletedProcess(
+                [], exit_code, "\n".join(json.dumps(entry) for entry in entries), "",
+            )
+            with self.subTest(exit_code=exit_code, entries=entries), patch(
+                "check_distribution.subprocess.run", return_value=process,
+            ):
+                if accepted:
+                    require_rejected_check(
+                        ["cargo"], self.directory, {}, "unsafe_code", "usage of an `unsafe` block",
+                    )
+                else:
+                    with self.assertRaisesRegex(ValueError, "expected compilation rejection"):
+                        require_rejected_check(
+                            ["cargo"], self.directory, {}, "unsafe_code", "usage of an `unsafe` block",
+                        )
+
+    def test_unsafe_policy_uses_the_real_guard_then_a_weaker_control_and_restores_source(self):
+        library = self.directory / "src" / "lib.rs"
+        library.parent.mkdir()
+        original = b"#![forbid(unsafe_code)]\npub fn example() {}\n"
+        library.write_bytes(original)
+
+        def reject(*_arguments):
+            self.assertIn(b"#![forbid(unsafe_code)]", library.read_bytes())
+            self.assertIn(b"unsafe {}", library.read_bytes())
+
+        def accept(*_arguments, **_keywords):
+            self.assertNotIn(b"#![forbid(unsafe_code)]", library.read_bytes())
+            self.assertIn(b"#![allow(unsafe_code)]", library.read_bytes())
+            self.assertIn(b"unsafe {}", library.read_bytes())
+
+        with patch("check_distribution.require_rejected_check", side_effect=reject) as strong, patch(
+            "check_distribution.run", side_effect=accept,
+        ) as weaker:
+            check_unsafe_policy(["cargo"], self.directory, {})
+        strong.assert_called_once()
+        weaker.assert_called_once()
+        self.assertEqual(library.read_bytes(), original)
+
+    def test_unsafe_policy_restores_source_when_either_control_fails(self):
+        library = self.directory / "src" / "lib.rs"
+        library.parent.mkdir()
+        original = b"#![forbid(unsafe_code)]\n"
+        for failed in ("strong", "weaker"):
+            library.write_bytes(original)
+            with self.subTest(failed=failed), patch(
+                "check_distribution.require_rejected_check",
+                side_effect=ValueError("strong failure") if failed == "strong" else None,
+            ), patch(
+                "check_distribution.run",
+                side_effect=subprocess.CalledProcessError(1, ["cargo"])
+                if failed == "weaker" else None,
+            ), self.assertRaises((ValueError, subprocess.CalledProcessError)):
+                check_unsafe_policy(["cargo"], self.directory, {})
+            self.assertEqual(library.read_bytes(), original)
+
+    def test_unsafe_policy_rejects_missing_or_ambiguous_guards_before_compiling(self):
+        library = self.directory / "src" / "lib.rs"
+        library.parent.mkdir()
+        for original in (b"pub fn example() {}", b"#![forbid(unsafe_code)]\n" * 2):
+            library.write_bytes(original)
+            with self.subTest(original=original), patch(
+                "check_distribution.require_rejected_check",
+            ) as strong, patch("check_distribution.run") as weaker, self.assertRaisesRegex(
+                ValueError, "one explicit unsafe-code prohibition",
+            ):
+                check_unsafe_policy(["cargo"], self.directory, {})
+            strong.assert_not_called()
+            weaker.assert_not_called()
+            self.assertEqual(library.read_bytes(), original)
 
 
 if __name__ == "__main__":
