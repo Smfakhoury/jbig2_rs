@@ -35,7 +35,6 @@ cargo clippy --all-targets --all-features -- -D warnings
 cargo test --all-features
 cargo doc --no-deps
 cargo package --locked
-python3 -B tools/check_distribution.py --toolchain 1.88.0
 ```
 
 For explicit MSRV checks:
@@ -51,6 +50,13 @@ current stable. The extracted archive is tested offline with a fresh Cargo
 home and an independent exact-output consumer. It exposes no validation-access
 module and needs neither Verus nor repository proof files. See
 [distribution](docs/distribution.md) for reproduction and compiler safety controls.
+That separate maintainer check uses Python 3.11+'s standard library:
+
+```sh
+python3 -B tools/check_distribution.py --toolchain 1.88.0
+```
+
+It is not a prerequisite for ordinary Cargo builds or Cargo-Verus.
 
 ## Implementation and proof boundary
 
@@ -68,18 +74,53 @@ Some verified contracts establish bounds or state preservation rather than
 decoded-output semantics, and a disclosed runtime/proof divergence still
 blocks a complete exact-source claim.
 
-With the pinned Verus release and bundled `cargo-verus` on `PATH`:
+### Run Verus through Cargo
+
+With the pinned Verus release and bundled `cargo-verus` on `PATH`, and the
+proof Rust toolchain installed, run from the repository root:
 
 ```sh
-cargo +1.98.1 verus verify --manifest-path verification/Cargo.toml --locked -- --num-threads 1 --rlimit 30
+cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked -- \
+  --num-threads 1 --rlimit 30 --triggers-mode silent
 ```
 
-The isolated manifest targets the same `src/lib.rs` as Cargo. Bare
-`cargo verus verify` against the runtime manifest is not an acceptance gate.
-CI also builds the verified library and checks complete production accounting
-and every required semantic contrast. Selected-module results are debugging
-evidence only. See [verifier limitations](docs/verifier-limitations.md) and
-[the auditor index](docs/verus-auditor-index.md).
+This verifies and builds the production library. **Python is not required for
+this command.** The isolated manifest targets the same `src/lib.rs` as ordinary
+Cargo; its pinned `vstd` dependency is separate from the dependency-free runtime.
+Bare `cargo verus verify` against the runtime manifest is not an acceptance gate.
+
+### Interpret the result
+
+- A successful production-crate result with zero verification errors means
+  its submitted contracts were proved under their preconditions and trusted
+  interfaces. Cargo can also process dependencies; do not mistake a dependency's
+  successful result for production verification.
+- The number of verified obligations is **not** a count or percentage of T.88
+  statements, nor proof that every contract specifies complete decoded output.
+- A focused/module/function run is partial debugging evidence, even with zero
+  errors. It does not replace the unfiltered proof and compiled library.
+- Complete production *accounting* includes reviewed limitations and forwarders;
+  it does not mean every body is directly proved. The remaining runtime/proof
+  divergence still blocks the exact-source release gate.
+- Functional project contracts, independent standard-to-model review, and
+  official conformance results are separate evidence.
+
+The [proof-gap and trust guide](docs/verifier-limitations.md) explains these
+categories, the remaining work and focused debugging commands.
+[Statement traceability](docs/spec-traceability.md) records semantic gaps;
+[the auditor index](docs/verus-auditor-index.md) identifies their model/proof
+entry points.
+
+### Additional maintainer and CI checks
+
+The Python tools are a **separate development/CI assurance layer**, not a
+prerequisite for executing Cargo-Verus or using the crate. They audit
+source/function accounting, statement links, compiling strong/weaker contract
+tests, packaging, coverage, fuzzing and performance evidence. Their tests
+check that those audits fail closed. The current CI/release contract requires
+these checks; running the Cargo command alone does not claim that they ran.
+See [validation](validation/README.md) for the maintained entry points.
+
 For bounded remote proof work, see [proof delegation](docs/github-proof-delegation.md);
 delegation does not replace the required verification gates.
 

@@ -86,8 +86,18 @@ CI uses `cargo verus build` with that manifest to check verification,
 compilation, lifetimes and ghost erasure. It rejects empty, dependency-only,
 partial, duplicate or wrong-tool reports and flags/environments that disable
 these checks. A `--compile` substring in an unrelated option is not evidence.
-For local debugging, place `--verus-args-to roots` before `--` and
-`--verify-module` after it; partial runs never substitute for whole-crate proof.
+For local debugging, use Cargo-Verus's focused mode:
+
+```sh
+cargo +1.98.1 verus focus --manifest-path verification/Cargo.toml --locked -- \
+  --verify-module document --num-threads 1 --rlimit 30 --triggers-mode silent
+```
+
+`focus` verifies crate contents without dependencies and forwards selectors to
+root crates by default. If overriding forwarding explicitly, the pinned option
+is `--fwd-verus-args-to roots` before `--`, not `--verus-args-to`.
+Selectors such as `--verify-module` go after `--`. A focused run is partial
+and never substitutes for whole-crate verification and compilation.
 
 The source trust audit rejects project-local trusted standard specifications,
 verification exclusions and exec termination waivers in runtime/models/proofs.
@@ -123,6 +133,25 @@ source/tool/run/attempt identities. Shards are sequential and worker/job budgets
 are unchanged; cached, canceled, partial or merely predicted results are not
 acceptance evidence. Current accepted group/contrast counts and runs are in the
 snapshot, not repeated as mutable progress totals here.
+
+## What remains before a complete proof/specification claim
+
+There are two different backlogs; closing one does not automatically close the
+other.
+
+| Backlog | Required closure | Authoritative detail |
+| --- | --- | --- |
+| Exact executing-source correspondence | Resolve the known capacity-accounting divergence through an authorized, verified integration; do not replace observed capacity with requested size | [Dispositions](../verification/proof-dispositions.json) and the capacity section above |
+| Reviewed native/standard/callback boundaries | Directly prove the relevant body or retain an explicitly justified conditional trust contract; arbitrary caller I/O/sink behavior is not proved by testing a wrapper | Every named [disposition](../verification/proof-dispositions.json) |
+| Observable algorithm and caller semantics | Strengthen required bounds/state-only results to actual input/output, error and resource relations, including Huffman canonical/prefix behavior, page/stripe lifecycle, symbol/text/refinement/halftone composition, references/retention and globals | Each statement's `gaps` and each feature's `remaining_scope` in the [ledger](../validation/traceability/requirements.json) |
+| Exhaustive standard coverage and model fidelity | Complete the in-scope statement decomposition and independently review standard-to-model, table and caller interpretation; selected records are not an exhaustive denominator | [Requirements](../validation/traceability/requirements.json) and [traceability guide](spec-traceability.md) |
+| Executable conformance | Resolve supported official positives with actual output evidence or an independently authorized disposition; do not infer normative malformation from a decoder rejection | Current [observations](../validation/conformance/itu-t88-2018-results.json), [expectations](../validation/conformance/expected-differences.json) and [review](../validation/conformance/seven-rejection-review.json) |
+
+The missing semantic properties are documented even for directly verified
+functions: direct verification proves their current contracts, not every
+property those functions ought eventually to expose. A successful Cargo run,
+complete accounting, semantic sensitivity and standards-conformance review
+must therefore be interpreted separately.
 
 ## Review and release policy
 
