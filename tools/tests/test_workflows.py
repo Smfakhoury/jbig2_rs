@@ -193,6 +193,7 @@ class WorkflowPolicyTests(unittest.TestCase):
             lambda j: j["verify"].update(needs=["semantic"]),
             lambda j: j["verify"].update(name="renamed"),
             lambda j: j["whole"].update(**{"timeout-minutes": "21"}),
+            lambda j: j["semantic"].update(**{"timeout-minutes": "20"}),
             lambda j: j["semantic"]["strategy"].update(**{"fail-fast": "true"}),
             lambda j: j["semantic"]["strategy"].update(**{"max-parallel": "8"}),
             lambda j: j["semantic"]["strategy"].update(matrix={"group": ["reset"]}),

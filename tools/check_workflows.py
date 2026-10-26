@@ -115,8 +115,12 @@ def check_verus_sharding(document):
     if set(jobs) != {"whole", "semantic", "verify"} or not all(isinstance(job, dict) for job in jobs.values()):
         raise ValueError("Verus requires whole, semantic and stable verify collector jobs")
     whole, semantic, verify = (jobs[name] for name in ("whole", "semantic", "verify"))
-    if any(job.get("timeout-minutes") != "20" for job in jobs.values()):
-        raise ValueError("Verus job caps must remain 20 minutes")
+    if (
+        whole.get("timeout-minutes") != "20"
+        or semantic.get("timeout-minutes") != "30"
+        or verify.get("timeout-minutes") != "20"
+    ):
+        raise ValueError("Verus job caps must remain 20 minutes, except 30 minutes for semantic shards")
     if (
         semantic.get("needs") != "whole"
         or semantic.get("strategy") != {
