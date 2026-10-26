@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -109,6 +110,19 @@ def weakened_contract(source: str, case: dict) -> str:
     return source
 
 
+def positive_baseline(root, executable, directory, environment, module, functions):
+    receipt = os.environ.get("JBIG2_WHOLE_BASELINE")
+    if receipt is not None:
+        from run_semantic_proofs import baseline_from_whole, load_whole_baseline
+
+        names = (functions,) if isinstance(functions, str) else functions
+        whole = load_whole_baseline(root, Path(receipt))
+        return baseline_from_whole(
+            whole, [f"jbig2_rs_production::{module}::{name}" for name in names],
+        )
+    return selected_proof(executable, directory, environment, False, module, functions)
+
+
 def check_semantic_cases(
     root: Path, executable: Path, cases: tuple, files: tuple, prefix: str, scope: str,
     *, baseline_groups: tuple = (),
@@ -131,8 +145,8 @@ def check_semantic_cases(
         baselines = {}
         baseline_targets = {}
         for module, functions in baseline_groups:
-            baseline = selected_proof(
-                executable, directory, environment, False, module, functions,
+            baseline = positive_baseline(
+                root, executable, directory, environment, module, functions,
             )
             for function in functions:
                 baselines[(module, function)] = baseline
@@ -146,8 +160,8 @@ def check_semantic_cases(
             original = path.read_text(encoding="utf-8")
             target = (case["module"], case["function"])
             if target not in baselines:
-                baselines[target] = selected_proof(
-                    executable, directory, environment, False, *target,
+                baselines[target] = positive_baseline(
+                    root, executable, directory, environment, *target,
                 )
                 baseline_targets[target] = [case["function"]]
             source = replace_once(original, case["site"], case["replacement"])

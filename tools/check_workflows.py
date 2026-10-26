@@ -246,6 +246,27 @@ def check_verus_sharding(document):
         step.get("env") == {"SEMANTIC_SHARD": "${{ matrix.shard }}"} for step in semantic_steps
     ):
         raise ValueError("semantic matrix must execute its exact complete selected shard")
+    positive_download = [
+        (index, step) for index, step in enumerate(semantic_steps)
+        if step.get("uses", "").startswith("actions/download-artifact@")
+    ]
+    semantic_execution = [
+        (index, step) for index, step in enumerate(semantic_steps)
+        if "tools/run_semantic_proofs.py" in step.get("run", "")
+    ]
+    if (
+        len(positive_download) != 1 or len(semantic_execution) != 1
+        or positive_download[0][0] >= semantic_execution[0][0]
+        or positive_download[0][1].get("uses")
+            != "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333"
+        or positive_download[0][1].get("with") != {
+            "name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-whole",
+            "path": "target/semantic-whole",
+        }
+        or "--whole-baseline target/semantic-whole"
+            not in semantic_execution[0][1].get("run", "")
+    ):
+        raise ValueError("semantic shards require the pinned current-run whole-positive baseline before execution")
     download = [step for step in verify_steps if step.get("uses", "").startswith("actions/download-artifact@")]
     if len(download) != 1 or download[0].get("with") != {
         "pattern": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-*",

@@ -17,6 +17,33 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
+DOCUMENT_PARTITION_GROUPS = (
+    ("iaid-state", 6), ("arithmetic-initialization", 6), ("text-batch", 11),
+    ("black-span", 6), ("segment-data", 10), ("value-bridge", 5), ("mmr-span", 8),
+    ("reader-error", 9), ("arithmetic-refill", 6), ("mmr-reference", 11),
+    ("bitmap-copy", 8), ("retention", 3), ("bitmap-chunk", 4),
+    ("symbol-cardinality", 11), ("segment-header", 10), ("document-count", 13),
+    ("mmr-run", 4), ("arithmetic-codec", 19), ("arithmetic-decision", 15),
+    ("halftone-header", 9), ("reset", 2), ("arithmetic-normalization", 6),
+    ("arithmetic-integer", 9), ("mmr-horizontal", 6), ("integer-state", 9),
+    ("operator-bit", 4), ("document-layout", 12), ("region-dispatch", 3),
+    ("bitmap-compose", 7), ("mmr-prefix", 4),
+)
+
+
+def document_partition_checks():
+    checks = {row[0]: row for row in runner.configured_checks()}
+    return tuple(
+        (*checks[name][:2], count, *checks[name][3:])
+        for name, count in DOCUMENT_PARTITION_GROUPS
+    )
+
+
+def document_partition_shards():
+    with patch.object(runner, "CHECKS", document_partition_checks()):
+        return runner.configured_shards()
+
+
 def evidence():
     return {
         "schema_version": 2, "status": "passed", "verus_version": "pinned", "production_sources_modified": False,
@@ -90,18 +117,34 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
 
-    def test_manifest_binds_relocated_metadata_and_agent_profiles_but_not_generated_json(self):
+    def test_manifest_binds_relocated_metadata_and_opaque_agent_profiles_not_generated_json(self):
         (self.root / "verification/target").mkdir(parents=True)
-        (self.root / ".github/agents").mkdir(parents=True)
         (self.root / "verification/proof-dispositions.json").write_text("{}")
         (self.root / "verification/target/generated.json").write_text("{}")
-        (self.root / ".github/agents/worker.agent.md").write_text("agent fixture")
-        with patch.object(runner, "CHECKS", self.checks):
-            bindings = runner.manifest(self.root)["source_bindings"]
+        profiles = {".github/agents/worker.agent.md": "1" * 40}
+        with patch.object(runner, "CHECKS", self.checks), patch.object(
+            runner, "agent_profile_blobs", return_value=profiles,
+        ):
+            manifest = runner.manifest(self.root)
+            bindings = manifest["source_bindings"]
         self.assertIn("config/toolchain.json", bindings)
         self.assertIn("verification/proof-dispositions.json", bindings)
-        self.assertIn(".github/agents/worker.agent.md", bindings)
+        self.assertEqual(manifest["agent_profile_blobs"], profiles)
         self.assertNotIn("verification/target/generated.json", bindings)
+
+    def test_agent_profile_identity_uses_git_metadata_without_reading_instructions(self):
+        (self.root / ".git").mkdir()
+        outputs = [
+            SimpleNamespace(stdout=""),
+            SimpleNamespace(stdout="100644 blob " + "1" * 40 + "\t.github/agents/worker.agent.md\n"),
+        ]
+        with patch.object(runner.subprocess, "run", side_effect=outputs):
+            self.assertEqual(runner.agent_profile_blobs(self.root), {
+                ".github/agents/worker.agent.md": "1" * 40,
+            })
+        with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(stdout=" M profile")):
+            with self.assertRaisesRegex(ValueError, "committed opaque"):
+                runner.agent_profile_blobs(self.root)
 
     def test_shared_document_baseline_requires_all_configured_function_identities(self):
         cases = [{"id": name, "function": name} for name in ("first", "second")]
@@ -342,12 +385,11 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "mmr-horizontal": (6, 180), "symbol-cardinality": (11, 271),
             "mmr-reference": (11, 371), "segment-header": (10, 171),
             "segment-data": (10, 296),
-            "huffman-assignment": (4, 260),
         }
-        checks = runner.configured_checks()
+        checks = document_partition_checks()
         self.assertEqual({check[0] for check in checks}, set(measured))
         estimates = []
-        for shard in runner.configured_shards():
+        for shard in document_partition_shards():
             seconds = 0
             for identity, _, cases, *_ in shard:
                 observed_cases, observed_seconds = measured[identity]
@@ -361,7 +403,6 @@ class SemanticOrchestrationTests(unittest.TestCase):
         # Completed 40303484174 attempt-2 groups, with conservative ZIP-time
         # bounds for its three leading shard-5 groups; canceled jobs get no
         # acceptance credit. Document partitions use fresh complete local runs.
-        # Huffman uses its complete 236.25-second local run, rounded up.
         observed = {
             "arithmetic-codec": 540, "arithmetic-decision": 308,
             "arithmetic-initialization": 160, "arithmetic-integer": 227,
@@ -374,25 +415,52 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "reader-error": 169, "region-dispatch": 89, "reset": 46,
             "retention": 91, "segment-header": 207, "symbol-cardinality": 322,
             "text-batch": 312, "value-bridge": 120, "segment-data": 266,
-            "huffman-assignment": 237,
         }
-        self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 240)
+        self.assertEqual({row[0] for row in document_partition_checks()}, set(observed))
+        self.assertEqual(sum(row[2] for row in document_partition_checks()), 236)
         self.assertLessEqual(max(
             sum(observed[row[0]] for row in shard)
-            for shard in runner.configured_shards()
+            for shard in document_partition_shards()
         ), 1050)
 
     def test_document_partitions_use_different_shards_without_more_jobs_or_cases(self):
-        shards = runner.configured_shards()
+        shards = document_partition_shards()
         self.assertEqual(len(shards), 6)
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 240)
+        self.assertEqual(sum(row[2] for row in document_partition_checks()), 236)
         groups = [{row[0] for row in shard} for shard in shards]
         self.assertNotEqual(
             next(i for i, names in enumerate(groups) if "document-count" in names),
             next(i for i, names in enumerate(groups) if "document-layout" in names),
         )
         self.assertLessEqual(max(sum(row[2] for row in shard) for shard in shards), 42)
+
+    def test_historical_snapshot_does_not_freeze_growth_within_existing_groups(self):
+        current = runner.configured_checks()
+        counts = {row[0]: row[2] for row in current}
+        for name, count in DOCUMENT_PARTITION_GROUPS:
+            self.assertGreaterEqual(counts[name], count)
+        future = tuple(
+            (*row[:2], row[2] + 1, *row[3:]) if row[0] == "iaid-state" else row
+            for row in current
+        )
+        before = document_partition_shards()
+        with patch.object(runner, "CHECKS", future):
+            self.assertEqual(document_partition_shards(), before)
+            self.assertEqual(sum(row[2] for row in runner.configured_checks()), sum(counts.values()) + 1)
+
+    def test_complete_measurement_guard_uses_all_current_groups_without_a_global_case_limit(self):
+        checks = self.checks + (("future-decision", "future.py", 100, "strong", "weak"),)
+        rows = [{"id": check[0], "status": "passed", "seconds": 1.0} for check in checks]
+        with patch.object(runner, "CHECKS", checks):
+            self.assertEqual(runner.measured_shard_seconds(rows), [2, 2, 2, 1, 1, 1])
+            for value in (None, True, 0, -1, float("nan"), float("inf"), 1050):
+                broken = copy.deepcopy(rows)
+                broken[0]["seconds"] = value
+                with self.subTest(seconds=value), self.assertRaises(ValueError):
+                    runner.measured_shard_seconds(broken)
+            for broken in (rows[:-1], rows + [rows[0]], [dict(row, status="failed") for row in rows]):
+                with self.assertRaises(ValueError):
+                    runner.measured_shard_seconds(broken)
 
     def test_matrix_is_generated_from_current_complete_checks(self):
         future_checks = self.checks + (("future-decision", "future.py", 4, "strong_contract", "weaker_control"),)
@@ -495,6 +563,83 @@ class SemanticOrchestrationTests(unittest.TestCase):
                     inputs / (runner.artifact_prefix() + f"shard-{index}") / runner.TRACE, shard=index,
                 )
         return inputs
+
+    def test_whole_positive_receipt_is_source_tool_run_and_artifact_bound(self):
+        whole = self.root / "whole"
+        self.whole_fixture(whole)
+        with patch.object(runner, "CHECKS", self.checks):
+            runner.seal_whole(self.root, whole)
+            baseline = runner.load_whole_baseline(self.root, whole)
+            selected = runner.baseline_from_whole(baseline, ["module::function"])
+            self.assertTrue(runner.baseline_passed(selected, baseline, ["module::function"]))
+            self.assertFalse(runner.baseline_passed(selected))
+            self.assertFalse(runner.baseline_passed(selected, baseline, ["other::function"]))
+            for names in ([], ["unknown"], ["module::function"] * 2):
+                with self.subTest(names=names), self.assertRaises(ValueError):
+                    runner.baseline_from_whole(baseline, names)
+            for field in ("receipt_sha256", "report_sha256", "functions"):
+                changed = copy.deepcopy(selected)
+                changed["whole_positive"][field] = [] if field == "functions" else "0" * 64
+                self.assertFalse(runner.baseline_passed(changed, baseline, ["module::function"]))
+            summary = whole / runner.WHOLE_SUMMARY
+            original = summary.read_bytes()
+            for field, value in (
+                ("status", "failed"), ("schema_version", 0), ("manifest", {}),
+                ("run_identity", {"GITHUB_RUN_ATTEMPT": "other"}), ("files", {}),
+            ):
+                document = json.loads(original)
+                document[field] = value
+                runner.write_json(summary, document)
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    runner.load_whole_baseline(self.root, whole)
+                summary.write_bytes(original)
+            library = whole / "target/verus-production/libfixture.rlib"
+            library.write_bytes(b"changed library")
+            with self.assertRaisesRegex(ValueError, "modified"):
+                runner.load_whole_baseline(self.root, whole)
+            library.write_bytes(b"native compilation fixture")
+            (self.root / "src/example.rs").write_text("changed source")
+            with self.assertRaisesRegex(ValueError, "source/tool identity"):
+                runner.load_whole_baseline(self.root, whole)
+
+    def test_invalid_explicit_whole_baseline_never_falls_back_or_runs_a_checker(self):
+        with patch.object(runner, "CHECKS", self.checks), patch.object(
+            runner.subprocess, "run",
+        ) as process, self.assertRaises(FileNotFoundError):
+            runner.run_checks(
+                self.root, self.root / "verus", self.output,
+                whole_baseline=self.root / "missing",
+            )
+        process.assert_not_called()
+        self.assertFalse((self.output / runner.SUMMARY).exists())
+
+    def test_baseline_option_cannot_be_silently_ignored_in_nonexecution_modes(self):
+        for mode in (["--matrix"], ["--seal-whole", "/whole"], ["--aggregate", "/inputs"]):
+            with self.subTest(mode=mode), patch.object(
+                sys, "argv", ["runner", *mode, "--whole-baseline", "/stale"],
+            ), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as stopped:
+                runner.main()
+            self.assertEqual(stopped.exception.code, 2)
+
+    def test_runner_passes_only_explicit_whole_baseline_to_isolated_checkers(self):
+        whole = self.root / "whole"
+        self.whole_fixture(whole)
+        with patch.object(runner, "CHECKS", self.checks):
+            runner.seal_whole(self.root, whole)
+            for supplied in (None, whole):
+                with patch.dict(os.environ, {"JBIG2_WHOLE_BASELINE": "/stale"}), patch.object(
+                    runner.subprocess, "run", side_effect=self.passing_process,
+                ) as process:
+                    result = runner.run_checks(
+                        self.root, self.root / "verus", self.output,
+                        only="0", whole_baseline=supplied,
+                    )
+                self.assertEqual(result["status"], "passed")
+                environment = process.call_args.kwargs["env"]
+                if supplied is None:
+                    self.assertNotIn("JBIG2_WHOLE_BASELINE", environment)
+                else:
+                    self.assertEqual(environment["JBIG2_WHOLE_BASELINE"], str(whole.resolve()))
 
     def collect(self, inputs, whole="success", semantic="success"):
         with patch.object(runner, "CHECKS", self.checks):

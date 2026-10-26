@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "Publication layout and documentation update only. Policy/baseline paths and validator references were relocated; all runtime, asset permissions, seven classifications and original bf3d525 execution receipts remain unchanged. The refreshed metadata/tool hashes do not claim a new official-vector run, normative approval or release permission.",
+  "metadata_only_update": "Publication layout and annotation-only PageState source binding update. The current document source hash includes proof annotations and raw numeric tests; its ordinary Rust 1.89.0 compiler expansion was freshly compared byte-for-byte with main 4eb0b65fb890af6cc49303c8b7415a6d83fe7866 and is identical (SHA-256 dbf462f410dfef52cc314e800a26f4544212f9e23991bfb1dfad2bfdbb976f33). Expansion artifacts: target/native-equivalence/{base,head}-expanded.rs, produced with RUSTC_BOOTSTRAP=1 cargo +1.89.0 rustc --locked --offline --lib -- -Zunpretty=expanded in the base archive and current checkout. Original bf3d525 execution revisions, decoder/asset hashes, source_selection review, all seven classifications and permissions remain unchanged. No official assets or oracles were accessed or rerun, and no new official-vector result, normative approval or release permission is claimed.",
   "recorded_at": "2026-10-25T20:20:57.607829+00:00",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
@@ -12,7 +12,7 @@
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
     "src/decode.rs": "07ad6f08c7e5ac66716cf469971d98f6f44360ec8d49b04f7500711ccf35092d",
-    "src/document.rs": "597b2ef2c78cb24d712fc5c62fb4f21dda6148741816b08edb676788ddbb4527",
+    "src/document.rs": "014b5c5ae96dc348d86033319bd66cbcfdbf5600e488f555bf13c63849265a43",
     "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",

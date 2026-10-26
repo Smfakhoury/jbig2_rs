@@ -253,6 +253,41 @@ class WorkflowPolicyTests(unittest.TestCase):
             with self.subTest(before=before), self.assertRaisesRegex(ValueError, "reports must stay"):
                 check_workflow(document, "verus.yml")
 
+    def test_semantic_positive_baseline_transport_is_current_exact_and_required(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        self.assertTrue(check_workflow(actual, "verus.yml"))
+        for change in (
+            "missing-download", "old-run", "wrong-name", "wrong-path",
+            "missing-argument", "wrong-argument", "late-download",
+        ):
+            document = copy.deepcopy(actual)
+            steps = document["jobs"]["semantic"]["steps"]
+            download = next(
+                step for step in steps
+                if step.get("uses", "").startswith("actions/download-artifact@")
+            )
+            execution = next(
+                step for step in steps
+                if "tools/run_semantic_proofs.py" in step.get("run", "")
+            )
+            if change == "missing-download":
+                steps.remove(download)
+            elif change == "old-run":
+                download["with"]["run-id"] = "previous"
+            elif change == "wrong-name":
+                download["with"]["name"] = "verus-partial-previous-whole"
+            elif change == "wrong-path":
+                download["with"]["path"] = "target/previous"
+            elif change == "missing-argument":
+                execution["run"] = execution["run"].replace("--whole-baseline target/semantic-whole", "")
+            elif change == "wrong-argument":
+                execution["run"] = execution["run"].replace("--whole-baseline target/semantic-whole", "--whole-baseline target/previous")
+            else:
+                steps.remove(download)
+                steps.insert(steps.index(execution) + 1, download)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                check_workflow(document, "verus.yml")
+
     def test_validation_events_avoid_duplicate_pushes_without_filtering_prs_or_tags(self):
         for name in ("ci", "coverage", "fuzz", "performance", "verus"):
             actual = load_workflow((TOOLS.parent / f".github/workflows/{name}.yml").read_text())

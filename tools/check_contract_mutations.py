@@ -13,6 +13,7 @@ from pathlib import Path
 from check_distribution import isolated_environment, run
 from check_document_count_proof import CASES as DOCUMENT_CASES
 from check_huffman_assignment_proofs import CASES as HUFFMAN_ASSIGNMENT_CASES
+from check_page_state_proofs import CASES as PAGE_STATE_CASES
 from check_segment_data_proofs import CASES as SEGMENT_DATA_CASES
 from check_segment_header_proofs import CASES as HEADER_CASES
 from check_text_batch_proofs import CASES as TEXT_CASES
@@ -68,6 +69,13 @@ MUTATIONS = tuple(
         "whitespace_flexible": True,
     }
     for case in HUFFMAN_ASSIGNMENT_CASES
+) + tuple(
+    {
+        "id": "page-state-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": case["test"], "whitespace_flexible": True,
+    }
+    for case in PAGE_STATE_CASES
 ) + tuple(
     {
         "id": "segment-data-" + case["id"],
