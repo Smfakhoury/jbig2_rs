@@ -204,7 +204,7 @@ def check_verus_sharding(document):
     if len(download) != 1 or download[0].get("with") != {
         "pattern": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-*",
         "path": "target/semantic-inputs", "merge-multiple": "false",
-    } or download[0].get("uses") != "actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131":
+    } or download[0].get("uses") != "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333":
         raise ValueError("collector must download unmerged, pinned, current-run/current-attempt artifacts")
     if not any(
         step.get("env") == {
