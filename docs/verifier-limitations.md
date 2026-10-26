@@ -141,10 +141,13 @@ in each semantic job, and passes that directory as `--whole-baseline` alongside 
 existing shard arguments. Do not place it inside the shard output directory.
 The collector revalidates every reused baseline against the whole artifact it
 collects. Preserve six one-worker shards, at most four active semantic jobs,
-20-minute job caps and the existing stable check topology.
+20-minute whole/collector caps, the owner-merged 30-minute semantic-job caps
+and the existing stable check topology. The measured 1050-second semantic
+workload guard remains unchanged.
 
-The existing whole-proof job also executes the complete `arithmetic-codec` and
-`value-bridge` contrast groups sequentially after sealing its positive evidence.
+The existing whole-proof job also executes the complete `arithmetic-codec`,
+`value-bridge` and `segment-header` contrast groups sequentially after sealing
+its positive evidence.
 This uses spare time in an existing job, not additional jobs, solver workers,
 larger timeouts or omitted cases. Their reports remain outside the immutable
 positive receipt and are separately source/run/hash validated by the collector,

@@ -408,7 +408,10 @@ class SemanticOrchestrationTests(unittest.TestCase):
         checks = runner.configured_checks()
         whole = runner.configured_whole_checks()
         shards = runner.configured_shards()
-        self.assertEqual([row[0] for row in whole], ["arithmetic-codec", "value-bridge"])
+        self.assertEqual(
+            [row[0] for row in whole],
+            ["arithmetic-codec", "value-bridge", "segment-header"],
+        )
         self.assertEqual(len(shards), 6)
         assigned = list(whole) + [row for shard in shards for row in shard]
         self.assertEqual(len(assigned), len(checks))
@@ -417,6 +420,48 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(sum(weights[row[0]] for row in whole), 1000)
         self.assertLessEqual(max(sum(weights[row[0]] for row in shard) for shard in shards), 1000)
         rows = [{"id": row[0], "status": "passed", "seconds": weights[row[0]]} for row in checks]
+        self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
+
+    def test_completed_f53_costs_rebalance_without_accepting_its_rejected_collection(self):
+        # All 40412207379 producers completed, but its collector rejected the
+        # overloaded shard. These costs are scheduling inputs, not acceptance.
+        observed = {
+            "arithmetic-codec": 354.261, "value-bridge": 98.024,
+            "arithmetic-decision": 345.218, "page-public": 212.728,
+            "segment-header": 231.228, "arithmetic-refill": 138.842,
+            "retention": 69.331, "region-dispatch": 73.249,
+            "mmr-reference": 228.469, "arithmetic-integer": 161.789,
+            "bitmap-copy": 144.227, "huffman-assignment": 78.843,
+            "operator-bit": 79.065, "reset": 37.332,
+            "document-layout": 302.450, "segment-data": 242.248,
+            "mmr-span": 192.194, "iaid-state": 142.176, "mmr-prefix": 98.857,
+            "page-state": 306.773, "halftone-header": 213.203,
+            "reader-error": 201.498, "arithmetic-normalization": 140.035,
+            "arithmetic-initialization": 138.166, "document-count": 288.756,
+            "integer-state": 224.280, "mmr-horizontal": 157.141,
+            "page-finish": 155.159, "mmr-run": 93.525,
+            "text-batch": 278.817, "symbol-cardinality": 267.925,
+            "bitmap-compose": 166.873, "black-span": 149.415,
+            "bitmap-chunk": 96.925,
+        }
+        checks = runner.configured_checks()
+        self.assertEqual({row[0] for row in checks}, set(observed))
+        overloaded = (
+            "arithmetic-decision", "page-public", "segment-header",
+            "arithmetic-refill", "retention", "region-dispatch",
+        )
+        self.assertGreater(sum(observed[name] for name in overloaded), 1050)
+        self.assertLessEqual(sum(
+            observed[row[0]] for row in runner.configured_whole_checks()
+        ), 1000)
+        self.assertLessEqual(max(
+            sum(observed[row[0]] for row in shard)
+            for shard in runner.configured_shards()
+        ), 1000)
+        rows = [
+            {"id": row[0], "status": "passed", "seconds": observed[row[0]]}
+            for row in checks
+        ]
         self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
 
     def test_measured_complete_profile_leaves_timeout_headroom(self):
