@@ -127,6 +127,22 @@ contract. Compilation failure or zero selected functions is not detection.
 Sharing a pristine baseline across explicit target sets never replaces the
 separate mutant/weaker queries.
 
+The semantic runner accepts `--whole-baseline PATH` pointing to the sealed whole
+artifact directory. It validates the complete source/tool/run/attempt manifest,
+whole proof, traceability, inventory, nonempty compiled library and artifact
+hashes before reusing only pristine positive baselines covering each exact
+qualified target. An explicitly supplied missing, stale or invalid artifact
+fails closed; it never falls back to selected verification. Each contrast still
+compiles its native mutant and independently executes both verifier queries.
+
+Coordinator workflow interface (no workflow change is included here): download
+the same-run `verus-partial-RUN-ATTEMPT-whole` artifact into a separate directory
+in each semantic job, and pass that directory as `--whole-baseline` alongside the
+existing shard arguments. Do not place it inside the shard output directory.
+The collector revalidates every reused baseline against the whole artifact it
+collects. Preserve six one-worker shards, at most four active semantic jobs,
+20-minute job caps and the existing stable check topology.
+
 The stable `verify` collector requires the whole proof/build and same-run shard
 receipts, exact membership and individual report/log/checker hashes with matching
 source/tool/run/attempt identities. Shards are sequential and worker/job budgets

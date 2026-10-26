@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from check_distribution import run
-from proof_sensitivity import proof_workspace, replace_once, selected_proof
+from proof_sensitivity import positive_baseline, proof_workspace, replace_once, selected_proof
 from rust_source import source_functions
 
 
@@ -269,8 +269,8 @@ def check_document_count_proof(executable: Path, case_group: str | None = None) 
         functions = tuple(sorted({case["function"] for case in cases}))
         if any(not FUNCTIONS[f"document::{name}"]["verification_requested"] for name in functions):
             raise ValueError("document baseline contains an unverified production function")
-        baseline = selected_proof(
-            executable, directory, environment, False, "document", functions,
+        baseline = positive_baseline(
+            ROOT, executable, directory, environment, "document", functions,
         )
         for case in cases:
             print(f"document contrast: {case['id']}", file=sys.stderr, flush=True)

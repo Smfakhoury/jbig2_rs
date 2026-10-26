@@ -12,10 +12,54 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from proof_sensitivity import check_semantic_cases, selected_proof, weakened_contract
+from proof_sensitivity import check_semantic_cases, positive_baseline, selected_proof, weakened_contract
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_receipt_replaces_only_pristine_baseline_not_negative_or_control_queries(self):
+        from run_semantic_proofs import baseline_from_whole
+
+        whole = {
+            "receipt_sha256": "1" * 64, "report_sha256": "2" * 64,
+            "report": {
+                "verification-results": {
+                    "success": True, "is-verifying-entire-crate": True, "verified": 1, "errors": 0,
+                },
+                "func-details": {"jbig2_rs_production::document::finalize_pages": {}},
+            },
+        }
+        with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/receipt"}), patch(
+            "run_semantic_proofs.load_whole_baseline", return_value=whole,
+        ) as load, patch("proof_sensitivity.selected_proof") as verify:
+            result = positive_baseline(
+                TOOLS.parent, Path("/verus"), TOOLS.parent, {}, "document", "finalize_pages",
+            )
+            self.assertEqual(result, baseline_from_whole(
+                whole, ["jbig2_rs_production::document::finalize_pages"],
+            ))
+            verify.assert_not_called()
+            load.assert_called_once_with(TOOLS.parent, Path("/receipt"))
+        for failure in (True, False):
+            with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/invalid"}), patch(
+                "run_semantic_proofs.load_whole_baseline", side_effect=AssertionError("must not reuse"),
+            ):
+                report = self.report()
+                report["verification-results"]["errors"] = int(failure)
+                process = CompletedProcess(
+                    [], int(failure), json.dumps(report),
+                    "postcondition not satisfied" if failure else "",
+                )
+                with patch("proof_sensitivity.subprocess.run", return_value=process) as verify:
+                    selected_proof(
+                        Path("/verus"), TOOLS.parent, {}, failure, "document", "finalize_pages",
+                    )
+                verify.assert_called_once()
+        with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/invalid"}), patch(
+            "run_semantic_proofs.load_whole_baseline", side_effect=ValueError("stale receipt"),
+        ), patch("proof_sensitivity.selected_proof") as verify, self.assertRaisesRegex(ValueError, "stale"):
+            positive_baseline(TOOLS.parent, Path("/verus"), TOOLS.parent, {}, "document", "finalize_pages")
+        verify.assert_not_called()
+
     def test_multi_clause_controls_are_explicit_and_nonempty(self):
         self.assertEqual(
             weakened_contract("first second", {"controls": (("first", "one"), ("second", "two"))}),
