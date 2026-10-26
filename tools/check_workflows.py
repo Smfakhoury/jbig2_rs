@@ -239,6 +239,8 @@ def check_verus_sharding(document):
         "--require-complete",
         "diff -u verification/production-proof-coverage.json", "tools/check_traceability.py",
         "--seal-whole target/semantic-ci/whole", "tools/run_semantic_proofs.py --matrix",
+        "--whole-groups", "--whole-baseline target/semantic-ci/whole",
+        "--output-dir target/semantic-ci/whole/semantic-groups/target/traceability",
     ):
         if text not in runs[0]:
             raise ValueError(f"whole-crate verification gate missing: {text}")

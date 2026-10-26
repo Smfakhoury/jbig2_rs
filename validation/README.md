@@ -310,9 +310,11 @@ Action pins are immutable identities, not independent approval of upstream code.
 Runtime MSRV, development, proof and nightly pins remain distinct.
 Native distribution executes rather than merely cross-compiles.
 PR validation is not duplicated by feature-push workflows; main/tag pushes and
-manual preflight retain their gates. Proof shards retain complete logical
-membership, sequential one-worker execution, unchanged concurrency/timeouts and
-same-source/run/attempt collection.
+manual preflight retain their gates. The existing whole-proof job executes its
+two assigned contrast groups serially after unfiltered verification; remaining
+groups use six sequential one-worker shards. The collector requires every
+configured group exactly once, including the whole-job groups, with unchanged
+job/concurrency/time limits and same-source/run/attempt identities.
 
 Dependency updates require review/rerun of workflow-policy tests. Source-bound
 reports and failed-run diagnostics are retained on all native hosts.

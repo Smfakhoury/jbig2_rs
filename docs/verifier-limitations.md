@@ -135,13 +135,22 @@ qualified target. An explicitly supplied missing, stale or invalid artifact
 fails closed; it never falls back to selected verification. Each contrast still
 compiles its native mutant and independently executes both verifier queries.
 
-Coordinator workflow interface (no workflow change is included here): download
+The workflow downloads
 the same-run `verus-partial-RUN-ATTEMPT-whole` artifact into a separate directory
-in each semantic job, and pass that directory as `--whole-baseline` alongside the
+in each semantic job, and passes that directory as `--whole-baseline` alongside the
 existing shard arguments. Do not place it inside the shard output directory.
 The collector revalidates every reused baseline against the whole artifact it
 collects. Preserve six one-worker shards, at most four active semantic jobs,
 20-minute job caps and the existing stable check topology.
+
+The existing whole-proof job also executes the complete `arithmetic-codec` and
+`value-bridge` contrast groups sequentially after sealing its positive evidence.
+This uses spare time in an existing job, not additional jobs, solver workers,
+larger timeouts or omitted cases. Their reports remain outside the immutable
+positive receipt and are separately source/run/hash validated by the collector,
+alongside all six shard receipts. Every configured group executes exactly once.
+The same 1050-second complete-measurement guard applies to this serial group
+workload as to each shard; the whole job's 20-minute cap also covers its proof.
 
 PageState's 29 individual contrasts are partitioned into initialization/stripe,
 finish and public-metadata groups (13/7/9), without adding jobs or changing
@@ -149,14 +158,20 @@ queries. The historical document-partition regression retains its original
 30-group, 236-case, 42-case-per-shard snapshot and 1000-second estimate guard.
 It is not a global case ceiling. Complete current-profile collection instead
 checks every configured group's actual successful elapsed time and rejects a
-shard total above the unchanged 1050-second measurement guard.
+producer total above the unchanged 1050-second measurement guard.
 
-The stable `verify` collector requires the whole proof/build and same-run shard
+The stable `verify` collector requires the whole proof/build, its assigned
+contrast receipt and same-run shard
 receipts, exact membership and individual report/log/checker hashes with matching
 source/tool/run/attempt identities. Shards are sequential and worker/job budgets
-are unchanged; cached, canceled, partial or merely predicted results are not
-acceptance evidence. Current accepted group/contrast counts and runs are in the
+are unchanged; old verification results, canceled/partial collections or merely
+predicted timings are not acceptance evidence. Current accepted group/contrast counts and runs are in the
 snapshot, not repeated as mutable progress totals here.
+
+Bounded in-process caches store only deterministic text normalization and native
+declaration metadata keyed by exact immutable source bytes and mode. Changed
+inputs are reparsed, mutable records are copied, and neither compiler outcomes
+nor strong/weaker verification queries are cached.
 
 ## What remains before a complete proof/specification claim
 

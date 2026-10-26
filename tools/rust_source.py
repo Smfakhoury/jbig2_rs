@@ -1,6 +1,8 @@
 """Syntax-aware source selection for audit tooling, not a Rust compiler."""
 
 import re
+from copy import deepcopy
+from functools import lru_cache
 from pathlib import Path
 
 from tree_sitter import Language, Parser
@@ -82,6 +84,7 @@ def items(container, exclude_proofs=True):
         attributes = []
 
 
+@lru_cache(maxsize=2048)
 def production_code(source: bytes, exclude_proofs=True, mask_noncode=True) -> str:
     """Mask excluded items and non-code without losing byte/line positions."""
     root = parse(source)
@@ -154,12 +157,35 @@ def type_name(node) -> str:
 
 
 def source_functions(root: Path) -> list[dict]:
+    root = root.resolve()
+    src = root / "src"
+    paths = sorted(src.rglob("*"))
+    if (
+        src.is_symlink() or not (src / "lib.rs").is_file()
+        or any(path.is_symlink() for path in paths)
+        or any(path.is_file() and path.suffix != ".rs" for path in paths)
+    ):
+        return _source_functions(root)
+    snapshot = tuple(
+        (path.relative_to(root).as_posix(), path.read_bytes())
+        for path in paths if path.is_file()
+    )
+    return deepcopy(_source_functions_snapshot(root, snapshot))
+
+
+@lru_cache(maxsize=8)
+def _source_functions_snapshot(root, snapshot):
+    return _source_functions(root, dict(snapshot))
+
+
+def _source_functions(root: Path, snapshot=None) -> list[dict]:
     import hashlib
 
     root = root.resolve()
     src = root / "src"
     result = []
     visited = {}
+    file_hashes = {}
     definitions = {}
 
     def visit_file(path, module):
@@ -169,7 +195,8 @@ def source_functions(root: Path) -> list[dict]:
         if path in visited:
             raise ValueError(f"runtime module included more than once: {path}")
         visited[path] = module
-        source = path.read_bytes()
+        source = path.read_bytes() if snapshot is None else snapshot[path.relative_to(root).as_posix()]
+        file_hashes[path] = hashlib.sha256(source).hexdigest()
         walk(parse(source), module, path, None, False)
 
     def walk(container, module, path, owner, verify_impl):
@@ -205,7 +232,7 @@ def source_functions(root: Path) -> list[dict]:
                     "line": node.start_point.row + 1,
                     "attributes": [attribute.text.decode("utf-8") for attribute in attributes],
                     "body_text": node.text.decode("utf-8"),
-                    "file_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                    "file_sha256": file_hashes[path],
                     "verification_requested": verify_impl or any(
                         re.search(rb"\b(verus_verify|verus_spec)\b", attribute.text)
                         for attribute in attributes
@@ -253,7 +280,14 @@ def source_functions(root: Path) -> list[dict]:
                     candidates = [directory / explicit[0]]
                 else:
                     candidates = [directory / f"{name}.rs", directory / name / "mod.rs"]
-                existing = [candidate for candidate in candidates if candidate.is_file()]
+                existing = [
+                    candidate for candidate in candidates
+                    if (
+                        candidate.is_file()
+                        if snapshot is None or not candidate.resolve().is_relative_to(src.resolve())
+                        else candidate.resolve().relative_to(root).as_posix() in snapshot
+                    )
+                ]
                 if len(existing) != 1:
                     raise ValueError(f"missing or ambiguous module {nested} in {path}")
                 visit_file(existing[0], nested)

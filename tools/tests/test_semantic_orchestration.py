@@ -40,7 +40,9 @@ def document_partition_checks():
 
 
 def document_partition_shards():
-    with patch.object(runner, "CHECKS", document_partition_checks()):
+    with patch.object(runner, "CHECKS", document_partition_checks()), patch.object(
+        runner, "WHOLE_GROUPS", (),
+    ):
         return runner.configured_shards()
 
 
@@ -362,6 +364,61 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 runner.run_checks(self.root, self.root / "verus", self.output, only="../missing")
             self.assertFalse((self.output / runner.SUMMARY).exists())
 
+    def test_whole_job_groups_are_serial_and_not_omitted_or_duplicated_by_shards(self):
+        with patch.object(runner, "CHECKS", self.checks), patch.object(
+            runner, "WHOLE_GROUPS", ("0", "1"),
+        ), patch.object(runner.subprocess, "run", side_effect=self.passing_process):
+            whole = runner.run_checks(
+                self.root, self.root / "verus", self.output, whole_groups=True,
+            )
+            self.assertEqual(whole["selected_groups"], ["0", "1"])
+            self.assertEqual(whole["workers"], 1)
+            self.assertIsNone(whole["shard"])
+            assigned = [row[0] for shard in runner.configured_shards() for row in shard]
+            self.assertEqual(assigned, [str(index) for index in range(2, 8)])
+            self.assertEqual(len(runner.configured_shards()), 6)
+            self.assertEqual(set(assigned) | set(whole["selected_groups"]), {row[0] for row in self.checks})
+            with self.assertRaisesRegex(ValueError, "mutually exclusive"):
+                runner.run_checks(self.root, self.root / "verus", self.output, only="0", whole_groups=True)
+            rows = [{"id": row[0], "status": "passed", "seconds": 1.0} for row in self.checks]
+            self.assertEqual(runner.measured_shard_seconds(rows), [1] * 6)
+            rows[0]["seconds"] = 1050
+            with self.assertRaisesRegex(ValueError, "1050"):
+                runner.measured_shard_seconds(rows)
+
+    def test_current_roles_replay_qualified_timing_inputs_without_more_jobs_or_raised_guards(self):
+        # Planning only: completed f294 groups; completed shard-5 ZIP timestamps
+        # plus allowance; current local value/Huffman runs plus 10%, rounded up.
+        # These inputs cannot grant current-head or interrupted-run acceptance.
+        weights = {
+            "arithmetic-codec": 381, "arithmetic-decision": 358,
+            "arithmetic-initialization": 139, "arithmetic-integer": 212,
+            "arithmetic-normalization": 113, "arithmetic-refill": 103,
+            "bitmap-chunk": 99, "bitmap-compose": 171, "bitmap-copy": 202,
+            "black-span": 151, "document-count": 308, "document-layout": 309,
+            "halftone-header": 214, "huffman-assignment": 120, "iaid-state": 144,
+            "integer-state": 241, "mmr-horizontal": 169, "mmr-prefix": 102,
+            "mmr-reference": 318, "mmr-run": 101, "mmr-span": 193,
+            "operator-bit": 98, "page-finish": 169, "page-public": 220,
+            "page-state": 309, "reader-error": 210, "region-dispatch": 56,
+            "reset": 37, "retention": 70, "segment-data": 237,
+            "segment-header": 174, "symbol-cardinality": 272,
+            "text-batch": 293, "value-bridge": 142,
+        }
+        checks = runner.configured_checks()
+        whole = runner.configured_whole_checks()
+        shards = runner.configured_shards()
+        self.assertEqual([row[0] for row in whole], ["arithmetic-codec", "value-bridge"])
+        self.assertEqual(len(shards), 6)
+        assigned = list(whole) + [row for shard in shards for row in shard]
+        self.assertEqual(len(assigned), len(checks))
+        self.assertEqual({row[0] for row in assigned}, {row[0] for row in checks})
+        self.assertEqual(sum(row[2] for row in assigned), sum(row[2] for row in checks))
+        self.assertLessEqual(sum(weights[row[0]] for row in whole), 1000)
+        self.assertLessEqual(max(sum(weights[row[0]] for row in shard) for shard in shards), 1000)
+        rows = [{"id": row[0], "status": "passed", "seconds": weights[row[0]]} for row in checks]
+        self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
+
     def test_measured_complete_profile_leaves_timeout_headroom(self):
         # Accepted current baseline 40222911541, rounded up.
         # The new metadata group uses its complete 269-second local run plus 10%.
@@ -557,12 +614,48 @@ class SemanticOrchestrationTests(unittest.TestCase):
             runner.subprocess, "run", side_effect=self.passing_process,
         ):
             runner.seal_whole(self.root, whole)
+            if runner.configured_whole_checks():
+                runner.run_checks(
+                    self.root, self.root / "verus",
+                    whole / "semantic-groups" / runner.TRACE, whole_groups=True,
+                )
             for index, _ in enumerate(runner.configured_shards()):
                 runner.run_checks(
                     self.root, self.root / "verus",
                     inputs / (runner.artifact_prefix() + f"shard-{index}") / runner.TRACE, shard=index,
                 )
         return inputs
+
+    def test_whole_job_semantic_receipts_are_required_and_source_bound(self):
+        with patch.object(runner, "WHOLE_GROUPS", ("0", "1")):
+            inputs = self.collection_fixture()
+            whole = inputs / (runner.artifact_prefix() + "whole")
+            summary_path = whole / "semantic-groups" / runner.TRACE / runner.SUMMARY
+            original = runner.read_json(summary_path)
+            with patch.object(runner, "CHECKS", self.checks):
+                result = runner.aggregate(self.root, inputs, self.output, "success", "success")
+                self.assertEqual(result["selected_groups"], [row[0] for row in self.checks])
+                self.assertEqual(len(result["checks"]), 8)
+                self.assertGreater(result["measured_whole_group_seconds"], 0)
+                for changed in ("missing", "workers", "selection", "role", "run", "timing"):
+                    summary = copy.deepcopy(original)
+                    if changed == "missing":
+                        summary_path.unlink()
+                    elif changed == "workers":
+                        summary["workers"] = 2
+                    elif changed == "selection":
+                        summary["selected_groups"] = ["0"]
+                    elif changed == "role":
+                        summary["shard"] = 0
+                    elif changed == "run":
+                        summary["run_identity"]["GITHUB_RUN_ID"] = "previous"
+                    else:
+                        summary["checks"][0]["seconds"] = 1050
+                    if changed != "missing":
+                        runner.write_json(summary_path, summary)
+                    with self.subTest(changed=changed), self.assertRaises((ValueError, OSError)):
+                        runner.aggregate(self.root, inputs, self.output, "success", "success")
+                    runner.write_json(summary_path, original)
 
     def test_whole_positive_receipt_is_source_tool_run_and_artifact_bound(self):
         whole = self.root / "whole"
