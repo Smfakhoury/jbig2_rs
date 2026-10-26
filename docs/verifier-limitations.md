@@ -143,6 +143,14 @@ The collector revalidates every reused baseline against the whole artifact it
 collects. Preserve six one-worker shards, at most four active semantic jobs,
 20-minute job caps and the existing stable check topology.
 
+PageState's 29 individual contrasts are partitioned into initialization/stripe,
+finish and public-metadata groups (13/7/9), without adding jobs or changing
+queries. The historical document-partition regression retains its original
+30-group, 236-case, 42-case-per-shard snapshot and 1000-second estimate guard.
+It is not a global case ceiling. Complete current-profile collection instead
+checks every configured group's actual successful elapsed time and rejects a
+shard total above the unchanged 1050-second measurement guard.
+
 The stable `verify` collector requires the whole proof/build and same-run shard
 receipts, exact membership and individual report/log/checker hashes with matching
 source/tool/run/attempt identities. Shards are sequential and worker/job budgets

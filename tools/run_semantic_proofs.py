@@ -21,37 +21,39 @@ WORKERS = 2
 CI_SHARDS = 6
 RECEIPT_SCHEMA = 3
 CHECKS = (
-    ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
+    ("page-state", "check_page_state_proofs.py", 13, "strong_contract", "weaker_control"),
     ("text-batch", "check_text_batch_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("black-span", "check_black_span_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),
+    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
+    ("document-layout", "check_document_count_proof.py", 12, "strong_count_contract", "weaker_control"),
+    ("segment-header", "check_segment_header_proofs.py", 10, "strong_contract", "weaker_control"),
+    ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("page-public", "check_page_state_proofs.py", 9, "strong_contract", "weaker_control"),
     ("segment-data", "check_segment_data_proofs.py", 10, "strong_contract", "weaker_control"),
-    ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
-    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
     ("mmr-reference", "check_mmr_reference_proofs.py", 11, "strong_contract", "weaker_control"),
+    ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
+    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("page-finish", "check_page_state_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
     ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("black-span", "check_black_span_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("segment-header", "check_segment_header_proofs.py", 10, "strong_contract", "weaker_control"),
-    ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),
-    ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
-    ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
-    ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
-    ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("document-layout", "check_document_count_proof.py", 12, "strong_count_contract", "weaker_control"),
-    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
-    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
-    ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("page-state", "check_page_state_proofs.py", 29, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -333,7 +335,9 @@ def run_checks(root, executable, output, only=None, shard=None, whole_baseline=N
             report.unlink(missing_ok=True)
             source = root / "tools" / script
             result["checker_sha256"] = digest(source)
-            selection = ["--case-group", identity] if script == "check_document_count_proof.py" else []
+            selection = ["--case-group", identity] if script in {
+                "check_document_count_proof.py", "check_page_state_proofs.py",
+            } else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(
                     [sys.executable, "-B", str(source), "--verus-executable",
@@ -613,6 +617,10 @@ def main():
     parser.add_argument("--whole-result")
     parser.add_argument("--semantic-result")
     arguments = parser.parse_args()
+    if arguments.whole_baseline is not None and (
+        arguments.matrix or arguments.seal_whole or arguments.aggregate
+    ):
+        parser.error("--whole-baseline is only valid for semantic execution")
     try:
         if arguments.matrix:
             print(json.dumps({"shard": list(range(len(configured_shards())))}))

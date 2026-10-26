@@ -134,19 +134,28 @@ for field, replacement in (
     entry["controls"] = ((FIELDS, " && ".join(remaining)),)
     CASES += (entry,)
 
+CASE_GROUPS = {
+    "page-state": tuple(case for case in CASES if case["function"] in ("PageState::new", "PageState::add_stripe")),
+    "page-finish": tuple(case for case in CASES if case["function"] == "PageState::finish"),
+    "page-public": tuple(case for case in CASES if case["function"] == "PageState::into_public"),
+}
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verus-executable", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--case-group", choices=tuple(CASE_GROUPS))
     arguments = parser.parse_args()
     try:
         report = check_semantic_cases(
-            ROOT, arguments.verus_executable.resolve(), CASES,
+            ROOT, arguments.verus_executable.resolve(),
+            CASES if arguments.case_group is None else CASE_GROUPS[arguments.case_group],
             ("src/document.rs", "specs/document.rs", "proofs/model_support/document.rs"),
             "jbig2-page-state-",
             "Exact existing PageState transitions, typed errors, failure frames and public metadata; no raster, caller lifecycle or independent normative approval",
         )
+        report["case_group"] = arguments.case_group or "all"
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"page state proof sensitivity failed: {error}", file=sys.stderr)
         report = {"schema_version": 2, "status": "failed", "error": str(error)}

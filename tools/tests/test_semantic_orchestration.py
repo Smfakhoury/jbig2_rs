@@ -592,6 +592,14 @@ class SemanticOrchestrationTests(unittest.TestCase):
         process.assert_not_called()
         self.assertFalse((self.output / runner.SUMMARY).exists())
 
+    def test_baseline_option_cannot_be_silently_ignored_in_nonexecution_modes(self):
+        for mode in (["--matrix"], ["--seal-whole", "/whole"], ["--aggregate", "/inputs"]):
+            with self.subTest(mode=mode), patch.object(
+                sys, "argv", ["runner", *mode, "--whole-baseline", "/stale"],
+            ), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as stopped:
+                runner.main()
+            self.assertEqual(stopped.exception.code, 2)
+
     def test_runner_passes_only_explicit_whole_baseline_to_isolated_checkers(self):
         whole = self.root / "whole"
         self.whole_fixture(whole)

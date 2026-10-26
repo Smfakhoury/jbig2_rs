@@ -11,11 +11,25 @@ from unittest.mock import patch
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
-from check_page_state_proofs import CASES, FIELDS, FINISH_RESULT, HEIGHT, STRIPE_RESULT
+from check_page_state_proofs import CASES, CASE_GROUPS, FIELDS, FINISH_RESULT, HEIGHT, STRIPE_RESULT
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class PageStateProofTests(unittest.TestCase):
+    def test_scheduling_partitions_preserve_all_individual_cases_and_registrations(self):
+        from run_semantic_proofs import CHECKS
+
+        selected = [case["id"] for cases in CASE_GROUPS.values() for case in cases]
+        self.assertEqual(len(selected), len(CASES))
+        self.assertEqual(set(selected), {case["id"] for case in CASES})
+        self.assertEqual({name: len(cases) for name, cases in CASE_GROUPS.items()}, {
+            "page-state": 13, "page-finish": 7, "page-public": 9,
+        })
+        self.assertEqual({
+            identity: count for identity, script, count, *_ in CHECKS
+            if script == "check_page_state_proofs.py"
+        }, {name: len(cases) for name, cases in CASE_GROUPS.items()})
+
     def test_individual_sites_and_controls_retain_independent_guarantees(self):
         source = (TOOLS.parent / "src/document.rs").read_text()
         self.assertEqual(len(CASES), 29)
