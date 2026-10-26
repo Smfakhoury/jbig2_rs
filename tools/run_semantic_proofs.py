@@ -50,6 +50,7 @@ CHECKS = (
     ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
     ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("page-state", "check_page_state_proofs.py", 29, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"

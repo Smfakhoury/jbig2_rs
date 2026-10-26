@@ -151,12 +151,19 @@ Read [`specs/segments.rs`](../specs/segments.rs),
   Page/Stripe/Profiles results and both container outputs, including empty
   EOP/EOF and accepted extension flags. Opaque table/entropy results do not prove
   codec validity.
+- `stripe_accepted` / `stripe_result` bind the existing PageState row transition,
+  including first distance from zero, exact typed rejection and complete failure
+  frames. `page_finish_result` preserves duplicate-first error priority.
+  `public_page_height` / `public_page_fields` bind known-height precedence,
+  checked last-row-plus-one inference and successful public metadata fields.
+  No new preconditions or sequencing checks are introduced: adding a stripe does
+  not inspect `ended`, and conversion does not require it.
 
 Opaque result predicates are unfolded by ordinary proved completion helpers;
 native bridges consume those results without replacing them with loop histories.
 Equivalent explicit enum pattern matches avoid introducing a trusted derived
 equality specification. Unknown-length termination, complete errors/resources,
-profile meaning, page/stripe/lifecycle and full decoded output remain separate.
+profile meaning, caller page/stripe lifecycle and full decoded output remain separate.
 
 ## Audit stop conditions
 
