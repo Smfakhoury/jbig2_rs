@@ -222,6 +222,19 @@ CASES = (
         "control_replacement": "Organization::RandomAccess => true,",
     },
 )
+LAYOUT_CASE_IDS = frozenset({
+    "known_payload_returns_wrong_bytes", "unknown_payload_returns_wrong_bytes",
+    "sequential_discards_consumed_segments", "sequential_rebinds_payload_after_validation",
+    "sequential_corrupts_header_after_validation", "standalone_disables_sequential_number_order",
+    "embedded_discards_first_input_byte", "random_access_discards_consumed_segments",
+    "random_access_rebinds_payload_after_validation", "random_access_corrupts_header_after_validation",
+    "random_access_drops_eof_after_validation", "standalone_random_access_discards_first_body_byte",
+})
+CASE_GROUPS = {
+    "document-count": tuple(case for case in CASES if case["id"] not in LAYOUT_CASE_IDS),
+    "document-layout": tuple(case for case in CASES if case["id"] in LAYOUT_CASE_IDS),
+}
+
 PREFIX_INVARIANT = """page_states@.len()
                 == document_spec::page_information_count(segments@, segment_index as nat),"""
 
@@ -237,7 +250,10 @@ def weaker_contract(source: str, case: dict) -> str:
     return source
 
 
-def check_document_count_proof(executable: Path) -> dict:
+def check_document_count_proof(executable: Path, case_group: str | None = None) -> dict:
+    if case_group is not None and case_group not in CASE_GROUPS:
+        raise ValueError(f"unknown document proof case group: {case_group}")
+    cases = CASES if case_group is None else CASE_GROUPS[case_group]
     files = (
         "src/document.rs", "specs/document.rs", "proofs/production_impl/document.rs",
         "src/file_header.rs", "specs/file_header.rs", "proofs/model_support/document.rs",
@@ -250,13 +266,13 @@ def check_document_count_proof(executable: Path) -> dict:
     ):
         path = directory / "src/document.rs"
         original = path.read_text(encoding="utf-8")
-        functions = tuple(sorted({case["function"] for case in CASES}))
+        functions = tuple(sorted({case["function"] for case in cases}))
         if any(not FUNCTIONS[f"document::{name}"]["verification_requested"] for name in functions):
             raise ValueError("document baseline contains an unverified production function")
         baseline = selected_proof(
             executable, directory, environment, False, "document", functions,
         )
-        for case in CASES:
+        for case in cases:
             print(f"document contrast: {case['id']}", file=sys.stderr, flush=True)
             control_path = directory / case.get("control_file", "src/document.rs")
             control_original = control_path.read_text(encoding="utf-8")
@@ -286,6 +302,7 @@ def check_document_count_proof(executable: Path) -> dict:
         raise ValueError("production source changed during document proof sensitivity checks")
     return {
         "schema_version": 1, "status": "passed", "verus_version": expected,
+        "case_group": case_group or "all",
         "baseline_verification_scope": "document::*",
         "baseline_selected_functions": list(functions),
         "scope": "Document count/metadata, accepted sequential/random-access raw byte windows/order/EOF and exact project numeric preflight quotas; not complete input acceptance/errors, decoded ParsedData, unknown-length termination, allocator/RSS or normative approval",
@@ -300,9 +317,10 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--verus-executable", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--case-group", choices=tuple(CASE_GROUPS))
     arguments = parser.parse_args()
     try:
-        result = check_document_count_proof(arguments.verus_executable.resolve())
+        result = check_document_count_proof(arguments.verus_executable.resolve(), arguments.case_group)
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"document count proof sensitivity failed: {error}", file=sys.stderr)
         result = {"schema_version": 1, "status": "failed", "error": str(error)}

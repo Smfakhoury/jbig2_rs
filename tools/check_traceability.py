@@ -247,8 +247,8 @@ def check_contract(record, section, tokens):
 
 def check(ledger, root, verifier_names=None, discovered=None):
     root = root.resolve()
-    matrix = load_json(root / "support-matrix.json")
-    provenance = load_json(root / "source-provenance.json")
+    matrix = load_json(root / "config/support-matrix.json")
+    provenance = load_json(root / "validation/source-provenance.json")
     documents = resolve_standards(ledger, provenance)
     consultations = ledger["source_consultations"]
     consulted = {entry["standard"] for entry in consultations}
@@ -300,7 +300,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
             raise ValueError(f"stale feature scope: {name}")
         if inventory[name]["decomposition"] == "excluded" and feature["status"] != "deferred":
             raise ValueError(f"required/rejection/prohibited behavior cannot be excluded: {name}")
-    coverage = read_evidence(root / "production-proof-coverage.json", "coverage")
+    coverage = read_evidence(root / "verification/production-proof-coverage.json", "coverage")
     coverage = {entry["id"]: entry for entry in coverage["functions"]}
     runtime = runtime_inventory(root)
     tests = test_inventory(root)
@@ -620,7 +620,7 @@ def main():
             ]
             if row["obligation_kind"] == "project_profile_policy":
                 table.append(
-                    f"Policy basis: `support-matrix.json` {row['policy_source']} "
+                    f"Policy basis: `config/support-matrix.json` {row['policy_source']} "
                     f"(feature `{row['feature']}`), reviewed source SHA-256 `{row['policy_row_sha256']}`."
                 )
         table += ["", report["note"]]

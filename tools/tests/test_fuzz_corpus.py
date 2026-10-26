@@ -155,7 +155,7 @@ class CorpusLifecycleTests(unittest.TestCase):
             CorpusInventoryTests().fixture(inputs)
             before = collection(inputs)
             identity = "c" * 64
-            configuration = json.loads((ROOT / "toolchain.json").read_text())
+            configuration = json.loads((ROOT / "config/toolchain.json").read_text())
             campaign = {
                 "schema_version": 1,
                 "status": "passed", "mode": "run", "source_sha256": identity,

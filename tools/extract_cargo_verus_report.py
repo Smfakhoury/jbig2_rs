@@ -53,7 +53,7 @@ def main():
         raise ValueError("Cargo verification must also produce the compiled production library")
     report = extract_report(
         arguments.input.read_text(encoding="utf-8"),
-        read_evidence(ROOT / "toolchain.json", "toolchain")["verus"],
+        read_evidence(ROOT / "config/toolchain.json", "toolchain")["verus"],
     )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

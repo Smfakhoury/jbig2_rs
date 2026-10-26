@@ -55,7 +55,7 @@ class TraceabilityTests(unittest.TestCase):
                 pub open spec fn identity(x: u8) -> u8 { x }
             }
         """)
-        self.write_json("support-matrix.json", {"rows": [{"feature": "decoder", "status": "required"}]})
+        self.write_json("config/support-matrix.json", {"rows": [{"feature": "decoder", "status": "required"}]})
         self.standard = {"id": "ITU-T T.88 (08/2018)", "edition": "2.0", "document_sha256": "a" * 64}
         self.consultation = {
             "standard": self.standard["id"],
@@ -64,7 +64,7 @@ class TraceabilityTests(unittest.TestCase):
             "package_sha256": "b" * 64, "document_sha256": self.standard["document_sha256"],
             "clause_families": ["5.4 (synthetic fixture)"],
         }
-        self.write_json("source-provenance.json", {"normative_documents": [self.standard | {
+        self.write_json("validation/source-provenance.json", {"normative_documents": [self.standard | {
             "package_sha256": "b" * 64, "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
         }]})
         runtime = runtime_inventory(self.root)
@@ -82,7 +82,7 @@ class TraceabilityTests(unittest.TestCase):
                 "verus_functions": [f"jbig2_rs_production::leaf::{entry['name']}"],
             } for name, entry in runtime.items()],
         }
-        self.write_json("production-proof-coverage.json", coverage)
+        self.write_json("verification/production-proof-coverage.json", coverage)
         self.ledger = {
             "schema_version": 1, "review_policy": "provisional fixture",
             "standards": [self.standard],
@@ -143,9 +143,9 @@ class TraceabilityTests(unittest.TestCase):
             "id": "ITU-T T.6 (1988)", "document_sha256": "c" * 64,
             "source_url": "https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items",
         }
-        provenance = load_json(self.root / "source-provenance.json")
+        provenance = load_json(self.root / "validation/source-provenance.json")
         provenance["normative_references"] = [reference]
-        self.write_json("source-provenance.json", provenance)
+        self.write_json("validation/source-provenance.json", provenance)
         ledger["standards"].append({
             "id": reference["id"], "edition": None,
             "provenance_collection": "normative_references",
@@ -320,7 +320,7 @@ class TraceabilityTests(unittest.TestCase):
             self.run_check(ledger)
 
     def test_unverified_body_cannot_back_a_functional_claim(self):
-        path = self.root / "production-proof-coverage.json"
+        path = self.root / "verification/production-proof-coverage.json"
         coverage = load_json(path)
         entry = next(item for item in coverage["functions"] if item["id"] == "leaf::identity")
         entry.update(
@@ -329,7 +329,7 @@ class TraceabilityTests(unittest.TestCase):
         )
         coverage["counts"]["verified"] -= 1
         coverage["counts"]["runtime-proof-divergence"] = 1
-        self.write_json("production-proof-coverage.json", coverage)
+        self.write_json("verification/production-proof-coverage.json", coverage)
         with self.assertRaisesRegex(ValueError, "unverified or divergent"):
             self.run_check()
 
@@ -357,7 +357,7 @@ class TraceabilityTests(unittest.TestCase):
                 self.run_check(ledger)
 
     def test_complete_feature_cannot_be_an_empty_declaration(self):
-        self.write_json("support-matrix.json", {"rows": [
+        self.write_json("config/support-matrix.json", {"rows": [
             {"feature": "decoder", "status": "required"},
             {"feature": "other", "status": "required"},
         ]})
@@ -383,7 +383,7 @@ class TraceabilityTests(unittest.TestCase):
                 self.run_check(ledger)
 
     def test_feature_cannot_claim_another_features_requirement(self):
-        self.write_json("support-matrix.json", {"rows": [
+        self.write_json("config/support-matrix.json", {"rows": [
             {"feature": "decoder", "status": "required"},
             {"feature": "other", "status": "required"},
         ]})
@@ -416,7 +416,7 @@ class TraceabilityTests(unittest.TestCase):
             ("required", "not_started", False),
             ("deferred", "excluded", False),
         ):
-            self.write_json("support-matrix.json", {"rows": [{"feature": "decoder", "status": status}]})
+            self.write_json("config/support-matrix.json", {"rows": [{"feature": "decoder", "status": status}]})
             for notes in ([], ["   "]):
                 ledger = copy.deepcopy(self.ledger)
                 ledger["features"][0].update(
@@ -557,11 +557,11 @@ class TraceabilityTests(unittest.TestCase):
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         ledger = copy.deepcopy(self.ledger)
         ledger["bindings"]["src/leaf.rs"] = digest
-        coverage = load_json(self.root / "production-proof-coverage.json")
+        coverage = load_json(self.root / "verification/production-proof-coverage.json")
         for function in coverage["functions"]:
             if function["file"] == "src/leaf.rs":
                 function["file_sha256"] = digest
-        self.write_json("production-proof-coverage.json", coverage)
+        self.write_json("verification/production-proof-coverage.json", coverage)
         with self.assertRaisesRegex(ValueError, "not present"):
             self.run_check(ledger)
 
@@ -574,11 +574,11 @@ class TraceabilityTests(unittest.TestCase):
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         ledger = copy.deepcopy(self.ledger)
         ledger["bindings"]["src/leaf.rs"] = digest
-        coverage = load_json(self.root / "production-proof-coverage.json")
+        coverage = load_json(self.root / "verification/production-proof-coverage.json")
         for function in coverage["functions"]:
             if function["file"] == "src/leaf.rs":
                 function["file_sha256"] = digest
-        self.write_json("production-proof-coverage.json", coverage)
+        self.write_json("verification/production-proof-coverage.json", coverage)
         with self.assertRaisesRegex(ValueError, "not present"):
             self.run_check(ledger)
 
@@ -594,11 +594,11 @@ class TraceabilityTests(unittest.TestCase):
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         ledger = copy.deepcopy(self.ledger)
         ledger["bindings"]["src/leaf.rs"] = digest
-        coverage = load_json(self.root / "production-proof-coverage.json")
+        coverage = load_json(self.root / "verification/production-proof-coverage.json")
         for function in coverage["functions"]:
             if function["file"] == "src/leaf.rs":
                 function["file_sha256"] = digest
-        self.write_json("production-proof-coverage.json", coverage)
+        self.write_json("verification/production-proof-coverage.json", coverage)
         with self.assertRaisesRegex(ValueError, "not present"):
             self.run_check(ledger)
 
@@ -696,7 +696,7 @@ class TraceabilityTests(unittest.TestCase):
 
     def test_explicit_project_policy_is_counted_separately_from_normative_rules(self):
         policy = {"feature": "decoder", "status": "required", "note": "Synthetic API policy."}
-        self.write_json("support-matrix.json", {"rows": [policy]})
+        self.write_json("config/support-matrix.json", {"rows": [policy]})
         ledger = copy.deepcopy(self.ledger)
         ledger["requirements"][0].update(
             obligation_kind="project_profile_policy", policy_row_sha256=policy_row_hash(policy),
@@ -709,16 +709,16 @@ class TraceabilityTests(unittest.TestCase):
 
     def test_stale_missing_or_unstated_policy_basis_fails(self):
         policy = {"feature": "decoder", "status": "required", "note": "Synthetic API policy."}
-        self.write_json("support-matrix.json", {"rows": [policy]})
+        self.write_json("config/support-matrix.json", {"rows": [policy]})
         ledger = copy.deepcopy(self.ledger)
         ledger["requirements"][0]["obligation_kind"] = "project_profile_policy"
         with self.assertRaisesRegex(ValueError, "stale or missing project policy"):
             self.run_check(ledger)
         ledger["requirements"][0]["policy_row_sha256"] = policy_row_hash(policy)
-        self.write_json("support-matrix.json", {"rows": [policy | {"note": "Weakened API policy."}]})
+        self.write_json("config/support-matrix.json", {"rows": [policy | {"note": "Weakened API policy."}]})
         with self.assertRaisesRegex(ValueError, "stale or missing project policy"):
             self.run_check(ledger)
-        self.write_json("support-matrix.json", {"rows": [{"feature": "decoder", "status": "required"}]})
+        self.write_json("config/support-matrix.json", {"rows": [{"feature": "decoder", "status": "required"}]})
         with self.assertRaisesRegex(ValueError, "no explicit support-matrix basis"):
             self.run_check(ledger)
 
@@ -754,17 +754,17 @@ class TraceabilityTests(unittest.TestCase):
 
     def test_ambiguous_cross_collection_identity_is_rejected(self):
         ledger = self.with_reference_standard()
-        provenance = load_json(self.root / "source-provenance.json")
+        provenance = load_json(self.root / "validation/source-provenance.json")
         provenance["normative_documents"].append(copy.deepcopy(provenance["normative_references"][0]))
-        self.write_json("source-provenance.json", provenance)
+        self.write_json("validation/source-provenance.json", provenance)
         with self.assertRaisesRegex(ValueError, "ambiguous normative provenance"):
             self.run_check(ledger)
 
     def test_reference_requires_an_approved_document_hash_not_only_metadata(self):
         ledger = self.with_reference_standard()
-        provenance = load_json(self.root / "source-provenance.json")
+        provenance = load_json(self.root / "validation/source-provenance.json")
         del provenance["normative_references"][0]["document_sha256"]
-        self.write_json("source-provenance.json", provenance)
+        self.write_json("validation/source-provenance.json", provenance)
         with self.assertRaisesRegex(ValueError, "no approved document identity"):
             self.run_check(ledger)
 
@@ -841,12 +841,12 @@ class TraceabilityTests(unittest.TestCase):
             local_document_checks(ledger, path, [selection])
 
     def test_typed_error_policy_has_a_separate_approved_public_api_binding(self):
-        matrix = load_json(self.root / "support-matrix.json")
+        matrix = load_json(self.root / "config/support-matrix.json")
         matrix["public_api"] = {
             "status": "approved",
             "requirements": ["Typed malformed, unsupported, resource-limit, input/output, and allocation errors."],
         }
-        self.write_json("support-matrix.json", matrix)
+        self.write_json("config/support-matrix.json", matrix)
         ledger = copy.deepcopy(self.ledger)
         ledger["requirements"][0].update(
             obligation_kind="project_profile_policy", policy_source="public_api",
@@ -856,11 +856,11 @@ class TraceabilityTests(unittest.TestCase):
         report = self.run_check(ledger)
         self.assertEqual(report["requirements"][0]["policy_source"], "public_api")
         matrix["public_api"]["requirements"].append("Changed policy scope.")
-        self.write_json("support-matrix.json", matrix)
+        self.write_json("config/support-matrix.json", matrix)
         with self.assertRaisesRegex(ValueError, "stale or missing project policy"):
             self.run_check(ledger)
         matrix["public_api"]["status"] = "pending"
-        self.write_json("support-matrix.json", matrix)
+        self.write_json("config/support-matrix.json", matrix)
         with self.assertRaisesRegex(ValueError, "no approved public API basis"):
             self.run_check(ledger)
 
@@ -869,7 +869,7 @@ class TraceabilityTests(unittest.TestCase):
         ledger["requirements"][0].update(
             obligation_kind="project_profile_policy", policy_source="public_api", policy_row_sha256="c" * 64,
         )
-        self.write_json("support-matrix.json", {
+        self.write_json("config/support-matrix.json", {
             "rows": [{"feature": "decoder", "status": "required"}],
             "public_api": {"status": "approved", "requirements": ["Unrelated API policy."]},
         })

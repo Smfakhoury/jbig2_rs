@@ -26,10 +26,18 @@ standards, or non-redistributable test assets.
 
 ## Security posture
 
-JBIG2 input is always treated as hostile. Production code forbids unsafe Rust
-and must not panic on malformed input. All dimensions, offsets, lengths,
-reference counts, allocations, retained state, and work are subject to checked
-arithmetic and explicit limits.
+JBIG2 input is always treated as hostile. Crate-authored production code forbids
+unsafe Rust. The requirement is to return typed failures rather than panic on
+malformed input, with checked arithmetic and explicit limits for dimensions,
+offsets, lengths, references, allocations, retained state and work.
+
+These are implementation requirements, not a binary-wide no-unsafe/no-panic or
+complete resource-accounting proof. Compiler-generated derives, standard-library
+internals and Rust/Verus/vstd toolchains remain trust boundaries. The known
+capacity-accounting gaps and runtime/proof divergence remain open; see
+[verification limitations](docs/verifier-limitations.md) and
+[publication readiness](docs/publication-readiness.md). The decoder is not yet
+recommended for untrusted production documents.
 
 The threat model includes:
 

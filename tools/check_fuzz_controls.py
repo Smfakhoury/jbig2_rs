@@ -45,7 +45,7 @@ def check_controls(output: Path) -> dict:
             shutil.copytree(ROOT / name, directory / name, dirs_exist_ok=True)
         files = [
             "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
-            "toolchain.json", "validation/runtime_access.rs", "examples/fuzz_seeds.rs",
+            "config/toolchain.json", "validation/runtime_access.rs", "examples/fuzz_seeds.rs",
             "tools/distribution_consumer.rs", "tools/run_fuzz.py",
             "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",
             ".github/workflows/fuzz.yml",

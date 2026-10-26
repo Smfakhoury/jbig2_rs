@@ -43,7 +43,7 @@ def main():
             "failure.json", "mutations.json",
         ):
             (output / name).unlink(missing_ok=True)
-        configuration = load_json(ROOT / "toolchain.json")["coverage"]
+        configuration = load_json(ROOT / "config/toolchain.json")["coverage"]
         cargo = ["cargo", f"+{configuration['rust_toolchain']}", "llvm-cov"]
         environment = {
             key: value for key, value in os.environ.items()

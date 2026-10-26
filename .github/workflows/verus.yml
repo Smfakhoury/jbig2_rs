@@ -39,7 +39,7 @@ jobs:
       - name: Verify proof build and audit production coverage
         run: |
           set -o pipefail
-          mkdir -p target/verus-production
+          mkdir -p target/verus-production target/verification
           export PATH="$PWD/verus-x86-linux:$PATH"
           export CARGO_TARGET_DIR="$PWD/target/verus-cargo"
           cargo fetch --manifest-path verification/Cargo.toml --locked
@@ -50,23 +50,26 @@ jobs:
             --output-json > target/verus-production/cargo-reports.jsons
           python tools/extract_cargo_verus_report.py \
             --input target/verus-production/cargo-reports.jsons \
-            --output verus-production.json \
+            --output target/verification/verus-production.json \
             --compiled-library target/verus-cargo/debug/libjbig2_rs_production.rlib
           cp target/verus-cargo/debug/libjbig2_rs_production.rlib target/verus-production/
           python tools/audit_production_coverage.py \
-            --verus-json verus-production.json \
-            --output production-proof-coverage-ci.json \
+            --verus-json target/verification/verus-production.json \
+            --output target/verification/production-proof-coverage-ci.json \
             --require-complete
-          diff -u production-proof-coverage.json \
-            production-proof-coverage-ci.json
+          diff -u verification/production-proof-coverage.json \
+            target/verification/production-proof-coverage-ci.json
           python tools/check_traceability.py \
-            --verus-json verus-production.json \
+            --verus-json target/verification/verus-production.json \
             --output target/traceability/verifier-report.json
       - name: Stage whole-crate outputs including failed diagnostics
         if: always()
         run: |
           mkdir -p target/semantic-ci/whole
-          for path in verus-production.json production-proof-coverage-ci.json target/traceability target/verus-production; do
+          for name in verus-production.json production-proof-coverage-ci.json; do
+            if [ -e "target/verification/$name" ]; then cp "target/verification/$name" target/semantic-ci/whole/; fi
+          done
+          for path in target/traceability target/verus-production; do
             if [ -e "$path" ]; then cp -r --parents "$path" target/semantic-ci/whole/; fi
           done
       - name: Seal whole-crate evidence and enumerate every semantic group

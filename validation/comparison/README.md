@@ -1,54 +1,47 @@
-# `hayro-jbig2` comparison
+# Optional Hayro comparison
 
-This comparison uses `hayro-jbig2` 0.3.1 from source revision
-`ea9c81dc70cde40c64205986fdcfcd481fe934d8` and `jbig2_rs` optimized
-revision `fd9e4b81abe97fea7ed45df9055b594ebe0871cb`.
+This unpublished harness compares `jbig2_rs` with `hayro-jbig2` 0.3.1.
+Superseded single-run measurements are recoverable in Git history and retained
+CI artifacts, not copied into a source archive or used as live release baselines.
+**No current-main performance or normative conformance claim follows from those
+measurements.** Current base/head policy and missing P09 evidence are documented
+in [validation](../README.md#basehead-performance).
 
 ## Reproduction
 
-Build and run the unpublished harness:
+The unpublished harness is separate from the dependency-free runtime crate:
 
 ```sh
 cargo +1.98.1 run --release \
   --manifest-path benchmarks/hayro-comparison/Cargo.toml -- \
   generated 50
-```
-
-Run both the default-SIMD and scalar-to-scalar tracks:
-
-```sh
 benchmarks/hayro-comparison/run-comparison.sh 50
-```
-
-Generated timing records include both median and p95 latency. Set
-`JBIG2_VECTOR_DIR` to add the private vector outcome comparison to the run.
-Generated inputs now come from the same project fixture module as the runtime
-performance lane. New p95 reports use the shared nearest-rank definition;
-the historical results below retain their original measurement method and are
-not rewritten. Cross-run stability uses the shared spread calculation.
-
-Run the required three-run stability gate:
-
-```sh
 benchmarks/hayro-comparison/run-stability.sh 50
 ```
 
-The gate fails if the cross-run spread of any generated parse or end-to-end
-median exceeds 3%. Override only for investigation with
-`MAX_RELATIVE_SPREAD`. Runs are pinned to CPU 0 by default; set `BENCH_CPU` to
-another isolated core when needed.
+The comparison script runs default-SIMD and scalar-to-scalar tracks. Hayro uses
+its default SIMD feature; `jbig2_rs` has no SIMD backend. Generated fixtures are
+shared with the runtime performance lane. New records include median and
+nearest-rank p95. Record actual source/tool/host identities for each run rather
+than reusing historical revision labels or measurements.
 
-Capture peak RSS and Linux hardware counters on a host with `perf` access:
+The stability gate rejects cross-run spread above 3% for any generated parse or
+end-to-end median. `MAX_RELATIVE_SPREAD` is an investigation override, not
+permission to weaken a release gate. CPU 0 is the default affinity;
+`BENCH_CPU` can select another isolated core. Stability is necessary for useful
+timing, not sufficient dedicated-host release evidence.
+
+For an authorized host with hardware-counter access:
 
 ```sh
 benchmarks/hayro-comparison/capture-counters.sh jbig2_rs
 benchmarks/hayro-comparison/capture-counters.sh hayro_jbig2
 ```
 
-The script fails explicitly when `perf_event_paranoid` prevents access rather
-than returning success-shaped empty counter data.
+Unavailable Linux `perf` access fails explicitly rather than producing empty
+success-shaped counters.
 
-Private ITU vectors can be compared without copying them into the repository:
+Only with already approved external assets:
 
 ```sh
 cargo +1.98.1 run --release \
@@ -56,45 +49,27 @@ cargo +1.98.1 run --release \
   vectors /path/to/JBIG2_ConformanceData-A20180829
 ```
 
-The harness checks packed bitmap equality before reporting timings. Timings
-include parsing, decoding, and hashing packed output. They do not represent a
-diverse PDF corpus. The generated cases are intentionally simple all-white MMR
-pages. `hayro-jbig2` uses its default SIMD feature; `jbig2_rs` has no SIMD
-backend.
+`JBIG2_VECTOR_DIR` optionally adds that vector outcome lane to the scripts.
+Neither command grants acquisition/redistribution permission or copies assets
+into the project.
 
-## Findings
+## Interpretation
 
-- The historical comparison reports matching dimensions and FNV64 bitmap
-  summaries for two supported single-page ITU vectors and errors for the other
-  eight streams. The wrapper does not compare all bytes or establish that an
-  official positive is malformed merely because both decoders reject it.
-  A fresh locked-harness run and the seven unresolved rejection diagnoses are
-  recorded in [the conformance review](../conformance/seven-rejection-review.json).
-  Hayro's single-image wrapper is partial evidence for the multi-page TT1 case,
-  and its errors expose no entropy offsets confirming the IAEX failure stage.
-- `jbig2_rs` was 1.68x to 2.78x faster on generated MMR. `hayro-jbig2`
-  remained 1.05x faster on TT9 and 1.39x faster at TT10 median.
-- Across generated 64/512/2048 and TT9/TT10, the geometric-mean
-  `jbig2_rs`/Hayro ratio was 0.655 at median and 0.641 at p95: `jbig2_rs` was
-  34.5% and 35.9% faster respectively on the aggregate suite.
-- TT10 improved through verified rolling word rows and direct-to-page decode
-  but remains slower at latency; its 100-iteration peak RSS is now 3084 KiB
-  versus Hayro's 3456 KiB.
-- Peak RSS for 100 decodes of the generated 2048x2048 case was 3300 KiB for
-  `jbig2_rs` and 3400 KiB for `hayro-jbig2`.
-- `jbig2_rs` has stronger document-level support: explicit multi-page output,
-  page/global segment lifecycle validation, retention policy, configurable
-  resource/work limits, typed unsupported-feature errors, and reusable globals.
-- `hayro-jbig2` exposes a single-image API. It parses retention and page
-  association fields but does not apply general retention/page lifecycle
-  policy, and its dispatch ignores profiles, colour palettes, extensions, and
-  end-of-stripe segments after its initial stripe-height pre-scan.
-- `hayro-jbig2` has no comparable formal proof inventory. `jbig2_rs` verifies
-  many production contracts with Verus, but the later readiness audit identified
-  runtime/proof substitutions and corrected over-broad identity matching.
-  Full exact-source and normative functional-correctness claims remain blocked;
-  see [verifier limitations](../../docs/verifier-limitations.md).
+Generated comparisons check packed bitmap equality before timing. This
+harness's timed scope includes parsing, decoding and output hashing, unlike the
+decode-call-only base/head lane. Simple generated MMR pages are not a diverse
+PDF corpus, and aggregate ratios must not conceal individual-case regressions.
+Historical TT9/TT10 latency and RSS observations do not establish improvements
+on today's decoder or close current allocator/RSS telemetry gaps.
 
-The optimized candidate is stronger on verified correctness, defensive limits,
-document orchestration, and aggregate throughput. TT9 and TT10 medians remain
-the disclosed performance exceptions.
+The historical official-vector wrapper reports dimensions and FNV64 summaries
+through a single-image API. That is not full-byte multi-page equality.
+Shared errors/warnings do not show an official positive malformed or confirm
+an entropy offset the wrapper does not expose. See the
+[source-bound seven-case review](../conformance/seven-rejection-review.json).
+The unresolved official positives have no reviewed rejection credit.
+
+API differences and the existence of a Verus inventory are not a comparative
+correctness certificate. Full exact-source and normative functional claims
+remain blocked as described in
+[verification limitations](../../docs/verifier-limitations.md).

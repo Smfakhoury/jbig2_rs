@@ -232,7 +232,7 @@ def maintain(arguments, root: Path = ROOT) -> dict:
     }
     try:
         validate_targets(root, list(TARGETS))
-        configuration = json.loads((root / "toolchain.json").read_text())
+        configuration = json.loads((root / "config/toolchain.json").read_text())
         identity = source_identity(root)
         cargo = ["cargo", "+" + configuration["fuzz_rust_toolchain"]]
         environment = fuzz_environment()

@@ -20,35 +20,36 @@ WORKERS = 2
 CI_SHARDS = 6
 RECEIPT_SCHEMA = 3
 CHECKS = (
+    ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("text-batch", "check_text_batch_proofs.py", 11, "strong_contract", "weaker_control"),
     ("black-span", "check_black_span_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
-    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
-    ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("segment-data", "check_segment_data_proofs.py", 10, "strong_contract", "weaker_control"),
+    ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
     ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
-    ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("mmr-reference", "check_mmr_reference_proofs.py", 11, "strong_contract", "weaker_control"),
+    ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
+    ("segment-header", "check_segment_header_proofs.py", 10, "strong_contract", "weaker_control"),
+    ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),
+    ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
+    ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
     ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
-    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
-    ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("segment-data", "check_segment_data_proofs.py", 10, "strong_contract", "weaker_control"),
-    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("text-batch", "check_text_batch_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("segment-header", "check_segment_header_proofs.py", 10, "strong_contract", "weaker_control"),
-    ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
     ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("mmr-reference", "check_mmr_reference_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("document-count", "check_document_count_proof.py", 25, "strong_count_contract", "weaker_control"),
-    ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
-    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("document-layout", "check_document_count_proof.py", 12, "strong_count_contract", "weaker_control"),
+    ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -116,17 +117,19 @@ def artifact_prefix():
 
 def manifest(root):
     checks = configured_checks()
-    # Whole-job outputs do not exist in clean semantic/collector checkouts.
-    paths = {path for path in root.glob("*.json") if path.name not in {
-        "verus-production.json", "production-proof-coverage-ci.json",
-    }}
+    paths = set()
     for directory, patterns in (
+        ("config", ("*.json",)), ("verification", ("*.json",)),
         ("src", ("*.rs",)), ("specs", ("*.rs",)), ("proofs", ("*.rs",)),
         ("tools", ("*.py", "*.txt", "*.json")), ("docs", ("*.md",)),
-        ("validation", ("*.json", "*.md")), (".github", ("*.yml", "*.yaml")),
+        ("validation", ("*.json", "*.md")), (".github", ("*.yml", "*.yaml", "*.md")),
     ):
         for pattern in patterns:
-            paths.update((root / directory).rglob(pattern))
+            paths.update(
+                path for path in (root / directory).rglob(pattern)
+                if not any(part in {"target", "__pycache__", "corpus", "artifacts"}
+                           for part in path.relative_to(root).parts)
+            )
     paths.update(root / name for name in (
         "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
         "verification/Cargo.toml", "verification/Cargo.lock",
@@ -139,7 +142,7 @@ def manifest(root):
             for identity, script, expected, strong, weak in checks
         ],
         "shards": [[check[0] for check in shard] for shard in configured_shards()],
-        "verus": read_json(root / "toolchain.json")["verus"],
+        "verus": read_json(root / "config/toolchain.json")["verus"],
         "source_bindings": {
             path.relative_to(root).as_posix(): digest(path) for path in sorted(paths)
         },
@@ -185,8 +188,8 @@ def check_report(report, expected, strong, weak, version):
 
 def check_bound_report(root, check, report, bindings):
     identity, script, expected, strong, weak = check
-    check_report(report, expected, strong, weak, read_json(root / "toolchain.json")["verus"]["version"])
-    if report.get("schema_version") != (1 if identity in {"reset", "document-count"} else 2):
+    check_report(report, expected, strong, weak, read_json(root / "config/toolchain.json")["verus"]["version"])
+    if report.get("schema_version") != (1 if identity in {"reset", "document-count", "document-layout"} else 2):
         raise ValueError("incompatible semantic report schema")
     if identity == "reset":
         if (
@@ -205,7 +208,12 @@ def check_bound_report(root, check, report, bindings):
         spec = importlib.util.spec_from_file_location("semantic_checker", root / "tools" / script)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-        cases = module.CASES
+        if hasattr(module, "CASE_GROUPS"):
+            if report.get("case_group") != identity:
+                raise ValueError("missing or misrouted checker case group")
+            cases = module.CASE_GROUPS[identity]
+        else:
+            cases = module.CASES
         if len(cases) != expected or [row.get("id") for row in report["counterexamples"]] != [
             case["id"] for case in cases
         ] or any(
@@ -216,7 +224,7 @@ def check_bound_report(root, check, report, bindings):
             for case in cases
         ]:
             raise ValueError("missing, duplicate or stale selected cases/baselines")
-        if identity == "document-count":
+        if identity in {"document-count", "document-layout"}:
             functions = sorted({case["function"] for case in cases})
             if (
                 report.get("baseline_verification_scope") != "document::*"
@@ -276,10 +284,11 @@ def run_checks(root, executable, output, only=None, shard=None):
             report.unlink(missing_ok=True)
             source = root / "tools" / script
             result["checker_sha256"] = digest(source)
+            selection = ["--case-group", identity] if script == "check_document_count_proof.py" else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(
                     [sys.executable, "-B", str(source), "--verus-executable",
-                     str(executable), "--output", str(report)],
+                     str(executable), *selection, "--output", str(report)],
                     cwd=root, stdout=stream, stderr=subprocess.STDOUT, check=False,
                 )
             result["exit_code"] = process.returncode
@@ -335,7 +344,7 @@ def validate_whole(root, directory):
 
     report = read_json(directory / "verus-production.json")
     inventory = directory / "production-proof-coverage-ci.json"
-    if inventory.read_bytes() != (root / "production-proof-coverage.json").read_bytes():
+    if inventory.read_bytes() != (root / "verification/production-proof-coverage.json").read_bytes():
         raise ValueError("whole-crate production inventory differs from checked-in inventory")
     coverage = read_json(inventory)
     try:
@@ -343,7 +352,7 @@ def validate_whole(root, directory):
         validate(coverage, "coverage")
     except ValidationError as error:
         raise ValueError(f"invalid whole-crate evidence: {error.message}") from error
-    tool = read_json(root / "toolchain.json")["verus"]
+    tool = read_json(root / "config/toolchain.json")["verus"]
     actual_tool = report.get("verus", {})
     if (
         actual_tool.get("version") != tool["version"]

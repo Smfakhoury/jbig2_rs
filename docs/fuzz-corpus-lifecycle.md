@@ -1,4 +1,4 @@
-# Existing generated fuzz corpus lifecycle
+# Generated fuzz corpus lifecycle
 
 This operational lane applies only to the nine targets already declared in
 `fuzz/Cargo.toml`. It does not add packet grammars, decoder input generators,
@@ -9,8 +9,9 @@ third-party vectors, copyrighted assets or private corpora.
 ## Reproduction
 
 Use Linux, Python 3.11+, `nightly-2026-10-12` and `cargo-fuzz 0.13.2`, as pinned
-in `toolchain.json`. Every output directory must be fresh. Standard temporary
-files used by libFuzzer or isolated controls must reside in an authorized local
+in [`config/toolchain.json`](../config/toolchain.json). Every output directory
+must be fresh. Standard temporary files used by libFuzzer or isolated controls
+must reside in an authorized local
 workspace location; set `TMPDIR` accordingly.
 
 Validate the minimal existing generated corpus, including real minimization and
@@ -186,7 +187,8 @@ Canceled pending jobs have not restored or saved a corpus. Ordering follows
 when jobs start waiting, not workflow dispatch order; independent controls can
 finish in either order. See [GitHub's concurrency
 documentation](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
-Parent-owned paired same-SHA trusted runs must still verify actual queued/running
-transitions and all nine restored/promoted inventories after merge; local policy
-tests are not hosted cache-lineage evidence. The existing execution budgets are
-unchanged.
+Hosted cache-lineage acceptance requires paired same-SHA trusted runs that
+verify actual queued/running transitions and all nine restored/promoted
+inventories. Local policy tests are not hosted lineage evidence; the existence
+of this concurrency configuration does not claim those runs occurred.
+The execution budgets are unchanged.

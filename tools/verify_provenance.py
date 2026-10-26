@@ -10,13 +10,12 @@ from evidence import load_json, read_evidence, validate
 
 ROOT = Path(__file__).resolve().parents[1]
 JSON_FILES = (
-    "support-matrix.json",
-    "source-provenance.json",
-    "proof-attestation.json",
-    "conformance-attestation.json",
-    "fuzz-attestation.json",
-    "release-attestation.schema.json",
-    "toolchain.json",
+    "config/support-matrix.json",
+    "validation/source-provenance.json",
+    "verification/proof-attestation.json",
+    "validation/conformance/attestation.json",
+    "validation/schemas/release-attestation.schema.json",
+    "config/toolchain.json",
 )
 FORBIDDEN_SUFFIXES = {".pdf", ".doc", ".docx"}
 FORBIDDEN_ORACLE_SUFFIXES = {".c", ".cc", ".cpp", ".js"}
@@ -33,6 +32,12 @@ arguments = parser.parse_args()
 def fail(message: str) -> None:
     print(f"provenance audit failed: {message}", file=sys.stderr)
     raise SystemExit(1)
+
+
+root_json = sorted(path.name for path in ROOT.glob("*.json"))
+if root_json:
+    fail("repository-root JSON belongs in config, verification, validation or target: "
+         + ", ".join(root_json))
 
 
 for relative_path in JSON_FILES:
@@ -76,21 +81,21 @@ for path in sorted(ROOT.rglob("*")):
             fail(f"{path.relative_to(ROOT)}: {error}")
 
 for filename, kind in (
-    ("proof-dispositions.json", "dispositions"),
-    ("production-proof-coverage.json", "coverage"),
-    ("toolchain.json", "toolchain"),
-    ("proof-attestation.json", "proof_attestation"),
+    ("verification/proof-dispositions.json", "dispositions"),
+    ("verification/production-proof-coverage.json", "coverage"),
+    ("config/toolchain.json", "toolchain"),
+    ("verification/proof-attestation.json", "proof_attestation"),
 ):
     try:
         read_evidence(ROOT / filename, kind)
     except (OSError, ValueError, ValidationError) as error:
         fail(f"{filename}: {error}")
 
-coverage = read_evidence(ROOT / "production-proof-coverage.json", "coverage")
-attestation = read_evidence(ROOT / "proof-attestation.json", "proof_attestation")
+coverage = read_evidence(ROOT / "verification/production-proof-coverage.json", "coverage")
+attestation = read_evidence(ROOT / "verification/proof-attestation.json", "proof_attestation")
 for filename, key in (
-    ("production-proof-coverage.json", "production_proof_coverage_sha256"),
-    ("proof-dispositions.json", "proof_dispositions_sha256"),
+    ("verification/production-proof-coverage.json", "production_proof_coverage_sha256"),
+    ("verification/proof-dispositions.json", "proof_dispositions_sha256"),
 ):
     if hashlib.sha256((ROOT / filename).read_bytes()).hexdigest() != attestation[key]:
         fail(f"stale proof-attestation hash: {filename}")
@@ -109,7 +114,7 @@ if coverage["counts"].get("runtime-proof-divergence", 0):
     if attestation["result"]["algorithm_bodies_verified"] or attestation["release_gate"] != "blocked":
         fail("runtime/proof divergences must block exact-source release claims")
 
-provenance = load_json(ROOT / "source-provenance.json")
+provenance = load_json(ROOT / "validation/source-provenance.json")
 differences = read_evidence(
     ROOT / "validation/conformance/expected-differences.json", "conformance_differences"
 )
@@ -127,7 +132,7 @@ for entry in differences["cases"]:
         for path, expected in entry["source_files_sha256"].items():
             if hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected:
                 fail(f"pending review source hash mismatch: {entry['id']}: {path}")
-conformance = load_json(ROOT / "conformance-attestation.json")
+conformance = load_json(ROOT / "validation/conformance/attestation.json")
 normative = conformance["normative_vectors"]
 for relative, key in (
     ("validation/conformance/itu-t88-2018-results.json", "results_sha256"),

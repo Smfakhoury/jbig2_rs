@@ -56,7 +56,7 @@ def source_identity(root: Path) -> str:
     paths += [root / name for name in (
         "Cargo.toml", "Cargo.lock", "fuzz/Cargo.toml", "fuzz/Cargo.lock",
         "validation/runtime_access.rs", "examples/fuzz_seeds.rs",
-        "tools/distribution_consumer.rs", "tools/run_fuzz.py", "toolchain.json",
+        "tools/distribution_consumer.rs", "tools/run_fuzz.py", "config/toolchain.json",
         "tests/support/context_scenarios.rs", "benchmarks/generated.rs",
         "tests/support/codec_scenarios.rs",
         "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",
@@ -202,7 +202,7 @@ def run(arguments, root: Path = ROOT) -> dict:
 
         targets = arguments.targets
         validate_targets(root, targets)
-        configuration = json.loads((root / "toolchain.json").read_text())
+        configuration = json.loads((root / "config/toolchain.json").read_text())
         cargo = ["cargo", "+" + configuration["fuzz_rust_toolchain"]]
         environment = fuzz_environment()
         version = subprocess.run(
