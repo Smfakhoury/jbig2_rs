@@ -18,19 +18,25 @@ import run_semantic_proofs as runner
 
 
 DOCUMENT_PARTITION_GROUPS = (
-    "iaid-state", "arithmetic-initialization", "text-batch", "black-span",
-    "segment-data", "value-bridge", "mmr-span", "reader-error", "arithmetic-refill",
-    "mmr-reference", "bitmap-copy", "retention", "bitmap-chunk", "symbol-cardinality",
-    "segment-header", "document-count", "mmr-run", "arithmetic-codec",
-    "arithmetic-decision", "halftone-header", "reset", "arithmetic-normalization",
-    "arithmetic-integer", "mmr-horizontal", "integer-state", "operator-bit",
-    "document-layout", "region-dispatch", "bitmap-compose", "mmr-prefix",
+    ("iaid-state", 6), ("arithmetic-initialization", 6), ("text-batch", 11),
+    ("black-span", 6), ("segment-data", 10), ("value-bridge", 5), ("mmr-span", 8),
+    ("reader-error", 9), ("arithmetic-refill", 6), ("mmr-reference", 11),
+    ("bitmap-copy", 8), ("retention", 3), ("bitmap-chunk", 4),
+    ("symbol-cardinality", 11), ("segment-header", 10), ("document-count", 13),
+    ("mmr-run", 4), ("arithmetic-codec", 19), ("arithmetic-decision", 15),
+    ("halftone-header", 9), ("reset", 2), ("arithmetic-normalization", 6),
+    ("arithmetic-integer", 9), ("mmr-horizontal", 6), ("integer-state", 9),
+    ("operator-bit", 4), ("document-layout", 12), ("region-dispatch", 3),
+    ("bitmap-compose", 7), ("mmr-prefix", 4),
 )
 
 
 def document_partition_checks():
     checks = {row[0]: row for row in runner.configured_checks()}
-    return tuple(checks[name] for name in DOCUMENT_PARTITION_GROUPS)
+    return tuple(
+        (*checks[name][:2], count, *checks[name][3:])
+        for name, count in DOCUMENT_PARTITION_GROUPS
+    )
 
 
 def document_partition_shards():
@@ -426,6 +432,20 @@ class SemanticOrchestrationTests(unittest.TestCase):
             next(i for i, names in enumerate(groups) if "document-layout" in names),
         )
         self.assertLessEqual(max(sum(row[2] for row in shard) for shard in shards), 42)
+
+    def test_historical_snapshot_does_not_freeze_growth_within_existing_groups(self):
+        current = runner.configured_checks()
+        counts = {row[0]: row[2] for row in current}
+        for name, count in DOCUMENT_PARTITION_GROUPS:
+            self.assertGreaterEqual(counts[name], count)
+        future = tuple(
+            (*row[:2], row[2] + 1, *row[3:]) if row[0] == "iaid-state" else row
+            for row in current
+        )
+        before = document_partition_shards()
+        with patch.object(runner, "CHECKS", future):
+            self.assertEqual(document_partition_shards(), before)
+            self.assertEqual(sum(row[2] for row in runner.configured_checks()), sum(counts.values()) + 1)
 
     def test_complete_measurement_guard_uses_all_current_groups_without_a_global_case_limit(self):
         checks = self.checks + (("future-decision", "future.py", 100, "strong", "weak"),)
