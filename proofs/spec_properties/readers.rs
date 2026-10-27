@@ -1,7 +1,17 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
 
+// Model navigation: spec::bits_limit [proof-support]
+// Purpose: Doubling bound used to justify reader accumulation.
+// Audit: reader-bits-limit
+// REQUIREMENT CONTEXT: T88-BITS-MSB-FIRST | ITU-T T.88 (08/2018) | 5.4.1
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn bits_limit(count: nat) -> nat
     decreases count,
 {

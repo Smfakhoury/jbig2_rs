@@ -1,7 +1,16 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: README.md
+// All requirement links and inherited locators: ../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
 
+// Model navigation: spec::pow2 [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn pow2(exponent: nat) -> nat
     decreases exponent,
 {
@@ -12,6 +21,10 @@ pub(super) open spec fn pow2(exponent: nat) -> nat
     }
 }
 
+// Model navigation: spec::wide_value [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn wide_value(code: super::WideCode) -> nat {
     code.limbs@[0] as nat
         + code.limbs@[1] as nat * pow2(64)
@@ -19,6 +32,10 @@ pub(super) open spec fn wide_value(code: super::WideCode) -> nat {
         + code.limbs@[3] as nat * pow2(192)
 }
 
+// Model navigation: spec::wide_fits [representation-invariant]
+// Purpose: Reader, line-width, wide-code and assigned-prefix representation invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn wide_fits(
     code: super::WideCode,
     bit_count: usize,
@@ -26,6 +43,10 @@ pub(super) open spec fn wide_fits(
     bit_count >= 256 || wide_value(code) < pow2(bit_count as nat)
 }
 
+// Model navigation: spec::add_limb [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn add_limb(left: u64, right: u64) -> (u64, bool) {
     if right <= u64::MAX - left {
         ((left + right) as u64, false)
@@ -34,6 +55,10 @@ pub(super) open spec fn add_limb(left: u64, right: u64) -> (u64, bool) {
     }
 }
 
+// Model navigation: spec::checked_add_small [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn checked_add_small(
     code: super::WideCode,
     value: u32,
@@ -60,6 +85,10 @@ pub(super) open spec fn checked_add_small(
     }
 }
 
+// Model navigation: spec::checked_shift_left_one [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn checked_shift_left_one(
     code: super::WideCode,
 ) -> Option<super::WideCode> {
@@ -77,6 +106,10 @@ pub(super) open spec fn checked_shift_left_one(
     }
 }
 
+// Model navigation: spec::append_bit [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn append_bit(
     code: super::WideCode,
     bit: u32,
@@ -87,6 +120,10 @@ pub(super) open spec fn append_bit(
     }
 }
 
+// Model navigation: spec::fits_in_bits [representation-invariant]
+// Purpose: Reader, line-width, wide-code and assigned-prefix representation invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn fits_in_bits(
     code: super::WideCode,
     bit_count: usize,
@@ -103,6 +140,10 @@ pub(super) open spec fn fits_in_bits(
     }
 }
 
+// Model navigation: spec::subtract_limb [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn subtract_limb(
     left: u64,
     right: u64,
@@ -122,6 +163,10 @@ pub(super) open spec fn subtract_limb(
     (second.0, first.1 || second.1)
 }
 
+// Model navigation: spec::small_distance_from [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn small_distance_from(
     left: super::WideCode,
     right: super::WideCode,
@@ -140,11 +185,20 @@ pub(super) open spec fn small_distance_from(
     }
 }
 
+// Model navigation: spec::reader_valid [representation-invariant]
+// Purpose: Reader, line-width, wide-code and assigned-prefix representation invariants.
+// Audit: huffman-reader-valid
+// REQUIREMENT CONTEXT: T88-HUFFMAN-PREFIX-MATCH | ITU-T T.88 (08/2018) | B.4 step 1
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn reader_valid(reader: &crate::reader::BitReader) -> bool {
     reader.bytes@.len() <= usize::MAX / 8
         && reader.bit_position <= reader.bytes@.len() * 8
 }
 
+// Model navigation: spec::line_decodable [representation-invariant]
+// Purpose: Reader, line-width, wide-code and assigned-prefix representation invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn line_decodable(line: super::HuffmanLine) -> bool {
     line.range_len <= 32
         && match line.kind {
@@ -160,6 +214,11 @@ pub(super) open spec fn line_decodable(line: super::HuffmanLine) -> bool {
         }
 }
 
+// Model navigation: spec::decoded_line_value [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Audit: huffman-decoded-value
+// REQUIREMENT CONTEXT: T88-HUFFMAN-NORMAL-VALUE | ITU-T T.88 (08/2018) | B.4 steps 2 and 5
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn decoded_line_value(
     line: super::HuffmanLine,
     offset: nat,
@@ -174,6 +233,10 @@ pub(super) open spec fn decoded_line_value(
     }
 }
 
+// Model navigation: spec::canonical_first_code [project-result-model]
+// Purpose: Checked wide-code arithmetic, first-prefix recurrence and signed value results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn canonical_first_code(
     previous: super::WideCode,
     count: u32,
@@ -184,6 +247,10 @@ pub(super) open spec fn canonical_first_code(
     }
 }
 
+// Model navigation: spec::canonical_range_fits [representation-invariant]
+// Purpose: Reader, line-width, wide-code and assigned-prefix representation invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn canonical_range_fits(
     first: super::WideCode,
     count: u32,
@@ -195,15 +262,27 @@ pub(super) open spec fn canonical_range_fits(
     }
 }
 
+// Model navigation: spec::line_lengths_valid [representation-invariant]
+// Purpose: Reader, line-width, wide-code and assigned-prefix representation invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn line_lengths_valid(lines: Seq<super::HuffmanLine>) -> bool {
     forall|index: int| 0 <= index < lines.len() ==>
         lines[index].range_len <= 32
 }
 
+// Model navigation: spec::is_raw [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn is_raw(source: super::HuffmanLines) -> bool {
     source is Borrowed
 }
 
+// Model navigation: spec::raw_lines [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn raw_lines(source: super::HuffmanLines) -> Seq<super::HuffmanLine> {
     match source {
         super::HuffmanLines::Borrowed(lines) => lines@,
@@ -212,6 +291,10 @@ pub(super) open spec fn raw_lines(source: super::HuffmanLines) -> Seq<super::Huf
 }
 
 // Select original indices, not the constructor's histogram or sorted storage.
+// Model navigation: spec::bucket [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn bucket(
     lines: Seq<super::HuffmanLine>, length: nat, scanned: nat,
 ) -> Seq<u32>
@@ -230,6 +313,10 @@ pub(super) open spec fn bucket(
     }
 }
 
+// Model navigation: spec::ordered_before [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn ordered_before(
     lines: Seq<super::HuffmanLine>, length: nat,
 ) -> Seq<u32>
@@ -243,6 +330,10 @@ pub(super) open spec fn ordered_before(
     }
 }
 
+// Model navigation: spec::first_prefix [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn first_prefix(
     lines: Seq<super::HuffmanLine>, length: nat,
 ) -> Option<super::WideCode>
@@ -265,6 +356,10 @@ pub(super) open spec fn first_prefix(
     }
 }
 
+// Model navigation: spec::histogram [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn histogram(
     lines: Seq<super::HuffmanLine>, counts: Seq<u32>, scanned: nat,
 ) -> bool {
@@ -273,6 +368,10 @@ pub(super) open spec fn histogram(
             counts[length] == bucket(lines, length as nat, scanned).len()
 }
 
+// Model navigation: spec::assignment_prefix [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn assignment_prefix(
     lines: Seq<super::HuffmanLine>,
     codes: Seq<super::WideCode>, starts: Seq<u32>, order: Seq<u32>, next: nat,
@@ -291,6 +390,11 @@ pub(super) open spec fn assignment_prefix(
                 ))
 }
 
+// Model navigation: spec::assignment_contents [project-result-model]
+// Purpose: Canonical assignment from raw-line histogram, prefix recurrence and stable order.
+// Audit: huffman-assignment-contents
+// REQUIREMENT CONTEXT: T88-HUFFMAN-CANONICAL-ASSIGNMENT | ITU-T T.88 (08/2018) | B.2 step 11; B.3 steps 1-3
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn assignment_contents(
     lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
 ) -> bool {
@@ -304,6 +408,11 @@ pub(crate) closed spec fn assignment_contents(
             == ordered_before(lines, table.max_prefix_len as nat + 1).len()
 }
 
+// Model navigation: spec::assignment_codes [project-result-model]
+// Purpose: Canonical assignment from raw-line histogram, prefix recurrence and stable order.
+// Audit: huffman-assignment-codes
+// REQUIREMENT CONTEXT: T88-HUFFMAN-CANONICAL-ASSIGNMENT | ITU-T T.88 (08/2018) | B.2 step 11; B.3 steps 1-3
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn assignment_codes(
     lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
 ) -> bool {
@@ -314,6 +423,11 @@ pub(crate) closed spec fn assignment_codes(
                 canonical_range_fits(table.first_code@[length], table.length_count@[length], length as usize))
 }
 
+// Model navigation: spec::assignment_starts [project-result-model]
+// Purpose: Canonical assignment from raw-line histogram, prefix recurrence and stable order.
+// Audit: huffman-assignment-starts
+// REQUIREMENT CONTEXT: T88-HUFFMAN-CANONICAL-ASSIGNMENT | ITU-T T.88 (08/2018) | B.2 step 11; B.3 steps 1-3
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn assignment_starts(
     lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
 ) -> bool {
@@ -322,12 +436,22 @@ pub(crate) closed spec fn assignment_starts(
             table.first_line@[length] == ordered_before(lines, length as nat).len()
 }
 
+// Model navigation: spec::assignment_order [project-result-model]
+// Purpose: Canonical assignment from raw-line histogram, prefix recurrence and stable order.
+// Audit: huffman-assignment-order
+// REQUIREMENT CONTEXT: T88-HUFFMAN-CANONICAL-ASSIGNMENT | ITU-T T.88 (08/2018) | B.2 step 11; B.3 steps 1-3
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn assignment_order(
     lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
 ) -> bool {
     table.ordered_lines@ == ordered_before(lines, table.max_prefix_len as nat + 1)
 }
 
+// Model navigation: spec::canonical_assignment [project-result-model]
+// Purpose: Canonical assignment from raw-line histogram, prefix recurrence and stable order.
+// Audit: huffman-canonical-assignment
+// REQUIREMENT CONTEXT: T88-HUFFMAN-CANONICAL-ASSIGNMENT | ITU-T T.88 (08/2018) | B.2 step 11; B.3 steps 1-3
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn canonical_assignment(
     lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
 ) -> bool {
@@ -335,6 +459,10 @@ pub(crate) open spec fn canonical_assignment(
         && assignment_starts(lines, table) && assignment_order(lines, table)
 }
 
+// Model navigation: spec::table_has_oob [proof-support]
+// Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn table_has_oob(table: &super::HuffmanTable) -> bool {
     exists|index: int| 0 <= index < table.lines@.len()
         && table.lines@[index].kind == super::LineKind::OutOfBand

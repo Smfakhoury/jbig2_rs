@@ -1,5 +1,15 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
+// Model navigation: macro::production_filled_tail_bounds [proof-support]
+// Purpose: Packed-storage bounds, fill completion and row-copy proof bridges.
+// Audit: filled-storage-tail-bounds
+// REQUIREMENT CONTEXT: T88-PAGE-DEFAULT-PIXEL | ITU-T T.88 (08/2018) | 7.4.8.5 bit 2; 8.2 step 3
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_filled_tail_bounds {
     ($data:ident, $height:ident, $stride:ident, $row:ident, $offset:ident, $last:ident, $index:ident) => {
         proof! {
@@ -21,6 +31,11 @@ macro_rules! production_filled_tail_bounds {
     };
 }
 
+// Model navigation: macro::production_filled_storage_step [proof-support]
+// Purpose: Packed-storage bounds, fill completion and row-copy proof bridges.
+// Audit: filled-storage-step
+// REQUIREMENT CONTEXT: T88-PAGE-DEFAULT-PIXEL | ITU-T T.88 (08/2018) | 7.4.8.5 bit 2; 8.2 step 3
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_filled_storage_step {
     ($before:ident, $data:ident, $width:ident, $stride:ident, $height:ident, $row:ident, $mask:ident) => {
         proof! {
@@ -34,6 +49,11 @@ macro_rules! production_filled_storage_step {
     };
 }
 
+// Model navigation: macro::production_filled_storage_result [proof-support]
+// Purpose: Packed-storage bounds, fill completion and row-copy proof bridges.
+// Audit: filled-storage-finish
+// REQUIREMENT CONTEXT: T88-PAGE-DEFAULT-PIXEL | ITU-T T.88 (08/2018) | 7.4.8.5 bit 2; 8.2 step 3
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_filled_storage_result {
     ($bitmap:ident, $value:ident) => {
         proof! {
@@ -207,6 +227,11 @@ macro_rules! production_black_span_result {
     };
 }
 
+// Model navigation: macro::production_bitmap_row_copy_bounds [proof-support]
+// Purpose: Packed-storage bounds, fill completion and row-copy proof bridges.
+// Audit: row-copy-bounds
+// REQUIREMENT CONTEXT: T88-GENERIC-TYPICAL-ROW | ITU-T T.88 (08/2018) | 6.2.5.5; 6.2.5.7 step 3c
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_bitmap_row_copy_bounds {
     ($bitmap:ident, $source:ident, $destination:ident) => {
         proof! {

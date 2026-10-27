@@ -1,3 +1,8 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 macro_rules! production_mmr_span_byte {
@@ -286,6 +291,11 @@ macro_rules! production_mmr_trace_row_push {
     };
 }
 
+// Model navigation: macro::production_mmr_trace_output [proof-support]
+// Purpose: Ghost completed-row history witnessing the project raster output relation.
+// Audit: mmr-raster-output-proof
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_mmr_trace_output {
     ($data:ident, $width:ident, $height:ident, $bitmap:ident, $reader:ident, $rows:ident) => {
         proof! {

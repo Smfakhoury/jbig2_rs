@@ -1,7 +1,17 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
 
+// Model navigation: spec::black_fill_prefix [proof-support]
+// Purpose: Loop partition: filled rows precede the untouched byte suffix.
+// Audit: filled-storage-prefix
+// REQUIREMENT CONTEXT: T88-PAGE-DEFAULT-PIXEL | ITU-T T.88 (08/2018) | 7.4.8.5 bit 2; 8.2 step 3
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn black_fill_prefix(
     data: Seq<u8>, width: u32, stride: usize, height: u32, completed: nat,
 ) -> bool {

@@ -1,17 +1,35 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: README.md
+// All requirement links and inherited locators: ../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
 
+// Model navigation: spec::context_valid [representation-invariant]
+// Purpose: Context/register/input-position representation and normalization invariants.
+// Audit: context-valid
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-RESET-ONE | ITU-T T.88 (08/2018) | E.3.7
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn context_valid(
     context: super::ArithmeticContext,
 ) -> bool {
     context.state_index < 47 && context.mps <= 1
 }
 
+// Model navigation: spec::exchange_is_mps [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_is_mps(lower: bool, interval: u32, qe: u32) -> bool {
     (interval < qe) == lower
 }
 
+// Model navigation: spec::exchange_decision [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_decision(
     lower: bool, interval: u32, qe: u32, old_mps: u8,
 ) -> u8
@@ -24,12 +42,20 @@ pub(crate) open spec fn exchange_decision(
     }
 }
 
+// Model navigation: spec::exchange_index [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_index(
     lower: bool, interval: u32, qe: u32, next_mps: u8, next_lps: u8,
 ) -> u8 {
     if exchange_is_mps(lower, interval, qe) { next_mps } else { next_lps }
 }
 
+// Model navigation: spec::exchange_mps [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_mps(
     lower: bool, interval: u32, qe: u32, switch_mps: bool,
     prior_context_mps: u8, old_mps: u8,
@@ -43,6 +69,10 @@ pub(crate) open spec fn exchange_mps(
     }
 }
 
+// Model navigation: spec::entry_decision [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn entry_decision(
     interval: u32, code: u32, index: u8, mps: u8,
 ) -> u8
@@ -58,6 +88,10 @@ pub(crate) closed spec fn entry_decision(
     }
 }
 
+// Model navigation: spec::entry_index [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn entry_index(
     interval: u32, code: u32, index: u8,
 ) -> u8
@@ -73,6 +107,10 @@ pub(crate) closed spec fn entry_index(
     }
 }
 
+// Model navigation: spec::entry_mps [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn entry_mps(
     interval: u32, code: u32, index: u8, mps: u8,
 ) -> u8
@@ -89,6 +127,10 @@ pub(crate) closed spec fn entry_mps(
 }
 
 // Representation preconditions used by production contracts, not normative rules.
+// Model navigation: spec::decoder_position_valid [representation-invariant]
+// Purpose: Context/register/input-position representation and normalization invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn decoder_position_valid(
     decoder: &super::ArithmeticDecoder,
 ) -> bool {
@@ -96,6 +138,11 @@ pub(crate) open spec fn decoder_position_valid(
         && decoder.current_byte == decoder.bytes@[decoder.byte_position as int]
 }
 
+// Model navigation: spec::decoder_state_valid [representation-invariant]
+// Purpose: Context/register/input-position representation and normalization invariants.
+// Audit: decoder-state-valid
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn decoder_state_valid(
     decoder: &super::ArithmeticDecoder,
 ) -> bool {
@@ -114,6 +161,11 @@ pub(crate) open spec fn decoder_state_valid(
         }
 }
 
+// Model navigation: spec::decoder_valid [representation-invariant]
+// Purpose: Context/register/input-position representation and normalization invariants.
+// Audit: decoder-valid
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DECISION | ITU-T T.88 (08/2018) | E.3.2; Figures E.15-E.17 (pp. 119-121)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn decoder_valid(
     decoder: &super::ArithmeticDecoder,
 ) -> bool {
@@ -124,6 +176,10 @@ pub(crate) open spec fn decoder_valid(
 // Audit: arithmetic-refill-step
 // T.88 (08/2018), E.3.4 / Figure E.19: https://www.itu.int/rec/T-REC-T.88-201808-I/en
 // Inherited ledger locator; independent BYTEIN and caller interpretation remain pending.
+// Model navigation: spec::refill_step [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-BYTEIN-BRANCH | ITU-T T.88 (08/2018) | E.3.4, Figure E.19, B equals FF test (p. 122)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn refill_step(
     decoder: &super::ArithmeticDecoder,
 ) -> (u8, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
@@ -170,6 +226,10 @@ pub(crate) open spec fn refill_step(
 // Audit: arithmetic-initialized-state
 // T.88 (08/2018), E.3.5 / Figure E.20: https://www.itu.int/rec/T-REC-T.88-201808-I/en
 // Project initialization result, not independent approval of the standard translation.
+// Model navigation: spec::initialized_state [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INITDEC-BYTEIN | ITU-T T.88 (08/2018) | E.3.5, Figure E.20, BYTEIN call (p. 122)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn initialized_state(
     bytes: &[u8],
 ) -> Option<(usize, u8, u32, u8, Option<super::ArithmeticMarker>)> {
@@ -193,6 +253,11 @@ pub(crate) open spec fn initialized_state(
     }
 }
 
+// Model navigation: spec::renormalization_steps [proof-support]
+// Purpose: Private decoder projections and the interval-doubling termination measure.
+// Audit: arithmetic-renormalization-steps
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-REGISTER-LOW-INPUT | ITU-T T.88 (08/2018) | E.3.1, input alignment and cross-half shift (p. 119)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn renormalization_steps(interval: nat) -> nat
     decreases if 0 < interval < super::MIN_INTERVAL {
         super::MIN_INTERVAL - interval
@@ -207,6 +272,11 @@ pub(crate) open spec fn renormalization_steps(interval: nat) -> nat
     }
 }
 
+// Model navigation: spec::normalized_state [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Audit: arithmetic-normalized-state
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-REGISTER-LOW-INPUT | ITU-T T.88 (08/2018) | E.3.1, input alignment and cross-half shift (p. 119)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn normalized_state(
     decoder: &super::ArithmeticDecoder,
 ) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
@@ -258,6 +328,11 @@ pub(crate) open spec fn normalized_state(
     }
 }
 
+// Model navigation: spec::exchange_normalization [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Audit: arithmetic-exchange-normalization
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DECODE-INTERVAL-SUBTRACT | ITU-T T.88 (08/2018) | E.3.2, Figure E.15, initial interval subtraction (p. 120)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_normalization(
     decoder: &super::ArithmeticDecoder, lower: bool, qe: u32,
 ) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
@@ -274,6 +349,11 @@ pub(crate) open spec fn exchange_normalization(
     })
 }
 
+// Model navigation: spec::decision_registers [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Audit: arithmetic-decision-registers
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DECODE-INTERVAL-SUBTRACT | ITU-T T.88 (08/2018) | E.3.2, Figure E.15, initial interval subtraction (p. 120)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn decision_registers(
     decoder: &super::ArithmeticDecoder, qe: u32, decision: u8,
 ) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
@@ -313,6 +393,11 @@ pub(crate) open spec fn decision_registers(
     }
 }
 
+// Model navigation: spec::decision_state [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Audit: arithmetic-decision-state
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-CONTEXT-SELECT | ITU-T T.88 (08/2018) | A.2, step 2 (p. 89)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn decision_state(
     decoder: &super::ArithmeticDecoder, context: super::ArithmeticContext,
 ) -> (u8, u32, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
@@ -325,6 +410,11 @@ pub(crate) closed spec fn decision_state(
     )
 }
 
+// Model navigation: spec::eof_error [project-policy]
+// Purpose: Project arithmetic EOF/overflow diagnostics and DecodeError translation.
+// Audit: arithmetic-eof-error
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE | ITU-T T.88 (08/2018) | E.3, Figure E.14, read CX / DECODE / Finished loop (p. 118)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn eof_error(
     offset: usize, needed: usize, remaining: usize,
 ) -> super::ArithmeticError {
@@ -337,6 +427,11 @@ pub(crate) open spec fn eof_error(
     }
 }
 
+// Model navigation: spec::error_for_signal [project-policy]
+// Purpose: Project arithmetic EOF/overflow diagnostics and DecodeError translation.
+// Audit: arithmetic-signal-error
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE | ITU-T T.88 (08/2018) | E.3, Figure E.14, read CX / DECODE / Finished loop (p. 118)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn error_for_signal(
     decoder: &super::ArithmeticDecoder, signal: u8,
 ) -> super::ArithmeticError {
@@ -348,6 +443,11 @@ pub(crate) open spec fn error_for_signal(
     }
 }
 
+// Model navigation: spec::decode_error [project-policy]
+// Purpose: Project arithmetic EOF/overflow diagnostics and DecodeError translation.
+// Audit: arithmetic-decode-error
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn decode_error(error: super::ArithmeticError) -> crate::DecodeError {
     match error {
         super::ArithmeticError::Malformed(error) => crate::DecodeError::Malformed(error),
@@ -364,6 +464,11 @@ pub(crate) open spec fn decode_error(error: super::ArithmeticError) -> crate::De
     }
 }
 
+// Model navigation: spec::integer_history_step [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-integer-history-step
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-CONTEXT-SELECT | ITU-T T.88 (08/2018) | A.2, step 2 (p. 89)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn integer_history_step(previous: u16, decision: u8) -> u16
     recommends previous <= 511, decision <= 1,
 {
@@ -371,6 +476,11 @@ pub(crate) open spec fn integer_history_step(previous: u16, decision: u8) -> u16
     if previous < 256 { shifted } else { (shifted & 511) | 256 }
 }
 
+// Model navigation: spec::context_after_decision [project-result-model]
+// Purpose: Exact project exchange, refill, initialization and normalized register results.
+// Audit: arithmetic-context-after-decision
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-CONTEXT-SELECT | ITU-T T.88 (08/2018) | A.2, step 2 (p. 89)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn context_after_decision(
     decoder: &super::ArithmeticDecoder, context: super::ArithmeticContext,
 ) -> super::ArithmeticContext
@@ -382,6 +492,11 @@ pub(crate) open spec fn context_after_decision(
     }
 }
 
+// Model navigation: spec::integer_bit_state [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-integer-bit-state
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-CONTEXT-SELECT | ITU-T T.88 (08/2018) | A.2, step 2 (p. 89)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn integer_bit_state(
     decoder: &super::ArithmeticDecoder,
     contexts: Seq<super::ArithmeticContext>,
@@ -394,6 +509,11 @@ pub(crate) open spec fn integer_bit_state(
     decision_state(decoder, contexts[(previous & 511) as int])
 }
 
+// Model navigation: spec::iaid_run [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-iaid-run
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-IAID-LENGTH | ITU-T T.88 (08/2018) | A.3, introductory fixed-length rule (p. 91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn iaid_run<'a>(
     decoder: super::ArithmeticDecoder<'a>,
     contexts: Seq<super::ArithmeticContext>,
@@ -449,6 +569,11 @@ pub(crate) open spec fn iaid_run<'a>(
     }
 }
 
+// Model navigation: spec::integer_step_state [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-integer-step-state
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn integer_step_state<'a>(
     decoder: super::ArithmeticDecoder<'a>,
     contexts: Seq<super::ArithmeticContext>,
@@ -487,6 +612,11 @@ pub(crate) open spec fn integer_step_state<'a>(
     }
 }
 
+// Model navigation: spec::integer_bits_run [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-integer-bits-run
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn integer_bits_run<'a>(
     decoder: super::ArithmeticDecoder<'a>,
     contexts: Seq<super::ArithmeticContext>,
@@ -517,6 +647,11 @@ pub(crate) open spec fn integer_bits_run<'a>(
     }
 }
 
+// Model navigation: spec::integer_selection_state [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-integer-selection-state
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn integer_selection_state<'a>(
     decoder: super::ArithmeticDecoder<'a>,
     contexts: Seq<super::ArithmeticContext>,
@@ -547,6 +682,11 @@ pub(crate) open spec fn integer_selection_state<'a>(
     }
 }
 
+// Model navigation: spec::integer_state [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-integer-state
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn integer_state<'a>(
     decoder: super::ArithmeticDecoder<'a>,
     contexts: Seq<super::ArithmeticContext>,
@@ -587,6 +727,11 @@ pub(crate) open spec fn integer_state<'a>(
     }
 }
 
+// Model navigation: spec::iaid_state [project-result-model]
+// Purpose: Decision histories, integer payload folds, IAID state and partial-error results.
+// Audit: arithmetic-iaid-state
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-IAID-LENGTH | ITU-T T.88 (08/2018) | A.3, introductory fixed-length rule (p. 91)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn iaid_state<'a>(
     decoder: super::ArithmeticDecoder<'a>,
     contexts: Seq<super::ArithmeticContext>,
@@ -624,12 +769,20 @@ pub(crate) open spec fn iaid_state<'a>(
     }
 }
 
+// Model navigation: spec::decoder_marker [proof-support]
+// Purpose: Private decoder projections and the interval-doubling termination measure.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn decoder_marker(
     decoder: &super::ArithmeticDecoder,
 ) -> Option<super::ArithmeticMarker> {
     decoder.marker
 }
 
+// Model navigation: spec::decoder_byte_position [proof-support]
+// Purpose: Private decoder projections and the interval-doubling termination measure.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn decoder_byte_position(
     decoder: &super::ArithmeticDecoder,
 ) -> usize {

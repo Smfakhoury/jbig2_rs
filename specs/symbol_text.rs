@@ -1,15 +1,32 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: README.md
+// All requirement links and inherited locators: ../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
 
+// Model navigation: spec::work_units [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn work_units(tracker: &super::ResourceTracker) -> u64 {
     tracker.work_units
 }
 
+// Model navigation: spec::bitmap_bytes [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn bitmap_bytes(tracker: &super::ResourceTracker) -> u64 {
     tracker.decoded_bitmap_bytes
 }
 
+// Model navigation: spec::work_charge_effect [project-policy]
+// Purpose: Resource charges/frames, requested dimensions, work and cursor arithmetic policy.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn work_charge_effect(
     before: &super::ResourceTracker,
     after: &super::ResourceTracker,
@@ -27,6 +44,10 @@ pub(crate) open spec fn work_charge_effect(
         && accepted == (total <= u64::MAX && total <= limits.max_work_units)
 }
 
+// Model navigation: spec::bitmap_charge_effect [project-policy]
+// Purpose: Resource charges/frames, requested dimensions, work and cursor arithmetic policy.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn bitmap_charge_effect(
     before: &super::ResourceTracker,
     after: &super::ResourceTracker,
@@ -53,6 +74,10 @@ pub(crate) open spec fn bitmap_charge_effect(
         )
 }
 
+// Model navigation: spec::text_initialization_allowed [project-policy]
+// Purpose: Resource charges/frames, requested dimensions, work and cursor arithmetic policy.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn text_initialization_allowed(
     config: super::TextRegionConfig,
     instances: u32,
@@ -65,6 +90,11 @@ pub(crate) open spec fn text_initialization_allowed(
         && i64::MIN <= -scaled <= i64::MAX
 }
 
+// Model navigation: spec::text_placement_allowed [project-policy]
+// Purpose: Resource charges/frames, requested dimensions, work and cursor arithmetic policy.
+// Audit: text-current-placement-acceptance
+// REQUIREMENT CONTEXT: T88-TEXT-INSTANCE-COORDINATES | ITU-T T.88 (08/2018) | 6.4.5 step 3c; 6.4.7-6.4.9
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn text_placement_allowed(
     state: &super::TextRegionState,
     within_strip_t: u8,
@@ -97,6 +127,10 @@ pub(crate) open spec fn text_placement_allowed(
     }
 }
 
+// Model navigation: spec::placement_overlap [project-result-model]
+// Purpose: Corner/transposition placement, clipping and prepared-content/resource frames.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn placement_overlap(
     destination: &crate::bitmap::Bitmap,
     source: &crate::bitmap::Bitmap,
@@ -114,6 +148,10 @@ pub(crate) open spec fn placement_overlap(
         if bottom > top { (bottom - top) as nat } else { 0 })
 }
 
+// Model navigation: spec::placement_preflight_result [project-result-model]
+// Purpose: Corner/transposition placement, clipping and prepared-content/resource frames.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn placement_preflight_result(
     destination: &crate::bitmap::Bitmap,
     source: &crate::bitmap::Bitmap,
@@ -147,6 +185,10 @@ pub(crate) open spec fn placement_preflight_result(
     }
 }
 
+// Model navigation: spec::integer_contexts_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn integer_contexts_valid(
     contexts: &super::IntegerContexts,
 ) -> bool {
@@ -158,6 +200,10 @@ pub(super) open spec fn integer_contexts_valid(
             )
 }
 
+// Model navigation: spec::arithmetic_contexts_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn arithmetic_contexts_valid(
     contexts: Seq<crate::arithmetic::ArithmeticContext>,
 ) -> bool {
@@ -165,6 +211,10 @@ pub(super) open spec fn arithmetic_contexts_valid(
         ==> crate::arithmetic::arithmetic_spec::context_valid(contexts[index])
 }
 
+// Model navigation: spec::arithmetic_codec_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn arithmetic_codec_valid(
     arithmetic: &super::ArithmeticCodec,
 ) -> bool {
@@ -173,10 +223,20 @@ pub(super) open spec fn arithmetic_codec_valid(
         && arithmetic_contexts_valid(arithmetic.iaid@)
 }
 
+// Model navigation: spec::integer_field_slot [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Audit: symbol-integer-field-slot
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn integer_field_slot(field: super::IntegerField) -> usize {
     field as usize
 }
 
+// Model navigation: spec::arithmetic_integer_result [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Audit: symbol-arithmetic-integer-result
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn arithmetic_integer_result(
     result: Result<crate::arithmetic::ArithmeticInteger, crate::arithmetic::ArithmeticError>,
 ) -> Result<super::EntropyInteger, super::SymbolTextError> {
@@ -191,6 +251,11 @@ pub(super) open spec fn arithmetic_integer_result(
     }
 }
 
+// Model navigation: spec::arithmetic_symbol_id_result [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Audit: symbol-arithmetic-iaid-result
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS | ITU-T T.88 (08/2018) | A.1; A.2, context-separation paragraph (pp. 89-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn arithmetic_symbol_id_result(
     result: Result<u32, crate::arithmetic::ArithmeticError>,
 ) -> Result<u32, super::SymbolTextError> {
@@ -202,6 +267,10 @@ pub(super) open spec fn arithmetic_symbol_id_result(
     }
 }
 
+// Model navigation: spec::codec_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn codec_valid(codec: &super::SymbolCodec) -> bool {
     match codec {
         super::SymbolCodec::Arithmetic(arithmetic) =>
@@ -212,6 +281,10 @@ pub(super) open spec fn codec_valid(codec: &super::SymbolCodec) -> bool {
     }
 }
 
+// Model navigation: spec::table_bindings_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn table_bindings_valid(
     bindings: &super::TableBindings,
 ) -> bool {
@@ -220,6 +293,11 @@ pub(super) open spec fn table_bindings_valid(
             bindings.entries[index].is_some() == (index < bindings.len)
 }
 
+// Model navigation: spec::export_indices_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Audit: export-indices-valid
+// REQUIREMENT CONTEXT: T88-DICTIONARY-EXPORT-COUNT | ITU-T T.88 (08/2018) | 6.5.10; 7.4.2.1.4
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn export_indices_valid(
     exported: Seq<u32>,
     total_candidates: u32,
@@ -228,11 +306,20 @@ pub(super) open spec fn export_indices_valid(
         ==> #[trigger] exported[index] < total_candidates
 }
 
+// Model navigation: spec::bitmaps_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Audit: symbol-bitmaps-valid
+// REQUIREMENT CONTEXT: T88-DICTIONARY-EXPORT-ORDER | ITU-T T.88 (08/2018) | 6.5.10 step 8
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn bitmaps_valid(bitmaps: Seq<crate::bitmap::Bitmap>) -> bool {
     forall|index: int| 0 <= index < bitmaps.len()
         ==> crate::spec::bitmap::storage_valid(#[trigger] &bitmaps[index])
 }
 
+// Model navigation: spec::bitmap_refs_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn bitmap_refs_valid(
     bitmaps: Seq<&crate::bitmap::Bitmap>,
 ) -> bool {
@@ -240,6 +327,11 @@ pub(crate) open spec fn bitmap_refs_valid(
         ==> crate::spec::bitmap::storage_valid(#[trigger] bitmaps[index])
 }
 
+// Model navigation: spec::codebook_len [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Audit: project-symbol-codebook-length
+// REQUIREMENT CONTEXT: T88-DICTIONARY-EXPORT-ORDER | ITU-T T.88 (08/2018) | 6.5.10 step 8
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn codebook_len(codebook: super::SymbolCodebook) -> nat {
     match codebook {
         super::SymbolCodebook::Contiguous(symbols) => symbols@.len(),
@@ -247,6 +339,10 @@ pub(crate) open spec fn codebook_len(codebook: super::SymbolCodebook) -> nat {
     }
 }
 
+// Model navigation: spec::codebook_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn codebook_valid(codebook: super::SymbolCodebook) -> bool {
     match codebook {
         super::SymbolCodebook::Contiguous(symbols) => bitmaps_valid(symbols@),
@@ -254,6 +350,11 @@ pub(crate) open spec fn codebook_valid(codebook: super::SymbolCodebook) -> bool 
     }
 }
 
+// Model navigation: spec::bitmap_contents_match [project-result-model]
+// Purpose: Exact bitmap content, symbol selection and ordered repeated-export results.
+// Audit: symbol-bitmap-contents-match
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn bitmap_contents_match(
     actual: &crate::bitmap::Bitmap, expected: &crate::bitmap::Bitmap,
 ) -> bool {
@@ -263,6 +364,11 @@ pub(crate) open spec fn bitmap_contents_match(
         && actual.data@ == expected.data@
 }
 
+// Model navigation: spec::codebook_selects [project-result-model]
+// Purpose: Exact bitmap content, symbol selection and ordered repeated-export results.
+// Audit: symbol-codebook-selects
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn codebook_selects(
     codebook: super::SymbolCodebook, index: nat, bitmap: &crate::bitmap::Bitmap,
 ) -> bool {
@@ -275,6 +381,11 @@ pub(crate) open spec fn codebook_selects(
         }
 }
 
+// Model navigation: spec::symbol_id_selects [project-result-model]
+// Purpose: Exact bitmap content, symbol selection and ordered repeated-export results.
+// Audit: symbol-id-selects
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn symbol_id_selects(
     imported: super::SymbolCodebook, new_symbols: Seq<crate::bitmap::Bitmap>,
     id: u32, bitmap: &crate::bitmap::Bitmap,
@@ -288,6 +399,11 @@ pub(super) open spec fn symbol_id_selects(
     }
 }
 
+// Model navigation: spec::exported_contents_match [project-result-model]
+// Purpose: Exact bitmap content, symbol selection and ordered repeated-export results.
+// Audit: symbol-exported-contents-match
+// REQUIREMENT CONTEXT: T88-DICTIONARY-EXPORT-ORDER | ITU-T T.88 (08/2018) | 6.5.10 step 8
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn exported_contents_match(
     imported: super::SymbolCodebook, new_symbols: Seq<crate::bitmap::Bitmap>,
     indices: Seq<u32>, exported: Seq<crate::bitmap::Bitmap>,
@@ -297,6 +413,10 @@ pub(super) open spec fn exported_contents_match(
             #[trigger] symbol_id_selects(imported, new_symbols, indices[index], &exported[index])
 }
 
+// Model navigation: spec::two_bit_choice_result [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn two_bit_choice_result(
     encoded: u8,
     first: crate::huffman::StandardHuffmanTable,
@@ -311,6 +431,10 @@ pub(crate) open spec fn two_bit_choice_result(
     }
 }
 
+// Model navigation: spec::four_way_choice_result [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn four_way_choice_result(
     encoded: u8,
     first: crate::huffman::StandardHuffmanTable,
@@ -326,6 +450,11 @@ pub(crate) open spec fn four_way_choice_result(
     }
 }
 
+// Model navigation: spec::dictionary_config_safe [candidate-standard-facing-model]
+// Purpose: Selected dictionary/text flags, strip/refinement choices and OOB candidates.
+// Audit: dictionary-config-safe
+// REQUIREMENT CONTEXT: T88-AGGREGATION-MODE-FLAG | ITU-T T.88 (08/2018) | 7.4.2.1.1 bit 1; 6.5.8.2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn dictionary_config_safe(
     flags: u16,
     config: super::SymbolDictionaryConfig,
@@ -335,6 +464,11 @@ pub(crate) open spec fn dictionary_config_safe(
         && config.refinement_aggregation == (flags & 2 != 0)
 }
 
+// Model navigation: spec::text_config_safe [candidate-standard-facing-model]
+// Purpose: Selected dictionary/text flags, strip/refinement choices and OOB candidates.
+// Audit: text-config-safe
+// REQUIREMENT CONTEXT: T88-TEXT-CODING-FLAGS | ITU-T T.88 (08/2018) | 7.4.3.1.1
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn text_config_safe(
     flags: u16,
     huffman_flags: Option<u16>,
@@ -349,6 +483,10 @@ pub(crate) open spec fn text_config_safe(
         && valid_strip_size(config.strip_size)
 }
 
+// Model navigation: spec::text_huffman_choices_safe [candidate-standard-facing-model]
+// Purpose: Selected dictionary/text flags, strip/refinement choices and OOB candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn text_huffman_choices_safe(
     flags: u16,
     refinement: bool,
@@ -367,6 +505,10 @@ pub(crate) open spec fn text_huffman_choices_safe(
         ))
 }
 
+// Model navigation: spec::refinement_choice_result [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn refinement_choice_result(
     encoded: u8,
     choice: super::TableChoice,
@@ -383,14 +525,28 @@ pub(crate) open spec fn refinement_choice_result(
     }
 }
 
+// Model navigation: spec::floor_half [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Audit: text-floor-half
+// REQUIREMENT CONTEXT: T88-AGGREGATION-TEXT-REFINEMENT-GEOMETRY | ITU-T T.88 (08/2018) | 6.5.8.2 step 2; 6.4.11 step 6; Table 12
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn floor_half(value: int) -> int {
     value / 2
 }
 
+// Model navigation: spec::signed_byte [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn signed_byte(value: u8) -> int {
     if value <= 127 { value as int } else { value as int - 256 }
 }
 
+// Model navigation: spec::dictionary_state_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Audit: dictionary-state-valid
+// REQUIREMENT CONTEXT: T88-DICTIONARY-HEIGHT-CLASS-STATE | ITU-T T.88 (08/2018) | 6.5.5 step 4; 6.5.6-6.5.7
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn dictionary_state_valid(
     state: &super::DictionaryClassState,
 ) -> bool {
@@ -398,10 +554,18 @@ pub(crate) open spec fn dictionary_state_valid(
         && state.width <= state.total_width
 }
 
+// Model navigation: spec::text_state_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn text_state_valid(state: &super::TextRegionState) -> bool {
     state.decoded_instances <= state.declared_instances
 }
 
+// Model navigation: spec::placement_within_extents [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn placement_within_extents(
     placement: super::Placement,
     width: u32,
@@ -413,6 +577,10 @@ pub(crate) open spec fn placement_within_extents(
         && placement.y <= placement.y + height as int - 1
 }
 
+// Model navigation: spec::prepared_placement_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn prepared_placement_valid(
     prepared: super::PreparedPlacement,
     destination: &crate::bitmap::Bitmap,
@@ -428,6 +596,10 @@ pub(crate) open spec fn prepared_placement_valid(
             <= destination.height as nat
 }
 
+// Model navigation: spec::placement_batch_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn placement_batch_valid(
     batch: &super::PlacementBatch,
     destination: &crate::bitmap::Bitmap,
@@ -447,6 +619,11 @@ pub(crate) open spec fn placement_batch_valid(
         }
 }
 
+// Model navigation: spec::placement_for_current [project-result-model]
+// Purpose: Corner/transposition placement, clipping and prepared-content/resource frames.
+// Audit: text-current-placement
+// REQUIREMENT CONTEXT: T88-TEXT-INSTANCE-COORDINATES | ITU-T T.88 (08/2018) | 6.4.5 step 3c; 6.4.7-6.4.9
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn placement_for_current(
     state: &super::TextRegionState,
     within_strip_t: u8,
@@ -494,18 +671,30 @@ pub(crate) open spec fn placement_for_current(
     }
 }
 
+// Model navigation: spec::pow2 [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn pow2(exponent: nat) -> nat
     decreases exponent,
 {
     if exponent == 0 { 1 } else { 2 * pow2((exponent - 1) as nat) }
 }
 
+// Model navigation: spec::symbol_code_length_valid [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn symbol_code_length_valid(count: u32, length: u8) -> bool {
     length <= 32
         && (count <= 1 ==> length == 0)
         && (count > 1 ==> length > 0)
 }
 
+// Model navigation: spec::symbol_code_length_expected [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn symbol_code_length_expected(count: u32) -> u8 {
     if count <= 1 { 0 }
     else if count <= 2 { 1 }
@@ -542,6 +731,10 @@ pub(crate) open spec fn symbol_code_length_expected(count: u32) -> u8 {
     else { 32 }
 }
 
+// Model navigation: spec::generic_template_matches [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn generic_template_matches(
     value: u8,
     template: crate::generic_region::GenericTemplate,
@@ -554,6 +747,10 @@ pub(crate) open spec fn generic_template_matches(
     }
 }
 
+// Model navigation: spec::refinement_template_matches [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn refinement_template_matches(
     value: u8,
     template: crate::generic_region::RefinementTemplate,
@@ -565,10 +762,18 @@ pub(crate) open spec fn refinement_template_matches(
     }
 }
 
+// Model navigation: spec::valid_strip_size [representation-invariant]
+// Purpose: Codec banks/bitmaps, table slots, export counters and placement-bound invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn valid_strip_size(size: u8) -> bool {
     size == 1 || size == 2 || size == 4 || size == 8
 }
 
+// Model navigation: spec::strip_log_valid [project-result-model]
+// Purpose: Arithmetic codec result/error translation and encoded choice/length results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn strip_log_valid(size: u8, log: u8) -> bool {
     (size == 1 && log == 0)
         || (size == 2 && log == 1)
@@ -576,6 +781,10 @@ pub(crate) open spec fn strip_log_valid(size: u8, log: u8) -> bool {
         || (size == 8 && log == 3)
 }
 
+// Model navigation: spec::export_progress_measure [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn export_progress_measure(
     index: nat,
     work: nat,
@@ -587,6 +796,10 @@ pub(crate) open spec fn export_progress_measure(
     (work_limit - work) * (total + 1) + (total - index)
 }
 
+// Model navigation: spec::custom_oob_compatible [candidate-standard-facing-model]
+// Purpose: Selected dictionary/text flags, strip/refinement choices and OOB candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn custom_oob_compatible(
     requires_oob: bool,
     supplied_oob: bool,
@@ -594,10 +807,18 @@ pub(crate) open spec fn custom_oob_compatible(
     requires_oob == supplied_oob
 }
 
+// Model navigation: spec::clipped_start [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn clipped_start(origin: int) -> int {
     if origin < 0 { 0 } else { origin }
 }
 
+// Model navigation: spec::clipped_end [proof-support]
+// Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn clipped_end(origin: int, extent: nat, bound: nat) -> int {
     let far = origin + extent as int;
     if far < bound as int { far } else { bound as int }

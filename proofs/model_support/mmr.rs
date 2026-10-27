@@ -1,7 +1,16 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 // Implementation accumulator invariant, included in mmr_spec without a new module.
 // Its unchanged definition remains part of the private helper contracts' audit surface.
 verus! {
 
+// Model navigation: spec::transition_prefix_valid [proof-support]
+// Purpose: Transition/cache prefixes and white unvisited-row frames for raster loops.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn transition_prefix_valid(
     transitions: Seq<u32>,
     scanned: u32,
@@ -15,6 +24,10 @@ pub(super) open spec fn transition_prefix_valid(
                 #[trigger] transitions[left] <= #[trigger] transitions[right]
 }
 
+// Model navigation: spec::transition_span_result [proof-support]
+// Purpose: Tuple-equality bridge to the shared transition-span update.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn transition_span_result(
     before: Seq<u32>,
     after: Seq<u32>,
@@ -27,6 +40,11 @@ pub(super) open spec fn transition_span_result(
     (after, after_black) == transition_span_state(before, before_black, start, end, black)
 }
 
+// Model navigation: spec::row_cache_prefix [proof-support]
+// Purpose: Transition/cache prefixes and white unvisited-row frames for raster loops.
+// Audit: mmr-row-cache-prefix
+// REQUIREMENT CONTEXT: T6-REFERENCE-NEXT-LINE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn row_cache_prefix(
     bitmap: &crate::Bitmap, row: u32, transitions: Seq<u32>,
     emitted_black: bool, scanned: u32,
@@ -39,12 +57,21 @@ pub(super) open spec fn row_cache_prefix(
                 == (x < scanned && transition_black_at(transitions, x))
 }
 
+// Model navigation: spec::future_rows_white [proof-support]
+// Purpose: Transition/cache prefixes and white unvisited-row frames for raster loops.
+// Audit: mmr-future-rows-white
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn future_rows_white(bitmap: &crate::Bitmap, first: nat) -> bool {
     crate::spec::bitmap::storage_valid(bitmap)
         && forall|x: u32, y: u32| x < bitmap.width && first <= y < bitmap.height ==>
             !#[trigger] crate::spec::bitmap::stored_pixel(bitmap, x, y)
 }
 
+// Model navigation: spec::raster_outer [proof-support]
+// Purpose: Transition/cache prefixes and white unvisited-row frames for raster loops.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn raster_outer(
     bytes: Seq<u8>, width: u32, row: u32, bitmap: &crate::Bitmap,
     rows: Seq<RasterRow>, reference: Seq<u32>, position: nat,
@@ -56,6 +83,10 @@ pub(super) open spec fn raster_outer(
         && position == rows_position(rows)
 }
 
+// Model navigation: spec::raster_inner [proof-support]
+// Purpose: Transition/cache prefixes and white unvisited-row frames for raster loops.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn raster_inner(
     bytes: Seq<u8>, width: u32, row: u32, bitmap: &crate::Bitmap,
     rows: Seq<RasterRow>, reference: Seq<u32>, start: nat,
@@ -97,6 +128,11 @@ pub(super) proof fn prefix_bitmap_witness(
     reveal(prefix_bitmap_decodes);
 }
 
+// Model navigation: spec::reference_cursor_matches [proof-support]
+// Purpose: Cursor eligibility and exclusion of skipped reference positions.
+// Audit: mmr-reference-cursor
+// REQUIREMENT CONTEXT: T6-REFERENCE-CHANGING-ELEMENTS | ITU-T T.6 (1988) | 2.2.2; 2.2.5.2
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn reference_cursor_matches(
     transitions: Seq<u32>, x: u32, initial: bool, start: int, cursor: int,
 ) -> bool {

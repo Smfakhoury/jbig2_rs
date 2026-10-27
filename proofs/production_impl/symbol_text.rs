@@ -1,3 +1,8 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 macro_rules! production_symbol_tracker_fields {
@@ -31,6 +36,11 @@ macro_rules! production_symbol_clipped_geometry {
     };
 }
 
+// Model navigation: macro::production_symbol_current_placement_witness [proof-support]
+// Purpose: Ghost placement witness from the native current strip coordinates.
+// Audit: text-current-placement-witness
+// REQUIREMENT CONTEXT: T88-TEXT-INSTANCE-COORDINATES | ITU-T T.88 (08/2018) | 6.4.5 step 3c; 6.4.7-6.4.9
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_symbol_current_placement_witness {
     ($state:expr, $within:expr, $width:expr, $height:expr, $x:expr, $y:expr) => {
         proof! {

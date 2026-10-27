@@ -1,3 +1,8 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: README.md
+// All requirement links and inherited locators: ../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
@@ -5,10 +10,18 @@ verus! {
 // Audit: mmr-mode-table-entry
 // T.6 (1988), 2.2.3 / Table 1: https://www.itu.int/rec/T-REC-T.6-198811-I/en
 // Membership in implementation data is not an independent normative-table proof.
+// Model navigation: spec::mode_code_in_implementation_table [proof-support]
+// Purpose: Membership/key equality against implementation mode/run arrays, not table fidelity.
+// REQUIREMENT CONTEXT: T6-MODE-TABLE-DISPATCH | ITU-T T.6 (1988) | 2.2.3; 2.2.4; Table 1/T.6
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn mode_code_in_implementation_table(code: super::ModeCode) -> bool {
     super::MODE_CODES@.contains(code)
 }
 
+// Model navigation: spec::mode_matches [proof-support]
+// Purpose: Membership/key equality against implementation mode/run arrays, not table fidelity.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn mode_matches(
     code: super::ModeCode,
     bits: u16,
@@ -20,6 +33,10 @@ pub(super) open spec fn mode_matches(
 // Audit: mmr-run-table-entry
 // T.6 (1988), 2.2.4 / Tables 2-3: https://www.itu.int/rec/T-REC-T.6-198811-I/en
 // Existing locator only; the arrays still need independent table-fidelity review.
+// Model navigation: spec::run_code_in_implementation_tables [proof-support]
+// Purpose: Membership/key equality against implementation mode/run arrays, not table fidelity.
+// REQUIREMENT CONTEXT: T6-WHITE-RUN-LOOKUP | ITU-T T.6 (1988) | 2.2.4 step 2iii; Tables 2/T.6 and 3/T.6
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn run_code_in_implementation_tables(
     black: bool,
     code: super::RunCode,
@@ -35,6 +52,11 @@ pub(super) open spec fn run_code_in_implementation_tables(
     }
 }
 
+// Model navigation: spec::run_key_matches [proof-support]
+// Purpose: Membership/key equality against implementation mode/run arrays, not table fidelity.
+// Audit: mmr-run-key
+// REQUIREMENT CONTEXT: T6-WHITE-RUN-LOOKUP | ITU-T T.6 (1988) | 2.2.4 step 2iii; Tables 2/T.6 and 3/T.6
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn run_key_matches(
     code: super::RunCode,
     bits: u16,
@@ -43,11 +65,20 @@ pub(super) open spec fn run_key_matches(
     code.bits == bits && code.length == length
 }
 
+// Model navigation: spec::reader_valid [representation-invariant]
+// Purpose: Packed bitmap, bit cursor and ordered transition/sentinel invariants.
+// Audit: mmr-reader-valid
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn reader_valid(reader: &crate::reader::BitReader) -> bool {
     reader.bytes@.len() <= usize::MAX / 8
         && reader.bit_position <= reader.bytes@.len() * 8
 }
 
+// Model navigation: spec::run_bit_length [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn run_bit_length(codes: Seq<super::RunCode>) -> nat
     decreases codes.len(),
 {
@@ -56,6 +87,10 @@ pub(super) open spec fn run_bit_length(codes: Seq<super::RunCode>) -> nat
     }
 }
 
+// Model navigation: spec::run_value_sum [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn run_value_sum(codes: Seq<super::RunCode>) -> nat
     decreases codes.len(),
 {
@@ -64,6 +99,10 @@ pub(super) open spec fn run_value_sum(codes: Seq<super::RunCode>) -> nat
     }
 }
 
+// Model navigation: spec::run_prefix_matches [project-result-model]
+// Purpose: Consumed run/mode bits, run sums, horizontal pairs and reference selection results.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn run_prefix_matches(
     black: bool, bytes: Seq<u8>, start: nat, codes: Seq<super::RunCode>,
 ) -> bool
@@ -83,6 +122,10 @@ pub(super) open spec fn run_prefix_matches(
     }
 }
 
+// Model navigation: spec::run_all_makeups [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn run_all_makeups(codes: Seq<super::RunCode>) -> bool
     decreases codes.len(),
 {
@@ -90,6 +133,11 @@ pub(super) open spec fn run_all_makeups(codes: Seq<super::RunCode>) -> bool
         || (run_all_makeups(codes.drop_last()) && !codes.last().terminal)
 }
 
+// Model navigation: spec::complete_run [project-result-model]
+// Purpose: Consumed run/mode bits, run sums, horizontal pairs and reference selection results.
+// Audit: mmr-complete-run
+// REQUIREMENT CONTEXT: T6-RUN-MAKEUP-SUM | ITU-T T.6 (1988) | 2.2.4 step 2iii
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn complete_run(
     black: bool, bytes: Seq<u8>, start: nat, end: nat, total: u32,
     codes: Seq<super::RunCode>,
@@ -102,6 +150,11 @@ pub(super) open spec fn complete_run(
         && total as nat == run_value_sum(codes)
 }
 
+// Model navigation: spec::horizontal_pair [project-result-model]
+// Purpose: Consumed run/mode bits, run sums, horizontal pairs and reference selection results.
+// Audit: mmr-horizontal-pair
+// REQUIREMENT CONTEXT: T6-HORIZONTAL-PAIR | ITU-T T.6 (1988) | 2.2.3.3; 2.2.4 step 2iii
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn horizontal_pair(
     black: bool, bytes: Seq<u8>, start: nat, finish: nat,
     x: u32, width: u32, after_first: u32, end: u32,
@@ -120,6 +173,10 @@ pub(super) open spec fn horizontal_pair(
             )
 }
 
+// Model navigation: spec::transitions_ordered [representation-invariant]
+// Purpose: Packed bitmap, bit cursor and ordered transition/sentinel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn transitions_ordered(
     transitions: Seq<u32>,
     width: u32,
@@ -131,6 +188,11 @@ pub(super) open spec fn transitions_ordered(
             transitions[left] <= transitions[right]
 }
 
+// Model navigation: spec::reference_line_valid [representation-invariant]
+// Purpose: Packed bitmap, bit cursor and ordered transition/sentinel invariants.
+// Audit: mmr-reference-line-valid
+// REQUIREMENT CONTEXT: T6-REFERENCE-CHANGING-ELEMENTS | ITU-T T.6 (1988) | 2.2.2; 2.2.5.2
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn reference_line_valid(
     transitions: Seq<u32>,
     width: u32,
@@ -141,12 +203,22 @@ pub(super) open spec fn reference_line_valid(
         && transitions_ordered(transitions, width)
 }
 
+// Model navigation: spec::reference_position_eligible [project-result-model]
+// Purpose: Consumed run/mode bits, run sums, horizontal pairs and reference selection results.
+// Audit: mmr-reference-position-eligible
+// REQUIREMENT CONTEXT: T6-REFERENCE-CHANGING-ELEMENTS | ITU-T T.6 (1988) | 2.2.2; 2.2.5.2
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn reference_position_eligible(
     position: u32, x: u32, initial: bool,
 ) -> bool {
     position > x || (initial && position == x)
 }
 
+// Model navigation: spec::first_reference_candidate [project-result-model]
+// Purpose: Consumed run/mode bits, run sums, horizontal pairs and reference selection results.
+// Audit: mmr-first-reference-candidate
+// REQUIREMENT CONTEXT: T6-REFERENCE-CHANGING-ELEMENTS | ITU-T T.6 (1988) | 2.2.2; 2.2.5.2
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn first_reference_candidate(
     transitions: Seq<u32>, x: u32, black: bool, initial: bool,
     start: int, index: int,
@@ -159,6 +231,11 @@ pub(super) open spec fn first_reference_candidate(
                 || (previous % 2 == 0) == black
 }
 
+// Model navigation: spec::reference_pair_matches [project-result-model]
+// Purpose: Consumed run/mode bits, run sums, horizontal pairs and reference selection results.
+// Audit: mmr-reference-pair
+// REQUIREMENT CONTEXT: T6-REFERENCE-CHANGING-ELEMENTS | ITU-T T.6 (1988) | 2.2.2; 2.2.5.2
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn reference_pair_matches(
     transitions: Seq<u32>, x: u32, black: bool, width: u32, initial: bool,
     start: int, b1: u32, b2: u32,
@@ -171,6 +248,10 @@ pub(super) open spec fn reference_pair_matches(
             && b1 == width && b2 == width)
 }
 
+// Model navigation: spec::span_byte [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn span_byte(
     bitmap: &crate::bitmap::Bitmap,
     row: u32,
@@ -179,12 +260,22 @@ pub(super) open spec fn span_byte(
     row as nat * bitmap.stride as nat + x as nat / 8
 }
 
+// Model navigation: spec::bitmap_storage_valid [representation-invariant]
+// Purpose: Packed bitmap, bit cursor and ordered transition/sentinel invariants.
+// Audit: mmr-storage-valid
+// REQUIREMENT CONTEXT: T88-MMR-BINARY-POLARITY | ITU-T T.88 (08/2018) | 6.2.6 second exception
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn bitmap_storage_valid(bitmap: &crate::bitmap::Bitmap) -> bool {
     bitmap.width as nat <= bitmap.stride as nat * 8
         && bitmap.data@.len()
             == bitmap.stride as nat * bitmap.height as nat
 }
 
+// Model navigation: spec::span_result [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-span-result
+// REQUIREMENT CONTEXT: T88-MMR-BINARY-POLARITY | ITU-T T.88 (08/2018) | 6.2.6 second exception
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn span_result(
     before: &crate::bitmap::Bitmap,
     after: &crate::bitmap::Bitmap,
@@ -200,6 +291,10 @@ pub(super) open spec fn span_result(
     }
 }
 
+// Model navigation: spec::transition_count_at [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn transition_count_at(transitions: Seq<u32>, x: u32) -> nat
     decreases transitions.len(),
 {
@@ -211,10 +306,20 @@ pub(super) open spec fn transition_count_at(transitions: Seq<u32>, x: u32) -> na
     }
 }
 
+// Model navigation: spec::transition_black_at [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Audit: mmr-cache-colour
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn transition_black_at(transitions: Seq<u32>, x: u32) -> bool {
     transition_count_at(transitions, x) % 2 == 1
 }
 
+// Model navigation: spec::row_cache_matches [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-row-cache-pixels
+// REQUIREMENT CONTEXT: T6-REFERENCE-NEXT-LINE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn row_cache_matches(
     bitmap: &crate::Bitmap, row: u32, transitions: Seq<u32>,
 ) -> bool {
@@ -224,10 +329,19 @@ pub(super) open spec fn row_cache_matches(
                 == transition_black_at(transitions, x)
 }
 
+// Model navigation: spec::white_reference_cache [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-white-reference-cache
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn white_reference_cache(transitions: Seq<u32>, width: u32) -> bool {
     forall|x: u32| x < width ==> !#[trigger] transition_black_at(transitions, x)
 }
 
+// Model navigation: spec::span_pixels [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn span_pixels(
     before: &crate::Bitmap, after: &crate::Bitmap,
     row: u32, start: u32, end: u32, black: bool,
@@ -262,12 +376,21 @@ pub(super) struct RasterRow {
     pub(super) ghost state: RasterState,
 }
 
+// Model navigation: spec::raster_state [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn raster_state(
     position: nat, x: u32, black: bool, transitions: Seq<u32>, emitted_black: bool,
 ) -> RasterState {
     RasterState { position, x, black, transitions, emitted_black }
 }
 
+// Model navigation: spec::transition_span_state [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-transition-span-state
+// REQUIREMENT CONTEXT: T6-PASS-TRANSITION | ITU-T T.6 (1988) | 2.2.3.1; 2.2.4 step 1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn transition_span_state(
     before: Seq<u32>, emitted: bool, start: u32, end: u32, black: bool,
 ) -> (Seq<u32>, bool) {
@@ -277,6 +400,11 @@ pub(super) open spec fn transition_span_state(
     )
 }
 
+// Model navigation: spec::mode_prefix_matches [project-result-model]
+// Purpose: Consumed run/mode bits, run sums, horizontal pairs and reference selection results.
+// Audit: mmr-mode-input-prefix
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn mode_prefix_matches(
     bytes: Seq<u8>, start: nat, end: nat, mode: super::Mode,
 ) -> bool {
@@ -289,6 +417,11 @@ pub(super) open spec fn mode_prefix_matches(
                     == crate::spec::readers::bits_value(bytes, start, code.length as nat)
 }
 
+// Model navigation: spec::raster_step [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-raster-step
+// REQUIREMENT CONTEXT: T6-PASS-TRANSITION | ITU-T T.6 (1988) | 2.2.3.1; 2.2.4 step 1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn raster_step(
     bytes: Seq<u8>, reference: Seq<u32>, width: u32, initial: bool,
     step: RasterStep,
@@ -342,6 +475,11 @@ pub(super) open spec fn raster_step(
     }
 }
 
+// Model navigation: spec::raster_steps [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-raster-steps
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn raster_steps(
     bytes: Seq<u8>, reference: Seq<u32>, width: u32, start: nat,
     steps: Seq<RasterStep>, state: RasterState,
@@ -358,10 +496,18 @@ pub(super) open spec fn raster_steps(
     }
 }
 
+// Model navigation: spec::rows_position [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn rows_position(rows: Seq<RasterRow>) -> nat {
     if rows.len() == 0 { 0 } else { rows.last().state.position }
 }
 
+// Model navigation: spec::rows_reference [proof-support]
+// Purpose: Raster projections, run folds, packed addresses and transition-parity vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn rows_reference(rows: Seq<RasterRow>, width: u32) -> Seq<u32> {
     if rows.len() == 0 {
         Seq::empty().push(width).push(width)
@@ -370,6 +516,11 @@ pub(super) open spec fn rows_reference(rows: Seq<RasterRow>, width: u32) -> Seq<
     }
 }
 
+// Model navigation: spec::raster_rows [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-raster-rows
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn raster_rows(bytes: Seq<u8>, width: u32, rows: Seq<RasterRow>) -> bool
     decreases rows.len(),
 {
@@ -388,6 +539,10 @@ pub(super) open spec fn raster_rows(bytes: Seq<u8>, width: u32, rows: Seq<Raster
     }
 }
 
+// Model navigation: spec::rows_cache_pixels [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn rows_cache_pixels(
     bitmap: &crate::Bitmap, rows: Seq<RasterRow>,
 ) -> bool {
@@ -400,6 +555,11 @@ pub(super) open spec fn rows_cache_pixels(
             )
 }
 
+// Model navigation: spec::bitmap_decodes [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-input-bitmap
+// REQUIREMENT CONTEXT: T6-REFERENCE-FIRST-WHITE | ITU-T T.6 (1988) | 2.2.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn bitmap_decodes(
     bytes: Seq<u8>, width: u32, height: u32, bitmap: &crate::Bitmap, end: nat,
 ) -> bool {
@@ -412,6 +572,11 @@ pub(super) open spec fn bitmap_decodes(
                 && end == rows_position(rows)
 }
 
+// Model navigation: spec::required_eofb_prefix [project-result-model]
+// Purpose: Immediate implementation EOFB marker and bounded zero alignment result.
+// Audit: mmr-required-eofb-prefix
+// REQUIREMENT CONTEXT: T6-EOFB-PADDING | ITU-T T.6 (1988) | 2.4.1.2
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn required_eofb_prefix(
     bytes: Seq<u8>, start: nat, end: nat,
 ) -> bool {
@@ -424,6 +589,11 @@ pub(super) open spec fn required_eofb_prefix(
         ) == 0
 }
 
+// Model navigation: spec::bounded_bitmap_decodes [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-bounded-bitmap
+// REQUIREMENT CONTEXT: T88-MMR-BINARY-POLARITY | ITU-T T.88 (08/2018) | 6.2.6 second exception
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn bounded_bitmap_decodes(
     bytes: Seq<u8>, width: u32, height: u32, bitmap: &crate::Bitmap,
     policy: super::EofbPolicy,
@@ -435,6 +605,11 @@ pub(crate) closed spec fn bounded_bitmap_decodes(
         }
 }
 
+// Model navigation: spec::prefix_bitmap_decodes [project-result-model]
+// Purpose: Transition-span effects, parity pixels and finite chained raster output histories.
+// Audit: mmr-prefix-bitmap
+// REQUIREMENT CONTEXT: T6-EOFB-PADDING | ITU-T T.6 (1988) | 2.4.1.2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) closed spec fn prefix_bitmap_decodes(
     bytes: Seq<u8>, width: u32, height: u32, bitmap: &crate::Bitmap, consumed: usize,
 ) -> bool {
@@ -442,6 +617,11 @@ pub(crate) closed spec fn prefix_bitmap_decodes(
         && required_eofb_prefix(bytes, end, consumed as nat * 8)
 }
 
+// Model navigation: spec::exact_eofb [project-result-model]
+// Purpose: Immediate implementation EOFB marker and bounded zero alignment result.
+// Audit: mmr-exact-eofb
+// REQUIREMENT CONTEXT: T6-EOFB-MARKER | ITU-T T.6 (1988) | 2.4.1.1
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn exact_eofb(
     bytes: Seq<u8>,
     start: nat,

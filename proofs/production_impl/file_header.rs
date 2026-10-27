@@ -1,3 +1,8 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 macro_rules! production_file_header_organization {
@@ -40,6 +45,11 @@ macro_rules! production_file_header_byte_length {
     };
 }
 
+// Model navigation: macro::production_file_header_result [proof-support]
+// Purpose: Private file-header fields exposed to the production result contract.
+// Audit: header-result
+// REQUIREMENT CONTEXT: T88-HEADER-SIGNATURE | ITU-T T.88 (08/2018) | D.4.1
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_file_header_result {
     ($header:ident) => {
         proof! {

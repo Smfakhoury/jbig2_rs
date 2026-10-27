@@ -1,5 +1,15 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
+// Model navigation: macro::production_reference_width [proof-support]
+// Purpose: Reference width, retention order and actual parsed-header field proof bridges.
+// Audit: reference-width-facts
+// REQUIREMENT CONTEXT: T88-SEGMENT-REFERENCE-WIDTH | ITU-T T.88 (08/2018) | 7.2.5
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_reference_width {
     ($segment_number:ident) => {
         proof! {
@@ -26,6 +36,11 @@ macro_rules! production_segment_short_flags {
     };
 }
 
+// Model navigation: macro::production_segment_header_fields [proof-support]
+// Purpose: Reference width, retention order and actual parsed-header field proof bridges.
+// Audit: segment-header-field-proof
+// REQUIREMENT CONTEXT: T88-SEGMENT-TYPE-FIELD | ITU-T T.88 (08/2018) | 7.2.3 bits 0-5; 7.3
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_segment_header_fields {
     () => {
         proof! {
@@ -54,6 +69,11 @@ macro_rules! production_segment_count_fields {
     };
 }
 
+// Model navigation: macro::production_segment_reference_fields [proof-support]
+// Purpose: Reference width, retention order and actual parsed-header field proof bridges.
+// Audit: segment-reference-field-proof
+// REQUIREMENT CONTEXT: T88-SEGMENT-RETENTION-WIRE-ORDER | ITU-T T.88 (08/2018) | 7.2.4
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_segment_reference_fields {
     ($reader:ident, $start:ident, $count:ident, $number:ident, $width:ident,
         $references_begin:ident, $references:ident, $retention:ident $(,)?) => {
