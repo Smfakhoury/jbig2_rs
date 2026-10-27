@@ -391,6 +391,25 @@ class TraceabilityTests(unittest.TestCase):
             with self.subTest(owner=owner), self.assertRaisesRegex(ValueError, "unsupported inline navigation owner"):
                 checker.audit_inventory(self.root, self.ledger)
 
+    def test_cfg_excluded_comment_cannot_supply_a_production_reference(self):
+        self.write("proofs/shared/support.rs", "macro_rules! helper { () => {} }\n")
+        self.write("specs/model.rs", (self.root / "specs/model.rs").read_text()
+                   + '\ninclude!("../proofs/shared/support.rs");\n')
+        self.ledger["definitions"]["helper-model"] = {
+            "kind": "macro", "file": "proofs/shared/support.rs", "module_path": ["spec"],
+            "name": "helper", "role": "proof support",
+        }
+        self.classification_fixture()
+        self.assertTrue(checker.audit_inventory(self.root, self.ledger)["inline_navigation"]["structural_coverage_complete"])
+        path = self.root / "proofs/shared/support.rs"
+        path.write_text(
+            "#[cfg(test)]\nfn excluded() {\n// Audit: helper-model\n}\n"
+            + path.read_text().replace("// Audit: helper-model\n", "")
+        )
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "missing inline navigation"):
+            checker.audit_inventory(self.root, self.ledger)
+
     def test_unscoped_associated_names_do_not_make_navigation_ambiguous(self):
         self.write("proofs/shared/unregistered.rs", """
             verus! {

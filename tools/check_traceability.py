@@ -196,6 +196,9 @@ def audit_inline_navigation(root, ledger, declarations, registered, classificati
     for relative in paths:
         source = source_path(root, relative).read_bytes()
         code = production_code(source, exclude_proofs=False).encode("utf-8").decode("latin1")
+        active = production_code(
+            source, exclude_proofs=False, mask_noncode=False,
+        ).encode("utf-8").decode("latin1")
         positions = navigation_declarations(source, {
             (kind, name) for file, kind, name in declarations if file == relative
         })
@@ -204,7 +207,7 @@ def audit_inline_navigation(root, ledger, declarations, registered, classificati
         def visit(node):
             if node.type == "line_comment":
                 start, end = node.start_byte, node.end_byte
-                if not code[start:end].strip():
+                if active[start:end].strip() and not code[start:end].strip():
                     comments.append((start, end, node.text.decode("utf-8")))
             for child in node.named_children:
                 visit(child)
