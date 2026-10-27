@@ -42,6 +42,8 @@ def document_partition_checks():
 def document_partition_shards():
     with patch.object(runner, "CHECKS", document_partition_checks()), patch.object(
         runner, "WHOLE_GROUPS", (),
+    ), patch.object(
+        runner, "COLLECTOR_GROUPS", (),
     ):
         return runner.configured_shards()
 
@@ -407,17 +409,19 @@ class SemanticOrchestrationTests(unittest.TestCase):
         }
         checks = runner.configured_checks()
         whole = runner.configured_whole_checks()
+        collector = runner.configured_collector_checks()
         shards = runner.configured_shards()
         self.assertEqual(
             [row[0] for row in whole],
-            ["arithmetic-codec", "value-bridge", "segment-header"],
+            ["arithmetic-codec", "value-bridge"],
         )
         self.assertEqual(len(shards), 6)
-        assigned = list(whole) + [row for shard in shards for row in shard]
+        assigned = list(whole) + list(collector) + [row for shard in shards for row in shard]
         self.assertEqual(len(assigned), len(checks))
         self.assertEqual({row[0] for row in assigned}, {row[0] for row in checks})
         self.assertEqual(sum(row[2] for row in assigned), sum(row[2] for row in checks))
         self.assertLessEqual(sum(weights[row[0]] for row in whole), 1000)
+        self.assertLessEqual(sum(weights[row[0]] for row in collector), 1000)
         self.assertLessEqual(max(sum(weights[row[0]] for row in shard) for shard in shards), 1000)
         rows = [{"id": row[0], "status": "passed", "seconds": weights[row[0]]} for row in checks]
         self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
@@ -500,6 +504,41 @@ class SemanticOrchestrationTests(unittest.TestCase):
                     seconds += 20
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
+
+    def test_existing_job_capacity_covers_three_profile_per_group_maxima(self):
+        # Planning only: prior qualified estimates and completed f53/7ae groups,
+        # taking each group's maximum and rounding up. Failed collections gain
+        # no acceptance credit; current measured receipts remain mandatory.
+        weights = {
+            "arithmetic-codec": 500, "value-bridge": 142,
+            "arithmetic-decision": 358, "document-count": 345, "reset": 46,
+            "mmr-reference": 328, "document-layout": 309, "page-state": 309,
+            "text-batch": 293, "symbol-cardinality": 272, "segment-data": 265,
+            "reader-error": 210, "page-public": 220, "arithmetic-integer": 212,
+            "halftone-header": 228, "integer-state": 241, "segment-header": 252,
+            "black-span": 169, "page-finish": 169, "mmr-horizontal": 169,
+            "bitmap-compose": 186, "bitmap-copy": 205, "mmr-span": 194,
+            "arithmetic-refill": 139, "arithmetic-normalization": 141,
+            "iaid-state": 147, "arithmetic-initialization": 139,
+            "mmr-prefix": 106, "mmr-run": 113, "retention": 71,
+            "region-dispatch": 74, "operator-bit": 98, "bitmap-chunk": 99,
+            "huffman-assignment": 120,
+        }
+        roles = [
+            runner.configured_whole_checks(), runner.configured_collector_checks(),
+            *runner.configured_shards(),
+        ]
+        assigned = [row for role in roles for row in role]
+        self.assertEqual(len(roles), 8)
+        self.assertEqual(len(assigned), len(runner.configured_checks()))
+        self.assertEqual(
+            {row[0] for row in assigned},
+            {row[0] for row in runner.configured_checks()},
+        )
+        self.assertLessEqual(max(sum(weights[row[0]] for row in role) for role in roles), 1000)
+        self.assertEqual(sum(row[2] for row in assigned), sum(
+            row[2] for row in runner.configured_checks()
+        ))
 
     def test_completed_profile_has_measured_job_headroom_without_relaxed_limits(self):
         # Completed 40303484174 attempt-2 groups, with conservative ZIP-time
@@ -664,12 +703,54 @@ class SemanticOrchestrationTests(unittest.TestCase):
                     self.root, self.root / "verus",
                     whole / "semantic-groups" / runner.TRACE, whole_groups=True,
                 )
+            if runner.configured_collector_checks():
+                runner.run_checks(
+                    self.root, self.root / "verus",
+                    inputs / (runner.artifact_prefix() + "collector") / runner.TRACE,
+                    collector_groups=True,
+                )
             for index, _ in enumerate(runner.configured_shards()):
                 runner.run_checks(
                     self.root, self.root / "verus",
                     inputs / (runner.artifact_prefix() + f"shard-{index}") / runner.TRACE, shard=index,
                 )
         return inputs
+
+    def test_collector_groups_are_serial_exclusive_and_required_before_aggregation(self):
+        with patch.object(runner, "COLLECTOR_GROUPS", ("0", "1")):
+            inputs = self.collection_fixture()
+            path = inputs / (runner.artifact_prefix() + "collector") / runner.TRACE / runner.SUMMARY
+            original = runner.read_json(path)
+            self.assertEqual(original["workers"], 1)
+            self.assertEqual(original["selected_groups"], ["0", "1"])
+            with patch.object(runner, "CHECKS", self.checks):
+                result = runner.aggregate(self.root, inputs, self.output, "success", "success")
+                self.assertGreater(result["measured_collector_group_seconds"], 0)
+                for change in ("missing", "workers", "selection", "role", "run", "timing"):
+                    modified = copy.deepcopy(original)
+                    if change == "missing":
+                        path.unlink()
+                    elif change == "workers":
+                        modified["workers"] = 2
+                    elif change == "selection":
+                        modified["selected_groups"] = ["0"]
+                    elif change == "role":
+                        modified["shard"] = 0
+                    elif change == "run":
+                        modified["run_identity"]["GITHUB_RUN_ATTEMPT"] = "previous"
+                    else:
+                        modified["checks"][0]["seconds"] = 1050
+                    if change != "missing":
+                        runner.write_json(path, modified)
+                    with self.subTest(change=change), self.assertRaises((ValueError, OSError)):
+                        runner.aggregate(self.root, inputs, self.output, "success", "success")
+                    runner.write_json(path, original)
+                for options in ({"only": "0"}, {"shard": 0}, {"whole_groups": True}):
+                    with self.subTest(options=options), self.assertRaisesRegex(ValueError, "mutually exclusive"):
+                        runner.run_checks(
+                            self.root, self.root / "verus", self.output,
+                            collector_groups=True, **options,
+                        )
 
     def test_whole_job_semantic_receipts_are_required_and_source_bound(self):
         with patch.object(runner, "WHOLE_GROUPS", ("0", "1")):

@@ -81,7 +81,7 @@ Pins live in [`config/toolchain.json`](../config/toolchain.json).
 | `target/coverage/raw.json`, `raw.lcov`, `html/index.html` | Original LLVM diagnostics; raw HTML includes test code and has a different scope from the runtime summary |
 | `target/coverage/collection.json` | Source/test identities, actual compiler/collector pins and raw-report/fixture hashes |
 | `target/coverage/failure.json` | Explicit collection failure |
-| `target/coverage/mutations.json` | Isolated native contract-sensitivity results |
+| `target/traceability/mutations.json` | Isolated native contract-sensitivity results from the Linux native CI artifact |
 
 Editing tests during/after collection invalidates evidence even if runtime
 source is unchanged. Compare coverage unions/fractions on compatible identities;
@@ -98,12 +98,16 @@ or secrets.
 
 ```sh
 python3 -B tools/check_contract_mutations.py --toolchain 1.89.0 \
-  --output target/coverage/mutations.json
+  --output target/traceability/mutations.json
 python3 -B tools/check_test_catalogs.py --discover-tests \
   --output target/traceability/test-catalogs.json
 ```
 
-CI uses the pinned coverage nightly for native mutation controls. The checker
+The existing Linux native CI job uses the pinned coverage nightly for native
+mutation controls and retains their report in `traceability-ubuntu-latest`.
+The separate coverage job collects LLVM metrics; both jobs must succeed.
+This keeps the existing 20-minute native and 15-minute coverage budgets, without
+adding jobs, omitting mutants or caching compilation outcomes. The checker
 isolates source/fixtures, uses a fresh offline Cargo home, requires the selected
 original test to pass, requires each mutant to compile, and requires that exact
 test to fail. Ambiguous/missing mutation sites, compilation failure, zero-test
