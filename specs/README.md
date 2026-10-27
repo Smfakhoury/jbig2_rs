@@ -1,102 +1,107 @@
-# A short guide to auditing the JBIG2 models
+# Understanding and auditing the JBIG2 models
 
-These are **project models, not an independently approved transcription of
-T.88/T.6**. Recent proofs and models were developed together. A proof that Rust
-matches a model is useful, but a second review must establish that the model
-expresses the intended standard. All selected requirement records remain
-provisional; their number is not an exhaustive specification denominator.
+JBIG2 describes how to turn a compressed stream into a black-and-white page.
+The models here make selected parts of that process precise: reading bits,
+decoding values, placing symbols and assembling pages. You can review one small
+decision without reading the whole decoder or learning the project's tracking
+system first.
 
-## Start here: one question, about fifteen minutes
+## Reading path and reference status
 
-1. Pick one small question, such as BYTEIN's marker branch. Find
+- **New to the code?** Start with the [component overview](#component-overview).
+- **Ready to check one equation?** Follow the [BYTEIN example](#a-first-audit-the-bytein-refill-step).
+- **Looking for notation or proof commands?** Use the [auditor index](../docs/verus-auditor-index.md)
+  or [Cargo-Verus instructions](../README.md#run-verus-through-cargo).
+
+**Review status:** a proof that Rust follows a model does not tell us whether
+the model follows the standard. Models and proofs were often developed together,
+not against an independently approved, frozen specification. Every recorded
+requirement still needs independent standards review, and the list is not
+exhaustive.
+
+### Free official specification downloads
+
+| Reference | Free download from ITU | What to open |
+|---|---|---|
+| T.88 (08/2018), edition 2.0: JBIG2 | [Download the ZIP containing the specification PDF](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items) | `ITU-T_T_88__08_2018.pdf` inside the ZIP |
+| T.6 (11/1988): the MMR coding reference | [Download the specification PDF](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.6-198811-I!!PDF-E&type=items) | The download is the PDF itself |
+
+T.88's download is labelled as a software package on the ITU site, but it
+includes the specification PDF. The recommendation pages for
+[T.88](https://www.itu.int/rec/T-REC-T.88-201808-I/en) and
+[T.6](https://www.itu.int/rec/T-REC-T.6-198811-I/en) provide the surrounding metadata.
+Use these editions and check the document hashes in
+[source provenance](../validation/source-provenance.json).
+
+Free access does not permit committing, redistributing or uploading PDFs to
+agents under [current policy](../validation/source-provenance.json).
+Recorded clause/page references still need independent checking; printed page
+numbers may differ from the PDF viewer's page index.
+
+## Component overview
+
+Here is how the parts fit together. Each link is a starting point, not a claim
+that the corresponding model covers the component's entire behavior.
+
+| Component | Its job in the decoder | Start reading |
+|---|---|---|
+| Bits and pixels | Read values from the stream and store or combine bitmap pixels. | [Readers](readers.rs), [bitmaps](bitmap.rs) |
+| File structure | Identify segments, their fields and the earlier segments they reference. | [File headers](file_header.rs), [segments](segments.rs) |
+| Pages | Track how segments belong to pages, including pages delivered in stripes. | [Documents and pages](document.rs) |
+| Arithmetic coding | Recover binary decisions, integers and symbol IDs using adaptive probability contexts. | [Arithmetic models](arithmetic.rs) |
+| Huffman coding | Associate bit prefixes with values using standard or custom code tables. | [Huffman models](huffman.rs) |
+| MMR | Reconstruct a row using runs of black/white pixels and changes in the preceding row. | [MMR models](mmr.rs) |
+| Generic and refinement regions | Decode pixels directly or with help from a reference bitmap. | [Region models](generic_region.rs) |
+| Symbols and text | Reuse small bitmap shapes, position them and combine them into an image. | [Symbols and text](symbol_text.rs), [decoding and composition](decode.rs) |
+| Halftones | Place patterns on a grid to represent an image. | [Halftone models](halftone.rs) |
+
+## A first audit: the BYTEIN refill step
+
+Try a concrete question: **when a refill recognizes a marker, does it consume
+the next byte?**
+
+1. Open the [arithmetic models](arithmetic.rs) and find `refill_step`.
+   It describes the next signal, input position, current byte, code register,
+   bit count and marker. For this question, concentrate on position and marker.
+2. Compare that branch with the recorded reference, **T.88 E.3.4, Figure E.19
+   (BYTEIN)**. The [notation guide](../docs/verus-auditor-index.md#arithmetic-notation-and-obligations)
+   connects the standard's register names to the code's fields. Read the
+   standard first; do not use the Rust implementation as the normative answer.
+3. Now open the [Rust arithmetic decoder](../src/arithmetic.rs) and find
+   `byte_in_signal`. Read its `ensures` conditions: these are the promises
+   the implementation proof makes. Check whether its preconditions rule out
+   inputs the decoder should support.
+4. In the same file, look for the test
+   `marker_is_strictly_greater_than_8f_and_is_not_consumed`.
+   A concrete test helps explain the behavior; it does not replace checking
+   the model against the standard.
+5. To see the recorded assumptions and remaining gaps, look up
    `T88-ARITHMETIC-BYTEIN-BRANCH` in the
    [requirements ledger](../validation/traceability/requirements.json).
-2. Obtain the exact standard through the official links below. Check its
-   identity before trusting a page reference.
-3. Read the row's clause, assumptions and gaps, then its linked model.
-   The [auditor index](../docs/verus-auditor-index.md) translates the standard's
-   notation to project parameters.
-4. Compare the equation with the standard **before** using the implementation
-   as an explanation of what the standard means.
-5. Follow the row to the actual production contract and tests. Ask whether
-   legitimate inputs are excluded, success is guaranteed where claimed, and
-   expected values come from an independent source.
-6. Record a discrepancy or a narrowly scoped conclusion. Do not approve a
-   whole file because one equation is correct.
+   Caller timing remains a separate question, even if this branch is correct.
 
-The [review procedure](../docs/specification-review.md) explains independent
-review packets, snapshot checks and the approval gates that remain open.
+A useful review note says **what you compared, what you found, and what you did
+not check**. One checked branch is not approval of the entire arithmetic coder.
 
-## Obtain the right documents, not a convenient edition
+## What a model does, and does not, promise
 
-| Source | Official acquisition | Pinned identity |
-|---|---|---|
-| T.88 (08/2018), edition 2.0 | [ITU](https://www.itu.int/rec/T-REC-T.88-201808-I/en) | [Source provenance](../validation/source-provenance.json) |
-| T.6 (1988), MMR reference | [ITU](https://www.itu.int/rec/T-REC-T.6-198811-I/en) | [Source provenance](../validation/source-provenance.json); no separate edition is recorded |
+Not every definition describes decoded output:
 
-Use the recorded document SHA-256, not just a filename or ZIP hash. Existing
-ledger page references are inherited consultation locators; printed page
-numbers and a viewer's PDF page index are not interchangeable. Do not invent
-deep links to unverified pages.
+- A **result model** describes an output or state change.
+- A **representation invariant** says a state is well formed, not which pixel
+  or value should come next.
+- A **project policy** describes choices such as resource limits and Rust errors,
+  rather than an ITU rule.
+- **Proof support** helps Verus reason about the code.
 
-For T.88, the [official English package](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items)
-contains `ITU-T_T_88__08_2018.pdf`. Open that document for review; sample
-software and conformance assets have separate use and redistribution limits.
+Use `Model navigation` comments for purpose and `Audit` for ledger identity.
+`REQUIREMENT CONTEXT` is a reading aid, not a certified translation.
+Arithmetic and MMR models refer to implementation tables: agreeing with those
+arrays does not establish that the tables agree with the standard.
 
-The current policy prohibits redistribution and third-party uploads. Obtain
-documents directly or through an approved licensed channel. Do not commit PDFs
-or send them to a cloud agent merely because an official download is free.
-Hash-checking a local document does not approve its interpretation or processing.
+## When you need more detail
 
-## What to open for each component
-
-| Component | Model entry | Audit focus |
-|---|---|---|
-| Arithmetic, integers, IAID | [arithmetic](arithmetic.rs) | Registers, refill/initialization, decisions, context meaning and caller interpretation |
-| MMR | [mmr](mmr.rs) | Tables, changing elements, coordinate boundaries, raster histories and framing |
-| Headers and references | [segments](segments.rs), [file header](file_header.rs) | Wire fields, retention order and original input extents |
-| Containers and pages | [document](document.rs) | Organization, metadata, accepted state transitions and their limits |
-| Huffman | [huffman](huffman.rs) | Raw-line ordering/assignment versus complete parsing, prefix freedom and entropy decoding |
-| Generic/refinement regions | [generic region](generic_region.rs) | Geometry/context interpretation versus representation and work bounds |
-| Symbols and text | [symbol/text](symbol_text.rs), [decode](decode.rs) | Content/order, placement, caller state and composed output |
-| Halftone | [halftone](halftone.rs) | Grids, headers, pattern placement and caller semantics |
-| Reader/bitmap primitives | [readers](readers.rs), [bitmap](bitmap.rs) | Exact bit/pixel results, frames and the scope of helper contracts |
-
-## Do not confuse these layers
-
-- **Normative candidates** need an independent comparison with the standard.
-- **Project result models** describe observable project behavior; that alone
-  does not make the behavior normative.
-- **Project policies** cover quotas and Rust errors, not invented ITU rules.
-- **Representation invariants** establish storage/state conditions, not
-  necessarily the required transformation.
-- **Proof support** supplies access, accumulators and lemmas.
-
-For example, arithmetic and MMR models refer to runtime tables. Membership or
-consistency with those arrays is not independent table fidelity. Model theorems
-and strong/weaker controls do not remove this review obligation.
-
-The generated traceability report includes an authored, source-only purpose
-inventory. The requirements ledger's `model_classifications` families own exact
-members, justifications and unresolved ambiguity, separately from normative
-requirement links. Authored families now cover the bounded declared source
-surface; consult the generated report for current purpose counts and any
-unresolved entries. New or ambiguous declarations cannot silently inherit a
-completed classification.
-Original roles/locators and unregistered helper status are preserved. Lexical
-implementation-constant references are dependencies to review, not normative
-ground truth. Neither these navigation labels nor structural checks approve a
-model. See the [inventory scope and freshness rules](../docs/specification-review.md#source-only-navigation-classification).
-
-Each scoped declaration now has an adjacent `Model navigation` comment with its
-authored purpose and unresolved fidelity. `Audit` names the exact registered
-ledger definition; `REQUIREMENT CONTEXT` gives one existing linked requirement
-and its unchanged locator as a reading entry point, **not a direct normative
-equation**. The ledger/report retains the complete link set. Helpers gain no new
-normative rule, and unregistered candidates explicitly show their missing
-requirement/locator mapping. The four earlier pilot references are preserved.
-
-For exact source/trust limits read [verifier limitations](../docs/verifier-limitations.md).
-For wider scope and evidence-strength distinctions read
-[traceability](../docs/spec-traceability.md). The detailed navigation lives in
-the [auditor index](../docs/verus-auditor-index.md), not in this introduction.
+- [Auditor index](../docs/verus-auditor-index.md): notation, entry points and component-specific questions.
+- [Traceability guide](../docs/spec-traceability.md): what each evidence label actually establishes.
+- [Verifier limitations](../docs/verifier-limitations.md): trusted boundaries and remaining proof gaps.
+- [Review procedure](../docs/specification-review.md): independent reviews, exact snapshots, approval gates and inventory maintenance.

@@ -10,6 +10,13 @@ Colour is unsupported and encoder work is deferred. Implemented features are
 not a claim of full JBIG2 or Annex F profile 1 conformance. The authoritative
 feature and resource policy is [the support matrix](config/support-matrix.json).
 
+## Where to start
+
+- **Understand or audit the specification:** the [model reading guide](specs/README.md)
+  explains the components, links to free official ITU downloads and walks through one small audit.
+- **Build or test the decoder:** see [build and test](#build-and-test) and the [public API](src/lib.rs).
+- **Run or interpret proofs:** see [Verus through Cargo](#run-verus-through-cargo) and [what the result means](#interpret-the-result).
+
 ## Decoder scope
 
 - Standalone sequential and random-access files; embedded/PDF page streams
