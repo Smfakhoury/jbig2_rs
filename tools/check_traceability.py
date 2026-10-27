@@ -2,24 +2,27 @@
 """Check provisional normative links, not the correctness of standard translation."""
 
 import argparse
+import base64
 import copy
+from datetime import datetime
 import hashlib
 import json
 import re
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, quote, urlsplit
 
 from jsonschema import ValidationError, validate as validate_json
 
-from evidence import load_json, read_evidence
+from evidence import invalid_constant, load_json, read_evidence, unique_object
 from rust_source import items, parse, production_code, source_functions
 from rust_tests import discover_tests as discover_cargo_tests, test_inventory
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = "jbig2_rs_production::"
+REVIEW_REPOSITORY = "microsoft/jbig2_rs"
 CLASSIFICATION_SCHEMA = {
     "type": "object", "additionalProperties": False,
     "required": ["review", "registry_sha256", "project_source_sha256", "families"],
@@ -430,6 +433,119 @@ def check_audit_packet(root, ledger, packet, expected_sha256, ledger_path):
     expected = audit_packet(root, ledger, packet.get("requirement_ids"), ledger_path)
     if packet != expected or expected["packet_sha256"] != expected_sha256:
         raise ValueError("stale, modified or unpinned audit packet; no normative approval is inferred")
+
+
+def github_review_json(endpoint):
+    return json.loads(subprocess.check_output([
+        "gh", "api", "-H", "X-GitHub-Api-Version: 2022-11-28",
+        f"repos/{REVIEW_REPOSITORY}" + (f"/{endpoint}" if endpoint else ""),
+    ], encoding="utf-8", stdin=subprocess.DEVNULL, timeout=60),
+        object_pairs_hook=unique_object, parse_constant=invalid_constant)
+
+
+def source_review_disposition(pr_number, review_id, revision, packet_pin, fetch=github_review_json):
+    """Authenticate an explicit source-snapshot disposition, never normative approval."""
+    if (
+        type(pr_number) is not int or pr_number <= 0
+        or type(review_id) is not int or review_id <= 0
+        or not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision)
+        or not isinstance(packet_pin, str) or not re.fullmatch(r"[0-9a-f]{64}", packet_pin)
+    ):
+        raise ValueError("source review needs exact positive IDs and pinned source identities")
+    repository = fetch("")
+    branch = repository["default_branch"]
+    if repository["full_name"] != REVIEW_REPOSITORY or not isinstance(branch, str) or not branch:
+        raise ValueError("source review needs the repository's configured default branch")
+    default_ref = fetch(f"git/ref/heads/{quote(branch, safe='/')}")
+    authority_revision = default_ref["object"]["sha"]
+    pull = fetch(f"pulls/{pr_number}")
+    base = pull["base"]
+    if (
+        pull["number"] != pr_number or pull["state"] != "open"
+        or pull["head"]["sha"] != revision
+        or base["ref"] != branch or base["sha"] != authority_revision
+        or base["repo"]["full_name"] != REVIEW_REPOSITORY
+        or pull["head"]["repo"]["full_name"] != REVIEW_REPOSITORY
+        or default_ref["ref"] != f"refs/heads/{branch}"
+        or default_ref["object"]["type"] != "commit"
+        or not re.fullmatch(r"[0-9a-f]{40}", base["sha"])
+    ):
+        raise ValueError("source review PR/repository/head identity differs")
+    provenance = fetch(f"contents/validation/source-provenance.json?ref={base['sha']}")
+    if provenance.get("type") != "file" or provenance.get("encoding") != "base64":
+        raise ValueError("source review authority must be a base-revision provenance file")
+    recorded = json.loads(
+        base64.b64decode(
+            provenance["content"].replace("\n", "").replace("\r", ""), validate=True,
+        ).decode("utf-8"),
+        object_pairs_hook=unique_object, parse_constant=invalid_constant,
+    )
+    authority = recorded.get("policy", {}).get("source_review_authority")
+    if (
+        not isinstance(authority, dict)
+        or set(authority) != {"enabled", "human_user_ids"}
+        or authority["enabled"] is not True
+        or not isinstance(authority["human_user_ids"], list)
+        or not authority["human_user_ids"]
+        or any(type(value) is not int or value <= 0 for value in authority["human_user_ids"])
+        or len(set(authority["human_user_ids"])) != len(authority["human_user_ids"])
+    ):
+        raise ValueError("base-revision human source-review authority is not configured")
+    reviews = []
+    for page in range(1, 22):
+        batch = fetch(f"pulls/{pr_number}/reviews?per_page=100&page={page}")
+        if not isinstance(batch, list) or len(batch) > 100:
+            raise ValueError("invalid source review pagination")
+        if page == 21:
+            if batch:
+                raise ValueError("source review history exceeds the supported bound")
+            break
+        reviews.extend(batch)
+        if len(batch) < 100:
+            break
+    if any(type(row.get("id")) is not int or row["id"] <= 0 for row in reviews):
+        raise ValueError("invalid authenticated source review identity")
+    if len({row["id"] for row in reviews}) != len(reviews):
+        raise ValueError("duplicate authenticated source review identity")
+    selected = [row for row in reviews if row["id"] == review_id]
+    if len(selected) != 1:
+        raise ValueError("explicit human source review is missing")
+    review = selected[0]
+    user = review["user"]
+    if (
+        review["state"] != "APPROVED" or review["commit_id"] != revision
+        or user.get("type") != "User"
+        or type(user.get("id")) is not int
+        or user["id"] not in authority["human_user_ids"]
+        or user["id"] == pull["user"]["id"]
+        or not isinstance(review.get("body"), str)
+        or review["body"].strip() != f"JBIG2-SOURCE-REVIEW-SHA256: {packet_pin}"
+    ):
+        raise ValueError("human source review is stale, unauthorized, self-authored or unpinned")
+    decisive = [
+        row for row in reviews if row["user"]["id"] == user["id"]
+        and row["state"] in {"APPROVED", "CHANGES_REQUESTED", "DISMISSED"}
+    ]
+    for row in decisive:
+        if not isinstance(row.get("submitted_at"), str) or not re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", row["submitted_at"],
+        ):
+            raise ValueError("decisive source reviews need exact submission timestamps")
+        datetime.strptime(row["submitted_at"], "%Y-%m-%dT%H:%M:%SZ")
+    if any(
+        row["id"] != review_id and row["submitted_at"] >= review["submitted_at"]
+        for row in decisive
+    ):
+        raise ValueError("human source review was superseded")
+    return {
+        "status": "authenticated_source_snapshot_disposition",
+        "repository": REVIEW_REPOSITORY, "pull_request": pr_number,
+        "review_id": review_id, "human_user_id": user["id"],
+        "source_revision": revision, "packet_sha256": packet_pin,
+        "authority_revision": base["sha"],
+        "scope": "Source-snapshot review only; not a normative-only model freeze or semantic certificate.",
+        "normative_approval": False, "document_processing_authorized": False,
+    }
 
 
 def source_path(root, relative):
@@ -953,6 +1069,11 @@ def main():
     parser.add_argument("--audit-requirement", action="append", default=[], metavar="REQUIREMENT_ID")
     parser.add_argument("--check-audit-packet", type=Path)
     parser.add_argument("--expected-audit-sha256")
+    parser.add_argument(
+        "--source-review-pr", type=int,
+        help="Authenticate a human source-snapshot disposition, never normative approval.",
+    )
+    parser.add_argument("--source-review-id", type=int, help="Explicit GitHub review ID; requires --source-review-pr.")
     arguments = parser.parse_args()
     if arguments.audit_packet and arguments.check_audit_packet:
         parser.error("audit packet creation and validation are separate operations")
@@ -960,6 +1081,11 @@ def main():
         parser.error("packet validation requires a separately supplied --expected-audit-sha256")
     if bool(arguments.audit_packet) != bool(arguments.audit_requirement):
         parser.error("packet creation requires explicit --audit-requirement selections")
+    if (arguments.source_review_pr is not None or arguments.source_review_id is not None) and (
+        arguments.source_review_pr is None or arguments.source_review_id is None
+        or not arguments.check_audit_packet
+    ):
+        parser.error("human source disposition needs both review IDs and a checked pinned packet")
     output_paths = {arguments.output.resolve(), arguments.output.with_suffix(".md").resolve()}
     inputs = [arguments.ledger, arguments.verus_json, arguments.standard_pdf, arguments.check_audit_packet]
     inputs.extend(
@@ -995,8 +1121,9 @@ def main():
         if arguments.audit_packet or arguments.check_audit_packet:
             ledger_path = arguments.ledger.resolve().relative_to(ROOT.resolve()).as_posix()
             if arguments.check_audit_packet:
+                packet = load_json(arguments.check_audit_packet)
                 check_audit_packet(
-                    ROOT, ledger, load_json(arguments.check_audit_packet),
+                    ROOT, ledger, packet,
                     arguments.expected_audit_sha256, ledger_path,
                 )
                 report["audit_packet_identity_checked"] = True
@@ -1009,6 +1136,20 @@ def main():
             ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True,
         ).stdout.strip()
         report["source_revision"] = revision
+        if arguments.source_review_pr is not None:
+            if subprocess.run(
+                ["git", "status", "--porcelain", "--untracked-files=all"],
+                cwd=ROOT, capture_output=True, text=True, check=True,
+            ).stdout:
+                raise ValueError("human source disposition requires a clean committed checkout")
+            subprocess.run(
+                ["git", "ls-files", "--error-unmatch", "--", *packet["source_bindings"]],
+                cwd=ROOT, capture_output=True, text=True, check=True,
+            )
+            report["source_review_disposition"] = source_review_disposition(
+                arguments.source_review_pr, arguments.source_review_id, revision,
+                arguments.expected_audit_sha256,
+            )
         report["ledger_sha256"] = hashlib.sha256(arguments.ledger.read_bytes()).hexdigest()
         report["normative_document_hash_checks"] = local_document_checks(
             ledger, arguments.standard_pdf, arguments.standard_document,
@@ -1019,6 +1160,16 @@ def main():
         table = [
             "# Provisional normative traceability", "",
             f"Status: **{report['status']}**. No full-conformance or complete-proof claim.", "",
+        ]
+        if "source_review_disposition" in report:
+            disposition = report["source_review_disposition"]
+            table += [
+                f"Authenticated source-snapshot review: `{disposition['review_id']}` "
+                f"by human user ID `{disposition['human_user_id']}`.",
+                "**Not normative approval, document-processing authorization or a normative-only model freeze.**",
+                "",
+            ]
+        table += [
             f"Reviewed decomposition complete: **{report['decomposition_review_complete']}**.",
             f"Semantic claims complete: **{report['semantic_claims_complete']}**.", "",
             "## Source-only author navigation (not independent normative approval)", "",
@@ -1088,16 +1239,22 @@ def main():
                 )
         table += ["", report["note"]]
         arguments.output.with_suffix(".md").write_text("\n".join(table) + "\n", encoding="utf-8")
-        print(json.dumps({key: report[key] for key in (
+        summary = {key: report[key] for key in (
             "status", "requirement_count", "feature_count", "verifier_report_checked",
             "cargo_test_discovery_checked", "normative_document_hash_checked", "normative_document_hash_checks",
             "decomposition_review_complete", "semantic_claims_complete",
-        )}, indent=2))
+        )}
+        if "source_review_disposition" in report:
+            summary["source_review_disposition"] = report["source_review_disposition"]
+        print(json.dumps(summary, indent=2))
         enforce_completion(
             report, arguments.require_reviewed_decomposition, arguments.require_complete,
         )
         return 0
-    except (OSError, ValueError, KeyError, TypeError, ValidationError, subprocess.CalledProcessError) as error:
+    except (
+        OSError, ValueError, KeyError, TypeError, ValidationError,
+        subprocess.CalledProcessError, subprocess.TimeoutExpired,
+    ) as error:
         print(f"traceability validation failed: {error}", file=sys.stderr)
         return 1
 
