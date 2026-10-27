@@ -10,7 +10,8 @@
         "members": ["spec::bit_at", "spec::bits_value"],
         "classification": "project-result-model",
         "justification": "bit_at extracts the MSB-first bit; bits_value recursively accumulates those bits in input order. src/reader.rs read_bits promises this numeric result; proofs/spec_properties/readers.rs bounds the recurrence and proofs/production_impl/readers.rs connects each actual bit. These describe project results, not just cursor validity.",
-        "ambiguity": "Independent standard alignment and caller interpretation are unreviewed; no candidate is approved by this result classification."
+        "ambiguity": "",
+        "caveats": "Independent standard alignment and caller interpretation are unreviewed; no candidate is approved by this result classification."
       },
       {
         "file": "specs/readers.rs",
@@ -24,7 +25,8 @@
         "members": ["spec::combine", "spec::operator_byte", "spec::operator_word", "spec::black_span_bits", "spec::black_span_result", "spec::zeroed_storage", "spec::filled_byte", "spec::filled_storage", "spec::prefix_copy_result", "spec::row_copy_result", "spec::pixel_result", "spec::filled_pixels", "spec::compose_frame"],
         "classification": "project-result-model",
         "justification": "Bodies specify Boolean/packed operator outputs, exact span effects, zero/fill byte content (including masked tails), copy source selection and untouched bytes, optional visible pixels, or unchanged composition bytes. prefix_copy_result is an output/frame relation despite its prefix name. src/bitmap.rs contracts consume these; filled_storage includes storage_valid but additionally quantifies every byte. They depend on the bitmap field views in proofs/shared/views.rs, not independent normative storage assumptions.",
-        "ambiguity": "Helper output/frame semantics are not a complete placement/clipping/rendering algorithm or independently approved standard translation."
+        "ambiguity": "",
+        "caveats": "Helper output/frame semantics are not a complete placement/clipping/rendering algorithm or independently approved standard translation."
       },
       {
         "file": "specs/bitmap.rs",
@@ -38,14 +40,16 @@
         "members": ["spec::dimensions_checked", "spec::stride_checked", "spec::allocation_checked", "spec::limits_allow_bitmap"],
         "classification": "project-policy",
         "justification": "Bodies express u64/usize arithmetic admissibility and Limits width/height/pixel/managed-memory checks used by src/bitmap.rs constructors. They model project machine/resource acceptance, not independent normative image limits or observed allocator capacity.",
-        "ambiguity": "Requested packed storage bounds do not close the held observed-capacity/trust decision."
+        "ambiguity": "",
+        "caveats": "Requested packed storage bounds do not close the held observed-capacity/trust decision."
       },
       {
         "file": "specs/bitmap.rs",
         "members": ["spec::byte_operator_bit", "spec::word_operator_bit", "spec::stride_for_width", "spec::byte_index", "spec::bit_mask", "spec::byte_bit", "spec::set_byte_bit", "spec::chunk_byte", "spec::chunk_value", "spec::stored_pixel", "spec::clipped_width", "spec::clipped_height", "spec::compose_byte_may_change"],
         "classification": "proof-support",
         "justification": "Bodies supply bit/byte/word projection, packed addressing, view-based pixel access, big-endian chunk conversion, clipped extents and an existential touched-byte set. These are compositional vocabulary for the actual result/frame relations in this file and src/bitmap.rs, not standalone claims of complete decoding. stored_pixel uses the proved field views in proofs/shared/views.rs.",
-        "ambiguity": "These helpers can also describe observable values; the primary navigation purpose here is support for the enclosing bitmap contracts, not a proof-strength ranking."
+        "ambiguity": "",
+        "caveats": "These helpers can also describe observable values; the primary navigation purpose here is support for the enclosing bitmap contracts, not a proof-strength ranking."
       },
       {
         "file": "proofs/shared/bitmap.rs",
@@ -71,163 +75,491 @@
       {
         "file": "proofs/model_support/document.rs",
         "members": ["spec::random_header_windows", "spec::random_payload_windows", "spec::sequential_windows"],
-        "classification": "classification-pending",
-        "justification": "Exact discovered membership is recorded without adding normative requirement links.",
-        "ambiguity": "Outside the authored reader/bitmap slice; body/dependency and caller-purpose review of container histories remains pending."
+        "classification": "proof-support",
+        "justification": "Bodies connect ghost window sequences to adjacent parsed headers/payloads, prefix lengths and the current reader end. Append and offset lemmas in this same file, called by src/document.rs via production_impl/document.rs, discharge the final container_fields relations. These are traversal histories, not extra normative requirements.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/model_support/mmr.rs",
-        "members": ["spec::future_rows_white", "spec::raster_inner", "spec::raster_outer", "spec::reference_cursor_matches", "spec::row_cache_prefix", "spec::transition_prefix_valid", "spec::transition_span_result"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded; original roles and normative links remain separate.",
-        "ambiguity": "MMR cursor/transition/raster predicates mix accumulator and result vocabulary; their bodies and use sites need a separate purpose review."
+        "members": ["spec::future_rows_white", "spec::raster_inner", "spec::raster_outer", "spec::row_cache_prefix", "spec::transition_prefix_valid"],
+        "classification": "proof-support",
+        "justification": "transition_prefix_valid bounds and orders positions below scanned; row_cache_prefix partitions scanned pixels from white remainder; future_rows_white frames unvisited rows. raster_inner/outer bind ghost completed rows/steps, current reference and cursor to specs/mmr.rs histories. src/mmr.rs uses these loop/helper invariants to establish bitmap_decodes, not as substitutes for that output.",
+        "ambiguity": ""
+      },
+      {
+        "file": "proofs/model_support/mmr.rs",
+        "members": ["spec::reference_cursor_matches"],
+        "classification": "proof-support",
+        "justification": "The body bounds start/cursor, requires the cursor to be eligible or the last sentinel, and rules out eligibility in the skipped interval. src/mmr.rs cached reference search and proofs/spec_properties/mmr.rs reference_prefix_skipped compose it with reference_pair_matches. This is cached-search bookkeeping.",
+        "ambiguity": ""
+      },
+      {
+        "file": "proofs/model_support/mmr.rs",
+        "members": ["spec::transition_span_result"],
+        "classification": "proof-support",
+        "justification": "The body is tuple equality to specs/mmr.rs transition_span_state. It bridges the native transition-buffer update to raster_step without introducing another recurrence or normative rule; the observable raster relation remains in specs/mmr.rs.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/arithmetic.rs",
         "members": ["macro::production_decode_interval_subtraction", "macro::production_integer_history_index", "macro::production_integer_magnitude", "macro::production_qe_transition_valid"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macros are retained by exact identity, without classifying by macro kind.",
-        "ambiguity": "Arithmetic proof bodies/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "Bodies call arithmetic_shared::qe_transition_valid for implementation QE entry bounds, assert interval subtraction safety, and invoke arithmetic_properties history-index/magnitude bounds. They connect src/arithmetic.rs machine operations to existing contracts, not independent QE table fidelity or new decoding equations.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/bitmap.rs",
         "members": ["macro::production_bitmap_row_copy_bounds", "macro::production_filled_storage_result", "macro::production_filled_storage_step", "macro::production_filled_tail_bounds"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macros are retained by exact identity; classifying the bitmap model does not automatically classify every attached proof macro.",
-        "ambiguity": "Individual macro body/dependency review has not been completed in this slice."
+        "classification": "proof-support",
+        "justification": "Bodies establish row/stride/index multiplication bounds, connect the actual tail mask to filled_byte, and call bitmap_shared black_fill_step/filled_storage_result/row_copy_bounds with field reveals. They support src/bitmap.rs loops and final results rather than defining additional model outputs.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/document.rs",
         "members": ["macro::production_document_fields", "macro::production_known_segment_data_fields", "macro::production_page_information_count_step", "macro::production_random_access_complete", "macro::production_random_header_append", "macro::production_random_payload", "macro::production_sequential_complete", "macro::production_sequential_window_append"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macros are retained by exact identity.",
-        "ambiguity": "Container composition proof bodies/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "Bodies expose document fields/known metadata, unfold the page-information count increment, append ghost sequential/random windows with metadata, and call model_support/document.rs completion lemmas. They connect src/document.rs actual traversal to final container results; ghost windows are not new normative rules.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/file_header.rs",
         "members": ["macro::production_file_header_result"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macro is retained by exact identity.",
-        "ambiguity": "File-header proof body/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "The body calls views::file_header_fields on the actual header, exposing fields for src/file_header.rs result contracts. It neither parses bytes nor independently validates specs/file_header.rs wire interpretation.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/generic_region.rs",
         "members": ["macro::production_generic_copied_row_pixels", "macro::production_generic_template_facts"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macros are retained by exact identity.",
-        "ambiguity": "Generic-region proof bodies/dependencies are outside this authored slice; no held encoded fixture work is attempted."
+        "classification": "proof-support",
+        "justification": "Bodies expose bitmap fields and invoke bitmap_shared::row_copy_pixels, or generic_region_shared::generic_template_runtime_facts. They bridge src/generic_region.rs copying/template operations to existing results, not a second raster algorithm.",
+        "ambiguity": "",
+        "caveats": "No encoded refinement/aggregation fixture or independent template approval is supplied."
       },
       {
         "file": "proofs/production_impl/mmr.rs",
         "members": ["macro::production_mmr_trace_output"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macro is retained by exact identity.",
-        "ambiguity": "MMR output proof body/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "The body asserts completed row count, raster_rows, rows_cache_pixels and exact consumed position to witness bitmap_decodes for src/mmr.rs. This is the final proof bridge from actual histories/pixels, not merely storage validity and not independent T.6 approval.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/segment_data.rs",
         "members": ["macro::production_profiles_fields"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macro is retained by exact identity.",
-        "ambiguity": "Typed metadata proof body/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "The body binds parsed profile count/length and every ordered ID to segments::be_u32_at at offset 4 + index * 4. It discharges src/segment_data.rs profiles_payload_fields result from actual reader output, not profile meaning.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/segment_header.rs",
         "members": ["macro::production_reference_width", "macro::production_segment_header_fields", "macro::production_segment_reference_fields"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macros are retained by exact identity.",
-        "ambiguity": "Segment-reference/header proof bodies/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "Bodies invoke segment_header_shared width facts, reveal segment_header_fields, and assert actual count, retention bytes, reference widths/values, order and cursor extent to build referred_header_fields. They support src/segment_header.rs results without approving retention interpretation.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/symbol_text.rs",
         "members": ["macro::production_symbol_current_placement_witness"],
-        "classification": "classification-pending",
-        "justification": "Existing registered macro is retained by exact identity.",
-        "ambiguity": "Placement proof body/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "The body constructs a ghost Placement from the native x/y and witnesses placement_for_current(old(state), ...) for src/symbol_text.rs. This proves an existential from the computed coordinates, not full text rendering or encoded aggregation.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/spec_properties/arithmetic.rs",
         "members": ["spec::binary_value", "spec::pow2"],
-        "classification": "classification-pending",
-        "justification": "Existing registered definitions are retained by exact identity.",
-        "ambiguity": "Arithmetic property bodies/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "pow2 doubles from one and binary_value folds supplied decisions as a binary prefix. Their bound/step lemmas justify IAID and integer history arithmetic used by src/arithmetic.rs; they do not choose decisions from input or approve the arithmetic model.",
+        "ambiguity": ""
       },
       {
         "file": "proofs/spec_properties/mmr.rs",
         "members": ["spec::reference_prefix_skipped"],
-        "classification": "classification-pending",
-        "justification": "Existing registered definition is retained by exact identity.",
-        "ambiguity": "MMR reference-search property body/dependencies are outside this authored slice."
+        "classification": "proof-support",
+        "justification": "The body bounds a skipped prefix and excludes every reference_position_eligible before its end. reference_suffix_is_global uses it to lift cached-suffix reference_pair_matches to start zero for src/mmr.rs; it is search bookkeeping, not a new reference-coordinate rule.",
+        "ambiguity": ""
       },
       {
         "file": "specs/arithmetic.rs",
-        "members": ["spec::context_after_decision", "spec::context_valid", "spec::decision_registers", "spec::decision_state", "spec::decode_error", "spec::decoder_byte_position", "spec::decoder_marker", "spec::decoder_position_valid", "spec::decoder_state_valid", "spec::decoder_valid", "spec::entry_decision", "spec::entry_index", "spec::entry_mps", "spec::eof_error", "spec::error_for_signal", "spec::exchange_decision", "spec::exchange_index", "spec::exchange_is_mps", "spec::exchange_mps", "spec::exchange_normalization", "spec::iaid_run", "spec::iaid_state", "spec::initialized_state", "spec::integer_bit_state", "spec::integer_bits_run", "spec::integer_history_step", "spec::integer_selection_state", "spec::integer_state", "spec::integer_step_state", "spec::normalized_state", "spec::refill_step", "spec::renormalization_steps"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "State transformations, validity, errors, measures and implementation QE table dependencies require body/use-site review beyond this slice; table membership is not normative fidelity."
+        "members": ["spec::context_valid", "spec::decoder_position_valid", "spec::decoder_state_valid", "spec::decoder_valid"],
+        "classification": "representation-invariant",
+        "justification": "Bodies bound context index/MPS, connect byte position/current byte to input, constrain interval/count and marker bytes, then add MIN_INTERVAL normalization. src/arithmetic.rs uses these entry/exit invariants; none determines a decoded decision or resulting register tuple.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/arithmetic.rs",
+        "members": ["spec::context_after_decision", "spec::decision_registers", "spec::decision_state", "spec::entry_decision", "spec::entry_index", "spec::entry_mps", "spec::exchange_decision", "spec::exchange_index", "spec::exchange_is_mps", "spec::exchange_mps", "spec::exchange_normalization", "spec::initialized_state", "spec::normalized_state", "spec::refill_step"],
+        "classification": "project-result-model",
+        "justification": "Bodies select exchange decision/context transitions, refill bytes/marker/errors, initialize scaled registers and recursively normalize into exact state tuples. decision_state composes the actual QE_STATES entry with decision_registers; src/arithmetic.rs contracts bind decision, context and every register to these results. model_support/arithmetic.rs supplies same-owner reveals.",
+        "ambiguity": "",
+        "caveats": "QE_STATES and MIN_INTERVAL are implementation dependencies, not independent normative ground truth. BYTEIN/INITDEC/register/caller interpretation and complete acceptance remain unreviewed."
+      },
+      {
+        "file": "specs/arithmetic.rs",
+        "members": ["spec::iaid_run", "spec::iaid_state", "spec::integer_bit_state", "spec::integer_bits_run", "spec::integer_history_step", "spec::integer_selection_state", "spec::integer_state", "spec::integer_step_state"],
+        "classification": "project-result-model",
+        "justification": "Bodies compose exact decision_state/context_after_decision steps into updated banks/registers/history, select integer payload length/offset, accumulate bits and return signed/OOB or partial errors. IAID starts with sentinel one and removes required. src/arithmetic.rs integer/IAID contracts use these full-state results, unlike a loop measure.",
+        "ambiguity": "",
+        "caveats": "Totality-only invalid-state branches are not valid-input acceptance proofs. Field-bank choice, caller lengths/reset timing and independent Annex A translation remain separate."
+      },
+      {
+        "file": "specs/arithmetic.rs",
+        "members": ["spec::decode_error", "spec::eof_error", "spec::error_for_signal"],
+        "classification": "project-policy",
+        "justification": "Bodies construct checked-width EOF/overflow diagnostics and translate ArithmeticError variants into DecodeError payloads used by src/arithmetic.rs and symbol_text/generic_region bridges. These typed Rust errors are project API policy, not normative exception types.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/arithmetic.rs",
+        "members": ["spec::decoder_byte_position", "spec::decoder_marker", "spec::renormalization_steps"],
+        "classification": "proof-support",
+        "justification": "Two bodies project decoder fields for contracts; renormalization_steps counts interval doublings until MIN_INTERVAL, independently of the input/refill result. src/arithmetic.rs uses the latter as termination support; it does not prescribe normalized_state or a global CPU bound.",
+        "ambiguity": ""
       },
       {
         "file": "specs/decode.rs",
-        "members": ["spec::allocation_bytes", "spec::bitmap_byte_count", "spec::bitmap_refs_valid", "spec::charge_succeeds", "spec::checked_sum_fits", "spec::collected_symbol_count", "spec::collected_symbols_valid", "spec::collector_bitmap_bytes", "spec::collector_decoded_limit", "spec::collector_memory_limit", "spec::collector_pages", "spec::dispatch_class", "spec::document_info", "spec::document_pages", "spec::first_symbol_index", "spec::generic_template_code", "spec::initial_resources_valid", "spec::page_bitmap", "spec::page_number", "spec::pattern_store_valid", "spec::referred_symbol_count", "spec::region_buffers_valid", "spec::region_intersects_page", "spec::release_succeeds", "spec::retained_bytes", "spec::runtime_last_stripe_end", "spec::runtime_open_stripe_max_row", "spec::runtime_pages_valid", "spec::symbol_group_count", "spec::symbol_store_valid", "spec::work_used"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Selection/results, store views/invariants and resource policy need individual body/dependency review; no capacity-policy inference is made."
+        "members": ["spec::bitmap_refs_valid", "spec::collected_symbols_valid", "spec::initial_resources_valid", "spec::pattern_store_valid", "spec::region_buffers_valid", "spec::runtime_pages_valid", "spec::symbol_store_valid"],
+        "classification": "representation-invariant",
+        "justification": "Bodies quantify bitmap::storage_valid over runtime page/region stores, owned or borrowed collected symbols, exported symbol groups and patterns; initial_resources_valid conjoins pattern/symbol stores. src/decode.rs preserves these representation conditions without thereby specifying decoded content.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/decode.rs",
+        "members": ["spec::collected_symbol_count", "spec::first_symbol_index", "spec::referred_symbol_count", "spec::symbol_group_count"],
+        "classification": "project-result-model",
+        "justification": "Bodies select the first numbered group, give its exported count or zero when absent, sum each referred occurrence, and report owned/borrowed collection length. src/decode.rs find/collect contracts expose this selection/count relation, including repeats, rather than only storage validity.",
+        "ambiguity": "",
+        "caveats": "Missing-group zero and repeated-reference counting describe project helpers, not approval of invalid normative callers or symbol content."
+      },
+      {
+        "file": "specs/decode.rs",
+        "members": ["spec::allocation_bytes", "spec::charge_succeeds", "spec::checked_sum_fits", "spec::release_succeeds"],
+        "classification": "project-policy",
+        "justification": "Bodies compute count * size_of, test u64 addition/limit bounds, and disallow retained-byte underflow. src/decode.rs resource accounting uses these machine/requested-storage rules, not normative coding equations.",
+        "ambiguity": "",
+        "caveats": "Requested allocation bytes do not establish observed Vec capacity or close the held capacity/getter decision."
+      },
+      {
+        "file": "specs/decode.rs",
+        "members": ["spec::bitmap_byte_count", "spec::collector_bitmap_bytes", "spec::collector_decoded_limit", "spec::collector_memory_limit", "spec::collector_pages", "spec::dispatch_class", "spec::document_info", "spec::document_pages", "spec::generic_template_code", "spec::page_bitmap", "spec::page_number", "spec::region_intersects_page", "spec::retained_bytes", "spec::runtime_last_stripe_end", "spec::runtime_open_stripe_max_row", "spec::work_used"],
+        "classification": "proof-support",
+        "justification": "Bodies expose page/document/collector/resource/stripe fields, project bitmap byte length through views, map template/segment enums to dispatch codes, and test nonempty region intersection. src/decode.rs contracts and model_support/decode.rs field lemmas use this vocabulary; these projections/guards are not full raster or lifecycle models.",
+        "ambiguity": ""
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::bounded_reads", "spec::contains_number", "spec::contiguous_pages", "spec::count_limits", "spec::declared_count_matches_pages", "spec::decoder_limits", "spec::default_limits", "spec::depth_witness", "spec::document_declared_page_count", "spec::document_organization", "spec::document_pages", "spec::document_segment_count", "spec::embedded_metadata", "spec::envelope_bytes", "spec::final_height", "spec::global_bytes", "spec::global_segment_count", "spec::header_byte_offset", "spec::initial_page_state", "spec::is_last_use", "spec::known_segment_data_fields", "spec::lower_chain", "spec::next_count_quota_result", "spec::page_association_allowed", "spec::page_finish_result", "spec::page_information_count", "spec::page_step", "spec::payload_byte_offset", "spec::payload_window", "spec::producer_retained_for_later_use", "spec::production_is_intermediate_region", "spec::public_page_fields", "spec::public_page_height", "spec::quota_result", "spec::random_access_container_fields", "spec::random_access_segment_fields", "spec::reference_class_allowed", "spec::reference_count", "spec::references_resolve_lower", "spec::release_allowed", "spec::segment_headers", "spec::segment_metadata", "spec::segment_policy_allowed", "spec::sequential_container_fields", "spec::sequential_offset", "spec::standalone_metadata", "spec::stripe_accepted", "spec::stripe_result", "spec::sum", "spec::unique_numbers", "spec::unknown_marker_fits", "spec::unknown_marker_valid", "spec::valid_profiles", "spec::work"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Container/page results, lifecycle, graph/retention interpretation and project quotas mix purposes and remain outside the authored slice."
+        "members": ["spec::bounded_reads", "spec::count_limits", "spec::default_limits", "spec::next_count_quota_result", "spec::quota_result", "spec::work"],
+        "classification": "project-policy",
+        "justification": "Bodies bound cumulative read/count totals, fix project Limits defaults, compute input + segment + reference work, and prioritize integer-overflow before LimitExceeded with exact kind/actual/limit. src/document.rs quotas and proofs/spec_properties/document.rs resource lemmas use these project limits, not standard-mandated budgets.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/document.rs",
+        "members": ["spec::declared_count_matches_pages", "spec::embedded_metadata", "spec::known_segment_data_fields", "spec::payload_window", "spec::random_access_container_fields", "spec::random_access_segment_fields", "spec::segment_metadata", "spec::sequential_container_fields", "spec::standalone_metadata"],
+        "classification": "project-result-model",
+        "justification": "Bodies bind accepted metadata to file-header/segments byte models, typed Page/Stripe/Profiles payloads, exact header/payload windows, increasing standalone numbers and complete sequential/random-access extents/EOF. src/document.rs parsing contracts expose these results; model_support/document.rs proves completion from internal windows, not the reverse.",
+        "ambiguity": "",
+        "caveats": "Other ParsedData stays opaque; table/entropy validity, unknown-length termination, complete errors/resources and independent wire/retention/profile interpretation are not established."
+      },
+      {
+        "file": "specs/document.rs",
+        "members": ["spec::page_finish_result", "spec::public_page_fields", "spec::public_page_height", "spec::stripe_accepted", "spec::stripe_result"],
+        "classification": "project-result-model",
+        "justification": "Bodies constrain stripe ordering/size/known-height, return the actual typed stripe/duplicate-first finish errors, and bind public page metadata with known-height precedence or checked last-row + 1. src/document.rs PageState contracts promise these API results and failure frames.",
+        "ambiguity": "",
+        "caveats": "Typed errors are project policy. These actual contracts do not add ended checks to stripe acceptance or require ended for conversion; they must not be silently equated to the separate abstract page_step lifecycle."
+      },
+      {
+        "file": "specs/document.rs",
+        "members": ["spec::contiguous_pages", "spec::is_last_use", "spec::page_association_allowed", "spec::producer_retained_for_later_use", "spec::reference_class_allowed", "spec::references_resolve_lower", "spec::release_allowed", "spec::segment_policy_allowed", "spec::unique_numbers", "spec::valid_profiles"],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies express abstract numbering/page order, lower resolved reference edges, allowed owner/reference classes, last-use/retention implication and global/page profile inclusion. proofs/spec_properties/document.rs proves properties of these abstract candidates; their purpose is proposed container/caller interpretation, not just Rust storage. Unregistered helpers retain no requirement links.",
+        "ambiguity": "",
+        "caveats": "Author purpose only: independent source/model/caller approval remains pending. In particular release_allowed merely delegates to is_last_use, and the retention conflict remains held; abstract theorems do not prove complete executing retention/lifecycle behavior."
+      },
+      {
+        "file": "specs/document.rs",
+        "members": ["spec::final_height", "spec::initial_page_state", "spec::page_step", "spec::unknown_marker_fits", "spec::unknown_marker_valid"],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies define a separate abstract PageState event transition/final-height interpretation and marker extent/row-count predicates. proofs/spec_properties/document.rs proves properties of these abstract candidates. page_step rejects content/stripe after ended, unlike the narrower production stripe_accepted helper; these are not interchangeable source-bound API results. Unregistered helpers retain no requirement links.",
+        "ambiguity": "",
+        "caveats": "No independent normative fidelity or full native lifecycle/unknown-length binding is approved. Marker predicates constrain offsets/counts, not actual marker-byte recognition or complete raster output."
+      },
+      {
+        "file": "specs/document.rs",
+        "members": ["spec::depth_witness", "spec::lower_chain"],
+        "classification": "proof-support",
+        "justification": "depth_witness supplies a map of bounded positive ranks increasing from reference to owner; lower_chain recursively orders a supplied number sequence. proofs/spec_properties/document.rs uses them to expose reference-depth bounds and prove decreasing-chain finiteness. These are abstract graph proof witnesses, not standalone normative reference rules or native graph-depth enforcement.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/document.rs",
+        "members": ["spec::contains_number", "spec::decoder_limits", "spec::document_declared_page_count", "spec::document_organization", "spec::document_pages", "spec::document_segment_count", "spec::envelope_bytes", "spec::global_bytes", "spec::global_segment_count", "spec::header_byte_offset", "spec::page_information_count", "spec::payload_byte_offset", "spec::production_is_intermediate_region", "spec::reference_count", "spec::segment_headers", "spec::sequential_offset", "spec::sum"],
+        "classification": "proof-support",
+        "justification": "Bodies project private fields/header sequences, classify intermediate enums, count pages/references, test number membership and recursively sum header/payload/envelope extents. src/document.rs contracts, same-owner model_support field/offset lemmas and abstract property proofs use this vocabulary to state the enclosing results/policies; it does not itself approve container semantics.",
+        "ambiguity": ""
       },
       {
         "file": "specs/file_header.rs",
-        "members": ["spec::byte_length", "spec::colour_regions", "spec::extended_templates", "spec::has_signature", "spec::organization", "spec::page_count", "spec::valid"],
-        "classification": "classification-pending",
-        "justification": "Exact registered membership and existing source locators are retained.",
-        "ambiguity": "Wire interpretation versus accepted-header predicates needs a separate body/dependency review."
+        "members": ["spec::byte_length", "spec::colour_regions", "spec::extended_templates", "spec::organization", "spec::page_count"],
+        "classification": "project-result-model",
+        "justification": "Bodies extract organization and option page-count from raw flag/big-endian bytes, expose extension/colour bits and select nine/thirteen consumed bytes. src/file_header.rs successful parser contracts bind actual header fields/extent to them via views::file_header_fields.",
+        "ambiguity": "",
+        "caveats": "Raw wire-result purpose is established; independent normative field interpretation and downstream colour/template support are not approved."
+      },
+      {
+        "file": "specs/file_header.rs",
+        "members": ["spec::has_signature", "spec::valid"],
+        "classification": "candidate-standard-facing-model",
+        "justification": "has_signature matches the eight literal signature bytes; valid adds minimum flag/count extents and reserved-bit constraints. src/file_header.rs acceptance and result recommendations use these proposed wire admissibility predicates, not an internal object-storage invariant.",
+        "ambiguity": "",
+        "caveats": "Source-only candidate purpose, not independent normative acceptance/error completeness approval."
       },
       {
         "file": "specs/generic_region.rs",
-        "members": ["spec::bitmap_storage_spec", "spec::context_value", "spec::contexts_compatible", "spec::contexts_valid", "spec::decoded_pixels", "spec::generic_adaptive_count", "spec::generic_context_bits", "spec::generic_contexts_valid", "spec::generic_pixel_decisions", "spec::generic_session_valid", "spec::generic_slot_adaptive", "spec::generic_slot_count", "spec::generic_slot_matches", "spec::generic_slot_x", "spec::generic_slot_y", "spec::generic_sltp_context", "spec::generic_template_code", "spec::generic_work_spec", "spec::pixel_measure", "spec::pow2", "spec::probability_error_for_signal", "spec::probability_states_valid", "spec::probability_validation_result", "spec::refinement_context_bits", "spec::refinement_contexts_valid", "spec::refinement_pixel_decisions", "spec::refinement_slot_adaptive", "spec::refinement_slot_count", "spec::refinement_slot_is_target", "spec::refinement_slot_matches", "spec::refinement_slot_x", "spec::refinement_slot_y", "spec::refinement_sltp_context", "spec::refinement_work_spec", "spec::reset_context_states", "spec::restore_context_states", "spec::row_measure", "spec::sample_or_zero", "spec::target_adaptive_valid", "spec::tpgd_next", "spec::tpgr_uses_prediction", "spec::unknown_length_accounting"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Context geometry, recurrence/results, representation and work policy need individual body review; no held encoded refinement work is undertaken."
+        "members": ["spec::contexts_compatible", "spec::contexts_valid", "spec::generic_contexts_valid", "spec::generic_session_valid", "spec::probability_states_valid", "spec::refinement_contexts_valid", "spec::target_adaptive_valid"],
+        "classification": "representation-invariant",
+        "justification": "Bodies quantify arithmetic context index/MPS validity, conjoin decoder/session validity, compare snapshot template/extended/count fields, and require adaptive target offsets to precede the current pixel. src/generic_region.rs context/session contracts and shared/property lemmas use these admissible-state/geometry constraints, not transformed pixel outputs.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/generic_region.rs",
+        "members": ["spec::bitmap_storage_spec", "spec::generic_work_spec", "spec::probability_error_for_signal", "spec::probability_validation_result", "spec::refinement_work_spec"],
+        "classification": "project-policy",
+        "justification": "Bodies estimate packed storage and fixed-coefficient work, specify the first invalid arithmetic context's exact typed diagnostic, and map context/decoder signals into GenericRegionError. src/generic_region.rs validation/resource contracts consume these project accounting/error policies, not normative exception or allocator guarantees.",
+        "ambiguity": "",
+        "caveats": "Requested bitmap storage is not observed allocation capacity; no trust/capacity hold is closed."
+      },
+      {
+        "file": "specs/generic_region.rs",
+        "members": ["spec::generic_adaptive_count", "spec::generic_context_bits", "spec::generic_slot_adaptive", "spec::generic_slot_count", "spec::generic_slot_matches", "spec::generic_slot_x", "spec::generic_slot_y", "spec::generic_sltp_context", "spec::refinement_context_bits", "spec::refinement_slot_adaptive", "spec::refinement_slot_count", "spec::refinement_slot_is_target", "spec::refinement_slot_matches", "spec::refinement_slot_x", "spec::refinement_slot_y", "spec::refinement_sltp_context"],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies enumerate template context sizes/SLTP indices, nominal slot coordinates, adaptive-pixel numbers and target/reference planes; slot_matches relates actual descriptors to these formulas. src/generic_region.rs and proofs/shared/generic_region.rs connect implementation template descriptors to these selected geometric candidates.",
+        "ambiguity": "",
+        "caveats": "Candidate purpose is not independent standard/source/model approval. Context geometry alone is not encoded generic/refinement output; protected encoded fixture work remains held."
+      },
+      {
+        "file": "specs/generic_region.rs",
+        "members": ["spec::context_value", "spec::generic_pixel_decisions", "spec::refinement_pixel_decisions", "spec::reset_context_states", "spec::restore_context_states", "spec::sample_or_zero", "spec::tpgd_next", "spec::tpgr_uses_prediction", "spec::unknown_length_accounting"],
+        "classification": "project-result-model",
+        "justification": "Bodies fold Boolean context bits, sample out-of-bounds as white, compute prediction toggles/decision counts, select restored or reset state sequences, and give arithmetic/MMR marker slice extents. src/generic_region.rs contracts and proofs/spec_properties/generic_region.rs use these helper/abstract transformations, each stronger in content than a validity predicate.",
+        "ambiguity": "",
+        "caveats": "Some are abstract model-property results rather than complete native decoding contracts. They do not prove full input-to-pixel refinement/generic composition or independently approve marker/prediction interpretation."
+      },
+      {
+        "file": "specs/generic_region.rs",
+        "members": ["spec::decoded_pixels"],
+        "classification": "project-result-model",
+        "justification": "The body returns the supplied decisions prefix of length min(decisions.len(), context_indexes.len()); it never reads the context-index values or encoded bytes. proofs/spec_properties/generic_region.rs proves equality for equal supplied decision/context-index sequences. Its source purpose is an abstract sequence result, not a production entropy decoder.",
+        "ambiguity": "",
+        "caveats": "The name does not establish decoded-raster correctness, native caller binding or meaningful dependence on context-index values. No full decoding or normative credit follows."
+      },
+      {
+        "file": "specs/generic_region.rs",
+        "members": ["spec::generic_template_code", "spec::pixel_measure", "spec::pow2", "spec::row_measure"],
+        "classification": "proof-support",
+        "justification": "Bodies map template enums to numeric identity, double powers from one, and subtract current row/x from bounded extents. src/generic_region.rs and its property/shared proofs use these projections/bounds/decreases measures; measures alone do not describe raster output.",
+        "ambiguity": ""
       },
       {
         "file": "specs/halftone.rs",
-        "members": ["spec::bitmaps_valid", "spec::clipped_axis_valid", "spec::decoder_state_valid", "spec::fixed_pixel", "spec::gray_binary_bit", "spec::gray_depth_expected", "spec::gray_depth_valid", "spec::grid_x_fixed", "spec::grid_y_fixed", "spec::halftone_flags_valid", "spec::halftone_header_accepted", "spec::halftone_header_fields", "spec::index_bit_inserted", "spec::indexes_valid", "spec::operator_code_valid", "spec::operator_for_code", "spec::pattern_count", "spec::pattern_flags_valid", "spec::pattern_header_accepted", "spec::pattern_header_fields", "spec::pow2", "spec::render_precedes", "spec::row_major_offset", "spec::signed_u32", "spec::wholly_outside", "spec::work_limit", "spec::work_used", "spec::work_valid"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Header results, grid/gray interpretation, storage and work predicates require individual body/dependency review."
+        "members": ["spec::bitmaps_valid", "spec::decoder_state_valid", "spec::indexes_valid", "spec::work_valid"],
+        "classification": "representation-invariant",
+        "justification": "Bodies quantify packed bitmap storage, constrain gray indexes below pattern count, require used <= limit, and inspect Arithmetic/PatternMmr/GrayMmr state variants for decoder validity or coded offset bounds. src/halftone.rs preserves these representation conditions, not complete rendered content.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/halftone.rs",
+        "members": ["spec::halftone_flags_valid", "spec::operator_code_valid", "spec::pattern_flags_valid"],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies mask reserved pattern bits, restrict MMR template/skip combinations and bound encoded operator values. src/halftone.rs parsing/shared properties use these proposed wire admissibility rules; they constrain encoded flags, not in-memory bitmap storage.",
+        "ambiguity": "",
+        "caveats": "Candidate standard-facing purpose does not approve the translation, full parser errors or downstream applicability."
+      },
+      {
+        "file": "specs/halftone.rs",
+        "members": ["spec::halftone_header_accepted", "spec::halftone_header_fields", "spec::operator_for_code", "spec::pattern_count", "spec::pattern_header_accepted", "spec::pattern_header_fields", "spec::signed_u32"],
+        "classification": "project-result-model",
+        "justification": "Bodies define seven/twenty-one-byte project acceptance, bind raw header flags/dimensions/grid words to actual fields through segments::be_u32_at, decode signed origins/operator enums and compute gray_max + 1 patterns. src/halftone.rs header/result contracts promise these outputs.",
+        "ambiguity": "",
+        "caveats": "Halftone entry starts after region information; unsigned vector words retain raw scale. Full raster/caller/typed-error and independent normative interpretation remain separate."
+      },
+      {
+        "file": "specs/halftone.rs",
+        "members": ["spec::clipped_axis_valid", "spec::fixed_pixel", "spec::gray_binary_bit", "spec::gray_depth_expected", "spec::gray_depth_valid", "spec::grid_x_fixed", "spec::grid_y_fixed", "spec::index_bit_inserted", "spec::wholly_outside"],
+        "classification": "project-result-model",
+        "justification": "Bodies prescribe ceil-log2 depth (including count-one zero), Gray XOR, exact index bit insertion, signed affine grid coordinates, right-shift fixed-point conversion and clipped/outside geometry. src/halftone.rs helper contracts and shared/property lemmas relate computed outputs to them; clipped_axis_valid equates endpoints, rather than only asserting safe storage.",
+        "ambiguity": "",
+        "caveats": "These local/abstract result relations are not complete bitplane-to-pattern-to-raster composition or independent fixed-point/Gray interpretation approval."
+      },
+      {
+        "file": "specs/halftone.rs",
+        "members": ["spec::pow2", "spec::render_precedes", "spec::row_major_offset", "spec::work_limit", "spec::work_used"],
+        "classification": "proof-support",
+        "justification": "Bodies provide doubling powers for gray bounds, row-major addressing/order, and private WorkBudget projections. src/halftone.rs and model_support/halftone.rs work_fields/shared/property proofs use these helpers to state traversal/accounting/results, not new normative equations.",
+        "ambiguity": ""
       },
       {
         "file": "specs/huffman.rs",
-        "members": ["spec::add_limb", "spec::append_bit", "spec::assignment_codes", "spec::assignment_contents", "spec::assignment_order", "spec::assignment_prefix", "spec::assignment_starts", "spec::bucket", "spec::canonical_assignment", "spec::canonical_first_code", "spec::canonical_range_fits", "spec::checked_add_small", "spec::checked_shift_left_one", "spec::decoded_line_value", "spec::first_prefix", "spec::fits_in_bits", "spec::histogram", "spec::is_raw", "spec::line_decodable", "spec::line_lengths_valid", "spec::ordered_before", "spec::pow2", "spec::raw_lines", "spec::reader_valid", "spec::small_distance_from", "spec::subtract_limb", "spec::table_has_oob", "spec::wide_fits", "spec::wide_value"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Raw assignment results, wide arithmetic support and reader/line admissibility need individual body review; no encoded custom-Huffman fixture work is undertaken."
+        "members": ["spec::canonical_range_fits", "spec::fits_in_bits", "spec::line_decodable", "spec::line_lengths_valid", "spec::reader_valid", "spec::wide_fits"],
+        "classification": "representation-invariant",
+        "justification": "Bodies bound reader positions, line range widths/i32 extrema, wide-code high limbs or mathematical value, and last assigned code within its bit length. src/huffman.rs wide arithmetic, constructor and decode helpers use these machine/representation admissibility predicates, not complete entropy input/output relations.",
+        "ambiguity": "",
+        "caveats": "Range fitting alone is not mathematical prefix-freedom, normative table fidelity or complete accepted-input/error behavior."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": ["spec::add_limb", "spec::append_bit", "spec::canonical_first_code", "spec::checked_add_small", "spec::checked_shift_left_one", "spec::decoded_line_value", "spec::small_distance_from", "spec::subtract_limb"],
+        "classification": "project-result-model",
+        "justification": "Bodies prescribe limb carry/borrow, checked wide addition/shift/bit append/distance, the (previous + count) << 1 recurrence, and signed line-low plus/minus offset output. src/huffman.rs helper contracts bind actual local results to these transformations.",
+        "ambiguity": "",
+        "caveats": "Local numeric/line results are not full lookup/entropy acceptance or independent normative interpretation."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": ["spec::assignment_codes", "spec::assignment_contents", "spec::assignment_order", "spec::assignment_starts", "spec::canonical_assignment"],
+        "classification": "project-result-model",
+        "justification": "Bodies bind original raw lines/histogram/extent, first-prefix code recurrence, active-bucket starts/range fits and stable original-index order to the returned table. src/huffman.rs new/Borrowed from_line_source expose these results; model_support/huffman.rs proves same-owner definitions and assignment completion.",
+        "ambiguity": "",
+        "caveats": "Scope is successful raw Borrowed assignment, not all line sources, encoded custom-Huffman parsing, full entropy decoding or independent normative approval. Held fixture work is untouched."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": ["spec::assignment_prefix", "spec::bucket", "spec::first_prefix", "spec::histogram", "spec::is_raw", "spec::ordered_before", "spec::pow2", "spec::raw_lines", "spec::table_has_oob", "spec::wide_value"],
+        "classification": "proof-support",
+        "justification": "Bodies project Borrowed input/OOB membership, give limb-value/power vocabulary, select stable original indices by length, recursively derive prefix codes, and track scanned histogram/assignment prefixes. src/huffman.rs constructor loops and model_support/huffman.rs step/completion lemmas use them to prove the final assignment relation, not replace it.",
+        "ambiguity": "",
+        "caveats": "Some vocabulary is reused in observable result clauses; proof-support denotes its primary compositional role, not weaker proof or independent table approval."
       },
       {
         "file": "specs/mmr.rs",
-        "members": ["spec::bitmap_decodes", "spec::bitmap_storage_valid", "spec::bounded_bitmap_decodes", "spec::complete_run", "spec::exact_eofb", "spec::first_reference_candidate", "spec::horizontal_pair", "spec::mode_code_in_implementation_table", "spec::mode_matches", "spec::mode_prefix_matches", "spec::prefix_bitmap_decodes", "spec::raster_rows", "spec::raster_state", "spec::raster_step", "spec::raster_steps", "spec::reader_valid", "spec::reference_line_valid", "spec::reference_pair_matches", "spec::reference_position_eligible", "spec::required_eofb_prefix", "spec::row_cache_matches", "spec::rows_cache_pixels", "spec::rows_position", "spec::rows_reference", "spec::run_all_makeups", "spec::run_bit_length", "spec::run_code_in_implementation_tables", "spec::run_key_matches", "spec::run_prefix_matches", "spec::run_value_sum", "spec::span_byte", "spec::span_pixels", "spec::span_result", "spec::transition_black_at", "spec::transition_count_at", "spec::transition_span_state", "spec::transitions_ordered", "spec::white_reference_cache"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Raster histories/results, accumulator validity and implementation mode/run table dependencies need individual review; runtime table membership is not independent T.6 fidelity."
+        "members": ["spec::bitmap_storage_valid", "spec::reader_valid", "spec::reference_line_valid", "spec::transitions_ordered"],
+        "classification": "representation-invariant",
+        "justification": "Bodies constrain packed bitmap dimensions/length, reader bit bounds, nondecreasing transition coordinates <= width and two terminal width sentinels. src/mmr.rs helper pre/postconditions require these representations without specifying decoded pixels.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/mmr.rs",
+        "members": ["spec::mode_code_in_implementation_table", "spec::mode_matches", "spec::run_code_in_implementation_tables", "spec::run_key_matches"],
+        "classification": "proof-support",
+        "justification": "Bodies test membership in MODE_CODES or colour-specific terminating/makeup/common runtime arrays and equality of code bits/length keys. src/mmr.rs lookup contracts and run/mode prefix relations depend on this implementation vocabulary; table membership is not a normative-table theorem.",
+        "ambiguity": "",
+        "caveats": "Existing T.6 requirement locators remain provisional and do not convert implementation data into independent normative ground truth."
+      },
+      {
+        "file": "specs/mmr.rs",
+        "members": ["spec::complete_run", "spec::first_reference_candidate", "spec::horizontal_pair", "spec::mode_prefix_matches", "spec::reference_pair_matches", "spec::reference_position_eligible", "spec::run_prefix_matches"],
+        "classification": "project-result-model",
+        "justification": "Bodies bind actual input bits/consumption to run/mode codes, require terminal-last with prior makeups and exact sum, compose opposite-colour horizontal runs, and select the first eligible parity-matching reference pair or width fallback. src/mmr.rs successful helpers promise these consequential input/output selections.",
+        "ambiguity": "",
+        "caveats": "Initial equality, parity and width fallback are project coordinate interpretation. Independent T.6 table/coordinate fidelity and complete acceptance/errors remain open."
+      },
+      {
+        "file": "specs/mmr.rs",
+        "members": ["spec::bitmap_decodes", "spec::bounded_bitmap_decodes", "spec::prefix_bitmap_decodes", "spec::raster_rows", "spec::raster_step", "spec::raster_steps", "spec::row_cache_matches", "spec::rows_cache_pixels", "spec::span_pixels", "spec::span_result", "spec::transition_span_state", "spec::white_reference_cache"],
+        "classification": "project-result-model",
+        "justification": "Bodies define deterministic transition-span updates, black effects/white no-op, transition-parity pixels, and finite mode/run/reference/colour/cursor histories chained through completed rows to every visible output pixel and consumed input. src/mmr.rs exposes bounded/prefix results through same-owner witnesses; these are actual raster result relations, unlike model_support loop invariants.",
+        "ambiguity": "",
+        "caveats": "White spans preserve existing bytes rather than clearing arbitrary pixels. Accepted-result histories do not prove complete valid-input acceptance, full callers/resources or independent normative fidelity; scratch-buffer capacity/address/parity is not promised."
+      },
+      {
+        "file": "specs/mmr.rs",
+        "members": ["spec::exact_eofb", "spec::required_eofb_prefix"],
+        "classification": "project-result-model",
+        "justification": "Bodies recognize the implementation EOFB value through readers::bits_value and bind the immediate 24-bit marker plus zero to seven zero alignment bits to an input-bounded octet boundary. src/mmr.rs bounded/prefix framing contracts consume this exact input-extent relation.",
+        "ambiguity": "",
+        "caveats": "EOFB constant and T.88 omission/fixed-block applicability still require independent review; this classification does not approve framing policy."
+      },
+      {
+        "file": "specs/mmr.rs",
+        "members": ["spec::raster_state", "spec::rows_position", "spec::rows_reference", "spec::run_all_makeups", "spec::run_bit_length", "spec::run_value_sum", "spec::span_byte", "spec::transition_black_at", "spec::transition_count_at"],
+        "classification": "proof-support",
+        "justification": "Bodies construct/project ghost raster state, derive preceding row reference/position, fold run lengths/values/makeup flags, compute packed span addresses and count transition parity. src/mmr.rs and raster/cache predicates compose this vocabulary into final input/pixel relations; projections/folds alone are not a complete decoder result.",
+        "ambiguity": ""
       },
       {
         "file": "specs/segments.rs",
-        "members": ["spec::be_u32_at", "spec::combination_operator", "spec::dimensions_within_limits", "spec::extension_flags_valid", "spec::extension_kind", "spec::extension_payload_flags_valid", "spec::final_code_unit_zero", "spec::header_reference_count", "spec::header_references_start", "spec::header_retention_start", "spec::page_flags_match", "spec::page_information_fields", "spec::profile_length_matches", "spec::profiles_payload_fields", "spec::profiles_payload_valid", "spec::reference_value_at", "spec::reference_width", "spec::referred_header_fields", "spec::region_flags_match", "spec::retention_bit", "spec::retention_values_match", "spec::segment_header_fields", "spec::segment_type", "spec::short_count_valid", "spec::unused_retention_bits_zero"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Raw field results, acceptance/resource policy and retention interpretation require body/dependency review."
+        "members": ["spec::dimensions_within_limits"],
+        "classification": "project-policy",
+        "justification": "The body compares width/height/pixel product to caller Limits. src/segment_data.rs resource checks use these project limits, not normative image bounds.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/segments.rs",
+        "members": ["spec::extension_flags_valid", "spec::extension_payload_flags_valid", "spec::final_code_unit_zero", "spec::profiles_payload_valid", "spec::short_count_valid", "spec::unused_retention_bits_zero"],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies constrain reserved short-count/retention bits, extension flag combinations, profile payload length from its encoded count, and zero final code units. src/segment_header.rs and src/segment_data.rs acceptance/property proofs use these selected wire admissibility candidates, not object-storage invariants.",
+        "ambiguity": "",
+        "caveats": "Independent source/model approval, retention interpretation, extension/profile meaning and full parser/caller/error completeness remain open."
+      },
+      {
+        "file": "specs/segments.rs",
+        "members": ["spec::combination_operator", "spec::extension_kind", "spec::page_flags_match", "spec::page_information_fields", "spec::profile_length_matches", "spec::profiles_payload_fields", "spec::referred_header_fields", "spec::region_flags_match", "spec::retention_values_match", "spec::segment_header_fields", "spec::segment_type"],
+        "classification": "project-result-model",
+        "justification": "Bodies map encoded type/operator/extension values, bind parsed flags/retention/reference values and header extents to original bytes, and quantify every PageInformation/Profiles field or ID. src/segment_header.rs and src/segment_data.rs contracts promise these raw-field/length relations; profile_length_matches equates bytes to count rather than merely bounding a cursor.",
+        "ambiguity": "",
+        "caveats": "Some config/flag relations intentionally bind only part of output. Raw fields are not full codec validity, normative retention/profile semantics or independent wire approval."
+      },
+      {
+        "file": "specs/segments.rs",
+        "members": ["spec::be_u32_at", "spec::header_reference_count", "spec::header_references_start", "spec::header_retention_start", "spec::reference_value_at", "spec::reference_width", "spec::retention_bit"],
+        "classification": "proof-support",
+        "justification": "Bodies project big-endian words/variable-width references and low-first retention bits, choose one/two/four-byte reference width, and calculate count/retention/reference starts. src/segment_header.rs, src/segment_data.rs and enclosing field predicates use this decoding/offset vocabulary to state actual parser results.",
+        "ambiguity": "",
+        "caveats": "Helper purpose does not approve width thresholds, bit order or retention interpretation independently."
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::arithmetic_codec_valid", "spec::arithmetic_contexts_valid", "spec::arithmetic_integer_result", "spec::arithmetic_symbol_id_result", "spec::bitmap_bytes", "spec::bitmap_charge_effect", "spec::bitmap_contents_match", "spec::bitmap_refs_valid", "spec::bitmaps_valid", "spec::clipped_end", "spec::clipped_start", "spec::codebook_len", "spec::codebook_selects", "spec::codebook_valid", "spec::codec_valid", "spec::custom_oob_compatible", "spec::dictionary_config_safe", "spec::dictionary_state_valid", "spec::export_indices_valid", "spec::export_progress_measure", "spec::exported_contents_match", "spec::floor_half", "spec::four_way_choice_result", "spec::generic_template_matches", "spec::integer_contexts_valid", "spec::integer_field_slot", "spec::placement_batch_valid", "spec::placement_for_current", "spec::placement_overlap", "spec::placement_preflight_result", "spec::placement_within_extents", "spec::pow2", "spec::prepared_placement_valid", "spec::refinement_choice_result", "spec::refinement_template_matches", "spec::signed_byte", "spec::strip_log_valid", "spec::symbol_code_length_expected", "spec::symbol_code_length_valid", "spec::symbol_id_selects", "spec::table_bindings_valid", "spec::text_config_safe", "spec::text_huffman_choices_safe", "spec::text_initialization_allowed", "spec::text_placement_allowed", "spec::text_state_valid", "spec::two_bit_choice_result", "spec::valid_strip_size", "spec::work_charge_effect", "spec::work_units"],
-        "classification": "classification-pending",
-        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
-        "ambiguity": "Content/placement results, codec/store invariants, work policy and template/table dependencies need individual review; held aggregation/refinement fixture work is not attempted."
+        "members": ["spec::arithmetic_codec_valid", "spec::arithmetic_contexts_valid", "spec::bitmap_refs_valid", "spec::bitmaps_valid", "spec::codebook_valid", "spec::codec_valid", "spec::dictionary_state_valid", "spec::export_indices_valid", "spec::integer_contexts_valid", "spec::placement_batch_valid", "spec::placement_within_extents", "spec::prepared_placement_valid", "spec::symbol_code_length_valid", "spec::table_bindings_valid", "spec::text_state_valid", "spec::valid_strip_size"],
+        "classification": "representation-invariant",
+        "justification": "Bodies quantify decoder/bank/bitmap validity, constrain optional table slots, export indices and decoded counters, and bound prepared/batched source/destination rectangles. valid_strip_size and symbol_code_length_valid only restrict admissible sizes; the latter does not equate length to ceil-log2. src/symbol_text.rs uses these safe-state pre/postconditions without thereby promising symbol contents or placement coordinates.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/symbol_text.rs",
+        "members": ["spec::bitmap_charge_effect", "spec::text_initialization_allowed", "spec::text_placement_allowed", "spec::work_charge_effect"],
+        "classification": "project-policy",
+        "justification": "Bodies specify resource charge updates/frames even on limit rejection, checked requested bitmap dimensions/bytes, instance/work limits and signed cursor arithmetic admissibility. src/symbol_text.rs ResourceTracker/TextRegionState contracts use these project machine/resource policies; no standard mandates their budget or error timing.",
+        "ambiguity": "",
+        "caveats": "Exact project accounting effects are not observed capacity or whole-decoder resource guarantees; the held capacity/trust decision is unchanged."
+      },
+      {
+        "file": "specs/symbol_text.rs",
+        "members": ["spec::custom_oob_compatible", "spec::dictionary_config_safe", "spec::text_config_safe", "spec::text_huffman_choices_safe"],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies bind only selected Huffman/refinement flags, disallow reserved/colour combinations, require appropriate Huffman flag presence/strip size, constrain refinement-size choice and compare required/supplied OOB. src/symbol_text.rs parsing/choice contracts use these proposed config compatibility rules, not complete dictionary/text decoding.",
+        "ambiguity": "",
+        "caveats": "Partial config checks are not complete output fields or independent source/model/table/caller approval. Held encoded refinement/aggregation/custom-Huffman fixtures remain untouched."
+      },
+      {
+        "file": "specs/symbol_text.rs",
+        "members": ["spec::bitmap_contents_match", "spec::codebook_selects", "spec::exported_contents_match", "spec::symbol_id_selects"],
+        "classification": "project-result-model",
+        "justification": "Bodies equate width/height/stride/every packed byte, select owned/borrowed codebook entries or imported/new symbol IDs, and bind ordered exported output to each supplied index, including repetitions. src/symbol_text.rs select/clone/export contracts expose these actual content relations, not merely storage validity.",
+        "ambiguity": "",
+        "caveats": "Encoded export-run flags, full refinement/aggregation/rendering and physical capacity remain outside these helper results; normative interpretation is not approved."
+      },
+      {
+        "file": "specs/symbol_text.rs",
+        "members": ["spec::arithmetic_integer_result", "spec::arithmetic_symbol_id_result", "spec::four_way_choice_result", "spec::generic_template_matches", "spec::refinement_choice_result", "spec::refinement_template_matches", "spec::strip_log_valid", "spec::symbol_code_length_expected", "spec::two_bit_choice_result"],
+        "classification": "project-result-model",
+        "justification": "Bodies translate arithmetic integer/OOB/ID/errors to codec result enums, map encoded choices/templates to returned enums, and prescribe exact strip logs/ceil-log2 symbol length. src/symbol_text.rs helper/codec contracts bind actual returned values to these relations and arithmetic::decode_error.",
+        "ambiguity": "",
+        "caveats": "Table-choice enums and field-slot selection do not prove normative table data, caller field selection or full entropy streams; default template branches are only the stated project mapping."
+      },
+      {
+        "file": "specs/symbol_text.rs",
+        "members": ["spec::placement_for_current", "spec::placement_overlap", "spec::placement_preflight_result"],
+        "classification": "project-result-model",
+        "justification": "Bodies derive corner/transposition-aware placement coordinates from current strip state, clip overlap dimensions, and bind successful PreparedPlacement source/content/offsets/extents plus resource/error frames. src/symbol_text.rs placement/preflight contracts and production_symbol_current_placement_witness expose these actual helper results.",
+        "ambiguity": "",
+        "caveats": "Local placement/preflight is not full text rendering or encoded refinement/aggregation correctness; result.is_err branches do not promise every typed diagnostic."
+      },
+      {
+        "file": "specs/symbol_text.rs",
+        "members": ["spec::bitmap_bytes", "spec::clipped_end", "spec::clipped_start", "spec::codebook_len", "spec::export_progress_measure", "spec::floor_half", "spec::integer_field_slot", "spec::pow2", "spec::signed_byte", "spec::work_units"],
+        "classification": "proof-support",
+        "justification": "Bodies project tracker/codebook/field-bank values, supply signed/floor-half and clipped endpoint vocabulary, double powers and combine remaining work/index into an export decrease. src/symbol_text.rs contracts and shared/property proofs use these helpers to state content, placement and resource results; a measure/projection alone is not decoding.",
+        "ambiguity": ""
       }
     ]
   },

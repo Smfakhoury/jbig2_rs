@@ -897,7 +897,7 @@ def main():
             "## Source-only author navigation (not independent normative approval)", "",
             f"Purpose classification complete: **{report['model_audit_inventory']['classification_complete']}**.",
             f"Purpose counts: `{json.dumps(report['model_audit_inventory']['classification_counts'], sort_keys=True)}`.",
-            "Exact members, justifications, ambiguities and unchanged requirement links are in "
+            "Exact members, justifications, unresolved purpose ambiguities, scope caveats and unchanged requirement links are in "
             "`model_audit_inventory` in the accompanying JSON report.", "",
             "| Requirement | Standard | Clause/context | Basis | Scope | Evidence strength | Open gaps |",
             "|---|---|---|---|---|---|---|",

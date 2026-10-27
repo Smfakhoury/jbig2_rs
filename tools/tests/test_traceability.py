@@ -300,6 +300,25 @@ class TraceabilityTests(unittest.TestCase):
         family["ambiguity"] = "Purpose unresolved despite the separate caveat."
         self.assertFalse(checker.audit_inventory(self.root, self.ledger)["classification_complete"])
 
+    def test_unregistered_purpose_ambiguity_is_visible_without_requirement_credit(self):
+        self.write("specs/extra.rs", "verus! { pub open spec fn helper() -> bool { true } }")
+        self.classification_fixture()
+        for family in self.ledger["model_classifications"]["families"]:
+            family.update(classification="project-result-model", ambiguity="")
+            if family["file"] == "specs/extra.rs":
+                family["ambiguity"] = "Purpose unresolved: no caller distinguishes result from invariant."
+                family["caveats"] = "Independent normative review is also pending."
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertFalse(report["classification_complete"])
+        self.assertEqual(report["unresolved_declarations"], [{
+            "file": "specs/extra.rs", "kind": "spec", "name": "helper",
+            "ambiguity": "Purpose unresolved: no caller distinguishes result from invariant.",
+        }])
+        helper = report["unregistered_spec_functions"][0]
+        self.assertEqual(helper["requirements"], [])
+        self.assertEqual(helper["caveats"], "Independent normative review is also pending.")
+        self.assertFalse(helper["normative_approval"])
+
     def test_pending_classification_requires_visible_ambiguity_and_is_not_complete(self):
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertFalse(report["classification_complete"])
