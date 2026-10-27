@@ -11,7 +11,7 @@ import sys
 from pathlib import Path, PurePosixPath
 from urllib.parse import parse_qs, urlsplit
 
-from jsonschema import ValidationError
+from jsonschema import ValidationError, validate as validate_json
 
 from evidence import load_json, read_evidence
 from rust_source import items, parse, production_code, source_functions
@@ -20,6 +20,39 @@ from rust_tests import discover_tests as discover_cargo_tests, test_inventory
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = "jbig2_rs_production::"
+CLASSIFICATION_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "required": ["review", "registry_sha256", "project_source_sha256", "families"],
+    "properties": {
+        "review": {"const": "author-navigation-only-not-independent-normative-approval"},
+        "registry_sha256": {"$ref": "#/$defs/sha256"},
+        "project_source_sha256": {"$ref": "#/$defs/sha256"},
+        "families": {
+            "type": "array", "minItems": 1,
+            "items": {
+                "type": "object", "additionalProperties": False,
+                "required": ["file", "members", "classification", "justification", "ambiguity"],
+                "properties": {
+                    "file": {"type": "string", "pattern": r"^(specs|proofs)/.+\.rs$"},
+                    "members": {
+                        "type": "array", "minItems": 1, "uniqueItems": True,
+                        "items": {"type": "string", "pattern": r"^(spec|proof|macro)::[A-Za-z_][A-Za-z0-9_]*$"},
+                    },
+                    "classification": {
+                        "enum": ["project-result-model", "project-policy", "representation-invariant",
+                                 "proof-support", "candidate-standard-facing-model", "classification-pending"],
+                    },
+                    "justification": {"$ref": "#/$defs/nonempty"},
+                    "ambiguity": {"type": "string"},
+                },
+                "allOf": [{
+                    "if": {"properties": {"classification": {"const": "classification-pending"}}},
+                    "then": {"properties": {"ambiguity": {"$ref": "#/$defs/nonempty"}}},
+                }],
+            },
+        },
+    },
+}
 
 
 def classification_evidence(root, ledger):
@@ -73,12 +106,21 @@ def audit_declarations(root, ledger):
 
 
 def audit_classifications(root, ledger, declarations):
-    authored = ledger["model_classifications"]
+    authored = ledger.get("model_classifications")
+    # Keep unrelated source-bound receipts over the shared evidence schema intact.
+    validate_json(authored, {
+        "$defs": load_json(Path(__file__).with_name("evidence.schema.json"))["$defs"],
+        **CLASSIFICATION_SCHEMA,
+    })
     expected = classification_evidence(root, ledger)
     if any(authored[field] != value for field, value in expected.items()):
         raise ValueError("stale navigation classification source/binding evidence")
     classifications = {}
     for family in authored["families"]:
+        if not family["justification"].strip() or (
+            family["classification"] == "classification-pending" and not family["ambiguity"].strip()
+        ):
+            raise ValueError("navigation classification needs purpose evidence or unresolved ambiguity")
         for member in family["members"]:
             kind, name = member.split("::")
             key = (family["file"], kind, name)

@@ -277,18 +277,18 @@ class TraceabilityTests(unittest.TestCase):
         authored = self.ledger["model_classifications"]
         authored["families"][0]["ambiguity"] = ""
         with self.assertRaises(ValidationError):
-            validate(self.ledger, "traceability")
+            checker.audit_inventory(self.root, self.ledger)
         authored["families"][0]["ambiguity"] = "Unresolved."
         authored["review"] = "independently-approved"
         with self.assertRaises(ValidationError):
-            validate(self.ledger, "traceability")
+            checker.audit_inventory(self.root, self.ledger)
 
     def test_classification_membership_rejects_missing_unknown_duplicate_and_wrong_kind(self):
         original = copy.deepcopy(self.ledger["model_classifications"]["families"])
         for members in ([], ["spec::unknown"], ["proof::identity"], ["spec::identity"] * 2):
             self.ledger["model_classifications"]["families"] = copy.deepcopy(original)
             self.ledger["model_classifications"]["families"][0]["members"] = members
-            with self.subTest(members=members), self.assertRaises(ValueError):
+            with self.subTest(members=members), self.assertRaises((ValueError, ValidationError)):
                 checker.audit_inventory(self.root, self.ledger)
         self.ledger["model_classifications"]["families"] = original * 2
         with self.assertRaisesRegex(ValueError, "duplicate navigation"):
