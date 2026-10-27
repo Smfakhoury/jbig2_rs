@@ -91,6 +91,9 @@ python3 -B tools/check_traceability.py \
 Do not take the expected pin from an untrusted replacement packet. Changes to
 bound inputs, selected scope or asserted approval fields fail validation.
 Regenerating a packet does not renew a review or create an approval.
+Creation and report outputs stay under the local `target/` directory and cannot
+alias input evidence. Hashes identify exact checkout bytes; different line
+endings are different inputs, not silently normalized source identities.
 
 The generated inventory preserves original roles and exact ledger locators.
 Spec definitions whose classification has not been reviewed remain explicitly

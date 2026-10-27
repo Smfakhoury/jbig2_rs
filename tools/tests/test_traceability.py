@@ -318,7 +318,8 @@ class TraceabilityTests(unittest.TestCase):
         packet, relative = self.packet_fixture()
         stored = self.root / "packet.json"
         stored.write_text(json.dumps(packet))
-        output = self.root / "result.json"
+        output = self.root / "target/result.json"
+        output.parent.mkdir()
         output.write_text('{"status":"passed"}')
         output.with_suffix(".md").write_text("stale success")
         with patch.object(checker, "ROOT", self.root), patch.object(
@@ -331,6 +332,24 @@ class TraceabilityTests(unittest.TestCase):
         self.assertFalse(output.exists())
         self.assertFalse(output.with_suffix(".md").exists())
         self.assertTrue(stored.is_file())
+
+    def test_audit_output_aliases_cannot_delete_input_or_snapshot_files(self):
+        packet, relative = self.packet_fixture()
+        stored = self.root / "target/packet.md"
+        stored.parent.mkdir()
+        original = json.dumps(packet)
+        stored.write_text(original)
+        for output in (stored, stored.with_suffix(".json"), self.root / relative, self.root / "outside.json"):
+            with self.subTest(output=output), patch.object(checker, "ROOT", self.root), patch.object(
+                sys, "argv", [
+                    "checker", "--ledger", str(self.root / relative), "--output", str(output),
+                    "--check-audit-packet", str(stored), "--expected-audit-sha256", packet["packet_sha256"],
+                ],
+            ), redirect_stderr(StringIO()), self.assertRaises(SystemExit) as stopped:
+                checker.main()
+            self.assertEqual(stopped.exception.code, 2)
+            self.assertEqual(stored.read_text(), original)
+            self.assertEqual(json.loads((self.root / relative).read_text()), self.ledger)
 
     def test_test_inventory_respects_test_and_ghost_scopes(self):
         self.write("tests/hidden.rs", "#![cfg(verus_keep_ghost)]\n#[test] fn hidden() {}")

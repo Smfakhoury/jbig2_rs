@@ -705,11 +705,23 @@ def main():
         parser.error("packet validation requires a separately supplied --expected-audit-sha256")
     if bool(arguments.audit_packet) != bool(arguments.audit_requirement):
         parser.error("packet creation requires explicit --audit-requirement selections")
-    if arguments.audit_packet and (
-        not arguments.audit_packet.resolve().is_relative_to((ROOT / "target").resolve())
-        or arguments.audit_packet.resolve() == arguments.output.resolve()
-    ):
-        parser.error("create audit packets separately from reports under target/")
+    output_paths = {arguments.output.resolve(), arguments.output.with_suffix(".md").resolve()}
+    inputs = [arguments.ledger, arguments.verus_json, arguments.standard_pdf, arguments.check_audit_packet]
+    inputs.extend(
+        Path(selection.split("=", 1)[1]) for selection in arguments.standard_document
+        if "=" in selection
+    )
+    if any(path is not None and path.resolve() in output_paths for path in inputs):
+        parser.error("reports must not overwrite input documents or evidence")
+    if arguments.audit_packet or arguments.check_audit_packet:
+        target = ROOT / "target"
+        if target.is_symlink() or not all(path.is_relative_to(target.resolve()) for path in output_paths):
+            parser.error("audit reports must stay under the local target directory")
+        if arguments.audit_packet and (
+            not arguments.audit_packet.resolve().is_relative_to(target.resolve())
+            or arguments.audit_packet.resolve() in output_paths
+        ):
+            parser.error("create audit packets separately from reports under target/")
     if (arguments.require_complete or arguments.require_reviewed_decomposition) and (
         not arguments.verus_json or not arguments.discover_tests
     ):
