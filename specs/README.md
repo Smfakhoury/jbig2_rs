@@ -21,6 +21,10 @@ exhaustive.
 
 ### Free official specification downloads
 
+**Why T.6?** JBIG2 can use MMR (Group 4) compression for bitmap data.
+T.6 defines that coding method; T.88 defines how it is used within JBIG2.
+We need both to audit the MMR path, not to implement a fax application.
+
 | Reference | Free download from ITU | What to open |
 |---|---|---|
 | T.88 (08/2018), edition 2.0: JBIG2 | [Download the ZIP containing the specification PDF](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items) | `ITU-T_T_88__08_2018.pdf` inside the ZIP |
