@@ -39,6 +39,10 @@ ledger page references are inherited consultation locators; printed page
 numbers and a viewer's PDF page index are not interchangeable. Do not invent
 deep links to unverified pages.
 
+For T.88, the [official English package](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items)
+contains `ITU-T_T_88__08_2018.pdf`. Open that document for review; sample
+software and conformance assets have separate use and redistribution limits.
+
 The current policy prohibits redistribution and third-party uploads. Obtain
 documents directly or through an approved licensed channel. Do not commit PDFs
 or send them to a cloud agent merely because an official download is free.
@@ -75,8 +79,10 @@ and strong/weaker controls do not remove this review obligation.
 The generated traceability report includes an authored, source-only purpose
 inventory. The requirements ledger's `model_classifications` families own exact
 members, justifications and unresolved ambiguity, separately from normative
-requirement links. The current bounded authoring slice covers reader/bitmap
-models and selected support; other declarations remain explicitly pending.
+requirement links. Authored families now cover the bounded declared source
+surface; consult the generated report for current purpose counts and any
+unresolved entries. New or ambiguous declarations cannot silently inherit a
+completed classification.
 Original roles/locators and unregistered helper status are preserved. Lexical
 implementation-constant references are dependencies to review, not normative
 ground truth. Neither these navigation labels nor structural checks approve a

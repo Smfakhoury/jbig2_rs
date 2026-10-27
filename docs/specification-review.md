@@ -114,15 +114,19 @@ particular, a candidate is not independently approved normative evidence.
 membership, not a completed semantic review. Every label carries the explicit
 `author-navigation-only-not-independent-normative-approval` review marker.
 
-The authored slice reads reader/bitmap bodies, their production callers and
-selected support: numeric bit results versus typed error policy; bitmap content
-and frame results versus storage invariants, machine/resource guards and
-projection/addressing vocabulary. `prefix_copy_result` is a result, whereas
-`black_fill_prefix` is internal loop support. Other families remain pending
-because individual body/dependency/use-site review is unfinished, not because
-their names prove their purpose. This is an honest partial classification.
-The JSON report lists every unresolved declaration and its reason and cannot
-report classification complete while any remain.
+Authored families inspect bodies, dependencies and use sites across arithmetic,
+MMR/Huffman, document/headers, generic regions, symbols/text, decode, halftone
+and reader/bitmap support. These are author navigation judgments, not independent
+normative reviews. For example, numeric bit results differ from typed error
+policy; bitmap content/frame results differ from storage invariants and
+projection/addressing vocabulary. `prefix_copy_result` is an output relation,
+whereas `black_fill_prefix` is internal loop support.
+
+The JSON report lists unresolved **purpose** ambiguity even when an enum has
+been selected. Such ambiguity blocks classification completion. Separate
+`caveats` describe partial scope, multiple uses or unreviewed normative fidelity;
+they never grant approval, but do not by themselves make a known source purpose
+unknown. Counts and completion come from the current report, not this guide.
 
 Original roles, requirement IDs and locators are preserved. Unregistered
 helpers have empty requirement links; recording them invents no normative
