@@ -18,6 +18,7 @@ approve them. Start reading at the [model guide](../specs/README.md).
 | Gate | State |
 |---|---|
 | Project source/code-only review and navigation | Available |
+| Authenticated human source-snapshot disposition | Checker available; owner-controlled authority not configured |
 | Exact standard identities and official acquisition links | Recorded in [source provenance](../validation/source-provenance.json) |
 | Permission to redistribute PDFs or upload them to agents | Not granted by this workflow; existing prohibitions remain |
 | Named human adjudicator for normative findings | Not yet assigned |
@@ -94,6 +95,62 @@ Regenerating a packet does not renew a review or create an approval.
 Creation and report outputs stay under the local `target/` directory and cannot
 alias input evidence. Hashes identify exact checkout bytes; different line
 endings are different inputs, not silently normalized source identities.
+
+### Authenticate an optional human source-snapshot disposition
+
+The same command can authenticate an explicit human review of that exact source
+snapshot. This is **not normative approval**, permission to process standards,
+an independent dependency-closure audit, or the normative-only model freeze
+required below. It does not modify the unreviewed packet or provisional ledger.
+Ordinary approval of a code PR is not implicitly a snapshot disposition.
+
+The responsible owner must first record an agreed human's numeric GitHub user ID
+under `policy.source_review_authority` in
+[source provenance](../validation/source-provenance.json), through the normal
+reviewed default-branch process. The optional authority is absent today, so the
+check fails closed. Its disabled shape is:
+
+```json
+{"enabled": false, "human_user_ids": []}
+```
+
+Activation requires an explicit `enabled: true` and a nonempty, duplicate-free
+list of agreed human user IDs. This source-review authority neither changes nor
+overrides any source-access, upload or redistribution restriction.
+
+The authorized human submits an `APPROVED` GitHub review whose entire body is
+the following single line, using the separately supplied packet pin:
+
+```text
+JBIG2-SOURCE-REVIEW-SHA256: COORDINATOR_SUPPLIED_SHA256
+```
+
+Then run from a clean, committed checkout of the exact open PR head:
+
+```sh
+python3 -B tools/check_traceability.py \
+  --check-audit-packet target/traceability/bytein-audit-packet.json \
+  --expected-audit-sha256 COORDINATOR_SUPPLIED_SHA256 \
+  --source-review-pr PR_NUMBER --source-review-id REVIEW_ID \
+  --output target/traceability/source-disposition.json
+```
+
+This optional operation needs authenticated read access through `gh`; normal
+packet validation and Cargo verification do not. It reads the configured
+default branch and exact current base revision from GitHub, not authority
+assertions supplied by the packet or candidate branch. The candidate must
+target that current default-branch revision within this repository. Bot reviews,
+PR-author self-review, wrong heads/pins, dismissed or superseded decisions,
+ambiguous submission ordering and incomplete review-history retrieval fail.
+The history bound is 2,000 reviews; exceeding it fails rather than accepting
+a truncated history. Source changes require a fresh packet and explicit review.
+
+The JSON and Markdown outputs label this as a source-snapshot disposition only;
+normative approval and document-processing authorization remain false. This is
+a point-in-time read-only check, not a timeless approval token. It establishes
+the recorded account's disposition, not all contributors' independence or
+semantic correctness. Normative review still requires the separate role,
+authorization, source-review and dependency-closure gates below.
 
 ## Source-only navigation classification
 

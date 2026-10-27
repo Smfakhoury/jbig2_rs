@@ -1,3 +1,4 @@
+import base64
 import copy
 from contextlib import redirect_stderr, redirect_stdout
 import hashlib
@@ -21,6 +22,208 @@ from check_traceability import check, enforce_completion, local_document_checks,
 from evidence import load_json, validate
 from rust_tests import test_inventory as inventory_tests
 import check_traceability as checker
+
+
+class SourceReviewDispositionTests(unittest.TestCase):
+    def setUp(self):
+        self.revision = "a" * 40
+        self.pin = "c" * 64
+        self.authority = {"enabled": True, "human_user_ids": [22]}
+        self.pull = {
+            "number": 4, "state": "open", "user": {"id": 11},
+            "base": {"ref": "main", "sha": "b" * 40, "repo": {"full_name": checker.REVIEW_REPOSITORY}},
+            "head": {"sha": self.revision, "repo": {"full_name": checker.REVIEW_REPOSITORY}},
+        }
+        self.review = {
+            "id": 41, "state": "APPROVED", "commit_id": self.revision,
+            "user": {"id": 22, "type": "User"},
+            "body": f"JBIG2-SOURCE-REVIEW-SHA256: {self.pin}",
+            "submitted_at": "2026-10-27T18:00:00Z",
+        }
+        self.responses = {
+            "": {"full_name": checker.REVIEW_REPOSITORY, "default_branch": "main"},
+            "git/ref/heads/main": {
+                "ref": "refs/heads/main", "object": {"sha": "b" * 40, "type": "commit"},
+            },
+            "pulls/4": self.pull,
+            "pulls/4/reviews?per_page=100&page=1": [self.review],
+        }
+        self.calls = []
+
+    def fetch(self, endpoint):
+        self.calls.append(endpoint)
+        if endpoint == f"contents/validation/source-provenance.json?ref={'b' * 40}":
+            return {
+                "type": "file", "encoding": "base64",
+                "content": base64.b64encode(json.dumps({
+                    "policy": {"source_review_authority": self.authority},
+                }).encode("utf-8")).decode("ascii"),
+            }
+        return copy.deepcopy(self.responses[endpoint])
+
+    def validate(self, **overrides):
+        return checker.source_review_disposition(
+            **({"pr_number": 4, "review_id": 41, "revision": self.revision,
+                "packet_pin": self.pin, "fetch": self.fetch} | overrides),
+        )
+
+    def test_authenticates_only_source_disposition_from_default_branch_authority(self):
+        report = self.validate()
+        self.assertEqual(report["status"], "authenticated_source_snapshot_disposition")
+        self.assertEqual(report["authority_revision"], "b" * 40)
+        self.assertEqual(report["human_user_id"], 22)
+        self.assertFalse(report["normative_approval"])
+        self.assertFalse(report["document_processing_authorized"])
+        self.assertIn(f"contents/validation/source-provenance.json?ref={'b' * 40}", self.calls)
+        self.assertNotIn(f"contents/validation/source-provenance.json?ref={self.revision}", self.calls)
+
+    def test_authority_is_absent_disabled_or_malformed_by_default(self):
+        for authority in (
+            None, {}, {"enabled": False, "human_user_ids": [22]},
+            {"enabled": True, "human_user_ids": []},
+            {"enabled": True, "human_user_ids": [22, 22]},
+            {"enabled": True, "human_user_ids": ["22"]},
+            {"enabled": True, "human_user_ids": [True]},
+            {"enabled": True, "human_user_ids": [0]},
+            {"enabled": True, "human_user_ids": [22], "normative_approval": True},
+        ):
+            with self.subTest(authority=authority):
+                self.authority = authority
+                with self.assertRaisesRegex(ValueError, "authority is not configured"):
+                    self.validate()
+
+    def test_rejects_bad_explicit_ids_and_source_pins_before_network(self):
+        for change in (
+            {"pr_number": 0}, {"pr_number": True}, {"review_id": -1},
+            {"revision": None}, {"revision": "A" * 40},
+            {"packet_pin": "c" * 63}, {"packet_pin": True},
+        ):
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "pinned source"):
+                self.validate(**change)
+        self.assertEqual(self.calls, [])
+
+    def test_rejects_other_pr_branch_repository_or_revision(self):
+        original = copy.deepcopy(self.pull)
+        for path, replacement in (
+            (("state",), "closed"), (("number",), 5),
+            (("base", "ref"), "topic"), (("base", "sha"), "d" * 40),
+            (("base", "repo", "full_name"), "other/repository"),
+            (("head", "repo", "full_name"), "other/repository"),
+            (("head", "sha"), "d" * 40),
+        ):
+            self.pull.clear()
+            self.pull.update(copy.deepcopy(original))
+            target = self.pull
+            for name in path[:-1]:
+                target = target[name]
+            target[path[-1]] = replacement
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, "identity differs"):
+                self.validate()
+
+    def test_current_default_branch_revocation_cannot_use_an_old_base(self):
+        self.responses["git/ref/heads/main"]["object"]["sha"] = "d" * 40
+        with self.assertRaisesRegex(ValueError, "identity differs"):
+            self.validate()
+        self.assertFalse(any(path.startswith("contents/") for path in self.calls))
+
+    def test_rejects_nonhuman_self_authored_stale_or_nonexplicit_dispositions(self):
+        original = copy.deepcopy(self.review)
+        for change in (
+            {"state": "COMMENTED"}, {"state": "DISMISSED"}, {"state": "CHANGES_REQUESTED"},
+            {"commit_id": "d" * 40}, {"user": {"id": 23, "type": "User"}},
+            {"user": {"id": 22, "type": "Bot"}}, {"user": {"id": True, "type": "User"}},
+            {"body": None}, {"body": f"> {original['body']}"},
+            {"body": f"Not a disposition:\n{original['body']}"},
+            {"body": f"```\n{original['body']}\n```"}, {"body": original["body"].replace("c", "d")},
+        ):
+            self.review.clear()
+            self.review.update(copy.deepcopy(original) | change)
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, "stale, unauthorized"):
+                self.validate()
+        self.review.clear()
+        self.review.update(original)
+        self.pull["user"]["id"] = 22
+        with self.assertRaisesRegex(ValueError, "self-authored"):
+            self.validate()
+
+    def test_submission_time_not_creation_id_controls_superseding_reviews(self):
+        for state in ("APPROVED", "CHANGES_REQUESTED", "DISMISSED"):
+            later = copy.deepcopy(self.review) | {
+                "id": 40, "state": state, "submitted_at": "2026-10-27T18:00:01Z",
+            }
+            self.responses["pulls/4/reviews?per_page=100&page=1"] = [later, self.review]
+            with self.subTest(state=state), self.assertRaisesRegex(ValueError, "superseded"):
+                self.validate()
+        later["submitted_at"] = self.review["submitted_at"]
+        with self.assertRaisesRegex(ValueError, "superseded"):
+            self.validate()
+
+    def test_old_decisions_and_new_comments_do_not_supersede_explicit_approval(self):
+        self.responses["pulls/4/reviews?per_page=100&page=1"] += [
+            copy.deepcopy(self.review) | {
+                "id": 42, "state": "CHANGES_REQUESTED", "submitted_at": "2026-10-27T17:59:59Z",
+            },
+            copy.deepcopy(self.review) | {
+                "id": 43, "state": "COMMENTED", "submitted_at": "2026-10-27T18:01:00Z",
+            },
+        ]
+        self.assertEqual(self.validate()["review_id"], 41)
+
+    def test_rejects_missing_duplicate_or_malformed_review_evidence(self):
+        for rows in (
+            [], [self.review, self.review], [self.review | {"id": True}],
+            [self.review | {"submitted_at": None}],
+            [self.review | {"submitted_at": "2026-02-31T18:00:00Z"}],
+            [self.review | {"submitted_at": "2026-10-27T18:00:00"}],
+        ):
+            with self.subTest(rows=rows), self.assertRaises(ValueError):
+                self.responses["pulls/4/reviews?per_page=100&page=1"] = rows
+                self.validate()
+
+    def test_reads_paginated_history_and_fails_closed_at_bound(self):
+        first = [self.review | {"id": index, "state": "COMMENTED"} for index in range(100, 200)]
+        self.responses["pulls/4/reviews?per_page=100&page=1"] = first
+        self.responses["pulls/4/reviews?per_page=100&page=2"] = [self.review]
+        self.assertEqual(self.validate()["review_id"], 41)
+        self.assertIn("pulls/4/reviews?per_page=100&page=2", self.calls)
+        for page in range(1, 21):
+            self.responses[f"pulls/4/reviews?per_page=100&page={page}"] = [
+                self.review | {"id": 100 + (page - 1) * 100 + index, "state": "COMMENTED"}
+                for index in range(100)
+            ]
+        self.responses["pulls/4/reviews?per_page=100&page=20"][-1] = self.review
+        self.responses["pulls/4/reviews?per_page=100&page=21"] = []
+        self.assertEqual(self.validate()["review_id"], 41)
+        self.responses["pulls/4/reviews?per_page=100&page=21"] = [self.review | {"id": 3000}]
+        with self.assertRaisesRegex(ValueError, "exceeds the supported bound"):
+            self.validate()
+
+    def test_github_reads_are_utf8_strict_json_noninteractive_and_bounded(self):
+        for document in ('{"duplicate":1,"duplicate":2}', '{"invalid":NaN}'):
+            with patch.object(checker.subprocess, "check_output", return_value=document):
+                with self.assertRaises(ValueError):
+                    checker.github_review_json("pulls/4")
+        with patch.object(checker.subprocess, "check_output", return_value='{"value":"é"}') as process:
+            self.assertEqual(checker.github_review_json(""), {"value": "é"})
+        self.assertEqual(process.call_args.kwargs["encoding"], "utf-8")
+        self.assertEqual(process.call_args.kwargs["timeout"], 60)
+        self.assertEqual(process.call_args.kwargs["stdin"], checker.subprocess.DEVNULL)
+        self.assertEqual(process.call_args.args[0][-1], f"repos/{checker.REVIEW_REPOSITORY}")
+
+    def test_base_authority_transport_and_embedded_json_are_strict(self):
+        original_fetch = self.fetch
+        for content in (
+            "!invalid base64!",
+            base64.b64encode(b'{"policy":{},"policy":{}}').decode("ascii"),
+            base64.b64encode(b'{"policy":NaN}').decode("ascii"),
+        ):
+            def fetch(endpoint):
+                result = original_fetch(endpoint)
+                if endpoint.startswith("contents/"):
+                    result["content"] = content
+                return result
+            with self.subTest(content=content), self.assertRaises(ValueError):
+                self.validate(fetch=fetch)
 
 
 class TraceabilityTests(unittest.TestCase):
@@ -718,6 +921,9 @@ class TraceabilityTests(unittest.TestCase):
             ["--check-audit-packet", "packet"],
             ["--expected-audit-sha256", "a" * 64],
             ["--audit-packet", "packet", "--check-audit-packet", "other"],
+            ["--source-review-pr", "4"],
+            ["--source-review-id", "41"],
+            ["--source-review-pr", "4", "--source-review-id", "41"],
         ):
             with self.subTest(options=options), patch.object(
                 sys, "argv", ["checker", "--output", str(self.root / "result.json"), *options],
@@ -743,6 +949,68 @@ class TraceabilityTests(unittest.TestCase):
         self.assertFalse(output.exists())
         self.assertFalse(output.with_suffix(".md").exists())
         self.assertTrue(stored.is_file())
+
+    def test_source_disposition_cli_requires_valid_packet_clean_head_and_live_approval(self):
+        for outcome in (
+            "accepted", "dirty", "untracked_source", "unauthorized", "api_failure", "timeout", "wrong_pin",
+        ):
+            with self.subTest(outcome=outcome):
+                packet, relative = self.packet_fixture()
+                stored = self.root / "target/packet.json"
+                stored.parent.mkdir(exist_ok=True)
+                stored.write_text(json.dumps(packet), encoding="utf-8")
+                output = self.root / "target/result.json"
+                output.write_text('{"status":"stale success"}', encoding="utf-8")
+                output.with_suffix(".md").write_text("stale success", encoding="utf-8")
+                pin = "f" * 64 if outcome == "wrong_pin" else packet["packet_sha256"]
+                disposition = {
+                    "status": "authenticated_source_snapshot_disposition",
+                    "review_id": 41, "human_user_id": 22,
+                    "normative_approval": False, "document_processing_authorized": False,
+                }
+                failures = {
+                    "unauthorized": ValueError("base-revision human authority is not configured"),
+                    "api_failure": checker.subprocess.CalledProcessError(1, ["gh", "api"]),
+                    "timeout": checker.subprocess.TimeoutExpired(["gh", "api"], 60),
+                }
+
+                def git(command, **kwargs):
+                    if command == ["git", "rev-parse", "HEAD"]:
+                        return SimpleNamespace(stdout="a" * 40 + "\n")
+                    if command[:2] == ["git", "ls-files"]:
+                        self.assertEqual(command, [
+                            "git", "ls-files", "--error-unmatch", "--", *packet["source_bindings"],
+                        ])
+                        if outcome == "untracked_source":
+                            raise checker.subprocess.CalledProcessError(1, command)
+                        return SimpleNamespace(stdout="")
+                    self.assertEqual(command, ["git", "status", "--porcelain", "--untracked-files=all"])
+                    return SimpleNamespace(stdout=" M source.rs\n" if outcome == "dirty" else "")
+
+                with patch.object(checker, "ROOT", self.root), patch.object(
+                    sys, "argv", [
+                        "checker", "--ledger", str(self.root / relative), "--output", str(output),
+                        "--check-audit-packet", str(stored), "--expected-audit-sha256", pin,
+                        "--source-review-pr", "4", "--source-review-id", "41",
+                    ],
+                ), patch.object(checker.subprocess, "run", side_effect=git), patch.object(
+                    checker, "source_review_disposition", return_value=disposition,
+                    side_effect=failures.get(outcome),
+                ) as gate, redirect_stderr(StringIO()), redirect_stdout(StringIO()):
+                    self.assertEqual(checker.main(), 0 if outcome == "accepted" else 1)
+                if outcome == "accepted":
+                    report = load_json(output)
+                    self.assertTrue(report["audit_packet_identity_checked"])
+                    self.assertEqual(report["source_review_disposition"], disposition)
+                    self.assertIn("Not normative approval", output.with_suffix(".md").read_text())
+                    gate.assert_called_once_with(4, 41, "a" * 40, packet["packet_sha256"])
+                else:
+                    self.assertFalse(output.exists())
+                    self.assertFalse(output.with_suffix(".md").exists())
+                    if outcome in {"dirty", "untracked_source", "wrong_pin"}:
+                        gate.assert_not_called()
+                self.assertEqual(load_json(stored)["state"], "unreviewed")
+                self.assertFalse(load_json(stored)["normative_approval"])
 
     def test_audit_output_aliases_cannot_delete_input_or_snapshot_files(self):
         packet, relative = self.packet_fixture()
