@@ -179,6 +179,10 @@ demonstrated may the provisional raw source bindings and source-purpose digest
 be refreshed. This does not renew reviews, freeze a normative model or change
 any selected requirement's provisional status.
 
+Preserve token boundaries, literal whitespace, doc comments and every test/proof
+cfg branch in that comparison. A comment masker that also removes strings,
+test-only code or doctest-bearing comments cannot establish this equivalence.
+
 Generate the inventory without providing any standard document:
 
 ```sh
