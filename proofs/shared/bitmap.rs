@@ -47,10 +47,6 @@ pub(super) proof fn distinct_row_tail(row: int, column: int, current: int, strid
 {
     vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(stride, row, 1);
     vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(stride, current, 1);
-    vstd::arithmetic::mul::lemma_mul_is_commutative(row, stride);
-    vstd::arithmetic::mul::lemma_mul_is_commutative(row + 1, stride);
-    vstd::arithmetic::mul::lemma_mul_is_commutative(current, stride);
-    vstd::arithmetic::mul::lemma_mul_is_commutative(current + 1, stride);
     if row < current {
         vstd::arithmetic::mul::lemma_mul_inequality(row + 1, current, stride);
     } else if row > current {
