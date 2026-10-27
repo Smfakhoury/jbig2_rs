@@ -200,6 +200,141 @@ pub(super) open spec fn line_lengths_valid(lines: Seq<super::HuffmanLine>) -> bo
         lines[index].range_len <= 32
 }
 
+pub(super) open spec fn is_raw(source: super::HuffmanLines) -> bool {
+    source is Borrowed
+}
+
+pub(super) open spec fn raw_lines(source: super::HuffmanLines) -> Seq<super::HuffmanLine> {
+    match source {
+        super::HuffmanLines::Borrowed(lines) => lines@,
+        _ => Seq::empty(),
+    }
+}
+
+// Select original indices, not the constructor's histogram or sorted storage.
+pub(super) open spec fn bucket(
+    lines: Seq<super::HuffmanLine>, length: nat, scanned: nat,
+) -> Seq<u32>
+    recommends scanned <= lines.len(),
+    decreases scanned,
+{
+    if scanned == 0 {
+        Seq::empty()
+    } else {
+        let earlier = bucket(lines, length, (scanned - 1) as nat);
+        if length != 0 && lines[scanned - 1].prefix_len == length {
+            earlier.push((scanned - 1) as u32)
+        } else {
+            earlier
+        }
+    }
+}
+
+pub(super) open spec fn ordered_before(
+    lines: Seq<super::HuffmanLine>, length: nat,
+) -> Seq<u32>
+    decreases length,
+{
+    if length <= 1 {
+        Seq::empty()
+    } else {
+        ordered_before(lines, (length - 1) as nat)
+            + bucket(lines, (length - 1) as nat, lines.len())
+    }
+}
+
+pub(super) open spec fn first_prefix(
+    lines: Seq<super::HuffmanLine>, length: nat,
+) -> Option<super::WideCode>
+    decreases length,
+{
+    if length == 0 {
+        Some(super::WideCode { limbs: [0, 0, 0, 0] })
+    } else {
+        match first_prefix(lines, (length - 1) as nat) {
+            Some(previous) => {
+                let count = bucket(lines, (length - 1) as nat, lines.len()).len();
+                if count <= u32::MAX {
+                    canonical_first_code(previous, count as u32)
+                } else {
+                    None
+                }
+            },
+            None => None,
+        }
+    }
+}
+
+pub(super) open spec fn histogram(
+    lines: Seq<super::HuffmanLine>, counts: Seq<u32>, scanned: nat,
+) -> bool {
+    scanned <= lines.len() && counts.len() == 256
+        && forall|length: int| 0 <= length < 256 ==>
+            counts[length] == bucket(lines, length as nat, scanned).len()
+}
+
+pub(super) open spec fn assignment_prefix(
+    lines: Seq<super::HuffmanLine>,
+    codes: Seq<super::WideCode>, starts: Seq<u32>, order: Seq<u32>, next: nat,
+) -> bool {
+    codes.len() == 256 && starts.len() == 256 && 1 <= next <= 256
+        && codes[0].limbs@ == seq![0u64, 0u64, 0u64, 0u64]
+        && order == ordered_before(lines, next)
+        && forall|length: int| 1 <= length < next ==>
+            #[trigger] first_prefix(lines, length as nat) == Some(codes[length])
+            && (bucket(lines, length as nat, lines.len()).len() > 0 ==>
+                starts[length] == ordered_before(lines, length as nat).len()
+                && canonical_range_fits(
+                    codes[length],
+                    bucket(lines, length as nat, lines.len()).len() as u32,
+                    length as usize,
+                ))
+}
+
+pub(crate) closed spec fn assignment_contents(
+    lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
+) -> bool {
+    table.lines@ == lines
+        && histogram(lines, table.length_count@, lines.len())
+        && 1 <= table.max_prefix_len <= 255
+        && table.length_count@[table.max_prefix_len as int] > 0
+        && (forall|length: int| table.max_prefix_len < length < 256 ==>
+            table.length_count@[length] == 0)
+        && table.ordered_lines@.len()
+            == ordered_before(lines, table.max_prefix_len as nat + 1).len()
+}
+
+pub(crate) closed spec fn assignment_codes(
+    lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
+) -> bool {
+    table.first_code@[0].limbs@ == seq![0u64, 0u64, 0u64, 0u64]
+        && forall|length: int| 1 <= length <= table.max_prefix_len ==>
+            #[trigger] first_prefix(lines, length as nat) == Some(table.first_code@[length])
+            && (table.length_count@[length] > 0 ==>
+                canonical_range_fits(table.first_code@[length], table.length_count@[length], length as usize))
+}
+
+pub(crate) closed spec fn assignment_starts(
+    lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
+) -> bool {
+    forall|length: int| 1 <= length <= table.max_prefix_len
+        && table.length_count@[length] > 0 ==>
+            table.first_line@[length] == ordered_before(lines, length as nat).len()
+}
+
+pub(crate) closed spec fn assignment_order(
+    lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
+) -> bool {
+    table.ordered_lines@ == ordered_before(lines, table.max_prefix_len as nat + 1)
+}
+
+pub(crate) open spec fn canonical_assignment(
+    lines: Seq<super::HuffmanLine>, table: &super::HuffmanTable,
+) -> bool {
+    assignment_contents(lines, table) && assignment_codes(lines, table)
+        && assignment_starts(lines, table) && assignment_order(lines, table)
+}
+
 pub(crate) closed spec fn table_has_oob(table: &super::HuffmanTable) -> bool {
     exists|index: int| 0 <= index < table.lines@.len()
         && table.lines@[index].kind == super::LineKind::OutOfBand

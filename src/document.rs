@@ -1400,7 +1400,10 @@ struct PageState {
 }
 
 impl PageState {
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out.info == info, out.last_stripe == None, !out.ended,
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     const fn new(info: PageInformation) -> Self {
         Self {
             info,
@@ -1410,6 +1413,13 @@ impl PageState {
     }
 
     #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out == document_spec::stripe_result(old(self).info, old(self).last_stripe, row),
+            final(self).info == old(self).info,
+            final(self).ended == old(self).ended,
+            final(self).last_stripe == if out is Ok { Some(row) } else { old(self).last_stripe },
+    ))]
     fn add_stripe(&mut self, row: u32) -> Result<(), DecodeError> {
         if !self.info.striped {
             return Err(MalformedError::InvalidStripeEndRow(row).into());
@@ -1431,6 +1441,15 @@ impl PageState {
     }
 
     #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            out == document_spec::page_finish_result(
+                old(self).info.height, old(self).last_stripe, old(self).ended,
+            ),
+            final(self).info == old(self).info,
+            final(self).last_stripe == old(self).last_stripe,
+            final(self).ended == (old(self).ended || out is Ok),
+    ))]
     fn finish(&mut self) -> Result<(), DecodeError> {
         if self.ended {
             return Err(MalformedError::DuplicatePageBoundary {
@@ -1447,6 +1466,19 @@ impl PageState {
     }
 
     #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            match out {
+                Ok(page) => document_spec::public_page_fields(self.info, number, page),
+                Err(_) => true,
+            },
+            match out {
+                Ok(page) => document_spec::public_page_height(self.info.height, self.last_stripe)
+                    == Ok(page.height),
+                Err(error) => document_spec::public_page_height(self.info.height, self.last_stripe)
+                    == Err(error),
+            },
+    ))]
     fn into_public(self, number: u32) -> Result<PageInfo, DecodeError> {
         let height = match (self.info.height, self.last_stripe) {
             (Some(height), _) => height,
@@ -2263,6 +2295,202 @@ fn allocation_size<T>(count: usize) -> Result<u64, MalformedError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn raw_page_state_info(height: Option<u32>, striped: bool, maximum: u16) -> PageInformation {
+        PageInformation {
+            width: 0x1234_5678,
+            height,
+            x_resolution: 0x0102_0304,
+            y_resolution: 0x89ab_cdef,
+            eventually_lossless: true,
+            might_contain_refinements: true,
+            default_pixel: true,
+            default_operator: crate::bitmap::CombinationOperator::Xor,
+            requires_auxiliary_buffers: true,
+            combination_operator_override: true,
+            striped,
+            max_stripe_size: maximum,
+        }
+    }
+
+    fn raw_page_state_result<T>(result: Result<T, DecodeError>) -> Result<T, MalformedError> {
+        result.map_err(|error| match error {
+            DecodeError::Malformed(error) => error,
+            other => panic!("unexpected PageState error: {other:?}"),
+        })
+    }
+
+    #[test]
+    fn raw_page_state_new_preserves_all_information_and_initial_boundaries() {
+        for height in [None, Some(0), Some(1), Some(u32::MAX)] {
+            for striped in [false, true] {
+                for maximum in [0, 1, 0x7fff, u16::MAX] {
+                    let info = raw_page_state_info(height, striped, maximum);
+                    let state = PageState::new(info);
+                    assert_eq!(state.info, info);
+                    assert_eq!(state.last_stripe, None);
+                    assert!(!state.ended);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn raw_page_state_stripes_match_wide_boundaries_and_complete_failure_frames() {
+        for height in [
+            None,
+            Some(0),
+            Some(1),
+            Some(2),
+            Some(0x1_0000),
+            Some(u32::MAX),
+        ] {
+            for striped in [false, true] {
+                for maximum in [0, 1, 2, 0x7fff, u16::MAX] {
+                    for previous in [
+                        None,
+                        Some(0),
+                        Some(1),
+                        Some(0xffff),
+                        Some(u32::MAX - 1),
+                        Some(u32::MAX),
+                    ] {
+                        let mut rows = vec![0, 1, 2, 0xffff, 0x1_0000, u32::MAX - 1, u32::MAX];
+                        let origin = u64::from(previous.unwrap_or(0));
+                        let boundary = origin + u64::from(maximum);
+                        for candidate in [
+                            origin.saturating_sub(1),
+                            origin,
+                            origin + 1,
+                            boundary.saturating_sub(1),
+                            boundary,
+                            boundary + 1,
+                        ] {
+                            if let Ok(row) = u32::try_from(candidate) {
+                                rows.push(row);
+                            }
+                        }
+                        if let Some(value) = height {
+                            rows.extend([value.saturating_sub(1), value, value.saturating_add(1)]);
+                        }
+                        for row in rows {
+                            for ended in [false, true] {
+                                let info = raw_page_state_info(height, striped, maximum);
+                                let mut state = PageState {
+                                    info,
+                                    last_stripe: previous,
+                                    ended,
+                                };
+                                let distance = i64::from(row) - i64::from(previous.unwrap_or(0));
+                                let accepted = striped
+                                    && (previous.is_none() || distance > 0)
+                                    && distance >= 0
+                                    && distance <= i64::from(maximum)
+                                    && height.is_none_or(|value| row < value);
+                                let expected = if accepted {
+                                    Ok(())
+                                } else {
+                                    Err(MalformedError::InvalidStripeEndRow(row))
+                                };
+                                assert_eq!(
+                                    raw_page_state_result(state.add_stripe(row)),
+                                    expected,
+                                    "{height:?} {striped} {maximum} {previous:?} {row} {ended}"
+                                );
+                                assert_eq!(state.info, info);
+                                assert_eq!(state.ended, ended);
+                                assert_eq!(
+                                    state.last_stripe,
+                                    if accepted { Some(row) } else { previous }
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn raw_page_state_finish_preserves_frames_and_duplicate_error_priority() {
+        for height in [None, Some(0), Some(1), Some(u32::MAX)] {
+            for last_stripe in [None, Some(0), Some(1), Some(u32::MAX)] {
+                for ended in [false, true] {
+                    for striped in [false, true] {
+                        let info = raw_page_state_info(height, striped, 0);
+                        let mut state = PageState {
+                            info,
+                            last_stripe,
+                            ended,
+                        };
+                        let expected = if ended {
+                            Err(MalformedError::DuplicatePageBoundary {
+                                page: 0,
+                                segment_type: 49,
+                            })
+                        } else if height.is_none() && last_stripe.is_none() {
+                            Err(MalformedError::InvalidStripeEndRow(0))
+                        } else {
+                            Ok(())
+                        };
+                        assert_eq!(raw_page_state_result(state.finish()), expected);
+                        assert_eq!(state.info, info);
+                        assert_eq!(state.last_stripe, last_stripe);
+                        assert_eq!(state.ended, ended || expected.is_ok());
+                        if expected.is_ok() {
+                            assert_eq!(
+                                raw_page_state_result(state.finish()),
+                                Err(MalformedError::DuplicatePageBoundary {
+                                    page: 0,
+                                    segment_type: 49
+                                },)
+                            );
+                            assert_eq!(state.info, info);
+                            assert_eq!(state.last_stripe, last_stripe);
+                            assert!(state.ended);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn raw_page_state_public_metadata_matches_known_and_wide_inferred_heights() {
+        for height in [None, Some(0), Some(1), Some(0x1234_5678), Some(u32::MAX)] {
+            for last_stripe in [None, Some(0), Some(1), Some(u32::MAX - 1), Some(u32::MAX)] {
+                for ended in [false, true] {
+                    for striped in [false, true] {
+                        for number in [0, 1, 0x0102_0304, u32::MAX] {
+                            let info = raw_page_state_info(height, striped, u16::MAX);
+                            let state = PageState {
+                                info,
+                                last_stripe,
+                                ended,
+                            };
+                            let expected_height = match (height, last_stripe) {
+                                (Some(value), _) => Ok(value),
+                                (None, Some(row)) => u32::try_from(u64::from(row) + 1)
+                                    .map_err(|_| MalformedError::IntegerOverflow),
+                                (None, None) => Err(MalformedError::InvalidStripeEndRow(0)),
+                            };
+                            assert_eq!(
+                                raw_page_state_result(state.into_public(number)),
+                                expected_height.map(|value| PageInfo {
+                                    number,
+                                    width: info.width,
+                                    height: value,
+                                    x_resolution: info.x_resolution,
+                                    y_resolution: info.y_resolution,
+                                    striped,
+                                })
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values() {

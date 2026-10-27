@@ -364,7 +364,7 @@
         "T88-HUFFMAN-CANONICAL-ASSIGNMENT"
       ],
       "remaining_scope": [
-        "Complete B.2/B.3 enumeration, encoded-table output relation, canonical prefix assignment theorem and caller selection remain open; shared B.4 helper evidence is recorded under standard_huffman_tables, not independently duplicated here."
+        "Raw-line success now carries a provisional histogram, checked-wide first-prefix recurrence, bucket-start and stable original-order result. Complete B.2/B.3 enumeration, encoded-table output relation, mathematical prefix-freedom, independent model review and caller selection remain open; shared B.4 helper evidence is recorded under standard_huffman_tables, not independently duplicated here."
       ]
     },
     {
@@ -638,7 +638,7 @@
     "proofs/model_support/decode.rs": "67e54d341dcb57f6b4ad8b2c8a489fa52928fd4f7e3c39406139c46dc3d5c2b4",
     "proofs/model_support/document.rs": "f829b13ba4c4adf86714aa42e474109e3f06d60f6e8f5e886e633d7ef46afcc5",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
-    "proofs/model_support/huffman.rs": "75ad3133571303f2d0369fb935e5b7dc4a94a16bab0fa65977af35f6a237e503",
+    "proofs/model_support/huffman.rs": "e7b4e8f3494999cab4bdfda6065778698decb1b9af3ea65b3be73b1f653b9df5",
     "proofs/model_support/mmr.rs": "0f1423997f6ebf4cc72faae5bcb8a2a774071853d929bfc10a9e7542b6bd9995",
     "proofs/production_impl/arithmetic.rs": "7baccbade7a1276a4efbe7de1a34a986d21e88ac7300ce449dd70a561bc0a3c9",
     "proofs/production_impl/bitmap.rs": "89390f3506136194877ee82e6968b93a88e2d0847c4d55b0279f56aa797b1686",
@@ -653,11 +653,11 @@
     "specs/arithmetic.rs": "0ba8e609485ef0e9889e64ef5f5532c34502f7f4780f3a1935f10ec865bba9b9",
     "specs/bitmap.rs": "913592795b8b43e3b716f77481b265c3d8ce55be9bce8d1ddb3dce69a865ff0c",
     "specs/decode.rs": "71640bc0bd5731b8a995abdcb34cc3b268c2219609da3f166f8997216e5bd61b",
-    "specs/document.rs": "f7bfd3028e9b7a28da424d07764bd42b11a883b9b15ad44b62aaaea8d808cceb",
+    "specs/document.rs": "d0c21a355505e67bb23badea9411fdb2b5834060e91ea9a346b573256968caa0",
     "specs/file_header.rs": "f56e38de1cf9b902caf6a0521e811fd43573647d5602fa690bcb7cc479e94b1f",
     "specs/generic_region.rs": "8f368daad98291eb31f1ccc5914ab836fcdbaa5c820f70ca71317a29140d22b9",
     "specs/halftone.rs": "de7c8a21eb1aae238b50ecfd2a1fbdac8e9df2f0254f1478e059f754d8d9a032",
-    "specs/huffman.rs": "fe0cca185e75966a67834cc01c44ac080eb7eee5374fffcc9fbaf790c81e0a58",
+    "specs/huffman.rs": "566f2701fdc602c916c9c1a9e55c2b344a5ba8a7f2e7a21e5f6f9cf902989d43",
     "specs/mmr.rs": "3ec0ed58d02fef9cb56b8e692b478c1a0770be576353aaf77eb72fa07bd49402",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "865c0c8489d05c971501adf32f99bcfad3427245f2e7b6ca1de5335c6bbfd95a",
@@ -666,11 +666,11 @@
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
     "src/decode.rs": "07ad6f08c7e5ac66716cf469971d98f6f44360ec8d49b04f7500711ccf35092d",
-    "src/document.rs": "597b2ef2c78cb24d712fc5c62fb4f21dda6148741816b08edb676788ddbb4527",
+    "src/document.rs": "014b5c5ae96dc348d86033319bd66cbcfdbf5600e488f555bf13c63849265a43",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",
     "src/halftone.rs": "0553be77a782a78a095af866311e4c9d629491be553bbc69b7bedf3e2ed4a051",
-    "src/huffman.rs": "be45bed95b51c96cad077b2e1d8f035374f7e30059522bc8d79dff7d3190826b",
+    "src/huffman.rs": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
     "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
@@ -1086,6 +1086,41 @@
       ],
       "name": "reader_valid",
       "role": "Bit reader bounds only, not correct prefix selection."
+    },
+    "huffman-canonical-assignment": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "canonical_assignment",
+      "role": "Conjunction of independent raw-source content/histogram/extent, checked-wide first-prefix, bucket-start and original-order results; success-only and provisional."
+    },
+    "huffman-assignment-contents": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_contents",
+      "role": "Exact original raw lines, zero-excluding histogram, maximum active length and ordered extent, retained by each code/start/order weaker control."
+    },
+    "huffman-assignment-codes": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_codes",
+      "role": "Literal zero seed and exact checked-wide first-prefix recurrence computed from original raw-line buckets, with accepted active ranges fitting their widths."
+    },
+    "huffman-assignment-starts": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_starts",
+      "role": "Every active bucket starts after all original lines with shorter nonzero lengths."
+    },
+    "huffman-assignment-order": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": ["huffman", "huffman_spec"],
+      "name": "assignment_order",
+      "role": "Exact concatenation of original raw-line index selections by increasing nonzero length and original order."
     },
     "huffman-decoded-value": {
       "kind": "spec",
@@ -2321,6 +2356,41 @@
       ],
       "name": "page_information_fields",
       "role": "complete accepted raw page fields and height encoding"
+    },
+    "page-stripe-accepted": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "stripe_accepted",
+      "role": "existing first/later stripe distance, ordering and declared-height acceptance"
+    },
+    "page-stripe-result": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "stripe_result",
+      "role": "exact project stripe success or typed row rejection"
+    },
+    "page-finish-result": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "page_finish_result",
+      "role": "exact existing metadata finish result with duplicate-boundary priority"
+    },
+    "public-page-height": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "public_page_height",
+      "role": "known height precedence or checked inclusive last-row inference and exact errors"
+    },
+    "public-page-fields": {
+      "kind": "spec",
+      "file": "specs/document.rs",
+      "module_path": ["document", "document_spec"],
+      "name": "public_page_fields",
+      "role": "successful public page number, width, resolutions and striping correspondence"
     },
     "profiles-payload-fields": {
       "kind": "spec",
@@ -4821,26 +4891,54 @@
       "title": "Advance stripe end rows while respecting the declared maximum stripe size",
       "feature": "striped_pages",
       "runtime": [
+        "document::PageState::new",
         "document::PageState::add_stripe"
       ],
-      "models": [],
+      "models": [
+        "page-stripe-accepted",
+        "page-stripe-result"
+      ],
       "proof_macros": [],
       "tests": [
         {
           "target": "traceability_semantics",
           "name": "stripe_rows_are_strictly_increasing_and_bounded"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_state_new_preserves_all_information_and_initial_boundaries"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_state_stripes_match_wide_boundaries_and_complete_failure_frames"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The verified helper exports no accepted-row progression, maximum-distance or exact error postcondition.",
+      "scope_of_formal_result": "New preserves every supplied information field and starts without a stripe or end marker. Add_stripe exactly matches the project acceptance/result model: striped, strictly increasing later rows, first distance from zero, inclusive maximum distance and strict declared-height bound. Information and ended are framed; only success changes last_stripe to row and every error preserves all state.",
       "assumptions": [
-        "The supplied PageInformation is already parsed; tests distinguish descending/equal rows and an excessive later stripe distance."
+        "No added caller preconditions: contracts cover arbitrary supplied PageInformation and stored rows/ended. First distance is row, not row plus one; add_stripe intentionally does not check ended. Independent normative/model and caller interpretation remain unapproved."
       ],
       "gaps": [
-        "Prove ordering, first/later stripe distance conventions, declared-height bounds and unchanged state on error; complete lifecycle enumeration remains open."
+        "Complete caller lifecycle, sealed-stripe raster writes, resource composition and independent normative/model review remain open; this is the existing metadata helper transition only."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::PageState::new",
+          "section": "ensures",
+          "tokens": ["out.info == info", "out.last_stripe == None", "!out.ended"]
+        },
+        {
+          "runtime": "document::PageState::add_stripe",
+          "section": "ensures",
+          "tokens": [
+            "out == document_spec::stripe_result(old(self).info, old(self).last_stripe, row)",
+            "final(self).info == old(self).info",
+            "final(self).ended == old(self).ended",
+            "final(self).last_stripe == if out is Ok { Some(row) } else { old(self).last_stripe }"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -4853,7 +4951,11 @@
         "document::PageState::finish",
         "document::PageState::into_public"
       ],
-      "models": [],
+      "models": [
+        "page-finish-result",
+        "public-page-height",
+        "public-page-fields"
+      ],
       "proof_macros": [],
       "tests": [
         {
@@ -4863,18 +4965,48 @@
         {
           "target": "traceability_semantics",
           "name": "unknown_height_uses_the_last_inclusive_stripe_row"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_state_finish_preserves_frames_and_duplicate_error_priority"
+        },
+        {
+          "target": "lib",
+          "name": "document::tests::raw_page_state_public_metadata_matches_known_and_wide_inferred_heights"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Both helpers are verified for safe execution, but expose no final-height/last-row relation or page-completion theorem.",
+      "scope_of_formal_result": "Finish exactly matches the project duplicate-first error policy, requires a stripe only for unknown height, preserves information/last row and sets ended only on success. Into_public preserves number, width, resolutions and striped, prioritizes known height, otherwise infers last row plus one with exact overflow/missing-stripe errors. These are metadata helper results, not decoded output or complete page lifecycle conformance.",
       "assumptions": [
-        "The expected height is a row count rather than a last-row index; a required last stripe must precede end of page."
+        "No added caller preconditions. Arbitrary stored rows, known zero height and ended states are covered. Into_public intentionally does not require ended; finish does not add striping/height validity checks. Diagnostic page zero/type 49 and error priority are existing project policy, not independently approved normative rules."
       ],
       "gaps": [
-        "Prove height equals final end row plus one, checked-overflow behavior and at-least-one-stripe/exactly-one-end-page rules through decoded output."
+        "Prove caller sequencing, exactly-one-end-page rules and metadata propagation through decoded raster output with resources; independent normative/model review and full document lifecycle remain open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "document::PageState::finish",
+          "section": "ensures",
+          "tokens": [
+            "out == document_spec::page_finish_result(",
+            "old(self).info.height, old(self).last_stripe, old(self).ended",
+            "final(self).info == old(self).info",
+            "final(self).last_stripe == old(self).last_stripe",
+            "final(self).ended == (old(self).ended || out is Ok)"
+          ]
+        },
+        {
+          "runtime": "document::PageState::into_public",
+          "section": "ensures",
+          "tokens": [
+            "document_spec::public_page_fields(self.info, number, page)",
+            "document_spec::public_page_height(self.info.height, self.last_stripe)",
+            "== Ok(page.height)",
+            "== Err(error)"
+          ]
+        }
+      ],
       "invariant_evidence": []
     },
     {
@@ -6627,9 +6759,17 @@
       "title": "Assign canonical prefixes by length and original table-line order",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::from_line_source"
+        "huffman::HuffmanTable::from_line_source",
+        "huffman::HuffmanTable::new",
+        "huffman::WideCode::zero"
       ],
-      "models": [],
+      "models": [
+        "huffman-canonical-assignment",
+        "huffman-assignment-contents",
+        "huffman-assignment-codes",
+        "huffman-assignment-starts",
+        "huffman-assignment-order"
+      ],
       "proof_macros": [],
       "tests": [
         {
@@ -6651,18 +6791,48 @@
         {
           "target": "lib",
           "name": "huffman::tests::canonical_width_boundaries_reject_oversubscription_and_preserve_valid_codes"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::raw_canonical_assignment_matches_numeric_histogram_and_stable_order"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::wide_zero_constructor_matches_default_and_array_initialization"
         }
       ],
-      "strength": "safety_only",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Verified construction and bounded wide arithmetic do not export a theorem for the entire histogram/first-code/line-order recurrence.",
+      "scope_of_formal_result": "On success for an original Borrowed raw line source, construction and new export exact copied lines, zero-length-excluding histogram, maximum active width, checked-wide canonical first-prefix recurrence from the raw source, active bucket starts/range checks, and stable original-line index order. The same literal zero constructor executes in Rust and Verus; Default remains derived. The dedicated huffman-assignment semantic group has individual code/start/order controls retaining content/count/extent and the other assignment guarantees, plus a literal-zero control; all four are also registered native mutations. This is not an encoded parser, entropy decoder or normative conformance result.",
       "assumptions": [
-        "The project supports wide prefixes; safety of wide arithmetic helpers is not independent proof of the complete canonical algorithm."
+        "The project supports wide prefixes through 255 bits and reuses its existing checked-wide arithmetic models. The raw-source recurrence is independent of returned storage, but independent normative/model approval remains open. Non-Borrowed sources retain their prior guarantees without an added assignment theorem."
       ],
       "gaps": [
-        "Prove canonical code assignment, zero-length exclusion and prefix-freedom for accepted tables; independently review invalid-table rejection policy."
+        "Prove mathematical prefix-freedom and complete acceptance/typed rejection policy, connect encoded/symbol-length/standard sources and prefix lookup/entropy decoding, and independently review the model and invalid-table policy."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "huffman::HuffmanTable::from_line_source",
+          "section": "ensures",
+          "tokens": [
+            "huffman_spec::is_raw(lines)",
+            "huffman_spec::assignment_contents(huffman_spec::raw_lines(lines), &table)",
+            "huffman_spec::assignment_codes(huffman_spec::raw_lines(lines), &table)",
+            "huffman_spec::assignment_starts(huffman_spec::raw_lines(lines), &table)",
+            "huffman_spec::assignment_order(huffman_spec::raw_lines(lines), &table)"
+          ]
+        },
+        {
+          "runtime": "huffman::HuffmanTable::new",
+          "section": "ensures",
+          "tokens": ["huffman_spec::canonical_assignment(lines@, &table)"]
+        },
+        {
+          "runtime": "huffman::WideCode::zero",
+          "section": "ensures",
+          "tokens": ["out.limbs@ == seq![0u64, 0u64, 0u64, 0u64]"]
+        }
+      ],
       "invariant_evidence": []
     },
     {

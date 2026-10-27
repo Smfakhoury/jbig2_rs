@@ -2,7 +2,7 @@
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
-  "scope": "Fresh existing official diagnostics on accepted-typed-structural-segment-metadata bf3d525; seven pending/unresolved cases, no standards-interpretation change or conformance credit.",
+  "scope": "Historical official diagnostics on accepted-typed-structural-segment-metadata bf3d525; seven pending/unresolved cases, no standards-interpretation change or conformance credit. Live source identity bindings are separately updated for PageState annotations and the verified equivalent WideCode zero initialization, without rerunning official inputs or changing execution revisions, decoder/asset hashes or outcomes.",
   "implementation_tests": {
     "total": 487,
     "passed": 473,
@@ -20,7 +20,7 @@
     "unsupported_profile": 1,
     "unresolved_failures": 7,
     "results_sha256": "63bd747e331697d80be486a28ee95f7dcf603c71332130ee8cd29866773800a0",
-    "review_sha256": "a4c9f4e506c9780c6c305b03fd4d6803e8af5411c5797b337fb0d71d53fd2bc7"
+    "review_sha256": "46c028d8ecdacbcb1d5b0a18f916237d1bcb0d8a6403299ec46dabf750a3c41e"
   },
   "community_regressions": {
     "total": 0,

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "Publication layout and documentation update only. Policy/baseline paths and validator references were relocated; all runtime, asset permissions, seven classifications and original bf3d525 execution receipts remain unchanged. The refreshed metadata/tool hashes do not claim a new official-vector run, normative approval or release permission.",
+  "metadata_only_update": "Live identity binding update only; official execution remains historical bf3d525. The PageState component 1e0ade5 added annotations and raw numeric tests with ordinary Rust 1.89.0 expansion byte-identical to main 4eb0b65 (SHA-256 dbf462f410dfef52cc314e800a26f4544212f9e23991bfb1dfad2bfdbb976f33). The merged source also includes Huffman annotations/raw tests and the behavior-equivalent private WideCode literal-zero constructor/call site; raw MSRV tests confirm equality with derived Default, and the worker compared identical optimized initialization instructions. This is not a claim that the complete merged compiler expansion is byte-identical. Original bf3d525 execution revisions, ordinary source/decoder/asset hashes, diagnostic origins, source_selection historical review, all seven classifications and permissions remain unchanged. No official assets or oracles were accessed or rerun, and no new official-vector result, normative approval or release permission is claimed.",
   "recorded_at": "2026-10-25T20:20:57.607829+00:00",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
@@ -12,13 +12,13 @@
     "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
     "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
     "src/decode.rs": "07ad6f08c7e5ac66716cf469971d98f6f44360ec8d49b04f7500711ccf35092d",
-    "src/document.rs": "597b2ef2c78cb24d712fc5c62fb4f21dda6148741816b08edb676788ddbb4527",
+    "src/document.rs": "014b5c5ae96dc348d86033319bd66cbcfdbf5600e488f555bf13c63849265a43",
     "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
     "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
     "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",
     "src/generic_row_ring.rs": "11f135b71730d44cddc61d44f34b1898e5859bfd3df0d489b7c47debb158827d",
     "src/halftone.rs": "0553be77a782a78a095af866311e4c9d629491be553bbc69b7bedf3e2ed4a051",
-    "src/huffman.rs": "be45bed95b51c96cad077b2e1d8f035374f7e30059522bc8d79dff7d3190826b",
+    "src/huffman.rs": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
     "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
     "src/limits.rs": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516",
     "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
@@ -69,7 +69,7 @@
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "d0cc2c988fac932c8ce2582e730a8c86dc31844c7c95f72fbd2c239451d4688d",
     "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
-    "validation/conformance/expected-differences.json": "47964e771248b90a9eab617c041210ee9542f029fc957857884ec3eced918197"
+    "validation/conformance/expected-differences.json": "0f754d2031b4fb7de1e53cd7d9487cc0da9e9f7a1e63812fe11fcc05913e0f4e"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",

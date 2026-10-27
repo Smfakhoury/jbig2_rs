@@ -209,6 +209,7 @@ class WorkflowPolicyTests(unittest.TestCase):
             ("performance.yml", "performance"): toolchains["cargo_rust_toolchain"],
             ("verus.yml", "whole"): toolchains["verus"]["rust_toolchain"],
             ("verus.yml", "semantic"): toolchains["verus"]["rust_toolchain"],
+            ("verus.yml", "verify"): toolchains["verus"]["rust_toolchain"],
         })
         check_updates(load_workflow((root / ".github/dependabot.yml").read_text()))
 
@@ -253,6 +254,100 @@ class WorkflowPolicyTests(unittest.TestCase):
                     step["run"] = step["run"].replace(before, after)
             with self.subTest(before=before), self.assertRaisesRegex(ValueError, "reports must stay"):
                 check_workflow(document, "verus.yml")
+
+    def test_semantic_positive_baseline_transport_is_current_exact_and_required(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        self.assertTrue(check_workflow(actual, "verus.yml"))
+        for change in (
+            "missing-download", "old-run", "wrong-name", "wrong-path",
+            "missing-argument", "wrong-argument", "late-download",
+        ):
+            document = copy.deepcopy(actual)
+            steps = document["jobs"]["semantic"]["steps"]
+            download = next(
+                step for step in steps
+                if step.get("uses", "").startswith("actions/download-artifact@")
+            )
+            execution = next(
+                step for step in steps
+                if "tools/run_semantic_proofs.py" in step.get("run", "")
+            )
+            if change == "missing-download":
+                steps.remove(download)
+            elif change == "old-run":
+                download["with"]["run-id"] = "previous"
+            elif change == "wrong-name":
+                download["with"]["name"] = "verus-partial-previous-whole"
+            elif change == "wrong-path":
+                download["with"]["path"] = "target/previous"
+            elif change == "missing-argument":
+                execution["run"] = execution["run"].replace("--whole-baseline target/semantic-whole", "")
+            elif change == "wrong-argument":
+                execution["run"] = execution["run"].replace("--whole-baseline target/semantic-whole", "--whole-baseline target/previous")
+            else:
+                steps.remove(download)
+                steps.insert(steps.index(execution) + 1, download)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                check_workflow(document, "verus.yml")
+
+    def test_whole_job_retains_its_serial_semantic_groups_inside_the_same_artifact(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        for before, after in (
+            ("--whole-groups", "--skip-groups"),
+            ("--whole-baseline target/semantic-ci/whole", "--whole-baseline target/previous"),
+            ("--output-dir target/semantic-ci/whole/semantic-groups/target/traceability",
+             "--output-dir target/semantic-ci/whole/target/traceability"),
+        ):
+            document = copy.deepcopy(actual)
+            for step in document["jobs"]["whole"]["steps"]:
+                if "run" in step:
+                    step["run"] = step["run"].replace(before, after)
+            with self.subTest(before=before), self.assertRaises(ValueError):
+                check_workflow(document, "verus.yml")
+
+    def test_collector_groups_and_raw_evidence_cannot_be_skipped_or_misrouted(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
+        for change in ("missing", "condition", "baseline", "output", "upload", "late"):
+            document = copy.deepcopy(actual)
+            steps = document["jobs"]["verify"]["steps"]
+            execution = next(step for step in steps if "--collector-groups" in step.get("run", ""))
+            if change == "missing":
+                steps.remove(execution)
+            elif change == "condition":
+                execution["if"] = "false"
+            elif change == "baseline":
+                execution["env"]["WHOLE_BASELINE"] = "previous"
+            elif change == "output":
+                execution["env"]["COLLECTOR_OUTPUT"] = "previous"
+            elif change == "upload":
+                steps.remove(next(step for step in steps if step.get("with", {}).get("name", "").endswith("-collector")))
+            else:
+                steps.remove(execution)
+                steps.append(execution)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                check_workflow(document, "verus.yml")
+
+    def test_native_mutations_keep_the_exact_compiler_cases_artifact_and_existing_job(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/ci.yml").read_text())
+        for change in ("missing", "condition", "compiler", "command", "artifact", "timeout"):
+            document = copy.deepcopy(actual)
+            job = document["jobs"]["cargo"]
+            steps = job["steps"]
+            execution = next(step for step in steps if step.get("name") == "Check critical public-API mutation sensitivity")
+            if change == "missing":
+                steps.remove(execution)
+            elif change == "condition":
+                execution["if"] = "false"
+            elif change == "compiler":
+                next(step for step in steps if step.get("name") == "Install pinned native mutation compiler")["run"] = "true"
+            elif change == "command":
+                execution["run"] += " --only-one"
+            elif change == "artifact":
+                steps[-1]["with"]["path"] = "previous"
+            else:
+                job["timeout-minutes"] = "21"
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                check_workflow(document, "ci.yml")
 
     def test_validation_events_avoid_duplicate_pushes_without_filtering_prs_or_tags(self):
         for name in ("ci", "coverage", "fuzz", "performance", "verus"):
@@ -306,7 +401,7 @@ class WorkflowPolicyTests(unittest.TestCase):
             ("sha256sum --check", "true"),
         ):
             document = copy.deepcopy(actual)
-            for job in ("whole", "semantic"):
+            for job in ("whole", "semantic", "verify"):
                 step = next(
                     step for step in document["jobs"][job]["steps"]
                     if step.get("name") == "Download pinned Verus"

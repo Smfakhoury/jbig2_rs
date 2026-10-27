@@ -1106,11 +1106,24 @@ class TraceabilityTests(unittest.TestCase):
     def test_parser_only_records_stay_weak_and_mmr_requires_input_raster_evidence(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
-        for name in ("T88-HUFFMAN-CANONICAL-ASSIGNMENT", "T88-HUFFMAN-STANDARD-TABLES"):
+        for name in ("T88-HUFFMAN-STANDARD-TABLES",):
             self.assertEqual(rows[name]["strength"], "safety_only")
             self.assertEqual(rows[name]["functional_evidence"], [])
             self.assertTrue(rows[name]["gaps"])
         self.assertEqual(rows["T88-HUFFMAN-PREFIX-MATCH"]["strength"], "state_preservation")
+        assignment = rows["T88-HUFFMAN-CANONICAL-ASSIGNMENT"]
+        self.assertEqual(assignment["strength"], "functional_contract")
+        self.assertEqual(assignment["review"], "provisional")
+        self.assertTrue(assignment["gaps"])
+        self.assertTrue({
+            "huffman-assignment-contents", "huffman-assignment-codes",
+            "huffman-assignment-starts", "huffman-assignment-order",
+        } <= set(assignment["models"]))
+        self.assertEqual(
+            {claim["runtime"] for claim in assignment["functional_evidence"]},
+            {"huffman::HuffmanTable::from_line_source", "huffman::HuffmanTable::new",
+             "huffman::WideCode::zero"},
+        )
         for name in (
             "T6-REFERENCE-FIRST-WHITE", "T6-REFERENCE-NEXT-LINE", "T6-PASS-TRANSITION",
             "T6-VERTICAL-TRANSITION", "T6-FIRST-IMAGINARY-WHITE", "T6-EOFB-PADDING",

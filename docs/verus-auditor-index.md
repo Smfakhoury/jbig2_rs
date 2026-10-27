@@ -105,6 +105,18 @@ names removes an overclaim; it does not add normative evidence.
 
 ## Readers, bitmaps and selection
 
+- [`specs/huffman.rs`](../specs/huffman.rs): `canonical_assignment` composes
+  original raw-line content/histogram/extent, checked-wide first-prefix
+  recurrence, active bucket starts/range checks and stable original index order.
+  `HuffmanTable::new` and successful Borrowed `from_line_source` expose the
+  result; other source kinds, encoded parsing, lookup/entropy decoding,
+  mathematical prefix-freedom and independent normative/model approval remain
+  separate. `WideCode::zero` is one literal executable constructor on both paths,
+  with its zero postcondition proved from initialization; derived `Default`
+  remains available. The `huffman-assignment` checker independently corrupts
+  returned code/start/order fields while retaining the other result clauses,
+  and checks the zero seed; all four cases also have native mutation bindings.
+
 - [`specs/readers.rs`](../specs/readers.rs): `eof_error` and `bit_read_error`
   state exact API units/payload/priority alongside preserved bytes/cursors.
   Internal `bits_value_bound`, `bits_limit_monotone`, `bits_limit` justify
@@ -151,12 +163,19 @@ Read [`specs/segments.rs`](../specs/segments.rs),
   Page/Stripe/Profiles results and both container outputs, including empty
   EOP/EOF and accepted extension flags. Opaque table/entropy results do not prove
   codec validity.
+- `stripe_accepted` / `stripe_result` bind the existing PageState row transition,
+  including first distance from zero, exact typed rejection and complete failure
+  frames. `page_finish_result` preserves duplicate-first error priority.
+  `public_page_height` / `public_page_fields` bind known-height precedence,
+  checked last-row-plus-one inference and successful public metadata fields.
+  No new preconditions or sequencing checks are introduced: adding a stripe does
+  not inspect `ended`, and conversion does not require it.
 
 Opaque result predicates are unfolded by ordinary proved completion helpers;
 native bridges consume those results without replacing them with loop histories.
 Equivalent explicit enum pattern matches avoid introducing a trusted derived
 equality specification. Unknown-length termination, complete errors/resources,
-profile meaning, page/stripe/lifecycle and full decoded output remain separate.
+profile meaning, caller page/stripe lifecycle and full decoded output remain separate.
 
 ## Audit stop conditions
 

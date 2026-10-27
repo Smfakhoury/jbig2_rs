@@ -12,10 +12,161 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from proof_sensitivity import check_semantic_cases, selected_proof, weakened_contract
+from proof_sensitivity import check_semantic_cases, positive_baseline, selected_proof, weakened_contract
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_whole_metadata_is_validated_once_and_snapshot_changes_fail_closed(self):
+        import hashlib
+
+        for broken in (None, "copy", "manifest", "files", "receipt"):
+            with self.subTest(broken=broken), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary) / "source"
+                directory = Path(temporary) / "proof"
+                root.mkdir()
+                directory.mkdir()
+                original = "first second contract"
+                (root / "fixture.rs").write_text(original)
+                (directory / "fixture.rs").write_text("wrong" if broken == "copy" else original)
+                cases = tuple({
+                    "id": name, "file": "fixture.rs", "module": "module", "function": name,
+                    "site": name, "replacement": "bad_" + name,
+                    "controls": (("contract", "weak"),),
+                } for name in ("first", "second"))
+                snapshot = {"source_bindings": {
+                    "fixture.rs": hashlib.sha256(original.encode()).hexdigest(),
+                }}
+                whole = {
+                    "receipt_sha256": "1" * 64, "report_sha256": "2" * 64,
+                    "manifest": snapshot, "files": {"baseline": "3" * 64},
+                    "report": {
+                        "verification-results": {
+                            "success": True, "is-verifying-entire-crate": True,
+                            "verified": 2, "errors": 0,
+                        },
+                        "func-details": {
+                            f"jbig2_rs_production::module::{name}": {}
+                            for name in ("first", "second")
+                        },
+                    },
+                }
+
+                @contextmanager
+                def workspace(*args):
+                    yield directory, {}, "pinned", "rust"
+
+                def verify(executable, checkout, environment, failure, module, function):
+                    return {"verified": 1, "errors": int(failure)}
+
+                with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/receipt"}), patch(
+                    "run_semantic_proofs.load_whole_baseline", return_value=whole,
+                ) as load, patch(
+                    "run_semantic_proofs.manifest", return_value={} if broken == "manifest" else snapshot,
+                ), patch(
+                    "run_semantic_proofs.whole_files", return_value={} if broken == "files" else whole["files"],
+                ), patch(
+                    "run_semantic_proofs.digest", return_value="0" * 64 if broken == "receipt" else "1" * 64,
+                ), patch("proof_sensitivity.proof_workspace", workspace), patch(
+                    "proof_sensitivity.selected_proof", side_effect=verify,
+                ) as queries, patch("proof_sensitivity.run"):
+                    if broken:
+                        with self.assertRaisesRegex(ValueError, "differs|changed"):
+                            check_semantic_cases(root, Path("/verus"), cases, ("fixture.rs",), "fixture-", "scope")
+                    else:
+                        result = check_semantic_cases(root, Path("/verus"), cases, ("fixture.rs",), "fixture-", "scope")
+                        self.assertEqual(result["status"], "passed")
+                        self.assertEqual(queries.call_count, 4)
+                    load.assert_called_once()
+                    if broken == "copy":
+                        queries.assert_not_called()
+
+    def test_source_inventory_cache_tracks_exact_bytes_and_returns_independent_records(self):
+        from rust_source import source_functions
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "src").mkdir()
+            path = root / "src/lib.rs"
+            path.write_text("pub fn cached_inventory_probe() -> u32 { 1 }")
+            first = source_functions(root)
+            first[0]["attributes"].append("must not leak")
+            again = source_functions(root)
+            self.assertEqual(again[0]["attributes"], [])
+            original_hash = again[0]["file_sha256"]
+            path.write_text("pub fn cached_inventory_probe() -> u32 { 2 }")
+            changed = source_functions(root)
+            self.assertNotEqual(changed[0]["file_sha256"], original_hash)
+            self.assertIn("{ 2 }", changed[0]["body_text"])
+            (root / "src/child.rs").write_text("pub fn child_probe() {}")
+            path.write_text("mod child; pub fn cached_inventory_probe() -> u32 { 2 }")
+            self.assertEqual(len(source_functions(root)), 2)
+            (root / "src/child.rs").unlink()
+            with self.assertRaisesRegex(ValueError, "missing"):
+                source_functions(root)
+
+    def test_projection_cache_is_content_and_mode_bound_not_verification_evidence(self):
+        from rust_source import production_code
+
+        production_code.cache_clear()
+        source = b"fn projection_cache_probe() { #[cfg(verus_keep_ghost)] proof! { assert(true); } let value = 1; } // marker\n"
+        hidden = production_code(source)
+        self.assertEqual(production_code(source), hidden)
+        self.assertEqual(production_code.cache_info().hits, 1)
+        self.assertEqual(production_code.cache_info().maxsize, 2048)
+        self.assertNotEqual(production_code(source, exclude_proofs=False), hidden)
+        self.assertNotEqual(production_code(source, mask_noncode=False), hidden)
+        changed = source.replace(b"value = 1", b"value = 2")
+        self.assertNotEqual(production_code(changed), hidden)
+        before = production_code.cache_info().misses
+        for _ in range(2):
+            with self.assertRaisesRegex(ValueError, "syntax"):
+                production_code(b"fn projection_cache_invalid( {")
+        self.assertEqual(production_code.cache_info().misses, before + 2)
+
+    def test_receipt_replaces_only_pristine_baseline_not_negative_or_control_queries(self):
+        from run_semantic_proofs import baseline_from_whole
+
+        whole = {
+            "receipt_sha256": "1" * 64, "report_sha256": "2" * 64,
+            "report": {
+                "verification-results": {
+                    "success": True, "is-verifying-entire-crate": True, "verified": 1, "errors": 0,
+                },
+                "func-details": {"jbig2_rs_production::document::finalize_pages": {}},
+            },
+        }
+        with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/receipt"}), patch(
+            "run_semantic_proofs.load_whole_baseline", return_value=whole,
+        ) as load, patch("proof_sensitivity.selected_proof") as verify:
+            result = positive_baseline(
+                TOOLS.parent, Path("/verus"), TOOLS.parent, {}, "document", "finalize_pages",
+            )
+            self.assertEqual(result, baseline_from_whole(
+                whole, ["jbig2_rs_production::document::finalize_pages"],
+            ))
+            verify.assert_not_called()
+            load.assert_called_once_with(TOOLS.parent, Path("/receipt"))
+        for failure in (True, False):
+            with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/invalid"}), patch(
+                "run_semantic_proofs.load_whole_baseline", side_effect=AssertionError("must not reuse"),
+            ):
+                report = self.report()
+                report["verification-results"]["errors"] = int(failure)
+                process = CompletedProcess(
+                    [], int(failure), json.dumps(report),
+                    "postcondition not satisfied" if failure else "",
+                )
+                with patch("proof_sensitivity.subprocess.run", return_value=process) as verify:
+                    selected_proof(
+                        Path("/verus"), TOOLS.parent, {}, failure, "document", "finalize_pages",
+                    )
+                verify.assert_called_once()
+        with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/invalid"}), patch(
+            "run_semantic_proofs.load_whole_baseline", side_effect=ValueError("stale receipt"),
+        ), patch("proof_sensitivity.selected_proof") as verify, self.assertRaisesRegex(ValueError, "stale"):
+            positive_baseline(TOOLS.parent, Path("/verus"), TOOLS.parent, {}, "document", "finalize_pages")
+        verify.assert_not_called()
+
     def test_multi_clause_controls_are_explicit_and_nonempty(self):
         self.assertEqual(
             weakened_contract("first second", {"controls": (("first", "one"), ("second", "two"))}),

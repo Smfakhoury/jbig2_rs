@@ -3,6 +3,82 @@ use crate::file_header::file_header_spec;
 
 verus! {
 
+// Project metadata transitions; caller sequencing and raster semantics are separate.
+pub(crate) open spec fn stripe_accepted(
+    info: crate::segment_data::PageInformation,
+    previous: Option<u32>,
+    row: u32,
+) -> bool {
+    &&& info.striped
+    &&& match previous {
+        Some(last) => last < row && row as int - last as int <= info.max_stripe_size,
+        None => row <= info.max_stripe_size,
+    }
+    &&& match info.height {
+        Some(height) => row < height,
+        None => true,
+    }
+}
+
+pub(crate) open spec fn stripe_result(
+    info: crate::segment_data::PageInformation,
+    previous: Option<u32>,
+    row: u32,
+) -> Result<(), crate::DecodeError> {
+    if stripe_accepted(info, previous, row) {
+        Ok(())
+    } else {
+        Err(crate::DecodeError::Malformed(crate::MalformedError::InvalidStripeEndRow(row)))
+    }
+}
+
+pub(crate) open spec fn page_finish_result(
+    height: Option<u32>,
+    last: Option<u32>,
+    ended: bool,
+) -> Result<(), crate::DecodeError> {
+    if ended {
+        Err(crate::DecodeError::Malformed(crate::MalformedError::DuplicatePageBoundary {
+            page: 0, segment_type: 49,
+        }))
+    } else if height is None && last is None {
+        Err(crate::DecodeError::Malformed(crate::MalformedError::InvalidStripeEndRow(0)))
+    } else {
+        Ok(())
+    }
+}
+
+pub(crate) open spec fn public_page_height(
+    height: Option<u32>,
+    last: Option<u32>,
+) -> Result<u32, crate::DecodeError> {
+    match height {
+        Some(value) => Ok(value),
+        None => match last {
+            Some(row) => if row < u32::MAX {
+                Ok((row + 1) as u32)
+            } else {
+                Err(crate::DecodeError::Malformed(crate::MalformedError::IntegerOverflow))
+            },
+            None => Err(crate::DecodeError::Malformed(
+                crate::MalformedError::InvalidStripeEndRow(0),
+            )),
+        },
+    }
+}
+
+pub(crate) open spec fn public_page_fields(
+    info: crate::segment_data::PageInformation,
+    number: u32,
+    page: crate::document::PageInfo,
+) -> bool {
+    &&& page.number == number
+    &&& page.width == info.width
+    &&& page.x_resolution == info.x_resolution
+    &&& page.y_resolution == info.y_resolution
+    &&& page.striped == info.striped
+}
+
 // Project quota/error policy, not a normative JBIG2 decoding equation.
 pub(crate) open spec fn quota_result(
     actual: nat,

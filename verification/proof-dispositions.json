@@ -82,21 +82,21 @@
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "597b2ef2c78cb24d712fc5c62fb4f21dda6148741816b08edb676788ddbb4527",
+      "file_sha256": "014b5c5ae96dc348d86033319bd66cbcfdbf5600e488f555bf13c63849265a43",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
     {
       "id": "document::Decoder::default",
       "file": "src/document.rs",
-      "file_sha256": "597b2ef2c78cb24d712fc5c62fb4f21dda6148741816b08edb676788ddbb4527",
+      "file_sha256": "014b5c5ae96dc348d86033319bd66cbcfdbf5600e488f555bf13c63849265a43",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "document::read_bounded_input",
       "file": "src/document.rs",
-      "file_sha256": "597b2ef2c78cb24d712fc5c62fb4f21dda6148741816b08edb676788ddbb4527",
+      "file_sha256": "014b5c5ae96dc348d86033319bd66cbcfdbf5600e488f555bf13c63849265a43",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks Read, iterator-closure, and fallible collection specifications used by remaining document parsing paths."
     },
@@ -229,28 +229,28 @@
     {
       "id": "huffman::HuffmanError::from",
       "file": "src/huffman.rs",
-      "file_sha256": "be45bed95b51c96cad077b2e1d8f035374f7e30059522bc8d79dff7d3190826b",
+      "file_sha256": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#2",
       "file": "src/huffman.rs",
-      "file_sha256": "be45bed95b51c96cad077b2e1d8f035374f7e30059522bc8d79dff7d3190826b",
+      "file_sha256": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::HuffmanError::from#3",
       "file": "src/huffman.rs",
-      "file_sha256": "be45bed95b51c96cad077b2e1d8f035374f7e30059522bc8d79dff7d3190826b",
+      "file_sha256": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
       "status": "audited-forwarder",
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "huffman::DecodeError::from",
       "file": "src/huffman.rs",
-      "file_sha256": "be45bed95b51c96cad077b2e1d8f035374f7e30059522bc8d79dff7d3190826b",
+      "file_sha256": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
       "status": "reviewed-verifier-limitation",
       "reason": "Typed error-enum conversion implemented as a standalone match, not a one-line verified forwarder; this trait implementation is not directly verified. Previously misattributed to error::DecodeError::from."
     },

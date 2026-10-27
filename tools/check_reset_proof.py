@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from check_distribution import run
-from proof_sensitivity import proof_workspace, selected_proof as verify_selected
+from proof_sensitivity import positive_baseline, proof_workspace, selected_proof as verify_selected
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,7 +52,9 @@ def check_reset_proof(executable: Path) -> dict:
     with proof_workspace(ROOT, executable, "jbig2-reset-proof-") as (
         directory, environment, expected, rust,
     ):
-        baseline = selected_proof(executable, directory, environment, expect_failure=False)
+        baseline = positive_baseline(
+            ROOT, executable, directory, environment, "arithmetic", "reset_contexts",
+        )
         path = directory / "src/arithmetic.rs"
         original = path.read_text(encoding="utf-8")
         results = []

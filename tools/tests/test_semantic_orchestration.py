@@ -17,6 +17,37 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
+DOCUMENT_PARTITION_GROUPS = (
+    ("iaid-state", 6), ("arithmetic-initialization", 6), ("text-batch", 11),
+    ("black-span", 6), ("segment-data", 10), ("value-bridge", 5), ("mmr-span", 8),
+    ("reader-error", 9), ("arithmetic-refill", 6), ("mmr-reference", 11),
+    ("bitmap-copy", 8), ("retention", 3), ("bitmap-chunk", 4),
+    ("symbol-cardinality", 11), ("segment-header", 10), ("document-count", 13),
+    ("mmr-run", 4), ("arithmetic-codec", 19), ("arithmetic-decision", 15),
+    ("halftone-header", 9), ("reset", 2), ("arithmetic-normalization", 6),
+    ("arithmetic-integer", 9), ("mmr-horizontal", 6), ("integer-state", 9),
+    ("operator-bit", 4), ("document-layout", 12), ("region-dispatch", 3),
+    ("bitmap-compose", 7), ("mmr-prefix", 4),
+)
+
+
+def document_partition_checks():
+    checks = {row[0]: row for row in runner.configured_checks()}
+    return tuple(
+        (*checks[name][:2], count, *checks[name][3:])
+        for name, count in DOCUMENT_PARTITION_GROUPS
+    )
+
+
+def document_partition_shards():
+    with patch.object(runner, "CHECKS", document_partition_checks()), patch.object(
+        runner, "WHOLE_GROUPS", (),
+    ), patch.object(
+        runner, "COLLECTOR_GROUPS", (),
+    ):
+        return runner.configured_shards()
+
+
 def evidence():
     return {
         "schema_version": 2, "status": "passed", "verus_version": "pinned", "production_sources_modified": False,
@@ -90,18 +121,34 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
 
-    def test_manifest_binds_relocated_metadata_and_agent_profiles_but_not_generated_json(self):
+    def test_manifest_binds_relocated_metadata_and_opaque_agent_profiles_not_generated_json(self):
         (self.root / "verification/target").mkdir(parents=True)
-        (self.root / ".github/agents").mkdir(parents=True)
         (self.root / "verification/proof-dispositions.json").write_text("{}")
         (self.root / "verification/target/generated.json").write_text("{}")
-        (self.root / ".github/agents/worker.agent.md").write_text("agent fixture")
-        with patch.object(runner, "CHECKS", self.checks):
-            bindings = runner.manifest(self.root)["source_bindings"]
+        profiles = {".github/agents/worker.agent.md": "1" * 40}
+        with patch.object(runner, "CHECKS", self.checks), patch.object(
+            runner, "agent_profile_blobs", return_value=profiles,
+        ):
+            manifest = runner.manifest(self.root)
+            bindings = manifest["source_bindings"]
         self.assertIn("config/toolchain.json", bindings)
         self.assertIn("verification/proof-dispositions.json", bindings)
-        self.assertIn(".github/agents/worker.agent.md", bindings)
+        self.assertEqual(manifest["agent_profile_blobs"], profiles)
         self.assertNotIn("verification/target/generated.json", bindings)
+
+    def test_agent_profile_identity_uses_git_metadata_without_reading_instructions(self):
+        (self.root / ".git").mkdir()
+        outputs = [
+            SimpleNamespace(stdout=""),
+            SimpleNamespace(stdout="100644 blob " + "1" * 40 + "\t.github/agents/worker.agent.md\n"),
+        ]
+        with patch.object(runner.subprocess, "run", side_effect=outputs):
+            self.assertEqual(runner.agent_profile_blobs(self.root), {
+                ".github/agents/worker.agent.md": "1" * 40,
+            })
+        with patch.object(runner.subprocess, "run", return_value=SimpleNamespace(stdout=" M profile")):
+            with self.assertRaisesRegex(ValueError, "committed opaque"):
+                runner.agent_profile_blobs(self.root)
 
     def test_shared_document_baseline_requires_all_configured_function_identities(self):
         cases = [{"id": name, "function": name} for name in ("first", "second")]
@@ -319,12 +366,115 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 runner.run_checks(self.root, self.root / "verus", self.output, only="../missing")
             self.assertFalse((self.output / runner.SUMMARY).exists())
 
+    def test_whole_job_groups_are_serial_and_not_omitted_or_duplicated_by_shards(self):
+        with patch.object(runner, "CHECKS", self.checks), patch.object(
+            runner, "WHOLE_GROUPS", ("0", "1"),
+        ), patch.object(runner.subprocess, "run", side_effect=self.passing_process):
+            whole = runner.run_checks(
+                self.root, self.root / "verus", self.output, whole_groups=True,
+            )
+            self.assertEqual(whole["selected_groups"], ["0", "1"])
+            self.assertEqual(whole["workers"], 1)
+            self.assertIsNone(whole["shard"])
+            assigned = [row[0] for shard in runner.configured_shards() for row in shard]
+            self.assertEqual(assigned, [str(index) for index in range(2, 8)])
+            self.assertEqual(len(runner.configured_shards()), 6)
+            self.assertEqual(set(assigned) | set(whole["selected_groups"]), {row[0] for row in self.checks})
+            with self.assertRaisesRegex(ValueError, "mutually exclusive"):
+                runner.run_checks(self.root, self.root / "verus", self.output, only="0", whole_groups=True)
+            rows = [{"id": row[0], "status": "passed", "seconds": 1.0} for row in self.checks]
+            self.assertEqual(runner.measured_shard_seconds(rows), [1] * 6)
+            rows[0]["seconds"] = 1050
+            with self.assertRaisesRegex(ValueError, "1050"):
+                runner.measured_shard_seconds(rows)
+
+    def test_current_roles_replay_qualified_timing_inputs_without_more_jobs_or_raised_guards(self):
+        # Planning only: completed f294 groups; completed shard-5 ZIP timestamps
+        # plus allowance; current local value/Huffman runs plus 10%, rounded up.
+        # These inputs cannot grant current-head or interrupted-run acceptance.
+        weights = {
+            "arithmetic-codec": 381, "arithmetic-decision": 358,
+            "arithmetic-initialization": 139, "arithmetic-integer": 212,
+            "arithmetic-normalization": 113, "arithmetic-refill": 103,
+            "bitmap-chunk": 99, "bitmap-compose": 171, "bitmap-copy": 202,
+            "black-span": 151, "document-count": 308, "document-layout": 309,
+            "halftone-header": 214, "huffman-assignment": 120, "iaid-state": 144,
+            "integer-state": 241, "mmr-horizontal": 169, "mmr-prefix": 102,
+            "mmr-reference": 318, "mmr-run": 101, "mmr-span": 193,
+            "operator-bit": 98, "page-finish": 169, "page-public": 220,
+            "page-state": 309, "reader-error": 210, "region-dispatch": 56,
+            "reset": 37, "retention": 70, "segment-data": 237,
+            "segment-header": 174, "symbol-cardinality": 272,
+            "text-batch": 293, "value-bridge": 142,
+        }
+        checks = runner.configured_checks()
+        whole = runner.configured_whole_checks()
+        collector = runner.configured_collector_checks()
+        shards = runner.configured_shards()
+        self.assertEqual(
+            [row[0] for row in whole],
+            ["arithmetic-codec", "value-bridge"],
+        )
+        self.assertEqual(len(shards), 6)
+        assigned = list(whole) + list(collector) + [row for shard in shards for row in shard]
+        self.assertEqual(len(assigned), len(checks))
+        self.assertEqual({row[0] for row in assigned}, {row[0] for row in checks})
+        self.assertEqual(sum(row[2] for row in assigned), sum(row[2] for row in checks))
+        self.assertLessEqual(sum(weights[row[0]] for row in whole), 1000)
+        self.assertLessEqual(sum(weights[row[0]] for row in collector), 1000)
+        self.assertLessEqual(max(sum(weights[row[0]] for row in shard) for shard in shards), 1000)
+        rows = [{"id": row[0], "status": "passed", "seconds": weights[row[0]]} for row in checks]
+        self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
+
+    def test_completed_f53_costs_rebalance_without_accepting_its_rejected_collection(self):
+        # All 40412207379 producers completed, but its collector rejected the
+        # overloaded shard. These costs are scheduling inputs, not acceptance.
+        observed = {
+            "arithmetic-codec": 354.261, "value-bridge": 98.024,
+            "arithmetic-decision": 345.218, "page-public": 212.728,
+            "segment-header": 231.228, "arithmetic-refill": 138.842,
+            "retention": 69.331, "region-dispatch": 73.249,
+            "mmr-reference": 228.469, "arithmetic-integer": 161.789,
+            "bitmap-copy": 144.227, "huffman-assignment": 78.843,
+            "operator-bit": 79.065, "reset": 37.332,
+            "document-layout": 302.450, "segment-data": 242.248,
+            "mmr-span": 192.194, "iaid-state": 142.176, "mmr-prefix": 98.857,
+            "page-state": 306.773, "halftone-header": 213.203,
+            "reader-error": 201.498, "arithmetic-normalization": 140.035,
+            "arithmetic-initialization": 138.166, "document-count": 288.756,
+            "integer-state": 224.280, "mmr-horizontal": 157.141,
+            "page-finish": 155.159, "mmr-run": 93.525,
+            "text-batch": 278.817, "symbol-cardinality": 267.925,
+            "bitmap-compose": 166.873, "black-span": 149.415,
+            "bitmap-chunk": 96.925,
+        }
+        checks = runner.configured_checks()
+        self.assertEqual({row[0] for row in checks}, set(observed))
+        overloaded = (
+            "arithmetic-decision", "page-public", "segment-header",
+            "arithmetic-refill", "retention", "region-dispatch",
+        )
+        self.assertGreater(sum(observed[name] for name in overloaded), 1050)
+        self.assertLessEqual(sum(
+            observed[row[0]] for row in runner.configured_whole_checks()
+        ), 1000)
+        self.assertLessEqual(max(
+            sum(observed[row[0]] for row in shard)
+            for shard in runner.configured_shards()
+        ), 1000)
+        rows = [
+            {"id": row[0], "status": "passed", "seconds": observed[row[0]]}
+            for row in checks
+        ]
+        self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
+
     def test_measured_complete_profile_leaves_timeout_headroom(self):
         # Accepted current baseline 40222911541, rounded up.
         # The new metadata group uses its complete 269-second local run plus 10%.
         # Document partitions project the same 25-case family, charging 20 extra
         # seconds for a duplicated baseline measured at 15.45 seconds.
         # Scheduling estimates are not hosted acceptance.
+        # Huffman: complete local four-case run 236.25 seconds, plus 10%.
         measured = {
             "reset": (2, 62), "document-count": (25, 511), "document-layout": (25, 511),
             "bitmap-copy": (8, 259), "retention": (3, 86),
@@ -342,10 +492,10 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "mmr-reference": (11, 371), "segment-header": (10, 171),
             "segment-data": (10, 296),
         }
-        checks = runner.configured_checks()
+        checks = document_partition_checks()
         self.assertEqual({check[0] for check in checks}, set(measured))
         estimates = []
-        for shard in runner.configured_shards():
+        for shard in document_partition_shards():
             seconds = 0
             for identity, _, cases, *_ in shard:
                 observed_cases, observed_seconds = measured[identity]
@@ -354,6 +504,41 @@ class SemanticOrchestrationTests(unittest.TestCase):
                     seconds += 20
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
+
+    def test_existing_job_capacity_covers_three_profile_per_group_maxima(self):
+        # Planning only: prior qualified estimates and completed f53/7ae groups,
+        # taking each group's maximum and rounding up. Failed collections gain
+        # no acceptance credit; current measured receipts remain mandatory.
+        weights = {
+            "arithmetic-codec": 500, "value-bridge": 142,
+            "arithmetic-decision": 358, "document-count": 345, "reset": 46,
+            "mmr-reference": 328, "document-layout": 309, "page-state": 309,
+            "text-batch": 293, "symbol-cardinality": 272, "segment-data": 265,
+            "reader-error": 210, "page-public": 220, "arithmetic-integer": 212,
+            "halftone-header": 228, "integer-state": 241, "segment-header": 252,
+            "black-span": 169, "page-finish": 169, "mmr-horizontal": 169,
+            "bitmap-compose": 186, "bitmap-copy": 205, "mmr-span": 194,
+            "arithmetic-refill": 139, "arithmetic-normalization": 141,
+            "iaid-state": 147, "arithmetic-initialization": 139,
+            "mmr-prefix": 106, "mmr-run": 113, "retention": 71,
+            "region-dispatch": 74, "operator-bit": 98, "bitmap-chunk": 99,
+            "huffman-assignment": 120,
+        }
+        roles = [
+            runner.configured_whole_checks(), runner.configured_collector_checks(),
+            *runner.configured_shards(),
+        ]
+        assigned = [row for role in roles for row in role]
+        self.assertEqual(len(roles), 8)
+        self.assertEqual(len(assigned), len(runner.configured_checks()))
+        self.assertEqual(
+            {row[0] for row in assigned},
+            {row[0] for row in runner.configured_checks()},
+        )
+        self.assertLessEqual(max(sum(weights[row[0]] for row in role) for role in roles), 1000)
+        self.assertEqual(sum(row[2] for row in assigned), sum(
+            row[2] for row in runner.configured_checks()
+        ))
 
     def test_completed_profile_has_measured_job_headroom_without_relaxed_limits(self):
         # Completed 40303484174 attempt-2 groups, with conservative ZIP-time
@@ -372,23 +557,51 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "retention": 91, "segment-header": 207, "symbol-cardinality": 322,
             "text-batch": 312, "value-bridge": 120, "segment-data": 266,
         }
-        self.assertEqual({row[0] for row in runner.configured_checks()}, set(observed))
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)
+        self.assertEqual({row[0] for row in document_partition_checks()}, set(observed))
+        self.assertEqual(sum(row[2] for row in document_partition_checks()), 236)
         self.assertLessEqual(max(
             sum(observed[row[0]] for row in shard)
-            for shard in runner.configured_shards()
+            for shard in document_partition_shards()
         ), 1050)
 
     def test_document_partitions_use_different_shards_without_more_jobs_or_cases(self):
-        shards = runner.configured_shards()
+        shards = document_partition_shards()
         self.assertEqual(len(shards), 6)
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 236)
+        self.assertEqual(sum(row[2] for row in document_partition_checks()), 236)
         groups = [{row[0] for row in shard} for shard in shards]
         self.assertNotEqual(
             next(i for i, names in enumerate(groups) if "document-count" in names),
             next(i for i, names in enumerate(groups) if "document-layout" in names),
         )
         self.assertLessEqual(max(sum(row[2] for row in shard) for shard in shards), 42)
+
+    def test_historical_snapshot_does_not_freeze_growth_within_existing_groups(self):
+        current = runner.configured_checks()
+        counts = {row[0]: row[2] for row in current}
+        for name, count in DOCUMENT_PARTITION_GROUPS:
+            self.assertGreaterEqual(counts[name], count)
+        future = tuple(
+            (*row[:2], row[2] + 1, *row[3:]) if row[0] == "iaid-state" else row
+            for row in current
+        )
+        before = document_partition_shards()
+        with patch.object(runner, "CHECKS", future):
+            self.assertEqual(document_partition_shards(), before)
+            self.assertEqual(sum(row[2] for row in runner.configured_checks()), sum(counts.values()) + 1)
+
+    def test_complete_measurement_guard_uses_all_current_groups_without_a_global_case_limit(self):
+        checks = self.checks + (("future-decision", "future.py", 100, "strong", "weak"),)
+        rows = [{"id": check[0], "status": "passed", "seconds": 1.0} for check in checks]
+        with patch.object(runner, "CHECKS", checks):
+            self.assertEqual(runner.measured_shard_seconds(rows), [2, 2, 2, 1, 1, 1])
+            for value in (None, True, 0, -1, float("nan"), float("inf"), 1050):
+                broken = copy.deepcopy(rows)
+                broken[0]["seconds"] = value
+                with self.subTest(seconds=value), self.assertRaises(ValueError):
+                    runner.measured_shard_seconds(broken)
+            for broken in (rows[:-1], rows + [rows[0]], [dict(row, status="failed") for row in rows]):
+                with self.assertRaises(ValueError):
+                    runner.measured_shard_seconds(broken)
 
     def test_matrix_is_generated_from_current_complete_checks(self):
         future_checks = self.checks + (("future-decision", "future.py", 4, "strong_contract", "weaker_control"),)
@@ -485,12 +698,167 @@ class SemanticOrchestrationTests(unittest.TestCase):
             runner.subprocess, "run", side_effect=self.passing_process,
         ):
             runner.seal_whole(self.root, whole)
+            if runner.configured_whole_checks():
+                runner.run_checks(
+                    self.root, self.root / "verus",
+                    whole / "semantic-groups" / runner.TRACE, whole_groups=True,
+                )
+            if runner.configured_collector_checks():
+                runner.run_checks(
+                    self.root, self.root / "verus",
+                    inputs / (runner.artifact_prefix() + "collector") / runner.TRACE,
+                    collector_groups=True,
+                )
             for index, _ in enumerate(runner.configured_shards()):
                 runner.run_checks(
                     self.root, self.root / "verus",
                     inputs / (runner.artifact_prefix() + f"shard-{index}") / runner.TRACE, shard=index,
                 )
         return inputs
+
+    def test_collector_groups_are_serial_exclusive_and_required_before_aggregation(self):
+        with patch.object(runner, "COLLECTOR_GROUPS", ("0", "1")):
+            inputs = self.collection_fixture()
+            path = inputs / (runner.artifact_prefix() + "collector") / runner.TRACE / runner.SUMMARY
+            original = runner.read_json(path)
+            self.assertEqual(original["workers"], 1)
+            self.assertEqual(original["selected_groups"], ["0", "1"])
+            with patch.object(runner, "CHECKS", self.checks):
+                result = runner.aggregate(self.root, inputs, self.output, "success", "success")
+                self.assertGreater(result["measured_collector_group_seconds"], 0)
+                for change in ("missing", "workers", "selection", "role", "run", "timing"):
+                    modified = copy.deepcopy(original)
+                    if change == "missing":
+                        path.unlink()
+                    elif change == "workers":
+                        modified["workers"] = 2
+                    elif change == "selection":
+                        modified["selected_groups"] = ["0"]
+                    elif change == "role":
+                        modified["shard"] = 0
+                    elif change == "run":
+                        modified["run_identity"]["GITHUB_RUN_ATTEMPT"] = "previous"
+                    else:
+                        modified["checks"][0]["seconds"] = 1050
+                    if change != "missing":
+                        runner.write_json(path, modified)
+                    with self.subTest(change=change), self.assertRaises((ValueError, OSError)):
+                        runner.aggregate(self.root, inputs, self.output, "success", "success")
+                    runner.write_json(path, original)
+                for options in ({"only": "0"}, {"shard": 0}, {"whole_groups": True}):
+                    with self.subTest(options=options), self.assertRaisesRegex(ValueError, "mutually exclusive"):
+                        runner.run_checks(
+                            self.root, self.root / "verus", self.output,
+                            collector_groups=True, **options,
+                        )
+
+    def test_whole_job_semantic_receipts_are_required_and_source_bound(self):
+        with patch.object(runner, "WHOLE_GROUPS", ("0", "1")):
+            inputs = self.collection_fixture()
+            whole = inputs / (runner.artifact_prefix() + "whole")
+            summary_path = whole / "semantic-groups" / runner.TRACE / runner.SUMMARY
+            original = runner.read_json(summary_path)
+            with patch.object(runner, "CHECKS", self.checks):
+                result = runner.aggregate(self.root, inputs, self.output, "success", "success")
+                self.assertEqual(result["selected_groups"], [row[0] for row in self.checks])
+                self.assertEqual(len(result["checks"]), 8)
+                self.assertGreater(result["measured_whole_group_seconds"], 0)
+                for changed in ("missing", "workers", "selection", "role", "run", "timing"):
+                    summary = copy.deepcopy(original)
+                    if changed == "missing":
+                        summary_path.unlink()
+                    elif changed == "workers":
+                        summary["workers"] = 2
+                    elif changed == "selection":
+                        summary["selected_groups"] = ["0"]
+                    elif changed == "role":
+                        summary["shard"] = 0
+                    elif changed == "run":
+                        summary["run_identity"]["GITHUB_RUN_ID"] = "previous"
+                    else:
+                        summary["checks"][0]["seconds"] = 1050
+                    if changed != "missing":
+                        runner.write_json(summary_path, summary)
+                    with self.subTest(changed=changed), self.assertRaises((ValueError, OSError)):
+                        runner.aggregate(self.root, inputs, self.output, "success", "success")
+                    runner.write_json(summary_path, original)
+
+    def test_whole_positive_receipt_is_source_tool_run_and_artifact_bound(self):
+        whole = self.root / "whole"
+        self.whole_fixture(whole)
+        with patch.object(runner, "CHECKS", self.checks):
+            runner.seal_whole(self.root, whole)
+            baseline = runner.load_whole_baseline(self.root, whole)
+            selected = runner.baseline_from_whole(baseline, ["module::function"])
+            self.assertTrue(runner.baseline_passed(selected, baseline, ["module::function"]))
+            self.assertFalse(runner.baseline_passed(selected))
+            self.assertFalse(runner.baseline_passed(selected, baseline, ["other::function"]))
+            for names in ([], ["unknown"], ["module::function"] * 2):
+                with self.subTest(names=names), self.assertRaises(ValueError):
+                    runner.baseline_from_whole(baseline, names)
+            for field in ("receipt_sha256", "report_sha256", "functions"):
+                changed = copy.deepcopy(selected)
+                changed["whole_positive"][field] = [] if field == "functions" else "0" * 64
+                self.assertFalse(runner.baseline_passed(changed, baseline, ["module::function"]))
+            summary = whole / runner.WHOLE_SUMMARY
+            original = summary.read_bytes()
+            for field, value in (
+                ("status", "failed"), ("schema_version", 0), ("manifest", {}),
+                ("run_identity", {"GITHUB_RUN_ATTEMPT": "other"}), ("files", {}),
+            ):
+                document = json.loads(original)
+                document[field] = value
+                runner.write_json(summary, document)
+                with self.subTest(field=field), self.assertRaises(ValueError):
+                    runner.load_whole_baseline(self.root, whole)
+                summary.write_bytes(original)
+            library = whole / "target/verus-production/libfixture.rlib"
+            library.write_bytes(b"changed library")
+            with self.assertRaisesRegex(ValueError, "modified"):
+                runner.load_whole_baseline(self.root, whole)
+            library.write_bytes(b"native compilation fixture")
+            (self.root / "src/example.rs").write_text("changed source")
+            with self.assertRaisesRegex(ValueError, "source/tool identity"):
+                runner.load_whole_baseline(self.root, whole)
+
+    def test_invalid_explicit_whole_baseline_never_falls_back_or_runs_a_checker(self):
+        with patch.object(runner, "CHECKS", self.checks), patch.object(
+            runner.subprocess, "run",
+        ) as process, self.assertRaises(FileNotFoundError):
+            runner.run_checks(
+                self.root, self.root / "verus", self.output,
+                whole_baseline=self.root / "missing",
+            )
+        process.assert_not_called()
+        self.assertFalse((self.output / runner.SUMMARY).exists())
+
+    def test_baseline_option_cannot_be_silently_ignored_in_nonexecution_modes(self):
+        for mode in (["--matrix"], ["--seal-whole", "/whole"], ["--aggregate", "/inputs"]):
+            with self.subTest(mode=mode), patch.object(
+                sys, "argv", ["runner", *mode, "--whole-baseline", "/stale"],
+            ), redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as stopped:
+                runner.main()
+            self.assertEqual(stopped.exception.code, 2)
+
+    def test_runner_passes_only_explicit_whole_baseline_to_isolated_checkers(self):
+        whole = self.root / "whole"
+        self.whole_fixture(whole)
+        with patch.object(runner, "CHECKS", self.checks):
+            runner.seal_whole(self.root, whole)
+            for supplied in (None, whole):
+                with patch.dict(os.environ, {"JBIG2_WHOLE_BASELINE": "/stale"}), patch.object(
+                    runner.subprocess, "run", side_effect=self.passing_process,
+                ) as process:
+                    result = runner.run_checks(
+                        self.root, self.root / "verus", self.output,
+                        only="0", whole_baseline=supplied,
+                    )
+                self.assertEqual(result["status"], "passed")
+                environment = process.call_args.kwargs["env"]
+                if supplied is None:
+                    self.assertNotIn("JBIG2_WHOLE_BASELINE", environment)
+                else:
+                    self.assertEqual(environment["JBIG2_WHOLE_BASELINE"], str(whole.resolve()))
 
     def collect(self, inputs, whole="success", semantic="success"):
         with patch.object(runner, "CHECKS", self.checks):
