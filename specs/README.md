@@ -39,6 +39,10 @@ ledger page references are inherited consultation locators; printed page
 numbers and a viewer's PDF page index are not interchangeable. Do not invent
 deep links to unverified pages.
 
+For T.88, the [official English package](https://www.itu.int/rec/dologin_pub.asp?lang=e&id=T-REC-T.88-201808-I!!SOFT-ZST-E&type=items)
+contains `ITU-T_T_88__08_2018.pdf`. Open that document for review; sample
+software and conformance assets have separate use and redistribution limits.
+
 The current policy prohibits redistribution and third-party uploads. Obtain
 documents directly or through an approved licensed channel. Do not commit PDFs
 or send them to a cloud agent merely because an official download is free.
@@ -72,10 +76,17 @@ For example, arithmetic and MMR models refer to runtime tables. Membership or
 consistency with those arrays is not independent table fidelity. Model theorems
 and strong/weaker controls do not remove this review obligation.
 
-The generated traceability report now includes an initial model audit inventory:
-registered roles and requirement locators, additional spec-function discoveries,
-and lexical implementation-constant references. Unclassified entries are
-visible gaps. Neither this inventory nor its structural checks approve a model.
+The generated traceability report includes an authored, source-only purpose
+inventory. The requirements ledger's `model_classifications` families own exact
+members, justifications and unresolved ambiguity, separately from normative
+requirement links. Authored families now cover the bounded declared source
+surface; consult the generated report for current purpose counts and any
+unresolved entries. New or ambiguous declarations cannot silently inherit a
+completed classification.
+Original roles/locators and unregistered helper status are preserved. Lexical
+implementation-constant references are dependencies to review, not normative
+ground truth. Neither these navigation labels nor structural checks approve a
+model. See the [inventory scope and freshness rules](../docs/specification-review.md#source-only-navigation-classification).
 
 For exact source/trust limits read [verifier limitations](../docs/verifier-limitations.md).
 For wider scope and evidence-strength distinctions read

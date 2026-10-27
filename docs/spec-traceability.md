@@ -55,6 +55,41 @@ The [auditor index](verus-auditor-index.md) gives parameter/notation bridges and
 source entry points. The following summarizes consequential distinctions rather
 than a chronology of contract changes.
 
+### Source-only purpose inventory
+
+The ledger's `model_classifications` assigns exact declaration families one of
+`project-result-model`, `project-policy`, `representation-invariant`,
+`proof-support`, `candidate-standard-facing-model` or `classification-pending`.
+The bounded inventory covers registered definitions plus every spec function
+in `specs/` and `proofs/model_support/`; it does not claim every unregistered
+proof/view declaration. Original roles and requirement links remain separate.
+Body/dependency justifications describe primary project purpose, not proof
+strength, native caller coverage or normative fidelity.
+
+`ambiguity` is reserved for **unresolved source purpose**. Any nonblank ambiguity
+appears in `unresolved_declarations` and makes `classification_complete` false,
+even with a non-pending category. Pending entries must explain their ambiguity.
+The optional `caveats` field preserves partial-output, caller, trust and
+unreviewed normative limitations without turning those into purpose gaps.
+Neither field is inferred from declaration names or free-text keyword matching.
+
+All 417 declarations in this bounded source inventory have authored purposes:
+147 project results, 53 representation invariants, 142 proof-support declarations,
+29 project policies and 46 candidate standard-facing models. No source-purpose
+ambiguities remain. These counts are not normative coverage percentages or
+approval: all 266 requirement reviews remain provisional. For example,
+`decoded_pixels` merely truncates supplied decisions, and abstract `page_step`
+must not be equated to the narrower production stripe API. Their purposes can
+be established while their output/caller/normative gaps remain open.
+
+The inventory validates exact membership and conservatively binds all project
+Rust plus the unchanged definition registry. New, removed, duplicated,
+ambiguous or stale declarations/bindings fail explicitly; there is no automatic
+purpose inference or source-binding refresh. Reports always keep
+`normative_approval` false. Candidate status grants neither independent source
+approval, source-processing authorization, human assignment nor release
+readiness. Capacity/trust, retention and protected fixture holds are unchanged.
+
 ### Arithmetic, integer and IAID
 
 Project contracts cover initialization, BYTEIN, normalization and complete

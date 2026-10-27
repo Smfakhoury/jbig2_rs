@@ -95,10 +95,69 @@ Creation and report outputs stay under the local `target/` directory and cannot
 alias input evidence. Hashes identify exact checkout bytes; different line
 endings are different inputs, not silently normalized source identities.
 
-The generated inventory preserves original roles and exact ledger locators.
-Spec definitions whose classification has not been reviewed remain explicitly
-pending; unregistered spec functions are not silently omitted. Its
-implementation-constant scan is lexical, not a complete dependency proof.
+## Source-only navigation classification
+
+The existing ledger's `model_classifications` is the sole authored purpose
+registry. Each family lists exact `kind::name` members in one physical file;
+there are no suffix/path wildcards. The inventory includes every registered
+definition plus every spec function discovered in `specs/` and
+`proofs/model_support/`. Unregistered declarations elsewhere (for example
+additional shared views and property helpers) are outside this bounded scope,
+not silently claimed as classified. All Rust source is nevertheless bound as
+conservative dependency evidence.
+
+Purpose labels are `project-result-model`, `project-policy`,
+`representation-invariant`, `proof-support` and
+`candidate-standard-facing-model`. They are not strength rankings. In
+particular, a candidate is not independently approved normative evidence.
+`classification-pending` requires a visible reason; a pending family records
+membership, not a completed semantic review. Every label carries the explicit
+`author-navigation-only-not-independent-normative-approval` review marker.
+
+Authored families inspect bodies, dependencies and use sites across arithmetic,
+MMR/Huffman, document/headers, generic regions, symbols/text, decode, halftone
+and reader/bitmap support. These are author navigation judgments, not independent
+normative reviews. For example, numeric bit results differ from typed error
+policy; bitmap content/frame results differ from storage invariants and
+projection/addressing vocabulary. `prefix_copy_result` is an output relation,
+whereas `black_fill_prefix` is internal loop support.
+
+The JSON report lists unresolved **purpose** ambiguity even when an enum has
+been selected. Such ambiguity blocks classification completion. Separate
+`caveats` describe partial scope, multiple uses or unreviewed normative fidelity;
+they never grant approval, but do not by themselves make a known source purpose
+unknown. Counts and completion come from the current report, not this guide.
+
+Original roles, requirement IDs and locators are preserved. Unregistered
+helpers have empty requirement links; recording them invents no normative
+obligation. The implementation-constant scan is lexical, not a complete
+dependency proof. Imported implementation tables/constants still need
+independent review and are never normative ground truth.
+
+The checker rejects duplicate identities/family members, unknown or missing
+members and ambiguous repeated declarations. New, removed or renamed scoped
+declarations must be explicitly reconciled. A registry digest binds the
+original definition identities/roles/module paths. A project-source digest
+binds the sorted mapping of relative paths to exact byte SHA-256 values for
+all Rust files under `src/`, `specs/` and `proofs/`, using canonical JSON
+(sorted keys, compact separators). This conservatively detects changed bodies,
+module bindings, views and implementation tables, including source-set changes.
+Updating a hash is not a classification review: re-read affected purposes and
+dependencies, keep ambiguity visible, then rerun the checker and tooling tests.
+No standard processing or normative approval follows from refreshing evidence.
+
+Generate the inventory without providing any standard document:
+
+```sh
+python3 -B tools/check_traceability.py \
+  --output target/traceability/reference-report.json
+```
+
+Inspect `model_audit_inventory` in that report for exact membership, purpose
+counts, evidence of purpose and unresolved declarations. Counts are current
+observations, not a fixed denominator or coverage percentage. The selected
+requirement records remain provisional; snapshot state and document-processing/
+normative-approval flags are unchanged.
 
 ## After authorization: review, freeze, then implement
 
