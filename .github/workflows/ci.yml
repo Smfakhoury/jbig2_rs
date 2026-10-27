@@ -55,6 +55,15 @@ jobs:
         shell: bash
         run: cargo package --allow-dirty --list | python tools/audit_package.py
       - run: cargo package --allow-dirty
+      - name: Install pinned native mutation compiler
+        if: runner.os == 'Linux'
+        run: rustup toolchain install nightly-2026-10-12 --profile minimal
+      - name: Check critical public-API mutation sensitivity
+        if: runner.os == 'Linux'
+        run: >-
+          python -B tools/check_contract_mutations.py
+          --toolchain nightly-2026-10-12
+          --output target/traceability/mutations.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

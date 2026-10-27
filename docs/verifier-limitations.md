@@ -151,8 +151,14 @@ This uses spare time in an existing job, not additional jobs, solver workers,
 larger timeouts or omitted cases. Their reports remain outside the immutable
 positive receipt and are separately source/run/hash validated by the collector,
 alongside all six shard receipts. Every configured group executes exactly once.
+The existing collector job also runs the complete `arithmetic-decision`,
+`document-count` and `reset` groups serially before aggregation. Its separately
+required `collector` receipt has the same source/tool/run/attempt and individual
+checker/report/log checks as every shard. It reuses only the sealed pristine
+whole-positive baseline; each negative and weaker query remains fresh.
 The same 1050-second complete-measurement guard applies to this serial group
-workload as to each shard; the whole job's 20-minute cap also covers its proof.
+workload and the collector groups as to each shard; each existing 20-minute
+whole/collector cap also covers its setup and other work.
 
 PageState's 29 individual contrasts are partitioned into initialization/stripe,
 finish and public-metadata groups (13/7/9), without adding jobs or changing

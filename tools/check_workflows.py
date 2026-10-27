@@ -27,6 +27,7 @@ FUZZ_PRODUCER_GROUP = (
     " github.repository, github.run_id, github.run_attempt) }}"
 )
 VALIDATION_WORKFLOWS = {"ci", "coverage", "fuzz", "performance", "verus"}
+COLLECTOR_READY = "needs.whole.result == 'success' && needs.semantic.result == 'success'"
 DISABLED_VERUS_CHECK = re.compile(
     r"(?<![\w-])--(?:no-verify|no-lifetime|no-erasure-check|no-trait-conflicts"
     r"|no-auto-recommends-check)(?![\w-])"
@@ -159,14 +160,18 @@ def check_verus_sharding(document):
          for step in steps if step.get("uses", "").split("@")[0] in {
              "actions/checkout", "actions/setup-python", "dtolnay/rust-toolchain",
          }]
-        for steps in (whole_steps, semantic_steps)
+        for steps in (whole_steps, semantic_steps, verify_steps)
     ]
     downloads = [
-        [step for step in steps if step.get("name") == "Download pinned Verus"]
-        for steps in (whole_steps, semantic_steps)
+        [{key: value for key, value in step.items() if key != "if"}
+         for step in steps if step.get("name") == "Download pinned Verus"]
+        for steps in (whole_steps, semantic_steps, verify_steps)
     ]
-    if setups[0] != setups[1] or len(setups[0]) != 3 or downloads[0] != downloads[1] or len(downloads[0]) != 1:
-        raise ValueError("whole and semantic jobs must use identical pinned tool setup")
+    if (
+        not all(setup == setups[0] for setup in setups) or len(setups[0]) != 3
+        or not all(download == downloads[0] for download in downloads) or len(downloads[0]) != 1
+    ):
+        raise ValueError("all proof jobs must use identical pinned tool setup")
     pins = json.loads((ROOT / "config/toolchain.json").read_text())["verus"]
     download_run = downloads[0][0].get("run", "").replace("\\\n", " ")
     download_run = re.sub(r"\|\s*\n\s*", "| ", download_run)
@@ -279,6 +284,31 @@ def check_verus_sharding(document):
         "path": "target/semantic-inputs", "merge-multiple": "false",
     } or download[0].get("uses") != "actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333":
         raise ValueError("collector must download unmerged, pinned, current-run/current-attempt artifacts")
+    collector_runs = [
+        (index, step) for index, step in enumerate(verify_steps)
+        if "--collector-groups" in step.get("run", "")
+    ]
+    if len(collector_runs) != 1:
+        raise ValueError("collector must execute every assigned complete semantic group")
+    collector_index, collector = collector_runs[0]
+    if (
+        collector.get("if") != COLLECTOR_READY
+        or collector.get("env") != {
+            "WHOLE_BASELINE": "target/semantic-inputs/verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-whole",
+            "COLLECTOR_OUTPUT": "target/semantic-inputs/verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-collector/target/traceability",
+        }
+        or shlex.split(collector.get("run", "")) != [
+            "python", "-B", "tools/run_semantic_proofs.py", "--collector-groups",
+            "--verus-executable", "verus-x86-linux/verus",
+            "--whole-baseline", "$WHOLE_BASELINE", "--output-dir", "$COLLECTOR_OUTPUT",
+        ]
+        or verify_steps.index(download[0]) >= collector_index
+        or not any(
+            "--aggregate target/semantic-inputs" in step.get("run", "")
+            for step in verify_steps[collector_index + 1:]
+        )
+    ):
+        raise ValueError("collector semantic groups require exact current-run inputs before aggregation")
     if not any(
         step.get("env") == {
             "WHOLE_RESULT": "${{ needs.whole.result }}", "SEMANTIC_RESULT": "${{ needs.semantic.result }}",
@@ -292,22 +322,72 @@ def check_verus_sharding(document):
     uploads = {}
     for name, steps in (("whole", whole_steps), ("semantic", semantic_steps), ("verify", verify_steps)):
         matches = [step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@")]
-        if len(matches) != 1 or matches[0].get("if") != "always()":
+        if len(matches) != (2 if name == "verify" else 1) or any(
+            step.get("if") != "always()" for step in matches
+        ):
             raise ValueError("each Verus job must retain failed diagnostics")
-        uploads[name] = matches[0].get("with")
+        uploads[name] = [step.get("with") for step in matches]
         if any(
-            "if" in step for step in steps
-            if step.get("run") and step.get("name") != "Stage whole-crate outputs including failed diagnostics"
+            "if" in step and not (
+                name == "verify"
+                and step.get("if") == COLLECTOR_READY
+                and (step.get("name") in {
+                    "Download pinned Verus",
+                    "Check every complete semantic group assigned to the collector",
+                } or step.get("uses", "").startswith("dtolnay/rust-toolchain@"))
+            )
+            for step in steps
+            if step.get("name") != "Stage whole-crate outputs including failed diagnostics"
+            and not step.get("uses", "").startswith("actions/upload-artifact@")
         ):
             raise ValueError("Verus evidence-producing/collecting steps must not be conditional")
     if uploads != {
-        "whole": {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-whole",
-                  "path": "target/semantic-ci/whole/"},
-        "semantic": {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}",
-                     "path": "target/semantic-ci/group/"},
-        "verify": {"name": "verus-bootstrap-log", "path": "target/semantic-canonical/"},
+        "whole": [{"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-whole",
+                   "path": "target/semantic-ci/whole/"}],
+        "semantic": [{"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}",
+                      "path": "target/semantic-ci/group/"}],
+        "verify": [
+            {"name": "verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-collector",
+             "path": "target/semantic-inputs/verus-partial-${{ github.run_id }}-${{ github.run_attempt }}-collector/"},
+            {"name": "verus-bootstrap-log", "path": "target/semantic-canonical/"},
+        ],
     }:
         raise ValueError("Verus immutable partial/canonical artifact names or layout changed")
+
+
+def check_native_mutation_lane(document):
+    job = document.get("jobs", {}).get("cargo", {})
+    steps = job.get("steps", [])
+    nightly = json.loads((ROOT / "config/toolchain.json").read_text())["coverage"]["rust_toolchain"]
+    expected = (
+        ("Install pinned native mutation compiler",
+         f"rustup toolchain install {nightly} --profile minimal"),
+        ("Check critical public-API mutation sensitivity",
+         f"python -B tools/check_contract_mutations.py --toolchain {nightly} "
+         "--output target/traceability/mutations.json"),
+    )
+    positions = []
+    for name, command in expected:
+        matches = [(index, step) for index, step in enumerate(steps) if step.get("name") == name]
+        if (
+            len(matches) != 1 or matches[0][1].get("if") != "runner.os == 'Linux'"
+            or shlex.split(matches[0][1].get("run", "")) != shlex.split(command)
+        ):
+            raise ValueError("native mutation checks require the exact pinned Linux-only lane")
+        positions.append(matches[0][0])
+    uploads = [
+        (index, step) for index, step in enumerate(steps)
+        if step.get("uses", "").startswith("actions/upload-artifact@")
+    ]
+    if (
+        job.get("timeout-minutes") != "20"
+        or len(uploads) != 1 or uploads[0][1].get("if") != "always()"
+        or uploads[0][1].get("with") != {
+            "name": "traceability-${{ matrix.os }}", "path": "target/traceability/",
+        }
+        or not positions[0] < positions[1] < uploads[0][0]
+    ):
+        raise ValueError("native mutations require the existing 20-minute job and retained raw artifact")
 
 
 def check_workflow(document, name):
@@ -332,6 +412,8 @@ def check_workflow(document, name):
         check_fuzz_producer_serialization(document)
     if name in {"verus.yml", "verus.yaml"}:
         check_verus_sharding(document)
+    if name in {"ci.yml", "ci.yaml"}:
+        check_native_mutation_lane(document)
     actions = []
     for job_name, job in jobs.items():
         if not isinstance(job, dict):
@@ -349,6 +431,8 @@ def check_workflow(document, name):
         for step in steps:
             if not isinstance(step, dict):
                 raise ValueError(f"{name}/{job_name}: step must be a mapping")
+            if "uses" in step and "run" in step:
+                raise ValueError(f"{name}/{job_name}: a step must choose either uses or run")
             if step.get("continue-on-error", "false") != "false" or "permissions" in step:
                 raise ValueError(f"{name}/{job_name}: step failure/permission override is unsupported")
             if "uses" not in step:

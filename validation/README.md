@@ -139,7 +139,7 @@ python3 -B tools/check_traceability.py --discover-tests \
   --verus-json target/verification/verus-production.json \
   --output target/traceability/combined-report.json
 python3 -B tools/check_contract_mutations.py --toolchain 1.89.0 \
-  --output target/coverage/mutations.json
+  --output target/traceability/mutations.json
 ```
 
 The exact-source release gate currently fails on the disclosed MMR capacity
@@ -312,9 +312,15 @@ Native distribution executes rather than merely cross-compiles.
 PR validation is not duplicated by feature-push workflows; main/tag pushes and
 manual preflight retain their gates. The existing whole-proof job executes its
 two assigned contrast groups serially after unfiltered verification; remaining
-groups use six sequential one-worker shards. The collector requires every
-configured group exactly once, including the whole-job groups, with unchanged
+groups use six sequential one-worker shards and the spare serial capacity of
+the existing collector job. Its three complete groups run before aggregation
+and produce a separately required, same-run receipt. The collector requires
+every configured group exactly once across these roles, with unchanged
 job/concurrency/time limits and same-source/run/attempt identities.
+
+Native mutation sensitivity runs in the existing Linux native CI job and is
+retained in its traceability artifact, not the LLVM coverage artifact. Both
+lanes remain required; no mutation or coverage threshold is removed.
 
 Dependency updates require review/rerun of workflow-policy tests. Source-bound
 reports and failed-run diagnostics are retained on all native hosts.

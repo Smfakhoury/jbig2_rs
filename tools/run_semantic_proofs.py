@@ -20,41 +20,42 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
 WHOLE_GROUPS = ("arithmetic-codec", "value-bridge")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
 RECEIPT_SCHEMA = 3
 CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
-    ("document-layout", "check_document_count_proof.py", 12, "strong_count_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),
-    ("page-state", "check_page_state_proofs.py", 13, "strong_contract", "weaker_control"),
+    ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
     ("mmr-reference", "check_mmr_reference_proofs.py", 11, "strong_contract", "weaker_control"),
+    ("document-layout", "check_document_count_proof.py", 12, "strong_count_contract", "weaker_control"),
+    ("page-state", "check_page_state_proofs.py", 13, "strong_contract", "weaker_control"),
     ("text-batch", "check_text_batch_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
-    ("page-public", "check_page_state_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
     ("segment-data", "check_segment_data_proofs.py", 10, "strong_contract", "weaker_control"),
+    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("page-public", "check_page_state_proofs.py", 9, "strong_contract", "weaker_control"),
+    ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
     ("halftone-header", "check_halftone_header_proofs.py", 9, "strong_contract", "weaker_control"),
     ("integer-state", "check_integer_state_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("arithmetic-integer", "check_arithmetic_integer_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
-    ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
     ("segment-header", "check_segment_header_proofs.py", 10, "strong_contract", "weaker_control"),
-    ("page-finish", "check_page_state_proofs.py", 7, "strong_contract", "weaker_control"),
-    ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
     ("black-span", "check_black_span_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("page-finish", "check_page_state_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("mmr-horizontal", "check_mmr_horizontal_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("bitmap-copy", "check_bitmap_copy_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
     ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
     ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("bitmap-compose", "check_bitmap_compose_proofs.py", 7, "strong_contract", "weaker_control"),
     ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
     ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("reset", "check_reset_proof.py", 2, "strong_zero_contract", "validity_only_control"),
+    ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -102,13 +103,20 @@ def configured_checks(only=None):
 
 
 def configured_shards():
-    checks = tuple(check for check in configured_checks() if check[0] not in WHOLE_GROUPS)
+    checks = tuple(
+        check for check in configured_checks()
+        if check[0] not in (*WHOLE_GROUPS, *COLLECTOR_GROUPS)
+    )
     count = min(CI_SHARDS, len(checks))
     return tuple(checks[index::count] for index in range(count))
 
 
 def configured_whole_checks():
     return tuple(check for check in configured_checks() if check[0] in WHOLE_GROUPS)
+
+
+def configured_collector_checks():
+    return tuple(check for check in configured_checks() if check[0] in COLLECTOR_GROUPS)
 
 
 def run_identity():
@@ -173,6 +181,7 @@ def manifest(root):
         ],
         "shards": [[check[0] for check in shard] for shard in configured_shards()],
         "whole_groups": [check[0] for check in configured_whole_checks()],
+        "collector_groups": [check[0] for check in configured_collector_checks()],
         "verus": read_json(root / "config/toolchain.json")["verus"],
         "agent_profile_blobs": agent_profile_blobs(root),
         "source_bindings": {
@@ -310,16 +319,23 @@ def check_bound_report(root, check, report, bindings, whole=None):
             raise ValueError("semantic case edits an unbound production source")
 
 
-def run_checks(root, executable, output, only=None, shard=None, whole_baseline=None, whole_groups=False):
+def run_checks(
+    root, executable, output, only=None, shard=None, whole_baseline=None,
+    whole_groups=False, collector_groups=False,
+):
     output.mkdir(parents=True, exist_ok=True)
     (output / SUMMARY).unlink(missing_ok=True)
-    if sum((only is not None, shard is not None, whole_groups)) > 1:
+    if sum((only is not None, shard is not None, whole_groups, collector_groups)) > 1:
         raise ValueError("group and shard selectors are mutually exclusive")
     checks = configured_checks(only)
     if whole_groups:
         checks = configured_whole_checks()
         if not checks:
             raise ValueError("no configured whole-job semantic groups")
+    if collector_groups:
+        checks = configured_collector_checks()
+        if not checks:
+            raise ValueError("no configured collector-job semantic groups")
     if shard is not None:
         shards = configured_shards()
         if type(shard) is not int or not 0 <= shard < len(shards):
@@ -333,7 +349,7 @@ def run_checks(root, executable, output, only=None, shard=None, whole_baseline=N
         environment["JBIG2_WHOLE_BASELINE"] = str(whole_baseline.resolve())
     identity_binding = run_identity()
     version = current["verus"]["version"]
-    workers = 1 if only is not None or shard is not None or whole_groups else WORKERS
+    workers = 1 if only is not None or shard is not None or whole_groups or collector_groups else WORKERS
 
     def execute(check):
         identity, script, expected, strong, weak = check
@@ -382,7 +398,7 @@ def run_checks(root, executable, output, only=None, shard=None, whole_baseline=N
         "checks": results,
         "scope": (
             "All configured isolated semantic contrasts; whole-crate verification remains separate."
-            if only is None and shard is None and not whole_groups else
+            if only is None and shard is None and not whole_groups and not collector_groups else
             "Complete selected groups; whole-crate and all-shard collection remain separate."
         ),
     }
@@ -530,7 +546,8 @@ def measured_shard_seconds(rows):
         seconds[row["id"]] = elapsed
     measured = [sum(seconds[check[0]] for check in shard) for shard in configured_shards()]
     whole_seconds = sum(seconds[check[0]] for check in configured_whole_checks())
-    if max([whole_seconds, *measured], default=0) > 1050:
+    collector_seconds = sum(seconds[check[0]] for check in configured_collector_checks())
+    if max([whole_seconds, collector_seconds, *measured], default=0) > 1050:
         raise ValueError("complete measured semantic profile exceeds the 1050-second guard")
     return measured
 
@@ -544,7 +561,10 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
     prefix = artifact_prefix()
     checks = configured_checks()
     shards = configured_shards()
+    collector_checks = configured_collector_checks()
     expected = {prefix + "whole", *(prefix + f"shard-{index}" for index in range(len(shards)))}
+    if collector_checks:
+        expected.add(prefix + "collector")
     if {path.name for path in inputs.iterdir()} != expected or any(
         not path.is_dir() or path.is_symlink() for path in inputs.iterdir()
     ):
@@ -561,6 +581,8 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
         (index, shard, inputs / (prefix + f"shard-{index}"))
         for index, shard in enumerate(shards)
     ]
+    if collector_checks:
+        producers.append((None, collector_checks, inputs / (prefix + "collector")))
     whole_checks = configured_whole_checks()
     if whole_checks:
         producers.append((None, whole_checks, whole / "semantic-groups"))
@@ -605,7 +627,7 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
             path.relative_to(shard_root) for path in shard_root.rglob("*") if path.is_file()
         } != {TRACE / name for name in expected_files}:
             raise ValueError(f"unexpected files outside semantic shard evidence: {index}")
-        if index is None:
+        if shard_root == whole / "semantic-groups":
             whole_semantic_files = {
                 Path("semantic-groups") / TRACE / name for name in expected_files
             }
@@ -633,6 +655,9 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
         "measured_whole_group_seconds": sum(
             row["seconds"] for row in rows if row["id"] in WHOLE_GROUPS
         ),
+        "measured_collector_group_seconds": sum(
+            row["seconds"] for row in rows if row["id"] in COLLECTOR_GROUPS
+        ),
         "scope": "Complete same-run whole-crate and all configured isolated semantic evidence.",
     }
     write_json(output / TRACE / SUMMARY, result)
@@ -645,6 +670,7 @@ def main():
     mode.add_argument("--only")
     mode.add_argument("--shard", type=int)
     mode.add_argument("--whole-groups", action="store_true")
+    mode.add_argument("--collector-groups", action="store_true")
     mode.add_argument("--matrix", action="store_true")
     mode.add_argument("--seal-whole", type=Path)
     mode.add_argument("--aggregate", type=Path)
@@ -680,6 +706,7 @@ def main():
                 only=arguments.only, shard=arguments.shard,
                 whole_baseline=arguments.whole_baseline,
                 whole_groups=arguments.whole_groups,
+                collector_groups=arguments.collector_groups,
             )
     except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.SubprocessError) as error:
         print(f"semantic proof orchestration failed: {error}", file=sys.stderr)
