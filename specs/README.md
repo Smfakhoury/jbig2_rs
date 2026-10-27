@@ -72,10 +72,15 @@ For example, arithmetic and MMR models refer to runtime tables. Membership or
 consistency with those arrays is not independent table fidelity. Model theorems
 and strong/weaker controls do not remove this review obligation.
 
-The generated traceability report now includes an initial model audit inventory:
-registered roles and requirement locators, additional spec-function discoveries,
-and lexical implementation-constant references. Unclassified entries are
-visible gaps. Neither this inventory nor its structural checks approve a model.
+The generated traceability report includes an authored, source-only purpose
+inventory. The requirements ledger's `model_classifications` families own exact
+members, justifications and unresolved ambiguity, separately from normative
+requirement links. The current bounded authoring slice covers reader/bitmap
+models and selected support; other declarations remain explicitly pending.
+Original roles/locators and unregistered helper status are preserved. Lexical
+implementation-constant references are dependencies to review, not normative
+ground truth. Neither these navigation labels nor structural checks approve a
+model. See the [inventory scope and freshness rules](../docs/specification-review.md#source-only-navigation-classification).
 
 For exact source/trust limits read [verifier limitations](../docs/verifier-limitations.md).
 For wider scope and evidence-strength distinctions read

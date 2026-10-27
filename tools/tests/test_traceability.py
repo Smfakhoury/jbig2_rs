@@ -121,6 +121,24 @@ class TraceabilityTests(unittest.TestCase):
             "jbig2_rs_production::leaf::identity",
         }
         self.discovered = {("lib", "leaf::tests::identity_returns_input")}
+        self.classification_fixture()
+
+    def classification_fixture(self):
+        declarations, _ = checker.audit_declarations(self.root, self.ledger)
+        families = []
+        for file in sorted({key[0] for key in declarations}):
+            families.append({
+                "file": file,
+                "members": [f"{kind}::{name}" for path, kind, name in sorted(declarations) if path == file],
+                "classification": "classification-pending",
+                "justification": "Synthetic exact-membership fixture.",
+                "ambiguity": "Body-purpose review pending.",
+            })
+        self.ledger["model_classifications"] = {
+            "review": "author-navigation-only-not-independent-normative-approval",
+            **checker.classification_evidence(self.root, self.ledger),
+            "families": families,
+        }
 
     def write(self, relative, text):
         path = self.root / relative
@@ -194,12 +212,16 @@ class TraceabilityTests(unittest.TestCase):
                 pub open spec fn undiscovered() -> bool { super::EXAMPLE_TABLE.len() > 0 }
             }
         """)
+        self.classification_fixture()
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertEqual(report["registered_definition_count"], 1)
         self.assertEqual(report["registered_spec_count"], 1)
         self.assertEqual(report["definitions"][0]["classification"], "classification-pending")
         self.assertEqual(report["definitions"][0]["requirements"][0]["clause"], "5.4")
-        self.assertEqual(report["unregistered_spec_functions"], [
+        self.assertEqual([
+            {key: row[key] for key in ("file", "name")}
+            for row in report["unregistered_spec_functions"]
+        ], [
             {"file": "specs/extra.rs", "name": "undiscovered"},
         ])
         self.assertEqual(report["implementation_constant_references"], {
@@ -211,6 +233,7 @@ class TraceabilityTests(unittest.TestCase):
     def test_inline_audit_references_bind_existing_physical_definition_files(self):
         source = (self.root / "specs/model.rs").read_text()
         self.write("specs/model.rs", "// Audit: identity-model\n" + source)
+        self.classification_fixture()
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertTrue(report["definitions"][0]["inline_audit_reference"])
         for path, annotation in (
@@ -224,6 +247,131 @@ class TraceabilityTests(unittest.TestCase):
                 checker.audit_inventory(self.root, self.ledger)
             if path != "specs/model.rs":
                 (self.root / path).unlink()
+
+    def test_authored_purposes_preserve_registration_and_never_approve_candidates(self):
+        self.write("specs/extra.rs", "verus! { pub open spec fn helper() -> bool { true } }")
+        self.classification_fixture()
+        families = self.ledger["model_classifications"]["families"]
+        for family in families:
+            family["classification"] = "candidate-standard-facing-model"
+            family["ambiguity"] = "Candidate only; independent normative review unresolved."
+        validate(self.ledger, "traceability")
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertTrue(report["classification_complete"])
+        self.assertFalse(report["normative_approval"])
+        self.assertEqual(report["classification_counts"], {"candidate-standard-facing-model": 2})
+        self.assertEqual(report["unresolved_declarations"], [])
+        self.assertEqual(report["definitions"][0]["requirements"][0]["id"], "T88-FIXTURE")
+        helper = report["unregistered_spec_functions"][0]
+        self.assertEqual(helper["requirements"], [])
+        self.assertFalse(helper["normative_approval"])
+        self.assertEqual(helper["classification_review"], "author-navigation-only-not-independent-normative-approval")
+
+    def test_pending_classification_requires_visible_ambiguity_and_is_not_complete(self):
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertFalse(report["classification_complete"])
+        self.assertEqual(report["unresolved_declarations"], [{
+            "file": "specs/model.rs", "kind": "spec", "name": "identity",
+            "ambiguity": "Body-purpose review pending.",
+        }])
+        authored = self.ledger["model_classifications"]
+        authored["families"][0]["ambiguity"] = ""
+        with self.assertRaises(ValidationError):
+            validate(self.ledger, "traceability")
+        authored["families"][0]["ambiguity"] = "Unresolved."
+        authored["review"] = "independently-approved"
+        with self.assertRaises(ValidationError):
+            validate(self.ledger, "traceability")
+
+    def test_classification_membership_rejects_missing_unknown_duplicate_and_wrong_kind(self):
+        original = copy.deepcopy(self.ledger["model_classifications"]["families"])
+        for members in ([], ["spec::unknown"], ["proof::identity"], ["spec::identity"] * 2):
+            self.ledger["model_classifications"]["families"] = copy.deepcopy(original)
+            self.ledger["model_classifications"]["families"][0]["members"] = members
+            with self.subTest(members=members), self.assertRaises(ValueError):
+                checker.audit_inventory(self.root, self.ledger)
+        self.ledger["model_classifications"]["families"] = original * 2
+        with self.assertRaisesRegex(ValueError, "duplicate navigation"):
+            checker.audit_inventory(self.root, self.ledger)
+
+    def test_new_and_deleted_unregistered_declarations_surface_even_with_rebound_sources(self):
+        self.write("specs/extra.rs", "verus! { pub open spec fn helper() -> bool { true } }")
+        self.classification_fixture()
+        original = (self.root / "specs/extra.rs").read_text()
+        for changed in (
+            original.replace("helper", "renamed"),
+            "verus! { pub open spec fn helper() -> bool { true } pub open spec fn added() -> bool { true } }",
+            "verus! {}",
+        ):
+            self.write("specs/extra.rs", changed)
+            self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+            with self.subTest(changed=changed), self.assertRaisesRegex(ValueError, "membership differs"):
+                checker.audit_inventory(self.root, self.ledger)
+
+    def test_new_file_and_deleted_registered_declaration_fail_closed(self):
+        self.write("specs/new.rs", "verus! { pub open spec fn added() -> bool { true } }")
+        with self.assertRaisesRegex(ValueError, "stale navigation"):
+            checker.audit_inventory(self.root, self.ledger)
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "membership differs"):
+            checker.audit_inventory(self.root, self.ledger)
+        self.write("specs/model.rs", "verus! {}")
+        with self.assertRaisesRegex(ValueError, "missing or ambiguous"):
+            checker.audit_inventory(self.root, self.ledger)
+
+    def test_classifications_reject_stale_bodies_dependencies_and_registry_bindings(self):
+        for name in ("specs/model.rs", "src/lib.rs", "src/leaf.rs"):
+            path = self.root / name
+            original = path.read_bytes()
+            path.write_bytes(original + b"\n// changed dependency\n")
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "stale navigation"):
+                checker.audit_inventory(self.root, self.ledger)
+            path.write_bytes(original)
+        self.ledger["definitions"]["identity-model"]["role"] = "changed role"
+        with self.assertRaisesRegex(ValueError, "stale navigation"):
+            checker.audit_inventory(self.root, self.ledger)
+
+    def test_duplicate_declarations_and_registry_aliases_are_not_interchangeable(self):
+        self.write("specs/extra.rs", """
+            verus! {
+                pub open spec fn repeated() -> bool { true }
+                pub open spec fn repeated() -> bool { false }
+            }
+        """)
+        with self.assertRaisesRegex(ValueError, "ambiguous audit declaration"):
+            checker.audit_inventory(self.root, self.ledger)
+        (self.root / "specs/extra.rs").unlink()
+        self.ledger["definitions"]["alias"] = copy.deepcopy(self.ledger["definitions"]["identity-model"])
+        with self.assertRaisesRegex(ValueError, "duplicate audit declaration"):
+            checker.audit_inventory(self.root, self.ledger)
+
+    def test_discovery_masks_noncode_and_does_not_infer_purpose_from_names(self):
+        self.write("specs/extra.rs", '''
+            const TEXT: &str = "pub open spec fn phantom() -> bool { true }";
+            // pub open spec fn commented() -> bool { true }
+            verus! { pub open spec fn output_valid() -> bool { true } }
+        ''')
+        self.classification_fixture()
+        family = self.ledger["model_classifications"]["families"][0]
+        self.assertEqual(family["members"], ["spec::output_valid"])
+        family.update(classification="project-result-model", justification="Synthetic output relation despite its name.")
+        report = checker.audit_inventory(self.root, self.ledger)
+        helper = report["unregistered_spec_functions"][0]
+        self.assertEqual(helper["name"], "output_valid")
+        self.assertEqual(helper["classification"], "project-result-model")
+        self.assertFalse(report["classification_complete"])
+
+    def test_classification_binding_tampering_and_module_rerouting_fail(self):
+        authored = self.ledger["model_classifications"]
+        for field in ("registry_sha256", "project_source_sha256"):
+            original = authored[field]
+            authored[field] = "0" * 64
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "stale navigation"):
+                checker.audit_inventory(self.root, self.ledger)
+            authored[field] = original
+        self.ledger["definitions"]["identity-model"]["module_path"] = ["leaf"]
+        with self.assertRaisesRegex(ValueError, "module points to another file"):
+            checker.audit_inventory(self.root, self.ledger)
 
     def test_audit_snapshot_is_explicitly_unreviewed_and_requires_an_external_pin(self):
         packet, relative = self.packet_fixture()

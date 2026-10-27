@@ -22,7 +22,84 @@ ROOT = Path(__file__).resolve().parents[1]
 PREFIX = "jbig2_rs_production::"
 
 
+def classification_evidence(root, ledger):
+    """Conservative project-source binding, not a normative dependency closure."""
+    paths = sorted(
+        path.relative_to(root).as_posix()
+        for directory in ("src", "specs", "proofs")
+        for path in (root / directory).rglob("*.rs")
+    )
+    sources = {
+        name: hashlib.sha256(source_path(root, name).read_bytes()).hexdigest()
+        for name in paths
+    }
+    return {
+        field: hashlib.sha256(json.dumps(
+            value, sort_keys=True, separators=(",", ":"),
+        ).encode("utf-8")).hexdigest()
+        for field, value in (
+            ("registry_sha256", ledger["definitions"]),
+            ("project_source_sha256", sources),
+        )
+    }
+
+
+def audit_declarations(root, ledger):
+    """Reuse masked production source and module resolution for exact membership."""
+    registered = {}
+    for identity, definition in ledger["definitions"].items():
+        key = (definition["file"], definition["kind"], definition["name"])
+        if key in registered:
+            raise ValueError(f"duplicate audit declaration identity: {key}")
+        check_definition(root, definition, None)
+        registered[key] = identity
+    declarations = set(registered)
+    paths = {
+        path.relative_to(root).as_posix()
+        for directory in ("specs", "proofs/model_support")
+        for path in (root / directory).rglob("*.rs")
+    } | {key[0] for key in registered}
+    for relative in sorted(paths):
+        code = production_code(source_path(root, relative).read_bytes(), exclude_proofs=False)
+        seen = set()
+        for match in re.finditer(r"\b(spec|proof)\s+fn\s+([A-Za-z_]\w*)\b", code):
+            key = (relative, match[1], match[2])
+            if key in seen:
+                raise ValueError(f"ambiguous audit declaration identity: {key}")
+            seen.add(key)
+            if match[1] == "spec" and relative.startswith(("specs/", "proofs/model_support/")):
+                declarations.add(key)
+    return declarations, registered
+
+
+def audit_classifications(root, ledger, declarations):
+    authored = ledger["model_classifications"]
+    expected = classification_evidence(root, ledger)
+    if any(authored[field] != value for field, value in expected.items()):
+        raise ValueError("stale navigation classification source/binding evidence")
+    classifications = {}
+    for family in authored["families"]:
+        for member in family["members"]:
+            kind, name = member.split("::")
+            key = (family["file"], kind, name)
+            if key in classifications:
+                raise ValueError(f"duplicate navigation classification member: {key}")
+            classifications[key] = {
+                "classification": family["classification"],
+                "classification_review": authored["review"],
+                "justification": family["justification"],
+                "ambiguity": family["ambiguity"],
+            }
+    if set(classifications) != declarations:
+        missing = sorted(declarations - set(classifications))
+        unknown = sorted(set(classifications) - declarations)
+        raise ValueError(f"navigation classification membership differs: missing={missing}, unknown={unknown}")
+    return classifications
+
+
 def audit_inventory(root, ledger):
+    declarations, registered = audit_declarations(root, ledger)
+    classifications = audit_classifications(root, ledger, declarations)
     references = {
         identity: [
             {"id": row["id"], "standard": row["standard"], "clause": row["clause"],
@@ -33,21 +110,20 @@ def audit_inventory(root, ledger):
         for identity in ledger["definitions"]
     }
     definitions = []
-    registered = set()
     for identity, definition in ledger["definitions"].items():
-        registered.add((definition["file"], definition["name"]))
         definitions.append({
             "id": identity, **copy.deepcopy(definition),
-            "classification": "proof-support" if definition["kind"] in {"proof", "macro"} else "classification-pending",
+            **classifications[(definition["file"], definition["kind"], definition["name"])],
             "requirements": references[identity],
             "normative_approval": False,
         })
-    unregistered = []
+    unregistered = [
+        {"file": file, "kind": kind, "name": name, **classifications[(file, kind, name)],
+         "requirements": [], "normative_approval": False}
+        for file, kind, name in sorted(declarations - set(registered))
+    ]
     inline_references = set()
     implementation_dependencies = {}
-    declaration = re.compile(
-        r"(?m)^\s*(?:pub(?:\([^)]*\))?\s+)?(?:(?:open|closed|opaque)\s+)?spec\s+fn\s+([A-Za-z_]\w*)\b"
-    )
     for directory in ("specs", "proofs/model_support"):
         for path in sorted((root / directory).rglob("*.rs")):
             relative = path.relative_to(root).as_posix()
@@ -61,23 +137,30 @@ def audit_inventory(root, ledger):
                     raise ValueError(f"unknown, duplicate or misrouted inline audit reference: {identity}")
                 inline_references.add(identity)
             code = production_code(source, exclude_proofs=False)
-            for match in declaration.finditer(code):
-                if (relative, match[1]) not in registered:
-                    unregistered.append({"file": relative, "name": match[1]})
             names = sorted(set(re.findall(r"\bsuper::([A-Z][A-Z_0-9]+)\b", code)))
             if names:
                 implementation_dependencies[relative] = names
     for definition in definitions:
         definition["inline_audit_reference"] = definition["id"] in inline_references
     return {
-        "scope": "Registered ledger definitions and spec-function discovery; not an exhaustive normative decomposition or transitive dependency analysis.",
+        "scope": "Registered ledger definitions and all spec functions in specs/ and proofs/model_support/. Other unregistered proof/view declarations are outside this bounded inventory. Purpose only, not proof strength, normative decomposition or transitive dependency analysis.",
         "registered_definition_count": len(definitions),
         "registered_spec_count": sum(row["kind"] == "spec" for row in definitions),
         "definitions": definitions,
         "unregistered_spec_functions": unregistered,
         "implementation_constant_references": implementation_dependencies,
-        "classification_complete": not unregistered and all(
-            row["classification"] != "classification-pending" for row in definitions
+        "implementation_dependency_review": "Lexical implementation constants/tables are dependencies to review, not normative ground truth; source binding conservatively covers all project Rust.",
+        "classification_counts": {
+            purpose: sum(row["classification"] == purpose for row in classifications.values())
+            for purpose in sorted({row["classification"] for row in classifications.values()})
+        },
+        "unresolved_declarations": [
+            {"file": file, "kind": kind, "name": name, "ambiguity": row["ambiguity"]}
+            for (file, kind, name), row in sorted(classifications.items())
+            if row["classification"] == "classification-pending"
+        ],
+        "classification_complete": all(
+            row["classification"] != "classification-pending" for row in classifications.values()
         ),
         "normative_approval": False,
     }
@@ -766,6 +849,11 @@ def main():
             f"Status: **{report['status']}**. No full-conformance or complete-proof claim.", "",
             f"Reviewed decomposition complete: **{report['decomposition_review_complete']}**.",
             f"Semantic claims complete: **{report['semantic_claims_complete']}**.", "",
+            "## Source-only author navigation (not independent normative approval)", "",
+            f"Purpose classification complete: **{report['model_audit_inventory']['classification_complete']}**.",
+            f"Purpose counts: `{json.dumps(report['model_audit_inventory']['classification_counts'], sort_keys=True)}`.",
+            "Exact members, justifications, ambiguities and unchanged requirement links are in "
+            "`model_audit_inventory` in the accompanying JSON report.", "",
             "| Requirement | Standard | Clause/context | Basis | Scope | Evidence strength | Open gaps |",
             "|---|---|---|---|---|---|---|",
         ]

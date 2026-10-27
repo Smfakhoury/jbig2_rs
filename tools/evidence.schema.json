@@ -88,9 +88,41 @@
     },
     "traceability": {
       "allOf": [{"$ref": "#/$defs/versioned"}],
-      "required": ["review_policy", "standards", "source_consultations", "features", "definitions", "bindings", "requirements"],
+      "required": ["review_policy", "standards", "source_consultations", "features", "definitions", "bindings", "requirements", "model_classifications"],
       "properties": {
         "review_policy": {"$ref": "#/$defs/nonempty"},
+        "model_classifications": {
+          "type": "object", "additionalProperties": false,
+          "required": ["review", "registry_sha256", "project_source_sha256", "families"],
+          "properties": {
+            "review": {"const": "author-navigation-only-not-independent-normative-approval"},
+            "registry_sha256": {"$ref": "#/$defs/sha256"},
+            "project_source_sha256": {"$ref": "#/$defs/sha256"},
+            "families": {
+              "type": "array", "minItems": 1,
+              "items": {
+                "type": "object", "additionalProperties": false,
+                "required": ["file", "members", "classification", "justification", "ambiguity"],
+                "properties": {
+                  "file": {"type": "string", "pattern": "^(specs|proofs)/.+\\.rs$"},
+                  "members": {
+                    "type": "array", "minItems": 1, "uniqueItems": true,
+                    "items": {"type": "string", "pattern": "^(spec|proof|macro)::[A-Za-z_][A-Za-z0-9_]*$"}
+                  },
+                  "classification": {
+                    "enum": ["project-result-model", "project-policy", "representation-invariant", "proof-support", "candidate-standard-facing-model", "classification-pending"]
+                  },
+                  "justification": {"$ref": "#/$defs/nonempty"},
+                  "ambiguity": {"type": "string"}
+                },
+                "allOf": [{
+                  "if": {"properties": {"classification": {"const": "classification-pending"}}},
+                  "then": {"properties": {"ambiguity": {"$ref": "#/$defs/nonempty"}}}
+                }]
+              }
+            }
+          }
+        },
         "standards": {
           "type": "array", "minItems": 1,
           "items": {

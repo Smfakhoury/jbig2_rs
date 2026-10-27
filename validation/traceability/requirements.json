@@ -1,5 +1,236 @@
 {
   "schema_version": 1,
+  "model_classifications": {
+    "review": "author-navigation-only-not-independent-normative-approval",
+    "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
+    "project_source_sha256": "81422cf9c1f98b8001d32f9110eb4b7e1229a53364bcd46953a04c5d14ebc3a9",
+    "families": [
+      {
+        "file": "specs/readers.rs",
+        "members": ["spec::bit_at", "spec::bits_value"],
+        "classification": "project-result-model",
+        "justification": "bit_at extracts the MSB-first bit; bits_value recursively accumulates those bits in input order. src/reader.rs read_bits promises this numeric result; proofs/spec_properties/readers.rs bounds the recurrence and proofs/production_impl/readers.rs connects each actual bit. These describe project results, not just cursor validity.",
+        "ambiguity": "Independent standard alignment and caller interpretation are unreviewed; no candidate is approved by this result classification."
+      },
+      {
+        "file": "specs/readers.rs",
+        "members": ["spec::bit_read_error", "spec::eof_error"],
+        "classification": "project-policy",
+        "justification": "eof_error constructs the Rust UnexpectedEof payload. bit_read_error prioritizes InvalidBitCount above remaining-bit EOF and None, with a 32-bit API cap; src/reader.rs uses these exact typed diagnostics. This is project API/error policy rather than an ITU exception rule.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/bitmap.rs",
+        "members": ["spec::combine", "spec::operator_byte", "spec::operator_word", "spec::black_span_bits", "spec::black_span_result", "spec::zeroed_storage", "spec::filled_byte", "spec::filled_storage", "spec::prefix_copy_result", "spec::row_copy_result", "spec::pixel_result", "spec::filled_pixels", "spec::compose_frame"],
+        "classification": "project-result-model",
+        "justification": "Bodies specify Boolean/packed operator outputs, exact span effects, zero/fill byte content (including masked tails), copy source selection and untouched bytes, optional visible pixels, or unchanged composition bytes. prefix_copy_result is an output/frame relation despite its prefix name. src/bitmap.rs contracts consume these; filled_storage includes storage_valid but additionally quantifies every byte. They depend on the bitmap field views in proofs/shared/views.rs, not independent normative storage assumptions.",
+        "ambiguity": "Helper output/frame semantics are not a complete placement/clipping/rendering algorithm or independently approved standard translation."
+      },
+      {
+        "file": "specs/bitmap.rs",
+        "members": ["spec::storage_valid", "spec::padding_is_zero", "spec::invariant", "spec::coordinates_in_bounds", "spec::region_request_valid"],
+        "classification": "representation-invariant",
+        "justification": "storage_valid equates stride/length to dimensions; padding_is_zero restricts unused bits; invariant conjoins them. coordinates_in_bounds and region_request_valid restrict legal pixel/rectangle access to stored extents. Unlike copy/fill relations these predicates alone prescribe no transformed output. Inspect src/bitmap.rs access/copy preconditions and proofs/shared/views.rs field access.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/bitmap.rs",
+        "members": ["spec::dimensions_checked", "spec::stride_checked", "spec::allocation_checked", "spec::limits_allow_bitmap"],
+        "classification": "project-policy",
+        "justification": "Bodies express u64/usize arithmetic admissibility and Limits width/height/pixel/managed-memory checks used by src/bitmap.rs constructors. They model project machine/resource acceptance, not independent normative image limits or observed allocator capacity.",
+        "ambiguity": "Requested packed storage bounds do not close the held observed-capacity/trust decision."
+      },
+      {
+        "file": "specs/bitmap.rs",
+        "members": ["spec::byte_operator_bit", "spec::word_operator_bit", "spec::stride_for_width", "spec::byte_index", "spec::bit_mask", "spec::byte_bit", "spec::set_byte_bit", "spec::chunk_byte", "spec::chunk_value", "spec::stored_pixel", "spec::clipped_width", "spec::clipped_height", "spec::compose_byte_may_change"],
+        "classification": "proof-support",
+        "justification": "Bodies supply bit/byte/word projection, packed addressing, view-based pixel access, big-endian chunk conversion, clipped extents and an existential touched-byte set. These are compositional vocabulary for the actual result/frame relations in this file and src/bitmap.rs, not standalone claims of complete decoding. stored_pixel uses the proved field views in proofs/shared/views.rs.",
+        "ambiguity": "These helpers can also describe observable values; the primary navigation purpose here is support for the enclosing bitmap contracts, not a proof-strength ranking."
+      },
+      {
+        "file": "proofs/shared/bitmap.rs",
+        "members": ["spec::black_fill_prefix"],
+        "classification": "proof-support",
+        "justification": "The body partitions rows at completed: earlier rows equal filled_byte and later rows remain 0xFF. initial_black_fill/black_fill_step advance this internal tail-clearing accumulator toward filled_storage; this is not the final public fill result.",
+        "ambiguity": ""
+      },
+      {
+        "file": "proofs/spec_properties/readers.rs",
+        "members": ["spec::bits_limit"],
+        "classification": "proof-support",
+        "justification": "The recurrence starts at one and doubles count times; bits_limit_monotone and bits_value_bound use it to prove numeric bounds for the reader accumulation. It does not specify which input bits were read.",
+        "ambiguity": ""
+      },
+      {
+        "file": "proofs/production_impl/readers.rs",
+        "members": ["macro::production_read_bits_after", "macro::production_read_bits_before"],
+        "classification": "proof-support",
+        "justification": "before saves ghost value/position; after reveals bit_at/bits_value and connects the actual shifted byte, position increment and previous accumulator to the recurrence. These macros support the src/reader.rs loop, not additional normative rules.",
+        "ambiguity": ""
+      },
+      {
+        "file": "proofs/model_support/document.rs",
+        "members": ["spec::random_header_windows", "spec::random_payload_windows", "spec::sequential_windows"],
+        "classification": "classification-pending",
+        "justification": "Exact discovered membership is recorded without adding normative requirement links.",
+        "ambiguity": "Outside the authored reader/bitmap slice; body/dependency and caller-purpose review of container histories remains pending."
+      },
+      {
+        "file": "proofs/model_support/mmr.rs",
+        "members": ["spec::future_rows_white", "spec::raster_inner", "spec::raster_outer", "spec::reference_cursor_matches", "spec::row_cache_prefix", "spec::transition_prefix_valid", "spec::transition_span_result"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded; original roles and normative links remain separate.",
+        "ambiguity": "MMR cursor/transition/raster predicates mix accumulator and result vocabulary; their bodies and use sites need a separate purpose review."
+      },
+      {
+        "file": "proofs/production_impl/arithmetic.rs",
+        "members": ["macro::production_decode_interval_subtraction", "macro::production_integer_history_index", "macro::production_integer_magnitude", "macro::production_qe_transition_valid"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macros are retained by exact identity, without classifying by macro kind.",
+        "ambiguity": "Arithmetic proof bodies/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/production_impl/bitmap.rs",
+        "members": ["macro::production_bitmap_row_copy_bounds", "macro::production_filled_storage_result", "macro::production_filled_storage_step", "macro::production_filled_tail_bounds"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macros are retained by exact identity; classifying the bitmap model does not automatically classify every attached proof macro.",
+        "ambiguity": "Individual macro body/dependency review has not been completed in this slice."
+      },
+      {
+        "file": "proofs/production_impl/document.rs",
+        "members": ["macro::production_document_fields", "macro::production_known_segment_data_fields", "macro::production_page_information_count_step", "macro::production_random_access_complete", "macro::production_random_header_append", "macro::production_random_payload", "macro::production_sequential_complete", "macro::production_sequential_window_append"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macros are retained by exact identity.",
+        "ambiguity": "Container composition proof bodies/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/production_impl/file_header.rs",
+        "members": ["macro::production_file_header_result"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macro is retained by exact identity.",
+        "ambiguity": "File-header proof body/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/production_impl/generic_region.rs",
+        "members": ["macro::production_generic_copied_row_pixels", "macro::production_generic_template_facts"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macros are retained by exact identity.",
+        "ambiguity": "Generic-region proof bodies/dependencies are outside this authored slice; no held encoded fixture work is attempted."
+      },
+      {
+        "file": "proofs/production_impl/mmr.rs",
+        "members": ["macro::production_mmr_trace_output"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macro is retained by exact identity.",
+        "ambiguity": "MMR output proof body/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/production_impl/segment_data.rs",
+        "members": ["macro::production_profiles_fields"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macro is retained by exact identity.",
+        "ambiguity": "Typed metadata proof body/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/production_impl/segment_header.rs",
+        "members": ["macro::production_reference_width", "macro::production_segment_header_fields", "macro::production_segment_reference_fields"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macros are retained by exact identity.",
+        "ambiguity": "Segment-reference/header proof bodies/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/production_impl/symbol_text.rs",
+        "members": ["macro::production_symbol_current_placement_witness"],
+        "classification": "classification-pending",
+        "justification": "Existing registered macro is retained by exact identity.",
+        "ambiguity": "Placement proof body/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/spec_properties/arithmetic.rs",
+        "members": ["spec::binary_value", "spec::pow2"],
+        "classification": "classification-pending",
+        "justification": "Existing registered definitions are retained by exact identity.",
+        "ambiguity": "Arithmetic property bodies/dependencies are outside this authored slice."
+      },
+      {
+        "file": "proofs/spec_properties/mmr.rs",
+        "members": ["spec::reference_prefix_skipped"],
+        "classification": "classification-pending",
+        "justification": "Existing registered definition is retained by exact identity.",
+        "ambiguity": "MMR reference-search property body/dependencies are outside this authored slice."
+      },
+      {
+        "file": "specs/arithmetic.rs",
+        "members": ["spec::context_after_decision", "spec::context_valid", "spec::decision_registers", "spec::decision_state", "spec::decode_error", "spec::decoder_byte_position", "spec::decoder_marker", "spec::decoder_position_valid", "spec::decoder_state_valid", "spec::decoder_valid", "spec::entry_decision", "spec::entry_index", "spec::entry_mps", "spec::eof_error", "spec::error_for_signal", "spec::exchange_decision", "spec::exchange_index", "spec::exchange_is_mps", "spec::exchange_mps", "spec::exchange_normalization", "spec::iaid_run", "spec::iaid_state", "spec::initialized_state", "spec::integer_bit_state", "spec::integer_bits_run", "spec::integer_history_step", "spec::integer_selection_state", "spec::integer_state", "spec::integer_step_state", "spec::normalized_state", "spec::refill_step", "spec::renormalization_steps"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "State transformations, validity, errors, measures and implementation QE table dependencies require body/use-site review beyond this slice; table membership is not normative fidelity."
+      },
+      {
+        "file": "specs/decode.rs",
+        "members": ["spec::allocation_bytes", "spec::bitmap_byte_count", "spec::bitmap_refs_valid", "spec::charge_succeeds", "spec::checked_sum_fits", "spec::collected_symbol_count", "spec::collected_symbols_valid", "spec::collector_bitmap_bytes", "spec::collector_decoded_limit", "spec::collector_memory_limit", "spec::collector_pages", "spec::dispatch_class", "spec::document_info", "spec::document_pages", "spec::first_symbol_index", "spec::generic_template_code", "spec::initial_resources_valid", "spec::page_bitmap", "spec::page_number", "spec::pattern_store_valid", "spec::referred_symbol_count", "spec::region_buffers_valid", "spec::region_intersects_page", "spec::release_succeeds", "spec::retained_bytes", "spec::runtime_last_stripe_end", "spec::runtime_open_stripe_max_row", "spec::runtime_pages_valid", "spec::symbol_group_count", "spec::symbol_store_valid", "spec::work_used"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Selection/results, store views/invariants and resource policy need individual body/dependency review; no capacity-policy inference is made."
+      },
+      {
+        "file": "specs/document.rs",
+        "members": ["spec::bounded_reads", "spec::contains_number", "spec::contiguous_pages", "spec::count_limits", "spec::declared_count_matches_pages", "spec::decoder_limits", "spec::default_limits", "spec::depth_witness", "spec::document_declared_page_count", "spec::document_organization", "spec::document_pages", "spec::document_segment_count", "spec::embedded_metadata", "spec::envelope_bytes", "spec::final_height", "spec::global_bytes", "spec::global_segment_count", "spec::header_byte_offset", "spec::initial_page_state", "spec::is_last_use", "spec::known_segment_data_fields", "spec::lower_chain", "spec::next_count_quota_result", "spec::page_association_allowed", "spec::page_finish_result", "spec::page_information_count", "spec::page_step", "spec::payload_byte_offset", "spec::payload_window", "spec::producer_retained_for_later_use", "spec::production_is_intermediate_region", "spec::public_page_fields", "spec::public_page_height", "spec::quota_result", "spec::random_access_container_fields", "spec::random_access_segment_fields", "spec::reference_class_allowed", "spec::reference_count", "spec::references_resolve_lower", "spec::release_allowed", "spec::segment_headers", "spec::segment_metadata", "spec::segment_policy_allowed", "spec::sequential_container_fields", "spec::sequential_offset", "spec::standalone_metadata", "spec::stripe_accepted", "spec::stripe_result", "spec::sum", "spec::unique_numbers", "spec::unknown_marker_fits", "spec::unknown_marker_valid", "spec::valid_profiles", "spec::work"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Container/page results, lifecycle, graph/retention interpretation and project quotas mix purposes and remain outside the authored slice."
+      },
+      {
+        "file": "specs/file_header.rs",
+        "members": ["spec::byte_length", "spec::colour_regions", "spec::extended_templates", "spec::has_signature", "spec::organization", "spec::page_count", "spec::valid"],
+        "classification": "classification-pending",
+        "justification": "Exact registered membership and existing source locators are retained.",
+        "ambiguity": "Wire interpretation versus accepted-header predicates needs a separate body/dependency review."
+      },
+      {
+        "file": "specs/generic_region.rs",
+        "members": ["spec::bitmap_storage_spec", "spec::context_value", "spec::contexts_compatible", "spec::contexts_valid", "spec::decoded_pixels", "spec::generic_adaptive_count", "spec::generic_context_bits", "spec::generic_contexts_valid", "spec::generic_pixel_decisions", "spec::generic_session_valid", "spec::generic_slot_adaptive", "spec::generic_slot_count", "spec::generic_slot_matches", "spec::generic_slot_x", "spec::generic_slot_y", "spec::generic_sltp_context", "spec::generic_template_code", "spec::generic_work_spec", "spec::pixel_measure", "spec::pow2", "spec::probability_error_for_signal", "spec::probability_states_valid", "spec::probability_validation_result", "spec::refinement_context_bits", "spec::refinement_contexts_valid", "spec::refinement_pixel_decisions", "spec::refinement_slot_adaptive", "spec::refinement_slot_count", "spec::refinement_slot_is_target", "spec::refinement_slot_matches", "spec::refinement_slot_x", "spec::refinement_slot_y", "spec::refinement_sltp_context", "spec::refinement_work_spec", "spec::reset_context_states", "spec::restore_context_states", "spec::row_measure", "spec::sample_or_zero", "spec::target_adaptive_valid", "spec::tpgd_next", "spec::tpgr_uses_prediction", "spec::unknown_length_accounting"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Context geometry, recurrence/results, representation and work policy need individual body review; no held encoded refinement work is undertaken."
+      },
+      {
+        "file": "specs/halftone.rs",
+        "members": ["spec::bitmaps_valid", "spec::clipped_axis_valid", "spec::decoder_state_valid", "spec::fixed_pixel", "spec::gray_binary_bit", "spec::gray_depth_expected", "spec::gray_depth_valid", "spec::grid_x_fixed", "spec::grid_y_fixed", "spec::halftone_flags_valid", "spec::halftone_header_accepted", "spec::halftone_header_fields", "spec::index_bit_inserted", "spec::indexes_valid", "spec::operator_code_valid", "spec::operator_for_code", "spec::pattern_count", "spec::pattern_flags_valid", "spec::pattern_header_accepted", "spec::pattern_header_fields", "spec::pow2", "spec::render_precedes", "spec::row_major_offset", "spec::signed_u32", "spec::wholly_outside", "spec::work_limit", "spec::work_used", "spec::work_valid"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Header results, grid/gray interpretation, storage and work predicates require individual body/dependency review."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": ["spec::add_limb", "spec::append_bit", "spec::assignment_codes", "spec::assignment_contents", "spec::assignment_order", "spec::assignment_prefix", "spec::assignment_starts", "spec::bucket", "spec::canonical_assignment", "spec::canonical_first_code", "spec::canonical_range_fits", "spec::checked_add_small", "spec::checked_shift_left_one", "spec::decoded_line_value", "spec::first_prefix", "spec::fits_in_bits", "spec::histogram", "spec::is_raw", "spec::line_decodable", "spec::line_lengths_valid", "spec::ordered_before", "spec::pow2", "spec::raw_lines", "spec::reader_valid", "spec::small_distance_from", "spec::subtract_limb", "spec::table_has_oob", "spec::wide_fits", "spec::wide_value"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Raw assignment results, wide arithmetic support and reader/line admissibility need individual body review; no encoded custom-Huffman fixture work is undertaken."
+      },
+      {
+        "file": "specs/mmr.rs",
+        "members": ["spec::bitmap_decodes", "spec::bitmap_storage_valid", "spec::bounded_bitmap_decodes", "spec::complete_run", "spec::exact_eofb", "spec::first_reference_candidate", "spec::horizontal_pair", "spec::mode_code_in_implementation_table", "spec::mode_matches", "spec::mode_prefix_matches", "spec::prefix_bitmap_decodes", "spec::raster_rows", "spec::raster_state", "spec::raster_step", "spec::raster_steps", "spec::reader_valid", "spec::reference_line_valid", "spec::reference_pair_matches", "spec::reference_position_eligible", "spec::required_eofb_prefix", "spec::row_cache_matches", "spec::rows_cache_pixels", "spec::rows_position", "spec::rows_reference", "spec::run_all_makeups", "spec::run_bit_length", "spec::run_code_in_implementation_tables", "spec::run_key_matches", "spec::run_prefix_matches", "spec::run_value_sum", "spec::span_byte", "spec::span_pixels", "spec::span_result", "spec::transition_black_at", "spec::transition_count_at", "spec::transition_span_state", "spec::transitions_ordered", "spec::white_reference_cache"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Raster histories/results, accumulator validity and implementation mode/run table dependencies need individual review; runtime table membership is not independent T.6 fidelity."
+      },
+      {
+        "file": "specs/segments.rs",
+        "members": ["spec::be_u32_at", "spec::combination_operator", "spec::dimensions_within_limits", "spec::extension_flags_valid", "spec::extension_kind", "spec::extension_payload_flags_valid", "spec::final_code_unit_zero", "spec::header_reference_count", "spec::header_references_start", "spec::header_retention_start", "spec::page_flags_match", "spec::page_information_fields", "spec::profile_length_matches", "spec::profiles_payload_fields", "spec::profiles_payload_valid", "spec::reference_value_at", "spec::reference_width", "spec::referred_header_fields", "spec::region_flags_match", "spec::retention_bit", "spec::retention_values_match", "spec::segment_header_fields", "spec::segment_type", "spec::short_count_valid", "spec::unused_retention_bits_zero"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Raw field results, acceptance/resource policy and retention interpretation require body/dependency review."
+      },
+      {
+        "file": "specs/symbol_text.rs",
+        "members": ["spec::arithmetic_codec_valid", "spec::arithmetic_contexts_valid", "spec::arithmetic_integer_result", "spec::arithmetic_symbol_id_result", "spec::bitmap_bytes", "spec::bitmap_charge_effect", "spec::bitmap_contents_match", "spec::bitmap_refs_valid", "spec::bitmaps_valid", "spec::clipped_end", "spec::clipped_start", "spec::codebook_len", "spec::codebook_selects", "spec::codebook_valid", "spec::codec_valid", "spec::custom_oob_compatible", "spec::dictionary_config_safe", "spec::dictionary_state_valid", "spec::export_indices_valid", "spec::export_progress_measure", "spec::exported_contents_match", "spec::floor_half", "spec::four_way_choice_result", "spec::generic_template_matches", "spec::integer_contexts_valid", "spec::integer_field_slot", "spec::placement_batch_valid", "spec::placement_for_current", "spec::placement_overlap", "spec::placement_preflight_result", "spec::placement_within_extents", "spec::pow2", "spec::prepared_placement_valid", "spec::refinement_choice_result", "spec::refinement_template_matches", "spec::signed_byte", "spec::strip_log_valid", "spec::symbol_code_length_expected", "spec::symbol_code_length_valid", "spec::symbol_id_selects", "spec::table_bindings_valid", "spec::text_config_safe", "spec::text_huffman_choices_safe", "spec::text_initialization_allowed", "spec::text_placement_allowed", "spec::text_state_valid", "spec::two_bit_choice_result", "spec::valid_strip_size", "spec::work_charge_effect", "spec::work_units"],
+        "classification": "classification-pending",
+        "justification": "Exact registered/discovered membership is recorded without adding helper requirements.",
+        "ambiguity": "Content/placement results, codec/store invariants, work policy and template/table dependencies need individual review; held aggregation/refinement fixture work is not attempted."
+      }
+    ]
+  },
   "review_policy": "Provisional assistant source/normative assessment, not owner approval or a conformance certificate. Source hashes bind the review. Functional contracts relate implementation to project models; translation from T.88 and T.6 remains a separate review obligation. Feature worklists are not exhaustive requirement counts.",
   "standards": [
     {
