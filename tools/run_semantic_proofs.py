@@ -158,7 +158,7 @@ def manifest(root):
     paths = set()
     for directory, patterns in (
         ("config", ("*.json",)), ("verification", ("*.json",)),
-        ("src", ("*.rs",)), ("specs", ("*.rs",)), ("proofs", ("*.rs",)),
+        ("src", ("*.rs",)), ("specs", ("*.rs", "*.md")), ("proofs", ("*.rs",)),
         ("tools", ("*.py", "*.txt", "*.json")), ("docs", ("*.md",)),
         ("validation", ("*.json", "*.md")), (".github", ("*.yml", "*.yaml", "*.md")),
     ):

@@ -2,6 +2,7 @@
 """Check provisional normative links, not the correctness of standard translation."""
 
 import argparse
+import copy
 import hashlib
 import json
 import re
@@ -19,6 +20,161 @@ from rust_tests import discover_tests as discover_cargo_tests, test_inventory
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = "jbig2_rs_production::"
+
+
+def audit_inventory(root, ledger):
+    references = {
+        identity: [
+            {"id": row["id"], "standard": row["standard"], "clause": row["clause"],
+             "review": row["review"], "obligation_kind": row.get("obligation_kind", "normative_rule")}
+            for row in ledger["requirements"]
+            if identity in row["models"] + row["proof_macros"]
+        ]
+        for identity in ledger["definitions"]
+    }
+    definitions = []
+    registered = set()
+    for identity, definition in ledger["definitions"].items():
+        registered.add((definition["file"], definition["name"]))
+        definitions.append({
+            "id": identity, **copy.deepcopy(definition),
+            "classification": "proof-support" if definition["kind"] in {"proof", "macro"} else "classification-pending",
+            "requirements": references[identity],
+            "normative_approval": False,
+        })
+    unregistered = []
+    inline_references = set()
+    implementation_dependencies = {}
+    declaration = re.compile(
+        r"(?m)^\s*(?:pub(?:\([^)]*\))?\s+)?(?:(?:open|closed|opaque)\s+)?spec\s+fn\s+([A-Za-z_]\w*)\b"
+    )
+    for directory in ("specs", "proofs/model_support"):
+        for path in sorted((root / directory).rglob("*.rs")):
+            relative = path.relative_to(root).as_posix()
+            source = source_path(root, relative).read_bytes()
+            for identity in re.findall(r"(?m)^\s*// Audit: ([A-Za-z0-9_-]+)\s*$", source.decode("utf-8")):
+                if (
+                    identity not in ledger["definitions"]
+                    or ledger["definitions"][identity]["file"] != relative
+                    or identity in inline_references
+                ):
+                    raise ValueError(f"unknown, duplicate or misrouted inline audit reference: {identity}")
+                inline_references.add(identity)
+            code = production_code(source, exclude_proofs=False)
+            for match in declaration.finditer(code):
+                if (relative, match[1]) not in registered:
+                    unregistered.append({"file": relative, "name": match[1]})
+            names = sorted(set(re.findall(r"\bsuper::([A-Z][A-Z_0-9]+)\b", code)))
+            if names:
+                implementation_dependencies[relative] = names
+    for definition in definitions:
+        definition["inline_audit_reference"] = definition["id"] in inline_references
+    return {
+        "scope": "Registered ledger definitions and spec-function discovery; not an exhaustive normative decomposition or transitive dependency analysis.",
+        "registered_definition_count": len(definitions),
+        "registered_spec_count": sum(row["kind"] == "spec" for row in definitions),
+        "definitions": definitions,
+        "unregistered_spec_functions": unregistered,
+        "implementation_constant_references": implementation_dependencies,
+        "classification_complete": not unregistered and all(
+            row["classification"] != "classification-pending" for row in definitions
+        ),
+        "normative_approval": False,
+    }
+
+
+def audit_packet(root, ledger, requirement_ids, ledger_path):
+    if (
+        not isinstance(requirement_ids, list) or not requirement_ids
+        or not all(isinstance(value, str) for value in requirement_ids)
+        or len(set(requirement_ids)) != len(requirement_ids)
+    ):
+        raise ValueError("audit packets need nonempty unique requirement IDs")
+    if load_json(source_path(root, ledger_path)) != ledger:
+        raise ValueError("audit ledger changed before snapshot creation")
+    selected = {row["id"]: row for row in ledger["requirements"]}
+    if any(identity not in selected for identity in requirement_ids):
+        raise ValueError("unknown audit requirement ID")
+    requirements = [selected[identity] for identity in requirement_ids]
+    definitions = {
+        identity: ledger["definitions"][identity]
+        for row in requirements for identity in row["models"] + row["proof_macros"]
+    }
+    for directory in ("src", "specs", "proofs", "tools", ".github/agents"):
+        if any(path.is_symlink() for path in (root / directory).rglob("*")):
+            raise ValueError("audit source snapshots must not contain symlinks")
+    paths = {
+        path.relative_to(root).as_posix()
+        for directory in ("src", "specs", "proofs")
+        for path in (root / directory).rglob("*.rs")
+    }
+    paths.update(
+        path.relative_to(root).as_posix()
+        for pattern in ("*.py", "*.json", "*.txt")
+        for path in (root / "tools").rglob(pattern)
+        if "__pycache__" not in path.relative_to(root).parts
+    )
+    paths.update((
+        ledger_path, "validation/source-provenance.json",
+        "config/support-matrix.json", "config/toolchain.json",
+        "tools/check_traceability.py", "tools/evidence.schema.json",
+        "Cargo.toml", "Cargo.lock", "verification/Cargo.toml", "verification/Cargo.lock",
+    ))
+    paths.update(
+        path.relative_to(root).as_posix()
+        for path in (root / ".github/agents").glob("*.agent.md")
+    )
+    for name in ("specs/README.md", "docs/specification-review.md"):
+        if (root / name).is_file():
+            paths.add(name)
+    sources = {}
+    for relative in sorted(paths):
+        unresolved = root / relative
+        if unresolved.is_symlink() or any(parent.is_symlink() for parent in unresolved.parents if parent != root):
+            raise ValueError("audit source snapshots must not contain symlinks")
+        sources[relative] = hashlib.sha256(source_path(root, relative).read_bytes()).hexdigest()
+    packet = {
+        "schema_version": 1,
+        "state": "unreviewed",
+        "scope": "Conservative all-Rust-source review snapshot, not an approved normative-only model freeze.",
+        "requirement_ids": list(requirement_ids),
+        "standards": [
+            copy.deepcopy(row) for row in ledger["standards"]
+            if row["id"] in {requirement["standard"] for requirement in requirements}
+        ],
+        "requirements": copy.deepcopy(requirements),
+        "definitions": copy.deepcopy(definitions),
+        "source_bindings": sources,
+        "human_adjudicator": None,
+        "normative_approval": False,
+        "document_processing_authorized": False,
+    }
+    packet["packet_sha256"] = hashlib.sha256(json.dumps(
+        packet, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")).hexdigest()
+    if any(
+        hashlib.sha256(source_path(root, name).read_bytes()).hexdigest() != value
+        for name, value in sources.items()
+    ):
+        raise ValueError("audit source changed during snapshot creation")
+    return packet
+
+
+def check_audit_packet(root, ledger, packet, expected_sha256, ledger_path):
+    if not isinstance(expected_sha256, str) or not re.fullmatch(r"[0-9a-f]{64}", expected_sha256):
+        raise ValueError("an independently supplied SHA-256 pin is required")
+    if not isinstance(packet, dict):
+        raise ValueError("audit packet must be a mapping")
+    payload = dict(packet)
+    declared = payload.pop("packet_sha256", None)
+    actual = hashlib.sha256(json.dumps(
+        payload, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")).hexdigest()
+    if declared != expected_sha256 or actual != expected_sha256:
+        raise ValueError("modified or unpinned audit packet")
+    expected = audit_packet(root, ledger, packet.get("requirement_ids"), ledger_path)
+    if packet != expected or expected["packet_sha256"] != expected_sha256:
+        raise ValueError("stale, modified or unpinned audit packet; no normative approval is inferred")
 
 
 def source_path(root, relative):
@@ -538,16 +694,50 @@ def main():
         help="Require reviewed requirement enumeration without treating recorded semantic gaps as closed.",
     )
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--audit-packet", type=Path, help="Write an explicitly unreviewed, hash-bound review snapshot.")
+    parser.add_argument("--audit-requirement", action="append", default=[], metavar="REQUIREMENT_ID")
+    parser.add_argument("--check-audit-packet", type=Path)
+    parser.add_argument("--expected-audit-sha256")
     arguments = parser.parse_args()
+    if arguments.audit_packet and arguments.check_audit_packet:
+        parser.error("audit packet creation and validation are separate operations")
+    if bool(arguments.check_audit_packet) != bool(arguments.expected_audit_sha256):
+        parser.error("packet validation requires a separately supplied --expected-audit-sha256")
+    if bool(arguments.audit_packet) != bool(arguments.audit_requirement):
+        parser.error("packet creation requires explicit --audit-requirement selections")
+    if arguments.audit_packet and (
+        not arguments.audit_packet.resolve().is_relative_to((ROOT / "target").resolve())
+        or arguments.audit_packet.resolve() == arguments.output.resolve()
+    ):
+        parser.error("create audit packets separately from reports under target/")
     if (arguments.require_complete or arguments.require_reviewed_decomposition) and (
         not arguments.verus_json or not arguments.discover_tests
     ):
         parser.error("completion gates need Verus evidence and Cargo test discovery")
     try:
+        arguments.output.unlink(missing_ok=True)
+        if arguments.output.with_suffix(".md") != arguments.output:
+            arguments.output.with_suffix(".md").unlink(missing_ok=True)
+        if arguments.audit_packet:
+            arguments.audit_packet.unlink(missing_ok=True)
         ledger = read_evidence(arguments.ledger, "traceability")
         verifier = read_evidence(arguments.verus_json, "verus") if arguments.verus_json else None
         discovered = discover_tests(ROOT, ledger) if arguments.discover_tests else None
         report = check(ledger, ROOT, set(verifier["func-details"]) if verifier else None, discovered)
+        report["model_audit_inventory"] = audit_inventory(ROOT, ledger)
+        if arguments.audit_packet or arguments.check_audit_packet:
+            ledger_path = arguments.ledger.resolve().relative_to(ROOT.resolve()).as_posix()
+            if arguments.check_audit_packet:
+                check_audit_packet(
+                    ROOT, ledger, load_json(arguments.check_audit_packet),
+                    arguments.expected_audit_sha256, ledger_path,
+                )
+                report["audit_packet_identity_checked"] = True
+            else:
+                packet = audit_packet(ROOT, ledger, arguments.audit_requirement, ledger_path)
+                arguments.audit_packet.parent.mkdir(parents=True, exist_ok=True)
+                arguments.audit_packet.write_text(json.dumps(packet, indent=2) + "\n", encoding="utf-8")
+                report["audit_packet_sha256"] = packet["packet_sha256"]
         revision = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True,
         ).stdout.strip()

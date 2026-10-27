@@ -176,6 +176,162 @@ class TraceabilityTests(unittest.TestCase):
         self.assertEqual(feature["evidence_strength_counts"]["functional_contract"], 1)
         self.assertTrue(feature["remaining_scope"])
 
+    def packet_fixture(self):
+        relative = "validation/traceability/requirements.json"
+        self.write_json(relative, self.ledger)
+        self.write_json("config/toolchain.json", {"fixture": "pinned"})
+        self.write("tools/check_traceability.py", "fixture verifier identity\n")
+        self.write_json("tools/evidence.schema.json", {"fixture": "schema"})
+        for name in ("Cargo.toml", "Cargo.lock", "verification/Cargo.toml", "verification/Cargo.lock"):
+            self.write(name, "fixture Cargo identity\n")
+        packet = checker.audit_packet(self.root, self.ledger, ["T88-FIXTURE"], relative)
+        return packet, relative
+
+    def test_inventory_exposes_unclassified_and_unregistered_models_without_approval(self):
+        self.write("specs/extra.rs", """
+            verus! {
+                // pub open spec fn not_a_declaration() -> bool { true }
+                pub open spec fn undiscovered() -> bool { super::EXAMPLE_TABLE.len() > 0 }
+            }
+        """)
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertEqual(report["registered_definition_count"], 1)
+        self.assertEqual(report["registered_spec_count"], 1)
+        self.assertEqual(report["definitions"][0]["classification"], "classification-pending")
+        self.assertEqual(report["definitions"][0]["requirements"][0]["clause"], "5.4")
+        self.assertEqual(report["unregistered_spec_functions"], [
+            {"file": "specs/extra.rs", "name": "undiscovered"},
+        ])
+        self.assertEqual(report["implementation_constant_references"], {
+            "specs/extra.rs": ["EXAMPLE_TABLE"],
+        })
+        self.assertFalse(report["classification_complete"])
+        self.assertFalse(report["normative_approval"])
+
+    def test_inline_audit_references_bind_existing_physical_definition_files(self):
+        source = (self.root / "specs/model.rs").read_text()
+        self.write("specs/model.rs", "// Audit: identity-model\n" + source)
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertTrue(report["definitions"][0]["inline_audit_reference"])
+        for path, annotation in (
+            ("specs/model.rs", "// Audit: missing\n"),
+            ("specs/model.rs", "// Audit: identity-model\n// Audit: identity-model\n"),
+            ("specs/extra.rs", "// Audit: identity-model\n"),
+        ):
+            self.write("specs/model.rs", source)
+            self.write(path, annotation + source)
+            with self.subTest(path=path, annotation=annotation), self.assertRaises(ValueError):
+                checker.audit_inventory(self.root, self.ledger)
+            if path != "specs/model.rs":
+                (self.root / path).unlink()
+
+    def test_audit_snapshot_is_explicitly_unreviewed_and_requires_an_external_pin(self):
+        packet, relative = self.packet_fixture()
+        self.assertEqual(packet["state"], "unreviewed")
+        self.assertIs(packet["normative_approval"], False)
+        self.assertIs(packet["document_processing_authorized"], False)
+        self.assertIsNone(packet["human_adjudicator"])
+        checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
+        for pin in (None, "", "bad", "a" * 64):
+            with self.subTest(pin=pin), self.assertRaises(ValueError):
+                checker.check_audit_packet(self.root, self.ledger, packet, pin, relative)
+        packet["requirements"][0]["gaps"].append("local report edit")
+        self.assertEqual(self.ledger["requirements"][0]["gaps"], [])
+
+    def test_audit_snapshot_rejects_source_dependency_and_validator_drift(self):
+        packet, relative = self.packet_fixture()
+        for name in (
+            "src/leaf.rs", "specs/model.rs", "config/toolchain.json",
+            "validation/source-provenance.json", "tools/check_traceability.py",
+            "tools/evidence.schema.json", "Cargo.toml", "verification/Cargo.lock",
+        ):
+            path = self.root / name
+            original = path.read_bytes()
+            path.write_bytes(original + b"\n")
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
+            path.write_bytes(original)
+        self.write("specs/new.rs", "verus! { pub open spec fn added() -> bool { true } }")
+        with self.assertRaises(ValueError):
+            checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
+
+    def test_audit_snapshot_cannot_forge_approval_scope_types_or_selected_rows(self):
+        packet, relative = self.packet_fixture()
+        for key, value in (
+            ("state", "approved"), ("normative_approval", True),
+            ("document_processing_authorized", True), ("human_adjudicator", "self"),
+            ("schema_version", True), ("requirement_ids", []),
+            ("requirements", []), ("source_bindings", {}),
+        ):
+            changed = copy.deepcopy(packet)
+            changed[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                checker.check_audit_packet(self.root, self.ledger, changed, packet["packet_sha256"], relative)
+        forged = copy.deepcopy(packet)
+        forged["normative_approval"] = True
+        forged.pop("packet_sha256")
+        forged["packet_sha256"] = hashlib.sha256(json.dumps(
+            forged, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        ).encode("utf-8")).hexdigest()
+        with self.assertRaises(ValueError):
+            checker.check_audit_packet(self.root, self.ledger, forged, forged["packet_sha256"], relative)
+
+    def test_packet_selection_missing_sources_and_stale_in_memory_ledger_fail(self):
+        packet, relative = self.packet_fixture()
+        for selected in (None, [], "T88-FIXTURE", ["unknown"], ["T88-FIXTURE"] * 2, [{}]):
+            with self.subTest(selected=selected), self.assertRaises(ValueError):
+                checker.audit_packet(self.root, self.ledger, selected, relative)
+        changed = copy.deepcopy(self.ledger)
+        changed["requirements"][0]["title"] = "changed"
+        with self.assertRaisesRegex(ValueError, "ledger changed"):
+            checker.audit_packet(self.root, changed, ["T88-FIXTURE"], relative)
+        (self.root / "config/toolchain.json").unlink()
+        with self.assertRaises(ValueError):
+            checker.audit_packet(self.root, self.ledger, ["T88-FIXTURE"], relative)
+
+    def test_packet_rejects_symlinked_source_directories(self):
+        packet, relative = self.packet_fixture()
+        self.write("external/hidden.rs", "hidden source")
+        link = self.root / "specs/hidden"
+        try:
+            link.symlink_to(self.root / "external", target_is_directory=True)
+        except OSError as error:
+            self.skipTest(f"symlink unavailable: {error}")
+        with self.assertRaisesRegex(ValueError, "symlinks"):
+            checker.audit_packet(self.root, self.ledger, ["T88-FIXTURE"], relative)
+
+    def test_audit_cli_does_not_ignore_missing_pins_or_mixed_modes(self):
+        for options in (
+            ["--audit-packet", "packet"],
+            ["--audit-requirement", "T88-FIXTURE"],
+            ["--check-audit-packet", "packet"],
+            ["--expected-audit-sha256", "a" * 64],
+            ["--audit-packet", "packet", "--check-audit-packet", "other"],
+        ):
+            with self.subTest(options=options), patch.object(
+                sys, "argv", ["checker", "--output", str(self.root / "result.json"), *options],
+            ), redirect_stderr(StringIO()), self.assertRaises(SystemExit) as stopped:
+                checker.main()
+            self.assertEqual(stopped.exception.code, 2)
+
+    def test_failed_audit_validation_removes_stale_success_reports(self):
+        packet, relative = self.packet_fixture()
+        stored = self.root / "packet.json"
+        stored.write_text(json.dumps(packet))
+        output = self.root / "result.json"
+        output.write_text('{"status":"passed"}')
+        output.with_suffix(".md").write_text("stale success")
+        with patch.object(checker, "ROOT", self.root), patch.object(
+            sys, "argv", [
+                "checker", "--ledger", str(self.root / relative), "--output", str(output),
+                "--check-audit-packet", str(stored), "--expected-audit-sha256", "a" * 64,
+            ],
+        ), redirect_stderr(StringIO()):
+            self.assertEqual(checker.main(), 1)
+        self.assertFalse(output.exists())
+        self.assertFalse(output.with_suffix(".md").exists())
+        self.assertTrue(stored.is_file())
+
     def test_test_inventory_respects_test_and_ghost_scopes(self):
         self.write("tests/hidden.rs", "#![cfg(verus_keep_ghost)]\n#[test] fn hidden() {}")
         tests = inventory_tests(self.root)

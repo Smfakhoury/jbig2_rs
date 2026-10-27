@@ -91,6 +91,13 @@ separate from these status fields and never infer it from the session's name.
 
 ## Task contracts
 
+The [specification-review procedure](specification-review.md) distinguishes
+project-contract tasks from refinement against a separately reviewed frozen
+normative model. An unreviewed snapshot, project proof success or a worker's
+opinion does not authorize normative status promotion. Read-only auditors use
+their separate profile and may not receive protected documents without the
+required processing authorization and human assignment.
+
 Each assignment specifies one proof objective, permitted files, existing
 models/tests, acceptance commands and explicit stop conditions. Two suitable
 independent objectives are:

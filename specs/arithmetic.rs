@@ -121,6 +121,9 @@ pub(crate) open spec fn decoder_valid(
         && decoder.interval >= super::MIN_INTERVAL
 }
 
+// Audit: arithmetic-refill-step
+// T.88 (08/2018), E.3.4 / Figure E.19: https://www.itu.int/rec/T-REC-T.88-201808-I/en
+// Inherited ledger locator; independent BYTEIN and caller interpretation remain pending.
 pub(crate) open spec fn refill_step(
     decoder: &super::ArithmeticDecoder,
 ) -> (u8, usize, u8, u32, u8, Option<super::ArithmeticMarker>)
@@ -164,6 +167,9 @@ pub(crate) open spec fn refill_step(
     }
 }
 
+// Audit: arithmetic-initialized-state
+// T.88 (08/2018), E.3.5 / Figure E.20: https://www.itu.int/rec/T-REC-T.88-201808-I/en
+// Project initialization result, not independent approval of the standard translation.
 pub(crate) open spec fn initialized_state(
     bytes: &[u8],
 ) -> Option<(usize, u8, u32, u8, Option<super::ArithmeticMarker>)> {

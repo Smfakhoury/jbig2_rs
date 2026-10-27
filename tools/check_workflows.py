@@ -86,6 +86,27 @@ def check_proof_agent(text):
     return profile
 
 
+def check_specification_auditor(text):
+    if not text.startswith("---\n"):
+        raise ValueError("specification auditor needs YAML frontmatter")
+    frontmatter, separator, body = text[4:].partition("\n---\n")
+    if not separator or not body.strip():
+        raise ValueError("specification auditor needs closed frontmatter and instructions")
+    profile = load_workflow(frontmatter)
+    expected = {
+        "name": "specification-auditor", "target": "github-copilot",
+        "model": "gpt-6.1-sol", "tools": ["read", "search"],
+        "disable-model-invocation": "true", "user-invocable": "true",
+    }
+    if (
+        set(profile) != {*expected, "description"}
+        or any(profile.get(key) != value for key, value in expected.items())
+        or not isinstance(profile.get("description"), str) or not profile["description"].strip()
+    ):
+        raise ValueError("specification auditor must retain read-only explicit dispatch and exact model")
+    return profile
+
+
 def read_permissions(permissions):
     if not isinstance(permissions, dict) or set(permissions) - {"contents"}:
         raise ValueError("only contents read/none permissions are allowed by current CI policy")
@@ -482,6 +503,9 @@ def main():
         agent = ROOT / ".github/agents/verus-proof-worker.agent.md"
         profile = check_proof_agent(agent.read_text())
         bindings[agent.relative_to(ROOT).as_posix()] = hashlib.sha256(agent.read_bytes()).hexdigest()
+        auditor = ROOT / ".github/agents/specification-auditor.agent.md"
+        check_specification_auditor(auditor.read_text())
+        bindings[auditor.relative_to(ROOT).as_posix()] = hashlib.sha256(auditor.read_bytes()).hexdigest()
         report = {
             "schema_version": 1, "status": "workflow_policy_passed",
             "workflow_count": len(paths), "action_count": len(actions), "actions": actions,

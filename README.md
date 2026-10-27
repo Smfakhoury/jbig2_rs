@@ -60,6 +60,10 @@ It is not a prerequisite for ordinary Cargo builds or Cargo-Verus.
 
 ## Implementation and proof boundary
 
+For a short human-audit route, start with the [model reading guide](specs/README.md).
+The [independent review procedure](docs/specification-review.md) separates
+standard-to-model fidelity from implementation proofs.
+
 [`src/`](src) is the sole executable implementation and Cargo source of truth.
 [`specs/`](specs) defines project models; [`proofs/`](proofs) supplies invariants,
 model-support lemmas and proof bodies attached to that implementation.

@@ -1,5 +1,9 @@
 # Verus auditor index
 
+For a short reading path and standard-access instructions, start with the
+[model guide](../specs/README.md). Independent source review and frozen-model
+change control are described in the [review procedure](specification-review.md).
+
 This is a model/navigation aid, **not normative approval**. The
 [ledger](../validation/traceability/requirements.json) owns exact requirement
 locators, assumptions, contracts and test identities. Its selected provisional
