@@ -382,6 +382,15 @@ class TraceabilityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "ambiguous or misplaced"):
             checker.audit_inventory(self.root, self.ledger)
 
+    def test_same_named_declaration_cannot_inherit_a_different_owner(self):
+        path = self.root / "specs/model.rs"
+        original = path.read_text()
+        for owner in ("mod wrong", "impl Wrong"):
+            path.write_text(original.replace("verus! {", f"verus! {{\n{owner} {{") + "\n}\n")
+            self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+            with self.subTest(owner=owner), self.assertRaisesRegex(ValueError, "unsupported inline navigation owner"):
+                checker.audit_inventory(self.root, self.ledger)
+
     def test_unscoped_associated_names_do_not_make_navigation_ambiguous(self):
         self.write("proofs/shared/unregistered.rs", """
             verus! {

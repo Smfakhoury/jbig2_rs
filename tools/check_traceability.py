@@ -143,6 +143,7 @@ def audit_classifications(root, ledger, declarations):
 
 def navigation_declarations(source, selected=None):
     """Locate only unambiguous declarations using the existing masked source."""
+    root = parse(source)
     code = production_code(source, exclude_proofs=False).encode("utf-8").decode("latin1")
     pattern = (
         r"(?m)^[ \t]*(?:pub(?:\([^)]*\))?\s+)?(?:(?:open|closed|opaque)\s+)?"
@@ -153,6 +154,21 @@ def navigation_declarations(source, selected=None):
         key = ("macro", match[3]) if match[3] else (match[1], match[2])
         if selected is not None and key not in selected:
             continue
+        start = match.start() + len(match[0]) - len(match[0].lstrip())
+        scope = root.descendant_for_byte_range(start, start + 1).parent
+        if key[0] == "macro":
+            owner = scope.parent if scope.type == "macro_definition" else None
+        else:
+            invocation = scope.parent
+            name = invocation.child_by_field_name("macro") if invocation is not None else None
+            owner = invocation.parent if (
+                scope.type == "token_tree" and invocation.type == "macro_invocation"
+                and name is not None and name.text == b"verus"
+            ) else None
+        if owner is not None and owner.type == "expression_statement":
+            owner = owner.parent
+        if owner is None or owner.type != "source_file":
+            raise ValueError(f"unsupported inline navigation owner/placement: {key}")
         if key in declarations:
             raise ValueError(f"ambiguous inline navigation placement: {key}")
         declarations[key] = match.start()
@@ -194,7 +210,7 @@ def audit_inline_navigation(root, ledger, declarations, registered, classificati
                 visit(child)
 
         visit(parse(source))
-        for start, end, text in comments:
+        for _, end, text in comments:
             if not re.match(r"//\s*(?:Audit|Model navigation):", text):
                 continue
             # Only whitespace/comments may separate a marker from its declaration.
