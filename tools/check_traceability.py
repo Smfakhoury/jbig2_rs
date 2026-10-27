@@ -44,6 +44,7 @@ CLASSIFICATION_SCHEMA = {
                     },
                     "justification": {"$ref": "#/$defs/nonempty"},
                     "ambiguity": {"type": "string"},
+                    "caveats": {"type": "string"},
                 },
                 "allOf": [{
                     "if": {"properties": {"classification": {"const": "classification-pending"}}},
@@ -131,6 +132,7 @@ def audit_classifications(root, ledger, declarations):
                 "classification_review": authored["review"],
                 "justification": family["justification"],
                 "ambiguity": family["ambiguity"],
+                "caveats": family.get("caveats", ""),
             }
     if set(classifications) != declarations:
         missing = sorted(declarations - set(classifications))
@@ -199,10 +201,11 @@ def audit_inventory(root, ledger):
         "unresolved_declarations": [
             {"file": file, "kind": kind, "name": name, "ambiguity": row["ambiguity"]}
             for (file, kind, name), row in sorted(classifications.items())
-            if row["classification"] == "classification-pending"
+            if row["classification"] == "classification-pending" or row["ambiguity"].strip()
         ],
         "classification_complete": all(
-            row["classification"] != "classification-pending" for row in classifications.values()
+            row["classification"] != "classification-pending" and not row["ambiguity"].strip()
+            for row in classifications.values()
         ),
         "normative_approval": False,
     }

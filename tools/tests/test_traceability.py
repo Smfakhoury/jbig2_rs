@@ -254,18 +254,51 @@ class TraceabilityTests(unittest.TestCase):
         families = self.ledger["model_classifications"]["families"]
         for family in families:
             family["classification"] = "candidate-standard-facing-model"
-            family["ambiguity"] = "Candidate only; independent normative review unresolved."
+            family["ambiguity"] = ""
+            family["caveats"] = "Candidate only; independent normative review unresolved."
         validate(self.ledger, "traceability")
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertTrue(report["classification_complete"])
         self.assertFalse(report["normative_approval"])
         self.assertEqual(report["classification_counts"], {"candidate-standard-facing-model": 2})
         self.assertEqual(report["unresolved_declarations"], [])
+        self.assertEqual(report["definitions"][0]["caveats"], families[0]["caveats"])
         self.assertEqual(report["definitions"][0]["requirements"][0]["id"], "T88-FIXTURE")
         helper = report["unregistered_spec_functions"][0]
         self.assertEqual(helper["requirements"], [])
         self.assertFalse(helper["normative_approval"])
         self.assertEqual(helper["classification_review"], "author-navigation-only-not-independent-normative-approval")
+
+    def test_nonpending_category_cannot_hide_unresolved_purpose(self):
+        family = self.ledger["model_classifications"]["families"][0]
+        for purpose in checker.CLASSIFICATION_SCHEMA["properties"]["families"]["items"]["properties"]["classification"]["enum"]:
+            family.update(
+                classification=purpose,
+                ambiguity="Purpose unresolved: could instead be a representation invariant.",
+            )
+            with self.subTest(purpose=purpose):
+                validate(self.ledger, "traceability")
+                report = checker.audit_inventory(self.root, self.ledger)
+                self.assertFalse(report["classification_complete"])
+                self.assertEqual(report["unresolved_declarations"], [{
+                    "file": "specs/model.rs", "kind": "spec", "name": "identity",
+                    "ambiguity": family["ambiguity"],
+                }])
+                self.assertFalse(report["normative_approval"])
+
+    def test_scope_and_normative_caveats_do_not_make_purpose_unresolved(self):
+        family = self.ledger["model_classifications"]["families"][0]
+        family.update(
+            classification="project-result-model", ambiguity="",
+            caveats="Only the identity result; full output scope and independent normative fidelity remain unreviewed.",
+        )
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertTrue(report["classification_complete"])
+        self.assertEqual(report["unresolved_declarations"], [])
+        self.assertFalse(report["normative_approval"])
+        self.assertEqual(report["definitions"][0]["caveats"], family["caveats"])
+        family["ambiguity"] = "Purpose unresolved despite the separate caveat."
+        self.assertFalse(checker.audit_inventory(self.root, self.ledger)["classification_complete"])
 
     def test_pending_classification_requires_visible_ambiguity_and_is_not_complete(self):
         report = checker.audit_inventory(self.root, self.ledger)
