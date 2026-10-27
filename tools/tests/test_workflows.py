@@ -13,7 +13,7 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_workflows import check_proof_agent, check_updates, check_workflow, load_workflow, main
+from check_workflows import check_proof_agent, check_specification_auditor, check_updates, check_workflow, load_workflow, main
 
 
 class WorkflowPolicyTests(unittest.TestCase):
@@ -53,6 +53,22 @@ class WorkflowPolicyTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 check_proof_agent(changed)
 
+    def test_specification_auditor_is_read_only_explicit_and_has_no_model_fallback(self):
+        text = (TOOLS.parent / ".github/agents/specification-auditor.agent.md").read_text()
+        self.assertEqual(check_specification_auditor(text)["tools"], ["read", "search"])
+        for changed in (
+            text.replace("tools: [read, search]", "tools: [read, edit, search]"),
+            text.replace("tools: [read, search]", "tools: [read, search, execute]"),
+            text.replace("tools: [read, search]", "tools: [read, search, web]"),
+            text.replace("\n---\n", "\nhooks: {}\n---\n", 1),
+            text.replace("\n---\n", "\nmcp-servers: {}\n---\n", 1),
+            text.replace("\n---\n", "\nhandoffs: []\n---\n", 1),
+            text.replace("model: gpt-6.1-sol", "model: [gpt-6.1-sol, default]"),
+            text.replace("disable-model-invocation: true", "disable-model-invocation: false"),
+            text.removeprefix("---\n"), text.split("\n---\n", 1)[0] + "\n---\n",
+        ):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                check_specification_auditor(changed)
     def test_proof_agent_rejects_invalid_frontmatter_missing_description_and_empty_body(self):
         text = (TOOLS.parent / ".github/agents/verus-proof-worker.agent.md").read_text()
         frontmatter = text.split("\n---\n", 1)[0] + "\n---\n"

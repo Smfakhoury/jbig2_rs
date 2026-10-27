@@ -39,6 +39,13 @@ provider-reported model information to the coordinator.
 
 ## Verification and tests
 
+- Distinguish project-contract work from refinement against an independently
+  reviewed normative model. Current unreviewed packets do not authorize the
+  latter or grant standard-processing permission.
+- If assigned a separately approved frozen model, preserve its supplied
+  definition/dependency identities. Do not edit the target to make a proof
+  pass. Report a source-cited correction proposal for separate review instead.
+  Follow `docs/specification-review.md`; do not self-approve model fidelity.
 - Prove the actual transformation, not only valid storage. Reuse independent
   project models and existing proved helpers. State conditional scope honestly.
 - Keep ordinary Rust source behavior unchanged unless the task expressly

@@ -2,6 +2,8 @@ use vstd::prelude::*;
 
 verus! {
 
+// Audit: mmr-mode-table-entry
+// T.6 (1988), 2.2.3 / Table 1: https://www.itu.int/rec/T-REC-T.6-198811-I/en
 // Membership in implementation data is not an independent normative-table proof.
 pub(super) open spec fn mode_code_in_implementation_table(code: super::ModeCode) -> bool {
     super::MODE_CODES@.contains(code)
@@ -15,6 +17,9 @@ pub(super) open spec fn mode_matches(
     code.bits == bits && code.length == length
 }
 
+// Audit: mmr-run-table-entry
+// T.6 (1988), 2.2.4 / Tables 2-3: https://www.itu.int/rec/T-REC-T.6-198811-I/en
+// Existing locator only; the arrays still need independent table-fidelity review.
 pub(super) open spec fn run_code_in_implementation_tables(
     black: bool,
     code: super::RunCode,
