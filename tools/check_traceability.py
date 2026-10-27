@@ -141,9 +141,135 @@ def audit_classifications(root, ledger, declarations):
     return classifications
 
 
+def navigation_declarations(source, selected=None):
+    """Locate only unambiguous declarations using the existing masked source."""
+    root = parse(source)
+    code = production_code(source, exclude_proofs=False).encode("utf-8").decode("latin1")
+    pattern = (
+        r"(?m)^[ \t]*(?:pub(?:\([^)]*\))?\s+)?(?:(?:open|closed|opaque)\s+)?"
+        r"(?:(spec|proof)\s+fn\s+([A-Za-z_]\w*)|macro_rules!\s*([A-Za-z_]\w*))\b"
+    )
+    declarations = {}
+    for match in re.finditer(pattern, code):
+        key = ("macro", match[3]) if match[3] else (match[1], match[2])
+        if selected is not None and key not in selected:
+            continue
+        start = match.start() + len(match[0]) - len(match[0].lstrip())
+        scope = root.descendant_for_byte_range(start, start + 1).parent
+        if key[0] == "macro":
+            owner = scope.parent if scope.type == "macro_definition" else None
+        else:
+            invocation = scope.parent
+            name = invocation.child_by_field_name("macro") if invocation is not None else None
+            owner = invocation.parent if (
+                scope.type == "token_tree" and invocation.type == "macro_invocation"
+                and name is not None and name.text == b"verus"
+            ) else None
+        if owner is not None and owner.type == "expression_statement":
+            owner = owner.parent
+        if owner is None or owner.type != "source_file":
+            raise ValueError(f"unsupported inline navigation owner/placement: {key}")
+        if key in declarations:
+            raise ValueError(f"ambiguous inline navigation placement: {key}")
+        declarations[key] = match.start()
+    return declarations
+
+
+def navigation_context(ledger, identity):
+    """One existing row is a reading entry point, never a new normative citation."""
+    return next((
+        row for row in ledger["requirements"]
+        if identity in row["models"] + row["proof_macros"]
+    ), None) if identity else None
+
+
+def audit_inline_navigation(root, ledger, declarations, registered, classifications):
+    covered = set()
+    inline_references = set()
+    # Scan all project sources, not just specs: misplaced references must not hide
+    # in unregistered support files or in the runtime source.
+    paths = sorted(
+        path.relative_to(root).as_posix()
+        for directory in ("src", "specs", "proofs")
+        for path in (root / directory).rglob("*.rs")
+    )
+    for relative in paths:
+        source = source_path(root, relative).read_bytes()
+        code = production_code(source, exclude_proofs=False).encode("utf-8").decode("latin1")
+        active = production_code(
+            source, exclude_proofs=False, mask_noncode=False,
+        ).encode("utf-8").decode("latin1")
+        positions = navigation_declarations(source, {
+            (kind, name) for file, kind, name in declarations if file == relative
+        })
+        comments = []
+
+        def visit(node):
+            if node.type == "line_comment":
+                start, end = node.start_byte, node.end_byte
+                if active[start:end].strip() and not code[start:end].strip():
+                    comments.append((start, end, node.text.decode("utf-8").removesuffix("\r")))
+            for child in node.named_children:
+                visit(child)
+
+        visit(parse(source))
+        for _, end, text in comments:
+            if not re.match(r"//\s*(?:Audit|Model navigation):", text):
+                continue
+            # Only whitespace/comments may separate a marker from its declaration.
+            following = next((index for index in range(end, len(code)) if not code[index].isspace()), len(code))
+            targets = [
+                (kind, name) for (kind, name), offset in positions.items()
+                if offset <= following
+                and not code[offset:following].strip()
+            ]
+            if len(targets) != 1:
+                raise ValueError(f"ambiguous or misplaced inline navigation: {relative}:{text}")
+            kind, name = targets[0]
+            key = (relative, kind, name)
+            if key not in declarations:
+                raise ValueError(f"unknown inline navigation declaration: {key}")
+            if text.startswith("// Audit:"):
+                identity = text.removeprefix("// Audit:").strip()
+                if registered.get(key) != identity or identity in inline_references:
+                    raise ValueError(f"unknown, duplicate or misrouted inline audit reference: {identity}")
+                inline_references.add(identity)
+                continue
+            expected = f"// Model navigation: {kind}::{name} [{classifications[key]['classification']}]"
+            if text != expected or key in covered:
+                raise ValueError(f"unknown, duplicate or misplaced inline model reference: {relative}:{text}")
+            # Keep purpose prose authored, but require a visible local explanation
+            # and an exact inherited entry context (or an explicit mapping gap).
+            block = source[end:positions[(kind, name)]].decode("utf-8")
+            if not re.search(r"(?m)^// Purpose: \S", block):
+                raise ValueError(f"missing inline navigation purpose: {key}")
+            context = navigation_context(ledger, registered.get(key))
+            expected_context = (
+                f"// REQUIREMENT CONTEXT: {context['id']} | {context['standard']} | {context['clause']}"
+                if context else "// Mapping: no registered requirement/locator mapping."
+            )
+            contexts = [
+                line for line in block.splitlines()
+                if line.startswith(("// REQUIREMENT CONTEXT:", "// Mapping:"))
+            ]
+            if contexts != [expected_context]:
+                raise ValueError(f"missing or incorrect inline requirement context: {key}")
+            if "// Fidelity: unresolved; no independent normative approval." not in block.splitlines():
+                raise ValueError(f"missing inline fidelity boundary: {key}")
+            covered.add(key)
+    missing = declarations - covered
+    missing_references = set(registered.values()) - inline_references
+    if missing or missing_references:
+        raise ValueError(
+            f"missing inline navigation: declarations={sorted(missing)}, references={sorted(missing_references)}"
+        )
+    return covered, inline_references
+
+
 def audit_inventory(root, ledger):
     declarations, registered = audit_declarations(root, ledger)
     classifications = audit_classifications(root, ledger, declarations)
+    covered, inline_references = audit_inline_navigation(root, ledger, declarations, registered, classifications)
     references = {
         identity: [
             {"id": row["id"], "standard": row["standard"], "clause": row["clause"],
@@ -166,20 +292,11 @@ def audit_inventory(root, ledger):
          "requirements": [], "normative_approval": False}
         for file, kind, name in sorted(declarations - set(registered))
     ]
-    inline_references = set()
     implementation_dependencies = {}
     for directory in ("specs", "proofs/model_support"):
         for path in sorted((root / directory).rglob("*.rs")):
             relative = path.relative_to(root).as_posix()
             source = source_path(root, relative).read_bytes()
-            for identity in re.findall(r"(?m)^\s*// Audit: ([A-Za-z0-9_-]+)\s*$", source.decode("utf-8")):
-                if (
-                    identity not in ledger["definitions"]
-                    or ledger["definitions"][identity]["file"] != relative
-                    or identity in inline_references
-                ):
-                    raise ValueError(f"unknown, duplicate or misrouted inline audit reference: {identity}")
-                inline_references.add(identity)
             code = production_code(source, exclude_proofs=False)
             names = sorted(set(re.findall(r"\bsuper::([A-Z][A-Z_0-9]+)\b", code)))
             if names:
@@ -190,6 +307,16 @@ def audit_inventory(root, ledger):
         "scope": "Registered ledger definitions and all spec functions in specs/ and proofs/model_support/. Other unregistered proof/view declarations are outside this bounded inventory. Purpose only, not proof strength, normative decomposition or transitive dependency analysis.",
         "registered_definition_count": len(definitions),
         "registered_spec_count": sum(row["kind"] == "spec" for row in definitions),
+        "inline_navigation": {
+            "declared_count": len(declarations),
+            "covered_count": len(covered),
+            "uncovered_count": len(declarations - covered),
+            "registered_reference_count": len(inline_references),
+            "structural_coverage_complete": covered == declarations,
+            "independently_verified_citations": False,
+            "normative_approval": False,
+            "document_processing_authorized": False,
+        },
         "definitions": definitions,
         "unregistered_spec_functions": unregistered,
         "implementation_constant_references": implementation_dependencies,
@@ -897,6 +1024,7 @@ def main():
             "## Source-only author navigation (not independent normative approval)", "",
             f"Purpose classification complete: **{report['model_audit_inventory']['classification_complete']}**.",
             f"Purpose counts: `{json.dumps(report['model_audit_inventory']['classification_counts'], sort_keys=True)}`.",
+            f"Inline structural coverage: `{json.dumps(report['model_audit_inventory']['inline_navigation'], sort_keys=True)}`.",
             "Exact members, justifications, unresolved purpose ambiguities, scope caveats and unchanged requirement links are in "
             "`model_audit_inventory` in the accompanying JSON report.", "",
             "| Requirement | Standard | Clause/context | Basis | Scope | Evidence strength | Open gaps |",

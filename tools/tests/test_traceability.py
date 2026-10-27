@@ -3,6 +3,7 @@ from contextlib import redirect_stderr, redirect_stdout
 import hashlib
 from io import StringIO
 import json
+import re
 import sys
 import tempfile
 from types import SimpleNamespace
@@ -124,6 +125,12 @@ class TraceabilityTests(unittest.TestCase):
         self.classification_fixture()
 
     def classification_fixture(self):
+        # Give compact synthetic declarations an unambiguous standalone anchor.
+        for directory in ("specs", "proofs"):
+            for path in (self.root / directory).rglob("*.rs"):
+                text = path.read_text(encoding="utf-8")
+                text = re.sub(r"(?<=[{;}]) *(?=pub open spec fn|pub proof fn)", "\n", text)
+                path.write_text(text, encoding="utf-8")
         declarations, _ = checker.audit_declarations(self.root, self.ledger)
         families = []
         for file in sorted({key[0] for key in declarations}):
@@ -139,6 +146,47 @@ class TraceabilityTests(unittest.TestCase):
             **checker.classification_evidence(self.root, self.ledger),
             "families": families,
         }
+        self.inline_fixture()
+
+    def inline_fixture(self):
+        declarations, registered = checker.audit_declarations(self.root, self.ledger)
+        classifications = {
+            (family["file"], *member.split("::")): family["classification"]
+            for family in self.ledger["model_classifications"]["families"]
+            for member in family["members"]
+        }
+        for file in sorted({key[0] for key in declarations}):
+            path = self.root / file
+            source = path.read_bytes()
+            source = re.sub(
+                rb"(?m)^// Model navigation:.*\n// Purpose: Synthetic.*\n"
+                rb"(?:// Audit:.*\n)?// (?:REQUIREMENT CONTEXT|Mapping):.*\n"
+                rb"// Fidelity:.*\n", b"", source,
+            )
+            insertions = []
+            for (kind, name), offset in checker.navigation_declarations(source).items():
+                key = (file, kind, name)
+                if key not in declarations:
+                    continue
+                context = checker.navigation_context(self.ledger, registered.get(key))
+                lines = [
+                    f"// Model navigation: {kind}::{name} [{classifications[key]}]",
+                    "// Purpose: Synthetic source-only navigation fixture.",
+                ]
+                if key in registered:
+                    lines.append(f"// Audit: {registered[key]}")
+                lines.append(
+                    f"// REQUIREMENT CONTEXT: {context['id']} | {context['standard']} | {context['clause']}"
+                    if context else "// Mapping: no registered requirement/locator mapping."
+                )
+                lines.append("// Fidelity: unresolved; no independent normative approval.")
+                insertions.append((offset, ("\n".join(lines) + "\n").encode()))
+            for offset, block in reversed(insertions):
+                source = source[:offset] + block + source[offset:]
+            path.write_bytes(source)
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        for file in self.ledger["bindings"]:
+            self.ledger["bindings"][file] = hashlib.sha256((self.root / file).read_bytes()).hexdigest()
 
     def write(self, relative, text):
         path = self.root / relative
@@ -232,8 +280,6 @@ class TraceabilityTests(unittest.TestCase):
 
     def test_inline_audit_references_bind_existing_physical_definition_files(self):
         source = (self.root / "specs/model.rs").read_text()
-        self.write("specs/model.rs", "// Audit: identity-model\n" + source)
-        self.classification_fixture()
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertTrue(report["definitions"][0]["inline_audit_reference"])
         for path, annotation in (
@@ -243,10 +289,170 @@ class TraceabilityTests(unittest.TestCase):
         ):
             self.write("specs/model.rs", source)
             self.write(path, annotation + source)
+            self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
             with self.subTest(path=path, annotation=annotation), self.assertRaises(ValueError):
                 checker.audit_inventory(self.root, self.ledger)
             if path != "specs/model.rs":
                 (self.root / path).unlink()
+
+    def test_inline_navigation_rejects_missing_duplicate_unknown_and_hidden_markers(self):
+        path = self.root / "specs/model.rs"
+        original = path.read_text()
+        marker = "// Model navigation: spec::identity [classification-pending]"
+        for changed in (
+            original.replace(marker + "\n", ""),
+            original.replace(marker, marker + "\n" + marker),
+            original.replace("spec::identity [", "spec::unknown ["),
+            original.replace("// Audit: identity-model\n", ""),
+            original.replace("// Audit: identity-model", "// Audit: unknown"),
+            original.replace(marker, 'const HIDDEN: &str = r#"\n' + marker + '\n"#;'),
+            original.replace("// Audit: identity-model", 'const HIDDEN: &str = r#"\n// Audit: identity-model\n"#;'),
+            original.replace("// REQUIREMENT CONTEXT: T88-FIXTURE", "// REQUIREMENT CONTEXT: T88-UNKNOWN"),
+            original.replace("| 5.4", "| 5.5"),
+            original.replace("// Purpose: Synthetic source-only navigation fixture.\n", ""),
+            original.replace("// Fidelity: unresolved; no independent normative approval.\n", ""),
+        ):
+            path.write_text(changed)
+            self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                checker.audit_inventory(self.root, self.ledger)
+
+    def test_inline_navigation_rejects_same_file_misplacement_and_wrong_support_file(self):
+        path = self.root / "specs/model.rs"
+        original = path.read_text()
+        marker = "// Audit: identity-model"
+        for file in ("specs/model.rs", "proofs/shared/unregistered.rs", "src/leaf.rs"):
+            path.write_text(original.replace(marker + "\n", ""))
+            destination = self.root / file
+            old = destination.read_text() if destination.exists() else ""
+            self.write(file, old + "\n" + marker + "\nverus! {\npub open spec fn unrelated() -> bool { true }\n}")
+            self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+            with self.subTest(file=file), self.assertRaises(ValueError):
+                checker.audit_inventory(self.root, self.ledger)
+            if file != "specs/model.rs":
+                if old:
+                    destination.write_text(old)
+                else:
+                    destination.unlink()
+
+    def test_inline_navigation_covers_registered_proof_support_and_growth_without_fixed_total(self):
+        self.write("proofs/shared/support.rs", """
+            verus! {
+                pub open spec fn support() -> bool { true }
+                pub proof fn witness() {}
+            }
+        """)
+        self.write("specs/model.rs", (self.root / "specs/model.rs").read_text()
+                   + '\ninclude!("../proofs/shared/support.rs");\n')
+        for kind, name in (("spec", "support"), ("proof", "witness")):
+            self.ledger["definitions"][f"{name}-model"] = {
+                "kind": kind, "file": "proofs/shared/support.rs", "module_path": ["spec"],
+                "name": name, "role": "proof support",
+            }
+        self.classification_fixture()
+        report = checker.audit_inventory(self.root, self.ledger)["inline_navigation"]
+        self.assertEqual(report["declared_count"], 3)
+        self.assertEqual(report["covered_count"], 3)
+        self.assertEqual(report["uncovered_count"], 0)
+        self.assertTrue(report["structural_coverage_complete"])
+        self.assertFalse(report["independently_verified_citations"])
+        self.assertFalse(report["document_processing_authorized"])
+        self.assertFalse(report["normative_approval"])
+        path = self.root / "proofs/shared/support.rs"
+        source = path.read_text()
+        path.write_text(source.replace("// Audit: witness-model\n", ""))
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "missing inline navigation"):
+            checker.audit_inventory(self.root, self.ledger)
+        path.write_text(source)
+        self.write("proofs/model_support/new.rs", "verus! {\npub open spec fn added() -> bool { true }\n}")
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "membership differs"):
+            checker.audit_inventory(self.root, self.ledger)
+        self.classification_fixture()
+        self.assertEqual(checker.audit_inventory(self.root, self.ledger)["inline_navigation"]["covered_count"], 4)
+
+    def test_ambiguous_inline_placement_fails_instead_of_granting_coverage(self):
+        path = self.root / "specs/model.rs"
+        source = path.read_text()
+        self.write("specs/model.rs", source.replace(
+            "pub open spec fn identity", "struct Intervening;\npub open spec fn identity",
+        ))
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "ambiguous or misplaced"):
+            checker.audit_inventory(self.root, self.ledger)
+
+    def test_same_named_declaration_cannot_inherit_a_different_owner(self):
+        path = self.root / "specs/model.rs"
+        original = path.read_text()
+        for owner in ("mod wrong", "impl Wrong"):
+            path.write_text(original.replace("verus! {", f"verus! {{\n{owner} {{") + "\n}\n")
+            self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+            with self.subTest(owner=owner), self.assertRaisesRegex(ValueError, "unsupported inline navigation owner"):
+                checker.audit_inventory(self.root, self.ledger)
+
+    def test_cfg_excluded_comment_cannot_supply_a_production_reference(self):
+        self.write("proofs/shared/support.rs", "macro_rules! helper { () => {} }\n")
+        self.write("specs/model.rs", (self.root / "specs/model.rs").read_text()
+                   + '\ninclude!("../proofs/shared/support.rs");\n')
+        self.ledger["definitions"]["helper-model"] = {
+            "kind": "macro", "file": "proofs/shared/support.rs", "module_path": ["spec"],
+            "name": "helper", "role": "proof support",
+        }
+        self.classification_fixture()
+        self.assertTrue(checker.audit_inventory(self.root, self.ledger)["inline_navigation"]["structural_coverage_complete"])
+        path = self.root / "proofs/shared/support.rs"
+        path.write_text(
+            "#[cfg(test)]\nfn excluded() {\n// Audit: helper-model\n}\n"
+            + path.read_text().replace("// Audit: helper-model\n", "")
+        )
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "missing inline navigation"):
+            checker.audit_inventory(self.root, self.ledger)
+
+    def test_unscoped_associated_names_do_not_make_navigation_ambiguous(self):
+        self.write("proofs/shared/unregistered.rs", """
+            verus! {
+                impl A {
+                    spec fn unscoped() -> bool { true }
+                }
+                impl B {
+                    spec fn unscoped() -> bool { false }
+                }
+            }
+        """)
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        self.assertEqual(checker.audit_inventory(self.root, self.ledger)["inline_navigation"]["covered_count"], 1)
+
+    def test_unicode_comments_and_literal_decoys_do_not_shift_navigation_identity(self):
+        path = self.root / "specs/model.rs"
+        original = path.read_text()
+        path.write_text(
+            '// Source-only notation: α → β.\nconst DECOY: &str = r#"\n'
+            '// Audit: unknown\n// Model navigation: spec::phantom [proof-support]\n"#;\n'
+            + original.replace("// Purpose: Synthetic", "// Purpose: α → β; Synthetic"),
+            encoding="utf-8",
+        )
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        self.assertTrue(checker.audit_inventory(self.root, self.ledger)["inline_navigation"]["structural_coverage_complete"])
+
+    def test_crlf_navigation_uses_logical_lines_without_normalizing_source_hashes(self):
+        before = self.ledger["model_classifications"]["project_source_sha256"]
+        for directory in ("src", "specs", "proofs"):
+            for path in (self.root / directory).rglob("*.rs"):
+                path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        for file in self.ledger["bindings"]:
+            self.ledger["bindings"][file] = hashlib.sha256((self.root / file).read_bytes()).hexdigest()
+        self.assertNotEqual(before, self.ledger["model_classifications"]["project_source_sha256"])
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertTrue(report["inline_navigation"]["structural_coverage_complete"])
+        self.assertEqual(report["inline_navigation"]["covered_count"], 1)
+        path = self.root / "specs/model.rs"
+        path.write_bytes(path.read_bytes().replace(b"// Audit: identity-model", b"// Audit: missing"))
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "audit reference"):
+            checker.audit_inventory(self.root, self.ledger)
 
     def test_authored_purposes_preserve_registration_and_never_approve_candidates(self):
         self.write("specs/extra.rs", "verus! { pub open spec fn helper() -> bool { true } }")
@@ -256,6 +462,7 @@ class TraceabilityTests(unittest.TestCase):
             family["classification"] = "candidate-standard-facing-model"
             family["ambiguity"] = ""
             family["caveats"] = "Candidate only; independent normative review unresolved."
+        self.inline_fixture()
         validate(self.ledger, "traceability")
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertTrue(report["classification_complete"])
@@ -276,6 +483,7 @@ class TraceabilityTests(unittest.TestCase):
                 classification=purpose,
                 ambiguity="Purpose unresolved: could instead be a representation invariant.",
             )
+            self.inline_fixture()
             with self.subTest(purpose=purpose):
                 validate(self.ledger, "traceability")
                 report = checker.audit_inventory(self.root, self.ledger)
@@ -292,6 +500,7 @@ class TraceabilityTests(unittest.TestCase):
             classification="project-result-model", ambiguity="",
             caveats="Only the identity result; full output scope and independent normative fidelity remain unreviewed.",
         )
+        self.inline_fixture()
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertTrue(report["classification_complete"])
         self.assertEqual(report["unresolved_declarations"], [])
@@ -308,6 +517,7 @@ class TraceabilityTests(unittest.TestCase):
             if family["file"] == "specs/extra.rs":
                 family["ambiguity"] = "Purpose unresolved: no caller distinguishes result from invariant."
                 family["caveats"] = "Independent normative review is also pending."
+        self.inline_fixture()
         report = checker.audit_inventory(self.root, self.ledger)
         self.assertFalse(report["classification_complete"])
         self.assertEqual(report["unresolved_declarations"], [{
@@ -407,6 +617,7 @@ class TraceabilityTests(unittest.TestCase):
         family = self.ledger["model_classifications"]["families"][0]
         self.assertEqual(family["members"], ["spec::output_valid"])
         family.update(classification="project-result-model", justification="Synthetic output relation despite its name.")
+        self.inline_fixture()
         report = checker.audit_inventory(self.root, self.ledger)
         helper = report["unregistered_spec_functions"][0]
         self.assertEqual(helper["name"], "output_valid")

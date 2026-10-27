@@ -1,3 +1,8 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 macro_rules! production_read_bytes_addition {
@@ -12,6 +17,11 @@ macro_rules! production_read_bytes_addition {
     };
 }
 
+// Model navigation: macro::production_read_bits_before [proof-support]
+// Purpose: Ghost accumulator bridge from actual bit reads to the numeric recurrence.
+// Audit: bits-before
+// REQUIREMENT CONTEXT: T88-BITS-MSB-FIRST | ITU-T T.88 (08/2018) | 5.4.1
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_read_bits_before {
     ($previous_value:ident, $previous_position:ident, $value:ident, $position:ident) => {
         proof_decl! {
@@ -21,6 +31,11 @@ macro_rules! production_read_bits_before {
     };
 }
 
+// Model navigation: macro::production_read_bits_after [proof-support]
+// Purpose: Ghost accumulator bridge from actual bit reads to the numeric recurrence.
+// Audit: bits-after
+// REQUIREMENT CONTEXT: T88-BITS-MSB-FIRST | ITU-T T.88 (08/2018) | 5.4.1
+// Fidelity: unresolved; no independent normative approval.
 macro_rules! production_read_bits_after {
     (
         $previous_value:ident,

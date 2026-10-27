@@ -1,6 +1,15 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 // Included in document_spec to preserve closed-model and field visibility.
 verus! {
 
+// Model navigation: spec::sequential_windows [proof-support]
+// Purpose: Window-sequence bookkeeping for parsed headers and payloads.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn sequential_windows(
     bytes: Seq<u8>,
     segments: Seq<crate::document::ParsedSegment<'_>>,
@@ -24,6 +33,10 @@ pub(super) open spec fn sequential_windows(
     }
 }
 
+// Model navigation: spec::random_header_windows [proof-support]
+// Purpose: Window-sequence bookkeeping for parsed headers and payloads.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn random_header_windows(
     bytes: Seq<u8>,
     headers: Seq<crate::segment_header::SegmentHeader>,
@@ -46,6 +59,10 @@ pub(super) open spec fn random_header_windows(
     }
 }
 
+// Model navigation: spec::random_payload_windows [proof-support]
+// Purpose: Window-sequence bookkeeping for parsed headers and payloads.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn random_payload_windows(
     bytes: Seq<u8>,
     headers: Seq<crate::segment_header::SegmentHeader>,

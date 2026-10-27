@@ -1,9 +1,19 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: README.md
+// All requirement links and inherited locators: ../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 use crate::file_header::file_header_spec;
 
 verus! {
 
 // Project metadata transitions; caller sequencing and raster semantics are separate.
+// Model navigation: spec::stripe_accepted [project-result-model]
+// Purpose: Accepted stripe/finish metadata, row ordering and typed project errors.
+// Audit: page-stripe-accepted
+// REQUIREMENT CONTEXT: T88-STRIPE-END-ROW-ORDER | ITU-T T.88 (08/2018) | 7.4.8.6; 7.4.10
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn stripe_accepted(
     info: crate::segment_data::PageInformation,
     previous: Option<u32>,
@@ -20,6 +30,11 @@ pub(crate) open spec fn stripe_accepted(
     }
 }
 
+// Model navigation: spec::stripe_result [project-result-model]
+// Purpose: Accepted stripe/finish metadata, row ordering and typed project errors.
+// Audit: page-stripe-result
+// REQUIREMENT CONTEXT: T88-STRIPE-END-ROW-ORDER | ITU-T T.88 (08/2018) | 7.4.8.6; 7.4.10
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn stripe_result(
     info: crate::segment_data::PageInformation,
     previous: Option<u32>,
@@ -32,6 +47,11 @@ pub(crate) open spec fn stripe_result(
     }
 }
 
+// Model navigation: spec::page_finish_result [project-result-model]
+// Purpose: Accepted stripe/finish metadata, row ordering and typed project errors.
+// Audit: page-finish-result
+// REQUIREMENT CONTEXT: T88-STRIPE-FINAL-PAGE-HEIGHT | ITU-T T.88 (08/2018) | 7.4.9; 7.4.10; 8.2 step 2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn page_finish_result(
     height: Option<u32>,
     last: Option<u32>,
@@ -48,6 +68,11 @@ pub(crate) open spec fn page_finish_result(
     }
 }
 
+// Model navigation: spec::public_page_height [project-result-model]
+// Purpose: Accepted stripe/finish metadata, row ordering and typed project errors.
+// Audit: public-page-height
+// REQUIREMENT CONTEXT: T88-STRIPE-FINAL-PAGE-HEIGHT | ITU-T T.88 (08/2018) | 7.4.9; 7.4.10; 8.2 step 2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn public_page_height(
     height: Option<u32>,
     last: Option<u32>,
@@ -67,6 +92,11 @@ pub(crate) open spec fn public_page_height(
     }
 }
 
+// Model navigation: spec::public_page_fields [project-result-model]
+// Purpose: Accepted stripe/finish metadata, row ordering and typed project errors.
+// Audit: public-page-fields
+// REQUIREMENT CONTEXT: T88-STRIPE-FINAL-PAGE-HEIGHT | ITU-T T.88 (08/2018) | 7.4.9; 7.4.10; 8.2 step 2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn public_page_fields(
     info: crate::segment_data::PageInformation,
     number: u32,
@@ -80,6 +110,10 @@ pub(crate) open spec fn public_page_fields(
 }
 
 // Project quota/error policy, not a normative JBIG2 decoding equation.
+// Model navigation: spec::quota_result [project-policy]
+// Purpose: Project read/count/work limits, defaults and typed error priority.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn quota_result(
     actual: nat,
     limit: u64,
@@ -96,6 +130,10 @@ pub(crate) open spec fn quota_result(
     }
 }
 
+// Model navigation: spec::next_count_quota_result [project-policy]
+// Purpose: Project read/count/work limits, defaults and typed error priority.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn next_count_quota_result(
     count: usize,
     limit: u32,
@@ -108,12 +146,20 @@ pub(crate) open spec fn next_count_quota_result(
     }
 }
 
+// Model navigation: spec::decoder_limits [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub closed spec fn decoder_limits(
     decoder: &crate::document::Decoder,
 ) -> crate::Limits {
     decoder.limits
 }
 
+// Model navigation: spec::default_limits [project-policy]
+// Purpose: Project read/count/work limits, defaults and typed error priority.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn default_limits(limits: crate::Limits) -> bool {
     &&& limits.max_width == 1_000_000
     &&& limits.max_height == 1_000_000
@@ -132,30 +178,53 @@ pub open spec fn default_limits(limits: crate::Limits) -> bool {
     &&& limits.max_retained_state_bytes == 536_870_912
 }
 
+// Model navigation: spec::document_organization [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub closed spec fn document_organization(
     document: &crate::document::DocumentInfo,
 ) -> crate::file_header::Organization {
     document.organization
 }
 
+// Model navigation: spec::document_declared_page_count [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Audit: document-count
+// REQUIREMENT CONTEXT: T88-DOCUMENT-COUNT-AGREEMENT | ITU-T T.88 (08/2018) | D.4.3
+// Fidelity: unresolved; no independent normative approval.
 pub closed spec fn document_declared_page_count(
     document: &crate::document::DocumentInfo,
 ) -> Option<u32> {
     document.declared_page_count
 }
 
+// Model navigation: spec::document_segment_count [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub closed spec fn document_segment_count(
     document: &crate::document::DocumentInfo,
 ) -> u32 {
     document.segment_count
 }
 
+// Model navigation: spec::document_pages [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Audit: document-pages
+// REQUIREMENT CONTEXT: T88-DOCUMENT-COUNT-AGREEMENT | ITU-T T.88 (08/2018) | D.4.3
+// Fidelity: unresolved; no independent normative approval.
 pub closed spec fn document_pages(
     document: &crate::document::DocumentInfo,
 ) -> Seq<crate::document::PageInfo> {
     document.pages@
 }
 
+// Model navigation: spec::declared_count_matches_pages [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: declared-count-matches-pages
+// REQUIREMENT CONTEXT: T88-DOCUMENT-COUNT-AGREEMENT | ITU-T T.88 (08/2018) | D.4.3
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn declared_count_matches_pages(
     document: &crate::document::DocumentInfo,
 ) -> bool {
@@ -165,6 +234,11 @@ pub open spec fn declared_count_matches_pages(
     }
 }
 
+// Model navigation: spec::standalone_metadata [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: standalone-metadata
+// REQUIREMENT CONTEXT: T88-DOCUMENT-COUNT-AGREEMENT | ITU-T T.88 (08/2018) | D.4.3
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn standalone_metadata(
     input: Seq<u8>,
     document: &crate::document::DocumentInfo,
@@ -176,6 +250,11 @@ pub open spec fn standalone_metadata(
     &&& declared_count_matches_pages(document)
 }
 
+// Model navigation: spec::embedded_metadata [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: embedded-metadata
+// REQUIREMENT CONTEXT: T88-PROFILE-EMBEDDED-GLOBAL-METADATA | ITU-T T.88 (08/2018) | D.3 (embedded context; metadata API shape is project policy)
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn embedded_metadata(
     document: &crate::document::DocumentInfo,
 ) -> bool {
@@ -183,6 +262,11 @@ pub open spec fn embedded_metadata(
     &&& document_declared_page_count(document) == None
 }
 
+// Model navigation: spec::payload_window [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: document-payload-window
+// REQUIREMENT CONTEXT: T88-SEQUENTIAL-SEGMENT-LAYOUT | ITU-T T.88 (08/2018) | D.1
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn payload_window(
     header: &crate::segment_header::SegmentHeader,
     bytes: Seq<u8>,
@@ -199,6 +283,11 @@ pub(crate) open spec fn payload_window(
 }
 
 #[verifier::opaque]
+// Model navigation: spec::known_segment_data_fields [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: known-segment-data-fields
+// REQUIREMENT CONTEXT: T88-PAGE-KNOWN-DIMENSIONS | ITU-T T.88 (08/2018) | 7.4.8.1-7.4.8.2; 8.2 step 2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn known_segment_data_fields(
     segment_type: crate::segment_header::SegmentType,
     payload: Seq<u8>,
@@ -230,6 +319,11 @@ pub(crate) open spec fn known_segment_data_fields(
     }
 }
 
+// Model navigation: spec::segment_metadata [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: container-segment-metadata
+// REQUIREMENT CONTEXT: T88-PAGE-KNOWN-DIMENSIONS | ITU-T T.88 (08/2018) | 7.4.8.1-7.4.8.2; 8.2 step 2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn segment_metadata(
     segments: Seq<crate::document::ParsedSegment<'_>>,
 ) -> bool {
@@ -239,6 +333,11 @@ pub(crate) open spec fn segment_metadata(
         )
 }
 
+// Model navigation: spec::sequential_offset [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Audit: document-sequential-offset
+// REQUIREMENT CONTEXT: T88-SEQUENTIAL-SEGMENT-LAYOUT | ITU-T T.88 (08/2018) | D.1
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn sequential_offset(
     segments: Seq<crate::document::ParsedSegment<'_>>,
     prefix: nat,
@@ -256,6 +355,11 @@ pub(crate) open spec fn sequential_offset(
 }
 
 #[verifier::opaque]
+// Model navigation: spec::sequential_container_fields [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: document-sequential-fields
+// REQUIREMENT CONTEXT: T88-SEQUENTIAL-SEGMENT-LAYOUT | ITU-T T.88 (08/2018) | D.1
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn sequential_container_fields(
     bytes: Seq<u8>,
     segments: Seq<crate::document::ParsedSegment<'_>>,
@@ -277,12 +381,22 @@ pub(crate) open spec fn sequential_container_fields(
     }
 }
 
+// Model navigation: spec::segment_headers [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Audit: document-header-sequence
+// REQUIREMENT CONTEXT: T88-RANDOM-HEADER-PAYLOAD-LAYOUT | ITU-T T.88 (08/2018) | D.2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn segment_headers(
     segments: Seq<crate::document::ParsedSegment<'_>>,
 ) -> Seq<crate::segment_header::SegmentHeader> {
     Seq::new(segments.len(), |index: int| segments[index].header)
 }
 
+// Model navigation: spec::header_byte_offset [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Audit: document-header-byte-offset
+// REQUIREMENT CONTEXT: T88-RANDOM-HEADER-PAYLOAD-LAYOUT | ITU-T T.88 (08/2018) | D.2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn header_byte_offset(
     headers: Seq<crate::segment_header::SegmentHeader>,
     prefix: nat,
@@ -298,6 +412,11 @@ pub(crate) open spec fn header_byte_offset(
     }
 }
 
+// Model navigation: spec::payload_byte_offset [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Audit: document-payload-byte-offset
+// REQUIREMENT CONTEXT: T88-RANDOM-HEADER-PAYLOAD-LAYOUT | ITU-T T.88 (08/2018) | D.2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn payload_byte_offset(
     segments: Seq<crate::document::ParsedSegment<'_>>,
     prefix: nat,
@@ -314,6 +433,11 @@ pub(crate) open spec fn payload_byte_offset(
 }
 
 #[verifier::opaque]
+// Model navigation: spec::random_access_segment_fields [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: document-random-access-segment-fields
+// REQUIREMENT CONTEXT: T88-RANDOM-HEADER-PAYLOAD-LAYOUT | ITU-T T.88 (08/2018) | D.2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn random_access_segment_fields(
     bytes: Seq<u8>,
     segments: Seq<crate::document::ParsedSegment<'_>>,
@@ -341,6 +465,11 @@ pub(crate) open spec fn random_access_segment_fields(
 }
 
 #[verifier::opaque]
+// Model navigation: spec::random_access_container_fields [project-result-model]
+// Purpose: Accepted metadata and exact sequential/random header/payload window results.
+// Audit: document-random-access-fields
+// REQUIREMENT CONTEXT: T88-RANDOM-HEADER-PAYLOAD-LAYOUT | ITU-T T.88 (08/2018) | D.2
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn random_access_container_fields(
     bytes: Seq<u8>,
     segments: Seq<crate::document::ParsedSegment<'_>>,
@@ -355,6 +484,11 @@ pub(crate) open spec fn random_access_container_fields(
         #[trigger] random_access_segment_fields(bytes, segments, index)
 }
 
+// Model navigation: spec::page_information_count [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Audit: page-information-count
+// REQUIREMENT CONTEXT: T88-DOCUMENT-COUNT-AGREEMENT | ITU-T T.88 (08/2018) | D.4.3
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn page_information_count(
     segments: Seq<crate::document::ParsedSegment<'_>>,
     prefix: nat,
@@ -376,18 +510,30 @@ pub(crate) open spec fn page_information_count(
     }
 }
 
+// Model navigation: spec::global_segment_count [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub closed spec fn global_segment_count(
     globals: &crate::document::GlobalSegments,
 ) -> nat {
     globals.types@.len()
 }
 
+// Model navigation: spec::global_bytes [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub closed spec fn global_bytes(
     globals: &crate::document::GlobalSegments,
 ) -> Seq<u8> {
     globals.bytes@
 }
 
+// Model navigation: spec::production_is_intermediate_region [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn production_is_intermediate_region(
     segment_type: crate::segment_header::SegmentType,
 ) -> bool {
@@ -437,6 +583,10 @@ pub struct Segment {
     pub references: Seq<Reference>,
 }
 
+// Model navigation: spec::sum [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn sum(values: Seq<nat>) -> nat
     decreases values.len(),
 {
@@ -447,6 +597,10 @@ pub open spec fn sum(values: Seq<nat>) -> nat
     }
 }
 
+// Model navigation: spec::reference_count [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn reference_count(segments: Seq<Segment>) -> nat
     decreases segments.len(),
 {
@@ -457,10 +611,18 @@ pub open spec fn reference_count(segments: Seq<Segment>) -> nat
     }
 }
 
+// Model navigation: spec::work [project-policy]
+// Purpose: Project read/count/work limits, defaults and typed error priority.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn work(input_bytes: nat, segments: Seq<Segment>) -> nat {
     input_bytes + segments.len() + reference_count(segments)
 }
 
+// Model navigation: spec::envelope_bytes [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn envelope_bytes(
     envelope: Envelope,
     file_header_bytes: nat,
@@ -476,10 +638,18 @@ pub open spec fn envelope_bytes(
     }
 }
 
+// Model navigation: spec::unknown_marker_fits [candidate-standard-facing-model]
+// Purpose: Abstract page-event/final-height and marker-extent candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn unknown_marker_fits(input_len: nat, marker_offset: nat) -> bool {
     18 <= marker_offset && marker_offset + 6 <= input_len
 }
 
+// Model navigation: spec::unknown_marker_valid [candidate-standard-facing-model]
+// Purpose: Abstract page-event/final-height and marker-extent candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn unknown_marker_valid(
     input_len: nat,
     marker_offset: nat,
@@ -489,6 +659,10 @@ pub open spec fn unknown_marker_valid(
     unknown_marker_fits(input_len, marker_offset) && row_count <= declared_height
 }
 
+// Model navigation: spec::bounded_reads [project-policy]
+// Purpose: Project read/count/work limits, defaults and typed error priority.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn bounded_reads(chunks: Seq<nat>, cap: nat) -> bool
     decreases chunks.len(),
 {
@@ -499,6 +673,10 @@ pub open spec fn bounded_reads(chunks: Seq<nat>, cap: nat) -> bool
     }
 }
 
+// Model navigation: spec::count_limits [project-policy]
+// Purpose: Project read/count/work limits, defaults and typed error priority.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn count_limits(
     segments: nat,
     pages: nat,
@@ -508,16 +686,28 @@ pub open spec fn count_limits(
     segments <= max_segments && pages <= max_pages
 }
 
+// Model navigation: spec::unique_numbers [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn unique_numbers(segments: Seq<Segment>) -> bool {
     forall|i: int, j: int|
         0 <= i < segments.len() && 0 <= j < segments.len() && i != j
             ==> segments[i].number != segments[j].number
 }
 
+// Model navigation: spec::contains_number [proof-support]
+// Purpose: Private document projections, counts, membership and extent folds.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn contains_number(segments: Seq<Segment>, number: nat) -> bool {
     exists|i: int| 0 <= i < segments.len() && segments[i].number == number
 }
 
+// Model navigation: spec::references_resolve_lower [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn references_resolve_lower(
     segments: Seq<Segment>,
     global_numbers: Set<nat>,
@@ -532,6 +722,10 @@ pub open spec fn references_resolve_lower(
             }
 }
 
+// Model navigation: spec::page_association_allowed [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn page_association_allowed(class: SegmentClass, page: nat) -> bool {
     match class {
         SegmentClass::IntermediateTextRegion
@@ -550,6 +744,10 @@ pub open spec fn page_association_allowed(class: SegmentClass, page: nat) -> boo
     }
 }
 
+// Model navigation: spec::reference_class_allowed [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn reference_class_allowed(
     owner: SegmentClass,
     references: Seq<Reference>,
@@ -609,11 +807,19 @@ pub open spec fn reference_class_allowed(
     }
 }
 
+// Model navigation: spec::segment_policy_allowed [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn segment_policy_allowed(segment: Segment) -> bool {
     page_association_allowed(segment.class, segment.page)
         && reference_class_allowed(segment.class, segment.references)
 }
 
+// Model navigation: spec::depth_witness [proof-support]
+// Purpose: Bounded rank witnesses and supplied lower-reference chain vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn depth_witness(
     segments: Seq<Segment>,
     depths: Map<nat, nat>,
@@ -633,6 +839,10 @@ pub open spec fn depth_witness(
             }
 }
 
+// Model navigation: spec::is_last_use [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn is_last_use(
     uses: Seq<nat>,
     use_index: int,
@@ -643,6 +853,10 @@ pub open spec fn is_last_use(
     &&& forall|later: int| use_index < later < uses.len() ==> uses[later] != number
 }
 
+// Model navigation: spec::release_allowed [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn release_allowed(
     uses: Seq<nat>,
     use_index: int,
@@ -651,6 +865,10 @@ pub open spec fn release_allowed(
     is_last_use(uses, use_index, number)
 }
 
+// Model navigation: spec::producer_retained_for_later_use [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn producer_retained_for_later_use(
     uses: Seq<nat>,
     producer_number: nat,
@@ -660,6 +878,10 @@ pub open spec fn producer_retained_for_later_use(
         ==> retained
 }
 
+// Model navigation: spec::lower_chain [proof-support]
+// Purpose: Bounded rank witnesses and supplied lower-reference chain vocabulary.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn lower_chain(chain: Seq<nat>) -> bool
     decreases chain.len(),
 {
@@ -671,6 +893,10 @@ pub open spec fn lower_chain(chain: Seq<nat>) -> bool
     }
 }
 
+// Model navigation: spec::contiguous_pages [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn contiguous_pages(pages: Seq<nat>) -> bool {
     forall|i: int| 0 <= i < pages.len() ==> pages[i] == i + 1
 }
@@ -681,6 +907,10 @@ pub struct ProfileDeclaration {
     pub values: Set<nat>,
 }
 
+// Model navigation: spec::valid_profiles [candidate-standard-facing-model]
+// Purpose: Abstract document order, reference ownership, retention and profile candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn valid_profiles(
     declarations: Seq<ProfileDeclaration>,
 ) -> bool {
@@ -717,6 +947,10 @@ pub enum PageEvent {
     Content,
 }
 
+// Model navigation: spec::initial_page_state [candidate-standard-facing-model]
+// Purpose: Abstract page-event/final-height and marker-extent candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn initial_page_state() -> PageState {
     PageState {
         information_seen: false,
@@ -728,6 +962,10 @@ pub open spec fn initial_page_state() -> PageState {
     }
 }
 
+// Model navigation: spec::page_step [candidate-standard-facing-model]
+// Purpose: Abstract page-event/final-height and marker-extent candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn page_step(state: PageState, event: PageEvent) -> Option<PageState> {
     match event {
         PageEvent::Information { striped, height, max_stripe_size } => {
@@ -781,6 +1019,10 @@ pub open spec fn page_step(state: PageState, event: PageEvent) -> Option<PageSta
     }
 }
 
+// Model navigation: spec::final_height [candidate-standard-facing-model]
+// Purpose: Abstract page-event/final-height and marker-extent candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub open spec fn final_height(state: PageState) -> Option<nat> {
     match state.fixed_height {
         Some(height) => Some(height),

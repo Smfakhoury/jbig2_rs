@@ -1,7 +1,16 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: README.md
+// All requirement links and inherited locators: ../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
 
+// Model navigation: spec::contexts_valid [representation-invariant]
+// Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn contexts_valid(
     contexts: Seq<crate::arithmetic::ArithmeticContext>,
 ) -> bool {
@@ -10,6 +19,11 @@ pub(crate) open spec fn contexts_valid(
 }
 
 // Project diagnostic policy, not a T.88 arithmetic-decoding equation.
+// Model navigation: spec::probability_validation_result [project-policy]
+// Purpose: Project storage/work estimates and typed context/decoder error policy.
+// Audit: generic-probability-validation-result
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE | ITU-T T.88 (08/2018) | E.3, Figure E.14, read CX / DECODE / Finished loop (p. 118)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn probability_validation_result(
     contexts: Seq<crate::arithmetic::ArithmeticContext>,
     result: Result<(), super::GenericRegionError>,
@@ -29,6 +43,11 @@ pub(crate) open spec fn probability_validation_result(
     }
 }
 
+// Model navigation: spec::probability_error_for_signal [project-policy]
+// Purpose: Project storage/work estimates and typed context/decoder error policy.
+// Audit: generic-probability-signal-error
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE | ITU-T T.88 (08/2018) | E.3, Figure E.14, read CX / DECODE / Finished loop (p. 118)
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn probability_error_for_signal(
     decoder: &crate::arithmetic::ArithmeticDecoder,
     index: usize,
@@ -46,18 +65,30 @@ pub(crate) open spec fn probability_error_for_signal(
     }
 }
 
+// Model navigation: spec::generic_contexts_valid [representation-invariant]
+// Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn generic_contexts_valid(
     contexts: &crate::generic_region::GenericContexts,
 ) -> bool {
     contexts_valid(contexts.contexts@)
 }
 
+// Model navigation: spec::refinement_contexts_valid [representation-invariant]
+// Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn refinement_contexts_valid(
     contexts: &crate::generic_region::RefinementContexts,
 ) -> bool {
     contexts_valid(contexts.contexts@)
 }
 
+// Model navigation: spec::generic_session_valid [representation-invariant]
+// Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn generic_session_valid(
     session: &crate::generic_region::GenericArithmeticSession,
 ) -> bool {
@@ -65,6 +96,10 @@ pub(crate) open spec fn generic_session_valid(
         && generic_contexts_valid(&session.contexts)
 }
 
+// Model navigation: spec::generic_template_code [proof-support]
+// Purpose: Template identity, powers of two and remaining-extent measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_template_code(
     template: super::GenericTemplate,
 ) -> nat {
@@ -76,6 +111,11 @@ pub(super) open spec fn generic_template_code(
     }
 }
 
+// Model navigation: spec::generic_context_bits [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Audit: template-bits
+// REQUIREMENT CONTEXT: T88-GENERIC-CONTEXT-SIZE | ITU-T T.88 (08/2018) | 6.2.5.3; Figures 3-6
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn generic_context_bits(
     template: super::GenericTemplate,
 ) -> nat {
@@ -87,6 +127,11 @@ pub(crate) open spec fn generic_context_bits(
     }
 }
 
+// Model navigation: spec::generic_sltp_context [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Audit: sltp-index
+// REQUIREMENT CONTEXT: T88-GENERIC-SLTP-CONTEXT | ITU-T T.88 (08/2018) | 6.2.5.7 step 3b; Figures 8-11
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn generic_sltp_context(
     template: super::GenericTemplate,
 ) -> nat {
@@ -98,6 +143,11 @@ pub(crate) open spec fn generic_sltp_context(
     }
 }
 
+// Model navigation: spec::refinement_context_bits [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Audit: refinement-context-bits
+// REQUIREMENT CONTEXT: T88-REFINEMENT-CONTEXT-SIZE | ITU-T T.88 (08/2018) | 6.3.5.3; Figures 12-13
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_context_bits(
     template: super::RefinementTemplate,
 ) -> nat {
@@ -107,6 +157,11 @@ pub(super) open spec fn refinement_context_bits(
     }
 }
 
+// Model navigation: spec::refinement_sltp_context [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Audit: refinement-sltp-context
+// REQUIREMENT CONTEXT: T88-REFINEMENT-SLTP-CONTEXT | ITU-T T.88 (08/2018) | 6.3.5.6 step 3b; Figures 14-15
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_sltp_context(
     template: super::RefinementTemplate,
 ) -> nat {
@@ -116,6 +171,10 @@ pub(super) open spec fn refinement_sltp_context(
     }
 }
 
+// Model navigation: spec::pow2 [proof-support]
+// Purpose: Template identity, powers of two and remaining-extent measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn pow2(exponent: nat) -> nat
     decreases exponent,
 {
@@ -126,18 +185,30 @@ pub(crate) open spec fn pow2(exponent: nat) -> nat
     }
 }
 
+// Model navigation: spec::target_adaptive_valid [representation-invariant]
+// Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn target_adaptive_valid(
     offset: super::TemplateOffset,
 ) -> bool {
     offset.y < 0 || (offset.y == 0 && offset.x < 0)
 }
 
+// Model navigation: spec::generic_slot_count [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_slot_count(
     template: super::GenericTemplate,
 ) -> nat {
     generic_context_bits(template)
 }
 
+// Model navigation: spec::generic_adaptive_count [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_adaptive_count(
     template: super::GenericTemplate,
     extended: bool,
@@ -151,6 +222,10 @@ pub(super) open spec fn generic_adaptive_count(
 
 /// The adaptive-pixel number occupying a geometric context slot. `None`
 /// denotes a fixed slot. The slot index is the context bit's MSB-first index.
+// Model navigation: spec::generic_slot_adaptive [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_slot_adaptive(
     template: super::GenericTemplate,
     extended: bool,
@@ -183,6 +258,10 @@ pub(super) open spec fn generic_slot_adaptive(
     }
 }
 
+// Model navigation: spec::generic_slot_x [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_slot_x(
     template: super::GenericTemplate,
     slot: int,
@@ -209,6 +288,10 @@ pub(super) open spec fn generic_slot_x(
     }
 }
 
+// Model navigation: spec::generic_slot_y [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_slot_y(
     template: super::GenericTemplate,
     slot: int,
@@ -229,6 +312,10 @@ pub(super) open spec fn generic_slot_y(
     }
 }
 
+// Model navigation: spec::generic_slot_matches [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_slot_matches(
     actual: super::GenericSlot,
     template: super::GenericTemplate,
@@ -249,12 +336,20 @@ pub(super) open spec fn generic_slot_matches(
         }
 }
 
+// Model navigation: spec::refinement_slot_count [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_slot_count(
     template: super::RefinementTemplate,
 ) -> nat {
     refinement_context_bits(template)
 }
 
+// Model navigation: spec::refinement_slot_x [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_slot_x(
     template: super::RefinementTemplate,
     slot: int,
@@ -276,6 +371,10 @@ pub(super) open spec fn refinement_slot_x(
     }
 }
 
+// Model navigation: spec::refinement_slot_y [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_slot_y(
     template: super::RefinementTemplate,
     slot: int,
@@ -296,6 +395,10 @@ pub(super) open spec fn refinement_slot_y(
     }
 }
 
+// Model navigation: spec::refinement_slot_matches [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_slot_matches(
     actual: super::RefinementSlot,
     template: super::RefinementTemplate,
@@ -316,6 +419,10 @@ pub(super) open spec fn refinement_slot_matches(
         }
 }
 
+// Model navigation: spec::refinement_slot_is_target [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_slot_is_target(
     template: super::RefinementTemplate,
     slot: nat,
@@ -326,6 +433,10 @@ pub(super) open spec fn refinement_slot_is_target(
     }
 }
 
+// Model navigation: spec::refinement_slot_adaptive [candidate-standard-facing-model]
+// Purpose: Template context sizes, slots, adaptive coordinates and plane candidates.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_slot_adaptive(
     template: super::RefinementTemplate,
     slot: nat,
@@ -340,6 +451,10 @@ pub(super) open spec fn refinement_slot_adaptive(
     }
 }
 
+// Model navigation: spec::context_value [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn context_value(bits: Seq<bool>) -> nat
     decreases bits.len(),
 {
@@ -351,6 +466,10 @@ pub(super) open spec fn context_value(bits: Seq<bool>) -> nat
     }
 }
 
+// Model navigation: spec::sample_or_zero [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn sample_or_zero(
     pixels: Seq<Seq<bool>>,
     x: int,
@@ -365,10 +484,18 @@ pub(super) open spec fn sample_or_zero(
     }
 }
 
+// Model navigation: spec::tpgd_next [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn tpgd_next(ltp: bool, sltp: bool) -> bool {
     ltp != sltp
 }
 
+// Model navigation: spec::generic_pixel_decisions [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_pixel_decisions(
     width: nat,
     ltp: bool,
@@ -383,6 +510,10 @@ pub(super) open spec fn generic_pixel_decisions(
     }
 }
 
+// Model navigation: spec::tpgr_uses_prediction [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn tpgr_uses_prediction(
     ltp: bool,
     neighbourhood_uniform: bool,
@@ -390,6 +521,10 @@ pub(super) open spec fn tpgr_uses_prediction(
     ltp && neighbourhood_uniform
 }
 
+// Model navigation: spec::refinement_pixel_decisions [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_pixel_decisions(
     pixels: nat,
     predictable: nat,
@@ -404,6 +539,10 @@ pub(super) open spec fn refinement_pixel_decisions(
     }
 }
 
+// Model navigation: spec::generic_work_spec [project-policy]
+// Purpose: Project storage/work estimates and typed context/decoder error policy.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn generic_work_spec(
     width: nat,
     rows: nat,
@@ -412,6 +551,10 @@ pub(super) open spec fn generic_work_spec(
     width * rows * 17 + if typical_prediction { rows } else { 0 }
 }
 
+// Model navigation: spec::refinement_work_spec [project-policy]
+// Purpose: Project storage/work estimates and typed context/decoder error policy.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn refinement_work_spec(
     width: nat,
     height: nat,
@@ -420,10 +563,18 @@ pub(super) open spec fn refinement_work_spec(
     width * height * (if typical_prediction { 23nat } else { 14nat }) + height
 }
 
+// Model navigation: spec::bitmap_storage_spec [project-policy]
+// Purpose: Project storage/work estimates and typed context/decoder error policy.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn bitmap_storage_spec(width: nat, height: nat) -> nat {
     ((width + 7) / 8) * height
 }
 
+// Model navigation: spec::contexts_compatible [representation-invariant]
+// Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn contexts_compatible(
     template: nat,
     extended: bool,
@@ -437,6 +588,10 @@ pub(super) open spec fn contexts_compatible(
         && context_count == snapshot_count
 }
 
+// Model navigation: spec::probability_states_valid [representation-invariant]
+// Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn probability_states_valid(
     states: Seq<(nat, nat)>,
 ) -> bool {
@@ -444,6 +599,10 @@ pub(super) open spec fn probability_states_valid(
         states[index].0 < 47 && states[index].1 <= 1
 }
 
+// Model navigation: spec::restore_context_states [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn restore_context_states(
     current: Seq<(nat, nat)>,
     snapshot: Seq<(nat, nat)>,
@@ -456,10 +615,18 @@ pub(super) open spec fn restore_context_states(
     }
 }
 
+// Model navigation: spec::reset_context_states [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn reset_context_states(count: nat) -> Seq<(nat, nat)> {
     Seq::new(count, |_index: int| (0nat, 0nat))
 }
 
+// Model navigation: spec::decoded_pixels [project-result-model]
+// Purpose: Supplied decision prefix only; does not decode bytes or inspect context values.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn decoded_pixels(
     decisions: Seq<bool>,
     context_indexes: Seq<nat>,
@@ -474,6 +641,10 @@ pub(super) open spec fn decoded_pixels(
     )
 }
 
+// Model navigation: spec::unknown_length_accounting [project-result-model]
+// Purpose: Context-bit folds, white boundary sampling, restored states and marker extents.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn unknown_length_accounting(
     marker_offset: nat,
     mmr: bool,
@@ -482,10 +653,18 @@ pub(super) open spec fn unknown_length_accounting(
     (if mmr { marker_offset } else { marker_offset + 2 }, marker_offset + 6)
 }
 
+// Model navigation: spec::row_measure [proof-support]
+// Purpose: Template identity, powers of two and remaining-extent measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn row_measure(row: nat, rows: nat) -> nat {
     if row <= rows { (rows - row) as nat } else { 0 }
 }
 
+// Model navigation: spec::pixel_measure [proof-support]
+// Purpose: Template identity, powers of two and remaining-extent measures.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn pixel_measure(x: nat, width: nat) -> nat {
     if x <= width { (width - x) as nat } else { 0 }
 }

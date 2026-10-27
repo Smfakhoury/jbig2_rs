@@ -1,3 +1,8 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
@@ -27,6 +32,11 @@ pub(super) proof fn iaid_value_bound(previous: usize, required: usize)
 {
 }
 
+// Model navigation: spec::pow2 [proof-support]
+// Purpose: Doubling and binary-prefix vocabulary for arithmetic properties.
+// Audit: arithmetic-pow2
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PAYLOAD-ORDER | ITU-T T.88 (08/2018) | A.2, step 4; Figure A.1; Table A.1 payload fields (pp. 90-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn pow2(exponent: nat) -> nat
     decreases exponent,
 {
@@ -63,6 +73,11 @@ pub(super) proof fn pow2_monotonic(lower: nat, upper: nat)
     }
 }
 
+// Model navigation: spec::binary_value [proof-support]
+// Purpose: Doubling and binary-prefix vocabulary for arithmetic properties.
+// Audit: arithmetic-binary-value
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-INTEGER-PAYLOAD-ORDER | ITU-T T.88 (08/2018) | A.2, step 4; Figure A.1; Table A.1 payload fields (pp. 90-91)
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn binary_value(
     decisions: Seq<u8>,
     count: nat,

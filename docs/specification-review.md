@@ -146,6 +146,43 @@ Updating a hash is not a classification review: re-read affected purposes and
 dependencies, keep ambiguity visible, then rerun the checker and tooling tests.
 No standard processing or normative approval follows from refreshing evidence.
 
+### Inline structural navigation
+
+Adjacent comments cover the same declared inventory, including registered
+support outside `specs/` and `proofs/model_support/`. Each names the exact
+`kind::name`, current purpose label and a short explanation. Registered members
+also retain their exact ledger `Audit` ID. One existing linked row supplies
+`REQUIREMENT CONTEXT` with its exact ID, standard and inherited clause string;
+the complete set remains in the ledger/report. This is reading context, not a
+new direct normative equation or an independently checked citation. Policy,
+representation and proof helpers are not promoted to standard rules.
+Unregistered candidates explicitly expose missing requirement/locator mapping.
+No PDF-page offsets are inferred or newly verified.
+
+The checker scans real parser comment nodes in **all** project Rust source,
+masking strings and excluded code through the existing source helpers.
+Every scoped declaration and registered reference must be covered exactly once.
+Markers must be immediately before the named declaration, separated only by
+whitespace/comments; intervening attributes, items or unsupported placement
+fail explicitly rather than inheriting a nearby reference. Missing, duplicate,
+unknown, wrong-purpose, wrong-file and misplaced markers fail. New scoped
+declarations require authored classification and inline navigation, not a
+hardcoded inventory total. `inline_navigation` reports structural coverage
+separately from independently verified citations, normative approval and
+document-processing authorization; all three latter flags remain false.
+
+For comment-only identity refreshes, first compare the complete `src/`, `specs/`
+and `proofs/` source set with the assigned exact base. Parse both versions and
+compare all non-comment token leaves, retaining literal contents, rather than
+masking away possible string/table changes. Only after code equivalence is
+demonstrated may the provisional raw source bindings and source-purpose digest
+be refreshed. This does not renew reviews, freeze a normative model or change
+any selected requirement's provisional status.
+
+Preserve token boundaries, literal whitespace, doc comments and every test/proof
+cfg branch in that comparison. A comment masker that also removes strings,
+test-only code or doctest-bearing comments cannot establish this equivalence.
+
 Generate the inventory without providing any standard document:
 
 ```sh

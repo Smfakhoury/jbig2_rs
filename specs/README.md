@@ -88,6 +88,14 @@ implementation-constant references are dependencies to review, not normative
 ground truth. Neither these navigation labels nor structural checks approve a
 model. See the [inventory scope and freshness rules](../docs/specification-review.md#source-only-navigation-classification).
 
+Each scoped declaration now has an adjacent `Model navigation` comment with its
+authored purpose and unresolved fidelity. `Audit` names the exact registered
+ledger definition; `REQUIREMENT CONTEXT` gives one existing linked requirement
+and its unchanged locator as a reading entry point, **not a direct normative
+equation**. The ledger/report retains the complete link set. Helpers gain no new
+normative rule, and unregistered candidates explicitly show their missing
+requirement/locator mapping. The four earlier pilot references are preserved.
+
 For exact source/trust limits read [verifier limitations](../docs/verifier-limitations.md).
 For wider scope and evidence-strength distinctions read
 [traceability](../docs/spec-traceability.md). The detailed navigation lives in

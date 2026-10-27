@@ -1,3 +1,8 @@
+// Source-only author navigation; named purposes are not normative approval.
+// Guide, official acquisition and source identity: ../../specs/README.md
+// All requirement links and inherited locators: ../../validation/traceability/requirements.json
+// REQUIREMENT CONTEXT is not a direct normative equation, including for proof/policy helpers.
+
 use vstd::prelude::*;
 
 verus! {
@@ -286,6 +291,11 @@ pub(super) proof fn initial_reference_cache(width: u32)
     }
 }
 
+// Model navigation: spec::reference_prefix_skipped [proof-support]
+// Purpose: Bounded skipped prefix excluding eligible reference candidates.
+// Audit: mmr-reference-prefix-skipped
+// REQUIREMENT CONTEXT: T6-REFERENCE-CHANGING-ELEMENTS | ITU-T T.6 (1988) | 2.2.2; 2.2.5.2
+// Fidelity: unresolved; no independent normative approval.
 pub(super) open spec fn reference_prefix_skipped(
     transitions: Seq<u32>, x: u32, initial: bool, end: int,
 ) -> bool {
