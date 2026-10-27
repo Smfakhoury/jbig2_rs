@@ -128,9 +128,9 @@ class TraceabilityTests(unittest.TestCase):
         # Give compact synthetic declarations an unambiguous standalone anchor.
         for directory in ("specs", "proofs"):
             for path in (self.root / directory).rglob("*.rs"):
-                text = path.read_text()
+                text = path.read_text(encoding="utf-8")
                 text = re.sub(r"(?<=[{;}]) *(?=pub open spec fn|pub proof fn)", "\n", text)
-                path.write_text(text)
+                path.write_text(text, encoding="utf-8")
         declarations, _ = checker.audit_declarations(self.root, self.ledger)
         families = []
         for file in sorted({key[0] for key in declarations}):
@@ -430,10 +430,29 @@ class TraceabilityTests(unittest.TestCase):
         path.write_text(
             '// Source-only notation: α → β.\nconst DECOY: &str = r#"\n'
             '// Audit: unknown\n// Model navigation: spec::phantom [proof-support]\n"#;\n'
-            + original.replace("// Purpose: Synthetic", "// Purpose: α → β; Synthetic")
+            + original.replace("// Purpose: Synthetic", "// Purpose: α → β; Synthetic"),
+            encoding="utf-8",
         )
         self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
         self.assertTrue(checker.audit_inventory(self.root, self.ledger)["inline_navigation"]["structural_coverage_complete"])
+
+    def test_crlf_navigation_uses_logical_lines_without_normalizing_source_hashes(self):
+        before = self.ledger["model_classifications"]["project_source_sha256"]
+        for directory in ("src", "specs", "proofs"):
+            for path in (self.root / directory).rglob("*.rs"):
+                path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        for file in self.ledger["bindings"]:
+            self.ledger["bindings"][file] = hashlib.sha256((self.root / file).read_bytes()).hexdigest()
+        self.assertNotEqual(before, self.ledger["model_classifications"]["project_source_sha256"])
+        report = checker.audit_inventory(self.root, self.ledger)
+        self.assertTrue(report["inline_navigation"]["structural_coverage_complete"])
+        self.assertEqual(report["inline_navigation"]["covered_count"], 1)
+        path = self.root / "specs/model.rs"
+        path.write_bytes(path.read_bytes().replace(b"// Audit: identity-model", b"// Audit: missing"))
+        self.ledger["model_classifications"].update(checker.classification_evidence(self.root, self.ledger))
+        with self.assertRaisesRegex(ValueError, "audit reference"):
+            checker.audit_inventory(self.root, self.ledger)
 
     def test_authored_purposes_preserve_registration_and_never_approve_candidates(self):
         self.write("specs/extra.rs", "verus! { pub open spec fn helper() -> bool { true } }")

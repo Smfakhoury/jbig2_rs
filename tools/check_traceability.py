@@ -208,7 +208,7 @@ def audit_inline_navigation(root, ledger, declarations, registered, classificati
             if node.type == "line_comment":
                 start, end = node.start_byte, node.end_byte
                 if active[start:end].strip() and not code[start:end].strip():
-                    comments.append((start, end, node.text.decode("utf-8")))
+                    comments.append((start, end, node.text.decode("utf-8").removesuffix("\r")))
             for child in node.named_children:
                 visit(child)
 
