@@ -1039,6 +1039,52 @@ class TraceabilityTests(unittest.TestCase):
         self.assertNotIn(("hidden", "hidden"), tests)
         self.assertIn("leaf::after_tests", runtime_inventory(self.root))
 
+    def test_external_unit_tests_keep_their_declared_module_names(self):
+        library = self.root / "src/lib.rs"
+        library.write_text(library.read_text() + "\n#[cfg(test)] mod external_tests;\n")
+        self.write("src/external_tests.rs", "#![cfg(test)]\n#[test] fn separate_case() {}")
+        tests = inventory_tests(self.root)
+        self.assertIn(("lib", "external_tests::separate_case"), tests)
+        self.assertEqual(tests[("lib", "external_tests::separate_case")]["file"], "src/external_tests.rs")
+
+    def test_external_tests_follow_inline_module_path_attributes(self):
+        library = self.root / "src/lib.rs"
+        library.write_text(library.read_text() + """
+            #[cfg(test)]
+            mod audit {
+                #[path = "renamed.rs"]
+                mod checks;
+            }
+        """)
+        self.write("src/audit/renamed.rs", "#[test] #[ignore] fn named_case() {}")
+        tests = inventory_tests(self.root)
+        self.assertIn(("lib", "audit::checks::named_case"), tests)
+        self.assertTrue(tests[("lib", "audit::checks::named_case")]["ignored"])
+        self.assertNotIn(("lib", "audit::renamed::named_case"), tests)
+
+    def test_unreachable_test_files_do_not_supply_coverage(self):
+        self.write("src/orphan.rs", "#[test] fn unreachable_case() {}")
+        self.assertNotIn(("lib", "orphan::unreachable_case"), inventory_tests(self.root))
+
+    def test_external_test_module_cycles_and_ambiguity_fail(self):
+        library = self.root / "src/lib.rs"
+        original = library.read_text()
+        library.write_text(original + '\n#[cfg(test)] #[path = "lib.rs"] mod cycle;\n')
+        with self.assertRaisesRegex(ValueError, "cyclic"):
+            inventory_tests(self.root)
+        library.write_text(original + "\n#[cfg(test)] mod ambiguous;\n")
+        self.write("src/ambiguous.rs", "#[test] fn first() {}")
+        self.write("src/ambiguous/mod.rs", "#[test] fn second() {}")
+        with self.assertRaisesRegex(ValueError, "ambiguous"):
+            inventory_tests(self.root)
+
+    def test_integration_crate_root_does_not_add_its_filename_to_module_paths(self):
+        self.write("tests/consumer.rs", "mod support;")
+        self.write("tests/support.rs", "#[test] fn helper_case() {}")
+        tests = inventory_tests(self.root)
+        self.assertIn(("consumer", "support::helper_case"), tests)
+        self.assertIn(("support", "helper_case"), tests)
+
     def test_stale_runtime_and_model_hashes_fail(self):
         for path in ("src/leaf.rs", "specs/model.rs"):
             original = (self.root / path).read_bytes()

@@ -13,6 +13,8 @@ from os.path import commonprefix
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
+from rust_source import source_functions
+from source_group import SourceGroup, bound_source_groups, relocated_target
 
 
 def replace_once(source: str, original: str, replacement: str) -> str:
@@ -138,7 +140,28 @@ def check_semantic_cases(
         ):
             raise ValueError("shared baseline needs disjoint existing function targets")
         covered.update(group)
-    sources = {name: (root / name).read_bytes() for name in files}
+    groups, sources, modules = bound_source_groups(root, files)
+    inventory = source_functions(root) if modules else []
+    relocated = {
+        target: relocated_target(root, *target, sources, inventory)
+        for target in targets
+    }
+    if len(set(relocated.values())) != len(targets):
+        raise ValueError("relocation collapsed distinct semantic targets")
+    cases = tuple({
+        **case, "module": relocated[(case["module"], case["function"])][0],
+        "function": relocated[(case["module"], case["function"])][1],
+    } for case in cases)
+    regrouped = []
+    for module, functions in baseline_groups:
+        by_module = {}
+        for function in functions:
+            owner, name = relocated[(module, function)]
+            by_module.setdefault(owner, []).append(name)
+        regrouped.extend(
+            (owner, tuple(names)) for owner, names in by_module.items() if len(names) > 1
+        )
+    baseline_groups = tuple(regrouped)
     whole = None
     receipt = os.environ.get("JBIG2_WHOLE_BASELINE")
     if receipt is not None:
@@ -169,8 +192,10 @@ def check_semantic_cases(
                   file=sys.stderr, flush=True)
             if case["file"] not in sources:
                 raise ValueError("semantic counterexample edits an unbound source")
-            path = directory / case["file"]
-            original = path.read_text(encoding="utf-8")
+            if case["file"] not in groups:
+                groups[case["file"]] = SourceGroup(root, case["file"], modules)
+            group = groups[case["file"]]
+            original = group.text
             target = (case["module"], case["function"])
             if target not in baselines:
                 baselines[target] = positive_baseline(
@@ -178,21 +203,23 @@ def check_semantic_cases(
                 )
                 baseline_targets[target] = [case["function"]]
             source = replace_once(original, case["site"], case["replacement"])
-            path.write_text(source, encoding="utf-8")
-            run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
-                directory, environment, capture=True)
-            rejected = selected_proof(executable, directory, environment, True, *target)
-            path.write_text(weakened_contract(source, case), encoding="utf-8")
-            control = selected_proof(executable, directory, environment, False, *target)
-            results.append({
-                "id": case["id"], "function": "::".join(target),
-                "normal_rust_compiles": True, "strong_contract": "rejected",
-                "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
-                "control_verifier_errors": control["errors"],
-                "baseline_selected_verification": baselines[target],
-                "baseline_selected_functions": baseline_targets[target],
-            })
-            path.write_text(original, encoding="utf-8")
+            try:
+                group.write(directory, source)
+                run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
+                    directory, environment, capture=True)
+                rejected = selected_proof(executable, directory, environment, True, *target)
+                group.write(directory, weakened_contract(source, case))
+                control = selected_proof(executable, directory, environment, False, *target)
+                results.append({
+                    "id": case["id"], "function": "::".join(target),
+                    "normal_rust_compiles": True, "strong_contract": "rejected",
+                    "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
+                    "control_verifier_errors": control["errors"],
+                    "baseline_selected_verification": baselines[target],
+                    "baseline_selected_functions": baseline_targets[target],
+                })
+            finally:
+                group.restore(directory)
     if any((root / name).read_bytes() != data for name, data in sources.items()):
         raise ValueError("production source changed during semantic sensitivity checks")
     if whole is not None:

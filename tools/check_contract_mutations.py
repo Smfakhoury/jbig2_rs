@@ -838,10 +838,15 @@ def build_test_binary(cargo: list[str], directory: Path, environment: dict, targ
 
 
 def check_mutations(toolchain: str) -> dict:
+    from source_group import bound_source_groups
+
     if not MUTATIONS or len({case["id"] for case in MUTATIONS}) != len(MUTATIONS):
         raise ValueError("missing or duplicate contract mutations")
     results = []
     cargo = ["cargo", f"+{toolchain}"]
+    groups, sources, _ = bound_source_groups(ROOT, tuple(dict.fromkeys(
+        mutation["file"] for mutation in MUTATIONS
+    )))
     with tempfile.TemporaryDirectory(prefix="jbig2-contract-mutations-") as temporary:
         directory = Path(temporary).resolve()
         if directory.is_relative_to(ROOT):
@@ -869,10 +874,9 @@ def check_mutations(toolchain: str) -> dict:
             )
             if not re.search(r"test result: ok\. 1 passed; 0 failed;", baseline):
                 raise ValueError(f"baseline did not run exactly one passing test: {mutation['id']}")
-            path = directory / mutation["file"]
-            original = path.read_bytes()
+            group = groups[mutation["file"]]
             try:
-                path.write_bytes(mutate(original.decode("utf-8"), mutation).encode("utf-8"))
+                group.write(directory, mutate(group.text, mutation))
                 executable = build_test_binary(cargo, directory, environment, mutation["target"])
                 process = subprocess.run(
                     [str(executable), mutation["test"], "--exact"], cwd=directory, env=environment,
@@ -891,7 +895,9 @@ def check_mutations(toolchain: str) -> dict:
                     "mutant_compiles": True, "mutant": "detected_by_failing_test",
                 })
             finally:
-                path.write_bytes(original)
+                group.restore(directory)
+    if any((ROOT / name).read_bytes() != data for name, data in sources.items()):
+        raise ValueError("source changed during native mutation checks")
     return {
         "schema_version": 1, "status": "passed", "toolchain": toolchain,
         "scope": "Targeted public API, reference-role, typed-error, formatter-failure, symbol storage and halftone state contracts, not exhaustive codec mutation coverage",

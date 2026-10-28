@@ -65,10 +65,10 @@ def excluded(attributes, exclude_proofs: bool, testing=False) -> bool:
     return result
 
 
-def items(container, exclude_proofs=True):
+def items(container, exclude_proofs=True, testing=False):
     if excluded(
         [node for node in container.named_children if node.type == "inner_attribute_item"],
-        exclude_proofs,
+        exclude_proofs, testing,
     ):
         return
     attributes = []
@@ -78,10 +78,47 @@ def items(container, exclude_proofs=True):
         if node.type == "attribute_item":
             attributes.append(node)
             continue
-        selected = not excluded(attributes, exclude_proofs)
+        selected = not excluded(attributes, exclude_proofs, testing)
         if selected:
             yield node, attributes
         attributes = []
+
+
+def resolve_module_file(root, path, file_module, module, name, attributes, snapshot=None):
+    explicit = [
+        match[1]
+        for attribute in attributes
+        if (match := re.fullmatch(r'#\[\s*path\s*=\s*"([^"]+)"\s*\]', attribute.text.decode("utf-8")))
+    ]
+    if len(explicit) > 1:
+        raise ValueError(f"duplicate module path attributes: {module}::{name}")
+    directory = path.parent
+    suffix = module[len(file_module):].strip(":")
+    if file_module and path.name not in {"lib.rs", "mod.rs"} and (not explicit or suffix):
+        directory /= path.stem
+    if suffix:
+        directory = directory.joinpath(*suffix.split("::"))
+    candidates = (
+        [directory / explicit[0]] if explicit
+        else [directory / f"{name}.rs", directory / name / "mod.rs"]
+    )
+    existing = [
+        candidate for candidate in candidates
+        if (
+            candidate.is_file()
+            if snapshot is None or not candidate.resolve().is_relative_to(root / "src")
+            else candidate.resolve().relative_to(root).as_posix() in snapshot
+        )
+    ]
+    if len(existing) != 1:
+        raise ValueError(f"missing or ambiguous module {module}::{name} in {path}")
+    selected = existing[0]
+    if (
+        not selected.resolve().is_relative_to(root.resolve()) or selected.is_symlink()
+        or any(parent.is_symlink() for parent in selected.parents if parent.is_relative_to(root))
+    ):
+        raise ValueError(f"external or symlinked module source: {selected}")
+    return selected.resolve()
 
 
 @lru_cache(maxsize=2048)
@@ -178,7 +215,13 @@ def _source_functions_snapshot(root, snapshot):
     return _source_functions(root, dict(snapshot))
 
 
-def _source_functions(root: Path, snapshot=None) -> list[dict]:
+def source_modules(root: Path) -> dict[str, str]:
+    modules = {}
+    _source_functions(root, module_catalog=modules)
+    return modules
+
+
+def _source_functions(root: Path, snapshot=None, module_catalog=None) -> list[dict]:
     import hashlib
 
     root = root.resolve()
@@ -262,41 +305,19 @@ def _source_functions(root: Path, snapshot=None) -> list[dict]:
                 if body is not None:
                     walk(body, nested, path, None, False)
                     continue
-                explicit = [
-                    re.fullmatch(r'#\[\s*path\s*=\s*"([^"]+)"\s*\]',
-                                 attribute.text.decode("utf-8"))
-                    for attribute in attributes
-                ]
-                explicit = [match[1] for match in explicit if match]
-                directory = path.parent
-                # Inline modules add a directory to external module resolution.
-                file_module = visited[path]
-                suffix = module[len(file_module):].strip(":")
-                if path.name not in {"lib.rs", "mod.rs"} and (not explicit or suffix):
-                    directory = directory / path.stem
-                if suffix:
-                    directory = directory.joinpath(*suffix.split("::"))
-                if explicit:
-                    candidates = [directory / explicit[0]]
-                else:
-                    candidates = [directory / f"{name}.rs", directory / name / "mod.rs"]
-                existing = [
-                    candidate for candidate in candidates
-                    if (
-                        candidate.is_file()
-                        if snapshot is None or not candidate.resolve().is_relative_to(src.resolve())
-                        else candidate.resolve().relative_to(root).as_posix() in snapshot
-                    )
-                ]
-                if len(existing) != 1:
-                    raise ValueError(f"missing or ambiguous module {nested} in {path}")
-                visit_file(existing[0], nested)
+                visit_file(resolve_module_file(
+                    root, path, visited[path], module, name, attributes, snapshot,
+                ), nested)
             elif node.type in {"macro_definition", "macro_invocation"} and re.search(
                 r"\bfn\s+\w", production_code(node.text)
             ):
                 raise ValueError("macro-generated functions need explicit audit support")
 
     visit_file(src / "lib.rs", "")
+    if module_catalog is not None:
+        module_catalog.update({
+            path.relative_to(root).as_posix(): module for path, module in visited.items()
+        })
     for entry in result:
         modules = definitions.get(entry["owner"], set())
         if len(modules) == 1:

@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from rust_source import excluded, parse, source_functions
+from rust_source import excluded, parse, resolve_module_file
 
 
 def discover_tests(root: Path, targets) -> set:
@@ -29,10 +29,28 @@ def discover_tests(root: Path, targets) -> set:
 
 def test_inventory(root: Path) -> dict:
     root = root.resolve()
-    modules = {entry["file"]: entry["file_module"] for entry in source_functions(root)}
     result = {}
+    active = set()
 
-    def walk(container, target, prefix, path, inherited_ignore=False):
+    def visit_file(path, target, prefix, inherited_ignore=False):
+        if path.is_symlink():
+            raise ValueError(f"symlinked test module: {path}")
+        path = path.resolve()
+        if path in active:
+            raise ValueError(f"cyclic test module inclusion: {path}")
+        if not path.is_relative_to(root):
+            raise ValueError(f"test module outside repository: {path}")
+        active.add(path)
+        try:
+            try:
+                container = parse(path.read_bytes())
+            except ValueError as error:
+                raise ValueError(f"invalid test module {path}: {error}") from error
+            walk(container, target, prefix, path, prefix, inherited_ignore)
+        finally:
+            active.remove(path)
+
+    def walk(container, target, prefix, path, file_prefix, inherited_ignore=False):
         if excluded(
             [node for node in container.named_children if node.type == "inner_attribute_item"],
             True, testing=True,
@@ -62,17 +80,20 @@ def test_inventory(root: Path) -> dict:
                         "file": path.relative_to(root).as_posix(),
                         "line": node.start_point.row + 1,
                     }
-                elif node.type == "mod_item" and node.child_by_field_name("body") is not None:
+                elif node.type == "mod_item":
                     name = node.child_by_field_name("name").text.decode("utf-8")
-                    walk(node.child_by_field_name("body"), target, [*prefix, name], path, ignored)
+                    nested = [*prefix, name]
+                    body = node.child_by_field_name("body")
+                    if body is not None:
+                        walk(body, target, nested, path, file_prefix, ignored)
+                    else:
+                        source = resolve_module_file(
+                            root, path, "::".join(file_prefix), "::".join(prefix), name, attributes,
+                        )
+                        visit_file(source, target, nested, ignored)
             attributes = []
 
-    for path in sorted((root / "src").rglob("*.rs")):
-        relative = path.relative_to(root).as_posix()
-        parts = path.relative_to(root / "src").with_suffix("").parts
-        fallback = "::".join(parts[:-1] if path.name == "mod.rs" else parts)
-        prefix = modules.get(relative, "" if path.name == "lib.rs" else fallback)
-        walk(parse(path.read_bytes()), "lib", prefix.split("::") if prefix else [], path)
+    visit_file(root / "src/lib.rs", "lib", [])
     for path in sorted((root / "tests").glob("*.rs")):
-        walk(parse(path.read_bytes()), path.stem, [], path)
+        visit_file(path, path.stem, [])
     return result

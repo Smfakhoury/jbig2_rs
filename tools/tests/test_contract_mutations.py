@@ -81,7 +81,7 @@ class ContractMutationTests(unittest.TestCase):
             root = Path(temporary).resolve()
             for name in ("src", "tests", "tools"):
                 (root / name).mkdir()
-            original = "before one\nbefore two\n"
+            original = "fn target() {\n    before_one();\n    before_two();\n}\n"
             original_bytes = original.replace("\n", "\r\n").encode("utf-8")
             (root / "src/lib.rs").write_bytes(original_bytes)
             for name in (
@@ -90,8 +90,8 @@ class ContractMutationTests(unittest.TestCase):
             ):
                 (root / name).write_text("")
             cases = tuple({
-                "id": name, "file": "src/lib.rs", "before": "before " + name,
-                "after": "after " + name, "target": "lib", "test": name,
+                "id": name, "file": "src/lib.rs", "before": "before_" + name,
+                "after": "after_" + name, "target": "lib", "test": name,
             } for name in ("one", "two"))
             builds, baselines, executions = [], [], []
 
@@ -115,11 +115,11 @@ class ContractMutationTests(unittest.TestCase):
             def execute(command, **kwargs):
                 self.assertNotEqual(Path(command[0]).parent.name, "baseline-tests")
                 self.assertEqual(Path(command[0]).read_text(),
-                    original.replace("before " + command[1], "after " + command[1]))
+                    original.replace("before_" + command[1], "after_" + command[1]))
                 self.assertEqual((kwargs["cwd"] / "src/lib.rs").read_bytes(),
                     original_bytes.replace(
-                        ("before " + command[1]).encode("utf-8"),
-                        ("after " + command[1]).encode("utf-8"),
+                        ("before_" + command[1]).encode("utf-8"),
+                        ("after_" + command[1]).encode("utf-8"),
                     ))
                 executions.append(command[1])
                 return check_contract_mutations.subprocess.CompletedProcess(
@@ -141,7 +141,10 @@ class ContractMutationTests(unittest.TestCase):
                 patch.object(Path, "write_text", windows_write_text),
             ):
                 result = check_contract_mutations.check_mutations("test")
-            self.assertEqual(builds, [original, "after one\nbefore two\n", "before one\nafter two\n"])
+            self.assertEqual(builds, [
+                original, original.replace("before_one", "after_one"),
+                original.replace("before_two", "after_two"),
+            ])
             self.assertEqual(baselines, ["one", "two"])
             self.assertEqual(executions, ["one", "two"])
             self.assertEqual(len(result["mutations"]), 2)
