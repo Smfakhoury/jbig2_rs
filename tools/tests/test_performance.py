@@ -114,6 +114,7 @@ class PerformanceReportTests(unittest.TestCase):
         self.assertIn("if: always()", workflow)
         self.assertIn("GITHUB_STEP_SUMMARY", workflow)
         self.assertIn("tools/check_performance_controls.py", workflow)
+        self.assertIn("python -m pip install -r tools/requirements.txt", workflow)
         self.assertNotIn("            target/performance-controls/\n", workflow)
 
 
