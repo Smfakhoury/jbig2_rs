@@ -195,6 +195,33 @@ See [validation](validation/README.md) for the maintained entry points.
 For bounded remote proof work, see [proof delegation](docs/github-proof-delegation.md);
 delegation does not replace the required verification gates.
 
+### Generated performance and work-quota checks
+
+The existing MMR/page/error scenarios validate exact outputs and typed errors
+before timing. They also binary-search the public `max_work_units` admission
+boundary, validate the expected result at that limit, and require a typed work
+error one below it. The fixed input-work error case is reported separately,
+not presented as a measured admission threshold.
+
+```sh
+python3 -B tools/run_performance.py --base-ref origin/main --output-dir target/performance-local
+python3 -B tools/check_performance_controls.py --output-dir target/performance-controls-local
+```
+
+Each command requires a fresh output directory and the existing pinned audit
+dependencies. Repeated base/head quota measurements must agree; an increased
+admission threshold fails independently of faster or noisy timing under the
+existing zero-work-regression policy. A real one-unit charge increase and a
+restored-library control test this gate.
+
+These are configured quota boundaries, **not internal work counters, allocation
+counts, allocated peak bytes or process RSS**. The search assumes work limits
+act monotonically as guards; the measurement does not prove that accounting
+property. Lower thresholds still require accounting review, not automatic
+optimization credit. Probes and validation run outside the timed interval;
+hosted timings remain informational. No new corpus families or protected
+fixtures are used, and the capacity-accounting hold remains open.
+
 ## Evidence and publication status
 
 [Publication readiness](docs/publication-readiness.md) is the single

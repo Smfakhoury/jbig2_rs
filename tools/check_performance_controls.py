@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check real timing slowdown and exact-output failure detection in local fixtures."""
+"""Check real slowdown, work-quota regression and exact-output failure detection."""
 
 import argparse
 import hashlib
@@ -56,6 +56,28 @@ def check_controls(output):
         ):
             raise ValueError("real decoder slowdown was not observed and blocked by timing enforcement")
         decode.restore(fixture)
+        site = "    structural_work_totals(input, segment_count, references)\n"
+        if original.count(site) != 1:
+            raise ValueError("work-quota control site is missing or ambiguous")
+        decode.write(fixture, original.replace(
+            site,
+            "    checked_work_add(structural_work_totals(input, segment_count, references)?, 1)\n",
+            1,
+        ))
+        work = comparison(options(base, output / "work-quota"), fixture)
+        if (
+            work.get("correctness") != "exact_generated_outputs_and_typed_error_boundaries_passed"
+            or work["status"] != "failed" or work.get("resource_gate") != "failed"
+            or work.get("timing_gate") != "not_requested"
+            or len(work.get("cases", [])) != 1
+            or work["cases"][0]["head_minimum_work_limit"]
+                != work["cases"][0]["base_minimum_work_limit"] + 1
+        ):
+            raise ValueError("one-unit work regression was not blocked independently of timing")
+        decode.restore(fixture)
+        restored = comparison(options(base, output / "restored-work"), fixture)
+        if restored["status"] != "passed" or restored.get("resource_gate") != "passed":
+            raise ValueError("restored decoder did not pass the work-quota weaker control")
         bitmap = SourceGroup(fixture, "src/bitmap.rs")
         contents = bitmap.text
         site = "        &self.data\n    }"
@@ -72,10 +94,12 @@ def check_controls(output):
         if (ROOT / name).read_bytes() != expected:
             raise ValueError("production source changed during performance controls")
     return {
-        "schema_version": 1, "status": "passed", "production_sources_modified": False,
+        "schema_version": 2, "status": "passed", "production_sources_modified": False,
         "controlled_decoder_slowdown": "observed_and_not_accepted",
         "slowdown_timing_gate": slowdown["timing_gate"],
         "exact_output_corruption": "rejected",
+        "one_unit_work_quota_regression": "rejected_without_timing_enforcement",
+        "restored_work_quota_control": "accepted",
         "source_bindings": {
             name: hashlib.sha256(contents).hexdigest() for name, contents in originals.items()
         },
