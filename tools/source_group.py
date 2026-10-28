@@ -89,6 +89,24 @@ def bound_source_groups(root, files):
     return groups, sources, modules
 
 
+def source_text(root, entry):
+    return SourceGroup(root, entry).text
+
+
+def runtime_function(root, component, function):
+    owner, separator, name = function.rpartition("::")
+    if not separator:
+        owner, name = None, function
+    matches = [
+        row for row in source_functions(root)
+        if row["name"] == name and row["owner"] == owner
+        and (row["file_module"] == component or row["file_module"].startswith(component + "::"))
+    ]
+    if len(matches) != 1:
+        raise ValueError(f"missing or ambiguous runtime function: {component}::{function}")
+    return matches[0]
+
+
 def relocated_target(root, module, function, files, inventory=None):
     inventory = source_functions(root) if inventory is None else inventory
     matches = [
@@ -102,3 +120,42 @@ def relocated_target(root, module, function, files, inventory=None):
     # Ghost lemmas are absent from ordinary Rust inventory; their explicitly
     # configured identity is still required by selected_proof's verifier report.
     return (matches[0]["verifier_module"], function) if matches else (module, function)
+
+
+def verification_scope(module, function, inventory):
+    matches = [
+        row for row in inventory
+        if row["verifier_module"] == module
+        and (row["owner"] + "::" if row["owner"] else "") + row["name"] == function
+    ]
+    if len(matches) > 1:
+        raise ValueError(f"ambiguous verification scope: {module}::{function}")
+    return matches[0]["verification_scope"] if matches else module
+
+
+def relocate_cases(root, cases, baseline_groups, files):
+    inventory = source_functions(root) if any(name.startswith("src/") for name in files) else []
+    targets = {(case["module"], case["function"]) for case in cases}
+    relocated = {
+        target: relocated_target(root, *target, files, inventory) for target in targets
+    }
+    if len(set(relocated.values())) != len(targets):
+        raise ValueError("relocation collapsed distinct semantic targets")
+    prepared = []
+    for case in cases:
+        module, function = relocated[(case["module"], case["function"])]
+        prepared.append({
+            **case, "module": module, "function": function,
+            "verification_module": verification_scope(module, function, inventory),
+        })
+    regrouped = []
+    for module, functions in baseline_groups:
+        by_module = {}
+        for function in functions:
+            owner, name = relocated[(module, function)]
+            scope = verification_scope(owner, name, inventory)
+            by_module.setdefault((owner, scope), []).append(name)
+        regrouped.extend(
+            (owner, tuple(names)) for (owner, _), names in by_module.items() if len(names) > 1
+        )
+    return tuple(prepared), tuple(regrouped)

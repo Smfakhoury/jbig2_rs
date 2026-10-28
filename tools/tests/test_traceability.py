@@ -1898,17 +1898,17 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertEqual(row["standard"], "ITU-T T.88 (08/2018)")
                 callers = {
                     "symbol_text::IntegerField::slot",
-                    "symbol_text::ArithmeticCodec::decode_integer",
-                    "symbol_text::ArithmeticCodec::decode_symbol_id",
+                    "symbol_text::codec::ArithmeticCodec::decode_integer",
+                    "symbol_text::codec::ArithmeticCodec::decode_symbol_id",
                 } if name in {
                     "INTEGER-PROCEDURE-BANKS", "IAID-LENGTH", "IAID-STORAGE",
                 } else set()
                 if name == "DRIVER-CONTEXT-SEQUENCE":
                     callers = {
-                        "generic_region::validate_probability_states",
-                        "generic_region::probability_signal_error",
-                        "generic_region::unexpected_eof",
-                        "generic_region::integer_overflow",
+                        "generic_region::contexts::validate_probability_states",
+                        "generic_region::generic::probability_signal_error",
+                        "generic_region::support::unexpected_eof",
+                        "generic_region::support::integer_overflow",
                     }
                     self.assertTrue({
                         "generic-probability-validation-result",
@@ -2045,9 +2045,9 @@ class TraceabilityTests(unittest.TestCase):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
         for name, caller in (
-            ("T88-SEQUENTIAL-SEGMENT-LAYOUT", "document::parse_standalone_document"),
-            ("T88-SEQUENTIAL-NUMBER-ORDER", "document::parse_standalone_document"),
-            ("T88-EMBEDDED-SEGMENT-LAYOUT", "document::parse_embedded_document"),
+            ("T88-SEQUENTIAL-SEGMENT-LAYOUT", "document::parsing::parse_standalone_document"),
+            ("T88-SEQUENTIAL-NUMBER-ORDER", "document::parsing::parse_standalone_document"),
+            ("T88-EMBEDDED-SEGMENT-LAYOUT", "document::parsing::parse_embedded_document"),
         ):
             row = rows[name]
             with self.subTest(requirement=name):
@@ -2056,7 +2056,7 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertIn("document-sequential-fields", row["models"])
                 self.assertIn("document-sequential-complete-proof", row["proof_macros"])
                 claims = {claim["runtime"]: claim["tokens"] for claim in row["functional_evidence"]}
-                self.assertIn("document::parse_sequential", claims)
+                self.assertIn("document::parsing::parse_sequential", claims)
                 self.assertTrue(any("sequential_container_fields(" in token for token in claims[caller]))
                 self.assertTrue(row["gaps"])
         for name in ("T88-SEGMENT-KNOWN-LENGTH", "T88-SEGMENT-UNKNOWN-LENGTH"):
@@ -2064,7 +2064,7 @@ class TraceabilityTests(unittest.TestCase):
                 claim["runtime"]: claim["tokens"]
                 for claim in rows[name]["functional_evidence"]
             }
-            self.assertTrue(any("payload_window(" in token for token in claims["document::read_payload"]))
+            self.assertTrue(any("payload_window(" in token for token in claims["document::parsing::read_payload"]))
         self.assertTrue(any(
             "terminator" in gap for gap in rows["T88-SEGMENT-UNKNOWN-LENGTH"]["gaps"]
         ))
@@ -2084,7 +2084,7 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertIn("document-random-access-segment-fields", row["models"])
                 self.assertIn("document-random-complete-proof", row["proof_macros"])
                 claims = {claim["runtime"]: claim["tokens"] for claim in row["functional_evidence"]}
-                for function in ("document::parse_random_access", "document::parse_standalone_document"):
+                for function in ("document::parsing::parse_random_access", "document::parsing::parse_standalone_document"):
                     self.assertTrue(any("random_access_container_fields(" in token for token in claims[function]))
                 self.assertTrue(row["gaps"])
         self.assertEqual(len(rows), 266)
@@ -2150,7 +2150,7 @@ class TraceabilityTests(unittest.TestCase):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
         for name in ("T88-IMMEDIATE-DIRECT-PAGE", "T88-IMMEDIATE-CLIPPED-PAGE"):
-            self.assertTrue(all(runtime.startswith("decode::compose_immediate") for runtime in rows[name]["runtime"]))
+            self.assertTrue(all(runtime.startswith("decode::rendering::compose_immediate") for runtime in rows[name]["runtime"]))
             self.assertEqual(rows[name]["strength"], "state_preservation")
             self.assertEqual(rows[name]["functional_evidence"], [])
             self.assertTrue(rows[name]["invariant_evidence"])
@@ -2177,8 +2177,8 @@ class TraceabilityTests(unittest.TestCase):
         self.assertEqual(requirement["strength"], "functional_contract")
         self.assertEqual(requirement["review"], "provisional")
         self.assertEqual(set(requirement["runtime"]), {
-            "generic_region::copy_bitmap_row", "bitmap::Bitmap::copy_row", "bitmap::copy_row_bytes",
-            "bitmap::Bitmap::blank", "bitmap::Bitmap::filled",
+            "generic_region::support::copy_bitmap_row", "bitmap::access::Bitmap::copy_row", "bitmap::access::copy_row_bytes",
+            "bitmap::storage::Bitmap::blank", "bitmap::storage::Bitmap::filled",
         })
         tokens = " ".join(
             token for claim in requirement["functional_evidence"] for token in claim["tokens"]

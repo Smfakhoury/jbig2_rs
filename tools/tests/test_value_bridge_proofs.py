@@ -6,6 +6,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_value_bridge_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 
@@ -20,7 +21,7 @@ class ValueBridgeProofFixtureTests(unittest.TestCase):
         )
         for case in CASES:
             with self.subTest(case=case["id"]):
-                source = (TOOLS.parent / case["file"]).read_text(encoding="utf-8")
+                source = source_text(TOOLS.parent, case["file"])
                 changed = replace_once(source, case["site"], case["replacement"])
                 self.assertNotEqual(source, changed)
                 self.assertIn(case["replacement"], changed)
@@ -28,7 +29,7 @@ class ValueBridgeProofFixtureTests(unittest.TestCase):
 
     def test_missing_duplicate_and_already_weakened_sites_fail_closed(self):
         for case in CASES:
-            source = (TOOLS.parent / case["file"]).read_text(encoding="utf-8")
+            source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]):
                 for invalid in ("", source + "\n" + case["site"]):
                     with self.assertRaises(ValueError):

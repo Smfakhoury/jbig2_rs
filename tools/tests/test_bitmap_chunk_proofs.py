@@ -6,13 +6,14 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_bitmap_chunk_proofs import CASES, FRAME, READ_VALUE, WRITE_VALUE
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class BitmapChunkProofFixtureTests(unittest.TestCase):
     def setUp(self):
-        self.source = (TOOLS.parent / "src/bitmap.rs").read_text(encoding="utf-8")
+        self.source = source_text(TOOLS.parent, "src/bitmap.rs")
 
     def test_four_value_and_frame_mutations_have_unique_sites(self):
         self.assertEqual(len({case["id"] for case in CASES}), 4)

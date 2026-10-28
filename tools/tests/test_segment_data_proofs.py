@@ -5,6 +5,7 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
+from source_group import source_text
 from check_segment_data_proofs import CASES, PAGE_FIELDS, PROFILE_PREFIX
 from proof_sensitivity import replace_once, weakened_contract
 from rust_source import parse
@@ -16,7 +17,7 @@ class SegmentDataProofFixtureTests(unittest.TestCase):
         self.assertEqual(len({case["id"] for case in CASES}), 10)
         for case in CASES:
             with self.subTest(case=case["id"]):
-                source = (TOOLS.parent / case["file"]).read_text()
+                source = source_text(TOOLS.parent, case["file"])
                 mutated = replace_once(source, case["site"], case["replacement"])
                 self.assertNotEqual(mutated, source)
                 self.assertFalse(parse(mutated.encode()).has_error)
@@ -25,7 +26,7 @@ class SegmentDataProofFixtureTests(unittest.TestCase):
                 self.assertFalse(parse(control.encode()).has_error)
 
     def test_page_controls_keep_original_flag_dimension_and_payload_guarantees(self):
-        source = (TOOLS.parent / "src/segment_data.rs").read_text()
+        source = source_text(TOOLS.parent, "src/segment_data.rs")
         for case in CASES:
             if case["function"] != "parse_page_information":
                 continue
@@ -37,7 +38,7 @@ class SegmentDataProofFixtureTests(unittest.TestCase):
             self.assertIn("info.default_operator != CombinationOperator::Replace", control)
 
     def test_profile_value_control_keeps_prefix_extent_count_and_reader_frame(self):
-        source = (TOOLS.parent / "src/segment_data.rs").read_text()
+        source = source_text(TOOLS.parent, "src/segment_data.rs")
         case = next(case for case in CASES if case["id"] == "profile_wire_values_discarded")
         control = weakened_contract(source, case)
         self.assertNotEqual(replace_once(control, PROFILE_PREFIX, "true"), control)
@@ -48,7 +49,7 @@ class SegmentDataProofFixtureTests(unittest.TestCase):
         self.assertIn("old(reader).position as int + index * 4 + 4 <= old(reader).bytes@.len()", control)
 
     def test_prefix_control_retains_new_wire_values_and_loop_history(self):
-        source = (TOOLS.parent / "src/segment_data.rs").read_text()
+        source = source_text(TOOLS.parent, "src/segment_data.rs")
         case = next(case for case in CASES if case["id"] == "profile_existing_prefix_corrupted")
         control = weakened_contract(source, case)
         self.assertIn("final(profiles)@[old(profiles)@.len() + index]", control)
@@ -56,7 +57,7 @@ class SegmentDataProofFixtureTests(unittest.TestCase):
         self.assertIn("final(reader).position == old(reader).position as int + count as int * 4", control)
 
     def test_container_controls_keep_internal_typed_and_byte_window_proofs(self):
-        source = (TOOLS.parent / "src/document.rs").read_text()
+        source = source_text(TOOLS.parent, "src/document.rs")
         for case in CASES:
             if case["function"] not in {"parse_sequential", "parse_random_access"}:
                 continue

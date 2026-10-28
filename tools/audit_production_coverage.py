@@ -97,7 +97,7 @@ def main() -> None:
         )
     }
     output = {
-        "schema_version": 1, "source": "src/*.rs",
+        "schema_version": 1, "source": "src/**/*.rs",
         "verus_verified_obligations": verification["verified"],
         "native_assumptions": [], "counts": counts, "functions": records,
     }

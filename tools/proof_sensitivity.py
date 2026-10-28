@@ -13,8 +13,7 @@ from os.path import commonprefix
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
-from rust_source import source_functions
-from source_group import SourceGroup, bound_source_groups, relocated_target
+from source_group import SourceGroup, bound_source_groups, relocate_cases
 
 
 def replace_once(source: str, original: str, replacement: str) -> str:
@@ -48,6 +47,7 @@ def proof_workspace(root: Path, executable: Path, prefix: str):
 def selected_proof(
     executable: Path, directory: Path, environment: dict, expect_failure: bool,
     module: str, function: str | tuple[str, ...],
+    *, verification_module=None,
 ):
     functions = (function,) if isinstance(function, str) else function
     if (
@@ -60,7 +60,7 @@ def selected_proof(
     command = [
         str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
         "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
-        "--verify-only-module", module, "--verify-function",
+        "--verify-only-module", verification_module or module, "--verify-function",
         function if isinstance(function, str) else commonprefix(functions) + "*",
         "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
     ]
@@ -112,7 +112,10 @@ def weakened_contract(source: str, case: dict) -> str:
     return source
 
 
-def positive_baseline(root, executable, directory, environment, module, functions, *, whole=None):
+def positive_baseline(
+    root, executable, directory, environment, module, functions, *,
+    whole=None, verification_module=None,
+):
     receipt = os.environ.get("JBIG2_WHOLE_BASELINE")
     if receipt is not None:
         from run_semantic_proofs import baseline_from_whole, load_whole_baseline
@@ -123,7 +126,8 @@ def positive_baseline(root, executable, directory, environment, module, function
         return baseline_from_whole(
             whole, [f"jbig2_rs_production::{module}::{name}" for name in names],
         )
-    return selected_proof(executable, directory, environment, False, module, functions)
+    options = {"verification_module": verification_module} if verification_module and verification_module != module else {}
+    return selected_proof(executable, directory, environment, False, module, functions, **options)
 
 
 def check_semantic_cases(
@@ -141,27 +145,10 @@ def check_semantic_cases(
             raise ValueError("shared baseline needs disjoint existing function targets")
         covered.update(group)
     groups, sources, modules = bound_source_groups(root, files)
-    inventory = source_functions(root) if modules else []
-    relocated = {
-        target: relocated_target(root, *target, sources, inventory)
-        for target in targets
+    cases, baseline_groups = relocate_cases(root, cases, baseline_groups, sources)
+    scopes = {
+        (case["module"], case["function"]): case["verification_module"] for case in cases
     }
-    if len(set(relocated.values())) != len(targets):
-        raise ValueError("relocation collapsed distinct semantic targets")
-    cases = tuple({
-        **case, "module": relocated[(case["module"], case["function"])][0],
-        "function": relocated[(case["module"], case["function"])][1],
-    } for case in cases)
-    regrouped = []
-    for module, functions in baseline_groups:
-        by_module = {}
-        for function in functions:
-            owner, name = relocated[(module, function)]
-            by_module.setdefault(owner, []).append(name)
-        regrouped.extend(
-            (owner, tuple(names)) for owner, names in by_module.items() if len(names) > 1
-        )
-    baseline_groups = tuple(regrouped)
     whole = None
     receipt = os.environ.get("JBIG2_WHOLE_BASELINE")
     if receipt is not None:
@@ -183,6 +170,7 @@ def check_semantic_cases(
         for module, functions in baseline_groups:
             baseline = positive_baseline(
                 root, executable, directory, environment, module, functions, whole=whole,
+                verification_module=scopes[(module, functions[0])],
             )
             for function in functions:
                 baselines[(module, function)] = baseline
@@ -200,6 +188,7 @@ def check_semantic_cases(
             if target not in baselines:
                 baselines[target] = positive_baseline(
                     root, executable, directory, environment, *target, whole=whole,
+                    verification_module=case["verification_module"],
                 )
                 baseline_targets[target] = [case["function"]]
             source = replace_once(original, case["site"], case["replacement"])
@@ -207,9 +196,13 @@ def check_semantic_cases(
                 group.write(directory, source)
                 run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
                     directory, environment, capture=True)
-                rejected = selected_proof(executable, directory, environment, True, *target)
+                options = (
+                    {"verification_module": case["verification_module"]}
+                    if case["verification_module"] != case["module"] else {}
+                )
+                rejected = selected_proof(executable, directory, environment, True, *target, **options)
                 group.write(directory, weakened_contract(source, case))
-                control = selected_proof(executable, directory, environment, False, *target)
+                control = selected_proof(executable, directory, environment, False, *target, **options)
                 results.append({
                     "id": case["id"], "function": "::".join(target),
                     "normal_rust_compiles": True, "strong_contract": "rejected",

@@ -48,7 +48,8 @@ def main():
     try:
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
-            ("src/bitmap.rs", "specs/bitmap.rs", "proofs/shared/bitmap.rs"),
+            ("src/bitmap.rs", "specs/bitmap.rs", "proofs/shared/bitmap.rs",
+             "proofs/production_impl/bitmap.rs"),
             "jbig2-operator-bits-",
             "Every output bit of all five byte/word operators equals the existing Boolean combination model; placement, mask/shift integration and normative translation remain separate",
         )

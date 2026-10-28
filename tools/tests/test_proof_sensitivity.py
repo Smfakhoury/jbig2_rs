@@ -208,6 +208,26 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "trigger diagnostic"):
             self.verify(report, 1, "trigger diagnostic")
 
+    def test_selection_module_can_differ_from_reported_type_namespace(self):
+        report = self.report()
+        process = CompletedProcess([], 0, json.dumps(report), "")
+        with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+            selected_proof(
+                Path("/verus"), TOOLS.parent, {}, False, "document", "finalize_pages",
+                verification_module="document::pages",
+            )
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("--verify-only-module") + 1], "document::pages")
+        report["func-details"] = {"jbig2_rs_production::document::pages::finalize_pages": {}}
+        with patch(
+            "proof_sensitivity.subprocess.run",
+            return_value=CompletedProcess([], 0, json.dumps(report), ""),
+        ), self.assertRaisesRegex(ValueError, "did not target"):
+            selected_proof(
+                Path("/verus"), TOOLS.parent, {}, False, "document", "finalize_pages",
+                verification_module="document::pages",
+            )
+
     def test_only_expected_failure_skips_additional_error_searches(self):
         for expected_failure in (False, True):
             report = self.report()

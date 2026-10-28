@@ -12,13 +12,14 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_integer_state_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class IntegerStateProofTests(unittest.TestCase):
     def test_all_cases_have_unique_production_sites_and_related_controls(self):
-        source = (TOOLS.parent / "src/arithmetic.rs").read_text()
+        source = source_text(TOOLS.parent, "src/arithmetic.rs")
         self.assertEqual(len(CASES), 9)
         self.assertEqual(len({case["id"] for case in CASES}), 9)
         for case in CASES:

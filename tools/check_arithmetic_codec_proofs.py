@@ -48,8 +48,7 @@ IAID_RESULT = """out == symbol_text_spec::arithmetic_symbol_id_result(
 DECODED_TAIL = """Err(error) => return Err(SymbolTextError::Decode(error.into_decode())),
 };
 match decoded {"""
-IAID_HEAD = """fn decode_symbol_id(&mut self, request: SymbolIdRequest) -> Result<u32, SymbolTextError> {
-    match self
+IAID_HEAD = """match self
         .decoder
         .decode_iaid(request.code_length, &mut self.iaid)"""
 IAID_RETURN = """match self
@@ -59,10 +58,10 @@ IAID_RETURN = """match self
     Err(error) => Err(SymbolTextError::Decode(error.into_decode())),
 }"""
 FUNCTIONS = {row["id"]: row for row in source_functions(ROOT)}
-VALIDATION_BODY = FUNCTIONS["generic_region::validate_probability_states"]["body_text"]
-SIGNAL_BODY = FUNCTIONS["generic_region::probability_signal_error"]["body_text"]
-EOF_BODY = FUNCTIONS["generic_region::unexpected_eof"]["body_text"]
-OVERFLOW_BODY = FUNCTIONS["generic_region::integer_overflow"]["body_text"]
+VALIDATION_BODY = FUNCTIONS["generic_region::contexts::validate_probability_states"]["body_text"]
+SIGNAL_BODY = FUNCTIONS["generic_region::generic::probability_signal_error"]["body_text"]
+EOF_BODY = FUNCTIONS["generic_region::support::unexpected_eof"]["body_text"]
+OVERFLOW_BODY = FUNCTIONS["generic_region::support::integer_overflow"]["body_text"]
 STATE_ERROR_POST = "&& error == ArithmeticError::InvalidContextState { state_index, mps }"
 VALIDATION_POST = "generic_region_spec::probability_validation_result(contexts@, out),"
 SIGNAL_POST = """ensures out == generic_region_spec::probability_error_for_signal(

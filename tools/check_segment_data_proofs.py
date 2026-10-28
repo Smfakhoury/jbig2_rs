@@ -8,11 +8,10 @@ import subprocess
 import sys
 
 from proof_sensitivity import check_semantic_cases, replace_once
-from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FUNCTIONS = {entry["id"]: entry for entry in source_functions(ROOT)}
 PAGE_FIELDS = "crate::spec::segments::page_information_fields(payload@, info)"
 KNOWN_FIELDS = "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
 PROFILE_PREFIX = """(forall|index: int| 0 <= index < old(profiles)@.len() ==>
@@ -33,7 +32,7 @@ BASELINE_GROUPS = (
 
 
 def body_case(identity, module, function, before, after, controls):
-    original = FUNCTIONS[f"{module}::{function}"]["body_text"]
+    original = runtime_function(ROOT, module, function)["body_text"]
     return {
         "id": identity, "file": f"src/{module}.rs", "module": module,
         "function": function, "site": original,

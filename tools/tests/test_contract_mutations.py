@@ -9,6 +9,7 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_contract_mutations import MUTATIONS, mutate
 import check_contract_mutations
 from evidence import load_json, validate
@@ -156,7 +157,7 @@ class ContractMutationTests(unittest.TestCase):
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):
-                source = (TOOLS.parent / mutation["file"]).read_text(encoding="utf-8")
+                source = source_text(TOOLS.parent, mutation["file"])
                 changed = mutate(source, mutation)
                 self.assertNotEqual(changed, source)
                 self.assertEqual(changed.count(mutation["after"]), 1)

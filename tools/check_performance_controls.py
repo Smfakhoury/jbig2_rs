@@ -12,6 +12,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from run_performance import HARNESS_FILES, ROOT, comparison
+from source_group import SourceGroup, bound_source_groups
 
 
 def options(base, output, enforce=False):
@@ -23,7 +24,7 @@ def options(base, output, enforce=False):
 
 def check_controls(output):
     output.mkdir(parents=True, exist_ok=False)
-    originals = {name: (ROOT / name).read_bytes() for name in ("src/decode.rs", "src/bitmap.rs")}
+    _, originals, _ = bound_source_groups(ROOT, ("src/decode.rs", "src/bitmap.rs"))
     with tempfile.TemporaryDirectory(prefix="jbig2-perf-control-") as temporary:
         fixture = Path(temporary) / "source"
         subprocess.run(
@@ -37,12 +38,12 @@ def check_controls(output):
         base = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=fixture, text=True, capture_output=True, check=True,
         ).stdout.strip()
-        decode = fixture / "src/decode.rs"
-        original = decode.read_text()
+        decode = SourceGroup(fixture, "src/decode.rs")
+        original = decode.text
         site = "        self.context().decode(input)"
         if original.count(site) != 1:
             raise ValueError("decoder slowdown control site is missing or ambiguous")
-        decode.write_text(original.replace(
+        decode.write(fixture, original.replace(
             site,
             "        std::thread::sleep(std::time::Duration::from_millis(25));\n" + site,
             1,
@@ -54,13 +55,13 @@ def check_controls(output):
             or slowdown["cases"][0]["median_ratio"] <= 1.2
         ):
             raise ValueError("real decoder slowdown was not observed and blocked by timing enforcement")
-        decode.write_text(original)
-        bitmap = fixture / "src/bitmap.rs"
-        contents = bitmap.read_text()
+        decode.restore(fixture)
+        bitmap = SourceGroup(fixture, "src/bitmap.rs")
+        contents = bitmap.text
         site = "        &self.data\n    }"
         if contents.count(site) != 1:
             raise ValueError("bitmap shape control site is missing or ambiguous")
-        bitmap.write_text(contents.replace(site, "        &self.data[1..]\n    }", 1))
+        bitmap.write(fixture, contents.replace(site, "        &self.data[1..]\n    }", 1))
         corrupted = comparison(options(base, output / "output"), fixture)
         if corrupted["status"] != "failed" or "correctness" in corrupted:
             raise ValueError("truncated packed output was not rejected before successful timing")

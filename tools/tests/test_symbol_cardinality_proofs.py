@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
+from source_group import source_text
 from check_symbol_cardinality_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 
@@ -21,7 +22,7 @@ class SymbolCardinalityProofTests(unittest.TestCase):
         self.assertEqual(len({case["id"] for case in CASES}), 11)
         for case in CASES:
             with self.subTest(case=case["id"]):
-                source = (TOOLS.parent / case["file"]).read_text()
+                source = source_text(TOOLS.parent, case["file"])
                 changed = replace_once(source, case["site"], case["replacement"])
                 weaker = weakened_contract(changed, case)
                 self.assertNotEqual(source, changed)
@@ -46,7 +47,7 @@ class SymbolCardinalityProofTests(unittest.TestCase):
 
     def test_missing_or_repeated_controls_fail_closed(self):
         for case in CASES:
-            source = (TOOLS.parent / case["file"]).read_text()
+            source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):
                 weakened_contract("", case)
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):

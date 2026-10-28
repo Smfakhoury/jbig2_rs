@@ -6,14 +6,15 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_document_count_proof import CASES, CASE_GROUPS, LAYOUT_CASE_IDS, mutated_document, weaker_contract
 from rust_source import parse
 
 
 class DocumentCountProofFixtureTests(unittest.TestCase):
     def setUp(self):
-        self.source = (TOOLS.parent / "src/document.rs").read_text(encoding="utf-8")
-        self.models = (TOOLS.parent / "specs/document.rs").read_text(encoding="utf-8")
+        self.source = source_text(TOOLS.parent, "src/document.rs")
+        self.models = source_text(TOOLS.parent, "specs/document.rs")
 
     def control_source(self, case):
         return self.models if case.get("control_file") == "specs/document.rs" else self.source
@@ -111,8 +112,8 @@ class DocumentCountProofFixtureTests(unittest.TestCase):
                 self.assertIn("document_spec::embedded_metadata(&result.0)", control)
 
     def test_loop_history_stays_in_proof_support_and_completion_uses_proved_result(self):
-        support = (TOOLS.parent / "proofs/model_support/document.rs").read_text(encoding="utf-8")
-        bridge = (TOOLS.parent / "proofs/production_impl/document.rs").read_text(encoding="utf-8")
+        support = source_text(TOOLS.parent, "proofs/model_support/document.rs")
+        bridge = source_text(TOOLS.parent, "proofs/production_impl/document.rs")
         self.assertNotIn("spec fn sequential_windows(", self.models)
         self.assertIn("spec fn sequential_windows(", support)
         self.assertIn("proof fn sequential_complete_fields(", support)

@@ -20,7 +20,7 @@
               "jbig2dec_stderr_sha256": {"$ref": "#/$defs/sha256"},
               "source_files_sha256": {
                 "type": "object", "minProperties": 1, "additionalProperties": false,
-                "patternProperties": {"^src/[a-z_]+\\.rs$": {"$ref": "#/$defs/sha256"}}
+                "patternProperties": {"^src/(?:[a-z_]+/)*[a-z_]+\\.rs$": {"$ref": "#/$defs/sha256"}}
               }
             },
             "if": {"properties": {"classification": {"const": "pending_normative_review"}}},

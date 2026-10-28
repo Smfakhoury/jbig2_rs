@@ -10,7 +10,7 @@ TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
 from proof_sensitivity import replace_once, weakened_contract
-from source_group import SourceGroup, bound_source_groups, relocated_target
+from source_group import SourceGroup, bound_source_groups, relocate_cases, relocated_target, runtime_function
 
 
 class SourceGroupTests(unittest.TestCase):
@@ -81,10 +81,13 @@ class SourceGroupTests(unittest.TestCase):
             relocated_target(self.root, "codec", "work", group.names),
             ("codec::run", "work"),
         )
+        self.assertEqual(runtime_function(self.root, "codec", "work")["file"], "src/codec/run.rs")
         path = self.root / "src/codec/data.rs"
         path.write_text(path.read_text() + "pub fn work() -> u8 { 4 }\n")
         with self.assertRaisesRegex(ValueError, "ambiguous"):
             relocated_target(self.root, "codec", "work", group.names)
+        with self.assertRaisesRegex(ValueError, "ambiguous"):
+            runtime_function(self.root, "codec", "work")
 
     def test_standalone_proof_input_needs_no_runtime_module_graph(self):
         proof = self.root / "fixture.rs"
@@ -94,3 +97,26 @@ class SourceGroupTests(unittest.TestCase):
         self.assertEqual(group.names, ("fixture.rs",))
         with self.assertRaisesRegex(ValueError, "invalid"):
             SourceGroup(self.root, "../outside.rs")
+
+    def test_inherent_method_identity_and_selection_scope_stay_distinct(self):
+        facade = self.root / "src/codec.rs"
+        facade.write_text("pub struct Pixel;\n" + facade.read_text())
+        (self.root / "src/codec/run.rs").write_text(
+            "impl super::Pixel { pub fn width(&self) -> u8 { 2 } }\n"
+        )
+        (self.root / "src/codec/data.rs").write_text(
+            "impl super::Pixel { pub fn height(&self) -> u8 { 1 } }\n"
+        )
+        group = SourceGroup(self.root, "src/codec.rs")
+        cases = tuple({
+            "id": name, "file": "src/codec.rs", "module": "codec",
+            "function": f"Pixel::{name}",
+        } for name in ("width", "height"))
+        prepared, groups = relocate_cases(
+            self.root, cases, (("codec", ("Pixel::width", "Pixel::height")),), group.names,
+        )
+        self.assertEqual([case["module"] for case in prepared], ["codec", "codec"])
+        self.assertEqual(
+            [case["verification_module"] for case in prepared], ["codec::run", "codec::data"],
+        )
+        self.assertEqual(groups, ())

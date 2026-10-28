@@ -7,9 +7,19 @@
       "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 192, needed: 1, remaining: 0 })",
       "stream_sha256": "d7fed4f97e960c45c404eb94dac84cfcd1dbb77f774aa3c58c052783c130b543",
       "source_files_sha256": {
-        "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
-        "src/huffman.rs": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
-        "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9"
+        "src/huffman.rs": "9ac4dc062265c398839fb7acf6e57c6baabadb82ee29236503276a8245748e63",
+        "src/huffman/tests.rs": "f381ff3140134f282547de09735f18a47a3802bfa19aa10fd8c69d7025d7f36e",
+        "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
+        "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
+        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+        "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+        "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+        "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+        "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+        "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
+        "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+        "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
       "rationale": "Historical accepted-typed-structural-segment-metadata bf3d525 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. The live Huffman source digest is rebound after proof annotations, raw numeric tests and the verified behavior-equivalent literal-zero initializer; the execution revision, observed error and classification are not refreshed. Standards interpretation is unchanged; no official rerun, normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a"
@@ -20,9 +30,19 @@
       "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
       "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
       "source_files_sha256": {
-        "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
-        "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
-        "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9"
+        "src/mmr.rs": "b3a7c6e68d677933e922b7194d5c1f8c7e2dcc37cf1314b8c061d50cfa407367",
+        "src/mmr/tests.rs": "c58cff417d07b40f19235130e3b879d3008d8f55e4f13785c593b49c3bf85498",
+        "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
+        "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
+        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+        "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+        "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+        "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+        "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+        "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
+        "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+        "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
       "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a"
@@ -33,8 +53,17 @@
       "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "stream_sha256": "23341708b770936cd199bbfa7a4f7be41b7b0257b38532a3e678710bac46012b",
       "source_files_sha256": {
-        "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
-        "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb"
+        "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
+        "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
+        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+        "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+        "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+        "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+        "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+        "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
+        "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+        "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
       "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
@@ -45,8 +74,17 @@
       "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "stream_sha256": "872ef6cb28c55b5e7d9f7d04c834896f4b06e52819254b3e2596d022dcc06305",
       "source_files_sha256": {
-        "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
-        "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb"
+        "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
+        "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
+        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+        "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+        "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+        "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+        "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+        "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
+        "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+        "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
       "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
@@ -57,8 +95,17 @@
       "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "stream_sha256": "ebec26a22425cce27de5feaf91bc8a6528428283cfdeeb5f39825fe1ba992871",
       "source_files_sha256": {
-        "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
-        "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb"
+        "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
+        "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
+        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+        "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+        "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+        "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+        "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+        "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
+        "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+        "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
       "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "83fb4c32a7c0adcbf69c6dc92489749783b4d57df6692e42cae5133e196ea418"
@@ -69,8 +116,17 @@
       "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "stream_sha256": "afa20c52a9fc0c4b33c867338b4447e0be7d402a814fadf52f414ed4d4f08a82",
       "source_files_sha256": {
-        "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
-        "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb"
+        "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
+        "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
+        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+        "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+        "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+        "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+        "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+        "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
+        "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+        "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
       "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "52f8bcbd6d8f2a55bdf1112eda6c1a36f38cd9c6fd784119a88154ce8c943a74"
@@ -81,8 +137,17 @@
       "expected_error_exact": "Error: Malformed(InvalidSymbolText(\"negative export run\"))",
       "stream_sha256": "e53dbbbc54b71e8f873c767a2e321444c26a245728007e4842c8746933df1bad",
       "source_files_sha256": {
-        "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
-        "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb"
+        "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
+        "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
+        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+        "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+        "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+        "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+        "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+        "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
+        "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+        "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
       "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
       "jbig2dec_stderr_sha256": "48f47424233ba140b26527ca45651147c7a6e80d3e796ccfbad54416d0b1da73"

@@ -5,13 +5,14 @@ import unittest
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
+from source_group import source_text
 from check_arithmetic_initialization_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class ArithmeticInitializationProofFixtureTests(unittest.TestCase):
     def setUp(self):
-        self.source = (TOOLS.parent / "src/arithmetic.rs").read_text()
+        self.source = source_text(TOOLS.parent, "src/arithmetic.rs")
 
     def test_six_initializer_mutations_have_unique_sites(self):
         self.assertEqual(len({case["id"] for case in CASES}), 6)

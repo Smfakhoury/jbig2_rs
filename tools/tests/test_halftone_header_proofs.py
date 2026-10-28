@@ -11,13 +11,14 @@ from unittest.mock import patch
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
+from source_group import source_text
 from check_halftone_header_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class HalftoneHeaderProofTests(unittest.TestCase):
     def test_unique_sites_and_bounded_weaker_controls(self):
-        source = (TOOLS.parent / "src/halftone.rs").read_text()
+        source = source_text(TOOLS.parent, "src/halftone.rs")
         self.assertEqual(len(CASES), 9)
         self.assertEqual(len({case["id"] for case in CASES}), 9)
         for case in CASES:
@@ -37,7 +38,7 @@ class HalftoneHeaderProofTests(unittest.TestCase):
                     replace_once(source, case["site"], case["replacement"])
 
     def test_repeated_or_missing_controls_fail_closed(self):
-        source = (TOOLS.parent / "src/halftone.rs").read_text()
+        source = source_text(TOOLS.parent, "src/halftone.rs")
         for case in CASES:
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):
                 weakened_contract("", case)

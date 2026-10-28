@@ -4,6 +4,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import tomllib
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -72,6 +73,23 @@ class RuntimeCoverageTests(unittest.TestCase):
         self.assertEqual(report["totals"]["branches"], ratio(1, 2))
         self.assertEqual(report["files"]["src/runtime.rs"]["uncovered_lines"], [5])
         self.assertEqual(report["files"]["src/runtime.rs"]["excluded_test_instantiations"], 1)
+
+    def test_separate_test_files_and_type_only_facades_are_not_runtime_denominators(self):
+        library = self.root / "src/lib.rs"
+        library.write_text(library.read_text() + "mod facade;\n", encoding="utf-8")
+        (self.root / "src/facade.rs").write_text("pub struct Metadata;\n", encoding="utf-8")
+        driver = self.root / "src/runtime/tests.rs"
+        driver.parent.mkdir()
+        driver.write_text("#![cfg(test)]\nfn helper() {}\n", encoding="utf-8")
+        self.document["data"][0]["functions"].append({
+            "name": "external_test_helper", "filenames": [str(driver)],
+            "regions": [[2, 1, 2, 15, 999, 0, 0, 0]], "branches": [],
+        })
+        report = self.report()
+        self.assertEqual(set(report["files"]), {"src/runtime.rs"})
+        self.assertIn("src/facade.rs", report["excluded_files"])
+        self.assertIn("src/runtime/tests.rs", report["excluded_files"])
+        self.assertIn("src/runtime/tests.rs", report["excluded_integration_test_sources"])
 
     def test_reused_test_driver_is_excluded_even_without_a_file_summary(self):
         driver = self.root / "tools/distribution_consumer.rs"
@@ -268,10 +286,10 @@ class RuntimeCoverageTests(unittest.TestCase):
     def test_checked_baseline_is_consistent_and_not_a_release_approval(self):
         baseline = load_json(TOOLS.parent / "validation/coverage/baseline.json")
         validate(baseline, "coverage_baseline")
-        self.assertLess(
-            baseline["totals"]["lines"]["covered"] / baseline["totals"]["lines"]["count"] * 100,
-            baseline["release_goals"]["lines"],
-        )
+        self.assertEqual(baseline["release_goals"], {"lines": 90, "branches": 85})
+        self.assertNotEqual(baseline["status"], "release_approved")
+        manifest = tomllib.loads((TOOLS.parent / "Cargo.toml").read_text())
+        self.assertIs(manifest["package"]["publish"], False)
         broken = copy.deepcopy(baseline)
         broken["totals"]["lines"]["covered"] += 1
         with self.assertRaisesRegex(ValueError, "totals do not match"):

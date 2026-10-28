@@ -37,12 +37,18 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
 
     def test_source_bound_pending_diagnosis_schema(self):
         validate(self.expectation(), "conformance_differences")
+        document = self.expectation()
+        document["cases"][0]["source_files_sha256"] = {"src/bitmap/compose.rs": "2" * 64}
+        validate(document, "conformance_differences")
 
     def test_pending_review_requires_exact_error_and_safe_hash_identities(self):
         for overrides in (
             {"expected_error_exact": ""}, {"expected_error_contains": "fixture"},
             {"stream_sha256": "not-a-hash"}, {"source_files_sha256": {}},
             {"source_files_sha256": {"../src/reader.rs": "2" * 64}},
+            {"source_files_sha256": {"src/../reader.rs": "2" * 64}},
+            {"source_files_sha256": {"src/bitmap//compose.rs": "2" * 64}},
+            {"source_files_sha256": {"src/bitmap/compose.txt": "2" * 64}},
             {"source_files_sha256": {"src/reader.rs": True}},
             {"classification": "passed"}, {"extra": "not accepted"},
         ):

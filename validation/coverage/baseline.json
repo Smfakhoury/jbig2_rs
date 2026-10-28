@@ -1,39 +1,707 @@
 {
   "schema_version": 1,
   "scope_version": 1,
-  "status": "ratcheted_baseline_release_goals_unmet",
-  "policy": "Upward-only ratchet of the actual complete pinned collection on immutable merged main source_revision, after the exact normalization and typed-error adapter tests merged. All global/per-file denominators are unchanged and every covered-count floor is nondecreasing against the previous reviewed baseline. Arithmetic gains one line, one region and one branch outcome; decode gains nineteen lines and eighteen regions with no branch gain. All counts below are a fresh combined measurement, not summed historical branch deltas. This evidence-only change adds no native tests or runtime/model/proof/Cargo behavior. Scope, exclusions, toolchain pins, release goals, CI job count and publication restrictions are unchanged; P06 and normative review remain incomplete.",
-  "source_revision": "5d95c52f2bb7394231ab4802d76f0a9f32b454fc",
-  "source_sha256": "a599328ee25fff023e3b8a8631bb1813d76bf58d706d590609c24309e58d3de1",
-  "test_source_sha256": "eabb9d7f2bbccd3ca5886545a9bda5f6a1d29f2f9d78ad3e44f98708492ed091",
+  "status": "layout_rebound_ratchet_release_goals_met",
+  "policy": "Physical-source layout rebinding from a fresh complete pinned Linux LLVM collection. All 659 native executable token streams, attached function/loop contracts, data and executing macros are preserved. Each new executing file maps to exactly one original source component; every original component is nonregressing against both the previous ratchet and the stronger recent accepted reference. Against that recent reference, branch and region totals are unchanged; 74 added physical lines are covered and the number of uncovered lines is unchanged. Test-only files and declaration-only facades are not executing-runtime denominators. All 48 new per-file floors are locked to the actual measured values. Global release goals remain 90% lines and 85% branch outcomes; no tests, cases or budget/trust constraints were removed. P06 and normative review remain incomplete.",
+  "source_revision": "9774ba9bb1f50a0cac1702ede078e1f0eba56e80",
+  "source_sha256": "558505e869c3ed4aadc37da2a5bd9373aa15b898ec6122401d8ac6e4a6c43d17",
+  "test_source_sha256": "381a803a66febf8c0d579adf5a795a8c43f99e5e4ed6a3e428c09fd1cfff743d",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
     "cargo_llvm_cov_version": "0.9.1",
     "component": "llvm-tools-preview",
     "note": "Dedicated ordinary-runtime coverage build; nightly enables branch instrumentation, not Verus cfgs."
   },
-  "release_goals": {"lines": 90, "branches": 85},
+  "release_goals": {
+    "lines": 90,
+    "branches": 85
+  },
   "totals": {
-    "lines": {"covered": 10345, "count": 12622},
-    "regions": {"covered": 9964, "count": 12933},
-    "branches": {"covered": 1909, "count": 2638}
+    "lines": {
+      "covered": 11460,
+      "count": 12716
+    },
+    "regions": {
+      "covered": 10974,
+      "count": 12953
+    },
+    "branches": {
+      "covered": 2245,
+      "count": 2640
+    }
   },
   "files": {
-    "src/arithmetic.rs": {"lines": {"covered": 282, "count": 340}, "regions": {"covered": 269, "count": 340}, "branches": {"covered": 71, "count": 90}},
-    "src/bitmap.rs": {"lines": {"covered": 900, "count": 974}, "regions": {"covered": 823, "count": 1041}, "branches": {"covered": 166, "count": 188}},
-    "src/decode.rs": {"lines": {"covered": 1111, "count": 1396}, "regions": {"covered": 947, "count": 1336}, "branches": {"covered": 143, "count": 230}},
-    "src/document.rs": {"lines": {"covered": 1067, "count": 1168}, "regions": {"covered": 1038, "count": 1131}, "branches": {"covered": 276, "count": 326}},
-    "src/error.rs": {"lines": {"covered": 151, "count": 151}, "regions": {"covered": 217, "count": 217}, "branches": {"covered": 0, "count": 0}},
-    "src/file_header.rs": {"lines": {"covered": 60, "count": 60}, "regions": {"covered": 55, "count": 55}, "branches": {"covered": 22, "count": 22}},
-    "src/generic_region.rs": {"lines": {"covered": 1644, "count": 2029}, "regions": {"covered": 1947, "count": 2398}, "branches": {"covered": 296, "count": 424}},
-    "src/generic_row_ring.rs": {"lines": {"covered": 289, "count": 322}, "regions": {"covered": 292, "count": 371}, "branches": {"covered": 55, "count": 76}},
-    "src/halftone.rs": {"lines": {"covered": 864, "count": 1065}, "regions": {"covered": 788, "count": 1061}, "branches": {"covered": 186, "count": 242}},
-    "src/huffman.rs": {"lines": {"covered": 688, "count": 832}, "regions": {"covered": 691, "count": 852}, "branches": {"covered": 165, "count": 232}},
-    "src/limits.rs": {"lines": {"covered": 22, "count": 22}, "regions": {"covered": 19, "count": 19}, "branches": {"covered": 0, "count": 0}},
-    "src/mmr.rs": {"lines": {"covered": 574, "count": 615}, "regions": {"covered": 520, "count": 606}, "branches": {"covered": 136, "count": 150}},
-    "src/reader.rs": {"lines": {"covered": 99, "count": 101}, "regions": {"covered": 89, "count": 93}, "branches": {"covered": 10, "count": 12}},
-    "src/segment_data.rs": {"lines": {"covered": 255, "count": 263}, "regions": {"covered": 244, "count": 275}, "branches": {"covered": 65, "count": 70}},
-    "src/segment_header.rs": {"lines": {"covered": 262, "count": 275}, "regions": {"covered": 277, "count": 294}, "branches": {"covered": 39, "count": 44}},
-    "src/symbol_text.rs": {"lines": {"covered": 2077, "count": 3009}, "regions": {"covered": 1748, "count": 2844}, "branches": {"covered": 279, "count": 532}}
+    "src/arithmetic.rs": {
+      "lines": {
+        "covered": 335,
+        "count": 344
+      },
+      "regions": {
+        "covered": 326,
+        "count": 340
+      },
+      "branches": {
+        "covered": 84,
+        "count": 90
+      }
+    },
+    "src/bitmap/access.rs": {
+      "lines": {
+        "covered": 165,
+        "count": 170
+      },
+      "regions": {
+        "covered": 163,
+        "count": 186
+      },
+      "branches": {
+        "covered": 55,
+        "count": 58
+      }
+    },
+    "src/bitmap/chunks.rs": {
+      "lines": {
+        "covered": 92,
+        "count": 92
+      },
+      "regions": {
+        "covered": 119,
+        "count": 130
+      },
+      "branches": {
+        "covered": 22,
+        "count": 22
+      }
+    },
+    "src/bitmap/compose.rs": {
+      "lines": {
+        "covered": 188,
+        "count": 195
+      },
+      "regions": {
+        "covered": 151,
+        "count": 200
+      },
+      "branches": {
+        "covered": 20,
+        "count": 22
+      }
+    },
+    "src/bitmap/operators.rs": {
+      "lines": {
+        "covered": 26,
+        "count": 26
+      },
+      "regions": {
+        "covered": 28,
+        "count": 28
+      },
+      "branches": {
+        "covered": 4,
+        "count": 4
+      }
+    },
+    "src/bitmap/region.rs": {
+      "lines": {
+        "covered": 376,
+        "count": 400
+      },
+      "regions": {
+        "covered": 316,
+        "count": 405
+      },
+      "branches": {
+        "covered": 61,
+        "count": 72
+      }
+    },
+    "src/bitmap/storage.rs": {
+      "lines": {
+        "covered": 95,
+        "count": 99
+      },
+      "regions": {
+        "covered": 85,
+        "count": 95
+      },
+      "branches": {
+        "covered": 10,
+        "count": 12
+      }
+    },
+    "src/decode/api.rs": {
+      "lines": {
+        "covered": 119,
+        "count": 119
+      },
+      "regions": {
+        "covered": 106,
+        "count": 112
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
+      }
+    },
+    "src/decode/dispatch.rs": {
+      "lines": {
+        "covered": 415,
+        "count": 553
+      },
+      "regions": {
+        "covered": 375,
+        "count": 559
+      },
+      "branches": {
+        "covered": 83,
+        "count": 112
+      }
+    },
+    "src/decode/orchestration.rs": {
+      "lines": {
+        "covered": 90,
+        "count": 108
+      },
+      "regions": {
+        "covered": 66,
+        "count": 101
+      },
+      "branches": {
+        "covered": 2,
+        "count": 2
+      }
+    },
+    "src/decode/rendering.rs": {
+      "lines": {
+        "covered": 205,
+        "count": 206
+      },
+      "regions": {
+        "covered": 159,
+        "count": 169
+      },
+      "branches": {
+        "covered": 33,
+        "count": 34
+      }
+    },
+    "src/decode/resources.rs": {
+      "lines": {
+        "covered": 318,
+        "count": 324
+      },
+      "regions": {
+        "covered": 287,
+        "count": 305
+      },
+      "branches": {
+        "covered": 72,
+        "count": 78
+      }
+    },
+    "src/decode.rs": {
+      "lines": {
+        "covered": 103,
+        "count": 104
+      },
+      "regions": {
+        "covered": 84,
+        "count": 90
+      },
+      "branches": {
+        "covered": 4,
+        "count": 4
+      }
+    },
+    "src/document/input.rs": {
+      "lines": {
+        "covered": 114,
+        "count": 125
+      },
+      "regions": {
+        "covered": 84,
+        "count": 98
+      },
+      "branches": {
+        "covered": 35,
+        "count": 44
+      }
+    },
+    "src/document/pages.rs": {
+      "lines": {
+        "covered": 264,
+        "count": 286
+      },
+      "regions": {
+        "covered": 248,
+        "count": 265
+      },
+      "branches": {
+        "covered": 92,
+        "count": 102
+      }
+    },
+    "src/document/parsing.rs": {
+      "lines": {
+        "covered": 204,
+        "count": 213
+      },
+      "regions": {
+        "covered": 229,
+        "count": 245
+      },
+      "branches": {
+        "covered": 45,
+        "count": 50
+      }
+    },
+    "src/document/references.rs": {
+      "lines": {
+        "covered": 330,
+        "count": 353
+      },
+      "regions": {
+        "covered": 310,
+        "count": 331
+      },
+      "branches": {
+        "covered": 99,
+        "count": 110
+      }
+    },
+    "src/document.rs": {
+      "lines": {
+        "covered": 187,
+        "count": 191
+      },
+      "regions": {
+        "covered": 188,
+        "count": 194
+      },
+      "branches": {
+        "covered": 18,
+        "count": 20
+      }
+    },
+    "src/error.rs": {
+      "lines": {
+        "covered": 151,
+        "count": 151
+      },
+      "regions": {
+        "covered": 217,
+        "count": 217
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
+      }
+    },
+    "src/file_header.rs": {
+      "lines": {
+        "covered": 60,
+        "count": 60
+      },
+      "regions": {
+        "covered": 55,
+        "count": 55
+      },
+      "branches": {
+        "covered": 22,
+        "count": 22
+      }
+    },
+    "src/generic_region/contexts.rs": {
+      "lines": {
+        "covered": 279,
+        "count": 299
+      },
+      "regions": {
+        "covered": 236,
+        "count": 256
+      },
+      "branches": {
+        "covered": 37,
+        "count": 42
+      }
+    },
+    "src/generic_region/generic.rs": {
+      "lines": {
+        "covered": 357,
+        "count": 385
+      },
+      "regions": {
+        "covered": 318,
+        "count": 359
+      },
+      "branches": {
+        "covered": 48,
+        "count": 64
+      }
+    },
+    "src/generic_region/generic_context.rs": {
+      "lines": {
+        "covered": 421,
+        "count": 436
+      },
+      "regions": {
+        "covered": 726,
+        "count": 741
+      },
+      "branches": {
+        "covered": 85,
+        "count": 94
+      }
+    },
+    "src/generic_region/headers.rs": {
+      "lines": {
+        "covered": 126,
+        "count": 128
+      },
+      "regions": {
+        "covered": 120,
+        "count": 133
+      },
+      "branches": {
+        "covered": 29,
+        "count": 32
+      }
+    },
+    "src/generic_region/refinement.rs": {
+      "lines": {
+        "covered": 291,
+        "count": 309
+      },
+      "regions": {
+        "covered": 383,
+        "count": 421
+      },
+      "branches": {
+        "covered": 43,
+        "count": 50
+      }
+    },
+    "src/generic_region/segments.rs": {
+      "lines": {
+        "covered": 291,
+        "count": 304
+      },
+      "regions": {
+        "covered": 274,
+        "count": 306
+      },
+      "branches": {
+        "covered": 88,
+        "count": 98
+      }
+    },
+    "src/generic_region/support.rs": {
+      "lines": {
+        "covered": 132,
+        "count": 140
+      },
+      "regions": {
+        "covered": 112,
+        "count": 122
+      },
+      "branches": {
+        "covered": 34,
+        "count": 44
+      }
+    },
+    "src/generic_region.rs": {
+      "lines": {
+        "covered": 54,
+        "count": 54
+      },
+      "regions": {
+        "covered": 60,
+        "count": 60
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
+      }
+    },
+    "src/generic_row_ring.rs": {
+      "lines": {
+        "covered": 298,
+        "count": 322
+      },
+      "regions": {
+        "covered": 307,
+        "count": 371
+      },
+      "branches": {
+        "covered": 63,
+        "count": 76
+      }
+    },
+    "src/halftone/headers.rs": {
+      "lines": {
+        "covered": 83,
+        "count": 83
+      },
+      "regions": {
+        "covered": 88,
+        "count": 88
+      },
+      "branches": {
+        "covered": 17,
+        "count": 18
+      }
+    },
+    "src/halftone/planes.rs": {
+      "lines": {
+        "covered": 372,
+        "count": 387
+      },
+      "regions": {
+        "covered": 361,
+        "count": 426
+      },
+      "branches": {
+        "covered": 123,
+        "count": 136
+      }
+    },
+    "src/halftone/render.rs": {
+      "lines": {
+        "covered": 229,
+        "count": 248
+      },
+      "regions": {
+        "covered": 203,
+        "count": 251
+      },
+      "branches": {
+        "covered": 27,
+        "count": 36
+      }
+    },
+    "src/halftone/resources.rs": {
+      "lines": {
+        "covered": 87,
+        "count": 100
+      },
+      "regions": {
+        "covered": 81,
+        "count": 94
+      },
+      "branches": {
+        "covered": 29,
+        "count": 36
+      }
+    },
+    "src/halftone.rs": {
+      "lines": {
+        "covered": 250,
+        "count": 252
+      },
+      "regions": {
+        "covered": 196,
+        "count": 202
+      },
+      "branches": {
+        "covered": 15,
+        "count": 16
+      }
+    },
+    "src/huffman.rs": {
+      "lines": {
+        "covered": 759,
+        "count": 835
+      },
+      "regions": {
+        "covered": 736,
+        "count": 855
+      },
+      "branches": {
+        "covered": 201,
+        "count": 232
+      }
+    },
+    "src/limits.rs": {
+      "lines": {
+        "covered": 22,
+        "count": 22
+      },
+      "regions": {
+        "covered": 19,
+        "count": 19
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
+      }
+    },
+    "src/mmr.rs": {
+      "lines": {
+        "covered": 600,
+        "count": 622
+      },
+      "regions": {
+        "covered": 545,
+        "count": 615
+      },
+      "branches": {
+        "covered": 138,
+        "count": 150
+      }
+    },
+    "src/reader.rs": {
+      "lines": {
+        "covered": 99,
+        "count": 101
+      },
+      "regions": {
+        "covered": 89,
+        "count": 93
+      },
+      "branches": {
+        "covered": 10,
+        "count": 12
+      }
+    },
+    "src/segment_data.rs": {
+      "lines": {
+        "covered": 255,
+        "count": 263
+      },
+      "regions": {
+        "covered": 245,
+        "count": 275
+      },
+      "branches": {
+        "covered": 65,
+        "count": 70
+      }
+    },
+    "src/segment_header.rs": {
+      "lines": {
+        "covered": 262,
+        "count": 275
+      },
+      "regions": {
+        "covered": 277,
+        "count": 294
+      },
+      "branches": {
+        "covered": 39,
+        "count": 44
+      }
+    },
+    "src/symbol_text/bitmap.rs": {
+      "lines": {
+        "covered": 128,
+        "count": 145
+      },
+      "regions": {
+        "covered": 98,
+        "count": 121
+      },
+      "branches": {
+        "covered": 20,
+        "count": 30
+      }
+    },
+    "src/symbol_text/codec.rs": {
+      "lines": {
+        "covered": 429,
+        "count": 676
+      },
+      "regions": {
+        "covered": 359,
+        "count": 626
+      },
+      "branches": {
+        "covered": 104,
+        "count": 128
+      }
+    },
+    "src/symbol_text/dictionary.rs": {
+      "lines": {
+        "covered": 423,
+        "count": 754
+      },
+      "regions": {
+        "covered": 370,
+        "count": 754
+      },
+      "branches": {
+        "covered": 59,
+        "count": 134
+      }
+    },
+    "src/symbol_text/headers.rs": {
+      "lines": {
+        "covered": 316,
+        "count": 325
+      },
+      "regions": {
+        "covered": 276,
+        "count": 311
+      },
+      "branches": {
+        "covered": 63,
+        "count": 70
+      }
+    },
+    "src/symbol_text/placement.rs": {
+      "lines": {
+        "covered": 167,
+        "count": 170
+      },
+      "regions": {
+        "covered": 137,
+        "count": 156
+      },
+      "branches": {
+        "covered": 36,
+        "count": 36
+      }
+    },
+    "src/symbol_text/tables.rs": {
+      "lines": {
+        "covered": 340,
+        "count": 343
+      },
+      "regions": {
+        "covered": 295,
+        "count": 301
+      },
+      "branches": {
+        "covered": 35,
+        "count": 38
+      }
+    },
+    "src/symbol_text/text.rs": {
+      "lines": {
+        "covered": 393,
+        "count": 450
+      },
+      "regions": {
+        "covered": 334,
+        "count": 432
+      },
+      "branches": {
+        "covered": 67,
+        "count": 86
+      }
+    },
+    "src/symbol_text.rs": {
+      "lines": {
+        "covered": 160,
+        "count": 169
+      },
+      "regions": {
+        "covered": 133,
+        "count": 146
+      },
+      "branches": {
+        "covered": 9,
+        "count": 10
+      }
+    }
   }
 }

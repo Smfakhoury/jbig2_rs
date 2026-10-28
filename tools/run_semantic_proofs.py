@@ -270,6 +270,16 @@ def check_bound_report(root, check, report, bindings, whole=None):
             cases = module.CASE_GROUPS[identity]
         else:
             cases = module.CASES
+        from source_group import relocate_cases
+
+        document_cases = identity in {"document-count", "document-layout"}
+        configured_baseline_groups = getattr(module, "BASELINE_GROUPS", ())
+        cases, baseline_groups = relocate_cases(
+            root,
+            tuple({**case, "module": case.get("module", "document")} for case in cases),
+            configured_baseline_groups,
+            sources,
+        )
         if len(cases) != expected or [row.get("id") for row in report["counterexamples"]] != [
             case["id"] for case in cases
         ] or any(
@@ -277,28 +287,37 @@ def check_bound_report(root, check, report, bindings, whole=None):
                 row.get("baseline_selected_verification"), whole,
                 ("jbig2_rs_production::" + (
                     "::".join([case["module"], case["function"]])
-                    if "module" in case else "document::" + case["function"]
                 ),),
             )
             for case, row in zip(cases, report["counterexamples"])
         ) or [row.get("function") for row in report["counterexamples"]] != [
-            "::".join([case["module"], case["function"]]) if "module" in case else case["function"]
+            case["function"] if document_cases else "::".join([case["module"], case["function"]])
             for case in cases
         ]:
             raise ValueError("missing, duplicate or stale selected cases/baselines")
-        if identity in {"document-count", "document-layout"}:
+        if document_cases:
             functions = sorted({case["function"] for case in cases})
             if (
                 report.get("baseline_verification_scope") != "document::*"
                 or report.get("baseline_selected_functions") != functions
-                or any(
-                    row["baseline_selected_verification"]["verified"] < len(functions)
-                    for row in report["counterexamples"]
-                )
             ):
                 raise ValueError("missing or incomplete shared document-module baseline")
-        baseline_groups = getattr(module, "BASELINE_GROUPS", ())
-        if baseline_groups:
+            for case, row in zip(cases, report["counterexamples"]):
+                group = [
+                    peer for peer in cases
+                    if (peer["module"], peer["verification_module"])
+                    == (case["module"], case["verification_module"])
+                ]
+                names = sorted({peer["function"] for peer in group})
+                if (
+                    row["baseline_selected_verification"]["verified"] < len(names)
+                    or not baseline_passed(
+                        row["baseline_selected_verification"], whole,
+                        tuple("jbig2_rs_production::" + case["module"] + "::" + name for name in names),
+                    )
+                ):
+                    raise ValueError("shared document baseline omits its actual source-module functions")
+        if configured_baseline_groups:
             expected_groups = [
                 {"module": name, "functions": list(functions)}
                 for name, functions in baseline_groups

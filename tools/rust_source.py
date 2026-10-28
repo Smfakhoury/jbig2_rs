@@ -216,8 +216,26 @@ def _source_functions_snapshot(root, snapshot):
 
 
 def source_modules(root: Path) -> dict[str, str]:
+    root = root.resolve()
+    paths = sorted((root / "src").rglob("*"))
+    if (
+        (root / "src").is_symlink() or not (root / "src/lib.rs").is_file()
+        or any(path.is_symlink() or path.is_file() and path.suffix != ".rs" for path in paths)
+    ):
+        modules = {}
+        _source_functions(root, module_catalog=modules)
+        return modules
+    snapshot = tuple(
+        (path.relative_to(root).as_posix(), path.read_bytes())
+        for path in paths if path.is_file()
+    )
+    return deepcopy(_source_modules_snapshot(root, snapshot))
+
+
+@lru_cache(maxsize=8)
+def _source_modules_snapshot(root, snapshot):
     modules = {}
-    _source_functions(root, module_catalog=modules)
+    _source_functions(root, dict(snapshot), module_catalog=modules)
     return modules
 
 
@@ -270,6 +288,7 @@ def _source_functions(root: Path, snapshot=None, module_catalog=None) -> list[di
                     "visibility": visibility,
                     "owner": owner,
                     "verifier_module": module,
+                    "verification_scope": module,
                     "file_module": visited[path],
                     "name": name,
                     "line": node.start_point.row + 1,

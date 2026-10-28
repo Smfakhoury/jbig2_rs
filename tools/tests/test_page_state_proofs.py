@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
+from source_group import source_text
 from check_page_state_proofs import CASES, CASE_GROUPS, FIELDS, FINISH_RESULT, HEIGHT, STRIPE_RESULT
 from proof_sensitivity import replace_once, weakened_contract
 
@@ -31,7 +32,7 @@ class PageStateProofTests(unittest.TestCase):
         }, {name: len(cases) for name, cases in CASE_GROUPS.items()})
 
     def test_individual_sites_and_controls_retain_independent_guarantees(self):
-        source = (TOOLS.parent / "src/document.rs").read_text()
+        source = source_text(TOOLS.parent, "src/document.rs")
         self.assertEqual(len(CASES), 29)
         self.assertEqual(len({case["id"] for case in CASES}), 29)
         for case in CASES:
@@ -53,7 +54,7 @@ class PageStateProofTests(unittest.TestCase):
                 self.assertTrue(case["test"].startswith("document::tests::raw_page_state_"))
 
     def test_missing_or_ambiguous_sites_and_controls_fail_closed(self):
-        source = (TOOLS.parent / "src/document.rs").read_text()
+        source = source_text(TOOLS.parent, "src/document.rs")
         for case in CASES:
             with self.subTest(case=case["id"]):
                 for text in ("", case["site"] + "\n" + case["site"]):

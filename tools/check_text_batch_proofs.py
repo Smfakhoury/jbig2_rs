@@ -59,7 +59,7 @@ BITMAP_LIMIT_CALL = """enforce_limit(
 )?;"""
 BODIES = {entry["id"]: entry["body_text"] for entry in source_functions(ROOT)}
 DIMENSION_BODY = BODIES["symbol_text::check_dimensions"]
-CURRENT_BODY = BODIES["symbol_text::TextRegionState::place_current"]
+CURRENT_BODY = BODIES["symbol_text::text::TextRegionState::place_current"]
 CASES = (
     {
         "id": "empty_batch_mutates_storage", "file": "src/symbol_text.rs",
