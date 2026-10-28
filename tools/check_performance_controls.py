@@ -15,14 +15,14 @@ from run_performance import HARNESS_FILES, ROOT, comparison
 from source_group import SourceGroup, bound_source_groups
 
 
-def options(base, output, enforce=False):
+def options(base, output, enforce=False, measure_rss=False):
     return SimpleNamespace(
         base_ref=base, output_dir=output, iterations=20, pairs=3,
-        case="white-64", cpu=None, enforce_timing=enforce,
+        case="white-64", cpu=None, enforce_timing=enforce, measure_rss=measure_rss,
     )
 
 
-def check_controls(output):
+def check_controls(output, measure_rss=False):
     output.mkdir(parents=True, exist_ok=False)
     _, originals, _ = bound_source_groups(ROOT, ("src/decode.rs", "src/bitmap.rs"))
     with tempfile.TemporaryDirectory(prefix="jbig2-perf-control-") as temporary:
@@ -75,9 +75,47 @@ def check_controls(output):
         ):
             raise ValueError("one-unit work regression was not blocked independently of timing")
         decode.restore(fixture)
-        restored = comparison(options(base, output / "restored-work"), fixture)
+        memory = None
+        if measure_rss:
+            site = "        self.context().decode(input)"
+            if original.count(site) != 1:
+                raise ValueError("RSS inflation control site is missing or ambiguous")
+            decode.write(fixture, original.replace(
+                site,
+                "        let resident_probe = vec![0xA5_u8; 64 * 1024 * 1024];\n"
+                "        std::hint::black_box(&resident_probe);\n"
+                "        let result = self.context().decode(input);\n"
+                "        std::hint::black_box(resident_probe);\n"
+                "        result",
+                1,
+            ))
+            memory = comparison(options(base, output / "rss-inflation", measure_rss=True), fixture)
+            if (
+                memory["status"] != "passed" or memory.get("resource_gate") != "passed"
+                or memory["rss"]["status"] != "observed"
+                or memory["rss"]["policy"] != "informational_only"
+                or memory["rss"]["cases"][0]["head_median_kib"]
+                    - memory["rss"]["cases"][0]["base_median_kib"] < 32 * 1024
+            ):
+                raise ValueError("real 64 MiB inflation was not observed independently of release gating")
+            decode.restore(fixture)
+        launcher_probe = None
+        if measure_rss:
+            # A child must not inherit the launcher's high-water RSS as its measurement.
+            launcher_probe = bytearray(64 * 1024 * 1024)
+            launcher_probe[::4096] = b"\xA5" * (len(launcher_probe) // 4096)
+        restored = comparison(options(base, output / "restored-work", measure_rss=measure_rss), fixture)
+        del launcher_probe
         if restored["status"] != "passed" or restored.get("resource_gate") != "passed":
             raise ValueError("restored decoder did not pass the work-quota weaker control")
+        if measure_rss and (
+            restored["rss"]["status"] != "observed"
+            or memory["rss"]["cases"][0]["head_median_kib"]
+                - restored["rss"]["cases"][0]["head_median_kib"] < 32 * 1024
+            or abs(restored["rss"]["cases"][0]["base_median_kib"]
+                   - memory["rss"]["cases"][0]["base_median_kib"]) >= 32 * 1024
+        ):
+            raise ValueError("restored RSS retained decoder inflation or inherited launcher high-water")
         bitmap = SourceGroup(fixture, "src/bitmap.rs")
         contents = bitmap.text
         site = "        &self.data\n    }"
@@ -94,12 +132,18 @@ def check_controls(output):
         if (ROOT / name).read_bytes() != expected:
             raise ValueError("production source changed during performance controls")
     return {
-        "schema_version": 2, "status": "passed", "production_sources_modified": False,
+        "schema_version": 3, "status": "passed", "production_sources_modified": False,
         "controlled_decoder_slowdown": "observed_and_not_accepted",
         "slowdown_timing_gate": slowdown["timing_gate"],
         "exact_output_corruption": "rejected",
         "one_unit_work_quota_regression": "rejected_without_timing_enforcement",
         "restored_work_quota_control": "accepted",
+        "rss_control": {
+            "status": "observed" if measure_rss else "not_requested",
+            "real_64_mib_inflation_observed_and_restored": measure_rss,
+            "inflated_launcher_highwater_excluded": measure_rss,
+            "release_memory_gate_enforced": False,
+        },
         "source_bindings": {
             name: hashlib.sha256(contents).hexdigest() for name, contents in originals.items()
         },
@@ -109,15 +153,16 @@ def check_controls(output):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--measure-rss", action="store_true")
     arguments = parser.parse_args()
     output = arguments.output_dir.resolve()
     if output.exists():
         parser.error("performance controls require a fresh output directory")
     try:
-        report = check_controls(output)
+        report = check_controls(output, measure_rss=arguments.measure_rss)
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"performance control failed: {error}", file=sys.stderr)
-        report = {"schema_version": 1, "status": "failed", "error": str(error)}
+        report = {"schema_version": 3, "status": "failed", "error": str(error)}
     output.mkdir(parents=True, exist_ok=True)
     (output / "control-report.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))

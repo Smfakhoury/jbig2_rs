@@ -269,10 +269,14 @@ are retained, and timing is trustworthy or clearly informational. SIMD/hotpath
 experiments are not prerequisites. The existing generated MMR/page/error lane
 now checks repeated public work-quota admission boundaries and exact one-below
 typed rejections independently of timing, including a real one-unit regression
-and restored-library control. These are not internal work counters or a proof
-of accounting monotonicity. This lane and its isolated controls are bounded
-progress, not complete P09 evidence; broader corpus, allocator/RSS telemetry,
-dedicated runner and ratification remain open.
+and restored-library control. Optional Linux RSS observations use a fresh
+process per case and sample its own `VmHWM` after one decode/exact validation;
+startup, fixture and measurement overhead are included. A real 64 MiB inflation
+and restored-library control check observation, not a release-memory threshold.
+These are not allocator peak bytes, internal work counters or proofs of
+capacity/accounting monotonicity. This lane and its isolated controls are
+bounded progress, not complete P09 evidence; broader corpus, allocation/peak-byte
+telemetry, dedicated-host latency/RSS enforcement and ratification remain open.
 
 ## P10 — Integrate a documented CI quality contract
 

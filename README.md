@@ -204,6 +204,7 @@ error one below it. The fixed input-work error case is reported separately,
 not presented as a measured admission threshold.
 
 ```sh
+cargo +1.89.0 test --locked --example performance_ci
 python3 -B tools/run_performance.py --base-ref origin/main --output-dir target/performance-local
 python3 -B tools/check_performance_controls.py --output-dir target/performance-controls-local
 ```
@@ -221,6 +222,23 @@ property. Lower thresholds still require accounting review, not automatic
 optimization credit. Probes and validation run outside the timed interval;
 hosted timings remain informational. No new corpus families or protected
 fixtures are used, and the capacity-accounting hold remains open.
+
+On Linux, add `--measure-rss` to either command for **observational per-case
+process peak RSS**. Each sample starts a fresh Rust process, constructs only the
+selected fixture, performs one decode and exact output/error validation, then
+reads `/proc/self/status`'s `VmHWM` in KiB before serializing its report. Startup,
+fixture construction and measurement overhead are included; other scenarios,
+work-quota searches and repeated timings are not. Reading inside the executed
+process avoids inheriting the Python launcher's high-water RSS.
+
+All raw base/head samples are retained. The controls must observe a real,
+bounded 64 MiB inflation and its removal after restoring the library; inflating
+the launcher separately must not contaminate the child measurement. Requested
+RSS collection fails explicitly on unsupported hosts or missing/invalid data.
+This is **not allocator peak bytes, isolated decoder allocation, a memory-limit
+proof or a release-memory regression gate**. Hosted RSS ratios remain
+informational; the existing memory thresholds and held capacity decision are
+not changed.
 
 ## Evidence and publication status
 

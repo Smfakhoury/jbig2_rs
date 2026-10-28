@@ -28,6 +28,8 @@ HARNESS_FILES = (
     "benchmarks/hayro-comparison/metrics.py", "tools/run_performance.py",
     "validation/performance/scenarios.json",
 )
+RSS_SOURCE = "linux_proc_self_status_VmHWM"
+RSS_SCOPE = "fresh_process_startup_selected_fixture_single_decode_and_exact_validation"
 
 
 def digest(root: Path, names) -> str:
@@ -170,6 +172,57 @@ def compare_runs(base: list[dict], head: list[dict], threshold: float, maximum_s
     return result
 
 
+def validate_rss(report, expected):
+    if (
+        not isinstance(report, dict)
+        or set(report) != {
+            "schema_version", "id", "input_bytes", "output_bytes", "outcome",
+            "exact_output_checked", "rss_source", "rss_unit", "peak_rss_kib", "scope",
+        }
+        or type(report.get("schema_version")) is not int or report["schema_version"] != 1
+        or report.get("rss_source") != RSS_SOURCE or report.get("rss_unit") != "KiB"
+        or report.get("scope") != RSS_SCOPE or report.get("exact_output_checked") is not True
+        or any(report.get(field) != expected[field]
+               for field in ("id", "input_bytes", "output_bytes", "outcome"))
+        or any(type(report[field]) is not int for field in ("input_bytes", "output_bytes"))
+        or type(report.get("peak_rss_kib")) is not int
+        or not 0 < report["peak_rss_kib"] <= (1 << 64) - 1
+    ):
+        raise ValueError("missing, incompatible or invalid exact-output per-case RSS measurement")
+    return report["peak_rss_kib"]
+
+
+def summarize_rss(runs, selected, pairs):
+    if not selected or len(set(selected)) != len(selected) or not 3 <= pairs <= 7:
+        raise ValueError("RSS summary needs unique nonempty cases and three to seven pairs")
+    if set(runs) != {"base", "head"} or any(set(side) != set(selected) for side in runs.values()):
+        raise ValueError("RSS summary has missing or unexpected base/head cases")
+    cases = []
+    for name in selected:
+        samples = {side: runs[side][name] for side in ("base", "head")}
+        if any(
+            not isinstance(values, list) or len(values) != pairs
+            or any(type(value) is not int or not 0 < value <= (1 << 64) - 1 for value in values)
+            for values in samples.values()
+        ):
+            raise ValueError("RSS summary requires every positive per-process sample")
+        base = statistics.median(samples["base"])
+        head = statistics.median(samples["head"])
+        cases.append({
+            "id": name, "base_samples_kib": samples["base"], "head_samples_kib": samples["head"],
+            "base_median_kib": base, "head_median_kib": head, "median_ratio": head / base,
+        })
+    return {
+        "status": "observed", "policy": "informational_only",
+        "source": RSS_SOURCE, "unit": "KiB", "scope": RSS_SCOPE,
+        "sample_point": "after exact output validation, before report serialization",
+        "includes": "process startup, selected fixture construction, one decode, validation and measurement overhead",
+        "excludes": "other cases, work-quota probes, repeated timings and inherited launcher high-water RSS",
+        "not_claimed": "allocator counts/peak bytes, isolated decoder allocation, or a release-memory gate",
+        "cases": cases,
+    }
+
+
 def execute(command, root, environment, log, timeout):
     with log.open("w", encoding="utf-8") as output:
         process = subprocess.run(
@@ -203,7 +256,7 @@ def markdown_report(report):
         "# Generated correctness and informational performance",
         "",
         "**Hosted timing is informational, not a release-performance pass.**",
-        "Unstable measurements are inconclusive. Allocation/RSS and broader corpus gaps remain.",
+        "Unstable measurements are inconclusive. Allocator, dedicated-host memory and broader corpus gaps remain.",
         "Work-quota boundaries are deterministic public admission limits, not internal work counters.",
         "",
         "Run status: " + report["status"],
@@ -216,6 +269,8 @@ def markdown_report(report):
         lines.append("Failure: " + report["error"])
     if "resource_gate" in report:
         lines.append("Work-quota gate: " + report["resource_gate"])
+    rss = report.get("rss", {"status": "not_established"})
+    lines.append("Process RSS: " + rss["status"])
     if "cases" in report:
         lines += [
             "", "| Case | Median head/base | p95 head/base | Timing classification | Work quota base/head | Work quota classification |",
@@ -232,14 +287,30 @@ def markdown_report(report):
                 f"{quota} | "
                 f"{case['work_quota_status']} |"
             )
+    if rss["status"] == "observed":
+        lines += [
+            "", "**Process peak RSS is observational, not an allocator or release-memory gate.**",
+            "Each sample includes startup, one selected fixture/decode, validation and measurement overhead; no quota probes or repeated timings.",
+            "", "| Case | Base median KiB | Head median KiB | Head/base |",
+            "|---|---:|---:|---:|",
+        ]
+        for case in rss["cases"]:
+            lines.append(
+                f"| {case['id']} | {case['base_median_kib']} | {case['head_median_kib']} | "
+                f"{case['median_ratio']:.3f} |"
+            )
     return "\n".join(lines) + "\n"
 
 
 def comparison(arguments, root=ROOT):
     output = arguments.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    result = {"schema_version": 2, "status": "failed"}
+    result = {"schema_version": 3, "status": "failed", "rss": {"status": "not_requested"}}
     try:
+        if arguments.measure_rss:
+            result["rss"] = {"status": "requested_not_established", "policy": "informational_only"}
+            if sys.platform != "linux":
+                raise ValueError("requested per-case RSS collection requires Linux /proc/self/status")
         selected = [arguments.case] if arguments.case else list(CASES)
         if arguments.iterations not in range(20, 201) or arguments.pairs not in range(3, 8):
             raise ValueError("iterations must be 20..200 and paired runs 3..7")
@@ -318,6 +389,7 @@ def comparison(arguments, root=ROOT):
             elif arguments.cpu is not None:
                 raise ValueError("CPU affinity is unavailable on this host")
             runs = {"base": [], "head": []}
+            rss_runs = {side: {case: [] for case in selected} for side in ("base", "head")}
             for pair in range(arguments.pairs):
                 for name in (("base", "head") if pair % 2 == 0 else ("head", "base")):
                     path = output / f"{name}-{pair}.json"
@@ -328,9 +400,18 @@ def comparison(arguments, root=ROOT):
                     runs[name].append(validate_measurement(
                         json.loads(path.read_text()), arguments.iterations, selected,
                     ))
+                    if arguments.measure_rss:
+                        for case in selected:
+                            path = output / f"{name}-{pair}-rss-{case}.json"
+                            execute([str(binaries[name]), "--rss-case", case], root, env, path, 120)
+                            rss_runs[name][case].append(validate_rss(
+                                json.loads(path.read_text()), runs[name][-1][case],
+                            ))
             result["cases"] = compare_runs(
                 runs["base"], runs["head"], policy["wall_time_regression_percent"],
             )
+            if arguments.measure_rss:
+                result["rss"] = summarize_rss(rss_runs, selected, arguments.pairs)
         if digest(root, HARNESS_FILES) != harness_hash or runtime_identity(root) != head_hash:
             raise ValueError("benchmark source changed during measurement")
         statuses = {case["timing_status"] for case in result["cases"]}
@@ -351,11 +432,13 @@ def comparison(arguments, root=ROOT):
         )
         result["correctness"] = "exact_generated_outputs_and_typed_error_boundaries_passed"
         result["unmeasured"] = [
-            "allocation counts, allocated peak bytes and per-case process RSS",
+            "allocation counts and allocated peak bytes",
             "internal cumulative work counters and a monotonicity/accounting proof; quota boundaries are measured separately",
             "representative PDFs and arithmetic/text/halftone corpus",
             "dedicated-host latency/RSS gate", "owner ratification of proposed median/p95 thresholds",
         ]
+        if not arguments.measure_rss:
+            result["unmeasured"].append("per-case process RSS (not requested)")
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         result["error"] = str(error)
         print(f"performance validation failed: {error}", file=sys.stderr)
@@ -373,6 +456,7 @@ def main():
     parser.add_argument("--case", choices=CASES)
     parser.add_argument("--cpu", type=int)
     parser.add_argument("--enforce-timing", action="store_true")
+    parser.add_argument("--measure-rss", action="store_true", help="Observe fresh-process per-case peak RSS on Linux; never enforce a memory threshold")
     arguments = parser.parse_args()
     try:
         report = comparison(arguments)
@@ -382,6 +466,7 @@ def main():
     print(json.dumps({
         "status": report["status"], "timing_gate": report.get("timing_gate", "unavailable"),
         "resource_gate": report.get("resource_gate", "not_established"),
+        "rss_status": report["rss"]["status"],
     }))
     return 0 if report["status"] == "passed" else 1
 

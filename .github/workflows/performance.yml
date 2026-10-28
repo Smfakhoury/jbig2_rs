@@ -26,14 +26,17 @@ jobs:
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.89.0
-      - name: Validate real slowdown, work-quota and exact-output controls
-        run: python -B tools/check_performance_controls.py --output-dir target/performance-controls
+      - name: Test single-case RSS driver and Linux peak parser
+        run: cargo test --locked --example performance_ci
+      - name: Validate real slowdown, work-quota, RSS and exact-output controls
+        run: python -B tools/check_performance_controls.py --measure-rss --output-dir target/performance-controls
       - name: Compare exact outputs, work quotas and informational timings
         env:
           BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: >-
           python -B tools/run_performance.py
           --base-ref "$BASE_REF"
+          --measure-rss
           --output-dir target/performance-comparison
       - name: Summarize deterministic quota gate and informational timings
         if: always()
