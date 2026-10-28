@@ -120,3 +120,35 @@ class SourceGroupTests(unittest.TestCase):
             [case["verification_module"] for case in prepared], ["codec::run", "codec::data"],
         )
         self.assertEqual(groups, ())
+
+    def test_identical_trait_method_names_require_exact_native_source_scopes(self):
+        (self.root / "src/codec.rs").write_text("pub struct Failure;\nmod run;\nmod data;\n")
+        for child, source in (("run", "u8"), ("data", "u16")):
+            (self.root / f"src/codec/{child}.rs").write_text(
+                "#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+                f"impl From<{source}> for super::Failure {{ fn from(value: {source}) -> Self {{ Self }} }}\n"
+            )
+        cases = tuple({
+            "id": name, "file": f"src/codec/{name}.rs", "module": "codec",
+            "verification_module": f"codec::{name}", "function": "Failure::from",
+        } for name in ("run", "data"))
+        prepared, groups = relocate_cases(
+            self.root, cases, (), SourceGroup(self.root, "src/codec.rs").names,
+        )
+        self.assertEqual(prepared, cases)
+        self.assertEqual(groups, ())
+        with self.assertRaisesRegex(ValueError, "name-only shared baseline"):
+            relocate_cases(
+                self.root, cases, (("codec", ("Failure::from", "Failure::other")),),
+                SourceGroup(self.root, "src/codec.rs").names,
+            )
+        for change in (
+            {"verification_module": "codec::missing"},
+            {"file": "src/codec/data.rs"},
+            {"module": "codec::wrong"},
+        ):
+            with self.assertRaisesRegex(ValueError, "explicit semantic scope"):
+                relocate_cases(
+                    self.root, ({**cases[0], **change},), (),
+                    SourceGroup(self.root, "src/codec.rs").names,
+                )

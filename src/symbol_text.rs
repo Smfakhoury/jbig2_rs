@@ -24,6 +24,8 @@ use crate::{DecodeError, LimitExceeded, LimitKind, Limits, MalformedError, Unsup
 use vstd::layout;
 #[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
+#[cfg(verus_keep_ghost)]
+use vstd::std_specs::convert::FromSpecImpl;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -138,6 +140,7 @@ impl From<ArithmeticError> for SymbolTextError {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<SymbolTextError> for DecodeError {
     fn from(error: SymbolTextError) -> Self {
         match error {
@@ -161,6 +164,37 @@ impl From<SymbolTextError> for DecodeError {
             ),
         }
     }
+}
+
+#[cfg(verus_keep_ghost)]
+verus! {
+
+// Project error policy, discharged by the executing From body through the pinned trait contract.
+impl FromSpecImpl<SymbolTextError> for DecodeError {
+    open spec fn obeys_from_spec() -> bool {
+        true
+    }
+
+    closed spec fn from_spec(error: SymbolTextError) -> DecodeError {
+        match error {
+            SymbolTextError::Decode(error) => error,
+            SymbolTextError::InvalidFlags(reason)
+            | SymbolTextError::InvalidTableAssociation(reason)
+            | SymbolTextError::InvalidCount(reason)
+            | SymbolTextError::InvalidEntropyValue(reason)
+            | SymbolTextError::UnexpectedOutOfBand(reason)
+            | SymbolTextError::InvalidState(reason) =>
+                DecodeError::Malformed(MalformedError::InvalidSymbolText(reason)),
+            SymbolTextError::InvalidDimensions =>
+                DecodeError::Malformed(MalformedError::InvalidSymbolDimensions),
+            SymbolTextError::SymbolIdOutOfRange { id, available } =>
+                DecodeError::Malformed(MalformedError::SymbolIdOutOfRange { id, available }),
+            SymbolTextError::InvalidSymbolLengthRun => DecodeError::Malformed(
+                MalformedError::InvalidSymbolText("invalid symbol-code length run")),
+        }
+    }
+}
+
 }
 
 /// Result of decoding an arithmetic or Huffman integer field.

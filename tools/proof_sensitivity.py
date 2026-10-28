@@ -154,6 +154,12 @@ def check_semantic_cases(
     scopes = {
         (case["module"], case["function"]): case["verification_module"] for case in cases
     }
+    scoped_targets = {}
+    for case in cases:
+        scoped_targets.setdefault((case["module"], case["function"]), set()).add(case["verification_module"])
+    collisions = {target for target, scopes in scoped_targets.items() if len(scopes) > 1}
+    if any((module, function) in collisions for module, functions in baseline_groups for function in functions):
+        raise ValueError("shared baseline cannot alias distinct native implementation scopes")
     whole = None
     receipt = os.environ.get("JBIG2_WHOLE_BASELINE")
     if receipt is not None:
@@ -178,8 +184,9 @@ def check_semantic_cases(
                 verification_module=scopes[(module, functions[0])],
             )
             for function in functions:
-                baselines[(module, function)] = baseline
-                baseline_targets[(module, function)] = list(functions)
+                target = (module, function, scopes[(module, function)])
+                baselines[target] = baseline
+                baseline_targets[target] = list(functions)
         for case in cases:
             print(f"semantic contrast: {case['module']}::{case['function']} / {case['id']}",
                   file=sys.stderr, flush=True)
@@ -189,12 +196,19 @@ def check_semantic_cases(
                 groups[case["file"]] = SourceGroup(root, case["file"], modules)
             group = groups[case["file"]]
             original = group.text
-            target = (case["module"], case["function"])
+            identity = (case["module"], case["function"])
+            target = (*identity, case["verification_module"])
             if target not in baselines:
-                baselines[target] = positive_baseline(
-                    root, executable, directory, environment, *target, whole=whole,
-                    verification_module=case["verification_module"],
-                )
+                if identity in collisions:
+                    baselines[target] = selected_proof(
+                        executable, directory, environment, False, *identity,
+                        verification_module=case["verification_module"],
+                    )
+                else:
+                    baselines[target] = positive_baseline(
+                        root, executable, directory, environment, *identity, whole=whole,
+                        verification_module=case["verification_module"],
+                    )
                 baseline_targets[target] = [case["function"]]
             source = replace_once(original, case["site"], case["replacement"])
             try:
@@ -205,17 +219,22 @@ def check_semantic_cases(
                     {"verification_module": case["verification_module"]}
                     if case["verification_module"] != case["module"] else {}
                 )
-                rejected = selected_proof(executable, directory, environment, True, *target, **options)
+                rejected = selected_proof(executable, directory, environment, True, *identity, **options)
                 group.write(directory, weakened_contract(source, case))
-                control = selected_proof(executable, directory, environment, False, *target, **options)
-                results.append({
-                    "id": case["id"], "function": "::".join(target),
+                control = selected_proof(executable, directory, environment, False, *identity, **options)
+                record = {
+                    "id": case["id"], "function": "::".join(identity),
                     "normal_rust_compiles": True, "strong_contract": "rejected",
                     "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
                     "control_verifier_errors": control["errors"],
                     "baseline_selected_verification": baselines[target],
                     "baseline_selected_functions": baseline_targets[target],
-                })
+                }
+                if identity in collisions:
+                    record.update(
+                        verification_module=case["verification_module"], source_file=case["file"],
+                    )
+                results.append(record)
             finally:
                 group.restore(directory)
     if any((root / name).read_bytes() != data for name, data in sources.items()):

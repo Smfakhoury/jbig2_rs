@@ -57,6 +57,7 @@ CHECKS = (
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),
     ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("error-conversion", "check_error_conversion_proofs.py", 8, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -295,6 +296,16 @@ def check_bound_report(root, check, report, bindings, whole=None):
             for case in cases
         ]:
             raise ValueError("missing, duplicate or stale selected cases/baselines")
+        scoped_targets = {}
+        for case in cases:
+            scoped_targets.setdefault((case["module"], case["function"]), set()).add(case["verification_module"])
+        for case, row in zip(cases, report["counterexamples"]):
+            if len(scoped_targets[(case["module"], case["function"])]) > 1 and (
+                row.get("verification_module") != case["verification_module"]
+                or row.get("source_file") != case["file"]
+                or row["baseline_selected_verification"].get("is-verifying-entire-crate") is not False
+            ):
+                raise ValueError("ambiguous function name needs its exact source scope and fresh selected baseline")
         if document_cases:
             functions = sorted({case["function"] for case in cases})
             if (

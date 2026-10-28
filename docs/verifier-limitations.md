@@ -35,6 +35,28 @@ Fallible reservation and deterministic stores have enabled many direct proofs;
 do not repeat obsolete broad claims that all allocation or all registries are
 unverified. Inspect each current disposition and actual `requires`/`ensures`.
 
+## Project-owned typed conversions
+
+The generic-region, Huffman, MMR and symbol/text `From` implementations now
+prove their exact error variant and payload mappings through the pinned
+verifier's existing trait-contract mechanism, as already used for the public
+malformed/limit conversions. These are project error-policy contracts, not
+new trusted standard-library declarations or normative T.88 rules. Closed
+specification bodies preserve the visibility of the private codec enums.
+The executing match bodies are unchanged.
+
+The implementations share a displayed `DecodeError::from` identity but live in
+different lexical source scopes. Their contrast evidence therefore binds the
+exact file and selection scope and requires separate pristine selected proofs;
+it cannot reuse a baseline solely because the displayed name matches. Eight
+compiling wrong-variant/field controls are rejected, with their corresponding
+conditional-contract weaker controls accepted. Literal Rust tests separately
+exercise every local error variant and wrapped public error class.
+
+This closes four directly proved project conversion boundaries. It does not
+prove arbitrary I/O, formatting, sinks or orchestration, resolve capacity
+accounting, or approve any standard-facing model.
+
 ## Blocking capacity/getter decision
 
 The remaining MMR divergence is `prepare_transition_storage` capacity-based
