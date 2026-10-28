@@ -1,15 +1,20 @@
 import copy
 import subprocess
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 from pathlib import Path
+from types import SimpleNamespace
 
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from run_performance import compare_runs, environment, markdown_report, resolve_base, validate_measurement
+from run_performance import (
+    RSS_SCOPE, RSS_SOURCE, compare_runs, comparison, environment, markdown_report,
+    resolve_base, summarize_rss, validate_measurement, validate_rss,
+)
 from metrics import relative_spread
 
 
@@ -38,6 +43,17 @@ def row(median, work=1024):
         "median_ns": median, "p95_ns": median + 10,
         "work_quota": quota(work),
     }}
+
+def rss_measurement(peak=2048):
+    return {
+        "schema_version": 1, "id": "white-64", "input_bytes": 102, "output_bytes": 512,
+        "outcome": "decoded", "exact_output_checked": True, "rss_source": RSS_SOURCE,
+        "rss_unit": "KiB", "peak_rss_kib": peak, "scope": RSS_SCOPE,
+    }
+
+
+def rss_runs():
+    return {"base": {"white-64": [1024, 2048, 1024]}, "head": {"white-64": [3072, 2048, 3072]}}
 
 
 class PerformanceReportTests(unittest.TestCase):
@@ -159,6 +175,82 @@ class PerformanceReportTests(unittest.TestCase):
         self.assertIn("not internal work counters", summary)
         self.assertIn("not a release-performance pass", summary)
 
+    def test_rss_requires_exact_single_case_output_and_linux_peak_scope(self):
+        expected = measurement()["cases"][0]
+        self.assertEqual(validate_rss(rss_measurement(), expected), 2048)
+        for field, value in (
+            ("schema_version", True), ("id", "white-512"), ("input_bytes", 103),
+            ("output_bytes", 511), ("outcome", "eof"), ("exact_output_checked", False),
+            ("rss_source", "launcher_wait4"), ("rss_unit", "bytes"),
+            ("scope", "all_cases_and_quota_probes"), ("input_bytes", True),
+            ("peak_rss_kib", 0), ("peak_rss_kib", -1), ("peak_rss_kib", True),
+            ("peak_rss_kib", 2.5), ("peak_rss_kib", "2048"), ("peak_rss_kib", 1 << 64),
+        ):
+            changed = rss_measurement()
+            changed[field] = value
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                validate_rss(changed, expected)
+
+    def test_missing_rss_and_mixed_timing_or_quota_payloads_fail_closed(self):
+        expected = measurement()["cases"][0]
+        for invalid in (None, {}, [], {"peak_rss_kib": 2048}):
+            with self.assertRaises(ValueError):
+                validate_rss(invalid, expected)
+        for extra in ("work_quota", "samples_ns", "cases"):
+            changed = rss_measurement()
+            changed[extra] = []
+            with self.assertRaises(ValueError):
+                validate_rss(changed, expected)
+
+    def test_rss_summary_retains_all_raw_samples_without_a_memory_gate(self):
+        report = summarize_rss(rss_runs(), ["white-64"], 3)
+        self.assertEqual(report["status"], "observed")
+        self.assertEqual(report["policy"], "informational_only")
+        self.assertEqual(report["cases"][0]["base_median_kib"], 1024)
+        self.assertEqual(report["cases"][0]["head_median_kib"], 3072)
+        self.assertEqual(report["cases"][0]["median_ratio"], 3)
+        self.assertEqual(report["cases"][0]["head_samples_kib"], [3072, 2048, 3072])
+        self.assertIn("inherited launcher", report["excludes"])
+        self.assertIn("allocator", report["not_claimed"])
+
+    def test_rss_summary_rejects_missing_extra_and_invalid_process_samples(self):
+        for mutate in (
+            lambda runs: runs.pop("head"),
+            lambda runs: runs["head"].pop("white-64"),
+            lambda runs: runs["head"].update(extra=[1, 2, 3]),
+            lambda runs: runs["head"].update({"white-64": [1024, 1024]}),
+            lambda runs: runs["head"].update({"white-64": [1024, 0, 1024]}),
+            lambda runs: runs["head"].update({"white-64": [1024, True, 1024]}),
+            lambda runs: runs["head"].update({"white-64": [1024, float("nan"), 1024]}),
+            lambda runs: runs["head"].update({"white-64": [1024, 1 << 64, 1024]}),
+        ):
+            invalid = rss_runs()
+            mutate(invalid)
+            with self.assertRaises(ValueError):
+                summarize_rss(invalid, ["white-64"], 3)
+        for selected, pairs in (([], 3), (["white-64", "white-64"], 3), (["white-64"], 2)):
+            with self.assertRaises(ValueError):
+                summarize_rss(rss_runs(), selected, pairs)
+
+    def test_requested_rss_fails_explicitly_on_an_unsupported_host(self):
+        with tempfile.TemporaryDirectory() as temporary, patch("run_performance.sys.platform", "win32"):
+            result = comparison(SimpleNamespace(
+                output_dir=Path(temporary) / "output", measure_rss=True,
+            ))
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["rss"]["status"], "requested_not_established")
+        self.assertIn("requires Linux", result["error"])
+
+    def test_rss_markdown_cannot_be_confused_with_allocator_or_release_approval(self):
+        report = {"status": "passed", "rss": summarize_rss(rss_runs(), ["white-64"], 3)}
+        summary = markdown_report(report)
+        self.assertIn("Process RSS: observed", summary)
+        self.assertIn("not an allocator or release-memory gate", summary)
+        self.assertIn("| white-64 | 1024 | 3072 | 3.000 |", summary)
+        self.assertIn("Process RSS: not_requested", markdown_report({
+            "status": "passed", "rss": {"status": "not_requested"},
+        }))
+
     def test_unstable_results_are_inconclusive_not_a_latency_pass(self):
         result = compare_runs([row(100)] * 3, [row(100), row(150), row(200)], 20)
         self.assertEqual(result[0]["timing_status"], "inconclusive")
@@ -198,6 +290,8 @@ class PerformanceReportTests(unittest.TestCase):
         self.assertIn("GITHUB_STEP_SUMMARY", workflow)
         self.assertIn("tools/check_performance_controls.py", workflow)
         self.assertIn("python -m pip install -r tools/requirements.txt", workflow)
+        self.assertGreaterEqual(workflow.count("--measure-rss"), 2)
+        self.assertIn("cargo test --locked --example performance_ci", workflow)
         self.assertNotIn("            target/performance-controls/\n", workflow)
 
 
