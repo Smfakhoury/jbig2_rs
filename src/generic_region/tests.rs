@@ -1,0 +1,4264 @@
+#![allow(clippy::duplicated_attributes)]
+#![cfg(test)]
+
+use super::contexts::*;
+use super::generic::*;
+use super::generic_context::*;
+use super::headers::*;
+use super::refinement::*;
+use super::segments::*;
+use super::support::*;
+use super::*;
+use crate::bitmap::CombinationOperator;
+use crate::mmr::MmrScratch;
+use crate::{LimitExceeded, LimitKind};
+use std::collections::VecDeque;
+use std::hint::black_box;
+use std::time::{Duration, Instant};
+
+/// Test-only full-raster oracle for the rolling nominal template-0 decoder.
+#[cfg(test)]
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct GenericWordRaster {
+    width: u32,
+    height: u32,
+    stride_words: usize,
+    words: Vec<u32>,
+}
+
+#[cfg(test)]
+impl GenericWordRaster {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out.is_some() ==> {
+            let raster = out.unwrap();
+            &&& raster.width == width
+            &&& raster.height == height
+            &&& raster.words@.len() == raster.stride_words as nat * height as nat
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn try_new(width: u32, height: u32) -> Option<Self> {
+        let stride_u32 = width.checked_add(31)? / 32;
+        let stride_words = usize::try_from(stride_u32).ok()?;
+        let height_usize = usize::try_from(height).ok()?;
+        let word_count = stride_words.checked_mul(height_usize)?;
+        let mut words = Vec::new();
+        if words.try_reserve(word_count).is_err() {
+            return None;
+        }
+        words.resize(word_count, 0);
+        Some(Self {
+            width,
+            height,
+            stride_words,
+            words,
+        })
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn row_start(&self, row: i64) -> Option<usize> {
+        if row < 0 || row > i64::from(u32::MAX) {
+            return None;
+        }
+        let row = u32::try_from(row).ok()?;
+        if row >= self.height {
+            return None;
+        }
+        usize::try_from(row).ok()?.checked_mul(self.stride_words)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn pixel(&self, x: i64, y: i64) -> bool {
+        if x < 0 || x >= i64::from(self.width) {
+            return false;
+        }
+        let Some(row_start) = self.row_start(y) else {
+            return false;
+        };
+        let Ok(x) = u32::try_from(x) else {
+            return false;
+        };
+        let Ok(word_column) = usize::try_from(x / 32) else {
+            return false;
+        };
+        let Some(index) = row_start.checked_add(word_column) else {
+            return false;
+        };
+        let Some(word) = self.words.get(index) else {
+            return false;
+        };
+        *word & (0x8000_0000_u32 >> (x % 32)) != 0
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        requires count <= 7,
+    ))]
+    fn row_bits(&self, row: i64, start_x: i64, count: u8) -> usize {
+        let mut bits = 0_usize;
+        let mut index = 0_u8;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                index <= count,
+                count <= 7,
+            decreases count - index,
+        ))]
+        while index < count {
+            let Some(sample_x) = start_x.checked_add(i64::from(index)) else {
+                return bits;
+            };
+            bits = (bits << 1) | usize::from(self.pixel(sample_x, row));
+            index += 1;
+        }
+        bits
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[allow(clippy::inline_always)]
+    #[inline(always)]
+    fn row_word(&self, row_start: Option<usize>, x: u64) -> u32 {
+        let Some(row_start) = row_start else {
+            return 0;
+        };
+        let word_column_u64 = x / 32;
+        let Ok(word_column) = usize::try_from(word_column_u64) else {
+            return 0;
+        };
+        if word_column >= self.stride_words {
+            return 0;
+        }
+        let Some(first_index) = row_start.checked_add(word_column) else {
+            return 0;
+        };
+        let Some(first) = self.words.get(first_index) else {
+            return 0;
+        };
+        let first = *first;
+        let shift = (x % 32) as u32;
+        if shift == 0 {
+            return first;
+        }
+        let second = match word_column.checked_add(1) {
+            Some(column) if column < self.stride_words => match row_start.checked_add(column) {
+                Some(index) if index < self.words.len() => self.words[index],
+                _ => 0,
+            },
+            _ => 0,
+        };
+        (first << shift) | (second >> (32 - shift))
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride_words == old(self).stride_words,
+    ))]
+    #[allow(clippy::inline_always)]
+    #[inline(always)]
+    fn set_black_in_row(&mut self, row_start: usize, x: u32) -> Result<(), GenericRegionError> {
+        let column = usize::try_from(x / 32).map_err(|_error| integer_overflow())?;
+        let index = row_start.checked_add(column).ok_or_else(integer_overflow)?;
+        let Some(word) = self.words.get_mut(index) else {
+            return Err(integer_overflow());
+        };
+        *word |= 0x8000_0000_u32 >> (x % 32);
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).height == old(self).height,
+            final(self).stride_words == old(self).stride_words,
+    ))]
+    fn copy_row(&mut self, source: u32, destination: u32) -> Result<(), GenericRegionError> {
+        if source >= self.height || destination >= self.height {
+            return Err(integer_overflow());
+        }
+        let source = usize::try_from(source).map_err(|_error| integer_overflow())?;
+        let destination = usize::try_from(destination).map_err(|_error| integer_overflow())?;
+        let source_start = source
+            .checked_mul(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let destination_start = destination
+            .checked_mul(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let source_end = source_start
+            .checked_add(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let destination_end = destination_start
+            .checked_add(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        if source_end > self.words.len() || destination_end > self.words.len() {
+            return Err(integer_overflow());
+        }
+        #[cfg(not(verus_keep_ghost))]
+        {
+            self.words
+                .copy_within(source_start..source_end, destination_start);
+        }
+        #[cfg(verus_keep_ghost)]
+        let mut column = 0_usize;
+        #[cfg(verus_keep_ghost)]
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant column <= self.stride_words,
+            decreases self.stride_words - column,
+        ))]
+        #[cfg(verus_keep_ghost)]
+        while column < self.stride_words {
+            let source_index = source_start
+                .checked_add(column)
+                .ok_or_else(integer_overflow)?;
+            let destination_index = destination_start
+                .checked_add(column)
+                .ok_or_else(integer_overflow)?;
+            let Some(value) = self.words.get(source_index) else {
+                return Err(integer_overflow());
+            };
+            let value = *value;
+            let Some(word) = self.words.get_mut(destination_index) else {
+                return Err(integer_overflow());
+            };
+            *word = value;
+            column += 1;
+        }
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(bitmap)),
+            old(bitmap).width == self.width,
+            old(bitmap).height == self.height,
+        ensures match out {
+            Ok(()) =>
+                crate::spec::bitmap::storage_valid(final(bitmap))
+                && final(bitmap).width == old(bitmap).width
+                && final(bitmap).height == old(bitmap).height
+                && final(bitmap).stride == old(bitmap).stride,
+            Err(_) => true,
+        },
+    ))]
+    #[allow(clippy::cast_possible_truncation, clippy::too_many_lines)]
+    fn materialize(&self, bitmap: &mut Bitmap) -> Result<(), GenericRegionError> {
+        if bitmap.width != self.width || bitmap.height != self.height {
+            return Err(integer_overflow());
+        }
+        #[cfg(verus_keep_ghost)]
+        let bitmap_width = bitmap.width;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_height = bitmap.height;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_stride = bitmap.stride;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_length = bitmap.data.len();
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+            assert(bitmap_length as nat
+                == bitmap_stride as nat * bitmap_height as nat);
+        }
+        let mut y = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                y <= self.height,
+                bitmap.width == self.width,
+                bitmap.height == self.height,
+                bitmap.width == bitmap_width,
+                bitmap.height == bitmap_height,
+                bitmap.stride == bitmap_stride,
+                bitmap.data@.len() == bitmap_length,
+                bitmap_length as nat
+                    == bitmap_stride as nat * bitmap_height as nat,
+            decreases self.height - y,
+        ))]
+        while y < self.height {
+            let row = usize::try_from(y).map_err(|_error| integer_overflow())?;
+            let word_start = row
+                .checked_mul(self.stride_words)
+                .ok_or_else(integer_overflow)?;
+            let byte_start = row
+                .checked_mul(bitmap.stride)
+                .ok_or_else(integer_overflow)?;
+            let full_words = bitmap.stride / 4;
+            let mut word_column = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    word_column <= full_words,
+                    bitmap.width == self.width,
+                    bitmap.height == self.height,
+                    bitmap.width == bitmap_width,
+                    bitmap.height == bitmap_height,
+                    bitmap.stride == bitmap_stride,
+                    bitmap.data@.len() == bitmap_length,
+                    bitmap_length as nat
+                        == bitmap_stride as nat * bitmap_height as nat,
+                decreases full_words - word_column,
+            ))]
+            while word_column < full_words {
+                let word_index = word_start
+                    .checked_add(word_column)
+                    .ok_or_else(integer_overflow)?;
+                let Some(word) = self.words.get(word_index) else {
+                    return Err(integer_overflow());
+                };
+                let word = *word;
+                let byte_index = byte_start
+                    .checked_add(word_column.checked_mul(4).ok_or_else(integer_overflow)?)
+                    .ok_or_else(integer_overflow)?;
+                let Some(byte_end) = byte_index.checked_add(4) else {
+                    return Err(integer_overflow());
+                };
+                #[cfg(not(verus_keep_ghost))]
+                {
+                    let Some(bytes) = bitmap.data.get_mut(byte_index..byte_end) else {
+                        return Err(integer_overflow());
+                    };
+                    bytes.copy_from_slice(&[
+                        (word >> 24) as u8,
+                        (word >> 16) as u8,
+                        (word >> 8) as u8,
+                        word as u8,
+                    ]);
+                }
+                #[cfg(verus_keep_ghost)]
+                {
+                    let mut offset = 0_usize;
+                    #[cfg_attr(verus_keep_ghost, verus_spec(
+                        invariant
+                            offset <= 4,
+                            bitmap.width == bitmap_width,
+                            bitmap.height == bitmap_height,
+                            bitmap.stride == bitmap_stride,
+                            bitmap.data@.len() == bitmap_length,
+                            bitmap_length as nat
+                                == bitmap_stride as nat * bitmap_height as nat,
+                        decreases 4 - offset,
+                    ))]
+                    while offset < 4 {
+                        let Some(offset_index) = byte_index.checked_add(offset) else {
+                            return Err(integer_overflow());
+                        };
+                        let Some(byte) = bitmap.data.get_mut(offset_index) else {
+                            return Err(integer_overflow());
+                        };
+                        *byte = word_byte(word, offset);
+                        offset += 1;
+                    }
+                }
+                word_column += 1;
+            }
+            let tail_start = full_words.checked_mul(4).ok_or_else(integer_overflow)?;
+            let tail_length = bitmap.stride - tail_start;
+            let mut tail_offset = 0_usize;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    tail_offset <= tail_length,
+                    tail_length <= 3,
+                    bitmap.width == self.width,
+                    bitmap.height == self.height,
+                    bitmap.width == bitmap_width,
+                    bitmap.height == bitmap_height,
+                    bitmap.stride == bitmap_stride,
+                    bitmap.data@.len() == bitmap_length,
+                    bitmap_length as nat
+                        == bitmap_stride as nat * bitmap_height as nat,
+                decreases tail_length - tail_offset,
+            ))]
+            while tail_offset < tail_length {
+                let word_index = word_start
+                    .checked_add(full_words)
+                    .ok_or_else(integer_overflow)?;
+                let Some(word) = self.words.get(word_index) else {
+                    return Err(integer_overflow());
+                };
+                let word = *word;
+                let Some(byte_column) = tail_start.checked_add(tail_offset) else {
+                    return Err(integer_overflow());
+                };
+                let byte_index = byte_start
+                    .checked_add(byte_column)
+                    .ok_or_else(integer_overflow)?;
+                let Some(byte) = bitmap.data.get_mut(byte_index) else {
+                    return Err(integer_overflow());
+                };
+                *byte = word_byte(word, tail_offset);
+                tail_offset += 1;
+            }
+            y += 1;
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+        }
+        Ok(())
+    }
+}
+
+/// Minimal MSB-first rolling rows for nominal template-0 arithmetic decoding.
+///
+/// At most the current row and its two predecessors are retained. Completed
+/// rows are written immediately into the public byte-packed bitmap.
+#[cfg(test)]
+#[derive(Debug)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+struct GenericRowRing {
+    width: u32,
+    stride_words: usize,
+    row_slots: usize,
+    words: Vec<u32>,
+    charged_bytes: u64,
+}
+
+#[cfg(test)]
+impl GenericRowRing {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out.is_some() ==> {
+            let ring = out.unwrap();
+            &&& ring.width == width
+            &&& ring.words@.len() == ring.stride_words as nat * ring.row_slots as nat
+            &&& ring.row_slots == (if rows < 3 { rows } else { 3 }) as usize
+            &&& ring.charged_bytes <= available_bytes
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
+    fn try_new(width: u32, rows: u32, available_bytes: u64) -> Option<Self> {
+        let stride_u32 = width.checked_add(31)? / 32;
+        let stride_words = usize::try_from(stride_u32).ok()?;
+        let row_slots = usize::try_from(rows.min(3)).ok()?;
+        let word_count = stride_words.checked_mul(row_slots)?;
+        let requested_bytes = u64::try_from(word_count).ok()?.checked_mul(4)?;
+        if requested_bytes > available_bytes {
+            return None;
+        }
+        let mut words = Vec::new();
+        if words.try_reserve(word_count).is_err() {
+            return None;
+        }
+        #[cfg(not(verus_keep_ghost))]
+        let charged_bytes = u64::try_from(words.capacity()).ok()?.checked_mul(4)?;
+        #[cfg(verus_keep_ghost)]
+        let charged_bytes = requested_bytes;
+        if charged_bytes > available_bytes {
+            return None;
+        }
+        words.resize(word_count, 0);
+        Some(Self {
+            width,
+            stride_words,
+            row_slots,
+            words,
+            charged_bytes,
+        })
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn slot_for_row(&self, row: u32) -> Option<usize> {
+        if self.row_slots == 0 {
+            return None;
+        }
+        usize::try_from(row).ok().map(|row| row % self.row_slots)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn row_start(&self, slot: Option<usize>) -> Option<usize> {
+        let slot = slot?;
+        if slot >= self.row_slots {
+            return None;
+        }
+        slot.checked_mul(self.stride_words)
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn pixel(&self, slot: Option<usize>, x: i64) -> bool {
+        if x < 0 || x >= i64::from(self.width) {
+            return false;
+        }
+        let Some(row_start) = self.row_start(slot) else {
+            return false;
+        };
+        let Ok(x) = u32::try_from(x) else {
+            return false;
+        };
+        let Ok(word_column) = usize::try_from(x / 32) else {
+            return false;
+        };
+        let Some(index) = row_start.checked_add(word_column) else {
+            return false;
+        };
+        let Some(word) = self.words.get(index) else {
+            return false;
+        };
+        *word & (0x8000_0000_u32 >> (x % 32)) != 0
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        requires count <= 7,
+    ))]
+    fn row_bits(&self, slot: Option<usize>, start_x: i64, count: u8) -> usize {
+        let mut bits = 0_usize;
+        let mut index = 0_u8;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                index <= count,
+                count <= 7,
+            decreases count - index,
+        ))]
+        while index < count {
+            let Some(sample_x) = start_x.checked_add(i64::from(index)) else {
+                return bits;
+            };
+            bits = (bits << 1) | usize::from(self.pixel(slot, sample_x));
+            index += 1;
+        }
+        bits
+    }
+
+    #[allow(clippy::inline_always)]
+    #[inline(always)]
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    fn row_word(&self, row_start: Option<usize>, x: u64) -> u32 {
+        let Some(row_start) = row_start else {
+            return 0;
+        };
+        let Ok(word_column) = usize::try_from(x / 32) else {
+            return 0;
+        };
+        if word_column >= self.stride_words {
+            return 0;
+        }
+        let Some(first_index) = row_start.checked_add(word_column) else {
+            return 0;
+        };
+        let Some(first) = self.words.get(first_index) else {
+            return 0;
+        };
+        let first = *first;
+        let shift = (x % 32) as u32;
+        if shift == 0 {
+            return first;
+        }
+        let second = match word_column.checked_add(1) {
+            Some(column) if column < self.stride_words => match row_start.checked_add(column) {
+                Some(index) if index < self.words.len() => self.words[index],
+                _ => 0,
+            },
+            _ => 0,
+        };
+        (first << shift) | (second >> (32 - shift))
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).stride_words == old(self).stride_words,
+            final(self).row_slots == old(self).row_slots,
+            final(self).charged_bytes == old(self).charged_bytes,
+            out.is_ok() ==>
+                final(self).words@.len() == old(self).words@.len(),
+    ))]
+    fn clear_row(&mut self, slot: usize) -> Result<(), GenericRegionError> {
+        let start = self.row_start(Some(slot)).ok_or_else(integer_overflow)?;
+        let end = start
+            .checked_add(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let Some(row) = self.words.get_mut(start..end) else {
+            return Err(integer_overflow());
+        };
+        let mut column = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant column <= row@.len(),
+            decreases row@.len() - column,
+        ))]
+        while column < row.len() {
+            row[column] = 0;
+            column += 1;
+        }
+        Ok(())
+    }
+
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).stride_words == old(self).stride_words,
+            final(self).row_slots == old(self).row_slots,
+            final(self).charged_bytes == old(self).charged_bytes,
+            out.is_ok() ==>
+                final(self).words@.len() == old(self).words@.len(),
+    ))]
+    fn copy_row(&mut self, source: usize, destination: usize) -> Result<(), GenericRegionError> {
+        let source_start = self.row_start(Some(source)).ok_or_else(integer_overflow)?;
+        let destination_start = self
+            .row_start(Some(destination))
+            .ok_or_else(integer_overflow)?;
+        let source_end = source_start
+            .checked_add(self.stride_words)
+            .ok_or_else(integer_overflow)?;
+        if source_end > self.words.len() {
+            return Err(integer_overflow());
+        }
+        #[cfg(verus_keep_ghost)]
+        let word_length = self.words.len();
+        #[cfg(not(verus_keep_ghost))]
+        self.words
+            .copy_within(source_start..source_end, destination_start);
+        #[cfg(verus_keep_ghost)]
+        let mut column = 0_usize;
+        #[cfg(verus_keep_ghost)]
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                column <= self.stride_words,
+                self.words@.len() == word_length,
+            decreases self.stride_words - column,
+        ))]
+        #[cfg(verus_keep_ghost)]
+        while column < self.stride_words {
+            let source_index = source_start
+                .checked_add(column)
+                .ok_or_else(integer_overflow)?;
+            let destination_index = destination_start
+                .checked_add(column)
+                .ok_or_else(integer_overflow)?;
+            let Some(value) = self.words.get(source_index) else {
+                return Err(integer_overflow());
+            };
+            let value = *value;
+            let Some(word) = self.words.get_mut(destination_index) else {
+                return Err(integer_overflow());
+            };
+            *word = value;
+            column += 1;
+        }
+        Ok(())
+    }
+
+    #[allow(clippy::inline_always)]
+    #[inline(always)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).width == old(self).width,
+            final(self).stride_words == old(self).stride_words,
+            final(self).row_slots == old(self).row_slots,
+            final(self).charged_bytes == old(self).charged_bytes,
+            out.is_ok() ==>
+                final(self).words@.len() == old(self).words@.len(),
+    ))]
+    fn set_black_in_row(&mut self, row_start: usize, x: u32) -> Result<(), GenericRegionError> {
+        let column = usize::try_from(x / 32).map_err(|_error| integer_overflow())?;
+        let index = row_start.checked_add(column).ok_or_else(integer_overflow)?;
+        let Some(word) = self.words.get_mut(index) else {
+            return Err(integer_overflow());
+        };
+        *word |= 0x8000_0000_u32 >> (x % 32);
+        Ok(())
+    }
+
+    #[allow(clippy::cast_possible_truncation, clippy::too_many_lines)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        requires
+            crate::spec::bitmap::storage_valid(old(bitmap)),
+            old(bitmap).width == self.width,
+        ensures match out {
+            Ok(()) =>
+                crate::spec::bitmap::storage_valid(final(bitmap))
+                && final(bitmap).width == old(bitmap).width
+                && final(bitmap).height == old(bitmap).height
+                && final(bitmap).stride == old(bitmap).stride,
+            Err(_) => true,
+        },
+    ))]
+    fn flush_row(
+        &self,
+        slot: usize,
+        bitmap: &mut Bitmap,
+        y: u32,
+    ) -> Result<(), GenericRegionError> {
+        if bitmap.width != self.width || y >= bitmap.height {
+            return Err(integer_overflow());
+        }
+        #[cfg(verus_keep_ghost)]
+        let bitmap_width = bitmap.width;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_height = bitmap.height;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_stride = bitmap.stride;
+        #[cfg(verus_keep_ghost)]
+        let bitmap_length = bitmap.data.len();
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+            assert(bitmap_length as nat
+                == bitmap_stride as nat * bitmap_height as nat);
+        }
+        let word_start = self.row_start(Some(slot)).ok_or_else(integer_overflow)?;
+        let row = usize::try_from(y).map_err(|_error| integer_overflow())?;
+        let byte_start = row
+            .checked_mul(bitmap.stride)
+            .ok_or_else(integer_overflow)?;
+        let full_words = bitmap.stride / 4;
+        let mut word_column = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                word_column <= full_words,
+                bitmap.width == bitmap_width,
+                bitmap.height == bitmap_height,
+                bitmap.stride == bitmap_stride,
+                bitmap.data@.len() == bitmap_length,
+                bitmap_length as nat
+                    == bitmap_stride as nat * bitmap_height as nat,
+            decreases full_words - word_column,
+        ))]
+        while word_column < full_words {
+            let word = *self
+                .words
+                .get(
+                    word_start
+                        .checked_add(word_column)
+                        .ok_or_else(integer_overflow)?,
+                )
+                .ok_or_else(integer_overflow)?;
+            let byte_column = word_column.checked_mul(4).ok_or_else(integer_overflow)?;
+            let byte_index = byte_start
+                .checked_add(byte_column)
+                .ok_or_else(integer_overflow)?;
+            let byte_end = byte_index.checked_add(4).ok_or_else(integer_overflow)?;
+            #[cfg(not(verus_keep_ghost))]
+            {
+                let Some(bytes) = bitmap.data.get_mut(byte_index..byte_end) else {
+                    return Err(integer_overflow());
+                };
+                bytes.copy_from_slice(&[
+                    (word >> 24) as u8,
+                    (word >> 16) as u8,
+                    (word >> 8) as u8,
+                    word as u8,
+                ]);
+            }
+            #[cfg(verus_keep_ghost)]
+            {
+                let mut offset = 0_usize;
+                #[cfg_attr(verus_keep_ghost, verus_spec(
+                    invariant
+                        offset <= 4,
+                        bitmap.width == bitmap_width,
+                        bitmap.height == bitmap_height,
+                        bitmap.stride == bitmap_stride,
+                        bitmap.data@.len() == bitmap_length,
+                        bitmap_length as nat
+                            == bitmap_stride as nat * bitmap_height as nat,
+                    decreases 4 - offset,
+                ))]
+                while offset < 4 {
+                    let Some(offset_index) = byte_index.checked_add(offset) else {
+                        return Err(integer_overflow());
+                    };
+                    let Some(byte) = bitmap.data.get_mut(offset_index) else {
+                        return Err(integer_overflow());
+                    };
+                    *byte = word_byte(word, offset);
+                    offset += 1;
+                }
+            }
+            word_column += 1;
+        }
+        let tail_start = full_words.checked_mul(4).ok_or_else(integer_overflow)?;
+        let tail_length = bitmap.stride - tail_start;
+        let mut tail = 0_usize;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                tail <= tail_length,
+                tail_length <= 3,
+                bitmap.width == bitmap_width,
+                bitmap.height == bitmap_height,
+                bitmap.stride == bitmap_stride,
+                bitmap.data@.len() == bitmap_length,
+                bitmap_length as nat
+                    == bitmap_stride as nat * bitmap_height as nat,
+            decreases tail_length - tail,
+        ))]
+        while tail < tail_length {
+            let word = *self
+                .words
+                .get(
+                    word_start
+                        .checked_add(full_words)
+                        .ok_or_else(integer_overflow)?,
+                )
+                .ok_or_else(integer_overflow)?;
+            let byte_column = tail_start.checked_add(tail).ok_or_else(integer_overflow)?;
+            let byte_index = byte_start
+                .checked_add(byte_column)
+                .ok_or_else(integer_overflow)?;
+            let Some(byte) = bitmap.data.get_mut(byte_index) else {
+                return Err(integer_overflow());
+            };
+            *byte = word_byte(word, tail);
+            tail += 1;
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::views::bitmap_fields(bitmap);
+            reveal(crate::spec::bitmap::storage_valid);
+        }
+        Ok(())
+    }
+}
+
+#[allow(clippy::ptr_arg)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        crate::spec::bitmap::storage_valid(old(bitmap)),
+        rows <= old(bitmap).height,
+        old(ring).width == old(bitmap).width,
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        generic_region_spec::contexts_valid(old(contexts)@),
+    ensures
+        out.is_ok() ==> crate::spec::bitmap::storage_valid(final(bitmap)),
+        generic_region_spec::contexts_valid(final(contexts)@),
+        out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
+))]
+#[allow(clippy::too_many_lines)]
+#[cfg(test)]
+fn decode_nominal_template0_row_ring(
+    ring: &mut GenericRowRing,
+    bitmap: &mut Bitmap,
+    rows: u32,
+    typical_prediction: bool,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    if rows > bitmap.height || ring.width != bitmap.width {
+        return Err(GenericRegionError::RowCountMismatch {
+            expected: bitmap.height,
+            actual: rows,
+        });
+    }
+    let mut ltp = false;
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= rows,
+            rows <= bitmap.height,
+            ring.width == bitmap.width,
+            crate::spec::bitmap::storage_valid(bitmap),
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+        decreases rows - y,
+    ))]
+    while y < rows {
+        let current_slot = ring.slot_for_row(y).ok_or_else(integer_overflow)?;
+        ring.clear_row(current_slot)?;
+        let current_row = ring
+            .row_start(Some(current_slot))
+            .ok_or_else(integer_overflow)?;
+        if typical_prediction {
+            let context = GenericTemplate::Template0.sltp_context();
+            let sltp = decode_probability_signal(decoder, contexts, context);
+            if sltp > 1 {
+                return Err(probability_signal_error(
+                    decoder,
+                    context,
+                    contexts.len(),
+                    sltp,
+                ));
+            }
+            ltp ^= sltp != 0;
+        }
+        if ltp {
+            if y != 0 {
+                let previous_slot = ring.slot_for_row(y - 1).ok_or_else(integer_overflow)?;
+                ring.copy_row(previous_slot, current_slot)?;
+            }
+            ring.flush_row(current_slot, bitmap, y)?;
+            y += 1;
+            continue;
+        }
+
+        let top_slot = y.checked_sub(2).and_then(|row| ring.slot_for_row(row));
+        let previous_slot = y.checked_sub(1).and_then(|row| ring.slot_for_row(row));
+        let top_row = ring.row_start(top_slot);
+        let previous_row = ring.row_start(previous_slot);
+        let mut history = 0_usize;
+        let mut top = ring.row_bits(top_slot, -2, 5);
+        let mut previous = ring.row_bits(previous_slot, -3, 7);
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= ring.width,
+                y < rows,
+                rows <= bitmap.height,
+                ring.width == bitmap.width,
+                crate::spec::bitmap::storage_valid(bitmap),
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+            decreases ring.width - x,
+        ))]
+        while x < ring.width {
+            let mut top_queue = ring.row_word(top_row, u64::from(x) + 3);
+            let mut previous_queue = ring.row_word(previous_row, u64::from(x) + 4);
+            let remaining = ring.width - x;
+            let chunk_width = remaining.min(32);
+            let chunk_end = x.checked_add(chunk_width).ok_or_else(integer_overflow)?;
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    x <= chunk_end,
+                    chunk_end <= ring.width,
+                    y < rows,
+                    rows <= bitmap.height,
+                    ring.width == bitmap.width,
+                    crate::spec::bitmap::storage_valid(bitmap),
+                    crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                    generic_region_spec::contexts_valid(contexts@),
+                decreases chunk_end - x,
+            ))]
+            while x < chunk_end {
+                let context = (top << 11) | (previous << 4) | history & 0x0f;
+                top = ((top << 1) | usize::from(top_queue & 0x8000_0000 != 0)) & 0x1f;
+                previous =
+                    ((previous << 1) | usize::from(previous_queue & 0x8000_0000 != 0)) & 0x7f;
+                top_queue <<= 1;
+                previous_queue <<= 1;
+
+                let signal = decode_probability_signal(decoder, contexts, context);
+                if signal > 1 {
+                    return Err(probability_signal_error(
+                        decoder,
+                        context,
+                        contexts.len(),
+                        signal,
+                    ));
+                }
+                history = ((history << 1) | usize::from(signal)) & 0x0f;
+                if signal != 0 {
+                    ring.set_black_in_row(current_row, x)?;
+                }
+                x += 1;
+            }
+        }
+        ring.flush_row(current_slot, bitmap, y)?;
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::ptr_arg)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    requires
+        rows <= old(raster).height,
+        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
+        generic_region_spec::contexts_valid(old(contexts)@),
+    ensures
+        out.is_ok() ==> final(raster).width == old(raster).width,
+        out.is_ok() ==> final(raster).height == old(raster).height,
+        out.is_ok() ==> final(raster).stride_words == old(raster).stride_words,
+        generic_region_spec::contexts_valid(final(contexts)@),
+        out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
+))]
+#[allow(clippy::too_many_lines)]
+fn decode_nominal_template0_words(
+    raster: &mut GenericWordRaster,
+    rows: u32,
+    typical_prediction: bool,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    if rows > raster.height {
+        return Err(GenericRegionError::RowCountMismatch {
+            expected: raster.height,
+            actual: rows,
+        });
+    }
+    #[cfg(verus_keep_ghost)]
+    let raster_width = raster.width;
+    #[cfg(verus_keep_ghost)]
+    let raster_height = raster.height;
+    #[cfg(verus_keep_ghost)]
+    let raster_stride = raster.stride_words;
+    let mut ltp = false;
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= rows,
+            rows <= raster.height,
+            raster.width == raster_width,
+            raster.height == raster_height,
+            raster.stride_words == raster_stride,
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+        decreases rows - y,
+    ))]
+    while y < rows {
+        if typical_prediction {
+            let context = GenericTemplate::Template0.sltp_context();
+            let sltp = decode_probability_signal(decoder, contexts, context);
+            if sltp > 1 {
+                return Err(probability_signal_error(
+                    decoder,
+                    context,
+                    contexts.len(),
+                    sltp,
+                ));
+            }
+            ltp ^= sltp != 0;
+        }
+        if ltp {
+            if y != 0 {
+                raster.copy_row(y - 1, y)?;
+            }
+            y += 1;
+            continue;
+        }
+
+        let mut history = 0_usize;
+        let y_i64 = i64::from(y);
+        let top_row = raster.row_start(y_i64 - 2);
+        let previous_row = raster.row_start(y_i64 - 1);
+        let mut top = raster.row_bits(y_i64 - 2, -2, 5);
+        let mut previous = raster.row_bits(y_i64 - 1, -3, 7);
+        let row = usize::try_from(y).map_err(|_error| integer_overflow())?;
+        let row_start = row
+            .checked_mul(raster.stride_words)
+            .ok_or_else(integer_overflow)?;
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= raster.width,
+                y < rows,
+                rows <= raster.height,
+                raster.width == raster_width,
+                raster.height == raster_height,
+                raster.stride_words == raster_stride,
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+            decreases raster.width - x,
+        ))]
+        while x < raster.width {
+            #[cfg(verus_keep_ghost)]
+            let chunk_start = x;
+            let mut top_queue = raster.row_word(top_row, u64::from(x) + 3);
+            let mut previous_queue = raster.row_word(previous_row, u64::from(x) + 4);
+            let remaining = raster.width - x;
+            let chunk_width = remaining.min(32);
+            let Some(chunk_end) = x.checked_add(chunk_width) else {
+                return Err(integer_overflow());
+            };
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(chunk_width > 0);
+                assert(chunk_end <= raster.width);
+            }
+            #[cfg_attr(verus_keep_ghost, verus_spec(
+                invariant
+                    x <= chunk_end,
+                    chunk_end <= raster.width,
+                    y < rows,
+                    rows <= raster.height,
+                    raster.width == raster_width,
+                    raster.height == raster_height,
+                    raster.stride_words == raster_stride,
+                    crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                    generic_region_spec::contexts_valid(contexts@),
+                decreases chunk_end - x,
+            ))]
+            while x < chunk_end {
+                let context = (top << 11) | (previous << 4) | history & 0x0f;
+                top = ((top << 1) | usize::from(top_queue & 0x8000_0000 != 0)) & 0x1f;
+                previous =
+                    ((previous << 1) | usize::from(previous_queue & 0x8000_0000 != 0)) & 0x7f;
+                top_queue <<= 1;
+                previous_queue <<= 1;
+
+                let signal = decode_probability_signal(decoder, contexts, context);
+                if signal > 1 {
+                    return Err(probability_signal_error(
+                        decoder,
+                        context,
+                        contexts.len(),
+                        signal,
+                    ));
+                }
+                history = ((history << 1) | usize::from(signal)) & 0x0f;
+                if signal != 0 {
+                    raster.set_black_in_row(row_start, x)?;
+                }
+                x += 1;
+            }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                assert(x == chunk_end);
+                assert(x > chunk_start);
+            }
+        }
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments, clippy::ptr_arg)]
+fn decode_generic_with_oracle(
+    bitmap: &mut Bitmap,
+    rows: u32,
+    template: GenericTemplate,
+    extended: bool,
+    adaptive: &[TemplateOffset; 12],
+    typical_prediction: bool,
+    skip: Option<&Bitmap>,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    let mut ltp = false;
+    let bitmap_width = bitmap.width;
+    let bitmap_height = bitmap.height;
+    if rows > bitmap_height {
+        return Err(GenericRegionError::RowCountMismatch {
+            expected: bitmap_height,
+            actual: rows,
+        });
+    }
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(bitmap);
+    }
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= rows,
+            rows <= bitmap_height,
+            crate::views::bitmap_width(bitmap) == bitmap_width,
+            crate::views::bitmap_height(bitmap) == bitmap_height,
+            crate::spec::bitmap::storage_valid(bitmap),
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+            match skip {
+                Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                None => true,
+            },
+        decreases rows - y,
+    ))]
+    while y < rows {
+        if typical_prediction {
+            let sltp = decode_probability(decoder, contexts, template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+
+        if ltp {
+            if y != 0 {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(bitmap.height == bitmap_height);
+                    assert(y - 1 < bitmap_height);
+                    assert(y < bitmap_height);
+                }
+                copy_bitmap_row(bitmap, y - 1, y)?;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(bitmap.width == bitmap_width);
+                    assert(bitmap.height == bitmap_height);
+                }
+            }
+            y += 1;
+            continue;
+        }
+
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= bitmap_width,
+                y < rows,
+                rows <= bitmap_height,
+                crate::views::bitmap_width(bitmap) == bitmap_width,
+                crate::views::bitmap_height(bitmap) == bitmap_height,
+                crate::spec::bitmap::storage_valid(bitmap),
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+                match skip {
+                    Some(mask) => crate::spec::bitmap::storage_valid(mask),
+                    None => true,
+                },
+            decreases bitmap_width - x,
+        ))]
+        while x < bitmap_width {
+            let skipped = match skip {
+                Some(mask) => mask.pixel(x, y).unwrap_or(false),
+                None => false,
+            };
+            if skipped {
+                bitmap.set_pixel(x, y, false)?;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    crate::views::bitmap_fields(bitmap);
+                    assert(x < bitmap_width);
+                }
+                x += 1;
+                continue;
+            }
+            let context = generic_context(bitmap, x, y, template, extended, adaptive);
+            let value = decode_probability(decoder, contexts, context)? != 0;
+            bitmap.set_pixel(x, y, value)?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(bitmap);
+                assert(x < bitmap_width);
+            }
+            x += 1;
+        }
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments)]
+fn decode_generic_with_callback<F>(
+    bitmap: &mut Bitmap,
+    rows: u32,
+    template: GenericTemplate,
+    extended: bool,
+    adaptive: &[TemplateOffset; 12],
+    typical_prediction: bool,
+    skip: Option<&Bitmap>,
+    mut decode: F,
+) -> Result<(), GenericRegionError>
+where
+    F: FnMut(usize) -> Result<u8, GenericRegionError>,
+{
+    let mut ltp = false;
+    for y in 0..rows {
+        if typical_prediction {
+            let sltp = decode(template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+        if ltp {
+            if y != 0 {
+                copy_bitmap_row(bitmap, y - 1, y)?;
+            }
+            continue;
+        }
+        for x in 0..bitmap.width() {
+            let skipped = skip.and_then(|mask| mask.pixel(x, y)).unwrap_or(false);
+            if skipped {
+                bitmap.set_pixel(x, y, false)?;
+                continue;
+            }
+            let context = generic_context(bitmap, x, y, template, extended, adaptive);
+            let value = decode(context)? != 0;
+            bitmap.set_pixel(x, y, value)?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[allow(clippy::ptr_arg, clippy::too_many_arguments)]
+fn decode_refinement_with_oracle(
+    bitmap: &mut Bitmap,
+    reference: &Bitmap,
+    template: RefinementTemplate,
+    adaptive: [TemplateOffset; 2],
+    typical_prediction: bool,
+    parameters: RefinementParameters,
+    decoder: &mut ArithmeticDecoder<'_>,
+    contexts: &mut Vec<ArithmeticContext>,
+) -> Result<(), GenericRegionError> {
+    let mut ltp = false;
+    let bitmap_width = bitmap.width;
+    let bitmap_height = bitmap.height;
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        crate::views::bitmap_fields(bitmap);
+    }
+    let mut y = 0_u32;
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        invariant
+            y <= bitmap_height,
+            crate::views::bitmap_width(bitmap) == bitmap_width,
+            crate::views::bitmap_height(bitmap) == bitmap_height,
+            crate::spec::bitmap::storage_valid(bitmap),
+            crate::spec::bitmap::storage_valid(reference),
+            crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+            generic_region_spec::contexts_valid(contexts@),
+        decreases bitmap_height - y,
+    ))]
+    while y < bitmap_height {
+        if typical_prediction {
+            let sltp = decode_probability(decoder, contexts, template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+        let mut x = 0_u32;
+        #[cfg_attr(verus_keep_ghost, verus_spec(
+            invariant
+                x <= bitmap_width,
+                y < bitmap_height,
+                crate::views::bitmap_width(bitmap) == bitmap_width,
+                crate::views::bitmap_height(bitmap) == bitmap_height,
+                crate::spec::bitmap::storage_valid(bitmap),
+                crate::spec::bitmap::storage_valid(reference),
+                crate::arithmetic::arithmetic_spec::decoder_valid(decoder),
+                generic_region_spec::contexts_valid(contexts@),
+            decreases bitmap_width - x,
+        ))]
+        while x < bitmap_width {
+            if ltp {
+                if let Some(prediction) = refinement_prediction(reference, x, y, parameters) {
+                    bitmap.set_pixel(x, y, prediction)?;
+                    #[cfg(verus_keep_ghost)]
+                    proof! {
+                        crate::views::bitmap_fields(bitmap);
+                    }
+                    x += 1;
+                    continue;
+                }
+            }
+            let context =
+                refinement_context(bitmap, reference, x, y, template, adaptive, parameters);
+            let value = decode_probability(decoder, contexts, context)? != 0;
+            bitmap.set_pixel(x, y, value)?;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                crate::views::bitmap_fields(bitmap);
+            }
+            x += 1;
+        }
+        y += 1;
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+fn decode_refinement_with_callback<F>(
+    bitmap: &mut Bitmap,
+    reference: &Bitmap,
+    template: RefinementTemplate,
+    adaptive: [TemplateOffset; 2],
+    typical_prediction: bool,
+    parameters: RefinementParameters,
+    mut decode: F,
+) -> Result<(), GenericRegionError>
+where
+    F: FnMut(usize) -> Result<u8, GenericRegionError>,
+{
+    let mut ltp = false;
+    for y in 0..bitmap.height() {
+        if typical_prediction {
+            let sltp = decode(template.sltp_context())?;
+            ltp ^= sltp != 0;
+        }
+        for x in 0..bitmap.width() {
+            if ltp {
+                if let Some(prediction) = refinement_prediction(reference, x, y, parameters) {
+                    bitmap.set_pixel(x, y, prediction)?;
+                    continue;
+                }
+            }
+            let context =
+                refinement_context(bitmap, reference, x, y, template, adaptive, parameters);
+            let value = decode(context)? != 0;
+            bitmap.set_pixel(x, y, value)?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+fn word_raster_storage_bytes(width: u32, height: u32) -> Option<u64> {
+    let stride_words = u64::from(width).checked_add(31)? / 32;
+    stride_words.checked_mul(u64::from(height))?.checked_mul(4)
+}
+
+#[cfg(test)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn row_ring_storage_bytes(width: u32, rows: u32) -> Option<u64> {
+    let stride_words = u64::from(width).checked_add(31)? / 32;
+    stride_words
+        .checked_mul(u64::from(rows.min(3)))?
+        .checked_mul(4)
+}
+
+#[cfg(test)]
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn row_ring_fits_managed_memory(
+    width: u32,
+    rows: u32,
+    context_bytes: u64,
+    bitmap_bytes: u64,
+    limits: &Limits,
+) -> Result<bool, GenericRegionError> {
+    let Some(row_bytes) = row_ring_storage_bytes(width, rows) else {
+        return Err(integer_overflow());
+    };
+    let Some(managed) = context_bytes
+        .checked_add(bitmap_bytes)
+        .and_then(|bytes| bytes.checked_add(row_bytes))
+    else {
+        return Err(integer_overflow());
+    };
+    Ok(managed <= limits.max_decoder_managed_memory_bytes)
+}
+
+fn control_pixel(bitmap: &Bitmap, x: i128, row: i128) -> bool {
+    if x < 0 || x >= i128::from(bitmap.width) || row < 0 || row >= i128::from(bitmap.height) {
+        return false;
+    }
+    let x = usize::try_from(x).unwrap();
+    let row = usize::try_from(row).unwrap();
+    bitmap.data[row * bitmap.stride + x / 8] & (0x80 >> (x % 8)) != 0
+}
+
+fn control_window(bitmap: &Bitmap, center: i64, row: i64, left: i32, count: u8) -> usize {
+    let start = i128::from(center) + i128::from(left);
+    let end = start + i128::from(count);
+    if !(1..=8).contains(&count)
+        || row < 0
+        || row >= i64::from(bitmap.height)
+        || start < i128::from(i64::MIN)
+        || start > i128::from(i64::MAX)
+        || end < i128::from(i64::MIN)
+        || end > i128::from(i64::MAX)
+    {
+        return 0;
+    }
+    (0..count).fold(0, |value, offset| {
+        value * 2
+            + usize::from(control_pixel(
+                bitmap,
+                start + i128::from(offset),
+                i128::from(row),
+            ))
+    })
+}
+
+fn control_malformed(error: GenericRegionError) -> MalformedError {
+    match DecodeError::from(error) {
+        DecodeError::Malformed(error) => error,
+        other => panic!("expected a typed malformed projection: {other:?}"),
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn packed_rows_match_scalar_msb_windows_padding_and_numeric_edges() {
+    let mut byte_cases = 0;
+    let mut window_cases = 0;
+    let mut extreme_cases = 0;
+    for width in [0, 1, 7, 8, 9, 15, 16, 17] {
+        let mut bitmap = Bitmap::blank(width, 3, &Limits::default()).unwrap();
+        for (index, byte) in bitmap.data.iter_mut().enumerate() {
+            *byte = u8::try_from(index % 256)
+                .unwrap()
+                .wrapping_mul(73)
+                .wrapping_add(u8::try_from(width).unwrap())
+                .wrapping_add(0xa5);
+        }
+        let before = bitmap.clone();
+        for row in [-1, 0, 1, 2, 3] {
+            let row_start = if (0..3).contains(&row) {
+                Some(usize::try_from(row).unwrap() * bitmap.stride)
+            } else {
+                None
+            };
+            assert_eq!(packed_row_start(&bitmap, row), row_start);
+            for center in -9..=i64::from(width) + 8 {
+                let byte = if center < 0 || center >= i64::from(width) || row_start.is_none() {
+                    0
+                } else {
+                    u8::try_from((0..8).fold(0_usize, |value, offset| {
+                        value * 2
+                            + usize::from(control_pixel(
+                                &bitmap,
+                                i128::from(center) + i128::from(offset),
+                                i128::from(row),
+                            ))
+                    }))
+                    .unwrap()
+                };
+                assert_eq!(packed_row_byte(&bitmap, row_start, center), byte);
+                byte_cases += 1;
+                for left in [-8, -3, 0, 3, 8] {
+                    for count in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, u8::MAX] {
+                        assert_eq!(
+                            packed_row_bits(&bitmap, center, row, left, count),
+                            control_window(&bitmap, center, row, left, count),
+                        );
+                        window_cases += 1;
+                    }
+                }
+            }
+            for center in [i64::MIN, i64::MIN + 1, i64::MAX - 1, i64::MAX] {
+                for left in [i32::MIN, -1, 0, 1, i32::MAX] {
+                    for count in [0, 1, 7, 8, 9, u8::MAX] {
+                        assert_eq!(
+                            packed_row_bits(&bitmap, center, row, left, count),
+                            control_window(&bitmap, center, row, left, count),
+                        );
+                        extreme_cases += 1;
+                    }
+                }
+            }
+        }
+        for invalid_start in [None, Some(bitmap.data.len()), Some(usize::MAX)] {
+            for x in [0, 8] {
+                assert_eq!(packed_row_byte(&bitmap, invalid_start, x), 0);
+            }
+        }
+        assert_eq!(bitmap, before);
+    }
+    assert_eq!(byte_cases, 1085);
+    assert_eq!(window_cases, 59_675);
+    assert_eq!(extreme_cases, 4800);
+}
+
+#[test]
+fn probability_state_validation_matches_all_raw_fields_and_first_error() {
+    assert!(validate_probability_states(&[]).is_ok());
+    let mut cases = 0;
+    let mut accepted = 0;
+    for state_index in 0..=u8::MAX {
+        for mps in 0..=u8::MAX {
+            let candidate = ArithmeticContext { state_index, mps };
+            let contexts = [
+                ArithmeticContext::new(),
+                candidate,
+                ArithmeticContext {
+                    state_index: u8::MAX,
+                    mps: u8::MAX,
+                },
+            ];
+            let valid = state_index < 47 && mps <= 1;
+            for with_tail in [false, true] {
+                let slice = if with_tail {
+                    &contexts[..]
+                } else {
+                    &contexts[..2]
+                };
+                match validate_probability_states(slice) {
+                    Ok(()) => {
+                        assert!(valid && !with_tail);
+                        accepted += 1;
+                    }
+                    Err(error) => {
+                        let expected = if valid {
+                            assert!(with_tail);
+                            (u8::MAX, u8::MAX)
+                        } else {
+                            (state_index, mps)
+                        };
+                        assert_eq!(
+                            control_malformed(error),
+                            MalformedError::InvalidArithmeticContextState {
+                                state_index: expected.0,
+                                mps: expected.1,
+                            }
+                        );
+                    }
+                }
+                assert_eq!(contexts[1].state_index(), state_index);
+                assert_eq!(contexts[1].mps(), mps);
+                cases += 1;
+            }
+        }
+    }
+    assert_eq!(cases, 131_072);
+    assert_eq!(accepted, 94);
+}
+
+#[test]
+fn generic_error_trait_projection_and_eof_factory_preserve_fields() {
+    for (error, expected) in [
+        (
+            GenericRegionError::ReservedFlags(u8::MAX),
+            GenericRegionErrorKind::ReservedFlags(u8::MAX),
+        ),
+        (
+            GenericRegionError::InvalidFlags(u8::MAX),
+            GenericRegionErrorKind::InvalidFlags(u8::MAX),
+        ),
+        (
+            GenericRegionError::InvalidAdaptivePixel {
+                number: u8::MAX,
+                x: i32::MIN,
+                y: i32::MAX,
+            },
+            GenericRegionErrorKind::InvalidAdaptivePixel {
+                number: u8::MAX,
+                x: i32::MIN,
+                y: i32::MAX,
+            },
+        ),
+        (
+            GenericRegionError::InvalidSkipDimensions,
+            GenericRegionErrorKind::InvalidSkipDimensions,
+        ),
+        (
+            GenericRegionError::InvalidArithmeticTerminator,
+            GenericRegionErrorKind::InvalidArithmeticTerminator,
+        ),
+        (
+            GenericRegionError::UnexpectedArithmeticMarker {
+                offset: usize::MAX,
+                code: u8::MAX,
+            },
+            GenericRegionErrorKind::UnexpectedArithmeticMarker {
+                offset: usize::MAX,
+                code: u8::MAX,
+            },
+        ),
+        (
+            GenericRegionError::RowCountMismatch {
+                expected: u32::MAX,
+                actual: 0,
+            },
+            GenericRegionErrorKind::RowCountMismatch {
+                expected: u32::MAX,
+                actual: 0,
+            },
+        ),
+        (
+            GenericRegionError::ContextIndex {
+                index: usize::MAX,
+                count: 0,
+            },
+            GenericRegionErrorKind::ContextIndex {
+                index: usize::MAX,
+                count: 0,
+            },
+        ),
+    ] {
+        assert_eq!(
+            control_malformed(error),
+            MalformedError::InvalidGenericRegion(expected)
+        );
+    }
+    let mut cases = 0;
+    for offset in [0, 1, 65_535, usize::MAX] {
+        for needed in [0, 1, 65_535, usize::MAX] {
+            for remaining in [0, 1, 65_535, usize::MAX] {
+                let fits = [offset, needed, remaining]
+                    .into_iter()
+                    .all(|value| value as u128 <= u128::from(u64::MAX));
+                let actual = control_malformed(unexpected_eof(offset, needed, remaining));
+                if fits {
+                    assert_eq!(
+                        actual,
+                        MalformedError::UnexpectedEof {
+                            offset: u64::try_from(offset).unwrap(),
+                            needed: u64::try_from(needed).unwrap(),
+                            remaining: u64::try_from(remaining).unwrap(),
+                        }
+                    );
+                } else {
+                    assert_eq!(actual, MalformedError::IntegerOverflow);
+                }
+                cases += 1;
+            }
+        }
+    }
+    assert_eq!(cases, 64);
+}
+
+#[test]
+fn probability_failure_projection_preserves_context_and_decoder_errors() {
+    let bytes = [0, 0];
+    let decoder = ArithmeticDecoder::new(&bytes).unwrap();
+    let before_position = decoder.byte_position();
+    let before_marker = decoder.marker();
+    let mut cases = 0;
+    for signal in 0..=u8::MAX {
+        for index in [0, 1, usize::MAX] {
+            for context_count in [0, 37, usize::MAX] {
+                let actual = control_malformed(probability_signal_error(
+                    &decoder,
+                    index,
+                    context_count,
+                    signal,
+                ));
+                let expected = if signal == RASTER_SIGNAL_CONTEXT {
+                    MalformedError::InvalidGenericRegion(GenericRegionErrorKind::ContextIndex {
+                        index,
+                        count: context_count,
+                    })
+                } else {
+                    match decoder.signal_error(signal).into_decode() {
+                        DecodeError::Malformed(error) => error,
+                        other => panic!("unexpected arithmetic diagnostic: {other:?}"),
+                    }
+                };
+                assert_eq!(actual, expected);
+                assert_eq!(decoder.byte_position(), before_position);
+                assert_eq!(decoder.marker(), before_marker);
+                cases += 1;
+            }
+        }
+    }
+    assert_eq!(cases, 2304);
+}
+
+#[test]
+fn diagnostic_variants_preserve_fields_sources_and_formatter_failures() {
+    use std::fmt::Write as _;
+
+    struct RejectWrites;
+    impl fmt::Write for RejectWrites {
+        fn write_str(&mut self, _: &str) -> fmt::Result {
+            Err(fmt::Error)
+        }
+    }
+
+    for (error, message, delegated) in [
+        (
+            GenericRegionError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow)),
+            "malformed JBIG2 input: input-derived integer overflow".to_owned(),
+            true,
+        ),
+        (
+            GenericRegionError::ReservedFlags(u8::MAX),
+            "reserved generic-region flags are set: 0xff".to_owned(),
+            false,
+        ),
+        (
+            GenericRegionError::InvalidFlags(u8::MAX),
+            "invalid generic-region flag combination: 0xff".to_owned(),
+            false,
+        ),
+        (
+            GenericRegionError::InvalidAdaptivePixel {
+                number: u8::MAX,
+                x: i32::MIN,
+                y: i32::MAX,
+            },
+            "adaptive pixel 255 at (-2147483648, 2147483647) is not an earlier target pixel"
+                .to_owned(),
+            false,
+        ),
+        (
+            GenericRegionError::InvalidSkipDimensions,
+            "generic-region skip bitmap has the wrong dimensions".to_owned(),
+            false,
+        ),
+        (
+            GenericRegionError::InvalidArithmeticTerminator,
+            "arithmetic region does not end in FF AC".to_owned(),
+            false,
+        ),
+        (
+            GenericRegionError::UnexpectedArithmeticMarker {
+                offset: usize::MAX,
+                code: 0xfe,
+            },
+            format!("unexpected arithmetic marker FF FE at byte {}", usize::MAX),
+            false,
+        ),
+        (
+            GenericRegionError::RowCountMismatch {
+                expected: u32::MAX,
+                actual: 0,
+            },
+            "terminal row count 0 differs from decoded row count 4294967295".to_owned(),
+            false,
+        ),
+        (
+            GenericRegionError::ContextIndex {
+                index: usize::MAX,
+                count: 0,
+            },
+            format!(
+                "context index {} is outside a statistics set of length 0",
+                usize::MAX
+            ),
+            false,
+        ),
+    ] {
+        assert_eq!(error.to_string(), message);
+        let source = std::error::Error::source(&error);
+        assert_eq!(source.is_some(), delegated);
+        if let Some(source) = source {
+            assert!(matches!(
+                source.downcast_ref::<DecodeError>(),
+                Some(DecodeError::Malformed(MalformedError::IntegerOverflow)),
+            ));
+        }
+        assert!(write!(&mut RejectWrites, "{error}").is_err());
+    }
+    let private_message = "private diagnostic message must not escape";
+    let io = std::io::Error::new(std::io::ErrorKind::TimedOut, private_message);
+    let error = GenericRegionError::from(DecodeError::from(io));
+    assert_eq!(error.to_string(), "input/output error: TimedOut");
+    assert!(!error.to_string().contains(private_message));
+    assert!(matches!(
+        std::error::Error::source(&error)
+            .unwrap()
+            .downcast_ref::<DecodeError>(),
+        Some(DecodeError::Io(_)),
+    ));
+}
+
+fn region_prefix(width: u32, height: u32) -> Vec<u8> {
+    let mut bytes = Vec::new();
+    bytes.extend_from_slice(&width.to_be_bytes());
+    bytes.extend_from_slice(&height.to_be_bytes());
+    bytes.extend_from_slice(&0_u32.to_be_bytes());
+    bytes.extend_from_slice(&0_u32.to_be_bytes());
+    bytes.push(4);
+    bytes
+}
+
+fn region_info(width: u32, height: u32) -> RegionInfo {
+    RegionInfo {
+        width,
+        height,
+        x: 0,
+        y: 0,
+        operator: CombinationOperator::Replace,
+    }
+}
+
+fn generic_header(
+    width: u32,
+    height: u32,
+    template: GenericTemplate,
+    extended: bool,
+    typical: bool,
+) -> GenericRegionHeader {
+    let mut adaptive = [TemplateOffset::ZERO; 12];
+    match (template, extended) {
+        (GenericTemplate::Template0, false) => {
+            adaptive[..4].copy_from_slice(&[
+                TemplateOffset::new(3, -1),
+                TemplateOffset::new(-3, -1),
+                TemplateOffset::new(2, -2),
+                TemplateOffset::new(-2, -2),
+            ]);
+        }
+        (GenericTemplate::Template0, true) => {
+            adaptive.copy_from_slice(&[
+                TemplateOffset::new(-2, 0),
+                TemplateOffset::new(0, -2),
+                TemplateOffset::new(-2, -1),
+                TemplateOffset::new(-1, -2),
+                TemplateOffset::new(1, -2),
+                TemplateOffset::new(2, -1),
+                TemplateOffset::new(-3, 0),
+                TemplateOffset::new(-4, 0),
+                TemplateOffset::new(2, -2),
+                TemplateOffset::new(3, -1),
+                TemplateOffset::new(-2, -2),
+                TemplateOffset::new(-3, -1),
+            ]);
+        }
+        (GenericTemplate::Template1, _) => {
+            adaptive[0] = TemplateOffset::new(3, -1);
+        }
+        (GenericTemplate::Template2 | GenericTemplate::Template3, _) => {
+            adaptive[0] = TemplateOffset::new(2, -1);
+        }
+    }
+    GenericRegionHeader {
+        region: region_info(width, height),
+        mmr: false,
+        template,
+        typical_prediction: typical,
+        extended_template: extended,
+        adaptive,
+    }
+}
+
+fn decode_bits(
+    bitmap: &mut Bitmap,
+    rows: u32,
+    header: &GenericRegionHeader,
+    skip: Option<&Bitmap>,
+    bits: &[u8],
+) -> Result<Vec<usize>, GenericRegionError> {
+    let mut bits = VecDeque::from(bits.to_vec());
+    let mut contexts = Vec::new();
+    decode_generic_with_callback(
+        bitmap,
+        rows,
+        header.template,
+        header.extended_template,
+        &header.adaptive,
+        header.typical_prediction,
+        skip,
+        |context| {
+            contexts.push(context);
+            bits.pop_front()
+                .ok_or(GenericRegionError::RowCountMismatch {
+                    expected: 1,
+                    actual: 0,
+                })
+        },
+    )?;
+    Ok(contexts)
+}
+
+fn next_random(state: &mut u64) -> u32 {
+    *state = state
+        .wrapping_mul(6_364_136_223_846_793_005)
+        .wrapping_add(1_442_695_040_888_963_407);
+    (*state >> 32) as u32
+}
+
+fn random_bitmap(width: u32, height: u32, state: &mut u64) -> Bitmap {
+    let limits = Limits::default();
+    let mut bitmap = Bitmap::blank(width, height, &limits).expect("random bitmap");
+    for y in 0..height {
+        for x in 0..width {
+            if next_random(state).is_multiple_of(4) {
+                bitmap.set_pixel(x, y, true).expect("in bounds");
+            }
+        }
+    }
+    bitmap
+}
+
+fn arithmetic_bytes(state: &mut u64) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity(1_026);
+    for _ in 0..1_024 {
+        bytes.push((next_random(state) & 0x7f) as u8);
+    }
+    bytes.extend_from_slice(&ARITHMETIC_TERMINATOR);
+    bytes
+}
+
+fn arithmetic_segment_payload(width: u32, height: u32, typical: bool, coded: &[u8]) -> Vec<u8> {
+    let mut payload = region_prefix(width, height);
+    payload.push(if typical { 0x08 } else { 0 });
+    for offset in [
+        TemplateOffset::new(3, -1),
+        TemplateOffset::new(-3, -1),
+        TemplateOffset::new(2, -2),
+        TemplateOffset::new(-2, -2),
+    ] {
+        payload.push(offset.x.to_be_bytes()[3]);
+        payload.push(offset.y.to_be_bytes()[3]);
+    }
+    payload.extend_from_slice(coded);
+    payload
+}
+
+fn assert_decoder_state_eq(left: &ArithmeticDecoder<'_>, right: &ArithmeticDecoder<'_>) {
+    assert_eq!(left.byte_position, right.byte_position);
+    assert_eq!(left.current_byte, right.current_byte);
+    assert_eq!(left.code, right.code);
+    assert_eq!(left.interval, right.interval);
+    assert_eq!(left.bit_count, right.bit_count);
+    assert_eq!(left.marker, right.marker);
+}
+
+fn assert_word_template0_parity(
+    width: u32,
+    height: u32,
+    rows: u32,
+    extended: bool,
+    typical: bool,
+    coded: &[u8],
+) {
+    let limits = Limits::default();
+    let header = generic_header(width, height, GenericTemplate::Template0, extended, typical);
+    let mut word_decoder = ArithmeticDecoder::new(coded).expect("word decoder");
+    let mut ring_decoder = ArithmeticDecoder::new(coded).expect("ring decoder");
+    let mut byte_decoder = ArithmeticDecoder::new(coded).expect("byte decoder");
+    let mut word_contexts =
+        vec![ArithmeticContext::new(); generic_context_count(GenericTemplate::Template0)];
+    let mut ring_contexts = word_contexts.clone();
+    let mut byte_contexts = word_contexts.clone();
+    let mut raster = GenericWordRaster::try_new(width, height).expect("word raster");
+    let mut word_bitmap = Bitmap::blank(width, height, &limits).expect("word bitmap");
+    let mut ring_bitmap = Bitmap::blank(width, height, &limits).expect("ring bitmap");
+    let mut byte_bitmap = Bitmap::blank(width, height, &limits).expect("byte bitmap");
+    let mut ring = GenericRowRing::try_new(width, rows, u64::MAX).expect("row ring");
+
+    let word_result = decode_nominal_template0_words(
+        &mut raster,
+        rows,
+        typical,
+        &mut word_decoder,
+        &mut word_contexts,
+    );
+    let ring_result = decode_nominal_template0_row_ring(
+        &mut ring,
+        &mut ring_bitmap,
+        rows,
+        typical,
+        &mut ring_decoder,
+        &mut ring_contexts,
+    );
+    let byte_result = decode_generic_with_oracle(
+        &mut byte_bitmap,
+        rows,
+        GenericTemplate::Template0,
+        extended,
+        &header.adaptive,
+        typical,
+        None,
+        &mut byte_decoder,
+        &mut byte_contexts,
+    );
+    assert_eq!(
+        word_result.as_ref().err().map(ToString::to_string),
+        byte_result.as_ref().err().map(ToString::to_string)
+    );
+    assert_eq!(
+        ring_result.as_ref().err().map(ToString::to_string),
+        byte_result.as_ref().err().map(ToString::to_string)
+    );
+    if word_result.is_ok() {
+        raster
+            .materialize(&mut word_bitmap)
+            .expect("materialize word raster");
+        assert_eq!(word_bitmap, byte_bitmap);
+        assert_eq!(ring_bitmap, byte_bitmap);
+    }
+    assert_eq!(word_contexts, byte_contexts);
+    assert_eq!(ring_contexts, byte_contexts);
+    assert_decoder_state_eq(&word_decoder, &byte_decoder);
+    assert_decoder_state_eq(&ring_decoder, &byte_decoder);
+}
+
+fn median_duration(mut values: Vec<Duration>) -> Duration {
+    values.sort_unstable();
+    values[values.len() / 2]
+}
+
+#[test]
+fn parses_all_generic_header_shapes() {
+    let limits = Limits::default();
+
+    let mut standard = region_prefix(8, 2);
+    standard.push(0);
+    standard.extend_from_slice(&[3, 0xff, 0xfd, 0xff, 2, 0xfe, 0xfe, 0xfe]);
+    standard.push(0xaa);
+    let (header, used) = parse_generic_region_header(&standard, &limits).expect("standard header");
+    assert_eq!(used, 26);
+    assert_eq!(header.template, GenericTemplate::Template0);
+    assert_eq!(header.adaptive[0], TemplateOffset::new(3, -1));
+    assert_eq!(standard[used], 0xaa);
+
+    let mut extended = region_prefix(8, 2);
+    extended.push(0x10);
+    for offset in generic_header(8, 2, GenericTemplate::Template0, true, false).adaptive {
+        extended.push(offset.x.to_ne_bytes()[0]);
+        extended.push(offset.y.to_ne_bytes()[0]);
+    }
+    extended.push(0xbb);
+    let (header, used) = parse_generic_region_header(&extended, &limits).expect("extended header");
+    assert!(header.extended_template);
+    assert_eq!(used, 42, "17 + flags + twelve signed pairs");
+    assert_eq!(extended[used], 0xbb);
+
+    for (flag, template) in [
+        (0x02, GenericTemplate::Template1),
+        (0x04, GenericTemplate::Template2),
+        (0x06, GenericTemplate::Template3),
+    ] {
+        let mut bytes = region_prefix(1, 1);
+        bytes.extend_from_slice(&[flag, 2, 0xff]);
+        let (header, used) = parse_generic_region_header(&bytes, &limits).expect("small template");
+        assert_eq!(header.template, template);
+        assert_eq!(used, 20);
+    }
+}
+
+#[test]
+fn rejects_reserved_flags_mmr_template_and_future_at() {
+    let limits = Limits::default();
+    for flags in [0x20, 0x03] {
+        let mut bytes = region_prefix(1, 1);
+        bytes.push(flags);
+        assert!(parse_generic_region_header(&bytes, &limits).is_err());
+    }
+
+    let mut future = region_prefix(1, 1);
+    future.extend_from_slice(&[0x02, 0, 0]);
+    assert!(matches!(
+        parse_generic_region_header(&future, &limits),
+        Err(GenericRegionError::InvalidAdaptivePixel { .. })
+    ));
+}
+
+#[test]
+fn generic_template_geometry_and_sltp_indices_are_exact() {
+    assert_eq!(GENERIC_TEMPLATE_0.len(), 16);
+    assert_eq!(GENERIC_TEMPLATE_0_EXTENDED.len(), 16);
+    assert_eq!(GENERIC_TEMPLATE_1.len(), 13);
+    assert_eq!(GENERIC_TEMPLATE_2.len(), 10);
+    assert_eq!(GENERIC_TEMPLATE_3.len(), 10);
+    assert_eq!(GenericTemplate::Template0.sltp_context(), 0x9b25);
+    assert_eq!(GenericTemplate::Template1.sltp_context(), 0x0795);
+    assert_eq!(GenericTemplate::Template2.sltp_context(), 0x00e5);
+    assert_eq!(GenericTemplate::Template3.sltp_context(), 0x0195);
+    assert_eq!(
+        GENERIC_TEMPLATE_0_EXTENDED
+            .iter()
+            .filter(|slot| slot.adaptive.is_some())
+            .count(),
+        12
+    );
+}
+
+#[test]
+fn moved_adaptive_pixel_keeps_its_slot_identity() {
+    let limits = Limits::default();
+    let mut bitmap = Bitmap::blank(10, 3, &limits).expect("bitmap");
+    bitmap.set_pixel(0, 2, true).expect("set");
+    let mut header = generic_header(10, 3, GenericTemplate::Template0, false, false);
+    header.adaptive[0] = TemplateOffset::new(-5, 0);
+    let context = generic_context(&bitmap, 5, 2, header.template, false, &header.adaptive);
+    assert_eq!(context, 1 << 4, "A1 remains the twelfth row-major slot");
+
+    bitmap.set_pixel(1, 2, true).expect("set overlap");
+    header.adaptive[0] = TemplateOffset::new(-4, 0);
+    let overlap = generic_context(&bitmap, 5, 2, header.template, false, &header.adaptive);
+    assert_eq!(
+        overlap, 0x18,
+        "overlap keeps both the A1 and fixed template slots"
+    );
+}
+
+#[test]
+fn out_of_bounds_generic_samples_are_zero() {
+    let limits = Limits::default();
+    let bitmap = Bitmap::blank(1, 1, &limits).expect("bitmap");
+    let header = generic_header(1, 1, GenericTemplate::Template3, false, false);
+    assert_eq!(
+        generic_context(&bitmap, 0, 0, header.template, false, &header.adaptive),
+        0
+    );
+}
+
+#[test]
+fn tpgd_toggles_and_copies_without_pixel_decisions() {
+    let limits = Limits::default();
+    let header = generic_header(3, 3, GenericTemplate::Template2, false, true);
+    let mut bitmap = Bitmap::blank(3, 3, &limits).expect("bitmap");
+    // Row 0: explicit 101. Row 1: SLTP=1, copy. Row 2: SLTP=0, copy.
+    let contexts = decode_bits(&mut bitmap, 3, &header, None, &[0, 1, 0, 1, 1, 0]).expect("decode");
+    assert_eq!(contexts.len(), 6);
+    assert_eq!(contexts[0], 0x00e5);
+    for y in 0..3 {
+        assert_eq!(bitmap.pixel(0, y), Some(true));
+        assert_eq!(bitmap.pixel(1, y), Some(false));
+        assert_eq!(bitmap.pixel(2, y), Some(true));
+    }
+}
+
+#[test]
+fn first_typical_generic_row_is_zero() {
+    let limits = Limits::default();
+    let header = generic_header(2, 1, GenericTemplate::Template3, false, true);
+    let mut bitmap = Bitmap::blank(2, 1, &limits).expect("bitmap");
+    let contexts = decode_bits(&mut bitmap, 1, &header, None, &[1]).expect("decode");
+    assert_eq!(contexts, vec![0x0195]);
+    assert_eq!(bitmap.pixel(0, 0), Some(false));
+    assert_eq!(bitmap.pixel(1, 0), Some(false));
+}
+
+#[test]
+fn height_padding_preserves_decoded_bytes_and_zeroes_new_rows() {
+    let limits = Limits::default();
+    for width in [0, 1, 7, 8, 9, 63, 64, 65] {
+        for height in [0, 1, 3] {
+            let mut decoded = Bitmap::blank(width, height, &limits).unwrap();
+            for (index, byte) in decoded.data.iter_mut().enumerate() {
+                *byte = u8::try_from(index % 251).unwrap().wrapping_add(17);
+            }
+            for nominal in [height, height + 1, height + 3] {
+                let result = pad_bitmap_height(decoded.clone(), nominal, &limits).unwrap();
+                assert_eq!(
+                    (result.width(), result.height(), result.stride()),
+                    (width, nominal, decoded.stride())
+                );
+                assert_eq!(&result.bytes()[..decoded.data.len()], decoded.bytes());
+                assert!(result.bytes()[decoded.data.len()..]
+                    .iter()
+                    .all(|byte| *byte == 0));
+            }
+        }
+    }
+    let decoded = Bitmap::blank(8, 2, &limits).unwrap();
+    assert!(matches!(
+        pad_bitmap_height(decoded.clone(), 1, &limits),
+        Err(GenericRegionError::RowCountMismatch {
+            expected: 1,
+            actual: 2
+        })
+    ));
+    let restricted = Limits {
+        max_height: 2,
+        ..limits
+    };
+    assert!(matches!(
+        pad_bitmap_height(decoded, 3, &restricted),
+        Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+            crate::LimitExceeded {
+                kind: crate::LimitKind::Height,
+                limit: 2,
+                actual: 3,
+            }
+        )))
+    ));
+}
+
+#[test]
+fn typical_row_copy_preserves_source_and_other_rows() {
+    for width in [
+        0, 1, 7, 8, 9, 63, 64, 65, 127, 128, 129, 511, 512, 513, 1017, 1023, 1024, 1025, 4096,
+    ] {
+        let mut original = Bitmap::blank(width, 4, &Limits::default()).unwrap();
+        for (index, byte) in original.data.iter_mut().enumerate() {
+            *byte = u8::try_from(index % 251)
+                .unwrap()
+                .wrapping_mul(37)
+                .wrapping_add(11);
+        }
+        for source in 0..4 {
+            for destination in 0..4 {
+                let stride = original.stride();
+                let source_start = usize::try_from(source).unwrap() * stride;
+                let destination_start = usize::try_from(destination).unwrap() * stride;
+                let mut expected = original.bytes().to_vec();
+                expected[destination_start..destination_start + stride]
+                    .copy_from_slice(&original.bytes()[source_start..source_start + stride]);
+                let mut actual = original.clone();
+                copy_bitmap_row(&mut actual, source, destination).unwrap();
+                assert_eq!(
+                    actual.bytes(),
+                    expected,
+                    "{width}: {source} -> {destination}"
+                );
+                assert_eq!(
+                    (actual.width(), actual.height(), actual.stride()),
+                    (width, 4, stride)
+                );
+                for x in 0..width {
+                    assert_eq!(actual.pixel(x, destination), original.pixel(x, source));
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn skip_outputs_zero_and_consumes_no_decision() {
+    let limits = Limits::default();
+    let header = generic_header(3, 1, GenericTemplate::Template3, false, false);
+    let mut bitmap = Bitmap::blank(3, 1, &limits).expect("bitmap");
+    let mut skip = Bitmap::blank(3, 1, &limits).expect("skip");
+    skip.set_pixel(1, 0, true).expect("set skip");
+    let contexts = decode_bits(&mut bitmap, 1, &header, Some(&skip), &[1, 1]).expect("decode");
+    assert_eq!(contexts.len(), 2);
+    assert_eq!(bitmap.pixel(0, 0), Some(true));
+    assert_eq!(bitmap.pixel(1, 0), Some(false));
+    assert_eq!(bitmap.pixel(2, 0), Some(true));
+}
+
+#[test]
+fn parses_refinement_headers_and_nominal_adaptive_pixels() {
+    let limits = Limits::default();
+    let mut template0 = region_prefix(4, 4);
+    template0.extend_from_slice(&[0x02, 0xff, 0xff, 0xff, 0xff]);
+    let (header, used) = parse_refinement_region_header(&template0, &limits).expect("template 0");
+    assert_eq!(used, 22);
+    assert_eq!(header.template, RefinementTemplate::Template0);
+    assert!(header.typical_prediction);
+    assert_eq!(header.adaptive, [TemplateOffset::new(-1, -1); 2]);
+
+    let mut template1 = region_prefix(4, 4);
+    template1.push(0x01);
+    let (header, used) = parse_refinement_region_header(&template1, &limits).expect("template 1");
+    assert_eq!(used, 18);
+    assert_eq!(header.template, RefinementTemplate::Template1);
+}
+
+#[test]
+fn refinement_templates_and_sltp_indices_are_exact() {
+    assert_eq!(REFINEMENT_TEMPLATE_0.len(), 13);
+    assert_eq!(REFINEMENT_TEMPLATE_1.len(), 10);
+    assert_eq!(RefinementTemplate::Template0.sltp_context(), 0x10);
+    assert_eq!(RefinementTemplate::Template1.sltp_context(), 0x08);
+}
+
+#[test]
+fn reference_offset_uses_target_minus_displacement() {
+    let limits = Limits::default();
+    let mut reference = Bitmap::blank(4, 4, &limits).expect("reference");
+    reference.set_pixel(0, 1, true).expect("set");
+    assert!(sample_reference(
+        &reference,
+        2,
+        1,
+        TemplateOffset::ZERO,
+        RefinementParameters {
+            reference_dx: 2,
+            reference_dy: 0,
+        }
+    ));
+    assert!(!sample_reference(
+        &reference,
+        2,
+        1,
+        TemplateOffset::ZERO,
+        RefinementParameters {
+            reference_dx: -2,
+            reference_dy: 0,
+        }
+    ));
+}
+
+#[test]
+fn tpgr_predicts_only_uniform_reference_neighbourhoods() {
+    let limits = Limits::default();
+    let zeros = Bitmap::blank(3, 3, &limits).expect("zeros");
+    assert_eq!(
+        refinement_prediction(
+            &zeros,
+            1,
+            1,
+            RefinementParameters {
+                reference_dx: 0,
+                reference_dy: 0
+            }
+        ),
+        Some(false)
+    );
+
+    let ones = Bitmap::filled(3, 3, true, &limits).expect("ones");
+    assert_eq!(
+        refinement_prediction(
+            &ones,
+            1,
+            1,
+            RefinementParameters {
+                reference_dx: 0,
+                reference_dy: 0
+            }
+        ),
+        Some(true)
+    );
+    assert_eq!(
+        refinement_prediction(
+            &ones,
+            0,
+            0,
+            RefinementParameters {
+                reference_dx: 0,
+                reference_dy: 0
+            }
+        ),
+        None,
+        "out-of-bounds zeroes prevent edge all-one prediction"
+    );
+}
+
+#[test]
+fn tpgr_skips_only_predictable_pixels() {
+    let limits = Limits::default();
+    let reference = Bitmap::blank(3, 1, &limits).expect("reference");
+    let mut target = Bitmap::blank(3, 1, &limits).expect("target");
+    let mut decisions = VecDeque::from(vec![1]);
+    let mut contexts = Vec::new();
+    decode_refinement_with_callback(
+        &mut target,
+        &reference,
+        RefinementTemplate::Template1,
+        [TemplateOffset::ZERO; 2],
+        true,
+        RefinementParameters {
+            reference_dx: 0,
+            reference_dy: 0,
+        },
+        |context| {
+            contexts.push(context);
+            decisions
+                .pop_front()
+                .ok_or(GenericRegionError::RowCountMismatch {
+                    expected: 1,
+                    actual: 0,
+                })
+        },
+    )
+    .expect("uniform zero reference predicts every pixel");
+    assert_eq!(contexts, vec![0x08]);
+    assert!(target.bytes().iter().all(|byte| *byte == 0));
+}
+
+#[test]
+fn arithmetic_marker_validation_is_bounded_and_strict() {
+    assert!(validate_arithmetic_terminator(&[0x12, 0xff, 0xac]).is_ok());
+    assert!(matches!(
+        validate_arithmetic_terminator(&[0xff, 0x90, 0xff, 0xac]),
+        Err(GenericRegionError::UnexpectedArithmeticMarker { .. })
+    ));
+    assert!(matches!(
+        validate_arithmetic_terminator(&[0x12, 0xff]),
+        Err(GenericRegionError::InvalidArithmeticTerminator)
+    ));
+}
+
+#[test]
+fn specialized_generic_kernels_match_scalar_oracle_randomized() {
+    let limits = Limits::default();
+    let templates = [
+        GenericTemplate::Template0,
+        GenericTemplate::Template1,
+        GenericTemplate::Template2,
+        GenericTemplate::Template3,
+    ];
+    let prior_offsets = [
+        TemplateOffset::new(-1, 0),
+        TemplateOffset::new(-4, 0),
+        TemplateOffset::new(-7, -1),
+        TemplateOffset::new(3, -1),
+        TemplateOffset::new(7, -2),
+    ];
+    let mut state = 0x8d26_4f31_ba90_75ce;
+    for case in 0..96_u32 {
+        let template = templates[case as usize % templates.len()];
+        let variant = case / u32::try_from(templates.len()).expect("four templates");
+        let extended = template == GenericTemplate::Template0 && variant & 1 != 0;
+        let width = 1 + next_random(&mut state) % 41;
+        let height = 1 + next_random(&mut state) % 23;
+        let rows = next_random(&mut state) % (height + 1);
+        let typical = variant & 2 != 0;
+        let mut adaptive = generic_header(width, height, template, extended, typical).adaptive;
+        let adaptive_count = match (template, extended) {
+            (GenericTemplate::Template0, true) => 12,
+            (GenericTemplate::Template0, false) => 4,
+            _ => 1,
+        };
+        if variant & 8 != 0 {
+            for offset in adaptive.iter_mut().take(adaptive_count) {
+                *offset = prior_offsets[next_random(&mut state) as usize % prior_offsets.len()];
+            }
+        }
+        let skip = (variant & 4 != 0).then(|| random_bitmap(width, height, &mut state));
+        let coded = arithmetic_bytes(&mut state);
+        let mut optimized_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+        let mut oracle_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+        let mut optimized_contexts =
+            vec![ArithmeticContext::new(); generic_context_count(template)];
+        let mut oracle_contexts = optimized_contexts.clone();
+        let mut optimized = Bitmap::blank(width, height, &limits).expect("bitmap");
+        let mut oracle = Bitmap::blank(width, height, &limits).expect("bitmap");
+
+        decode_generic_with(
+            &mut optimized,
+            rows,
+            template,
+            extended,
+            &adaptive,
+            typical,
+            skip.as_ref(),
+            &mut optimized_decoder,
+            &mut optimized_contexts,
+        )
+        .expect("optimized decode");
+        decode_generic_with_oracle(
+            &mut oracle,
+            rows,
+            template,
+            extended,
+            &adaptive,
+            typical,
+            skip.as_ref(),
+            &mut oracle_decoder,
+            &mut oracle_contexts,
+        )
+        .expect("oracle decode");
+
+        assert_eq!(optimized, oracle, "bitmap mismatch in case {case}");
+        assert_eq!(
+            optimized_contexts, oracle_contexts,
+            "context mismatch in case {case}"
+        );
+        assert_decoder_state_eq(&optimized_decoder, &oracle_decoder);
+    }
+}
+
+#[test]
+fn word_template0_matches_byte_oracle_exhaustive_row_shapes() {
+    let mut state = 0x942d_63a1_b806_f75c;
+    for width in 0..=97_u32 {
+        for height in 0..=6_u32 {
+            for rows in 0..=height {
+                for mode in 0..4_u32 {
+                    let extended = mode & 1 != 0;
+                    let typical = mode & 2 != 0;
+                    let coded = arithmetic_bytes(&mut state);
+                    assert_word_template0_parity(width, height, rows, extended, typical, &coded);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn word_template0_matches_byte_oracle_randomized() {
+    let mut state = 0x16cb_78d2_4af9_035e;
+    for case in 0..256_u32 {
+        let width = next_random(&mut state) % 258;
+        let height = next_random(&mut state) % 19;
+        let rows = if height == 0 {
+            0
+        } else {
+            next_random(&mut state) % (height + 1)
+        };
+        let extended = case & 1 != 0;
+        let typical = case & 2 != 0;
+        let coded = arithmetic_bytes(&mut state);
+        assert_word_template0_parity(width, height, rows, extended, typical, &coded);
+    }
+}
+
+#[test]
+fn word_template0_matches_byte_oracle_on_entropy_error() {
+    for coded in [
+        vec![0x00, 0xff, 0xac],
+        vec![0x7f, 0x00, 0xff, 0xac],
+        vec![0x01, 0x02, 0x03, 0xff, 0xac],
+    ] {
+        assert_word_template0_parity(97, 11, 11, false, true, &coded);
+    }
+}
+
+#[test]
+fn direct_bitmap_matches_owned_region_exhaustive_widths() {
+    let limits = Limits::default();
+    let mut state = 0xa314_6d29_8bf0_c572;
+    for width in 1..=65_u32 {
+        for height in 1..=4_u32 {
+            for typical in [false, true] {
+                let coded = arithmetic_bytes(&mut state);
+                let payload = arithmetic_segment_payload(width, height, typical, &coded);
+                let mut scratch = MmrScratch::default();
+                let owned =
+                    decode_generic_region_segment_reused(&payload, false, &limits, &mut scratch)
+                        .expect("owned decode");
+                let mut direct = Bitmap::blank(width, height, &limits).expect("direct target");
+                let metadata =
+                    decode_generic_region_segment_into(&payload, false, &limits, &mut direct)
+                        .expect("direct decode")
+                        .expect("arithmetic route");
+                assert_eq!(direct, owned.bitmap);
+                assert_eq!(metadata.decoded_rows, owned.decoded_rows);
+                assert_eq!(metadata.consumed_bytes, owned.consumed_bytes);
+            }
+        }
+    }
+}
+
+#[test]
+fn direct_bitmap_matches_owned_unknown_rows_randomized() {
+    let limits = Limits::default();
+    let mut state = 0x4bc7_9da2_105e_f638;
+    for case in 0..128_u32 {
+        let width = 1 + next_random(&mut state) % 129;
+        let height = 1 + next_random(&mut state) % 17;
+        let rows = next_random(&mut state) % (height + 1);
+        let typical = case & 1 != 0;
+        let mut coded = arithmetic_bytes(&mut state);
+        coded.extend_from_slice(&rows.to_be_bytes());
+        let payload = arithmetic_segment_payload(width, height, typical, &coded);
+        let mut scratch = MmrScratch::default();
+        let owned = decode_generic_region_segment_reused(&payload, true, &limits, &mut scratch)
+            .expect("owned unknown-height decode");
+        let mut direct = Bitmap::blank(width, height, &limits).expect("direct target");
+        let metadata = decode_generic_region_segment_into(&payload, true, &limits, &mut direct)
+            .expect("direct unknown-height decode")
+            .expect("arithmetic route");
+        assert_eq!(direct, owned.bitmap);
+        assert_eq!(metadata.decoded_rows, rows);
+        assert_eq!(metadata.consumed_bytes, owned.consumed_bytes);
+    }
+}
+
+#[test]
+fn direct_bitmap_preserves_error_and_memory_limit_classification() {
+    let width = 97;
+    let height = 11;
+    let limits = Limits::default();
+    for coded in [
+        vec![0x00, 0xff, 0xac],
+        vec![0x7f, 0x00, 0xff, 0xac],
+        vec![0x01, 0x02, 0x03, 0xff, 0xac],
+    ] {
+        let payload = arithmetic_segment_payload(width, height, false, &coded);
+        let mut scratch = MmrScratch::default();
+        let owned = decode_generic_region_segment_reused(&payload, false, &limits, &mut scratch);
+        let mut direct = Bitmap::blank(width, height, &limits).expect("direct target");
+        let direct = decode_generic_region_segment_into(&payload, false, &limits, &mut direct);
+        assert_eq!(
+            owned.as_ref().err().map(ToString::to_string),
+            direct.as_ref().err().map(ToString::to_string)
+        );
+    }
+
+    let mut state = 0x18e5_a720_64bc_93df;
+    let coded = arithmetic_bytes(&mut state);
+    let payload = arithmetic_segment_payload(width, height, false, &coded);
+    let bitmap_bytes = bitmap_storage_bytes(width, height).expect("bitmap bytes");
+    let context_bytes = context_storage_bytes(generic_context_count(GenericTemplate::Template0))
+        .expect("context bytes");
+    let limited = Limits {
+        max_decoder_managed_memory_bytes: context_bytes + bitmap_bytes - 1,
+        ..limits
+    };
+    let mut scratch = MmrScratch::default();
+    let owned = decode_generic_region_segment_reused(&payload, false, &limited, &mut scratch);
+    let mut direct = Bitmap::blank(width, height, &limits).expect("preallocated target");
+    let direct = decode_generic_region_segment_into(&payload, false, &limited, &mut direct);
+    assert_eq!(
+        owned.as_ref().err().map(ToString::to_string),
+        direct.as_ref().err().map(ToString::to_string)
+    );
+}
+
+#[test]
+fn row_ring_preserves_continuous_decoder_and_retained_context_state() {
+    let limits = Limits::default();
+    let coded = arithmetic_bytes(&mut 0xb47e_93d0_2c51_a86f);
+    let mut ring_decoder = ArithmeticDecoder::new(&coded).expect("ring decoder");
+    let mut word_decoder = ArithmeticDecoder::new(&coded).expect("word decoder");
+    let mut byte_decoder = ArithmeticDecoder::new(&coded).expect("byte decoder");
+    let mut ring_contexts =
+        vec![ArithmeticContext::new(); generic_context_count(GenericTemplate::Template0)];
+    let mut word_contexts = ring_contexts.clone();
+    let mut byte_contexts = ring_contexts.clone();
+
+    for (width, height, rows, typical) in [(31, 5, 5, true), (65, 7, 4, false), (9, 3, 3, true)] {
+        let header = generic_header(width, height, GenericTemplate::Template0, false, typical);
+        let mut ring_bitmap = Bitmap::blank(width, height, &limits).expect("ring bitmap");
+        let mut word_bitmap = Bitmap::blank(width, height, &limits).expect("word bitmap");
+        let mut byte_bitmap = Bitmap::blank(width, height, &limits).expect("byte bitmap");
+        let mut ring = GenericRowRing::try_new(width, rows, u64::MAX).expect("row ring");
+        let mut raster = GenericWordRaster::try_new(width, height).expect("word raster");
+
+        decode_nominal_template0_row_ring(
+            &mut ring,
+            &mut ring_bitmap,
+            rows,
+            typical,
+            &mut ring_decoder,
+            &mut ring_contexts,
+        )
+        .expect("row-ring decode");
+        decode_nominal_template0_words(
+            &mut raster,
+            rows,
+            typical,
+            &mut word_decoder,
+            &mut word_contexts,
+        )
+        .expect("word decode");
+        raster
+            .materialize(&mut word_bitmap)
+            .expect("word materialization");
+        decode_generic_with_oracle(
+            &mut byte_bitmap,
+            rows,
+            GenericTemplate::Template0,
+            false,
+            &header.adaptive,
+            typical,
+            None,
+            &mut byte_decoder,
+            &mut byte_contexts,
+        )
+        .expect("byte decode");
+
+        assert_eq!(ring_bitmap, byte_bitmap);
+        assert_eq!(word_bitmap, byte_bitmap);
+        assert_eq!(ring_contexts, byte_contexts);
+        assert_eq!(word_contexts, byte_contexts);
+        assert_decoder_state_eq(&ring_decoder, &byte_decoder);
+        assert_decoder_state_eq(&word_decoder, &byte_decoder);
+    }
+}
+
+#[test]
+fn nominal_template0_skip_uses_exact_byte_fallback() {
+    let limits = Limits::default();
+    let width = 67;
+    let height = 8;
+    let rows = 5;
+    let header = generic_header(width, height, GenericTemplate::Template0, false, true);
+    let mut state = 0xe534_18af_92c7_60bd;
+    let coded = arithmetic_bytes(&mut state);
+    let skip = random_bitmap(width, height, &mut state);
+    let mut routed_decoder = ArithmeticDecoder::new(&coded).expect("routed decoder");
+    let mut oracle_decoder = ArithmeticDecoder::new(&coded).expect("oracle decoder");
+    let mut routed_contexts =
+        GenericContexts::new(GenericTemplate::Template0, false, &limits).expect("contexts");
+    let mut oracle_contexts = routed_contexts.contexts.clone();
+    let mut work = 0;
+    let routed = decode_generic_on(
+        &mut routed_decoder,
+        &mut routed_contexts,
+        GenericArithmeticCall {
+            width,
+            height,
+            adaptive: header.adaptive,
+            typical_prediction: true,
+            skip: Some(&skip),
+        },
+        rows,
+        &limits,
+        &mut work,
+    )
+    .expect("fallback decode");
+    let mut oracle = Bitmap::blank(width, height, &limits).expect("oracle bitmap");
+    decode_generic_with_oracle(
+        &mut oracle,
+        rows,
+        GenericTemplate::Template0,
+        false,
+        &header.adaptive,
+        true,
+        Some(&skip),
+        &mut oracle_decoder,
+        &mut oracle_contexts,
+    )
+    .expect("oracle decode");
+
+    assert_eq!(routed, oracle);
+    assert_eq!(routed_contexts.contexts, oracle_contexts);
+    assert_decoder_state_eq(&routed_decoder, &oracle_decoder);
+    assert_eq!(
+        work,
+        generic_work(width, rows, true).expect("expected work")
+    );
+}
+
+#[test]
+fn row_ring_peak_is_charged_released_and_low_memory_falls_back() {
+    let width = 33;
+    let height = 100;
+    let context_bytes = context_storage_bytes(generic_context_count(GenericTemplate::Template0))
+        .expect("context bytes");
+    let bitmap_bytes = bitmap_storage_bytes(width, height).expect("bitmap bytes");
+    let row_bytes = row_ring_storage_bytes(width, height).expect("row bytes");
+    let raster_bytes = word_raster_storage_bytes(width, height).expect("word bytes");
+    assert_eq!(bitmap_bytes, 500);
+    assert_eq!(row_bytes, 24);
+    assert_eq!(raster_bytes, 800);
+    assert!(row_bytes < raster_bytes);
+
+    let fallback_limits = Limits {
+        max_decoder_managed_memory_bytes: context_bytes + bitmap_bytes,
+        ..Limits::default()
+    };
+    assert!(!row_ring_fits_managed_memory(
+        width,
+        height,
+        context_bytes,
+        bitmap_bytes,
+        &fallback_limits,
+    )
+    .expect("peak check"));
+    let mut ring_limits = fallback_limits;
+    ring_limits.max_decoder_managed_memory_bytes += row_bytes;
+    assert!(
+        row_ring_fits_managed_memory(width, height, context_bytes, bitmap_bytes, &ring_limits,)
+            .expect("peak check")
+    );
+    let ring_charge =
+        GenericRowRing::try_new(width, height, row_bytes).expect("exact charged capacity");
+    assert_eq!(ring_charge.charged_bytes, row_bytes);
+    drop(ring_charge);
+
+    let header = generic_header(width, height, GenericTemplate::Template0, false, true);
+    let coded = arithmetic_bytes(&mut 0x52c7_f931_0bae_846d);
+    let mut fallback_decoder = ArithmeticDecoder::new(&coded).expect("fallback decoder");
+    let mut ring_decoder = ArithmeticDecoder::new(&coded).expect("ring decoder");
+    let mut fallback_contexts =
+        GenericContexts::new(GenericTemplate::Template0, false, &fallback_limits)
+            .expect("fallback contexts");
+    let mut ring_contexts = GenericContexts::new(GenericTemplate::Template0, false, &ring_limits)
+        .expect("ring contexts");
+    let call = GenericArithmeticCall {
+        width,
+        height,
+        adaptive: header.adaptive,
+        typical_prediction: true,
+        skip: None,
+    };
+    let mut fallback_work = 0;
+    let mut ring_work = 0;
+    let fallback = decode_generic_on(
+        &mut fallback_decoder,
+        &mut fallback_contexts,
+        call,
+        height,
+        &fallback_limits,
+        &mut fallback_work,
+    )
+    .expect("byte fallback");
+    let ring = decode_generic_on(
+        &mut ring_decoder,
+        &mut ring_contexts,
+        call,
+        height,
+        &ring_limits,
+        &mut ring_work,
+    )
+    .expect("row-ring route");
+    assert_eq!(ring, fallback);
+    assert_eq!(ring_contexts.contexts, fallback_contexts.contexts);
+    assert_decoder_state_eq(&ring_decoder, &fallback_decoder);
+    assert_eq!(ring_work, fallback_work);
+}
+
+#[test]
+fn specialized_refinement_kernels_match_scalar_oracle_randomized() {
+    let limits = Limits::default();
+    let mut state = 0x71e4_c09b_325d_a86f;
+    for case in 0..96_u32 {
+        let template = if case & 1 == 0 {
+            RefinementTemplate::Template0
+        } else {
+            RefinementTemplate::Template1
+        };
+        let width = 1 + next_random(&mut state) % 37;
+        let height = 1 + next_random(&mut state) % 21;
+        let reference_width = 1 + next_random(&mut state) % 43;
+        let reference_height = 1 + next_random(&mut state) % 25;
+        let reference = random_bitmap(reference_width, reference_height, &mut state);
+        let adaptive = if case & 8 == 0 {
+            [TemplateOffset::new(-1, -1); 2]
+        } else {
+            let target = [
+                TemplateOffset::new(-1, 0),
+                TemplateOffset::new(-5, -1),
+                TemplateOffset::new(4, -2),
+            ][next_random(&mut state) as usize % 3];
+            let reference = TemplateOffset::new(
+                i32::try_from(next_random(&mut state) % 11).expect("bounded") - 5,
+                i32::try_from(next_random(&mut state) % 7).expect("bounded") - 3,
+            );
+            [target, reference]
+        };
+        let parameters = RefinementParameters {
+            reference_dx: i32::try_from(next_random(&mut state) % 9).expect("bounded") - 4,
+            reference_dy: i32::try_from(next_random(&mut state) % 7).expect("bounded") - 3,
+        };
+        let typical = case & 2 != 0;
+        let coded = arithmetic_bytes(&mut state);
+        let mut optimized_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+        let mut oracle_decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+        let mut optimized_contexts =
+            vec![ArithmeticContext::new(); refinement_context_count(template)];
+        let mut oracle_contexts = optimized_contexts.clone();
+        let mut optimized = Bitmap::blank(width, height, &limits).expect("bitmap");
+        let mut oracle = Bitmap::blank(width, height, &limits).expect("bitmap");
+
+        decode_refinement_with(
+            &mut optimized,
+            &reference,
+            template,
+            adaptive,
+            typical,
+            parameters,
+            &mut optimized_decoder,
+            &mut optimized_contexts,
+        )
+        .expect("optimized decode");
+        decode_refinement_with_oracle(
+            &mut oracle,
+            &reference,
+            template,
+            adaptive,
+            typical,
+            parameters,
+            &mut oracle_decoder,
+            &mut oracle_contexts,
+        )
+        .expect("oracle decode");
+
+        assert_eq!(optimized, oracle, "bitmap mismatch in case {case}");
+        assert_eq!(
+            optimized_contexts, oracle_contexts,
+            "context mismatch in case {case}"
+        );
+        assert_decoder_state_eq(&optimized_decoder, &oracle_decoder);
+    }
+}
+
+#[test]
+#[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+fn benchmark_specialized_generic_kernels_against_44a2b6e_oracle() {
+    let limits = Limits::default();
+    let width = 768;
+    let height = 384;
+    let coded = {
+        let mut bytes = vec![0x55; 48_000];
+        bytes.extend_from_slice(&ARITHMETIC_TERMINATOR);
+        bytes
+    };
+    for template in [
+        GenericTemplate::Template0,
+        GenericTemplate::Template1,
+        GenericTemplate::Template2,
+        GenericTemplate::Template3,
+    ] {
+        let header = generic_header(width, height, template, false, true);
+        let mut optimized_times = Vec::new();
+        let mut oracle_times = Vec::new();
+        for sample in 0..11 {
+            let run = |optimized: bool| {
+                let mut bitmap = Bitmap::blank(width, height, &limits).expect("bitmap");
+                let mut decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+                let mut contexts = vec![ArithmeticContext::new(); generic_context_count(template)];
+                let start = Instant::now();
+                if optimized {
+                    decode_generic_with(
+                        &mut bitmap,
+                        height,
+                        template,
+                        false,
+                        &header.adaptive,
+                        true,
+                        None,
+                        &mut decoder,
+                        &mut contexts,
+                    )
+                    .expect("optimized decode");
+                } else {
+                    decode_generic_with_oracle(
+                        &mut bitmap,
+                        height,
+                        template,
+                        false,
+                        &header.adaptive,
+                        true,
+                        None,
+                        &mut decoder,
+                        &mut contexts,
+                    )
+                    .expect("oracle decode");
+                }
+                let elapsed = start.elapsed();
+                black_box((bitmap, contexts, decoder));
+                elapsed
+            };
+            if sample & 1 == 0 {
+                optimized_times.push(run(true));
+                oracle_times.push(run(false));
+            } else {
+                oracle_times.push(run(false));
+                optimized_times.push(run(true));
+            }
+        }
+        let optimized = median_duration(optimized_times);
+        let oracle = median_duration(oracle_times);
+        println!(
+            "generic_{template:?} scalar_44a2b6e_median_ns={} specialized_median_ns={} speedup={:.3}",
+            oracle.as_nanos(),
+            optimized.as_nanos(),
+            oracle.as_secs_f64() / optimized.as_secs_f64(),
+        );
+    }
+}
+
+#[test]
+#[ignore = "microbenchmark; run explicitly with --release --ignored --nocapture"]
+fn benchmark_specialized_refinement_kernels_against_44a2b6e_oracle() {
+    let limits = Limits::default();
+    let width = 512;
+    let height = 384;
+    let mut state = 0x914a_d27c_650e_b83f;
+    let reference = random_bitmap(width + 5, height + 3, &mut state);
+    let coded = {
+        let mut bytes = vec![0x35; 32_000];
+        bytes.extend_from_slice(&ARITHMETIC_TERMINATOR);
+        bytes
+    };
+    for template in [RefinementTemplate::Template0, RefinementTemplate::Template1] {
+        let adaptive = [TemplateOffset::new(-1, -1), TemplateOffset::new(-1, -1)];
+        let parameters = RefinementParameters {
+            reference_dx: -2,
+            reference_dy: 1,
+        };
+        let mut optimized_times = Vec::new();
+        let mut oracle_times = Vec::new();
+        for sample in 0..11 {
+            let run = |optimized: bool| {
+                let mut bitmap = Bitmap::blank(width, height, &limits).expect("bitmap");
+                let mut decoder = ArithmeticDecoder::new(&coded).expect("decoder");
+                let mut contexts =
+                    vec![ArithmeticContext::new(); refinement_context_count(template)];
+                let start = Instant::now();
+                if optimized {
+                    decode_refinement_with(
+                        &mut bitmap,
+                        &reference,
+                        template,
+                        adaptive,
+                        true,
+                        parameters,
+                        &mut decoder,
+                        &mut contexts,
+                    )
+                    .expect("optimized decode");
+                } else {
+                    decode_refinement_with_oracle(
+                        &mut bitmap,
+                        &reference,
+                        template,
+                        adaptive,
+                        true,
+                        parameters,
+                        &mut decoder,
+                        &mut contexts,
+                    )
+                    .expect("oracle decode");
+                }
+                let elapsed = start.elapsed();
+                black_box((bitmap, contexts, decoder));
+                elapsed
+            };
+            if sample & 1 == 0 {
+                optimized_times.push(run(true));
+                oracle_times.push(run(false));
+            } else {
+                oracle_times.push(run(false));
+                optimized_times.push(run(true));
+            }
+        }
+        let optimized = median_duration(optimized_times);
+        let oracle = median_duration(oracle_times);
+        println!(
+            "refinement_{template:?} scalar_44a2b6e_median_ns={} specialized_median_ns={} speedup={:.3}",
+            oracle.as_nanos(),
+            optimized.as_nanos(),
+            oracle.as_secs_f64() / optimized.as_secs_f64(),
+        );
+    }
+}
+
+#[test]
+fn generic_arithmetic_session_preserves_contexts_and_stream() {
+    const ANNEX_H_ENCODED: [u8; 30] = [
+        0x84, 0xc7, 0x3b, 0xfc, 0xe1, 0xa1, 0x43, 0x04, 0x02, 0x20, 0x00, 0x00, 0x41, 0x0d, 0xbb,
+        0x86, 0xf4, 0x31, 0x7f, 0xff, 0x88, 0xff, 0x37, 0x47, 0x1a, 0xdb, 0x6a, 0xdf, 0xff, 0xac,
+    ];
+    let limits = Limits::default();
+    let header = generic_header(4, 1, GenericTemplate::Template3, false, false);
+    let call = GenericArithmeticCall {
+        width: 4,
+        height: 1,
+        adaptive: header.adaptive,
+        typical_prediction: false,
+        skip: None,
+    };
+    let mut session =
+        GenericArithmeticSession::new(&ANNEX_H_ENCODED, GenericTemplate::Template3, false, &limits)
+            .expect("session");
+
+    let first = session.decode_bitmap(call).expect("first bitmap");
+    let first_state = session.contexts.contexts[0];
+    let first_position = session.consumed_byte_offset();
+    let second = session.decode_bitmap(call).expect("second bitmap");
+    let second_state = session.contexts.contexts[0];
+    let second_position = session.consumed_byte_offset();
+
+    assert!(first.bytes().iter().all(|byte| *byte == 0));
+    assert!(second.bytes().iter().all(|byte| *byte == 0));
+    assert_ne!(
+        first_state, second_state,
+        "the second call must reuse, not reset, context zero"
+    );
+    assert!(
+        second_position >= first_position,
+        "the continuous stream cannot move backwards"
+    );
+    assert_eq!(session.validate_final_marker().expect("marker"), 28);
+}
+
+#[test]
+fn generic_arithmetic_session_stays_bounded_at_observed_marker() {
+    let limits = Limits::default();
+    let header = generic_header(1, 1, GenericTemplate::Template3, false, false);
+    let call = GenericArithmeticCall {
+        width: 1,
+        height: 1,
+        adaptive: header.adaptive,
+        typical_prediction: false,
+        skip: None,
+    };
+    let mut session =
+        GenericArithmeticSession::new(&[0xff, 0xac], GenericTemplate::Template3, false, &limits)
+            .expect("marker-fill session");
+
+    let state_before = session.contexts.contexts[0];
+    session.decode_bitmap(call).expect("first bitmap");
+    let state_after_first = session.contexts.contexts[0];
+    session.decode_bitmap(call).expect("second bitmap");
+    let state_after_second = session.contexts.contexts[0];
+
+    assert_ne!(state_before, state_after_first);
+    assert_ne!(state_after_first, state_after_second);
+    assert_eq!(session.observed_marker_offset(), Some(0));
+    assert_eq!(session.consumed_byte_offset(), 0);
+    assert_eq!(session.validate_final_marker().expect("bounded marker"), 0);
+}
+
+#[test]
+fn generic_arithmetic_session_charges_work_cumulatively() {
+    let limits = Limits {
+        max_work_units: 20,
+        ..Limits::default()
+    };
+    let header = generic_header(1, 1, GenericTemplate::Template3, false, false);
+    let call = GenericArithmeticCall {
+        width: 1,
+        height: 1,
+        adaptive: header.adaptive,
+        typical_prediction: false,
+        skip: None,
+    };
+    let mut session =
+        GenericArithmeticSession::new(&[0xff, 0xac], GenericTemplate::Template3, false, &limits)
+            .expect("session");
+    session.decode_bitmap(call).expect("first call costs 17");
+    assert!(matches!(
+        session.decode_bitmap(call),
+        Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::Work,
+                limit: 20,
+                actual: 34
+            }
+        )))
+    ));
+}
+
+#[test]
+fn generic_and_refinement_contexts_snapshot_reset_and_restore() {
+    let limits = Limits::default();
+    let header = generic_header(1, 1, GenericTemplate::Template3, false, false);
+    let mut generic =
+        GenericContexts::new(GenericTemplate::Template3, false, &limits).expect("generic contexts");
+    let mut decoder = ArithmeticDecoder::new(&[0xff, 0xac]).expect("bounded decoder");
+    let mut work = 0;
+    decode_generic_on(
+        &mut decoder,
+        &mut generic,
+        GenericArithmeticCall {
+            width: 1,
+            height: 1,
+            adaptive: header.adaptive,
+            typical_prediction: false,
+            skip: None,
+        },
+        1,
+        &limits,
+        &mut work,
+    )
+    .expect("mutate generic contexts");
+    let retained_generic = generic.try_snapshot(&limits).expect("retain generic");
+    let generic_state = generic.contexts[0];
+    generic.reset().expect("reset generic");
+    assert_eq!(generic.contexts[0], ArithmeticContext::new());
+    generic
+        .restore(&retained_generic, &limits)
+        .expect("restore generic");
+    assert_eq!(generic.contexts[0], generic_state);
+
+    let mut incompatible = GenericContexts::new(GenericTemplate::Template2, false, &limits)
+        .expect("same-sized incompatible contexts");
+    assert!(incompatible.restore(&retained_generic, &limits).is_err());
+
+    let mut refinement = RefinementContexts::new(RefinementTemplate::Template1, &limits)
+        .expect("refinement contexts");
+    let reference = Bitmap::blank(1, 1, &limits).expect("reference");
+    decode_refinement_on(
+        &mut decoder,
+        &mut refinement,
+        RefinementArithmeticCall {
+            width: 1,
+            height: 1,
+            adaptive: [TemplateOffset::ZERO; 2],
+            typical_prediction: false,
+        },
+        &reference,
+        RefinementParameters {
+            reference_dx: 0,
+            reference_dy: 0,
+        },
+        &limits,
+        &mut work,
+    )
+    .expect("mutate refinement contexts");
+    let retained_refinement = refinement.try_snapshot(&limits).expect("retain refinement");
+    let refinement_state = refinement.contexts[0];
+    refinement.reset().expect("reset refinement");
+    assert_eq!(refinement.contexts[0], ArithmeticContext::new());
+    refinement
+        .restore(&retained_refinement, &limits)
+        .expect("restore refinement");
+    assert_eq!(refinement.contexts[0], refinement_state);
+
+    let mut retained_limited = limits;
+    retained_limited.max_retained_state_bytes = 0;
+    assert!(matches!(
+        generic.try_snapshot(&retained_limited),
+        Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::RetainedState,
+                ..
+            }
+        )))
+    ));
+
+    let mut allocation_limited = limits;
+    allocation_limited.max_decoder_managed_memory_bytes = 0;
+    assert!(matches!(
+        GenericContexts::new(GenericTemplate::Template3, false, &allocation_limited),
+        Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::Memory,
+                ..
+            }
+        )))
+    ));
+}
+
+fn assert_raw_guard_result(
+    actual: Result<(), GenericRegionError>,
+    expected: Result<(), Option<LimitExceeded>>,
+) {
+    match actual {
+        Ok(()) => assert_eq!(expected, Ok(())),
+        Err(GenericRegionError::Decode(DecodeError::Malformed(
+            MalformedError::IntegerOverflow,
+        ))) => assert_eq!(expected, Err(None)),
+        Err(GenericRegionError::Decode(DecodeError::LimitExceeded(error))) => {
+            assert_eq!(expected, Err(Some(error)));
+        }
+        other => panic!("unexpected raw guard result: {other:?}"),
+    }
+}
+
+#[test]
+fn raw_context_memory_guards_match_wide_arithmetic_and_priority() {
+    let values = [0, 1, 2, u64::MAX / 2, u64::MAX / 2 + 1, u64::MAX];
+    for bytes in values {
+        for retained_limit in values {
+            for memory_limit in values {
+                let limits = Limits {
+                    max_retained_state_bytes: retained_limit,
+                    max_decoder_managed_memory_bytes: memory_limit,
+                    ..Limits::default()
+                };
+                let combined = u128::from(bytes) * 2;
+                let expected = if bytes > retained_limit {
+                    Err(Some(LimitExceeded {
+                        kind: LimitKind::RetainedState,
+                        limit: retained_limit,
+                        actual: bytes,
+                    }))
+                } else if combined > u128::from(u64::MAX) {
+                    Err(None)
+                } else if combined > u128::from(memory_limit) {
+                    Err(Some(LimitExceeded {
+                        kind: LimitKind::Memory,
+                        limit: memory_limit,
+                        actual: u64::try_from(combined).unwrap(),
+                    }))
+                } else {
+                    Ok(())
+                };
+                assert_raw_guard_result(validate_snapshot_limits(bytes, &limits), expected);
+                for bitmap_bytes in values {
+                    let combined = u128::from(bytes) + u128::from(bitmap_bytes);
+                    let expected = if combined > u128::from(u64::MAX) {
+                        Err(None)
+                    } else if combined > u128::from(memory_limit) {
+                        Err(Some(LimitExceeded {
+                            kind: LimitKind::Memory,
+                            limit: memory_limit,
+                            actual: u64::try_from(combined).unwrap(),
+                        }))
+                    } else {
+                        Ok(())
+                    };
+                    assert_raw_guard_result(
+                        enforce_managed_memory(bytes, bitmap_bytes, &limits),
+                        expected,
+                    );
+                }
+            }
+        }
+    }
+    for count in [0, 1, 65_536, usize::MAX / 2, usize::MAX] {
+        let wide = count as u128 * 2;
+        assert_raw_guard_result(
+            context_storage_bytes(count).map(|bytes| assert_eq!(u128::from(bytes), wide)),
+            if wide > u128::from(u64::MAX) {
+                Err(None)
+            } else {
+                Ok(())
+            },
+        );
+    }
+}
+
+#[test]
+fn raw_raster_work_guards_cover_exact_addition_overflow_boundaries() {
+    for (width, rows) in [
+        (0_u32, u32::MAX),
+        (u32::MAX, 0),
+        (1, 1),
+        (65_535, 65_535),
+        (u32::MAX, u32::MAX),
+        (4_294_967_280, 252_645_136),
+        (4_294_967_286, 306_783_379),
+        (4_294_967_285, 186_737_709),
+    ] {
+        for typical in [false, true] {
+            let pixels = u128::from(width) * u128::from(rows);
+            let generic = pixels * 17 + if typical { u128::from(rows) } else { 0 };
+            let refinement = pixels * if typical { 23 } else { 14 } + u128::from(rows);
+            for (is_generic, expected) in [(true, generic), (false, refinement)] {
+                let actual = if is_generic {
+                    generic_work(width, rows, typical)
+                } else {
+                    refinement_work(width, rows, typical)
+                };
+                assert_raw_guard_result(
+                    actual.map(|work| assert_eq!(u128::from(work), expected)),
+                    if expected > u128::from(u64::MAX) {
+                        Err(None)
+                    } else {
+                        Ok(())
+                    },
+                );
+                let work = u64::try_from(expected).unwrap_or(u64::MAX);
+                for limit in [work.saturating_sub(1), work, work.saturating_add(1)] {
+                    let limits = Limits {
+                        max_work_units: limit,
+                        ..Limits::default()
+                    };
+                    let actual = if is_generic {
+                        enforce_generic_work(width, rows, typical, &limits)
+                    } else {
+                        enforce_refinement_work(width, rows, typical, &limits)
+                    };
+                    let result = if expected > u128::from(u64::MAX) {
+                        Err(None)
+                    } else if expected > u128::from(limit) {
+                        Err(Some(LimitExceeded {
+                            kind: LimitKind::Work,
+                            limit,
+                            actual: work,
+                        }))
+                    } else {
+                        Ok(())
+                    };
+                    assert_raw_guard_result(actual, result);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn raw_template_slots_preserve_offsets_planes_and_context_sizes() {
+    for x in [i32::MIN, -1, 0, 1, i32::MAX] {
+        for y in [i32::MIN, -1, 0, 1, i32::MAX] {
+            let generic = generic_slot(x, y);
+            assert_eq!(generic.nominal, TemplateOffset { x, y });
+            assert_eq!(generic.adaptive, None);
+            let target = target_slot(x, y);
+            assert!(matches!(target.plane, RefinementPlane::Target));
+            assert_eq!(target.nominal, TemplateOffset { x, y });
+            assert_eq!(target.adaptive, None);
+            let reference = reference_slot(x, y);
+            assert!(matches!(reference.plane, RefinementPlane::Reference));
+            assert_eq!(reference.nominal, TemplateOffset { x, y });
+            assert_eq!(reference.adaptive, None);
+            for number in [0, 1, 2, u8::MAX] {
+                let generic = generic_at(x, y, number);
+                assert_eq!(generic.nominal, TemplateOffset { x, y });
+                assert_eq!(generic.adaptive, Some(number));
+                let target = target_at(x, y, number);
+                assert!(matches!(target.plane, RefinementPlane::Target));
+                assert_eq!(target.nominal, TemplateOffset { x, y });
+                assert_eq!(target.adaptive, Some(number));
+                let reference = reference_at(x, y, number);
+                assert!(matches!(reference.plane, RefinementPlane::Reference));
+                assert_eq!(reference.nominal, TemplateOffset { x, y });
+                assert_eq!(reference.adaptive, Some(number));
+            }
+        }
+    }
+    for (template, bits, sltp) in [
+        (GenericTemplate::Template0, 16, 0x9b25),
+        (GenericTemplate::Template1, 13, 0x0795),
+        (GenericTemplate::Template2, 10, 0x00e5),
+        (GenericTemplate::Template3, 10, 0x0195),
+    ] {
+        assert_eq!(template.context_bits(), bits);
+        assert_eq!(template.sltp_context(), sltp);
+    }
+    for (template, bits, sltp) in [
+        (RefinementTemplate::Template0, 13, 0x10),
+        (RefinementTemplate::Template1, 10, 0x08),
+    ] {
+        assert_eq!(template.context_bits(), bits);
+        assert_eq!(template.sltp_context(), sltp);
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn raw_refinement_snapshots_preserve_all_states_and_failure_frames() {
+    let limits = Limits::default();
+    for (template, count, code) in [
+        (RefinementTemplate::Template0, 8192, 0),
+        (RefinementTemplate::Template1, 1024, 1),
+    ] {
+        let mut source = RefinementContexts::new(template, &limits).unwrap();
+        for (index, context) in source.contexts.iter_mut().enumerate() {
+            *context = ArithmeticContext::from_state(
+                u8::try_from(index % 47).unwrap(),
+                u8::try_from((index / 47) % 2).unwrap(),
+            )
+            .unwrap();
+        }
+        let bytes = u64::try_from(count).unwrap() * 2;
+        let exact = Limits {
+            max_retained_state_bytes: bytes,
+            max_decoder_managed_memory_bytes: bytes * 2,
+            ..limits
+        };
+        let snapshot = source.try_snapshot(&exact).unwrap();
+        assert_eq!(snapshot.contexts, source.contexts);
+        assert_ne!(snapshot.contexts.as_ptr(), source.contexts.as_ptr());
+        source.reset().unwrap();
+        assert!(source
+            .contexts
+            .iter()
+            .all(|c| *c == ArithmeticContext::new()));
+        source.restore(&snapshot, &exact).unwrap();
+        assert_eq!(source.contexts, snapshot.contexts);
+        assert_eq!(source.storage_bytes, bytes);
+        for target_template in [RefinementTemplate::Template0, RefinementTemplate::Template1] {
+            let mut target = RefinementContexts::new(target_template, &limits).unwrap();
+            target
+                .contexts
+                .fill(ArithmeticContext::from_state(46, 1).unwrap());
+            let before = target.contexts.clone();
+            let result = target.restore(&snapshot, &exact);
+            if target_template == template {
+                result.unwrap();
+                assert_eq!(target.contexts, snapshot.contexts);
+            } else {
+                assert!(matches!(result, Err(GenericRegionError::InvalidFlags(c)) if c == code));
+                assert_eq!(target.contexts, before);
+            }
+        }
+        for (limited, kind, limit, actual) in [
+            (
+                Limits {
+                    max_retained_state_bytes: bytes - 1,
+                    ..exact
+                },
+                LimitKind::RetainedState,
+                bytes - 1,
+                bytes,
+            ),
+            (
+                Limits {
+                    max_decoder_managed_memory_bytes: bytes * 2 - 1,
+                    ..exact
+                },
+                LimitKind::Memory,
+                bytes * 2 - 1,
+                bytes * 2,
+            ),
+        ] {
+            let before = source.contexts.clone();
+            assert_raw_guard_result(
+                source.try_snapshot(&limited).map(|_| ()),
+                Err(Some(LimitExceeded {
+                    kind,
+                    limit,
+                    actual,
+                })),
+            );
+            assert_raw_guard_result(
+                source.restore(&snapshot, &limited),
+                Err(Some(LimitExceeded {
+                    kind,
+                    limit,
+                    actual,
+                })),
+            );
+            assert_eq!(source.contexts, before);
+        }
+        source.contexts.pop();
+        let before = source.contexts.clone();
+        assert!(matches!(source.restore(&snapshot, &exact),
+            Err(GenericRegionError::ContextIndex { index, count: actual })
+                if index == count && actual == count - 1));
+        assert_eq!(source.contexts, before);
+        let mut invalid = RefinementContexts::new(template, &limits)
+            .unwrap()
+            .try_snapshot(&limits)
+            .unwrap();
+        invalid.contexts.pop();
+        assert!(matches!(source.restore(&invalid, &exact),
+            Err(GenericRegionError::ContextIndex { index, count: actual })
+                if index == count && actual == count - 1));
+        assert_eq!(source.contexts, before);
+    }
+    let mut generic = GenericContexts::new(GenericTemplate::Template3, false, &limits).unwrap();
+    let snapshot = generic.try_snapshot(&limits).unwrap();
+    generic.contexts.pop();
+    let before = generic.contexts.clone();
+    assert!(matches!(
+        generic.restore(&snapshot, &limits),
+        Err(GenericRegionError::ContextIndex {
+            index: 1024,
+            count: 1023
+        })
+    ));
+    assert_eq!(generic.contexts, before);
+}
+
+#[test]
+fn raw_context_descriptors_match_literal_sampling_and_history_masks() {
+    let pixels = [
+        [true, false, true, true, false, false, true, false, true],
+        [false, true, false, false, true, true, false, true, false],
+        [true, true, false, true, false, true, true, false, false],
+        [false, false, true, false, true, false, false, true, true],
+    ];
+    let mut bitmap = Bitmap::blank(9, 4, &Limits::default()).unwrap();
+    for (y, row) in pixels.iter().enumerate() {
+        for (x, value) in row.iter().enumerate() {
+            bitmap
+                .set_pixel(u32::try_from(x).unwrap(), u32::try_from(y).unwrap(), *value)
+                .unwrap();
+        }
+    }
+    let offset = TemplateOffset::new(-5, -3);
+    for (descriptor, top, previous, adaptive, history_bits) in [
+        (
+            GenericContextDescriptor::NominalTemplate0,
+            (-2, 5),
+            (-3, 7),
+            false,
+            4,
+        ),
+        (
+            GenericContextDescriptor::NominalTemplate1,
+            (-1, 4),
+            (-2, 6),
+            false,
+            3,
+        ),
+        (
+            GenericContextDescriptor::NominalTemplate2,
+            (-1, 3),
+            (-2, 5),
+            false,
+            2,
+        ),
+        (
+            GenericContextDescriptor::NominalTemplate3,
+            (0, 0),
+            (-3, 6),
+            false,
+            4,
+        ),
+        (
+            GenericContextDescriptor::Template1(offset),
+            (-1, 4),
+            (-2, 5),
+            true,
+            3,
+        ),
+        (
+            GenericContextDescriptor::Template2(offset),
+            (-1, 3),
+            (-2, 4),
+            true,
+            2,
+        ),
+        (
+            GenericContextDescriptor::Template3(offset),
+            (0, 0),
+            (-3, 5),
+            true,
+            4,
+        ),
+    ] {
+        for y in 0..6 {
+            for x in 0..12 {
+                for history in [0, 1, 0x55, usize::MAX] {
+                    let mut expected = 0;
+                    for (row_delta, (left, count)) in [(-2, top), (-1, previous)] {
+                        for column_delta in left..left + count {
+                            let px = i64::from(x) + column_delta;
+                            let py = i64::from(y) + row_delta;
+                            let value = (0..9).contains(&px)
+                                && (0..4).contains(&py)
+                                && pixels[usize::try_from(py).unwrap()]
+                                    [usize::try_from(px).unwrap()];
+                            expected = (expected << 1) | usize::from(value);
+                        }
+                    }
+                    if adaptive {
+                        let px = i64::from(x) - 5;
+                        let py = i64::from(y) - 3;
+                        let value = (0..9).contains(&px)
+                            && (0..4).contains(&py)
+                            && pixels[usize::try_from(py).unwrap()][usize::try_from(px).unwrap()];
+                        expected = (expected << 1) | usize::from(value);
+                    }
+                    expected = (expected << history_bits) | (history & ((1 << history_bits) - 1));
+                    assert_eq!(descriptor.context(&bitmap, x, y, history), expected);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn generic_snapshots_copy_all_states_and_preserve_rejected_targets() {
+    let limits = Limits::default();
+    let templates = [
+        (GenericTemplate::Template0, false, 65_536, 0),
+        (GenericTemplate::Template0, true, 65_536, 0x10),
+        (GenericTemplate::Template1, false, 8_192, 2),
+        (GenericTemplate::Template2, false, 1_024, 4),
+        (GenericTemplate::Template3, false, 1_024, 6),
+    ];
+    for (template, extended, count, code) in templates {
+        let mut source = GenericContexts::new(template, extended, &limits).unwrap();
+        assert_eq!(source.contexts.len(), count);
+        for (index, context) in source.contexts.iter_mut().enumerate() {
+            *context = ArithmeticContext::from_state(
+                u8::try_from(index % 47).unwrap(),
+                u8::try_from(index % 2).unwrap(),
+            )
+            .unwrap();
+        }
+        let bytes = u64::try_from(count).unwrap() * 2;
+        let exact = Limits {
+            max_retained_state_bytes: bytes,
+            max_decoder_managed_memory_bytes: bytes * 2,
+            ..limits
+        };
+        let snapshot = source.try_snapshot(&exact).unwrap();
+        assert_ne!(source.contexts.as_ptr(), snapshot.contexts.as_ptr());
+        assert_eq!(snapshot.storage_bytes, bytes);
+        source.reset().unwrap();
+        assert!(source
+            .contexts
+            .iter()
+            .all(|c| c.state_index() == 0 && c.mps() == 0));
+        for (target_template, target_extended, _, _) in templates {
+            let mut target =
+                GenericContexts::new(target_template, target_extended, &limits).unwrap();
+            target
+                .contexts
+                .fill(ArithmeticContext::from_state(46, 1).unwrap());
+            let result = target.restore(&snapshot, &exact);
+            if (target_template, target_extended) == (template, extended) {
+                result.unwrap();
+                for (index, context) in target.contexts.iter().enumerate() {
+                    assert_eq!(usize::from(context.state_index()), index % 47);
+                    assert_eq!(usize::from(context.mps()), index % 2);
+                }
+            } else {
+                assert!(matches!(result, Err(GenericRegionError::InvalidFlags(c)) if c == code));
+                assert!(target
+                    .contexts
+                    .iter()
+                    .all(|c| c.state_index() == 46 && c.mps() == 1));
+            }
+        }
+        for (limited, kind, limit, actual) in [
+            (
+                Limits {
+                    max_retained_state_bytes: bytes - 1,
+                    ..exact
+                },
+                LimitKind::RetainedState,
+                bytes - 1,
+                bytes,
+            ),
+            (
+                Limits {
+                    max_decoder_managed_memory_bytes: bytes * 2 - 1,
+                    ..exact
+                },
+                LimitKind::Memory,
+                bytes * 2 - 1,
+                bytes * 2,
+            ),
+        ] {
+            assert_raw_guard_result(
+                source.try_snapshot(&limited).map(|_| ()),
+                Err(Some(LimitExceeded {
+                    kind,
+                    limit,
+                    actual,
+                })),
+            );
+            let mut target = GenericContexts::new(template, extended, &limits).unwrap();
+            target
+                .contexts
+                .fill(ArithmeticContext::from_state(46, 1).unwrap());
+            assert_raw_guard_result(
+                target.restore(&snapshot, &limited),
+                Err(Some(LimitExceeded {
+                    kind,
+                    limit,
+                    actual,
+                })),
+            );
+            assert!(target
+                .contexts
+                .iter()
+                .all(|c| c.state_index() == 46 && c.mps() == 1));
+            assert!(source
+                .contexts
+                .iter()
+                .all(|c| c.state_index() == 0 && c.mps() == 0));
+        }
+        for (index, context) in snapshot.contexts.iter().enumerate() {
+            assert_eq!(usize::from(context.state_index()), index % 47);
+            assert_eq!(usize::from(context.mps()), index % 2);
+        }
+    }
+}
+
+#[test]
+fn arithmetic_procedures_interleave_on_one_decoder() {
+    const ANNEX_H_ENCODED: [u8; 30] = [
+        0x84, 0xc7, 0x3b, 0xfc, 0xe1, 0xa1, 0x43, 0x04, 0x02, 0x20, 0x00, 0x00, 0x41, 0x0d, 0xbb,
+        0x86, 0xf4, 0x31, 0x7f, 0xff, 0x88, 0xff, 0x37, 0x47, 0x1a, 0xdb, 0x6a, 0xdf, 0xff, 0xac,
+    ];
+    let limits = Limits::default();
+    let mut decoder = ArithmeticDecoder::new(&ANNEX_H_ENCODED).expect("decoder");
+    let mut integer_contexts = [ArithmeticContext::new(); 512];
+    let first_integer = decoder
+        .decode_integer(&mut integer_contexts)
+        .expect("first integer");
+
+    let header = generic_header(1, 1, GenericTemplate::Template3, false, false);
+    let mut generic =
+        GenericContexts::new(GenericTemplate::Template3, false, &limits).expect("generic contexts");
+    let mut cumulative_work = 0;
+    let generic_bitmap = decode_generic_on(
+        &mut decoder,
+        &mut generic,
+        GenericArithmeticCall {
+            width: 1,
+            height: 1,
+            adaptive: header.adaptive,
+            typical_prediction: false,
+            skip: None,
+        },
+        1,
+        &limits,
+        &mut cumulative_work,
+    )
+    .expect("generic bitmap");
+
+    let second_integer = decoder
+        .decode_integer(&mut integer_contexts)
+        .expect("second integer");
+
+    let reference = Bitmap::blank(1, 1, &limits).expect("reference");
+    let mut refinement = RefinementContexts::new(RefinementTemplate::Template1, &limits)
+        .expect("refinement contexts");
+    let refined_bitmap = decode_refinement_on(
+        &mut decoder,
+        &mut refinement,
+        RefinementArithmeticCall {
+            width: 1,
+            height: 1,
+            adaptive: [TemplateOffset::ZERO; 2],
+            typical_prediction: false,
+        },
+        &reference,
+        RefinementParameters {
+            reference_dx: 0,
+            reference_dy: 0,
+        },
+        &limits,
+        &mut cumulative_work,
+    )
+    .expect("refinement bitmap");
+
+    assert_ne!(first_integer, second_integer);
+    assert!(generic_bitmap.pixel(0, 0).is_some());
+    assert!(refined_bitmap.pixel(0, 0).is_some());
+    assert_eq!(cumulative_work, 32);
+    validate_observed_marker(&decoder, ANNEX_H_ENCODED.len())
+        .expect("any observed marker remains the bounded final marker");
+}
+
+#[test]
+fn unknown_length_arithmetic_count_is_validated() {
+    let limits = Limits::default();
+    let data = [0x12, 0xff, 0xac, 0, 0, 0, 3, 0xde, 0xad];
+    let terminal = split_unknown_length_data(&data, false, 4, &limits).expect("terminal");
+    assert_eq!(terminal.coded, &[0x12, 0xff, 0xac]);
+    assert_eq!(terminal.rows, 3);
+    assert_eq!(terminal.consumed, 7);
+
+    let too_many = [0xff, 0xac, 0, 0, 0, 5];
+    assert!(matches!(
+        split_unknown_length_data(&too_many, false, 4, &limits),
+        Err(GenericRegionError::Decode(DecodeError::Malformed(
+            MalformedError::GenericRegionRowCount {
+                declared: 4,
+                actual: 5
+            }
+        )))
+    ));
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn generic_preflight_errors_preserve_stream_statistics_work_and_direct_bytes() {
+    let limits = Limits::default();
+    let header = generic_header(9, 2, GenericTemplate::Template3, false, false);
+    let coded = [0xff, 0xac];
+    for direct in [false, true] {
+        for case in 0..4 {
+            let rows = if case == 0 { 3 } else { 1 };
+            let initial = if case == 1 { u64::MAX } else { 11 };
+            let limited = match case {
+                2 => Limits {
+                    max_work_units: 163,
+                    ..limits
+                },
+                3 => Limits {
+                    max_decoder_managed_memory_bytes: 2051,
+                    ..limits
+                },
+                _ => limits,
+            };
+            let mut decoder = ArithmeticDecoder::new(&coded).unwrap();
+            let mut contexts =
+                GenericContexts::new(GenericTemplate::Template3, false, &limits).unwrap();
+            let mut work = initial;
+            let mut target = Bitmap::filled(9, 2, true, &limits).unwrap();
+            let call = GenericArithmeticCall {
+                width: 9,
+                height: 2,
+                adaptive: header.adaptive,
+                typical_prediction: false,
+                skip: None,
+            };
+            let result = if direct {
+                decode_generic_on_into(
+                    &mut decoder,
+                    &mut contexts,
+                    call,
+                    rows,
+                    &limited,
+                    &mut work,
+                    &mut target,
+                )
+            } else {
+                decode_generic_on(&mut decoder, &mut contexts, call, rows, &limited, &mut work)
+                    .map(|_| ())
+            };
+            if case == 0 {
+                assert!(matches!(
+                    result,
+                    Err(GenericRegionError::Decode(DecodeError::Malformed(
+                        MalformedError::GenericRegionRowCount {
+                            declared: 2,
+                            actual: 3
+                        }
+                    )))
+                ));
+            } else {
+                let expected = match case {
+                    1 => None,
+                    2 => Some(LimitExceeded {
+                        kind: LimitKind::Work,
+                        limit: 163,
+                        actual: 164,
+                    }),
+                    3 => Some(LimitExceeded {
+                        kind: LimitKind::Memory,
+                        limit: 2051,
+                        actual: 2052,
+                    }),
+                    _ => unreachable!(),
+                };
+                assert_raw_guard_result(result, Err(expected));
+            }
+            assert_eq!(work, initial);
+            assert_eq!(target.bytes(), &[0xff, 0x80, 0xff, 0x80]);
+            assert!(contexts
+                .contexts
+                .iter()
+                .all(|c| c.state_index() == 0 && c.mps() == 0));
+            assert_decoder_state_eq(&decoder, &ArithmeticDecoder::new(&coded).unwrap());
+        }
+    }
+    for (width, height) in [(8, 2), (9, 3)] {
+        let skip = Bitmap::blank(width, height, &limits).unwrap();
+        assert!(matches!(
+            decode_arithmetic_generic(&coded, &header, 0, Some(&skip), &limits),
+            Err(GenericRegionError::InvalidSkipDimensions)
+        ));
+        let mut decoder = ArithmeticDecoder::new(&coded).unwrap();
+        let mut contexts =
+            GenericContexts::new(GenericTemplate::Template3, false, &limits).unwrap();
+        let mut work = 11;
+        assert!(matches!(
+            decode_generic_on(
+                &mut decoder,
+                &mut contexts,
+                GenericArithmeticCall {
+                    width: 9,
+                    height: 2,
+                    adaptive: header.adaptive,
+                    typical_prediction: false,
+                    skip: Some(&skip),
+                },
+                0,
+                &limits,
+                &mut work,
+            ),
+            Err(GenericRegionError::InvalidSkipDimensions)
+        ));
+        assert_eq!(work, 11);
+        assert_decoder_state_eq(&decoder, &ArithmeticDecoder::new(&coded).unwrap());
+    }
+}
+
+#[test]
+fn known_length_normalization_preserves_zero_row_bitmap_geometry() {
+    let limits = Limits::default();
+    for (template, extended) in [
+        (GenericTemplate::Template0, false),
+        (GenericTemplate::Template0, true),
+        (GenericTemplate::Template1, false),
+        (GenericTemplate::Template2, false),
+        (GenericTemplate::Template3, false),
+    ] {
+        for typical in [false, true] {
+            let header = generic_header(9, 2, template, extended, typical);
+            for coded in [&[0xff][..], &[0x12, 0xff], &[0xff, 0xac]] {
+                let owned = decode_known_length_arithmetic_generic(coded, &header, 0, &limits)
+                    .expect("zero rows require no entropy decisions");
+                let mut direct = Bitmap::blank(9, 2, &limits).unwrap();
+                decode_known_length_arithmetic_generic_into(
+                    coded,
+                    &header,
+                    0,
+                    &limits,
+                    &mut direct,
+                )
+                .expect("zero-row direct decode");
+                for bitmap in [&owned, &direct] {
+                    assert_eq!(bitmap.width(), 9);
+                    assert_eq!(bitmap.height(), 2);
+                    assert_eq!(bitmap.stride(), 2);
+                    assert_eq!(bitmap.bytes(), &[0, 0, 0, 0]);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn known_length_normalization_reports_exact_errors_before_bitmap_mutation() {
+    let limits = Limits::default();
+    let header = generic_header(9, 2, GenericTemplate::Template3, false, false);
+    for coded in [&[][..], &[0], &[0xff, 0], &[0, 0xac]] {
+        let mut direct = Bitmap::filled(9, 2, true, &limits).unwrap();
+        let before = direct.bytes().to_vec();
+        for result in [
+            decode_known_length_arithmetic_generic(coded, &header, 0, &limits).map(|_| ()),
+            decode_known_length_arithmetic_generic_into(coded, &header, 0, &limits, &mut direct),
+        ] {
+            assert!(matches!(
+                result,
+                Err(GenericRegionError::InvalidArithmeticTerminator)
+            ));
+        }
+        assert_eq!(direct.bytes(), before);
+    }
+
+    for (coded, limit, actual) in [(&[0xff][..], 1, 2), (&[0x12, 0xff][..], 2, 3)] {
+        let limited = Limits {
+            max_decoder_managed_memory_bytes: limit,
+            ..limits
+        };
+        let mut direct = Bitmap::filled(9, 2, true, &limits).unwrap();
+        let before = direct.bytes().to_vec();
+        for result in [
+            decode_known_length_arithmetic_generic(coded, &header, 0, &limited).map(|_| ()),
+            decode_known_length_arithmetic_generic_into(coded, &header, 0, &limited, &mut direct),
+        ] {
+            assert!(matches!(
+                result,
+                Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+                    LimitExceeded {
+                        kind: LimitKind::Memory,
+                        limit: observed_limit,
+                        actual: observed_actual,
+                    }
+                ))) if observed_limit == limit && observed_actual == actual
+            ));
+        }
+        assert_eq!(direct.bytes(), before);
+    }
+
+    let context_bytes = 1024 * u64::try_from(std::mem::size_of::<ArithmeticContext>()).unwrap();
+    let limited = Limits {
+        max_decoder_managed_memory_bytes: 2,
+        ..limits
+    };
+    for coded in [&[0xff][..], &[0xff, 0xac]] {
+        let mut direct = Bitmap::filled(9, 2, true, &limits).unwrap();
+        for result in [
+            decode_known_length_arithmetic_generic(coded, &header, 0, &limited).map(|_| ()),
+            decode_known_length_arithmetic_generic_into(coded, &header, 0, &limited, &mut direct),
+        ] {
+            assert!(matches!(
+                result,
+                Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+                    LimitExceeded {
+                        kind: LimitKind::Memory,
+                        limit: 2,
+                        actual,
+                    }
+                ))) if actual == context_bytes
+            ));
+        }
+        assert_eq!(direct.bytes(), &[0xff, 0x80, 0xff, 0x80]);
+    }
+}
+
+#[test]
+fn unknown_length_framing_preserves_count_extent_and_exact_eof_fields() {
+    let limits = Limits::default();
+    for mmr in [false, true] {
+        let marker = if mmr { [0, 0] } else { [0xff, 0xac] };
+        for rows in [0_u32, 1, 0x100, 0x1_0000, 0x100_0000, u32::MAX] {
+            let mut data = vec![0x12, 0x34, marker[0], marker[1]];
+            data.extend_from_slice(&rows.to_be_bytes());
+            data.extend_from_slice(&[0xde, 0xad]);
+            let terminal = split_unknown_length_data(&data, mmr, rows, &limits).unwrap();
+            assert_eq!(terminal.rows, rows);
+            assert_eq!(terminal.consumed, 8);
+            assert_eq!(terminal.coded, &data[..if mmr { 2 } else { 4 }]);
+            if rows != 0 {
+                assert!(matches!(
+                    split_unknown_length_data(&data, mmr, rows - 1, &limits),
+                    Err(GenericRegionError::Decode(DecodeError::Malformed(
+                        MalformedError::GenericRegionRowCount { declared, actual }
+                    ))) if declared == rows - 1 && actual == rows
+                ));
+            }
+        }
+        for count_bytes in 0..4 {
+            let mut truncated = marker.to_vec();
+            truncated.extend_from_slice(&[0; 3][..count_bytes]);
+            assert!(matches!(
+                split_unknown_length_data(&truncated, mmr, 0, &limits),
+                Err(GenericRegionError::Decode(DecodeError::Malformed(
+                    MalformedError::UnexpectedEof {
+                        offset: 2,
+                        needed: 4,
+                        remaining,
+                    }
+                ))) if remaining == u64::try_from(count_bytes).unwrap()
+            ));
+        }
+        for data in [&[][..], &[0x12], &[0x12, marker[0]], &[marker[0], 0x34]] {
+            assert!(matches!(
+                split_unknown_length_data(data, mmr, 0, &limits),
+                Err(GenericRegionError::Decode(DecodeError::Malformed(
+                    MalformedError::MissingGenericRegionTerminator
+                )))
+            ));
+        }
+    }
+}
+
+#[test]
+fn direct_generic_dispatch_declines_unsupported_routes_without_mutation() {
+    let limits = Limits::default();
+    for (mmr, width, height) in [(true, 9, 2), (false, 8, 2), (false, 9, 3)] {
+        let mut payload = region_prefix(9, 2);
+        if mmr {
+            payload.push(1);
+        } else {
+            payload.extend_from_slice(&[6, 2, 0xff]);
+        }
+        for unknown_length in [false, true] {
+            let mut target = Bitmap::filled(width, height, true, &limits).unwrap();
+            let before = target.bytes().to_vec();
+            assert!(decode_generic_region_segment_into(
+                &payload,
+                unknown_length,
+                &limits,
+                &mut target,
+            )
+            .unwrap()
+            .is_none());
+            assert_eq!(target.width(), width);
+            assert_eq!(target.height(), height);
+            assert_eq!(target.bytes(), before);
+        }
+    }
+}
+
+#[test]
+fn zero_row_dispatch_reports_original_not_normalized_input_extent() {
+    let limits = Limits::default();
+    for unknown_length in [false, true] {
+        let height = if unknown_length { 2 } else { 0 };
+        let mut payload = region_prefix(9, height);
+        payload.extend_from_slice(&[6, 2, 0xff]);
+        if unknown_length {
+            payload.extend_from_slice(&[0xff, 0xac, 0, 0, 0, 0, 0xde, 0xad]);
+        } else {
+            payload.push(0xff);
+        }
+        let expected_consumed = if unknown_length { 26 } else { 21 };
+        let owned = decode_generic_region_segment(&payload, unknown_length, &limits).unwrap();
+        let mut direct = Bitmap::blank(9, height, &limits).unwrap();
+        let metadata =
+            decode_generic_region_segment_into(&payload, unknown_length, &limits, &mut direct)
+                .unwrap()
+                .unwrap();
+        assert_eq!(owned.consumed_bytes, expected_consumed);
+        assert_eq!(metadata.consumed_bytes, expected_consumed);
+        assert_eq!(owned.decoded_rows, 0);
+        assert_eq!(metadata.decoded_rows, 0);
+        for bitmap in [&owned.bitmap, &direct] {
+            assert_eq!(bitmap.width(), 9);
+            assert_eq!(bitmap.height(), height);
+            assert!(bitmap.bytes().iter().all(|byte| *byte == 0));
+        }
+    }
+}
+
+#[test]
+fn known_length_mmr_dispatches_to_shared_decoder() {
+    let limits = Limits::default();
+    let mut payload = region_prefix(8, 1);
+    payload.push(0x01);
+    payload.push(0x80);
+    let decoded = decode_generic_region_segment(&payload, false, &limits).expect("MMR");
+    assert_eq!(decoded.decoded_rows, 1);
+    assert_eq!(decoded.consumed_bytes, payload.len());
+    assert!(decoded.bitmap.bytes().iter().all(|byte| *byte == 0));
+}
+
+#[test]
+fn annex_h_generic_arithmetic_segment_decodes() {
+    let limits = Limits::default();
+    let mut payload = region_prefix(54, 44);
+    payload[8..12].copy_from_slice(&4_u32.to_be_bytes());
+    payload[12..16].copy_from_slice(&11_u32.to_be_bytes());
+    payload[16] = 0;
+    payload.push(0x08);
+    payload.extend_from_slice(&[3, 0xff, 0xfd, 0xff, 2, 0xfe, 0xfe, 0xfe]);
+    payload.extend_from_slice(&[0x04, 0xee, 0xed, 0x87, 0xfb, 0xcb, 0x2b, 0xff, 0xac]);
+
+    let decoded = decode_generic_region_segment(&payload, false, &limits)
+        .expect("Annex H segment must decode");
+    assert_eq!(decoded.bitmap.width(), 54);
+    assert_eq!(decoded.bitmap.height(), 44);
+    assert_eq!(decoded.consumed_bytes, payload.len());
+    assert!(
+        decoded.bitmap.bytes().iter().any(|byte| *byte != 0),
+        "the Annex H region is not blank"
+    );
+}
+
+#[test]
+fn bounded_refinement_uses_shared_arithmetic_decoder() {
+    let limits = Limits::default();
+    let reference = Bitmap::blank(1, 1, &limits).expect("reference");
+    let header = RefinementRegionHeader {
+        region: region_info(1, 1),
+        template: RefinementTemplate::Template1,
+        typical_prediction: false,
+        adaptive: [TemplateOffset::ZERO; 2],
+    };
+    let decoded = decode_arithmetic_refinement(
+        &[0xff, 0xac],
+        &header,
+        RefinementParameters {
+            reference_dx: 0,
+            reference_dy: 0,
+        },
+        &reference,
+        &limits,
+    )
+    .expect("marker fill supplies a bounded final decision");
+    assert_eq!(decoded.pixel(0, 0), Some(true));
+}
+
+#[test]
+fn unknown_length_mmr_requires_eofb_and_pads_nominal_rows() {
+    let limits = Limits::default();
+    let mut payload = region_prefix(8, 2);
+    payload.push(0x01);
+    payload.extend_from_slice(&[0x80, 0x08, 0x00, 0x80]);
+    payload.extend_from_slice(&[0x00, 0x00, 0, 0, 0, 1]);
+    payload.extend_from_slice(&[0xde, 0xad]);
+    let decoded = decode_generic_region_segment(&payload, true, &limits).expect("MMR");
+    assert_eq!(decoded.decoded_rows, 1);
+    assert_eq!(decoded.bitmap.height(), 2);
+    assert_eq!(decoded.consumed_bytes, payload.len() - 2);
+    assert!(decoded.bitmap.bytes().iter().all(|byte| *byte == 0));
+}
+
+#[test]
+fn work_and_memory_limits_are_enforced_before_decode() {
+    let limits = Limits {
+        max_work_units: 1,
+        ..Limits::default()
+    };
+    assert!(matches!(
+        enforce_generic_work(2, 1, false, &limits),
+        Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::Work,
+                ..
+            }
+        )))
+    ));
+
+    let memory_limits = Limits {
+        max_decoder_managed_memory_bytes: 1,
+        ..Limits::default()
+    };
+    assert!(matches!(
+        allocate_contexts(1024, 1, &memory_limits),
+        Err(GenericRegionError::Decode(DecodeError::LimitExceeded(
+            LimitExceeded {
+                kind: LimitKind::Memory,
+                ..
+            }
+        )))
+    ));
+}
