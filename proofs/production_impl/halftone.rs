@@ -1,5 +1,70 @@
 use vstd::prelude::*;
 
+macro_rules! production_grid_position_bounds {
+    ($ng:ident, $mg:ident, $vector_x:ident, $vector_y:ident) => {
+        proof! {
+            assert(0 <= $ng <= u32::MAX as int);
+            assert(0 <= $mg <= u32::MAX as int);
+            assert(0 <= $vector_x <= u16::MAX as int);
+            assert(0 <= $vector_y <= u16::MAX as int);
+            crate::halftone::halftone_properties::product_upper_bound(
+                $mg as nat,
+                $vector_y as nat,
+                u32::MAX as nat,
+                u16::MAX as nat,
+            );
+            crate::halftone::halftone_properties::product_upper_bound(
+                $ng as nat,
+                $vector_x as nat,
+                u32::MAX as nat,
+                u16::MAX as nat,
+            );
+            crate::halftone::halftone_properties::product_upper_bound(
+                $mg as nat,
+                $vector_x as nat,
+                u32::MAX as nat,
+                u16::MAX as nat,
+            );
+            crate::halftone::halftone_properties::product_upper_bound(
+                $ng as nat,
+                $vector_y as nat,
+                u32::MAX as nat,
+                u16::MAX as nat,
+            );
+            assert(
+                (u32::MAX as nat) * (u16::MAX as nat)
+                    == 281_470_681_677_825
+            ) by (compute);
+            assert(
+                2 * 281_470_681_677_825 + (i32::MAX as int)
+                    < i64::MAX as int
+            ) by (compute);
+            assert(
+                (i32::MIN as int) - 281_470_681_677_825
+                    > i64::MIN as int
+            ) by (compute);
+        }
+    };
+}
+
+macro_rules! production_row_major_bounds {
+    ($y:ident, $width:ident) => {
+        proof! {
+            crate::halftone::halftone_properties::product_upper_bound(
+                $y as nat,
+                $width as nat,
+                u32::MAX as nat,
+                u32::MAX as nat,
+            );
+            assert(
+                (u32::MAX as nat) * (u32::MAX as nat)
+                    + (u32::MAX as nat)
+                    < u64::MAX as nat
+            ) by (compute);
+        }
+    };
+}
+
 macro_rules! production_one_pattern_zero_plane {
     () => {
         proof! {
