@@ -64,6 +64,33 @@ and pixel/byte accessors accordingly. `DecoderContext` supports scratch reuse,
 pages without collecting all output pages. See the [crate-level API guide](src/lib.rs)
 for the entry points, error handling and source/proof boundary.
 
+### What a consumer can rely on
+
+| Need | Entry point and boundary |
+|---|---|
+| Inspect dimensions and document structure | `inspect` / `inspect_reader` validate the envelope and page lifecycle, not compressed region payloads. Successful inspection does not guarantee successful decoding. |
+| Keep all decoded pages | `decode` / `decode_reader` return an owned `DecodedDocument`. |
+| Process completed pages individually | `decode_with_sink` / `decode_reader_with_sink` transfer each completed `Page` to a `PageSink`; closures can serve as sinks. Earlier callback effects are not rolled back if a later callback or decode fails. |
+| Decode embedded/PDF page data | `decode_embedded`, optionally with `parse_globals` and `decode_embedded_with_globals`. The caller supplies extracted JBIG2 segment streams; this crate does not parse PDF files. |
+| Reuse scratch capacity | `Decoder::context` returns a `DecoderContext` for repeated calls. It does not retain previous document semantics. |
+
+Reader methods buffer bounded compressed input through EOF **before** parsing
+or delivering pages. A page sink avoids collecting all decoded output, but does
+not make compressed input incremental or guarantee constant process memory.
+An error may leave the reader advanced; its position and sink side effects are
+not restored. I/O errors, including `Interrupted`, remain typed errors rather
+than being silently retried.
+
+Packed pixels use **1 / `true` for black and 0 / `false` for white**.
+The first pixel is the most significant bit of its byte; row stride is in
+bytes. Read only the declared width in each row, not padding bits. An adapter
+producing 8-bit grayscale must expand the bits and map black to 0 and white to
+255, not reinterpret the packed buffer as one byte per pixel.
+
+`DecodedDocument::pages()` and page-sink delivery use stream order, which need
+not be page-number order. `DocumentInfo::pages()` is sorted by page number;
+match metadata and output by `Page::number()`, not by their slice indices.
+
 ### Development commands
 
 The runtime MSRV is **Rust 1.88.0**. Development uses a separate compiler;
