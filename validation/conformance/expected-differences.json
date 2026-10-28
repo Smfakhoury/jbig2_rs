@@ -7,11 +7,11 @@
       "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 192, needed: 1, remaining: 0 })",
       "stream_sha256": "d7fed4f97e960c45c404eb94dac84cfcd1dbb77f774aa3c58c052783c130b543",
       "source_files_sha256": {
-        "src/huffman.rs": "9ac4dc062265c398839fb7acf6e57c6baabadb82ee29236503276a8245748e63",
+        "src/huffman.rs": "da734ce1a5ae0e37dc2eee0709b3839ac6cc0f556c3ff9d7350fbbad48977a9f",
         "src/huffman/tests.rs": "f381ff3140134f282547de09735f18a47a3802bfa19aa10fd8c69d7025d7f36e",
         "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
         "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
-        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
         "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
         "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
         "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
@@ -30,11 +30,11 @@
       "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
       "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
       "source_files_sha256": {
-        "src/mmr.rs": "b3a7c6e68d677933e922b7194d5c1f8c7e2dcc37cf1314b8c061d50cfa407367",
+        "src/mmr.rs": "2592b84eed9af854f58e4f9a7b25fd87e545066d5730bd2143ccba4a3a573c8a",
         "src/mmr/tests.rs": "c58cff417d07b40f19235130e3b879d3008d8f55e4f13785c593b49c3bf85498",
         "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
         "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
-        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
         "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
         "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
         "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
@@ -55,7 +55,7 @@
       "source_files_sha256": {
         "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
         "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
-        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
         "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
         "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
         "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
@@ -76,7 +76,7 @@
       "source_files_sha256": {
         "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
         "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
-        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
         "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
         "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
         "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
@@ -97,7 +97,7 @@
       "source_files_sha256": {
         "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
         "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
-        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
         "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
         "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
         "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
@@ -118,7 +118,7 @@
       "source_files_sha256": {
         "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
         "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
-        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
         "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
         "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
         "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
@@ -139,7 +139,7 @@
       "source_files_sha256": {
         "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
         "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
-        "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+        "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
         "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
         "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
         "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",

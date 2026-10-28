@@ -19,7 +19,7 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge")
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion")
 COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
 RECEIPT_SCHEMA = 3
 CHECKS = (

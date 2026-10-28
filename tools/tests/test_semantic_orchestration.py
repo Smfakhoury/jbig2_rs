@@ -165,6 +165,19 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
 
+    def test_error_conversion_uses_existing_whole_role_without_reassigning_prior_shards(self):
+        actual = runner.configured_shards()
+        previous = tuple(row for row in runner.CHECKS if row[0] != "error-conversion")
+        with patch.object(runner, "CHECKS", previous):
+            self.assertEqual(actual, runner.configured_shards())
+        self.assertEqual(
+            [row[0] for row in runner.configured_whole_checks()],
+            ["arithmetic-codec", "value-bridge", "error-conversion"],
+        )
+        self.assertEqual(len(actual), 6)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 277)
+        self.assertEqual(len(runner.configured_checks()), 35)
+
     def test_manifest_binds_relocated_metadata_and_opaque_agent_profiles_not_generated_json(self):
         (self.root / "verification/target").mkdir(parents=True)
         (self.root / "verification/proof-dispositions.json").write_text("{}")

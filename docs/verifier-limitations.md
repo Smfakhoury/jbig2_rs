@@ -52,6 +52,9 @@ it cannot reuse a baseline solely because the displayed name matches. Eight
 compiling wrong-variant/field controls are rejected, with their corresponding
 conditional-contract weaker controls accepted. Literal Rust tests separately
 exercise every local error variant and wrapped public error class.
+The new group runs serially in the existing whole-proof job alongside
+arithmetic-codec and value-bridge; it does not add a job or load an already
+assigned semantic shard.
 
 This closes four directly proved project conversion boundaries. It does not
 prove arbitrary I/O, formatting, sinks or orchestration, resolve capacity
