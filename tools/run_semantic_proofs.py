@@ -19,8 +19,9 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "error-wrappers-basic")
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion")
 COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions")
+ADDED_SHARD_GROUPS = {"error-wrappers-symbol": 4, "error-wrappers-basic": 5}
 RECEIPT_SCHEMA = 3
 CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
@@ -113,12 +114,12 @@ def configured_shards():
         if check[0] not in (*WHOLE_GROUPS, *COLLECTOR_GROUPS)
     )
     count = min(CI_SHARDS, len(checks))
-    # Preserve prior memberships; shard four has measured headroom for this new group.
-    previous = tuple(check for check in checks if check[0] != "error-wrappers-symbol")
+    # Preserve prior memberships; these two shards have measured headroom for new groups.
+    previous = tuple(check for check in checks if check[0] not in ADDED_SHARD_GROUPS)
     shards = [list(previous[index::count]) for index in range(count)]
     for check in checks:
-        if check[0] == "error-wrappers-symbol":
-            shards[min(4, count - 1)].append(check)
+        if check[0] in ADDED_SHARD_GROUPS:
+            shards[min(ADDED_SHARD_GROUPS[check[0]], count - 1)].append(check)
     return tuple(tuple(shard) for shard in shards)
 
 

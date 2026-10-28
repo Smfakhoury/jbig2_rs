@@ -77,10 +77,11 @@ Only that implementation's conditional mapping is weakened for its control,
 which must restore proof of the complete selected set. Missing, swapped or
 incomplete implementation/peer records fail collection.
 
-The basic and region groups run in the existing serial whole/collector roles.
-Only the new symbol-wrapper group is appended to shard four; every previous
-shard membership, the six-shard/max-four policy, eight producers, solver limits,
-job caps and actual 1,050-second guards remain unchanged.
+The region group runs in the existing serial collector role. Only the new
+symbol/basic groups are appended to shards four/five, whose measured prior
+workloads leave headroom. Every previous shard and whole-role membership, the
+six-shard/max-four policy, eight producers, solver limits, job caps and actual
+1,050-second guards remain unchanged.
 
 The three remaining audited forwarders are the two default constructors and
 the owned page collector's sink wrapper. This does not close the twenty

@@ -212,10 +212,11 @@ class SemanticOrchestrationTests(unittest.TestCase):
         with patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS):
             before = runner.configured_shards()
         symbol = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-symbol")
+        basic = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-basic")
         self.assertEqual(shards[4], (*before[4], symbol))
         self.assertEqual(shards[:4], before[:4])
-        self.assertEqual(shards[5:], before[5:])
-        self.assertIn("error-wrappers-basic", [row[0] for row in runner.configured_whole_checks()])
+        self.assertEqual(shards[5], (*before[5], basic))
+        self.assertNotIn("error-wrappers-basic", [row[0] for row in runner.configured_whole_checks()])
         self.assertIn("error-wrappers-regions", [row[0] for row in runner.configured_collector_checks()])
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *shards]
         self.assertEqual(len(roles), 8)
