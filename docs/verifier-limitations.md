@@ -80,10 +80,13 @@ incomplete implementation/peer records fail collection.
 The region group runs in the existing serial collector role; symbol/basic
 groups run in shards four/five. A complete first candidate run was correctly
 rejected when shard five exceeded the 1,050-second guard, despite all queries
-passing. Its actual costs inform two scheduling moves: Huffman assignment to
-shard one and operator bits to shard three. Rejected-run timings are planning
-inputs, not acceptance credit. Every case/query, the six-shard/max-four policy,
-eight producers, solver/job caps and actual 1,050-second guards remain intact.
+passing. A second complete candidate exposed a different overloaded shard.
+Combined per-group maxima inform the bounded role plan: retention joins the
+whole role; Huffman assignment moves to shard one, operator bits to shard two,
+MMR prefix/run to shard three, and bitmap chunks to shard four. Whole-job setup
+overhead is included in planning. Rejected-run timings remain planning inputs,
+not acceptance credit. Every case/query, the six-shard/max-four policy, eight
+producers, solver/job caps and actual 1,050-second guards remain intact.
 
 The three remaining audited forwarders are the two default constructors and
 the owned page collector's sink wrapper. This does not close the twenty

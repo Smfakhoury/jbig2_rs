@@ -209,47 +209,59 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     def test_new_wrapper_groups_rebalance_two_measured_memberships_without_more_producers(self):
         shards = runner.configured_shards()
-        with patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS):
+        with patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS), patch.object(
+            runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge", "error-conversion"),
+        ):
             before = runner.configured_shards()
         symbol = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-symbol")
         basic = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-basic")
         expected = [list(shard) for shard in before]
         expected[4].append(symbol)
         expected[5].append(basic)
-        for name, old, new in (("huffman-assignment", 5, 1), ("operator-bit", 1, 3)):
+        retention = next(row for row in expected[2] if row[0] == "retention")
+        expected[2].remove(retention)
+        for name, old, new in (
+            ("huffman-assignment", 5, 1), ("operator-bit", 1, 2),
+            ("mmr-prefix", 4, 3), ("mmr-run", 4, 3), ("bitmap-chunk", 3, 4),
+        ):
             row = next(row for row in expected[old] if row[0] == name)
             expected[old].remove(row)
             expected[new].append(row)
         self.assertEqual(shards, tuple(tuple(shard) for shard in expected))
         self.assertNotIn("error-wrappers-basic", [row[0] for row in runner.configured_whole_checks()])
+        self.assertIn("retention", [row[0] for row in runner.configured_whole_checks()])
         self.assertIn("error-wrappers-regions", [row[0] for row in runner.configured_collector_checks()])
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *shards]
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 38)
         self.assertEqual(sum(row[2] for role in roles for row in role), 297)
 
-    def test_completed_rejected_wrapper_profile_rebalances_below_original_guards(self):
+    def test_completed_rejected_wrapper_profiles_rebalance_below_original_guards(self):
         # All producers in40760950278 completed; its guard rejection grants no acceptance credit.
-        # Take per-group maxima with accepted #111, rounding up for conservative replay.
+        # Combine both complete rejected profiles with accepted #111; round maxima up.
         costs = {
             "mmr-reference": 352, "reader-error": 228, "black-span": 163,
             "arithmetic-refill": 160, "region-dispatch": 81,
-            "document-layout": 308, "page-public": 213, "page-finish": 167,
-            "arithmetic-normalization": 146, "operator-bit": 93,
+            "document-layout": 314, "page-public": 223, "page-finish": 169,
+            "arithmetic-normalization": 147, "operator-bit": 94,
             "page-state": 331, "arithmetic-integer": 235, "mmr-horizontal": 192,
-            "iaid-state": 159, "retention": 76,
+            "iaid-state": 159, "retention": 77,
             "text-batch": 266, "halftone-header": 215, "bitmap-compose": 172,
             "arithmetic-initialization": 145, "bitmap-chunk": 96,
-            "symbol-cardinality": 223, "integer-state": 221, "bitmap-copy": 167,
-            "mmr-run": 88, "mmr-prefix": 88, "error-wrappers-symbol": 153,
+            "symbol-cardinality": 265, "integer-state": 265, "bitmap-copy": 195,
+            "mmr-run": 105, "mmr-prefix": 108, "error-wrappers-symbol": 185,
             "segment-data": 270, "segment-header": 266, "mmr-span": 222,
             "huffman-assignment": 126, "error-wrappers-basic": 217,
+            "arithmetic-codec": 448, "value-bridge": 117, "error-conversion": 238,
+            "arithmetic-decision": 398, "document-count": 326, "reset": 52,
+            "error-wrappers-regions": 213,
         }
         rejected = ("segment-data", "segment-header", "mmr-span", "huffman-assignment", "error-wrappers-basic")
         self.assertGreater(sum(costs[name] for name in rejected), 1050)
-        self.assertLessEqual(max(
-            sum(costs[row[0]] for row in shard) for shard in runner.configured_shards()
-        ), 1000)
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
+        measured = [sum(costs[row[0]] for row in role) for role in roles]
+        self.assertLessEqual(max(measured), 1020)
+        self.assertLessEqual(measured[0] + 211, 1200)
 
     def test_manifest_covers_every_semantic_checker_without_fixed_group_or_case_totals(self):
         checks = runner.configured_checks()
@@ -274,6 +286,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertNotIn("verification/target/Cargo.toml", bindings)
 
     @patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge", "error-conversion"))
     def test_error_conversion_uses_existing_whole_role_without_reassigning_prior_shards(self):
         actual = runner.configured_shards()
         previous = tuple(row for row in runner.CHECKS if row[0] != "error-conversion")
@@ -555,6 +568,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 runner.measured_shard_seconds(rows)
 
     @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
     def test_pre_conversion_roles_replay_qualified_timing_inputs_without_more_jobs_or_raised_guards(self):
         # Planning only: completed f294 groups; completed shard-5 ZIP timestamps
         # plus allowance; current local value/Huffman runs plus 10%, rounded up.
@@ -594,6 +608,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
 
     @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
     def test_completed_f53_costs_rebalance_without_accepting_its_rejected_collection(self):
         # All 40412207379 producers completed, but its collector rejected the
         # overloaded shard. These costs are scheduling inputs, not acceptance.
@@ -674,6 +689,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(estimates), 1000)
 
     @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
     def test_pre_conversion_job_capacity_covers_three_profile_per_group_maxima(self):
         # Planning only: prior qualified estimates and completed f53/7ae groups,
         # taking each group's maximum and rounding up. Failed collections gain

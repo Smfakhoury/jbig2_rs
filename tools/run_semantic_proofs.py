@@ -19,10 +19,13 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion")
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention")
 COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions")
 ADDED_SHARD_GROUPS = {"error-wrappers-symbol": 4, "error-wrappers-basic": 5}
-REBALANCED_SHARD_GROUPS = {"huffman-assignment": 1, "operator-bit": 3}
+REBALANCED_SHARD_GROUPS = {
+    "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
+    "mmr-run": 3, "bitmap-chunk": 4,
+}
 RECEIPT_SCHEMA = 3
 CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
