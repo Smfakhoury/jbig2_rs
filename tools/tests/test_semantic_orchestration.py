@@ -207,21 +207,49 @@ class SemanticOrchestrationTests(unittest.TestCase):
             result = runner.run_checks(self.root, self.root / "verus", self.output, only="error-wrappers-basic")
         self.assertEqual(result["status"], "passed")
 
-    def test_new_wrapper_groups_preserve_old_memberships_and_producer_limits(self):
+    def test_new_wrapper_groups_rebalance_two_measured_memberships_without_more_producers(self):
         shards = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS):
             before = runner.configured_shards()
         symbol = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-symbol")
         basic = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-basic")
-        self.assertEqual(shards[4], (*before[4], symbol))
-        self.assertEqual(shards[:4], before[:4])
-        self.assertEqual(shards[5], (*before[5], basic))
+        expected = [list(shard) for shard in before]
+        expected[4].append(symbol)
+        expected[5].append(basic)
+        for name, old, new in (("huffman-assignment", 5, 1), ("operator-bit", 1, 3)):
+            row = next(row for row in expected[old] if row[0] == name)
+            expected[old].remove(row)
+            expected[new].append(row)
+        self.assertEqual(shards, tuple(tuple(shard) for shard in expected))
         self.assertNotIn("error-wrappers-basic", [row[0] for row in runner.configured_whole_checks()])
         self.assertIn("error-wrappers-regions", [row[0] for row in runner.configured_collector_checks()])
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *shards]
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 38)
         self.assertEqual(sum(row[2] for role in roles for row in role), 297)
+
+    def test_completed_rejected_wrapper_profile_rebalances_below_original_guards(self):
+        # All producers in40760950278 completed; its guard rejection grants no acceptance credit.
+        # Take per-group maxima with accepted #111, rounding up for conservative replay.
+        costs = {
+            "mmr-reference": 352, "reader-error": 228, "black-span": 163,
+            "arithmetic-refill": 160, "region-dispatch": 81,
+            "document-layout": 308, "page-public": 213, "page-finish": 167,
+            "arithmetic-normalization": 146, "operator-bit": 93,
+            "page-state": 331, "arithmetic-integer": 235, "mmr-horizontal": 192,
+            "iaid-state": 159, "retention": 76,
+            "text-batch": 266, "halftone-header": 215, "bitmap-compose": 172,
+            "arithmetic-initialization": 145, "bitmap-chunk": 96,
+            "symbol-cardinality": 223, "integer-state": 221, "bitmap-copy": 167,
+            "mmr-run": 88, "mmr-prefix": 88, "error-wrappers-symbol": 153,
+            "segment-data": 270, "segment-header": 266, "mmr-span": 222,
+            "huffman-assignment": 126, "error-wrappers-basic": 217,
+        }
+        rejected = ("segment-data", "segment-header", "mmr-span", "huffman-assignment", "error-wrappers-basic")
+        self.assertGreater(sum(costs[name] for name in rejected), 1050)
+        self.assertLessEqual(max(
+            sum(costs[row[0]] for row in shard) for shard in runner.configured_shards()
+        ), 1000)
 
     def test_manifest_covers_every_semantic_checker_without_fixed_group_or_case_totals(self):
         checks = runner.configured_checks()

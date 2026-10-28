@@ -22,6 +22,7 @@ CI_SHARDS = 6
 WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion")
 COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions")
 ADDED_SHARD_GROUPS = {"error-wrappers-symbol": 4, "error-wrappers-basic": 5}
+REBALANCED_SHARD_GROUPS = {"huffman-assignment": 1, "operator-bit": 3}
 RECEIPT_SCHEMA = 3
 CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
@@ -120,6 +121,14 @@ def configured_shards():
     for check in checks:
         if check[0] in ADDED_SHARD_GROUPS:
             shards[min(ADDED_SHARD_GROUPS[check[0]], count - 1)].append(check)
+    if any(check[0] == "error-wrappers-basic" for check in checks):
+        for identity, destination in REBALANCED_SHARD_GROUPS.items():
+            for shard in shards:
+                match = next((check for check in shard if check[0] == identity), None)
+                if match is not None:
+                    shard.remove(match)
+                    shards[min(destination, count - 1)].append(match)
+                    break
     return tuple(tuple(shard) for shard in shards)
 
 

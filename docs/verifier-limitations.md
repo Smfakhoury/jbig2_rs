@@ -77,11 +77,13 @@ Only that implementation's conditional mapping is weakened for its control,
 which must restore proof of the complete selected set. Missing, swapped or
 incomplete implementation/peer records fail collection.
 
-The region group runs in the existing serial collector role. Only the new
-symbol/basic groups are appended to shards four/five, whose measured prior
-workloads leave headroom. Every previous shard and whole-role membership, the
-six-shard/max-four policy, eight producers, solver limits, job caps and actual
-1,050-second guards remain unchanged.
+The region group runs in the existing serial collector role; symbol/basic
+groups run in shards four/five. A complete first candidate run was correctly
+rejected when shard five exceeded the 1,050-second guard, despite all queries
+passing. Its actual costs inform two scheduling moves: Huffman assignment to
+shard one and operator bits to shard three. Rejected-run timings are planning
+inputs, not acceptance credit. Every case/query, the six-shard/max-four policy,
+eight producers, solver/job caps and actual 1,050-second guards remain intact.
 
 The three remaining audited forwarders are the two default constructors and
 the owned page collector's sink wrapper. This does not close the twenty
