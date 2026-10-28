@@ -6,6 +6,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_bitmap_copy_proofs import CASES, mutated_copy, weaker_contract
 from rust_source import parse
 
@@ -13,7 +14,7 @@ from rust_source import parse
 class BitmapCopyProofFixtureTests(unittest.TestCase):
     def setUp(self):
         self.sources = {
-            path: (TOOLS.parent / path).read_text(encoding="utf-8")
+            path: source_text(TOOLS.parent, path)
             for path in ("src/bitmap.rs", "src/generic_region.rs")
         }
 

@@ -25,6 +25,40 @@ archive. Separate proof, validation, fuzz, tool and benchmark assets are not
 packaged. Inactive inline proof annotations remain in runtime source; see
 [distribution](distribution.md).
 
+### Read the implementation by responsibility
+
+The top-level component files are facades, not concatenated source fragments.
+They retain the established types and entry points while ordinary Rust child
+modules hold focused implementation responsibilities.
+
+| Start here | Focused implementation |
+|---|---|
+| [`src/bitmap.rs`](../src/bitmap.rs) | [`bitmap/`](../src/bitmap): storage, access, operators, chunks, composition and region updates |
+| [`src/document.rs`](../src/document.rs) | [`document/`](../src/document): bounded input, parsing, references and page metadata |
+| [`src/decode.rs`](../src/decode.rs) | [`decode/`](../src/decode): public operations, resources, dispatch, orchestration and rendering |
+| [`src/symbol_text.rs`](../src/symbol_text.rs) | [`symbol_text/`](../src/symbol_text): codecs, headers, tables, dictionaries, placement, text and bitmap support |
+| [`src/generic_region.rs`](../src/generic_region.rs) | [`generic_region/`](../src/generic_region): contexts, headers, generic/refinement engines and segment wiring |
+| [`src/halftone.rs`](../src/halftone.rs) | [`halftone/`](../src/halftone): headers, resources, planes and rendering |
+
+Unit tests live in each component's `tests.rs` rather than interrupting its
+implementation. They remain packaged and keep their logical Cargo test names.
+Their file-local `cfg(test)` guards also let standalone source/coverage audits
+identify them as test-only; the narrow duplicate-attribute lint allowances are
+intentional. Internal fuzz/validation helpers retain their existing cfgs and
+are not moved into test-only modules.
+
+Detailed proof reasoning stays in the corresponding proof files. Short
+contracts, loop invariants, local snapshots and calls to those helpers remain
+attached to the actual Rust operations. This is one implementation, not a
+generated proof-free fork. Function/loop guarantees and mathematical models
+are not weakened to make relocation verify.
+
+Semantic and native mutation checks bind logical component source groups to
+the actual module graph. Their temporary edits are written back to individual
+physical files; the combined inspection text is never compiled as a substitute
+implementation. Ordinary function identities and physical verifier-selection
+scopes are checked separately when an impl lives below its owning type.
+
 ## Policy, baselines and source-bound records
 
 | Retained path | Purpose and interpretation |

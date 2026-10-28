@@ -6,6 +6,41 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
+## Publication-layout candidate
+
+The implementation now uses focused Rust child modules, separately packaged
+unit tests and external proof helpers; start with the
+[responsibility map](repository-layout.md#read-the-implementation-by-responsibility)
+or the ordinary-Rust example in the [crate guide](../src/lib.rs).
+This changes source organization, not the public decoder API or publication
+policy. Inactive contracts and necessary local proof hooks remain in source.
+
+Local acceptance of the integrated layout includes:
+
+- A fresh whole production proof and compiled library: **1,245 verified,
+  0 errors**. The increase from 1,244 is one ghost proof helper, not another
+  runtime operation.
+- All 659 native declarations accounted for, with native token projections,
+  attached function/loop contracts, data declarations and mathematical models
+  preserved. Production accounting remains 611 directly verified, 24 reviewed
+  limitations, 23 audited forwarders and one runtime/proof divergence.
+- All 141 existing native mutants compile and are detected. Real operator-bit
+  and document-count strong/weaker contrasts also pass the strict collector.
+- All 511 tooling tests pass. A real 71-file archive passes its extracted tests,
+  doctest and exact downstream-output check on Rust 1.88.0 with a fresh offline
+  Cargo home and no normal dependencies.
+- Fresh LLVM coverage covers 48 executing files: 11,460/12,716 lines,
+  10,974/12,953 regions and 2,245/2,640 branch outcomes. Rebinding the physical
+  file baseline preserves both the previous component ratchets and the
+  unchanged 90% line / 85% branch goals.
+- Actual slowdown and packed-output-corruption controls are still rejected.
+
+These are local results, not current-head hosted acceptance. The complete
+34-group / 269-contrast matrix, cross-platform distribution lanes and other
+hosted checks must pass on the final candidate before review readiness.
+None of these results resolves the release blockers below or grants normative
+approval.
+
 ## Verified reference revision
 
 Reference: owner-merged [PR #91](https://github.com/microsoft/jbig2_rs/pull/91),

@@ -14,7 +14,7 @@ automatically rewrites that baseline or lowers goals to make a change pass.
 
 - Executing `src/` under ordinary cfgs includes error formatting/conversion and
   compiler-generated methods located in that tree.
-- Syntax-level exclusion removes inline test helpers, reference oracles,
+- Syntax-level exclusion removes inline and separate test helpers, reference oracles,
   microbenchmark drivers and test-only statements/branches inside production
   functions. Their calls still contribute execution to runtime code.
 - Positive ghost-only items, separate models/proofs, external drivers, developer
@@ -25,9 +25,12 @@ automatically rewrites that baseline or lowers goals to make a change pass.
   even if LLVM supplies a function mapping without a file summary. Their bytes
   and all Rust test/support files remain part of test-source identity.
   Other unknown non-runtime mappings fail closed.
-- `src/lib.rs` is the only whole-file exclusion: it declares/re-exports modules.
-  The gate fails if it gains an executing function. Every other runtime file
-  must have line instrumentation.
+- `src/lib.rs` is explicitly reserved for declarations/re-exports and fails
+  if it gains an executing function. Runtime files are derived from the actual
+  native function inventory, not every physical `.rs` path. Separate test-only
+  files and type/module-only facades are listed as exclusions; every source
+  file containing ordinary executing declarations must have line instrumentation.
+  Unknown non-runtime LLVM mappings still fail closed.
 - Linux instrumentation does not claim coverage of Windows/macOS-only paths.
   Native tests/distribution on those platforms are separate evidence.
 
@@ -48,6 +51,12 @@ Fraction comparisons use integer cross multiplication, not rounded percentages.
 Missing baseline files, scope changes, unsupported export formats, missing branch
 data, malformed/duplicate LCOV records and inconsistent baselines fail closed.
 Baseline changes need explicit review and reproducible source/test/tool evidence.
+When a layout-only refactor splits files, first compare the measured aggregate
+of each original component against both the existing ratchet and the recent
+accepted collection. Only after every comparison is nonregressing may the new
+physical-file floors be locked to the fresh collection. Source identity,
+unchanged region/branch accounting and the 90%/85% goals remain checked; file
+splitting is not permission to discard uncovered code.
 
 Changed-line enforcement remains **informational pending policy review**.
 No changed runtime lines is `not_applicable`, not an invented 100%. CI must fetch

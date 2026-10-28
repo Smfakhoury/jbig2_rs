@@ -13,6 +13,12 @@ security policy and license. Cargo adds its normalized manifest, original
 manifest, lockfile and VCS metadata. The archive inventory is checked against
 the real package, not inferred from a successful build.
 
+The source allowlist is recursive: focused component submodules and their
+separate unit-test files under `src/` remain packaged. Reorganization changes
+the actual file count, not the requirement to compare every included source
+byte and execute the extracted package's tests. Separate proof/model assets
+remain excluded.
+
 The separate `proofs/`, `specs/`, `validation/`, `fuzz/`, `tools/` and benchmark
 directories are not included. Neither Verus nor `vstd` is a Cargo dependency.
 

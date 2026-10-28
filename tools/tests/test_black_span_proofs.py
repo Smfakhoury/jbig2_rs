@@ -6,13 +6,14 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_black_span_proofs import CASES, RESULT, SUCCESS
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class BlackSpanProofFixtureTests(unittest.TestCase):
     def setUp(self):
-        self.source = (TOOLS.parent / "src/bitmap.rs").read_text(encoding="utf-8")
+        self.source = source_text(TOOLS.parent, "src/bitmap.rs")
 
     def test_six_output_contrasts_have_unique_compilation_sites(self):
         self.assertEqual(len({case["id"] for case in CASES}), 6)

@@ -11,13 +11,14 @@ from unittest.mock import patch
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
+from source_group import source_text
 from check_mmr_reference_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class MmrReferenceProofTests(unittest.TestCase):
     def test_unique_mutations_retain_original_input_and_result_bounds(self):
-        source = (TOOLS.parent / "src/mmr.rs").read_text()
+        source = source_text(TOOLS.parent, "src/mmr.rs")
         self.assertEqual(len(CASES), 11)
         self.assertEqual(len({case["id"] for case in CASES}), 11)
         for case in CASES:
@@ -35,7 +36,7 @@ class MmrReferenceProofTests(unittest.TestCase):
         raster_cases = [case for case in CASES if case["id"].startswith("raster_reference_")]
         self.assertEqual(len(raster_cases), 2)
         for case in raster_cases:
-            source = (TOOLS.parent / "src/mmr.rs").read_text()
+            source = source_text(TOOLS.parent, "src/mmr.rs")
             changed = replace_once(source, case["site"], case["replacement"])
             weaker = weakened_contract(changed, case)
             self.assertEqual(
@@ -63,7 +64,7 @@ class MmrReferenceProofTests(unittest.TestCase):
     def test_output_controls_retain_every_trace_and_cache_proof(self):
         raster_cases = [case for case in CASES if case["id"].startswith("raster_output_")]
         self.assertEqual(len(raster_cases), 2)
-        source = (TOOLS.parent / "src/mmr.rs").read_text()
+        source = source_text(TOOLS.parent, "src/mmr.rs")
         for case in raster_cases:
             changed = replace_once(source, case["site"], case["replacement"])
             weaker = weakened_contract(changed, case)
@@ -79,7 +80,7 @@ class MmrReferenceProofTests(unittest.TestCase):
                     replace_once(source, case["site"], case["replacement"])
 
     def test_missing_or_repeated_controls_fail_closed(self):
-        source = (TOOLS.parent / "src/mmr.rs").read_text()
+        source = source_text(TOOLS.parent, "src/mmr.rs")
         for case in CASES:
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):
                 weakened_contract("", case)

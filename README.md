@@ -33,6 +33,39 @@ I/O failure have distinct typed errors.
 
 ## Build and test
 
+### Decode a document
+
+The public API is ordinary Rust; consumers do not need Verus. This crate is
+still unpublished, so use a checkout or local path dependency while evaluating
+it. The example uses a reader so the decoder applies its input limit while
+reading, rather than asking the caller to allocate an unbounded input first.
+
+```rust,no_run
+use std::fs::File;
+use jbig2_rs::{Decoder, Limits};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let decoder = Decoder::new(Limits::default());
+    let mut input = File::open("document.jb2")?;
+    let document = decoder.decode_reader(&mut input)?;
+
+    for page in document.pages() {
+        let bitmap = page.bitmap();
+        println!("page {}: {} x {}", page.number(), bitmap.width(), bitmap.height());
+    }
+    Ok(())
+}
+```
+
+Choose application-appropriate `Limits` before accepting input. `Bitmap` uses
+packed one-bit pixels, not one byte per pixel; use its dimensions, byte stride
+and pixel/byte accessors accordingly. `DecoderContext` supports scratch reuse,
+`GlobalSegments` supports embedded streams, and `PageSink` delivers completed
+pages without collecting all output pages. See the [crate-level API guide](src/lib.rs)
+for the entry points, error handling and source/proof boundary.
+
+### Development commands
+
 The runtime MSRV is **Rust 1.88.0**. Development uses a separate compiler;
 all tool pins are in [`config/toolchain.json`](config/toolchain.json).
 

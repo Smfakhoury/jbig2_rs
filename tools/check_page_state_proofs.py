@@ -8,11 +8,10 @@ import subprocess
 import sys
 
 from proof_sensitivity import check_semantic_cases, replace_once
-from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FUNCTIONS = {entry["id"]: entry for entry in source_functions(ROOT)}
 NEW = "ensures out.info == info, out.last_stripe == None, !out.ended,"
 STRIPE_RESULT = "out == document_spec::stripe_result(old(self).info, old(self).last_stripe, row)"
 STRIPE = f"""ensures
@@ -44,7 +43,7 @@ TESTS = {
 
 
 def case(identity, method, before, after, contract, clause):
-    original = FUNCTIONS[f"document::PageState::{method}"]["body_text"]
+    original = runtime_function(ROOT, "document", f"PageState::{method}")["body_text"]
     return {
         "id": identity, "file": "src/document.rs", "module": "document",
         "function": f"PageState::{method}", "site": original,

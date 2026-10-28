@@ -3,11 +3,14 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "48561a991c2efc1457913434422517a1f50fad21f5ec2f1fe549566717bf0b5a",
+    "project_source_sha256": "0cba01ebb65cd6bcedcdecb24477e6fb23f90e17bd23bee626daa5fb8c0e09cd",
     "families": [
       {
         "file": "specs/readers.rs",
-        "members": ["spec::bit_at", "spec::bits_value"],
+        "members": [
+          "spec::bit_at",
+          "spec::bits_value"
+        ],
         "classification": "project-result-model",
         "justification": "bit_at extracts the MSB-first bit; bits_value recursively accumulates those bits in input order. src/reader.rs read_bits promises this numeric result; proofs/spec_properties/readers.rs bounds the recurrence and proofs/production_impl/readers.rs connects each actual bit. These describe project results, not just cursor validity.",
         "ambiguity": "",
@@ -15,14 +18,31 @@
       },
       {
         "file": "specs/readers.rs",
-        "members": ["spec::bit_read_error", "spec::eof_error"],
+        "members": [
+          "spec::bit_read_error",
+          "spec::eof_error"
+        ],
         "classification": "project-policy",
         "justification": "eof_error constructs the Rust UnexpectedEof payload. bit_read_error prioritizes InvalidBitCount above remaining-bit EOF and None, with a 32-bit API cap; src/reader.rs uses these exact typed diagnostics. This is project API/error policy rather than an ITU exception rule.",
         "ambiguity": ""
       },
       {
         "file": "specs/bitmap.rs",
-        "members": ["spec::combine", "spec::operator_byte", "spec::operator_word", "spec::black_span_bits", "spec::black_span_result", "spec::zeroed_storage", "spec::filled_byte", "spec::filled_storage", "spec::prefix_copy_result", "spec::row_copy_result", "spec::pixel_result", "spec::filled_pixels", "spec::compose_frame"],
+        "members": [
+          "spec::combine",
+          "spec::operator_byte",
+          "spec::operator_word",
+          "spec::black_span_bits",
+          "spec::black_span_result",
+          "spec::zeroed_storage",
+          "spec::filled_byte",
+          "spec::filled_storage",
+          "spec::prefix_copy_result",
+          "spec::row_copy_result",
+          "spec::pixel_result",
+          "spec::filled_pixels",
+          "spec::compose_frame"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies specify Boolean/packed operator outputs, exact span effects, zero/fill byte content (including masked tails), copy source selection and untouched bytes, optional visible pixels, or unchanged composition bytes. prefix_copy_result is an output/frame relation despite its prefix name. src/bitmap.rs contracts consume these; filled_storage includes storage_valid but additionally quantifies every byte. They depend on the bitmap field views in proofs/shared/views.rs, not independent normative storage assumptions.",
         "ambiguity": "",
@@ -30,14 +50,25 @@
       },
       {
         "file": "specs/bitmap.rs",
-        "members": ["spec::storage_valid", "spec::padding_is_zero", "spec::invariant", "spec::coordinates_in_bounds", "spec::region_request_valid"],
+        "members": [
+          "spec::storage_valid",
+          "spec::padding_is_zero",
+          "spec::invariant",
+          "spec::coordinates_in_bounds",
+          "spec::region_request_valid"
+        ],
         "classification": "representation-invariant",
         "justification": "storage_valid equates stride/length to dimensions; padding_is_zero restricts unused bits; invariant conjoins them. coordinates_in_bounds and region_request_valid restrict legal pixel/rectangle access to stored extents. Unlike copy/fill relations these predicates alone prescribe no transformed output. Inspect src/bitmap.rs access/copy preconditions and proofs/shared/views.rs field access.",
         "ambiguity": ""
       },
       {
         "file": "specs/bitmap.rs",
-        "members": ["spec::dimensions_checked", "spec::stride_checked", "spec::allocation_checked", "spec::limits_allow_bitmap"],
+        "members": [
+          "spec::dimensions_checked",
+          "spec::stride_checked",
+          "spec::allocation_checked",
+          "spec::limits_allow_bitmap"
+        ],
         "classification": "project-policy",
         "justification": "Bodies express u64/usize arithmetic admissibility and Limits width/height/pixel/managed-memory checks used by src/bitmap.rs constructors. They model project machine/resource acceptance, not independent normative image limits or observed allocator capacity.",
         "ambiguity": "",
@@ -45,7 +76,21 @@
       },
       {
         "file": "specs/bitmap.rs",
-        "members": ["spec::byte_operator_bit", "spec::word_operator_bit", "spec::stride_for_width", "spec::byte_index", "spec::bit_mask", "spec::byte_bit", "spec::set_byte_bit", "spec::chunk_byte", "spec::chunk_value", "spec::stored_pixel", "spec::clipped_width", "spec::clipped_height", "spec::compose_byte_may_change"],
+        "members": [
+          "spec::byte_operator_bit",
+          "spec::word_operator_bit",
+          "spec::stride_for_width",
+          "spec::byte_index",
+          "spec::bit_mask",
+          "spec::byte_bit",
+          "spec::set_byte_bit",
+          "spec::chunk_byte",
+          "spec::chunk_value",
+          "spec::stored_pixel",
+          "spec::clipped_width",
+          "spec::clipped_height",
+          "spec::compose_byte_may_change"
+        ],
         "classification": "proof-support",
         "justification": "Bodies supply bit/byte/word projection, packed addressing, view-based pixel access, big-endian chunk conversion, clipped extents and an existential touched-byte set. These are compositional vocabulary for the actual result/frame relations in this file and src/bitmap.rs, not standalone claims of complete decoding. stored_pixel uses the proved field views in proofs/shared/views.rs.",
         "ambiguity": "",
@@ -53,84 +98,129 @@
       },
       {
         "file": "proofs/shared/bitmap.rs",
-        "members": ["spec::black_fill_prefix"],
+        "members": [
+          "spec::black_fill_prefix"
+        ],
         "classification": "proof-support",
         "justification": "The body partitions rows at completed: earlier rows equal filled_byte and later rows remain 0xFF. initial_black_fill/black_fill_step advance this internal tail-clearing accumulator toward filled_storage; this is not the final public fill result.",
         "ambiguity": ""
       },
       {
         "file": "proofs/spec_properties/readers.rs",
-        "members": ["spec::bits_limit"],
+        "members": [
+          "spec::bits_limit"
+        ],
         "classification": "proof-support",
         "justification": "The recurrence starts at one and doubles count times; bits_limit_monotone and bits_value_bound use it to prove numeric bounds for the reader accumulation. It does not specify which input bits were read.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/readers.rs",
-        "members": ["macro::production_read_bits_after", "macro::production_read_bits_before"],
+        "members": [
+          "macro::production_read_bits_after",
+          "macro::production_read_bits_before"
+        ],
         "classification": "proof-support",
         "justification": "before saves ghost value/position; after reveals bit_at/bits_value and connects the actual shifted byte, position increment and previous accumulator to the recurrence. These macros support the src/reader.rs loop, not additional normative rules.",
         "ambiguity": ""
       },
       {
         "file": "proofs/model_support/document.rs",
-        "members": ["spec::random_header_windows", "spec::random_payload_windows", "spec::sequential_windows"],
+        "members": [
+          "spec::random_header_windows",
+          "spec::random_payload_windows",
+          "spec::sequential_windows"
+        ],
         "classification": "proof-support",
         "justification": "Bodies connect ghost window sequences to adjacent parsed headers/payloads, prefix lengths and the current reader end. Append and offset lemmas in this same file, called by src/document.rs via production_impl/document.rs, discharge the final container_fields relations. These are traversal histories, not extra normative requirements.",
         "ambiguity": ""
       },
       {
         "file": "proofs/model_support/mmr.rs",
-        "members": ["spec::future_rows_white", "spec::raster_inner", "spec::raster_outer", "spec::row_cache_prefix", "spec::transition_prefix_valid"],
+        "members": [
+          "spec::future_rows_white",
+          "spec::raster_inner",
+          "spec::raster_outer",
+          "spec::row_cache_prefix",
+          "spec::transition_prefix_valid"
+        ],
         "classification": "proof-support",
         "justification": "transition_prefix_valid bounds and orders positions below scanned; row_cache_prefix partitions scanned pixels from white remainder; future_rows_white frames unvisited rows. raster_inner/outer bind ghost completed rows/steps, current reference and cursor to specs/mmr.rs histories. src/mmr.rs uses these loop/helper invariants to establish bitmap_decodes, not as substitutes for that output.",
         "ambiguity": ""
       },
       {
         "file": "proofs/model_support/mmr.rs",
-        "members": ["spec::reference_cursor_matches"],
+        "members": [
+          "spec::reference_cursor_matches"
+        ],
         "classification": "proof-support",
         "justification": "The body bounds start/cursor, requires the cursor to be eligible or the last sentinel, and rules out eligibility in the skipped interval. src/mmr.rs cached reference search and proofs/spec_properties/mmr.rs reference_prefix_skipped compose it with reference_pair_matches. This is cached-search bookkeeping.",
         "ambiguity": ""
       },
       {
         "file": "proofs/model_support/mmr.rs",
-        "members": ["spec::transition_span_result"],
+        "members": [
+          "spec::transition_span_result"
+        ],
         "classification": "proof-support",
         "justification": "The body is tuple equality to specs/mmr.rs transition_span_state. It bridges the native transition-buffer update to raster_step without introducing another recurrence or normative rule; the observable raster relation remains in specs/mmr.rs.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/arithmetic.rs",
-        "members": ["macro::production_decode_interval_subtraction", "macro::production_integer_history_index", "macro::production_integer_magnitude", "macro::production_qe_transition_valid"],
+        "members": [
+          "macro::production_decode_interval_subtraction",
+          "macro::production_integer_history_index",
+          "macro::production_integer_magnitude",
+          "macro::production_qe_transition_valid"
+        ],
         "classification": "proof-support",
         "justification": "Bodies call arithmetic_shared::qe_transition_valid for implementation QE entry bounds, assert interval subtraction safety, and invoke arithmetic_properties history-index/magnitude bounds. They connect src/arithmetic.rs machine operations to existing contracts, not independent QE table fidelity or new decoding equations.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/bitmap.rs",
-        "members": ["macro::production_bitmap_row_copy_bounds", "macro::production_filled_storage_result", "macro::production_filled_storage_step", "macro::production_filled_tail_bounds"],
+        "members": [
+          "macro::production_bitmap_row_copy_bounds",
+          "macro::production_filled_storage_result",
+          "macro::production_filled_storage_step",
+          "macro::production_filled_tail_bounds"
+        ],
         "classification": "proof-support",
         "justification": "Bodies establish row/stride/index multiplication bounds, connect the actual tail mask to filled_byte, and call bitmap_shared black_fill_step/filled_storage_result/row_copy_bounds with field reveals. They support src/bitmap.rs loops and final results rather than defining additional model outputs.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/document.rs",
-        "members": ["macro::production_document_fields", "macro::production_known_segment_data_fields", "macro::production_page_information_count_step", "macro::production_random_access_complete", "macro::production_random_header_append", "macro::production_random_payload", "macro::production_sequential_complete", "macro::production_sequential_window_append"],
+        "members": [
+          "macro::production_document_fields",
+          "macro::production_known_segment_data_fields",
+          "macro::production_page_information_count_step",
+          "macro::production_random_access_complete",
+          "macro::production_random_header_append",
+          "macro::production_random_payload",
+          "macro::production_sequential_complete",
+          "macro::production_sequential_window_append"
+        ],
         "classification": "proof-support",
         "justification": "Bodies expose document fields/known metadata, unfold the page-information count increment, append ghost sequential/random windows with metadata, and call model_support/document.rs completion lemmas. They connect src/document.rs actual traversal to final container results; ghost windows are not new normative rules.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/file_header.rs",
-        "members": ["macro::production_file_header_result"],
+        "members": [
+          "macro::production_file_header_result"
+        ],
         "classification": "proof-support",
         "justification": "The body calls views::file_header_fields on the actual header, exposing fields for src/file_header.rs result contracts. It neither parses bytes nor independently validates specs/file_header.rs wire interpretation.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/generic_region.rs",
-        "members": ["macro::production_generic_copied_row_pixels", "macro::production_generic_template_facts"],
+        "members": [
+          "macro::production_generic_copied_row_pixels",
+          "macro::production_generic_template_facts"
+        ],
         "classification": "proof-support",
         "justification": "Bodies expose bitmap fields and invoke bitmap_shared::row_copy_pixels, or generic_region_shared::generic_template_runtime_facts. They bridge src/generic_region.rs copying/template operations to existing results, not a second raster algorithm.",
         "ambiguity": "",
@@ -138,56 +228,91 @@
       },
       {
         "file": "proofs/production_impl/mmr.rs",
-        "members": ["macro::production_mmr_trace_output"],
+        "members": [
+          "macro::production_mmr_trace_output"
+        ],
         "classification": "proof-support",
         "justification": "The body asserts completed row count, raster_rows, rows_cache_pixels and exact consumed position to witness bitmap_decodes for src/mmr.rs. This is the final proof bridge from actual histories/pixels, not merely storage validity and not independent T.6 approval.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/segment_data.rs",
-        "members": ["macro::production_profiles_fields"],
+        "members": [
+          "macro::production_profiles_fields"
+        ],
         "classification": "proof-support",
         "justification": "The body binds parsed profile count/length and every ordered ID to segments::be_u32_at at offset 4 + index * 4. It discharges src/segment_data.rs profiles_payload_fields result from actual reader output, not profile meaning.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/segment_header.rs",
-        "members": ["macro::production_reference_width", "macro::production_segment_header_fields", "macro::production_segment_reference_fields"],
+        "members": [
+          "macro::production_reference_width",
+          "macro::production_segment_header_fields",
+          "macro::production_segment_reference_fields"
+        ],
         "classification": "proof-support",
         "justification": "Bodies invoke segment_header_shared width facts, reveal segment_header_fields, and assert actual count, retention bytes, reference widths/values, order and cursor extent to build referred_header_fields. They support src/segment_header.rs results without approving retention interpretation.",
         "ambiguity": ""
       },
       {
         "file": "proofs/production_impl/symbol_text.rs",
-        "members": ["macro::production_symbol_current_placement_witness"],
+        "members": [
+          "macro::production_symbol_current_placement_witness"
+        ],
         "classification": "proof-support",
         "justification": "The body constructs a ghost Placement from the native x/y and witnesses placement_for_current(old(state), ...) for src/symbol_text.rs. This proves an existential from the computed coordinates, not full text rendering or encoded aggregation.",
         "ambiguity": ""
       },
       {
         "file": "proofs/spec_properties/arithmetic.rs",
-        "members": ["spec::binary_value", "spec::pow2"],
+        "members": [
+          "spec::binary_value",
+          "spec::pow2"
+        ],
         "classification": "proof-support",
         "justification": "pow2 doubles from one and binary_value folds supplied decisions as a binary prefix. Their bound/step lemmas justify IAID and integer history arithmetic used by src/arithmetic.rs; they do not choose decisions from input or approve the arithmetic model.",
         "ambiguity": ""
       },
       {
         "file": "proofs/spec_properties/mmr.rs",
-        "members": ["spec::reference_prefix_skipped"],
+        "members": [
+          "spec::reference_prefix_skipped"
+        ],
         "classification": "proof-support",
         "justification": "The body bounds a skipped prefix and excludes every reference_position_eligible before its end. reference_suffix_is_global uses it to lift cached-suffix reference_pair_matches to start zero for src/mmr.rs; it is search bookkeeping, not a new reference-coordinate rule.",
         "ambiguity": ""
       },
       {
         "file": "specs/arithmetic.rs",
-        "members": ["spec::context_valid", "spec::decoder_position_valid", "spec::decoder_state_valid", "spec::decoder_valid"],
+        "members": [
+          "spec::context_valid",
+          "spec::decoder_position_valid",
+          "spec::decoder_state_valid",
+          "spec::decoder_valid"
+        ],
         "classification": "representation-invariant",
         "justification": "Bodies bound context index/MPS, connect byte position/current byte to input, constrain interval/count and marker bytes, then add MIN_INTERVAL normalization. src/arithmetic.rs uses these entry/exit invariants; none determines a decoded decision or resulting register tuple.",
         "ambiguity": ""
       },
       {
         "file": "specs/arithmetic.rs",
-        "members": ["spec::context_after_decision", "spec::decision_registers", "spec::decision_state", "spec::entry_decision", "spec::entry_index", "spec::entry_mps", "spec::exchange_decision", "spec::exchange_index", "spec::exchange_is_mps", "spec::exchange_mps", "spec::exchange_normalization", "spec::initialized_state", "spec::normalized_state", "spec::refill_step"],
+        "members": [
+          "spec::context_after_decision",
+          "spec::decision_registers",
+          "spec::decision_state",
+          "spec::entry_decision",
+          "spec::entry_index",
+          "spec::entry_mps",
+          "spec::exchange_decision",
+          "spec::exchange_index",
+          "spec::exchange_is_mps",
+          "spec::exchange_mps",
+          "spec::exchange_normalization",
+          "spec::initialized_state",
+          "spec::normalized_state",
+          "spec::refill_step"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies select exchange decision/context transitions, refill bytes/marker/errors, initialize scaled registers and recursively normalize into exact state tuples. decision_state composes the actual QE_STATES entry with decision_registers; src/arithmetic.rs contracts bind decision, context and every register to these results. model_support/arithmetic.rs supplies same-owner reveals.",
         "ambiguity": "",
@@ -195,7 +320,16 @@
       },
       {
         "file": "specs/arithmetic.rs",
-        "members": ["spec::iaid_run", "spec::iaid_state", "spec::integer_bit_state", "spec::integer_bits_run", "spec::integer_history_step", "spec::integer_selection_state", "spec::integer_state", "spec::integer_step_state"],
+        "members": [
+          "spec::iaid_run",
+          "spec::iaid_state",
+          "spec::integer_bit_state",
+          "spec::integer_bits_run",
+          "spec::integer_history_step",
+          "spec::integer_selection_state",
+          "spec::integer_state",
+          "spec::integer_step_state"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies compose exact decision_state/context_after_decision steps into updated banks/registers/history, select integer payload length/offset, accumulate bits and return signed/OOB or partial errors. IAID starts with sentinel one and removes required. src/arithmetic.rs integer/IAID contracts use these full-state results, unlike a loop measure.",
         "ambiguity": "",
@@ -203,28 +337,49 @@
       },
       {
         "file": "specs/arithmetic.rs",
-        "members": ["spec::decode_error", "spec::eof_error", "spec::error_for_signal"],
+        "members": [
+          "spec::decode_error",
+          "spec::eof_error",
+          "spec::error_for_signal"
+        ],
         "classification": "project-policy",
         "justification": "Bodies construct checked-width EOF/overflow diagnostics and translate ArithmeticError variants into DecodeError payloads used by src/arithmetic.rs and symbol_text/generic_region bridges. These typed Rust errors are project API policy, not normative exception types.",
         "ambiguity": ""
       },
       {
         "file": "specs/arithmetic.rs",
-        "members": ["spec::decoder_byte_position", "spec::decoder_marker", "spec::renormalization_steps"],
+        "members": [
+          "spec::decoder_byte_position",
+          "spec::decoder_marker",
+          "spec::renormalization_steps"
+        ],
         "classification": "proof-support",
         "justification": "Two bodies project decoder fields for contracts; renormalization_steps counts interval doublings until MIN_INTERVAL, independently of the input/refill result. src/arithmetic.rs uses the latter as termination support; it does not prescribe normalized_state or a global CPU bound.",
         "ambiguity": ""
       },
       {
         "file": "specs/decode.rs",
-        "members": ["spec::bitmap_refs_valid", "spec::collected_symbols_valid", "spec::initial_resources_valid", "spec::pattern_store_valid", "spec::region_buffers_valid", "spec::runtime_pages_valid", "spec::symbol_store_valid"],
+        "members": [
+          "spec::bitmap_refs_valid",
+          "spec::collected_symbols_valid",
+          "spec::initial_resources_valid",
+          "spec::pattern_store_valid",
+          "spec::region_buffers_valid",
+          "spec::runtime_pages_valid",
+          "spec::symbol_store_valid"
+        ],
         "classification": "representation-invariant",
         "justification": "Bodies quantify bitmap::storage_valid over runtime page/region stores, owned or borrowed collected symbols, exported symbol groups and patterns; initial_resources_valid conjoins pattern/symbol stores. src/decode.rs preserves these representation conditions without thereby specifying decoded content.",
         "ambiguity": ""
       },
       {
         "file": "specs/decode.rs",
-        "members": ["spec::collected_symbol_count", "spec::first_symbol_index", "spec::referred_symbol_count", "spec::symbol_group_count"],
+        "members": [
+          "spec::collected_symbol_count",
+          "spec::first_symbol_index",
+          "spec::referred_symbol_count",
+          "spec::symbol_group_count"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies select the first numbered group, give its exported count or zero when absent, sum each referred occurrence, and report owned/borrowed collection length. src/decode.rs find/collect contracts expose this selection/count relation, including repeats, rather than only storage validity.",
         "ambiguity": "",
@@ -232,7 +387,12 @@
       },
       {
         "file": "specs/decode.rs",
-        "members": ["spec::allocation_bytes", "spec::charge_succeeds", "spec::checked_sum_fits", "spec::release_succeeds"],
+        "members": [
+          "spec::allocation_bytes",
+          "spec::charge_succeeds",
+          "spec::checked_sum_fits",
+          "spec::release_succeeds"
+        ],
         "classification": "project-policy",
         "justification": "Bodies compute count * size_of, test u64 addition/limit bounds, and disallow retained-byte underflow. src/decode.rs resource accounting uses these machine/requested-storage rules, not normative coding equations.",
         "ambiguity": "",
@@ -240,21 +400,55 @@
       },
       {
         "file": "specs/decode.rs",
-        "members": ["spec::bitmap_byte_count", "spec::collector_bitmap_bytes", "spec::collector_decoded_limit", "spec::collector_memory_limit", "spec::collector_pages", "spec::dispatch_class", "spec::document_info", "spec::document_pages", "spec::generic_template_code", "spec::page_bitmap", "spec::page_number", "spec::region_intersects_page", "spec::retained_bytes", "spec::runtime_last_stripe_end", "spec::runtime_open_stripe_max_row", "spec::work_used"],
+        "members": [
+          "spec::bitmap_byte_count",
+          "spec::collector_bitmap_bytes",
+          "spec::collector_decoded_limit",
+          "spec::collector_memory_limit",
+          "spec::collector_pages",
+          "spec::dispatch_class",
+          "spec::document_info",
+          "spec::document_pages",
+          "spec::generic_template_code",
+          "spec::page_bitmap",
+          "spec::page_number",
+          "spec::region_intersects_page",
+          "spec::retained_bytes",
+          "spec::runtime_last_stripe_end",
+          "spec::runtime_open_stripe_max_row",
+          "spec::work_used"
+        ],
         "classification": "proof-support",
         "justification": "Bodies expose page/document/collector/resource/stripe fields, project bitmap byte length through views, map template/segment enums to dispatch codes, and test nonempty region intersection. src/decode.rs contracts and model_support/decode.rs field lemmas use this vocabulary; these projections/guards are not full raster or lifecycle models.",
         "ambiguity": ""
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::bounded_reads", "spec::count_limits", "spec::default_limits", "spec::next_count_quota_result", "spec::quota_result", "spec::work"],
+        "members": [
+          "spec::bounded_reads",
+          "spec::count_limits",
+          "spec::default_limits",
+          "spec::next_count_quota_result",
+          "spec::quota_result",
+          "spec::work"
+        ],
         "classification": "project-policy",
         "justification": "Bodies bound cumulative read/count totals, fix project Limits defaults, compute input + segment + reference work, and prioritize integer-overflow before LimitExceeded with exact kind/actual/limit. src/document.rs quotas and proofs/spec_properties/document.rs resource lemmas use these project limits, not standard-mandated budgets.",
         "ambiguity": ""
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::declared_count_matches_pages", "spec::embedded_metadata", "spec::known_segment_data_fields", "spec::payload_window", "spec::random_access_container_fields", "spec::random_access_segment_fields", "spec::segment_metadata", "spec::sequential_container_fields", "spec::standalone_metadata"],
+        "members": [
+          "spec::declared_count_matches_pages",
+          "spec::embedded_metadata",
+          "spec::known_segment_data_fields",
+          "spec::payload_window",
+          "spec::random_access_container_fields",
+          "spec::random_access_segment_fields",
+          "spec::segment_metadata",
+          "spec::sequential_container_fields",
+          "spec::standalone_metadata"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies bind accepted metadata to file-header/segments byte models, typed Page/Stripe/Profiles payloads, exact header/payload windows, increasing standalone numbers and complete sequential/random-access extents/EOF. src/document.rs parsing contracts expose these results; model_support/document.rs proves completion from internal windows, not the reverse.",
         "ambiguity": "",
@@ -262,7 +456,13 @@
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::page_finish_result", "spec::public_page_fields", "spec::public_page_height", "spec::stripe_accepted", "spec::stripe_result"],
+        "members": [
+          "spec::page_finish_result",
+          "spec::public_page_fields",
+          "spec::public_page_height",
+          "spec::stripe_accepted",
+          "spec::stripe_result"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies constrain stripe ordering/size/known-height, return the actual typed stripe/duplicate-first finish errors, and bind public page metadata with known-height precedence or checked last-row + 1. src/document.rs PageState contracts promise these API results and failure frames.",
         "ambiguity": "",
@@ -270,7 +470,18 @@
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::contiguous_pages", "spec::is_last_use", "spec::page_association_allowed", "spec::producer_retained_for_later_use", "spec::reference_class_allowed", "spec::references_resolve_lower", "spec::release_allowed", "spec::segment_policy_allowed", "spec::unique_numbers", "spec::valid_profiles"],
+        "members": [
+          "spec::contiguous_pages",
+          "spec::is_last_use",
+          "spec::page_association_allowed",
+          "spec::producer_retained_for_later_use",
+          "spec::reference_class_allowed",
+          "spec::references_resolve_lower",
+          "spec::release_allowed",
+          "spec::segment_policy_allowed",
+          "spec::unique_numbers",
+          "spec::valid_profiles"
+        ],
         "classification": "candidate-standard-facing-model",
         "justification": "Bodies express abstract numbering/page order, lower resolved reference edges, allowed owner/reference classes, last-use/retention implication and global/page profile inclusion. proofs/spec_properties/document.rs proves properties of these abstract candidates; their purpose is proposed container/caller interpretation, not just Rust storage. Unregistered helpers retain no requirement links.",
         "ambiguity": "",
@@ -278,7 +489,13 @@
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::final_height", "spec::initial_page_state", "spec::page_step", "spec::unknown_marker_fits", "spec::unknown_marker_valid"],
+        "members": [
+          "spec::final_height",
+          "spec::initial_page_state",
+          "spec::page_step",
+          "spec::unknown_marker_fits",
+          "spec::unknown_marker_valid"
+        ],
         "classification": "candidate-standard-facing-model",
         "justification": "Bodies define a separate abstract PageState event transition/final-height interpretation and marker extent/row-count predicates. proofs/spec_properties/document.rs proves properties of these abstract candidates. page_step rejects content/stripe after ended, unlike the narrower production stripe_accepted helper; these are not interchangeable source-bound API results. Unregistered helpers retain no requirement links.",
         "ambiguity": "",
@@ -286,21 +503,48 @@
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::depth_witness", "spec::lower_chain"],
+        "members": [
+          "spec::depth_witness",
+          "spec::lower_chain"
+        ],
         "classification": "proof-support",
         "justification": "depth_witness supplies a map of bounded positive ranks increasing from reference to owner; lower_chain recursively orders a supplied number sequence. proofs/spec_properties/document.rs uses them to expose reference-depth bounds and prove decreasing-chain finiteness. These are abstract graph proof witnesses, not standalone normative reference rules or native graph-depth enforcement.",
         "ambiguity": ""
       },
       {
         "file": "specs/document.rs",
-        "members": ["spec::contains_number", "spec::decoder_limits", "spec::document_declared_page_count", "spec::document_organization", "spec::document_pages", "spec::document_segment_count", "spec::envelope_bytes", "spec::global_bytes", "spec::global_segment_count", "spec::header_byte_offset", "spec::page_information_count", "spec::payload_byte_offset", "spec::production_is_intermediate_region", "spec::reference_count", "spec::segment_headers", "spec::sequential_offset", "spec::sum"],
+        "members": [
+          "spec::contains_number",
+          "spec::decoder_limits",
+          "spec::document_declared_page_count",
+          "spec::document_organization",
+          "spec::document_pages",
+          "spec::document_segment_count",
+          "spec::envelope_bytes",
+          "spec::global_bytes",
+          "spec::global_segment_count",
+          "spec::header_byte_offset",
+          "spec::page_information_count",
+          "spec::payload_byte_offset",
+          "spec::production_is_intermediate_region",
+          "spec::reference_count",
+          "spec::segment_headers",
+          "spec::sequential_offset",
+          "spec::sum"
+        ],
         "classification": "proof-support",
         "justification": "Bodies project private fields/header sequences, classify intermediate enums, count pages/references, test number membership and recursively sum header/payload/envelope extents. src/document.rs contracts, same-owner model_support field/offset lemmas and abstract property proofs use this vocabulary to state the enclosing results/policies; it does not itself approve container semantics.",
         "ambiguity": ""
       },
       {
         "file": "specs/file_header.rs",
-        "members": ["spec::byte_length", "spec::colour_regions", "spec::extended_templates", "spec::organization", "spec::page_count"],
+        "members": [
+          "spec::byte_length",
+          "spec::colour_regions",
+          "spec::extended_templates",
+          "spec::organization",
+          "spec::page_count"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies extract organization and option page-count from raw flag/big-endian bytes, expose extension/colour bits and select nine/thirteen consumed bytes. src/file_header.rs successful parser contracts bind actual header fields/extent to them via views::file_header_fields.",
         "ambiguity": "",
@@ -308,7 +552,10 @@
       },
       {
         "file": "specs/file_header.rs",
-        "members": ["spec::has_signature", "spec::valid"],
+        "members": [
+          "spec::has_signature",
+          "spec::valid"
+        ],
         "classification": "candidate-standard-facing-model",
         "justification": "has_signature matches the eight literal signature bytes; valid adds minimum flag/count extents and reserved-bit constraints. src/file_header.rs acceptance and result recommendations use these proposed wire admissibility predicates, not an internal object-storage invariant.",
         "ambiguity": "",
@@ -316,14 +563,28 @@
       },
       {
         "file": "specs/generic_region.rs",
-        "members": ["spec::contexts_compatible", "spec::contexts_valid", "spec::generic_contexts_valid", "spec::generic_session_valid", "spec::probability_states_valid", "spec::refinement_contexts_valid", "spec::target_adaptive_valid"],
+        "members": [
+          "spec::contexts_compatible",
+          "spec::contexts_valid",
+          "spec::generic_contexts_valid",
+          "spec::generic_session_valid",
+          "spec::probability_states_valid",
+          "spec::refinement_contexts_valid",
+          "spec::target_adaptive_valid"
+        ],
         "classification": "representation-invariant",
         "justification": "Bodies quantify arithmetic context index/MPS validity, conjoin decoder/session validity, compare snapshot template/extended/count fields, and require adaptive target offsets to precede the current pixel. src/generic_region.rs context/session contracts and shared/property lemmas use these admissible-state/geometry constraints, not transformed pixel outputs.",
         "ambiguity": ""
       },
       {
         "file": "specs/generic_region.rs",
-        "members": ["spec::bitmap_storage_spec", "spec::generic_work_spec", "spec::probability_error_for_signal", "spec::probability_validation_result", "spec::refinement_work_spec"],
+        "members": [
+          "spec::bitmap_storage_spec",
+          "spec::generic_work_spec",
+          "spec::probability_error_for_signal",
+          "spec::probability_validation_result",
+          "spec::refinement_work_spec"
+        ],
         "classification": "project-policy",
         "justification": "Bodies estimate packed storage and fixed-coefficient work, specify the first invalid arithmetic context's exact typed diagnostic, and map context/decoder signals into GenericRegionError. src/generic_region.rs validation/resource contracts consume these project accounting/error policies, not normative exception or allocator guarantees.",
         "ambiguity": "",
@@ -331,7 +592,24 @@
       },
       {
         "file": "specs/generic_region.rs",
-        "members": ["spec::generic_adaptive_count", "spec::generic_context_bits", "spec::generic_slot_adaptive", "spec::generic_slot_count", "spec::generic_slot_matches", "spec::generic_slot_x", "spec::generic_slot_y", "spec::generic_sltp_context", "spec::refinement_context_bits", "spec::refinement_slot_adaptive", "spec::refinement_slot_count", "spec::refinement_slot_is_target", "spec::refinement_slot_matches", "spec::refinement_slot_x", "spec::refinement_slot_y", "spec::refinement_sltp_context"],
+        "members": [
+          "spec::generic_adaptive_count",
+          "spec::generic_context_bits",
+          "spec::generic_slot_adaptive",
+          "spec::generic_slot_count",
+          "spec::generic_slot_matches",
+          "spec::generic_slot_x",
+          "spec::generic_slot_y",
+          "spec::generic_sltp_context",
+          "spec::refinement_context_bits",
+          "spec::refinement_slot_adaptive",
+          "spec::refinement_slot_count",
+          "spec::refinement_slot_is_target",
+          "spec::refinement_slot_matches",
+          "spec::refinement_slot_x",
+          "spec::refinement_slot_y",
+          "spec::refinement_sltp_context"
+        ],
         "classification": "candidate-standard-facing-model",
         "justification": "Bodies enumerate template context sizes/SLTP indices, nominal slot coordinates, adaptive-pixel numbers and target/reference planes; slot_matches relates actual descriptors to these formulas. src/generic_region.rs and proofs/shared/generic_region.rs connect implementation template descriptors to these selected geometric candidates.",
         "ambiguity": "",
@@ -339,7 +617,17 @@
       },
       {
         "file": "specs/generic_region.rs",
-        "members": ["spec::context_value", "spec::generic_pixel_decisions", "spec::refinement_pixel_decisions", "spec::reset_context_states", "spec::restore_context_states", "spec::sample_or_zero", "spec::tpgd_next", "spec::tpgr_uses_prediction", "spec::unknown_length_accounting"],
+        "members": [
+          "spec::context_value",
+          "spec::generic_pixel_decisions",
+          "spec::refinement_pixel_decisions",
+          "spec::reset_context_states",
+          "spec::restore_context_states",
+          "spec::sample_or_zero",
+          "spec::tpgd_next",
+          "spec::tpgr_uses_prediction",
+          "spec::unknown_length_accounting"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies fold Boolean context bits, sample out-of-bounds as white, compute prediction toggles/decision counts, select restored or reset state sequences, and give arithmetic/MMR marker slice extents. src/generic_region.rs contracts and proofs/spec_properties/generic_region.rs use these helper/abstract transformations, each stronger in content than a validity predicate.",
         "ambiguity": "",
@@ -347,7 +635,9 @@
       },
       {
         "file": "specs/generic_region.rs",
-        "members": ["spec::decoded_pixels"],
+        "members": [
+          "spec::decoded_pixels"
+        ],
         "classification": "project-result-model",
         "justification": "The body returns the supplied decisions prefix of length min(decisions.len(), context_indexes.len()); it never reads the context-index values or encoded bytes. proofs/spec_properties/generic_region.rs proves equality for equal supplied decision/context-index sequences. Its source purpose is an abstract sequence result, not a production entropy decoder.",
         "ambiguity": "",
@@ -355,21 +645,35 @@
       },
       {
         "file": "specs/generic_region.rs",
-        "members": ["spec::generic_template_code", "spec::pixel_measure", "spec::pow2", "spec::row_measure"],
+        "members": [
+          "spec::generic_template_code",
+          "spec::pixel_measure",
+          "spec::pow2",
+          "spec::row_measure"
+        ],
         "classification": "proof-support",
         "justification": "Bodies map template enums to numeric identity, double powers from one, and subtract current row/x from bounded extents. src/generic_region.rs and its property/shared proofs use these projections/bounds/decreases measures; measures alone do not describe raster output.",
         "ambiguity": ""
       },
       {
         "file": "specs/halftone.rs",
-        "members": ["spec::bitmaps_valid", "spec::decoder_state_valid", "spec::indexes_valid", "spec::work_valid"],
+        "members": [
+          "spec::bitmaps_valid",
+          "spec::decoder_state_valid",
+          "spec::indexes_valid",
+          "spec::work_valid"
+        ],
         "classification": "representation-invariant",
         "justification": "Bodies quantify packed bitmap storage, constrain gray indexes below pattern count, require used <= limit, and inspect Arithmetic/PatternMmr/GrayMmr state variants for decoder validity or coded offset bounds. src/halftone.rs preserves these representation conditions, not complete rendered content.",
         "ambiguity": ""
       },
       {
         "file": "specs/halftone.rs",
-        "members": ["spec::halftone_flags_valid", "spec::operator_code_valid", "spec::pattern_flags_valid"],
+        "members": [
+          "spec::halftone_flags_valid",
+          "spec::operator_code_valid",
+          "spec::pattern_flags_valid"
+        ],
         "classification": "candidate-standard-facing-model",
         "justification": "Bodies mask reserved pattern bits, restrict MMR template/skip combinations and bound encoded operator values. src/halftone.rs parsing/shared properties use these proposed wire admissibility rules; they constrain encoded flags, not in-memory bitmap storage.",
         "ambiguity": "",
@@ -377,7 +681,15 @@
       },
       {
         "file": "specs/halftone.rs",
-        "members": ["spec::halftone_header_accepted", "spec::halftone_header_fields", "spec::operator_for_code", "spec::pattern_count", "spec::pattern_header_accepted", "spec::pattern_header_fields", "spec::signed_u32"],
+        "members": [
+          "spec::halftone_header_accepted",
+          "spec::halftone_header_fields",
+          "spec::operator_for_code",
+          "spec::pattern_count",
+          "spec::pattern_header_accepted",
+          "spec::pattern_header_fields",
+          "spec::signed_u32"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies define seven/twenty-one-byte project acceptance, bind raw header flags/dimensions/grid words to actual fields through segments::be_u32_at, decode signed origins/operator enums and compute gray_max + 1 patterns. src/halftone.rs header/result contracts promise these outputs.",
         "ambiguity": "",
@@ -385,7 +697,17 @@
       },
       {
         "file": "specs/halftone.rs",
-        "members": ["spec::clipped_axis_valid", "spec::fixed_pixel", "spec::gray_binary_bit", "spec::gray_depth_expected", "spec::gray_depth_valid", "spec::grid_x_fixed", "spec::grid_y_fixed", "spec::index_bit_inserted", "spec::wholly_outside"],
+        "members": [
+          "spec::clipped_axis_valid",
+          "spec::fixed_pixel",
+          "spec::gray_binary_bit",
+          "spec::gray_depth_expected",
+          "spec::gray_depth_valid",
+          "spec::grid_x_fixed",
+          "spec::grid_y_fixed",
+          "spec::index_bit_inserted",
+          "spec::wholly_outside"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies prescribe ceil-log2 depth (including count-one zero), Gray XOR, exact index bit insertion, signed affine grid coordinates, right-shift fixed-point conversion and clipped/outside geometry. src/halftone.rs helper contracts and shared/property lemmas relate computed outputs to them; clipped_axis_valid equates endpoints, rather than only asserting safe storage.",
         "ambiguity": "",
@@ -393,14 +715,27 @@
       },
       {
         "file": "specs/halftone.rs",
-        "members": ["spec::pow2", "spec::render_precedes", "spec::row_major_offset", "spec::work_limit", "spec::work_used"],
+        "members": [
+          "spec::pow2",
+          "spec::render_precedes",
+          "spec::row_major_offset",
+          "spec::work_limit",
+          "spec::work_used"
+        ],
         "classification": "proof-support",
         "justification": "Bodies provide doubling powers for gray bounds, row-major addressing/order, and private WorkBudget projections. src/halftone.rs and model_support/halftone.rs work_fields/shared/property proofs use these helpers to state traversal/accounting/results, not new normative equations.",
         "ambiguity": ""
       },
       {
         "file": "specs/huffman.rs",
-        "members": ["spec::canonical_range_fits", "spec::fits_in_bits", "spec::line_decodable", "spec::line_lengths_valid", "spec::reader_valid", "spec::wide_fits"],
+        "members": [
+          "spec::canonical_range_fits",
+          "spec::fits_in_bits",
+          "spec::line_decodable",
+          "spec::line_lengths_valid",
+          "spec::reader_valid",
+          "spec::wide_fits"
+        ],
         "classification": "representation-invariant",
         "justification": "Bodies bound reader positions, line range widths/i32 extrema, wide-code high limbs or mathematical value, and last assigned code within its bit length. src/huffman.rs wide arithmetic, constructor and decode helpers use these machine/representation admissibility predicates, not complete entropy input/output relations.",
         "ambiguity": "",
@@ -408,7 +743,16 @@
       },
       {
         "file": "specs/huffman.rs",
-        "members": ["spec::add_limb", "spec::append_bit", "spec::canonical_first_code", "spec::checked_add_small", "spec::checked_shift_left_one", "spec::decoded_line_value", "spec::small_distance_from", "spec::subtract_limb"],
+        "members": [
+          "spec::add_limb",
+          "spec::append_bit",
+          "spec::canonical_first_code",
+          "spec::checked_add_small",
+          "spec::checked_shift_left_one",
+          "spec::decoded_line_value",
+          "spec::small_distance_from",
+          "spec::subtract_limb"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies prescribe limb carry/borrow, checked wide addition/shift/bit append/distance, the (previous + count) << 1 recurrence, and signed line-low plus/minus offset output. src/huffman.rs helper contracts bind actual local results to these transformations.",
         "ambiguity": "",
@@ -416,7 +760,13 @@
       },
       {
         "file": "specs/huffman.rs",
-        "members": ["spec::assignment_codes", "spec::assignment_contents", "spec::assignment_order", "spec::assignment_starts", "spec::canonical_assignment"],
+        "members": [
+          "spec::assignment_codes",
+          "spec::assignment_contents",
+          "spec::assignment_order",
+          "spec::assignment_starts",
+          "spec::canonical_assignment"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies bind original raw lines/histogram/extent, first-prefix code recurrence, active-bucket starts/range fits and stable original-index order to the returned table. src/huffman.rs new/Borrowed from_line_source expose these results; model_support/huffman.rs proves same-owner definitions and assignment completion.",
         "ambiguity": "",
@@ -424,7 +774,18 @@
       },
       {
         "file": "specs/huffman.rs",
-        "members": ["spec::assignment_prefix", "spec::bucket", "spec::first_prefix", "spec::histogram", "spec::is_raw", "spec::ordered_before", "spec::pow2", "spec::raw_lines", "spec::table_has_oob", "spec::wide_value"],
+        "members": [
+          "spec::assignment_prefix",
+          "spec::bucket",
+          "spec::first_prefix",
+          "spec::histogram",
+          "spec::is_raw",
+          "spec::ordered_before",
+          "spec::pow2",
+          "spec::raw_lines",
+          "spec::table_has_oob",
+          "spec::wide_value"
+        ],
         "classification": "proof-support",
         "justification": "Bodies project Borrowed input/OOB membership, give limb-value/power vocabulary, select stable original indices by length, recursively derive prefix codes, and track scanned histogram/assignment prefixes. src/huffman.rs constructor loops and model_support/huffman.rs step/completion lemmas use them to prove the final assignment relation, not replace it.",
         "ambiguity": "",
@@ -432,14 +793,24 @@
       },
       {
         "file": "specs/mmr.rs",
-        "members": ["spec::bitmap_storage_valid", "spec::reader_valid", "spec::reference_line_valid", "spec::transitions_ordered"],
+        "members": [
+          "spec::bitmap_storage_valid",
+          "spec::reader_valid",
+          "spec::reference_line_valid",
+          "spec::transitions_ordered"
+        ],
         "classification": "representation-invariant",
         "justification": "Bodies constrain packed bitmap dimensions/length, reader bit bounds, nondecreasing transition coordinates <= width and two terminal width sentinels. src/mmr.rs helper pre/postconditions require these representations without specifying decoded pixels.",
         "ambiguity": ""
       },
       {
         "file": "specs/mmr.rs",
-        "members": ["spec::mode_code_in_implementation_table", "spec::mode_matches", "spec::run_code_in_implementation_tables", "spec::run_key_matches"],
+        "members": [
+          "spec::mode_code_in_implementation_table",
+          "spec::mode_matches",
+          "spec::run_code_in_implementation_tables",
+          "spec::run_key_matches"
+        ],
         "classification": "proof-support",
         "justification": "Bodies test membership in MODE_CODES or colour-specific terminating/makeup/common runtime arrays and equality of code bits/length keys. src/mmr.rs lookup contracts and run/mode prefix relations depend on this implementation vocabulary; table membership is not a normative-table theorem.",
         "ambiguity": "",
@@ -447,7 +818,15 @@
       },
       {
         "file": "specs/mmr.rs",
-        "members": ["spec::complete_run", "spec::first_reference_candidate", "spec::horizontal_pair", "spec::mode_prefix_matches", "spec::reference_pair_matches", "spec::reference_position_eligible", "spec::run_prefix_matches"],
+        "members": [
+          "spec::complete_run",
+          "spec::first_reference_candidate",
+          "spec::horizontal_pair",
+          "spec::mode_prefix_matches",
+          "spec::reference_pair_matches",
+          "spec::reference_position_eligible",
+          "spec::run_prefix_matches"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies bind actual input bits/consumption to run/mode codes, require terminal-last with prior makeups and exact sum, compose opposite-colour horizontal runs, and select the first eligible parity-matching reference pair or width fallback. src/mmr.rs successful helpers promise these consequential input/output selections.",
         "ambiguity": "",
@@ -455,7 +834,20 @@
       },
       {
         "file": "specs/mmr.rs",
-        "members": ["spec::bitmap_decodes", "spec::bounded_bitmap_decodes", "spec::prefix_bitmap_decodes", "spec::raster_rows", "spec::raster_step", "spec::raster_steps", "spec::row_cache_matches", "spec::rows_cache_pixels", "spec::span_pixels", "spec::span_result", "spec::transition_span_state", "spec::white_reference_cache"],
+        "members": [
+          "spec::bitmap_decodes",
+          "spec::bounded_bitmap_decodes",
+          "spec::prefix_bitmap_decodes",
+          "spec::raster_rows",
+          "spec::raster_step",
+          "spec::raster_steps",
+          "spec::row_cache_matches",
+          "spec::rows_cache_pixels",
+          "spec::span_pixels",
+          "spec::span_result",
+          "spec::transition_span_state",
+          "spec::white_reference_cache"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies define deterministic transition-span updates, black effects/white no-op, transition-parity pixels, and finite mode/run/reference/colour/cursor histories chained through completed rows to every visible output pixel and consumed input. src/mmr.rs exposes bounded/prefix results through same-owner witnesses; these are actual raster result relations, unlike model_support loop invariants.",
         "ambiguity": "",
@@ -463,7 +855,10 @@
       },
       {
         "file": "specs/mmr.rs",
-        "members": ["spec::exact_eofb", "spec::required_eofb_prefix"],
+        "members": [
+          "spec::exact_eofb",
+          "spec::required_eofb_prefix"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies recognize the implementation EOFB value through readers::bits_value and bind the immediate 24-bit marker plus zero to seven zero alignment bits to an input-bounded octet boundary. src/mmr.rs bounded/prefix framing contracts consume this exact input-extent relation.",
         "ambiguity": "",
@@ -471,21 +866,40 @@
       },
       {
         "file": "specs/mmr.rs",
-        "members": ["spec::raster_state", "spec::rows_position", "spec::rows_reference", "spec::run_all_makeups", "spec::run_bit_length", "spec::run_value_sum", "spec::span_byte", "spec::transition_black_at", "spec::transition_count_at"],
+        "members": [
+          "spec::raster_state",
+          "spec::rows_position",
+          "spec::rows_reference",
+          "spec::run_all_makeups",
+          "spec::run_bit_length",
+          "spec::run_value_sum",
+          "spec::span_byte",
+          "spec::transition_black_at",
+          "spec::transition_count_at"
+        ],
         "classification": "proof-support",
         "justification": "Bodies construct/project ghost raster state, derive preceding row reference/position, fold run lengths/values/makeup flags, compute packed span addresses and count transition parity. src/mmr.rs and raster/cache predicates compose this vocabulary into final input/pixel relations; projections/folds alone are not a complete decoder result.",
         "ambiguity": ""
       },
       {
         "file": "specs/segments.rs",
-        "members": ["spec::dimensions_within_limits"],
+        "members": [
+          "spec::dimensions_within_limits"
+        ],
         "classification": "project-policy",
         "justification": "The body compares width/height/pixel product to caller Limits. src/segment_data.rs resource checks use these project limits, not normative image bounds.",
         "ambiguity": ""
       },
       {
         "file": "specs/segments.rs",
-        "members": ["spec::extension_flags_valid", "spec::extension_payload_flags_valid", "spec::final_code_unit_zero", "spec::profiles_payload_valid", "spec::short_count_valid", "spec::unused_retention_bits_zero"],
+        "members": [
+          "spec::extension_flags_valid",
+          "spec::extension_payload_flags_valid",
+          "spec::final_code_unit_zero",
+          "spec::profiles_payload_valid",
+          "spec::short_count_valid",
+          "spec::unused_retention_bits_zero"
+        ],
         "classification": "candidate-standard-facing-model",
         "justification": "Bodies constrain reserved short-count/retention bits, extension flag combinations, profile payload length from its encoded count, and zero final code units. src/segment_header.rs and src/segment_data.rs acceptance/property proofs use these selected wire admissibility candidates, not object-storage invariants.",
         "ambiguity": "",
@@ -493,7 +907,19 @@
       },
       {
         "file": "specs/segments.rs",
-        "members": ["spec::combination_operator", "spec::extension_kind", "spec::page_flags_match", "spec::page_information_fields", "spec::profile_length_matches", "spec::profiles_payload_fields", "spec::referred_header_fields", "spec::region_flags_match", "spec::retention_values_match", "spec::segment_header_fields", "spec::segment_type"],
+        "members": [
+          "spec::combination_operator",
+          "spec::extension_kind",
+          "spec::page_flags_match",
+          "spec::page_information_fields",
+          "spec::profile_length_matches",
+          "spec::profiles_payload_fields",
+          "spec::referred_header_fields",
+          "spec::region_flags_match",
+          "spec::retention_values_match",
+          "spec::segment_header_fields",
+          "spec::segment_type"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies map encoded type/operator/extension values, bind parsed flags/retention/reference values and header extents to original bytes, and quantify every PageInformation/Profiles field or ID. src/segment_header.rs and src/segment_data.rs contracts promise these raw-field/length relations; profile_length_matches equates bytes to count rather than merely bounding a cursor.",
         "ambiguity": "",
@@ -501,7 +927,15 @@
       },
       {
         "file": "specs/segments.rs",
-        "members": ["spec::be_u32_at", "spec::header_reference_count", "spec::header_references_start", "spec::header_retention_start", "spec::reference_value_at", "spec::reference_width", "spec::retention_bit"],
+        "members": [
+          "spec::be_u32_at",
+          "spec::header_reference_count",
+          "spec::header_references_start",
+          "spec::header_retention_start",
+          "spec::reference_value_at",
+          "spec::reference_width",
+          "spec::retention_bit"
+        ],
         "classification": "proof-support",
         "justification": "Bodies project big-endian words/variable-width references and low-first retention bits, choose one/two/four-byte reference width, and calculate count/retention/reference starts. src/segment_header.rs, src/segment_data.rs and enclosing field predicates use this decoding/offset vocabulary to state actual parser results.",
         "ambiguity": "",
@@ -509,14 +943,36 @@
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::arithmetic_codec_valid", "spec::arithmetic_contexts_valid", "spec::bitmap_refs_valid", "spec::bitmaps_valid", "spec::codebook_valid", "spec::codec_valid", "spec::dictionary_state_valid", "spec::export_indices_valid", "spec::integer_contexts_valid", "spec::placement_batch_valid", "spec::placement_within_extents", "spec::prepared_placement_valid", "spec::symbol_code_length_valid", "spec::table_bindings_valid", "spec::text_state_valid", "spec::valid_strip_size"],
+        "members": [
+          "spec::arithmetic_codec_valid",
+          "spec::arithmetic_contexts_valid",
+          "spec::bitmap_refs_valid",
+          "spec::bitmaps_valid",
+          "spec::codebook_valid",
+          "spec::codec_valid",
+          "spec::dictionary_state_valid",
+          "spec::export_indices_valid",
+          "spec::integer_contexts_valid",
+          "spec::placement_batch_valid",
+          "spec::placement_within_extents",
+          "spec::prepared_placement_valid",
+          "spec::symbol_code_length_valid",
+          "spec::table_bindings_valid",
+          "spec::text_state_valid",
+          "spec::valid_strip_size"
+        ],
         "classification": "representation-invariant",
         "justification": "Bodies quantify decoder/bank/bitmap validity, constrain optional table slots, export indices and decoded counters, and bound prepared/batched source/destination rectangles. valid_strip_size and symbol_code_length_valid only restrict admissible sizes; the latter does not equate length to ceil-log2. src/symbol_text.rs uses these safe-state pre/postconditions without thereby promising symbol contents or placement coordinates.",
         "ambiguity": ""
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::bitmap_charge_effect", "spec::text_initialization_allowed", "spec::text_placement_allowed", "spec::work_charge_effect"],
+        "members": [
+          "spec::bitmap_charge_effect",
+          "spec::text_initialization_allowed",
+          "spec::text_placement_allowed",
+          "spec::work_charge_effect"
+        ],
         "classification": "project-policy",
         "justification": "Bodies specify resource charge updates/frames even on limit rejection, checked requested bitmap dimensions/bytes, instance/work limits and signed cursor arithmetic admissibility. src/symbol_text.rs ResourceTracker/TextRegionState contracts use these project machine/resource policies; no standard mandates their budget or error timing.",
         "ambiguity": "",
@@ -524,7 +980,12 @@
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::custom_oob_compatible", "spec::dictionary_config_safe", "spec::text_config_safe", "spec::text_huffman_choices_safe"],
+        "members": [
+          "spec::custom_oob_compatible",
+          "spec::dictionary_config_safe",
+          "spec::text_config_safe",
+          "spec::text_huffman_choices_safe"
+        ],
         "classification": "candidate-standard-facing-model",
         "justification": "Bodies bind only selected Huffman/refinement flags, disallow reserved/colour combinations, require appropriate Huffman flag presence/strip size, constrain refinement-size choice and compare required/supplied OOB. src/symbol_text.rs parsing/choice contracts use these proposed config compatibility rules, not complete dictionary/text decoding.",
         "ambiguity": "",
@@ -532,7 +993,12 @@
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::bitmap_contents_match", "spec::codebook_selects", "spec::exported_contents_match", "spec::symbol_id_selects"],
+        "members": [
+          "spec::bitmap_contents_match",
+          "spec::codebook_selects",
+          "spec::exported_contents_match",
+          "spec::symbol_id_selects"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies equate width/height/stride/every packed byte, select owned/borrowed codebook entries or imported/new symbol IDs, and bind ordered exported output to each supplied index, including repetitions. src/symbol_text.rs select/clone/export contracts expose these actual content relations, not merely storage validity.",
         "ambiguity": "",
@@ -540,7 +1006,17 @@
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::arithmetic_integer_result", "spec::arithmetic_symbol_id_result", "spec::four_way_choice_result", "spec::generic_template_matches", "spec::refinement_choice_result", "spec::refinement_template_matches", "spec::strip_log_valid", "spec::symbol_code_length_expected", "spec::two_bit_choice_result"],
+        "members": [
+          "spec::arithmetic_integer_result",
+          "spec::arithmetic_symbol_id_result",
+          "spec::four_way_choice_result",
+          "spec::generic_template_matches",
+          "spec::refinement_choice_result",
+          "spec::refinement_template_matches",
+          "spec::strip_log_valid",
+          "spec::symbol_code_length_expected",
+          "spec::two_bit_choice_result"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies translate arithmetic integer/OOB/ID/errors to codec result enums, map encoded choices/templates to returned enums, and prescribe exact strip logs/ceil-log2 symbol length. src/symbol_text.rs helper/codec contracts bind actual returned values to these relations and arithmetic::decode_error.",
         "ambiguity": "",
@@ -548,7 +1024,11 @@
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::placement_for_current", "spec::placement_overlap", "spec::placement_preflight_result"],
+        "members": [
+          "spec::placement_for_current",
+          "spec::placement_overlap",
+          "spec::placement_preflight_result"
+        ],
         "classification": "project-result-model",
         "justification": "Bodies derive corner/transposition-aware placement coordinates from current strip state, clip overlap dimensions, and bind successful PreparedPlacement source/content/offsets/extents plus resource/error frames. src/symbol_text.rs placement/preflight contracts and production_symbol_current_placement_witness expose these actual helper results.",
         "ambiguity": "",
@@ -556,7 +1036,18 @@
       },
       {
         "file": "specs/symbol_text.rs",
-        "members": ["spec::bitmap_bytes", "spec::clipped_end", "spec::clipped_start", "spec::codebook_len", "spec::export_progress_measure", "spec::floor_half", "spec::integer_field_slot", "spec::pow2", "spec::signed_byte", "spec::work_units"],
+        "members": [
+          "spec::bitmap_bytes",
+          "spec::clipped_end",
+          "spec::clipped_start",
+          "spec::codebook_len",
+          "spec::export_progress_measure",
+          "spec::floor_half",
+          "spec::integer_field_slot",
+          "spec::pow2",
+          "spec::signed_byte",
+          "spec::work_units"
+        ],
         "classification": "proof-support",
         "justification": "Bodies project tracker/codebook/field-bank values, supply signed/floor-half and clipped endpoint vocabulary, double powers and combine remaining work/index into an export decrease. src/symbol_text.rs contracts and shared/property proofs use these helpers to state content, placement and resource results; a measure/projection alone is not decoding.",
         "ambiguity": ""
@@ -1204,15 +1695,19 @@
     "proofs/model_support/huffman.rs": "e7b4e8f3494999cab4bdfda6065778698decb1b9af3ea65b3be73b1f653b9df5",
     "proofs/model_support/mmr.rs": "16bc3d8d0434cab9d062321962daf75341d8d6c286c60d801749c79c4bc6a04b",
     "proofs/production_impl/arithmetic.rs": "4c299e136e1291f66d09a8f3e25aeeb4b1d974ef83a4a3ffdedc458893eedb50",
-    "proofs/production_impl/bitmap.rs": "ced2414c72d0f1a1343876cb20c3dcfd9553cfea15fc26743430aa8435fccc75",
+    "proofs/production_impl/bitmap.rs": "7eabe6eecfd5f87785c542a34b8dc7ccfe6158af7543334754d5e417b981c479",
     "proofs/production_impl/document.rs": "f2fcc4c76ca83405ada89187e71897ca232e6f829c1aaae01709f2c2ca51b3fb",
     "proofs/production_impl/file_header.rs": "b33e70b621a9c4fdea50ef20b138fdbd685209ecb4b4aeaf2c0e24c624b10f1b",
     "proofs/production_impl/generic_region.rs": "e5927d3949157b10f5e37c6810245ac9ab7e5e1f9768cdabd0f25c2890d314c0",
     "proofs/production_impl/mmr.rs": "62e7cd4d48c5636939a90e5423a160a9677f55bc4c0c28a9b842bfc66cfb9894",
     "proofs/production_impl/readers.rs": "c1130367984b90db1e1c8adce5c34d6a05a9a833888651dc45070dd2fe037519",
+    "proofs/production_impl/segment_data.rs": "23a12b1085c3b23ffbeefff83e5f1608fb73250465fcebccdb4e34e74000ab79",
     "proofs/production_impl/segment_header.rs": "8951757eb8f9baf48e1d9258992cc896481c6ad53a2fb9169742a686327dbcb0",
-    "proofs/production_impl/symbol_text.rs": "263fa8c075a11da4f47c8cf4f0cca8f845882ea40e89a154fd6c57c43dd54e80",
+    "proofs/production_impl/symbol_text.rs": "14fa5b7faee06db57008773f5b0d0d6acb4dc6791409d6bea703b7999953571b",
+    "proofs/shared/bitmap.rs": "4698b6d24d60eb65e8a75694bccfb5ba34b0561a8b96814e7cd5d71ae6897af1",
     "proofs/spec_properties/arithmetic.rs": "a43e10db2c92bd58127314f9307993264998373a6f71cb0dd66b8402020e68b0",
+    "proofs/spec_properties/mmr.rs": "16035dc09a1720c7677dcf3f57fd5e92cec44efd3af3c672716a2614e6e7844c",
+    "proofs/spec_properties/readers.rs": "01efdc55fd62e5bc34b97275a23d6b683af934d6739a7e284f08f991af883fd3",
     "specs/arithmetic.rs": "6ca6ba7feba16d866d06e8704ff4ee609153e10e1097514a12b0947b4868eea5",
     "specs/bitmap.rs": "9d4da6608d7ee55fdf0ab7d8d47f6105e75e656c1f31589610d47a67a61218cf",
     "specs/decode.rs": "ab6fe9a6db39686699b54c70c9008659bf9119da6f31982de143a40dd1f4266f",
@@ -1226,28 +1721,59 @@
     "specs/readers.rs": "7678c7167ed4ccba27b2e8f8a66481a606a2207f33600cef7e967d9c2df74776",
     "specs/segments.rs": "a4a19a65babe5a29532273f3374434762cf0fd63d3336b0f49e4914e3e390bc0",
     "specs/symbol_text.rs": "ca8bdc6faee0922a6fb52dc897e480c6b91ead709dff1ccf99dd14de32fc2778",
-    "src/arithmetic.rs": "ed6b973ed751d6b8f57de0eca7cea5df2b4351a3f2c191db5d437f9bcfe903cb",
-    "src/bitmap.rs": "7c2101c569351a8e8fd38332b5355f0048cbc859723178d3359b39d5dc593fd1",
-    "src/decode.rs": "07ad6f08c7e5ac66716cf469971d98f6f44360ec8d49b04f7500711ccf35092d",
-    "src/document.rs": "014b5c5ae96dc348d86033319bd66cbcfdbf5600e488f555bf13c63849265a43",
-    "src/file_header.rs": "82607ab5607594b8958b746022f032c5a20ed7810747e9612fa8ffaa8ba0e6db",
-    "src/generic_region.rs": "ef708058327e072bb737065c2c8642706429a90515a044f8c1ff7c3e13e03605",
-    "src/halftone.rs": "0553be77a782a78a095af866311e4c9d629491be553bbc69b7bedf3e2ed4a051",
-    "src/huffman.rs": "1aa54d0cffe1937fd3fac52c2c1a557419ebcca3b53575d6510c9fb7d9016ed1",
-    "src/lib.rs": "973fc36ee7608cf075d5969f85f34bf8f4bb5b5c72fff4c586e64b1c98806019",
-    "src/mmr.rs": "1b4c910d6779cb7be01a4fdc6ab7a54955277fe46458e931da7f034ed145ce4e",
-    "src/reader.rs": "a33f3bbd00a1b29f1df00e7b35226f07ff7909e2257492dfb4027b7ba9fb42b9",
-    "src/segment_data.rs": "0a36d1c56dc09f5fa97ed71eb6bc141b7b30ada19489236f07d79e6402e00869",
-    "src/segment_header.rs": "f2feb925f74669044cdad201c8a787cba7d373f06bcdc8b3c7204ec6e436a439",
-    "src/symbol_text.rs": "49e44e673b8debdb055f72695b9bceb5a381bfb22ba7bd50bd24e9b1f8274992",
+    "src/arithmetic.rs": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
+    "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
+    "src/bitmap.rs": "7151eb22ac6ebf41ed4cb75d3698e43eab4277dbf6667dc8c7fd699a48988e94",
+    "src/bitmap/access.rs": "ce458c26068422e717e32672c57eda03168d8118806d39ffaed278622e74fae3",
+    "src/bitmap/operators.rs": "ca7c9f926f1c71d74bfc938798dfdf8ab22c53fee7e1843ca6def5d3bd86729d",
+    "src/bitmap/storage.rs": "79cc6fae082551302ca8498d48d6be48f692c44460c6bf84104d3368798ab2d9",
+    "src/bitmap/tests.rs": "56531c5e069e258cfef00309813661c46a64c8840410befbbd98d9cb7aae3f1e",
+    "src/decode.rs": "82fef2e311d659c4ee5271056b092827f5ed6a046a5f52f1ff28e8a1746e4aea",
+    "src/decode/dispatch.rs": "3f5776dcc0d85b78c0696508b0fa0bb23f062362ef38bf4aaeb526265652e7b0",
+    "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
+    "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",
+    "src/decode/tests.rs": "4e5b0d88e93b50e5b6bc4884e34f91b76a41fd5f2dfcb92111f6638b80825552",
+    "src/document.rs": "bbe60471c5016b81d5f5ef4e8bd4cb86157bb960cf2ef65356767e294b182122",
+    "src/document/pages.rs": "f11a042b00dfab74c94454999b7d3c9ba575ff3c77b8fafd54ec692b7c4649a0",
+    "src/document/parsing.rs": "ce5a558c99b64b8d3ec7af95a35bd8c563ddcf09f65c760a7cb31eaebc93aa54",
+    "src/document/references.rs": "211469b5b0d1e5b507459d718e3f97623897c9acb0a8639a077f2d7e12f5a80b",
+    "src/document/tests.rs": "cf866552dd84abdbc15d5289ec34845d25b78d872fc017e4a5cafeac7ba6fdba",
+    "src/file_header.rs": "9011f761698f3772c953980e2d2d56ed5ece4f792c8e318ca89a0e0f8d326e11",
+    "src/generic_region.rs": "871d37bf047f1dacbf6196afc75a6efbc5bcfdf459756c129f6cb7a0a2bdbd52",
+    "src/generic_region/contexts.rs": "d8e8a6bf536faf6327f60f6204b69f6443e8702d8d767614d53496c271652ae5",
+    "src/generic_region/generic.rs": "7df85ea015071478a1f691f39d0ccdeb6581d110e650fdc172767c9fcd914076",
+    "src/generic_region/headers.rs": "d116c691bcc2c0f94f4a39a0984b7576a492f9b4411159aaf00a901cce2d3ac8",
+    "src/generic_region/refinement.rs": "defb4386d60cf2b85b7de320ce5c8a53e83d4483ee30668e0cc3ab5a54e7b35c",
+    "src/generic_region/support.rs": "f564fa0bda614940d4592b8958b236a1c8978ed56cf1ee9102e745f20ce62f16",
+    "src/generic_region/tests.rs": "be9a03a5edde4b24dc69a446a7c95761834f99649c06756aaae93cc1f4739088",
+    "src/halftone.rs": "78131542ee8334b837839c032e9f9fb9b87e88c864efcd50ff804cf721958098",
+    "src/halftone/headers.rs": "363497a0fdf003435987f0fa64e793d7d61d7d9de4a65c58c0e66571394cdda0",
+    "src/halftone/planes.rs": "563d5b285cad5af7644babe50c6f5103a1b914af52d0156098438fcd196f73b0",
+    "src/halftone/render.rs": "c45d1d1a4af09551053de75d9c49e4f1bd06de0456f279e7d4f88abdfcb57cd4",
+    "src/halftone/tests.rs": "924a396899694321674460d8deb8144ac291038c8befadb98501dc5cf4caecb8",
+    "src/huffman.rs": "9ac4dc062265c398839fb7acf6e57c6baabadb82ee29236503276a8245748e63",
+    "src/huffman/tests.rs": "f381ff3140134f282547de09735f18a47a3802bfa19aa10fd8c69d7025d7f36e",
+    "src/lib.rs": "351b3bbb606a834a9db224fe84f8329920bd5be34b0890e03b51e65f6cf0166c",
+    "src/mmr.rs": "b3a7c6e68d677933e922b7194d5c1f8c7e2dcc37cf1314b8c061d50cfa407367",
+    "src/mmr/tests.rs": "c58cff417d07b40f19235130e3b879d3008d8f55e4f13785c593b49c3bf85498",
+    "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
+    "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
+    "src/segment_data.rs": "6fb360c3b8cc52b7405e5c3f106aef139f44ef52fef13990c709e4f39fbf992d",
+    "src/segment_data/tests.rs": "7b082bcee501bd86382474823db6af59afb56842b7d053c3de8b77d2e5edfc15",
+    "src/segment_header.rs": "8e69bfe6071c90755cd91d35b295d326c897ab58ba00a1f19537630a8c0e2745",
+    "src/segment_header/tests.rs": "06a6e803fa33e41df721b64bd4e94c744bf57f8001fcbbf4e4dfc73334b949b8",
+    "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3",
+    "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
+    "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
+    "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+    "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
+    "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
+    "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+    "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27",
     "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
     "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
     "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
-    "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d",
-    "proofs/spec_properties/readers.rs": "01efdc55fd62e5bc34b97275a23d6b683af934d6739a7e284f08f991af883fd3",
-    "proofs/spec_properties/mmr.rs": "16035dc09a1720c7677dcf3f57fd5e92cec44efd3af3c672716a2614e6e7844c",
-    "proofs/shared/bitmap.rs": "99003495d2d4577c87e3c5e3ad6c80cae89b89ced948c040789c49223e5aaad6",
-    "proofs/production_impl/segment_data.rs": "23a12b1085c3b23ffbeefff83e5f1608fb73250465fcebccdb4e34e74000ab79"
+    "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -1653,35 +2179,50 @@
     "huffman-canonical-assignment": {
       "kind": "spec",
       "file": "specs/huffman.rs",
-      "module_path": ["huffman", "huffman_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
       "name": "canonical_assignment",
       "role": "Conjunction of independent raw-source content/histogram/extent, checked-wide first-prefix, bucket-start and original-order results; success-only and provisional."
     },
     "huffman-assignment-contents": {
       "kind": "spec",
       "file": "specs/huffman.rs",
-      "module_path": ["huffman", "huffman_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
       "name": "assignment_contents",
       "role": "Exact original raw lines, zero-excluding histogram, maximum active length and ordered extent, retained by each code/start/order weaker control."
     },
     "huffman-assignment-codes": {
       "kind": "spec",
       "file": "specs/huffman.rs",
-      "module_path": ["huffman", "huffman_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
       "name": "assignment_codes",
       "role": "Literal zero seed and exact checked-wide first-prefix recurrence computed from original raw-line buckets, with accepted active ranges fitting their widths."
     },
     "huffman-assignment-starts": {
       "kind": "spec",
       "file": "specs/huffman.rs",
-      "module_path": ["huffman", "huffman_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
       "name": "assignment_starts",
       "role": "Every active bucket starts after all original lines with shorter nonzero lengths."
     },
     "huffman-assignment-order": {
       "kind": "spec",
       "file": "specs/huffman.rs",
-      "module_path": ["huffman", "huffman_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
       "name": "assignment_order",
       "role": "Exact concatenation of original raw-line index selections by increasing nonzero length and original order."
     },
@@ -2923,35 +3464,50 @@
     "page-stripe-accepted": {
       "kind": "spec",
       "file": "specs/document.rs",
-      "module_path": ["document", "document_spec"],
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
       "name": "stripe_accepted",
       "role": "existing first/later stripe distance, ordering and declared-height acceptance"
     },
     "page-stripe-result": {
       "kind": "spec",
       "file": "specs/document.rs",
-      "module_path": ["document", "document_spec"],
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
       "name": "stripe_result",
       "role": "exact project stripe success or typed row rejection"
     },
     "page-finish-result": {
       "kind": "spec",
       "file": "specs/document.rs",
-      "module_path": ["document", "document_spec"],
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
       "name": "page_finish_result",
       "role": "exact existing metadata finish result with duplicate-boundary priority"
     },
     "public-page-height": {
       "kind": "spec",
       "file": "specs/document.rs",
-      "module_path": ["document", "document_spec"],
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
       "name": "public_page_height",
       "role": "known height precedence or checked inclusive last-row inference and exact errors"
     },
     "public-page-fields": {
       "kind": "spec",
       "file": "specs/document.rs",
-      "module_path": ["document", "document_spec"],
+      "module_path": [
+        "document",
+        "document_spec"
+      ],
       "name": "public_page_fields",
       "role": "successful public page number, width, resolutions and striping correspondence"
     },
@@ -4042,7 +4598,7 @@
       "title": "Compute collective pattern width as count times individual pattern width",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::checked_collective_width"
+        "halftone::planes::checked_collective_width"
       ],
       "models": [],
       "proof_macros": [],
@@ -4067,7 +4623,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::checked_collective_width",
+          "runtime": "halftone::planes::checked_collective_width",
           "section": "ensures",
           "tokens": [
             "width as nat == pattern_count as nat * pattern_width as nat",
@@ -4084,7 +4640,7 @@
       "title": "Extract consecutive equal-width patterns from the collective bitmap",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::slice_collective_bitmap"
+        "halftone::planes::slice_collective_bitmap"
       ],
       "models": [
         "pattern-bitmaps-valid"
@@ -4108,7 +4664,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "halftone::slice_collective_bitmap",
+          "runtime": "halftone::planes::slice_collective_bitmap",
           "section": "ensures",
           "tokens": [
             "halftone_spec::bitmaps_valid(patterns@)"
@@ -4123,8 +4679,8 @@
       "title": "Compute signed fixed-point pattern locations using the grid origin and vectors",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::grid_fixed_position",
-        "halftone::fixed_to_pixel"
+        "halftone::render::grid_fixed_position",
+        "halftone::render::fixed_to_pixel"
       ],
       "models": [
         "halftone-grid-x",
@@ -4153,7 +4709,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::grid_fixed_position",
+          "runtime": "halftone::render::grid_fixed_position",
           "section": "ensures",
           "tokens": [
             "out.0 as int == halftone_spec::grid_x_fixed(header, grid_x, grid_y)",
@@ -4161,7 +4717,7 @@
           ]
         },
         {
-          "runtime": "halftone::fixed_to_pixel",
+          "runtime": "halftone::render::fixed_to_pixel",
           "section": "ensures",
           "tokens": [
             "out == halftone_spec::fixed_pixel(value)"
@@ -4177,7 +4733,7 @@
       "title": "Choose the minimum grayscale bit depth for the supplied pattern count",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::gray_bit_depth"
+        "halftone::planes::gray_bit_depth"
       ],
       "models": [
         "halftone-gray-depth"
@@ -4204,7 +4760,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::gray_bit_depth",
+          "runtime": "halftone::planes::gray_bit_depth",
           "section": "ensures",
           "tokens": [
             "depth == halftone_spec::gray_depth_expected(pattern_count)",
@@ -4221,8 +4777,8 @@
       "title": "Reconstruct grayscale values from most-significant-first Gray-coded planes",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::xor_gray_plane_bytes",
-        "halftone::decode_gray_planes"
+        "halftone::planes::xor_gray_plane_bytes",
+        "halftone::planes::decode_gray_planes"
       ],
       "models": [
         "bitmap-storage-valid"
@@ -4254,7 +4810,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "halftone::xor_gray_plane_bytes",
+          "runtime": "halftone::planes::xor_gray_plane_bytes",
           "section": "ensures",
           "tokens": [
             "Ok(()) => crate::spec::bitmap::storage_valid(final(current))"
@@ -4269,7 +4825,7 @@
       "title": "Classify a pattern wholly outside the halftone region using half-open bounds",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::half_open_outside"
+        "halftone::render::half_open_outside"
       ],
       "models": [
         "halftone-outside"
@@ -4292,7 +4848,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::half_open_outside",
+          "runtime": "halftone::render::half_open_outside",
           "section": "ensures",
           "tokens": [
             "out == halftone_spec::wholly_outside(x, y, pattern_width, pattern_height, region_width, region_height,)"
@@ -4308,7 +4864,7 @@
       "title": "Render selected patterns in grid order with clipped operator application",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::render_clipped_pattern"
+        "halftone::render::render_clipped_pattern"
       ],
       "models": [
         "bitmap-storage-valid"
@@ -4336,7 +4892,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "halftone::render_clipped_pattern",
+          "runtime": "halftone::render::render_clipped_pattern",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(final(destination))"
@@ -4351,7 +4907,7 @@
       "title": "Combine an immediate direct region bitmap into its page buffer",
       "feature": "immediate_regions",
       "runtime": [
-        "decode::compose_immediate"
+        "decode::rendering::compose_immediate"
       ],
       "models": [
         "runtime-pages-valid"
@@ -4379,7 +4935,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "decode::compose_immediate",
+          "runtime": "decode::rendering::compose_immediate",
           "section": "ensures",
           "tokens": [
             "decode_spec::runtime_pages_valid(final(pages))"
@@ -4394,7 +4950,7 @@
       "title": "Restrict an immediate region's observable page effect to its page intersection",
       "feature": "immediate_regions",
       "runtime": [
-        "decode::compose_immediate_on_page"
+        "decode::rendering::compose_immediate_on_page"
       ],
       "models": [
         "bitmap-storage-valid"
@@ -4422,7 +4978,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "decode::compose_immediate_on_page",
+          "runtime": "decode::rendering::compose_immediate_on_page",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(&final(page).bitmap)"
@@ -4437,7 +4993,7 @@
       "title": "Prevent a later intersecting region from writing at or above an already sealed stripe end row",
       "feature": "immediate_regions",
       "runtime": [
-        "decode::checked_page_write_state"
+        "decode::rendering::checked_page_write_state"
       ],
       "models": [
         "region-intersects-page"
@@ -4460,7 +5016,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "decode::checked_page_write_state",
+          "runtime": "decode::rendering::checked_page_write_state",
           "section": "ensures",
           "tokens": [
             "Some(sealed) => region_y > sealed",
@@ -4477,7 +5033,7 @@
       "title": "Retain an intermediate direct bitmap in auxiliary storage rather than draw it immediately",
       "feature": "intermediate_regions",
       "runtime": [
-        "decode::insert_buffer"
+        "decode::resources::insert_buffer"
       ],
       "models": [
         "region-buffers-valid"
@@ -4501,7 +5057,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "decode::insert_buffer",
+          "runtime": "decode::resources::insert_buffer",
           "section": "ensures",
           "tokens": [
             "Ok(()) => decode_spec::region_buffers_valid(final(buffers))"
@@ -4516,7 +5072,7 @@
       "title": "Respect the page's declaration that auxiliary-buffer regions may occur",
       "feature": "intermediate_regions",
       "runtime": [
-        "decode::require_auxiliary_page_state"
+        "decode::rendering::require_auxiliary_page_state"
       ],
       "models": [],
       "proof_macros": [],
@@ -4545,7 +5101,7 @@
       "title": "Interpret the dictionary refinement/aggregation mode flag",
       "feature": "refinement_aggregation",
       "runtime": [
-        "symbol_text::parse_symbol_dictionary_flags"
+        "symbol_text::headers::parse_symbol_dictionary_flags"
       ],
       "models": [
         "dictionary-config-safe"
@@ -4568,7 +5124,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::parse_symbol_dictionary_flags",
+          "runtime": "symbol_text::headers::parse_symbol_dictionary_flags",
           "section": "ensures",
           "tokens": [
             "Ok(config) => symbol_text_spec::dictionary_config_safe(flags, config)"
@@ -4584,7 +5140,7 @@
       "title": "Compute shared text-refinement dimensions and floor-half reference offsets",
       "feature": "refinement_aggregation",
       "runtime": [
-        "symbol_text::refinement_geometry"
+        "symbol_text::codec::refinement_geometry"
       ],
       "models": [
         "text-floor-half"
@@ -4607,7 +5163,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::refinement_geometry",
+          "runtime": "symbol_text::codec::refinement_geometry",
           "section": "ensures",
           "tokens": [
             "geometry.width as int == base_width as int + delta_width as int",
@@ -4626,7 +5182,7 @@
       "title": "Distinguish permitted page-independent resources from segment types that require a page",
       "feature": "global_segments",
       "runtime": [
-        "document::validate_page_association"
+        "document::pages::validate_page_association"
       ],
       "models": [],
       "proof_macros": [],
@@ -4659,7 +5215,7 @@
       "title": "Forbid page-independent resources from referring to page-scoped segments",
       "feature": "global_segments",
       "runtime": [
-        "document::validate_reference_links"
+        "document::references::validate_reference_links"
       ],
       "models": [],
       "proof_macros": [],
@@ -4688,7 +5244,7 @@
       "title": "Apply the five combination operators to two binary pixel values",
       "feature": "combination_operators",
       "runtime": [
-        "bitmap::CombinationOperator::apply"
+        "bitmap::operators::CombinationOperator::apply"
       ],
       "models": [
         "bitmap-combine"
@@ -4711,7 +5267,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "bitmap::CombinationOperator::apply",
+          "runtime": "bitmap::operators::CombinationOperator::apply",
           "section": "ensures",
           "tokens": [
             "out == crate::spec::bitmap::combine(self, destination, source)"
@@ -4767,7 +5323,7 @@
       "title": "Gate a direct region's nondefault operator on the page override permission",
       "feature": "combination_operators",
       "runtime": [
-        "decode::check_combination_operator"
+        "decode::rendering::check_combination_operator"
       ],
       "models": [],
       "proof_macros": [],
@@ -4788,7 +5344,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "decode::check_combination_operator",
+          "runtime": "decode::rendering::check_combination_operator",
           "section": "ensures",
           "tokens": [
             "combination_override || region_operator == page_operator || refinement",
@@ -4838,7 +5394,7 @@
       "obligation_kind": "project_profile_policy",
       "policy_row_sha256": "62ced19cb640299c3f9cf1de1bf447145218ecc5f6847fa2b27d7ae91cfde549",
       "runtime": [
-        "document::parse_known_segment_data"
+        "document::parsing::parse_known_segment_data"
       ],
       "models": [],
       "proof_macros": [],
@@ -4869,7 +5425,7 @@
       "obligation_kind": "project_profile_policy",
       "policy_row_sha256": "4cfe363f77d12f62f57222bd6bd76222e3333e94f85c9a8bc0d25b77b1f0fdee",
       "runtime": [
-        "symbol_text::checked_symbol_id",
+        "symbol_text::codec::checked_symbol_id",
         "symbol_text::SymbolCodebook::get",
         "symbol_text::symbol_by_id"
       ],
@@ -4896,7 +5452,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::checked_symbol_id",
+          "runtime": "symbol_text::codec::checked_symbol_id",
           "section": "ensures",
           "tokens": [
             "Ok(value) => value == id && value < available_symbols"
@@ -4914,7 +5470,7 @@
       "obligation_kind": "project_profile_policy",
       "policy_row_sha256": "4cfe363f77d12f62f57222bd6bd76222e3333e94f85c9a8bc0d25b77b1f0fdee",
       "runtime": [
-        "symbol_text::clone_bitmap"
+        "symbol_text::bitmap::clone_bitmap"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -4940,7 +5496,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::clone_bitmap",
+          "runtime": "symbol_text::bitmap::clone_bitmap",
           "section": "ensures",
           "tokens": [
             "bitmap.width == source.width",
@@ -5036,7 +5592,7 @@
       "feature": "known_height_pages",
       "runtime": [
         "segment_data::parse_page_information",
-        "document::parse_known_segment_data"
+        "document::parsing::parse_known_segment_data"
       ],
       "models": [
         "known-segment-data-fields",
@@ -5077,7 +5633,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -5101,8 +5657,8 @@
       "feature": "known_height_pages",
       "runtime": [
         "segment_data::parse_page_information",
-        "bitmap::Bitmap::filled",
-        "document::parse_known_segment_data"
+        "bitmap::storage::Bitmap::filled",
+        "document::parsing::parse_known_segment_data"
       ],
       "models": [
         "page-flags-match",
@@ -5154,14 +5710,14 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "bitmap::Bitmap::filled",
+          "runtime": "bitmap::storage::Bitmap::filled",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::filled_storage(&bitmap, value)"
           ]
         },
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -5185,7 +5741,7 @@
       "feature": "known_height_pages",
       "runtime": [
         "segment_data::parse_page_information",
-        "document::parse_known_segment_data"
+        "document::parsing::parse_known_segment_data"
       ],
       "models": [
         "known-segment-data-fields",
@@ -5226,7 +5782,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -5250,7 +5806,7 @@
       "feature": "unknown_height_pages",
       "runtime": [
         "segment_data::parse_page_information",
-        "document::parse_known_segment_data"
+        "document::parsing::parse_known_segment_data"
       ],
       "models": [
         "known-segment-data-fields",
@@ -5295,7 +5851,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -5319,7 +5875,7 @@
       "feature": "unknown_height_pages",
       "runtime": [
         "segment_data::parse_page_information",
-        "document::parse_known_segment_data"
+        "document::parsing::parse_known_segment_data"
       ],
       "models": [
         "page-flags-match",
@@ -5361,7 +5917,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -5385,7 +5941,7 @@
       "feature": "striped_pages",
       "runtime": [
         "segment_data::parse_end_of_stripe",
-        "document::parse_known_segment_data"
+        "document::parsing::parse_known_segment_data"
       ],
       "models": [
         "segment-be-u32",
@@ -5438,7 +5994,7 @@
           ]
         },
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -5454,8 +6010,8 @@
       "title": "Advance stripe end rows while respecting the declared maximum stripe size",
       "feature": "striped_pages",
       "runtime": [
-        "document::PageState::new",
-        "document::PageState::add_stripe"
+        "document::pages::PageState::new",
+        "document::pages::PageState::add_stripe"
       ],
       "models": [
         "page-stripe-accepted",
@@ -5487,12 +6043,16 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::PageState::new",
+          "runtime": "document::pages::PageState::new",
           "section": "ensures",
-          "tokens": ["out.info == info", "out.last_stripe == None", "!out.ended"]
+          "tokens": [
+            "out.info == info",
+            "out.last_stripe == None",
+            "!out.ended"
+          ]
         },
         {
-          "runtime": "document::PageState::add_stripe",
+          "runtime": "document::pages::PageState::add_stripe",
           "section": "ensures",
           "tokens": [
             "out == document_spec::stripe_result(old(self).info, old(self).last_stripe, row)",
@@ -5511,8 +6071,8 @@
       "title": "Resolve an initially unknown page height from its last inclusive stripe end row",
       "feature": "striped_pages",
       "runtime": [
-        "document::PageState::finish",
-        "document::PageState::into_public"
+        "document::pages::PageState::finish",
+        "document::pages::PageState::into_public"
       ],
       "models": [
         "page-finish-result",
@@ -5549,7 +6109,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::PageState::finish",
+          "runtime": "document::pages::PageState::finish",
           "section": "ensures",
           "tokens": [
             "out == document_spec::page_finish_result(",
@@ -5560,7 +6120,7 @@
           ]
         },
         {
-          "runtime": "document::PageState::into_public",
+          "runtime": "document::pages::PageState::into_public",
           "section": "ensures",
           "tokens": [
             "document_spec::public_page_fields(self.info, number, page)",
@@ -5579,7 +6139,7 @@
       "title": "Choose the refinement context size associated with each template",
       "feature": "generic_refinement_regions",
       "runtime": [
-        "generic_region::RefinementTemplate::context_bits"
+        "generic_region::contexts::RefinementTemplate::context_bits"
       ],
       "models": [
         "refinement-context-bits"
@@ -5602,7 +6162,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "generic_region::RefinementTemplate::context_bits",
+          "runtime": "generic_region::contexts::RefinementTemplate::context_bits",
           "section": "ensures",
           "tokens": [
             "out as nat == generic_region_spec::refinement_context_bits(self)",
@@ -5619,7 +6179,7 @@
       "title": "Select the refinement typical-prediction context in the chosen gather order",
       "feature": "generic_refinement_regions",
       "runtime": [
-        "generic_region::RefinementTemplate::sltp_context"
+        "generic_region::contexts::RefinementTemplate::sltp_context"
       ],
       "models": [
         "refinement-sltp-context",
@@ -5643,7 +6203,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "generic_region::RefinementTemplate::sltp_context",
+          "runtime": "generic_region::contexts::RefinementTemplate::sltp_context",
           "section": "ensures",
           "tokens": [
             "out as nat == generic_region_spec::refinement_sltp_context(self)",
@@ -5660,8 +6220,8 @@
       "title": "Interpret the refinement adaptive pixels and their target/reference roles",
       "feature": "generic_refinement_regions",
       "runtime": [
-        "generic_region::parse_refinement_region_header",
-        "generic_region::refinement_adaptive_offset"
+        "generic_region::headers::parse_refinement_region_header",
+        "generic_region::refinement::refinement_adaptive_offset"
       ],
       "models": [],
       "proof_macros": [],
@@ -5690,8 +6250,8 @@
       "title": "Predict a refinement pixel only when its reference neighbourhood permits it",
       "feature": "generic_refinement_regions",
       "runtime": [
-        "generic_region::refinement_prediction",
-        "generic_region::decode_arithmetic_refinement"
+        "generic_region::refinement::refinement_prediction",
+        "generic_region::refinement::decode_arithmetic_refinement"
       ],
       "models": [
         "bitmap-storage-valid"
@@ -5726,7 +6286,7 @@
       "title": "Interpret the dictionary entropy-coding mode and reject reserved high flags",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::parse_symbol_dictionary_flags"
+        "symbol_text::headers::parse_symbol_dictionary_flags"
       ],
       "models": [
         "dictionary-config-safe"
@@ -5749,7 +6309,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::parse_symbol_dictionary_flags",
+          "runtime": "symbol_text::headers::parse_symbol_dictionary_flags",
           "section": "ensures",
           "tokens": [
             "Ok(config) => symbol_text_spec::dictionary_config_safe(flags, config)"
@@ -5765,7 +6325,7 @@
       "title": "Accumulate symbol dimensions and decoded counts within a dictionary height class",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::DictionaryClassState::add_symbol"
+        "symbol_text::dictionary::DictionaryClassState::add_symbol"
       ],
       "models": [
         "dictionary-state-valid"
@@ -5789,7 +6349,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "symbol_text::DictionaryClassState::add_symbol",
+          "runtime": "symbol_text::dictionary::DictionaryClassState::add_symbol",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::dictionary_state_valid(final(self))",
@@ -5805,7 +6365,7 @@
       "title": "Return the declared number of in-range dictionary export indices",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::decode_export_runs"
+        "symbol_text::dictionary::decode_export_runs"
       ],
       "models": [
         "export-indices-valid"
@@ -5836,7 +6396,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::decode_export_runs",
+          "runtime": "symbol_text::dictionary::decode_export_runs",
           "section": "ensures",
           "tokens": [
             "exported@.len() == expected_exports",
@@ -5853,12 +6413,12 @@
       "title": "Assemble exports in the selected order over imported then new symbols",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::assemble_exported_symbols",
+        "symbol_text::dictionary::assemble_exported_symbols",
         "symbol_text::SymbolCodebook::get",
         "symbol_text::symbol_by_id",
-        "decode::symbol_index",
-        "decode::get_symbol_resource",
-        "decode::collect_referred_symbols",
+        "decode::resources::symbol_index",
+        "decode::resources::get_symbol_resource",
+        "decode::dispatch::collect_referred_symbols",
         "decode::CollectedSymbols::codebook"
       ],
       "models": [
@@ -5919,7 +6479,7 @@
           ]
         },
         {
-          "runtime": "symbol_text::assemble_exported_symbols",
+          "runtime": "symbol_text::dictionary::assemble_exported_symbols",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::exported_contents_match(imported, new_symbols@, exported_indices@, exported@,)"
@@ -5928,21 +6488,21 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "decode::symbol_index",
+          "runtime": "decode::resources::symbol_index",
           "section": "ensures",
           "tokens": [
             "decode_spec::first_symbol_index(symbols@, number, index as int)"
           ]
         },
         {
-          "runtime": "decode::get_symbol_resource",
+          "runtime": "decode::resources::get_symbol_resource",
           "section": "ensures",
           "tokens": [
             "resource.exported@.len() == decode_spec::symbol_group_count(symbols@, number)"
           ]
         },
         {
-          "runtime": "decode::collect_referred_symbols",
+          "runtime": "decode::dispatch::collect_referred_symbols",
           "section": "ensures",
           "tokens": [
             "decode_spec::collected_symbol_count(&bitmaps) == decode_spec::referred_symbol_count(symbols@, segment.header.referred_segments@, segment.header.referred_segments@.len(),)"
@@ -5956,7 +6516,7 @@
           ]
         },
         {
-          "runtime": "symbol_text::assemble_exported_symbols",
+          "runtime": "symbol_text::dictionary::assemble_exported_symbols",
           "section": "ensures",
           "tokens": [
             "exported@.len() == exported_indices@.len()",
@@ -5972,7 +6532,7 @@
       "title": "Interpret selected text coding/refinement fields with a valid strip size",
       "feature": "text_regions",
       "runtime": [
-        "symbol_text::parse_text_region_flags"
+        "symbol_text::headers::parse_text_region_flags"
       ],
       "models": [
         "text-config-safe"
@@ -5995,7 +6555,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::parse_text_region_flags",
+          "runtime": "symbol_text::headers::parse_text_region_flags",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::text_config_safe(flags, huffman_flags, colour_extension, config)"
@@ -6011,7 +6571,7 @@
       "title": "Compute the current symbol's physical placement from strip coordinates and reference corner",
       "feature": "text_regions",
       "runtime": [
-        "symbol_text::TextRegionState::place_current"
+        "symbol_text::text::TextRegionState::place_current"
       ],
       "models": [
         "text-current-placement",
@@ -6041,7 +6601,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::TextRegionState::place_current",
+          "runtime": "symbol_text::text::TextRegionState::place_current",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::placement_for_current(old(self), within_strip_t, width, height, placement)",
@@ -6058,7 +6618,7 @@
       "title": "Preserve an accepted symbol index while rejecting indices outside the supplied codebook extent",
       "feature": "text_regions",
       "runtime": [
-        "symbol_text::checked_symbol_id"
+        "symbol_text::codec::checked_symbol_id"
       ],
       "models": [],
       "proof_macros": [],
@@ -6079,7 +6639,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::checked_symbol_id",
+          "runtime": "symbol_text::codec::checked_symbol_id",
           "section": "ensures",
           "tokens": [
             "Ok(value) => value == id && value < available_symbols",
@@ -6096,7 +6656,7 @@
       "title": "Clip symbol instances to the text region and combine their visible pixels",
       "feature": "text_regions",
       "runtime": [
-        "symbol_text::compose_placement"
+        "symbol_text::placement::compose_placement"
       ],
       "models": [
         "bitmap-storage-valid"
@@ -6124,7 +6684,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "symbol_text::compose_placement",
+          "runtime": "symbol_text::placement::compose_placement",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(final(destination))",
@@ -6140,10 +6700,10 @@
       "title": "Read each sequential segment body immediately after its header",
       "feature": "sequential_organization",
       "runtime": [
-        "document::parse_sequential",
-        "document::read_payload",
-        "document::parse_standalone_document",
-        "document::parse_known_segment_data",
+        "document::parsing::parse_sequential",
+        "document::parsing::read_payload",
+        "document::parsing::parse_standalone_document",
+        "document::parsing::parse_known_segment_data",
         "segment_data::parse_profiles",
         "segment_data::read_profiles_into"
       ],
@@ -6208,28 +6768,28 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::read_payload",
+          "runtime": "document::parsing::read_payload",
           "section": "ensures",
           "tokens": [
             "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
           ]
         },
         {
-          "runtime": "document::parse_sequential",
+          "runtime": "document::parsing::parse_sequential",
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "Organization::Sequential => document_spec::sequential_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@, true,)"
           ]
         },
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -6245,8 +6805,8 @@
       "title": "Enforce increasing standalone sequential segment numbers",
       "feature": "sequential_organization",
       "runtime": [
-        "document::parse_sequential",
-        "document::parse_standalone_document"
+        "document::parsing::parse_sequential",
+        "document::parsing::parse_standalone_document"
       ],
       "models": [
         "document-payload-window",
@@ -6291,14 +6851,14 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_sequential",
+          "runtime": "document::parsing::parse_sequential",
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "Organization::Sequential => document_spec::sequential_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@, true,)"
@@ -6314,10 +6874,10 @@
       "title": "Read random-access headers before the corresponding bodies in header order",
       "feature": "random_access_organization",
       "runtime": [
-        "document::parse_random_access",
-        "document::read_payload",
-        "document::parse_standalone_document",
-        "document::parse_known_segment_data",
+        "document::parsing::parse_random_access",
+        "document::parsing::read_payload",
+        "document::parsing::parse_standalone_document",
+        "document::parsing::parse_known_segment_data",
         "segment_data::parse_profiles",
         "segment_data::read_profiles_into"
       ],
@@ -6386,21 +6946,21 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_random_access",
+          "runtime": "document::parsing::parse_random_access",
           "section": "ensures",
           "tokens": [
             "document_spec::random_access_container_fields(input@, segments@)"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
           ]
         },
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -6416,8 +6976,8 @@
       "title": "Use an end-of-file segment header to terminate the random-access header block",
       "feature": "random_access_organization",
       "runtime": [
-        "document::parse_random_access",
-        "document::parse_standalone_document"
+        "document::parsing::parse_random_access",
+        "document::parsing::parse_standalone_document"
       ],
       "models": [
         "document-payload-window",
@@ -6466,14 +7026,14 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_random_access",
+          "runtime": "document::parsing::parse_random_access",
           "section": "ensures",
           "tokens": [
             "document_spec::random_access_container_fields(input@, segments@)"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
@@ -6489,8 +7049,8 @@
       "title": "Enforce increasing random-access segment numbers",
       "feature": "random_access_organization",
       "runtime": [
-        "document::parse_random_access",
-        "document::parse_standalone_document"
+        "document::parsing::parse_random_access",
+        "document::parsing::parse_standalone_document"
       ],
       "models": [
         "document-payload-window",
@@ -6539,14 +7099,14 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::parse_random_access",
+          "runtime": "document::parsing::parse_random_access",
           "section": "ensures",
           "tokens": [
             "document_spec::random_access_container_fields(input@, segments@)"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
@@ -6562,10 +7122,10 @@
       "title": "Accept header-body segment pairs without a standalone file header or standalone wire-number order",
       "feature": "embedded_organization",
       "runtime": [
-        "document::parse_embedded_document",
-        "document::parse_sequential",
-        "document::read_payload",
-        "document::parse_known_segment_data",
+        "document::parsing::parse_embedded_document",
+        "document::parsing::parse_sequential",
+        "document::parsing::read_payload",
+        "document::parsing::parse_known_segment_data",
         "segment_data::parse_profiles",
         "segment_data::read_profiles_into"
       ],
@@ -6631,28 +7191,28 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::read_payload",
+          "runtime": "document::parsing::read_payload",
           "section": "ensures",
           "tokens": [
             "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
           ]
         },
         {
-          "runtime": "document::parse_sequential",
+          "runtime": "document::parsing::parse_sequential",
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
           ]
         },
         {
-          "runtime": "document::parse_embedded_document",
+          "runtime": "document::parsing::parse_embedded_document",
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, result.1@, false)"
           ]
         },
         {
-          "runtime": "document::parse_known_segment_data",
+          "runtime": "document::parsing::parse_known_segment_data",
           "section": "ensures",
           "tokens": [
             "document_spec::known_segment_data_fields(header.segment_type, payload@, data)"
@@ -6832,10 +7392,10 @@
       "runtime": [
         "segment_header::decode_data_length",
         "segment_header::parse_segment_header",
-        "document::read_payload",
-        "document::parse_sequential",
-        "document::parse_random_access",
-        "document::parse_standalone_document"
+        "document::parsing::read_payload",
+        "document::parsing::parse_sequential",
+        "document::parsing::parse_random_access",
+        "document::parsing::parse_standalone_document"
       ],
       "models": [
         "segment-header-fields",
@@ -6917,28 +7477,28 @@
           ]
         },
         {
-          "runtime": "document::read_payload",
+          "runtime": "document::parsing::read_payload",
           "section": "ensures",
           "tokens": [
             "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
           ]
         },
         {
-          "runtime": "document::parse_sequential",
+          "runtime": "document::parsing::parse_sequential",
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
           ]
         },
         {
-          "runtime": "document::parse_random_access",
+          "runtime": "document::parsing::parse_random_access",
           "section": "ensures",
           "tokens": [
             "document_spec::random_access_container_fields(input@, segments@)"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
@@ -6956,10 +7516,10 @@
       "runtime": [
         "segment_header::decode_data_length",
         "segment_header::parse_segment_header",
-        "document::read_payload",
-        "document::parse_sequential",
-        "document::parse_random_access",
-        "document::parse_standalone_document"
+        "document::parsing::read_payload",
+        "document::parsing::parse_sequential",
+        "document::parsing::parse_random_access",
+        "document::parsing::parse_standalone_document"
       ],
       "models": [
         "segment-header-fields",
@@ -7042,28 +7602,28 @@
           ]
         },
         {
-          "runtime": "document::read_payload",
+          "runtime": "document::parsing::read_payload",
           "section": "ensures",
           "tokens": [
             "document_spec::payload_window(header, old(reader).bytes@, old(reader).position as int, final(reader).position as int, payload@,)"
           ]
         },
         {
-          "runtime": "document::parse_sequential",
+          "runtime": "document::parsing::parse_sequential",
           "section": "ensures",
           "tokens": [
             "document_spec::sequential_container_fields(input@, segments@, require_local_references,)"
           ]
         },
         {
-          "runtime": "document::parse_random_access",
+          "runtime": "document::parsing::parse_random_access",
           "section": "ensures",
           "tokens": [
             "document_spec::random_access_container_fields(input@, segments@)"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "Organization::RandomAccess => document_spec::random_access_container_fields(input@.subrange(crate::file_header::file_header_spec::byte_length(input@) as int, input@.len() as int,), result.1@,)"
@@ -7388,12 +7948,16 @@
         {
           "runtime": "huffman::HuffmanTable::new",
           "section": "ensures",
-          "tokens": ["huffman_spec::canonical_assignment(lines@, &table)"]
+          "tokens": [
+            "huffman_spec::canonical_assignment(lines@, &table)"
+          ]
         },
         {
           "runtime": "huffman::WideCode::zero",
           "section": "ensures",
-          "tokens": ["out.limbs@ == seq![0u64, 0u64, 0u64, 0u64]"]
+          "tokens": [
+            "out.limbs@ == seq![0u64, 0u64, 0u64, 0u64]"
+          ]
         }
       ],
       "invariant_evidence": []
@@ -8557,12 +9121,12 @@
       "title": "A declared page count agrees with the document's pages",
       "feature": "multiple_pages",
       "runtime": [
-        "document::build_document_info",
-        "document::collect_page_states",
-        "document::collect_page_states_into",
-        "document::finalize_pages",
-        "document::parse_standalone_document",
-        "document::parse_embedded_document",
+        "document::pages::build_document_info",
+        "document::pages::collect_page_states",
+        "document::pages::collect_page_states_into",
+        "document::pages::finalize_pages",
+        "document::parsing::parse_standalone_document",
+        "document::parsing::parse_embedded_document",
         "document::Decoder::inspect",
         "document::DecoderContext::inspect",
         "document::Decoder::inspect_embedded_internal",
@@ -8628,7 +9192,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "document::build_document_info",
+          "runtime": "document::pages::build_document_info",
           "section": "ensures",
           "tokens": [
             "document_spec::document_declared_page_count(&info) == declared_page_count",
@@ -8637,7 +9201,7 @@
           ]
         },
         {
-          "runtime": "document::collect_page_states",
+          "runtime": "document::pages::collect_page_states",
           "section": "ensures",
           "tokens": [
             "result.0@.len() == result.1@.len()",
@@ -8645,7 +9209,7 @@
           ]
         },
         {
-          "runtime": "document::collect_page_states_into",
+          "runtime": "document::pages::collect_page_states_into",
           "section": "ensures",
           "tokens": [
             "out.is_ok() ==> final(page_states)@.len() == final(page_order)@.len()",
@@ -8653,14 +9217,14 @@
           ]
         },
         {
-          "runtime": "document::finalize_pages",
+          "runtime": "document::pages::finalize_pages",
           "section": "ensures",
           "tokens": [
             "Ok(pages) => pages@.len() == page_order@.len()"
           ]
         },
         {
-          "runtime": "document::parse_standalone_document",
+          "runtime": "document::parsing::parse_standalone_document",
           "section": "ensures",
           "tokens": [
             "document_spec::standalone_metadata(input@, &result.0)",
@@ -8669,7 +9233,7 @@
           ]
         },
         {
-          "runtime": "document::parse_embedded_document",
+          "runtime": "document::parsing::parse_embedded_document",
           "section": "ensures",
           "tokens": [
             "document_spec::embedded_metadata(&result.0)",
@@ -8736,7 +9300,7 @@
       "title": "Select the context cardinality associated with each generic template",
       "feature": "generic_regions",
       "runtime": [
-        "generic_region::GenericTemplate::context_bits"
+        "generic_region::contexts::GenericTemplate::context_bits"
       ],
       "models": [
         "template-bits"
@@ -8761,7 +9325,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "generic_region::GenericTemplate::context_bits",
+          "runtime": "generic_region::contexts::GenericTemplate::context_bits",
           "section": "ensures",
           "tokens": [
             "out as nat == generic_region_spec::generic_context_bits(self)"
@@ -8777,7 +9341,7 @@
       "title": "Select the template-specific SLTP context, independently of relocated adaptive pixels",
       "feature": "generic_regions",
       "runtime": [
-        "generic_region::GenericTemplate::sltp_context"
+        "generic_region::contexts::GenericTemplate::sltp_context"
       ],
       "models": [
         "sltp-index"
@@ -8802,7 +9366,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "generic_region::GenericTemplate::sltp_context",
+          "runtime": "generic_region::contexts::GenericTemplate::sltp_context",
           "section": "ensures",
           "tokens": [
             "out as nat == generic_region_spec::generic_sltp_context(self)"
@@ -8961,11 +9525,11 @@
       "title": "A typical row reproduces the preceding row under the specified edge convention",
       "feature": "generic_regions",
       "runtime": [
-        "generic_region::copy_bitmap_row",
-        "bitmap::Bitmap::copy_row",
-        "bitmap::copy_row_bytes",
-        "bitmap::Bitmap::blank",
-        "bitmap::Bitmap::filled"
+        "generic_region::support::copy_bitmap_row",
+        "bitmap::access::Bitmap::copy_row",
+        "bitmap::access::copy_row_bytes",
+        "bitmap::storage::Bitmap::blank",
+        "bitmap::storage::Bitmap::filled"
       ],
       "models": [
         "row-copy-result",
@@ -9020,28 +9584,28 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "bitmap::copy_row_bytes",
+          "runtime": "bitmap::access::copy_row_bytes",
           "section": "ensures",
           "tokens": [
             "final(destination)@ == source@"
           ]
         },
         {
-          "runtime": "bitmap::Bitmap::blank",
+          "runtime": "bitmap::storage::Bitmap::blank",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::zeroed_storage(&bitmap)"
           ]
         },
         {
-          "runtime": "bitmap::Bitmap::filled",
+          "runtime": "bitmap::storage::Bitmap::filled",
           "section": "ensures",
           "tokens": [
             "!value ==> crate::spec::bitmap::zeroed_storage(&bitmap)"
           ]
         },
         {
-          "runtime": "bitmap::Bitmap::copy_row",
+          "runtime": "bitmap::access::Bitmap::copy_row",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::row_copy_result(old(self), final(self), source, destination)",
@@ -9049,7 +9613,7 @@
           ]
         },
         {
-          "runtime": "generic_region::copy_bitmap_row",
+          "runtime": "generic_region::support::copy_bitmap_row",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::row_copy_result(old(bitmap), final(bitmap), source, destination)",
@@ -9070,8 +9634,8 @@
         "arithmetic::ArithmeticDecoder::decode_iaid",
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
-        "symbol_text::ArithmeticCodec::decode_integer",
-        "symbol_text::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::ArithmeticCodec::decode_integer",
+        "symbol_text::codec::ArithmeticCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -10953,8 +11517,8 @@
         "arithmetic::ArithmeticDecoder::decode_iaid",
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
-        "symbol_text::ArithmeticCodec::decode_integer",
-        "symbol_text::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::ArithmeticCodec::decode_integer",
+        "symbol_text::codec::ArithmeticCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -11433,8 +11997,8 @@
         "arithmetic::ArithmeticDecoder::decode_iaid",
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
-        "symbol_text::ArithmeticCodec::decode_integer",
-        "symbol_text::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::ArithmeticCodec::decode_integer",
+        "symbol_text::codec::ArithmeticCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -11593,10 +12157,10 @@
       "runtime": [
         "arithmetic::ArithmeticDecoder::decode",
         "arithmetic::ArithmeticContext::from_state",
-        "generic_region::validate_probability_states",
-        "generic_region::probability_signal_error",
-        "generic_region::unexpected_eof",
-        "generic_region::integer_overflow"
+        "generic_region::contexts::validate_probability_states",
+        "generic_region::generic::probability_signal_error",
+        "generic_region::support::unexpected_eof",
+        "generic_region::support::integer_overflow"
       ],
       "models": [
         "decoder-state-valid",
@@ -16442,7 +17006,7 @@
       "title": "Extract the pattern coding selector without changing its bit value",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::parse_pattern_dictionary_header"
+        "halftone::headers::parse_pattern_dictionary_header"
       ],
       "models": [
         "pattern-header-fields",
@@ -16469,7 +17033,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_pattern_dictionary_header",
+          "runtime": "halftone::headers::parse_pattern_dictionary_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16486,7 +17050,7 @@
       "title": "Extract the pattern template and require the neutral selection for MMR",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::parse_pattern_dictionary_header"
+        "halftone::headers::parse_pattern_dictionary_header"
       ],
       "models": [
         "pattern-header-fields",
@@ -16513,7 +17077,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_pattern_dictionary_header",
+          "runtime": "halftone::headers::parse_pattern_dictionary_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16530,7 +17094,7 @@
       "title": "Do not accept a pattern header with reserved flag bits set",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::parse_pattern_dictionary_header"
+        "halftone::headers::parse_pattern_dictionary_header"
       ],
       "models": [
         "pattern-header-fields",
@@ -16557,7 +17121,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_pattern_dictionary_header",
+          "runtime": "halftone::headers::parse_pattern_dictionary_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16574,7 +17138,7 @@
       "title": "Preserve the positive one-byte pattern width",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::parse_pattern_dictionary_header"
+        "halftone::headers::parse_pattern_dictionary_header"
       ],
       "models": [
         "pattern-header-fields",
@@ -16601,7 +17165,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_pattern_dictionary_header",
+          "runtime": "halftone::headers::parse_pattern_dictionary_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16618,7 +17182,7 @@
       "title": "Preserve the positive one-byte pattern height",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::parse_pattern_dictionary_header"
+        "halftone::headers::parse_pattern_dictionary_header"
       ],
       "models": [
         "pattern-header-fields",
@@ -16645,7 +17209,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_pattern_dictionary_header",
+          "runtime": "halftone::headers::parse_pattern_dictionary_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16662,7 +17226,7 @@
       "title": "Preserve the serialized maximum pattern-index word",
       "feature": "pattern_dictionaries",
       "runtime": [
-        "halftone::parse_pattern_dictionary_header"
+        "halftone::headers::parse_pattern_dictionary_header"
       ],
       "models": [
         "pattern-header-fields",
@@ -16689,7 +17253,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_pattern_dictionary_header",
+          "runtime": "halftone::headers::parse_pattern_dictionary_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::pattern_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16706,7 +17270,7 @@
       "title": "Extract the gray-plane coding selector",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -16733,7 +17297,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16750,7 +17314,7 @@
       "title": "Extract the gray-plane template with the MMR restriction",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -16777,7 +17341,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16794,7 +17358,7 @@
       "title": "Preserve skip selection and do not enable it for MMR",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -16821,7 +17385,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16838,7 +17402,7 @@
       "title": "Preserve the accepted pattern-combination selection",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -16865,7 +17429,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16882,7 +17446,7 @@
       "title": "Extract the initial output-pixel selection",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -16909,7 +17473,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16926,7 +17490,7 @@
       "title": "Preserve the gray-value array width word",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -16953,7 +17517,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -16970,7 +17534,7 @@
       "title": "Preserve the gray-value array height word",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -16997,7 +17561,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -17014,7 +17578,7 @@
       "title": "Interpret the horizontal grid-origin word as signed while retaining its encoded scale",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -17041,7 +17605,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -17058,7 +17622,7 @@
       "title": "Interpret the vertical grid-origin word as signed while retaining its encoded scale",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -17085,7 +17649,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -17102,7 +17666,7 @@
       "title": "Preserve the unsigned horizontal grid-vector word and its encoded scale",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -17129,7 +17693,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",
@@ -17146,7 +17710,7 @@
       "title": "Preserve the unsigned vertical grid-vector word and its encoded scale",
       "feature": "halftone_regions",
       "runtime": [
-        "halftone::parse_halftone_header"
+        "halftone::headers::parse_halftone_header"
       ],
       "models": [
         "halftone-header-fields",
@@ -17173,7 +17737,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "halftone::parse_halftone_header",
+          "runtime": "halftone::headers::parse_halftone_header",
           "section": "ensures",
           "tokens": [
             "halftone_spec::halftone_header_fields(header, old(reader).bytes@, old(reader).position as int,)",

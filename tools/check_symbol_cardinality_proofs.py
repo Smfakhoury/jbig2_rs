@@ -24,7 +24,7 @@ BASELINE_GROUPS = (
 FUNCTIONS = {row["id"]: row for row in source_functions(ROOT)}
 GET = FUNCTIONS["symbol_text::SymbolCodebook::get"]["body_text"]
 LOOKUP = FUNCTIONS["symbol_text::symbol_by_id"]["body_text"]
-ASSEMBLE = FUNCTIONS["symbol_text::assemble_exported_symbols"]["body_text"]
+ASSEMBLE = FUNCTIONS["symbol_text::dictionary::assemble_exported_symbols"]["body_text"]
 CODEBOOK_COUNT = """crate::symbol_text::symbol_text_spec::codebook_len(out)
     == decode_spec::collected_symbol_count(self),"""
 GROUP_COUNT = """&& resource.exported@.len()

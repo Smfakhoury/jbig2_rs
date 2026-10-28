@@ -12,6 +12,7 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_arithmetic_codec_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 from rust_source import parse
@@ -22,7 +23,7 @@ class ArithmeticCodecProofTests(unittest.TestCase):
         self.assertEqual(len(CASES), 19)
         self.assertEqual(len({case["id"] for case in CASES}), 19)
         for case in CASES:
-            source = (TOOLS.parent / case["file"]).read_text()
+            source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]):
                 changed = replace_once(source, case["site"], case["replacement"])
                 self.assertNotEqual(changed, source)
@@ -32,7 +33,7 @@ class ArithmeticCodecProofTests(unittest.TestCase):
         for case in CASES:
             if case["function"] != "validate_probability_states":
                 continue
-            source = (TOOLS.parent / case["file"]).read_text()
+            source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]):
                 weaker = weakened_contract(source, case)
                 self.assertIn("Ok(()) => forall|index: int|", weaker)
@@ -41,7 +42,7 @@ class ArithmeticCodecProofTests(unittest.TestCase):
 
     def test_mutants_preserve_ordinary_rust_syntax(self):
         for case in CASES:
-            source = (TOOLS.parent / case["file"]).read_text()
+            source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]):
                 changed = replace_once(source, case["site"], case["replacement"])
                 self.assertFalse(parse(changed.encode()).has_error)
@@ -56,7 +57,7 @@ class ArithmeticCodecProofTests(unittest.TestCase):
         for case in CASES:
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):
                 weakened_contract("", case)
-            source = (TOOLS.parent / case["file"]).read_text()
+            source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]), self.assertRaises(ValueError):
                 weakened_contract(weakened_contract(source, case), case)
 

@@ -12,13 +12,14 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_mmr_span_proofs import CASES
 from proof_sensitivity import replace_once, weakened_contract
 
 
 class MmrSpanProofFixtureTests(unittest.TestCase):
     def setUp(self):
-        self.source = (TOOLS.parent / "src/mmr.rs").read_text(encoding="utf-8")
+        self.source = source_text(TOOLS.parent, "src/mmr.rs")
 
     def test_distinct_invalid_white_and_empty_mutations_have_unique_sites(self):
         self.assertEqual(len({case["id"] for case in CASES}), 8)

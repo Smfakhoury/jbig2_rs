@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from evidence import load_json, read_evidence
-from rust_source import production_code, source_functions
+from rust_source import excluded, parse, production_code, source_functions
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,7 +30,15 @@ def test_source_hash(root: Path) -> str:
 
 
 def test_driver_source(path: Path, root: Path) -> bool:
-    return path.is_relative_to(root / "tests") or path in {root / name for name in TEST_FIXTURES}
+    if path.is_relative_to(root / "tests") or path in {root / name for name in TEST_FIXTURES}:
+        return True
+    if path.is_relative_to(root / "src") and path.is_file():
+        attributes = [
+            node for node in parse(path.read_bytes()).named_children
+            if node.type == "inner_attribute_item"
+        ]
+        return excluded(attributes, True) and not excluded(attributes, True, testing=True)
+    return False
 
 
 def ratio(covered: int, count: int) -> dict:
@@ -46,13 +54,14 @@ def runtime_sources(root: Path):
     if any(entry["file"] in EXCLUDED_FILES for entry in functions):
         raise ValueError("an excluded source file gained an executing function")
     paths = sorted((root / "src").rglob("*.rs"))
+    executing = {entry["file"] for entry in functions}
     masks = {}
     identity = hashlib.sha256()
     for path in paths:
         relative = path.relative_to(root).as_posix()
         data = path.read_bytes()
         identity.update(relative.encode() + b"\0" + data + b"\0")
-        if relative not in EXCLUDED_FILES:
+        if relative in executing:
             masks[path.resolve()] = production_code(data, mask_noncode=False).encode().splitlines()
     return masks, identity.hexdigest()
 
@@ -200,7 +209,14 @@ def scoped_report(document: dict, lcov: str, root: Path) -> dict:
     return {
         "schema_version": 1, "scope_version": SCOPE_VERSION,
         "source_sha256": source_hash, "coverage_platform": "linux",
-        "totals": totals, "files": files, "excluded_files": EXCLUDED_FILES,
+        "totals": totals, "files": files,
+        "excluded_files": {
+            path.relative_to(root).as_posix(): EXCLUDED_FILES.get(
+                path.relative_to(root).as_posix(),
+                "No ordinary executing function declarations; test-only or type/module source.",
+            )
+            for path in sorted((root / "src").rglob("*.rs")) if path.resolve() not in masks
+        },
         "excluded_integration_test_sources": sorted(path.relative_to(root).as_posix() for path in excluded_drivers),
     }
 

@@ -73,7 +73,15 @@ class SemanticOrchestrationTests(unittest.TestCase):
         (self.root / "tools").mkdir()
         (self.root / "src").mkdir()
         (self.root / "config").mkdir()
-        (self.root / "src/example.rs").write_text("// source fixture\n")
+        (self.root / "src/lib.rs").write_text(
+            '#[path = "example.rs"] mod module;\nmod document;\n'
+        )
+        (self.root / "src/example.rs").write_text(
+            "// source fixture\nfn function() {}\nfn first() {}\nfn second() {}\n"
+        )
+        (self.root / "src/document.rs").write_text(
+            "fn function() {}\nfn first() {}\nfn second() {}\n"
+        )
         (self.root / "config/toolchain.json").write_text(json.dumps({"verus": {"version": "pinned"}}))
         self.checks = tuple((str(index), f"{index}.py", 1, "strong_contract", "weaker_control") for index in range(8))
         for _, script, *_ in self.checks:

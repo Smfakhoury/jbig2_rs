@@ -6,6 +6,7 @@ from pathlib import Path
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from source_group import source_text
 from check_text_batch_proofs import (
     BITMAP_EFFECT, CASES, CLEAR, CURRENT_ACCEPTANCE, DIMENSION_ACCEPTANCE,
     INITIALIZATION_ACCEPTANCE, NO_OP, PREFLIGHT_RESULT, WORK_EFFECT,
@@ -15,7 +16,7 @@ from proof_sensitivity import replace_once, weakened_contract
 
 class TextBatchProofFixtureTests(unittest.TestCase):
     def setUp(self):
-        self.source = (TOOLS.parent / "src/symbol_text.rs").read_text(encoding="utf-8")
+        self.source = source_text(TOOLS.parent, "src/symbol_text.rs")
 
     def test_eleven_distinct_mutations_have_unique_sites(self):
         self.assertEqual(len({case["id"] for case in CASES}), 11)

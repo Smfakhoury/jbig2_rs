@@ -10,11 +10,10 @@ from pathlib import Path
 
 from check_distribution import run
 from proof_sensitivity import positive_baseline, proof_workspace, replace_once, selected_proof
-from rust_source import source_functions
+from source_group import bound_source_groups, runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FUNCTIONS = {entry["id"]: entry for entry in source_functions(ROOT)}
 PAYLOAD_FIELDS = """document_spec::payload_window(
     header, old(reader).bytes@, old(reader).position as int,
     final(reader).position as int, payload@,
@@ -41,7 +40,7 @@ EMBEDDED_WINDOWS = "&& document_spec::sequential_container_fields(input@, result
 
 
 def quota_cases(function, comparison, postcondition):
-    original = FUNCTIONS[f"document::{function}"]["body_text"]
+    original = runtime_function(ROOT, "document", function)["body_text"]
     return (
         {
             "id": f"{function}_rejects_inclusive_boundary",
@@ -66,7 +65,7 @@ def quota_cases(function, comparison, postcondition):
 
 
 def result_case(identity, function, contract, replacement):
-    original = FUNCTIONS[f"document::{function}"]["body_text"]
+    original = runtime_function(ROOT, "document", function)["body_text"]
     return {
         "id": identity, "function": function, "site": original,
         "replacement": replace_once(original, "Ok(segments)", replacement),
@@ -259,45 +258,55 @@ def check_document_count_proof(executable: Path, case_group: str | None = None) 
         "src/file_header.rs", "specs/file_header.rs", "proofs/model_support/document.rs",
         "src/segment_header.rs", "specs/segments.rs",
     )
-    sources = {name: (ROOT / name).read_bytes() for name in files}
+    groups, sources, _ = bound_source_groups(ROOT, files)
+    document = groups["src/document.rs"]
     results = []
     with proof_workspace(ROOT, executable, "jbig2-count-proof-") as (
         directory, environment, expected, rust,
     ):
-        path = directory / "src/document.rs"
-        original = path.read_text(encoding="utf-8")
+        original = document.text
         functions = tuple(sorted({case["function"] for case in cases}))
-        if any(not FUNCTIONS[f"document::{name}"]["verification_requested"] for name in functions):
+        records = {name: runtime_function(ROOT, "document", name) for name in functions}
+        if any(not record["verification_requested"] for record in records.values()):
             raise ValueError("document baseline contains an unverified production function")
-        baseline = positive_baseline(
-            ROOT, executable, directory, environment, "document", functions,
-        )
+        by_module = {}
+        for name, record in records.items():
+            by_module.setdefault(record["verifier_module"], []).append(name)
+        baselines = {
+            module: positive_baseline(
+                ROOT, executable, directory, environment, module,
+                names[0] if len(names) == 1 else tuple(names),
+            )
+            for module, names in by_module.items()
+        }
         for case in cases:
             print(f"document contrast: {case['id']}", file=sys.stderr, flush=True)
-            control_path = directory / case.get("control_file", "src/document.rs")
-            control_original = control_path.read_text(encoding="utf-8")
+            control_group = groups[case.get("control_file", "src/document.rs")]
             source = mutated_document(original, case)
-            path.write_text(source, encoding="utf-8")
-            run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
-                directory, environment, capture=True)
-            rejected = selected_proof(
-                executable, directory, environment, True, "document", case["function"],
-            )
-            control_source = source if control_path == path else control_original
-            control_path.write_text(weaker_contract(control_source, case), encoding="utf-8")
-            control = selected_proof(
-                executable, directory, environment, False, "document", case["function"],
-            )
-            results.append({
-                "id": case["id"], "function": case["function"],
-                "normal_rust_compiles": True, "strong_count_contract": "rejected",
-                "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
-                "control_verifier_errors": control["errors"],
-                "baseline_selected_verification": baseline,
-            })
-            path.write_text(original, encoding="utf-8")
-            if control_path != path:
-                control_path.write_text(control_original, encoding="utf-8")
+            module = records[case["function"]]["verifier_module"]
+            try:
+                document.write(directory, source)
+                run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
+                    directory, environment, capture=True)
+                rejected = selected_proof(
+                    executable, directory, environment, True, module, case["function"],
+                )
+                control_source = source if control_group is document else control_group.text
+                control_group.write(directory, weaker_contract(control_source, case))
+                control = selected_proof(
+                    executable, directory, environment, False, module, case["function"],
+                )
+                results.append({
+                    "id": case["id"], "function": case["function"],
+                    "normal_rust_compiles": True, "strong_count_contract": "rejected",
+                    "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
+                    "control_verifier_errors": control["errors"],
+                    "baseline_selected_verification": baselines[module],
+                })
+            finally:
+                document.restore(directory)
+                if control_group is not document:
+                    control_group.restore(directory)
     if any((ROOT / name).read_bytes() != data for name, data in sources.items()):
         raise ValueError("production source changed during document proof sensitivity checks")
     return {

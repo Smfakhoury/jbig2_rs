@@ -5,6 +5,132 @@
 
 use vstd::prelude::*;
 
+macro_rules! production_bitmap_pixel_index_bounds {
+    ($bitmap:ident, $x:ident, $y:ident) => {
+        proof! {
+            reveal(crate::spec::bitmap::byte_index);
+            assert($y as nat <= u32::MAX as nat);
+            assert(u32::MAX as nat <= usize::MAX) by (compute);
+            assert(
+                $y as nat * $bitmap.stride as nat + $x as nat / 8
+                    < $bitmap.data@.len()
+            );
+            assert($bitmap.data@.len() == $bitmap.data.len());
+            assert($bitmap.data@.len() <= usize::MAX);
+            assert($y as nat * $bitmap.stride as nat <= usize::MAX);
+        }
+    };
+}
+
+macro_rules! production_bitmap_set_pixel_result {
+    ($bitmap:ident, $x:ident, $y:ident, $value:ident) => {
+        proof! {
+            crate::views::bitmap_fields($bitmap);
+            reveal(crate::spec::bitmap::set_byte_bit);
+            reveal(crate::spec::bitmap::bit_mask);
+            crate::bitmap::bitmap_shared::set_byte_reads_written_value(
+                old($bitmap).data@[
+                    crate::spec::bitmap::byte_index(
+                        old($bitmap).stride,
+                        $x,
+                        $y,
+                    ) as int
+                ],
+                $x,
+                $value,
+            );
+            reveal(crate::spec::bitmap::stored_pixel);
+            reveal(crate::spec::bitmap::byte_bit);
+        }
+    };
+}
+
+macro_rules! production_bitmap_byte_operator {
+    ($operator:ident, $destination:ident, $source:ident, $result:ident) => {
+        proof! {
+            reveal(crate::spec::bitmap::operator_byte);
+            assert($result == crate::spec::bitmap::operator_byte($operator, $destination, $source));
+            assert forall|bit: u32| bit < 8 implies
+                crate::spec::bitmap::byte_operator_bit($result, bit)
+                    == crate::spec::bitmap::combine(
+                        $operator, crate::spec::bitmap::byte_operator_bit($destination, bit),
+                        crate::spec::bitmap::byte_operator_bit($source, bit),
+                    ) by {
+                crate::bitmap::bitmap_shared::byte_operator_semantics(
+                    $operator, $destination, $source, bit,
+                );
+            }
+        }
+    };
+}
+
+macro_rules! production_bitmap_word_operator {
+    ($operator:ident, $destination:ident, $source:ident, $result:ident) => {
+        proof! {
+            reveal(crate::spec::bitmap::operator_word);
+            assert($result == crate::spec::bitmap::operator_word($operator, $destination, $source));
+            assert forall|bit: u32| bit < 64 implies
+                crate::spec::bitmap::word_operator_bit($result, bit)
+                    == crate::spec::bitmap::combine(
+                        $operator, crate::spec::bitmap::word_operator_bit($destination, bit),
+                        crate::spec::bitmap::word_operator_bit($source, bit),
+                    ) by {
+                crate::bitmap::bitmap_shared::word_operator_semantics(
+                    $operator, $destination, $source, bit,
+                );
+            }
+        }
+    };
+}
+
+macro_rules! production_bitmap_clipped_dimensions {
+    ($bitmap:ident, $source:ident, $x:ident, $y:ident, $width:ident, $height:ident) => {
+        proof! {
+            reveal(crate::spec::bitmap::clipped_width);
+            reveal(crate::spec::bitmap::clipped_height);
+            assert($width as nat == crate::spec::bitmap::clipped_width(
+                $bitmap.width,
+                $source.width,
+                $x,
+            ));
+            assert($height as nat == crate::spec::bitmap::clipped_height(
+                $bitmap.height,
+                $source.height,
+                $y,
+            ));
+            assert($x as nat + $width as nat <= if $x <= $bitmap.width {
+                $bitmap.width as nat
+            } else {
+                $x as nat
+            });
+            assert($y as nat + $height as nat <= if $y <= $bitmap.height {
+                $bitmap.height as nat
+            } else {
+                $y as nat
+            });
+        }
+    };
+}
+
+macro_rules! production_bitmap_compose_row_bounds {
+    ($bitmap:ident, $source:ident, $source_y:ident, $x:ident, $y:ident, $width:ident) => {
+        proof! {
+            crate::views::bitmap_fields($bitmap);
+            crate::views::bitmap_fields($source);
+            reveal(crate::spec::bitmap::storage_valid);
+            reveal(crate::spec::bitmap::stride_for_width);
+            assert(u32::MAX as nat <= usize::MAX) by (compute);
+            crate::bitmap::bitmap_shared::row_copy_bounds($source, $source_y, $source_y);
+            let dy = ($y as int + $source_y as int) as u32;
+            crate::bitmap::bitmap_shared::row_copy_bounds($bitmap, dy, dy);
+            crate::bitmap::bitmap_shared::packed_span_bounds($source.width, $source.stride, 0, $width);
+            crate::bitmap::bitmap_shared::packed_span_bounds($bitmap.width, $bitmap.stride, $x, $width);
+            vstd::arithmetic::div_mod::lemma_fundamental_div_mod($width as int, 8);
+            vstd::arithmetic::div_mod::lemma_mod_bound($width as int, 8);
+        }
+    };
+}
+
 // Model navigation: macro::production_filled_tail_bounds [proof-support]
 // Purpose: Packed-storage bounds, fill completion and row-copy proof bridges.
 // Audit: filled-storage-tail-bounds

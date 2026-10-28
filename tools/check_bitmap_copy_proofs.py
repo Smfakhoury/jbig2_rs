@@ -41,7 +41,7 @@ PAD_RESULT = """&& forall|index: int| 0 <= index < crate::views::bitmap_data(&bi
                     } else { 0u8 }"""
 FILLED = next(
     entry["body_text"] for entry in source_functions(ROOT)
-    if entry["id"] == "bitmap::Bitmap::filled"
+    if entry["id"] == "bitmap::storage::Bitmap::filled"
 )
 FILLED_WITHOUT_RESULT_SUPPORT = replace_once(
     FILLED,

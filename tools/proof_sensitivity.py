@@ -13,6 +13,7 @@ from os.path import commonprefix
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
+from source_group import SourceGroup, bound_source_groups, relocate_cases
 
 
 def replace_once(source: str, original: str, replacement: str) -> str:
@@ -46,6 +47,7 @@ def proof_workspace(root: Path, executable: Path, prefix: str):
 def selected_proof(
     executable: Path, directory: Path, environment: dict, expect_failure: bool,
     module: str, function: str | tuple[str, ...],
+    *, verification_module=None,
 ):
     functions = (function,) if isinstance(function, str) else function
     if (
@@ -55,11 +57,16 @@ def selected_proof(
         or expect_failure and not isinstance(function, str)
     ):
         raise ValueError("selected proof needs unique targets; failures must select one function")
+    # Verus cannot strip a lexical scope from a method reported under its parent type.
+    selector = (
+        ("*::" if verification_module and verification_module != module else "") + function
+        if isinstance(function, str) else commonprefix(functions) + "*"
+    )
     command = [
         str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
         "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
-        "--verify-only-module", module, "--verify-function",
-        function if isinstance(function, str) else commonprefix(functions) + "*",
+        "--verify-only-module", verification_module or module, "--verify-function",
+        selector,
         "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
     ]
     if expect_failure:
@@ -110,7 +117,10 @@ def weakened_contract(source: str, case: dict) -> str:
     return source
 
 
-def positive_baseline(root, executable, directory, environment, module, functions, *, whole=None):
+def positive_baseline(
+    root, executable, directory, environment, module, functions, *,
+    whole=None, verification_module=None,
+):
     receipt = os.environ.get("JBIG2_WHOLE_BASELINE")
     if receipt is not None:
         from run_semantic_proofs import baseline_from_whole, load_whole_baseline
@@ -121,7 +131,8 @@ def positive_baseline(root, executable, directory, environment, module, function
         return baseline_from_whole(
             whole, [f"jbig2_rs_production::{module}::{name}" for name in names],
         )
-    return selected_proof(executable, directory, environment, False, module, functions)
+    options = {"verification_module": verification_module} if verification_module and verification_module != module else {}
+    return selected_proof(executable, directory, environment, False, module, functions, **options)
 
 
 def check_semantic_cases(
@@ -138,7 +149,11 @@ def check_semantic_cases(
         ):
             raise ValueError("shared baseline needs disjoint existing function targets")
         covered.update(group)
-    sources = {name: (root / name).read_bytes() for name in files}
+    groups, sources, modules = bound_source_groups(root, files)
+    cases, baseline_groups = relocate_cases(root, cases, baseline_groups, sources)
+    scopes = {
+        (case["module"], case["function"]): case["verification_module"] for case in cases
+    }
     whole = None
     receipt = os.environ.get("JBIG2_WHOLE_BASELINE")
     if receipt is not None:
@@ -160,6 +175,7 @@ def check_semantic_cases(
         for module, functions in baseline_groups:
             baseline = positive_baseline(
                 root, executable, directory, environment, module, functions, whole=whole,
+                verification_module=scopes[(module, functions[0])],
             )
             for function in functions:
                 baselines[(module, function)] = baseline
@@ -169,30 +185,39 @@ def check_semantic_cases(
                   file=sys.stderr, flush=True)
             if case["file"] not in sources:
                 raise ValueError("semantic counterexample edits an unbound source")
-            path = directory / case["file"]
-            original = path.read_text(encoding="utf-8")
+            if case["file"] not in groups:
+                groups[case["file"]] = SourceGroup(root, case["file"], modules)
+            group = groups[case["file"]]
+            original = group.text
             target = (case["module"], case["function"])
             if target not in baselines:
                 baselines[target] = positive_baseline(
                     root, executable, directory, environment, *target, whole=whole,
+                    verification_module=case["verification_module"],
                 )
                 baseline_targets[target] = [case["function"]]
             source = replace_once(original, case["site"], case["replacement"])
-            path.write_text(source, encoding="utf-8")
-            run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
-                directory, environment, capture=True)
-            rejected = selected_proof(executable, directory, environment, True, *target)
-            path.write_text(weakened_contract(source, case), encoding="utf-8")
-            control = selected_proof(executable, directory, environment, False, *target)
-            results.append({
-                "id": case["id"], "function": "::".join(target),
-                "normal_rust_compiles": True, "strong_contract": "rejected",
-                "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
-                "control_verifier_errors": control["errors"],
-                "baseline_selected_verification": baselines[target],
-                "baseline_selected_functions": baseline_targets[target],
-            })
-            path.write_text(original, encoding="utf-8")
+            try:
+                group.write(directory, source)
+                run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
+                    directory, environment, capture=True)
+                options = (
+                    {"verification_module": case["verification_module"]}
+                    if case["verification_module"] != case["module"] else {}
+                )
+                rejected = selected_proof(executable, directory, environment, True, *target, **options)
+                group.write(directory, weakened_contract(source, case))
+                control = selected_proof(executable, directory, environment, False, *target, **options)
+                results.append({
+                    "id": case["id"], "function": "::".join(target),
+                    "normal_rust_compiles": True, "strong_contract": "rejected",
+                    "weaker_control": "accepted", "strong_verifier_errors": rejected["errors"],
+                    "control_verifier_errors": control["errors"],
+                    "baseline_selected_verification": baselines[target],
+                    "baseline_selected_functions": baseline_targets[target],
+                })
+            finally:
+                group.restore(directory)
     if any((root / name).read_bytes() != data for name, data in sources.items()):
         raise ValueError("production source changed during semantic sensitivity checks")
     if whole is not None:

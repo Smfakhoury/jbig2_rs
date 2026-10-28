@@ -240,10 +240,10 @@ pub fn exercise(input: &[u8]) {
                 assert_results(context.decode(&changed), fresh);
             }
             5 => {
-                let raw = input.get(32..).unwrap_or(&[]);
-                let raw = &raw[..raw.len().min(256)];
-                assert_results(context.decode(raw), decoder.decode(raw));
-                assert_results(context.inspect(raw), decoder.inspect(raw));
+                let bytes = input.get(32..).unwrap_or(&[]);
+                let bytes = &bytes[..bytes.len().min(256)];
+                assert_results(context.decode(bytes), decoder.decode(bytes));
+                assert_results(context.inspect(bytes), decoder.inspect(bytes));
             }
             6 => {
                 let mut oversized = first.input.clone();
