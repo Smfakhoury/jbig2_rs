@@ -5,6 +5,40 @@
 
 use vstd::prelude::*;
 
+verus! {
+
+pub(super) proof fn packed_row_end_in_bounds(
+    row: nat,
+    height: nat,
+    stride: nat,
+    final_byte: nat,
+)
+    requires
+        row < height,
+        stride > 0,
+        final_byte == row * stride + (stride - 1),
+    ensures
+        final_byte < stride * height,
+{
+    vstd::arithmetic::mul::lemma_mul_inequality(
+        row as int + 1,
+        height as int,
+        stride as int,
+    );
+    vstd::arithmetic::mul::lemma_mul_is_distributive_add_other_way(
+        stride as int,
+        row as int,
+        1,
+    );
+    vstd::arithmetic::mul::lemma_mul_is_commutative(
+        height as int,
+        stride as int,
+    );
+    assert(final_byte + 1 == (row + 1) * stride);
+}
+
+}
+
 macro_rules! production_symbol_tracker_fields {
     ($tracker:expr) => {
         proof! {
