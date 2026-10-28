@@ -6,7 +6,13 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
-## Publication-layout candidate
+## Verified publication-layout revision
+
+Reference: owner-merged [PR #107](https://github.com/microsoft/jbig2_rs/pull/107),
+main commit `e145a4532bc0ee4ae0abf237b13e4d755bfd2eee`, source head
+`b071519ec681943f483499908117899e897d3948`. Their Git trees are identical.
+The results below belong to that source head; this documentation update does
+not rerun or relabel its proofs, coverage or conformance observations.
 
 The implementation now uses focused Rust child modules, separately packaged
 unit tests and external proof helpers; start with the
@@ -15,59 +21,34 @@ or the ordinary-Rust example in the [crate guide](../src/lib.rs).
 This changes source organization, not the public decoder API or publication
 policy. Inactive contracts and necessary local proof hooks remain in source.
 
-Local acceptance of the integrated layout includes:
-
-- A fresh whole production proof and compiled library: **1,245 verified,
-  0 errors**. The increase from 1,244 is one ghost proof helper, not another
-  runtime operation.
-- All 659 native declarations accounted for, with native token projections,
-  attached function/loop contracts, data declarations and mathematical models
-  preserved. Production accounting remains 611 directly verified, 24 reviewed
-  limitations, 23 audited forwarders and one runtime/proof divergence.
-- All 141 existing native mutants compile and are detected. Real operator-bit
-  and document-count strong/weaker contrasts also pass the strict collector.
-- All 511 tooling tests pass. A real 71-file archive passes its extracted tests,
-  doctest and exact downstream-output check on Rust 1.88.0 with a fresh offline
-  Cargo home and no normal dependencies.
-- Fresh LLVM coverage covers 48 executing files: 11,460/12,716 lines,
-  10,974/12,953 regions and 2,245/2,640 branch outcomes. Rebinding the physical
-  file baseline preserves both the previous component ratchets and the
-  unchanged 90% line / 85% branch goals.
-- Actual slowdown and packed-output-corruption controls are still rejected.
-
-These are local results, not current-head hosted acceptance. The complete
-34-group / 269-contrast matrix, cross-platform distribution lanes and other
-hosted checks must pass on the final candidate before review readiness.
-None of these results resolves the release blockers below or grants normative
-approval.
-
-## Verified reference revision
-
-Reference: owner-merged [PR #91](https://github.com/microsoft/jbig2_rs/pull/91),
-main commit `60786ccb096cc55f9cfe1847f702c0d97b7949d3`, source head
-`4d075b9361033bf8c9dd92e4faf7ef1a2e93696b`. The publication-layout cleanup is
-not itself covered by those runs.
-
 | Evidence at that revision | Result |
 | --- | --- |
 | Checks | All 22 passed: 21 workflow jobs plus CLA |
-| Whole production proof | 1,232 verified obligations, 0 errors; proof run [40243754827](https://github.com/microsoft/jbig2_rs/actions/runs/40243754827), attempt 1 |
-| Production accounting | 610 directly verified native functions, 24 reviewed verifier limitations, 23 audited forwarders, 1 runtime/proof divergence; 0 native assumptions, 0 incomplete functions |
-| Proof sensitivity | 29 semantic groups, 236 compiling strong-rejected/weaker-accepted contrasts; six sequential one-worker shards, at most four active |
-| Independent reconstruction | 229 source bindings across 66 canonical files; all 51 raw coverage metrics, hashes, source/test/tool identities and actual merge identities checked |
-| Runtime sensitivity | 108 real native mutants compiled and were detected by their selected tests |
-| Runtime tests | 473 passing; 14 existing ignored microbenchmarks are not correctness passes |
-| Tooling tests | 418 passing |
-| Coverage | [40243755037](https://github.com/microsoft/jbig2_rs/actions/runs/40243755037): 11,383/12,639 lines (90.062504945%), 10,971/12,950 regions (84.718146718%), 2,245/2,640 branch outcomes (85.037878788%) |
-| Native CI/distribution | [40243754851](https://github.com/microsoft/jbig2_rs/actions/runs/40243754851), attempt 1: six native Linux/Windows/macOS × Rust 1.88.0 MSRV/stable 1.99.1 distribution reports |
-| Archive controls | 24 package files, fresh offline Cargo home, zero dependencies, exact downstream output, hidden `runtime_access`, unsafe probe rejected and guard-only weaker control compiled; extracted source unconditionally restored |
+| Whole production proof | 1,245 verified obligations, 0 errors and a compiled library; proof run [40679876981](https://github.com/microsoft/jbig2_rs/actions/runs/40679876981), attempt 1 |
+| Production accounting | All 659 native declarations accounted for: 611 directly verified, 24 reviewed verifier limitations, 23 audited forwarders, 1 runtime/proof divergence; 0 native assumptions, 0 incomplete functions |
+| Proof sensitivity | 34 semantic groups, 269 compiling strong-rejected/weaker-accepted contrasts; six sequential one-worker shards, at most four active |
+| Independent reconstruction | 275 source bindings across 76 canonical files; all 147 raw coverage metrics, hashes, source/test/tool identities and actual merge identities checked |
+| Runtime sensitivity | 141 real native mutants compiled and were detected by their selected tests |
+| Tooling tests | 511 passing |
+| Coverage | [40679877001](https://github.com/microsoft/jbig2_rs/actions/runs/40679877001): 48 executing files; 11,460/12,716 lines (90.122680088%), 10,974/12,953 regions (84.721686096%), 2,245/2,640 branch outcomes (85.037878788%) |
+| Native CI/distribution | [40679876967](https://github.com/microsoft/jbig2_rs/actions/runs/40679876967), attempt 1: six native Linux/Windows/macOS × Rust 1.88.0 MSRV/stable 1.99.1 distribution reports |
+| Archive controls | 71 package files, fresh offline Cargo home, zero normal dependencies, extracted tests/doctest and exact downstream output, hidden `runtime_access`, unsafe probe rejected and guard-only weaker control compiled; extracted source unconditionally restored |
+| Performance and fuzz | Generated performance comparison [40679877015](https://github.com/microsoft/jbig2_rs/actions/runs/40679877015) and bounded existing-target fuzz validation [40679877127](https://github.com/microsoft/jbig2_rs/actions/runs/40679877127) passed; timing remains informational |
 | Normative ledger | 266 selected records: 257 normative + 9 project-policy; 133 functional, 117 state-preservation, 16 safety; all provisional, denominator not exhaustive |
-| Official cases | 2 exact positives, 7 unresolved positives, 1 unsupported; 0 reviewed rejection credit |
+| Official cases | Historical observations remain 2 exact positives, 7 unresolved positives, 1 unsupported; 0 reviewed rejection credit. No new official execution or normative approval in this refactor |
 
-No runtime code changed in PR #91. Proof and coverage job caps remained
-20 and 15 minutes respectively; the shard layout did not weaken the gates.
-Coverage met the unchanged 90% line / 85% branch-outcome goals. This does not
-complete P06 or establish normative conformance.
+Native token projections, attached function/loop contracts, data declarations
+and mathematical models were preserved across the source reorganization.
+The increase from 1,244 to 1,245 verified obligations is one ghost proof helper,
+not another runtime operation. Short contracts and proof hooks remain attached
+to the executing Rust.
+
+The whole proof, six semantic shards and final collector passed with unchanged
+1,050-second measured guards; the largest measured semantic shard took
+948.255 seconds. Coverage met the unchanged 90% line / 85% branch-outcome goals,
+with physical-file rebinding checked against both previous component baselines.
+These results do not complete P06, establish normative conformance or resolve
+the release blockers below. Earlier revision snapshots remain in Git history.
 
 Toolchains remain separate: runtime MSRV 1.88.0, development Rust 1.89.0,
 proof Rust 1.98.1 with Verus `0.2026.10.04.426d8b0`, and fuzz/coverage

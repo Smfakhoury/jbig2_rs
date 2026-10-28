@@ -75,7 +75,7 @@ the next byte?**
    `byte_in_signal`. Read its `ensures` conditions: these are the promises
    the implementation proof makes. Check whether its preconditions rule out
    inputs the decoder should support.
-4. In the same file, look for the test
+4. Open the separate [arithmetic tests](../src/arithmetic/tests.rs) and find
    `marker_is_strictly_greater_than_8f_and_is_not_consumed`.
    A concrete test helps explain the behavior; it does not replace checking
    the model against the standard.
