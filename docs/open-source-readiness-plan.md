@@ -267,8 +267,12 @@ is configured; each real finding becomes a regression test.
 **Acceptance:** a controlled slowdown is detected, base/head environment/results
 are retained, and timing is trustworthy or clearly informational. SIMD/hotpath
 experiments are not prerequisites. The existing generated MMR/page/error lane
-and isolated controls are bounded progress, not complete P09 evidence; broader
-corpus, allocator/RSS telemetry, dedicated runner and ratification remain open.
+now checks repeated public work-quota admission boundaries and exact one-below
+typed rejections independently of timing, including a real one-unit regression
+and restored-library control. These are not internal work counters or a proof
+of accounting monotonicity. This lane and its isolated controls are bounded
+progress, not complete P09 evidence; broader corpus, allocator/RSS telemetry,
+dedicated runner and ratification remain open.
 
 ## P10 — Integrate a documented CI quality contract
 

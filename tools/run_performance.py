@@ -62,7 +62,9 @@ def resolve_base(reference: str, root: Path) -> tuple[str, str | None]:
 
 
 def validate_measurement(report: dict, iterations: int, selected: list[str]) -> dict:
-    if report["schema_version"] != 1 or report["iterations"] != iterations:
+    if not selected or len(set(selected)) != len(selected):
+        raise ValueError("performance measurement needs unique nonempty case selection")
+    if report["schema_version"] != 2 or report["iterations"] != iterations:
         raise ValueError("unexpected performance report schema or sample count")
     rows = report["cases"]
     if len(rows) != len(selected) or {row["id"] for row in rows} != set(selected):
@@ -90,6 +92,31 @@ def validate_measurement(report: dict, iterations: int, selected: list[str]) -> 
             raise ValueError("unexpected generated outcome")
         if (row["outcome"] == "decoded") != (row["output_bytes"] > 0):
             raise ValueError("generated output-byte shape is invalid")
+        quota = row.get("work_quota")
+        if (
+            not isinstance(quota, dict)
+            or set(quota) != {"admitted_limit", "rejected_limit", "rejected_actual", "rejected_kind"}
+            or quota["rejected_kind"] != "Work"
+            or any(
+                type(quota[name]) is not int or not 0 <= quota[name] <= (1 << 64) - 1
+                for name in ("rejected_limit", "rejected_actual")
+            )
+            or quota["rejected_actual"] <= quota["rejected_limit"]
+        ):
+            raise ValueError("missing or invalid typed work-quota boundary")
+        admitted = quota["admitted_limit"]
+        if row["outcome"] == "work-limit":
+            if (
+                admitted is not None or quota["rejected_actual"] != row["input_bytes"]
+                or quota["rejected_limit"] + 1 != row["input_bytes"]
+            ):
+                raise ValueError("fixed input-work control differs from its exact boundary")
+        elif (
+            type(admitted) is not int or not 0 < admitted <= (1 << 64) - 1
+            or admitted != quota["rejected_limit"] + 1
+            or quota["rejected_actual"] != admitted
+        ):
+            raise ValueError("work-quota result lacks an admitted/one-below rejection pair")
     return {row["id"]: row for row in rows}
 
 
@@ -98,8 +125,17 @@ def compare_runs(base: list[dict], head: list[dict], threshold: float, maximum_s
         raise ValueError("timing thresholds must be finite and nonnegative")
     if len(base) < 3 or len(base) != len(head):
         raise ValueError("at least three complete paired runs are required")
+    if any(not run for run in (*base, *head)):
+        raise ValueError("paired runs need nonempty case measurements")
     result = []
     for identity in base[0]:
+        for side in (base, head):
+            for run in side:
+                if set(run) != set(side[0]) or any(
+                    run[identity][field] != side[0][identity][field]
+                    for field in ("input_bytes", "output_bytes", "outcome", "work_quota")
+                ):
+                    raise ValueError(f"{identity}: repeated correctness/work-quota measurements differ")
         for before, after in zip(base, head):
             if set(before) != set(base[0]) or set(after) != set(base[0]):
                 raise ValueError("paired case identities differ")
@@ -110,6 +146,10 @@ def compare_runs(base: list[dict], head: list[dict], threshold: float, maximum_s
         after = [run[identity]["median_ns"] for run in head]
         stable = max(relative_spread(before), relative_spread(after)) <= maximum_spread
         ratio = statistics.median(after) / statistics.median(before)
+        base_quota = base[0][identity]["work_quota"]["admitted_limit"]
+        head_quota = head[0][identity]["work_quota"]["admitted_limit"]
+        if (base_quota is None) != (head_quota is None):
+            raise ValueError(f"{identity}: incompatible work-quota scopes")
         result.append({
             "id": identity, "base_median_ns": statistics.median(before),
             "head_median_ns": statistics.median(after), "median_ratio": ratio,
@@ -119,6 +159,12 @@ def compare_runs(base: list[dict], head: list[dict], threshold: float, maximum_s
             "head_relative_spread": relative_spread(after),
             "timing_status": "inconclusive" if not stable else (
                 "regression_observed" if ratio > 1 + threshold / 100 else "within_policy"
+            ),
+            "base_minimum_work_limit": base_quota,
+            "head_minimum_work_limit": head_quota,
+            "work_quota_status": (
+                "fixed_input_guard_control" if base_quota is None
+                else "regression_observed" if head_quota > base_quota else "within_policy"
             ),
         })
     return result
@@ -158,6 +204,7 @@ def markdown_report(report):
         "",
         "**Hosted timing is informational, not a release-performance pass.**",
         "Unstable measurements are inconclusive. Allocation/RSS and broader corpus gaps remain.",
+        "Work-quota boundaries are deterministic public admission limits, not internal work counters.",
         "",
         "Run status: " + report["status"],
     ]
@@ -167,15 +214,23 @@ def markdown_report(report):
         lines.append("Correctness: not established; inspect the failure diagnostics.")
     if "error" in report:
         lines.append("Failure: " + report["error"])
+    if "resource_gate" in report:
+        lines.append("Work-quota gate: " + report["resource_gate"])
     if "cases" in report:
         lines += [
-            "", "| Case | Median head/base | p95 head/base | Timing classification |",
-            "|---|---:|---:|---|",
+            "", "| Case | Median head/base | p95 head/base | Timing classification | Work quota base/head | Work quota classification |",
+            "|---|---:|---:|---|---:|---|",
         ]
         for case in report["cases"]:
+            quota = (
+                "fixed input guard" if case["base_minimum_work_limit"] is None
+                else f"{case['base_minimum_work_limit']} / {case['head_minimum_work_limit']}"
+            )
             lines.append(
                 f"| {case['id']} | {case['median_ratio']:.3f} | {case['p95_ratio']:.3f} | "
-                f"{case['timing_status']} |"
+                f"{case['timing_status']} | "
+                f"{quota} | "
+                f"{case['work_quota_status']} |"
             )
     return "\n".join(lines) + "\n"
 
@@ -183,7 +238,7 @@ def markdown_report(report):
 def comparison(arguments, root=ROOT):
     output = arguments.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    result = {"schema_version": 1, "status": "failed"}
+    result = {"schema_version": 2, "status": "failed"}
     try:
         selected = [arguments.case] if arguments.case else list(CASES)
         if arguments.iterations not in range(20, 201) or arguments.pairs not in range(3, 8):
@@ -199,6 +254,8 @@ def comparison(arguments, root=ROOT):
         policy = json.loads((root / "validation/performance/scenarios.json").read_text())["threshold_approval"]
         if policy["status"] != "approved_delegated_default":
             raise ValueError("review the performance threshold policy before using it")
+        if type(policy["work_unit_regression"]) is not int or policy["work_unit_regression"] != 0:
+            raise ValueError("work-quota comparison requires the existing zero-work-regression policy")
         harness_hash = digest(root, HARNESS_FILES)
         head_hash = runtime_identity(root)
         result.update({
@@ -217,6 +274,7 @@ def comparison(arguments, root=ROOT):
             ).stdout.strip(),
             "build_scope": "locked offline release libraries, opt-level=3/codegen-units=1/lto=false/debug=false; identical rustc -O driver; caller overrides removed",
             "scope": "Generated MMR/envelope/error subset; no normative assets, allocation counts or dedicated-runner claim",
+            "resource_scope": "Minimum public max_work_units for the exact expected outcome; not an internal work counter",
         })
         env = environment()
         with tempfile.TemporaryDirectory(prefix="jbig2-performance-base-") as temporary:
@@ -276,6 +334,10 @@ def comparison(arguments, root=ROOT):
         if digest(root, HARNESS_FILES) != harness_hash or runtime_identity(root) != head_hash:
             raise ValueError("benchmark source changed during measurement")
         statuses = {case["timing_status"] for case in result["cases"]}
+        result["resource_gate"] = (
+            "failed" if any(case["work_quota_status"] == "regression_observed" for case in result["cases"])
+            else "passed"
+        )
         result["timing_gate"] = "not_requested"
         if arguments.enforce_timing:
             result["timing_gate"] = (
@@ -283,12 +345,14 @@ def comparison(arguments, root=ROOT):
                 else "inconclusive" if "inconclusive" in statuses else "passed"
             )
         result["status"] = (
-            "passed" if result["timing_gate"] in ("not_requested", "passed") else result["timing_gate"]
+            "failed" if result["resource_gate"] == "failed"
+            else "passed" if result["timing_gate"] in ("not_requested", "passed")
+            else result["timing_gate"]
         )
         result["correctness"] = "exact_generated_outputs_and_typed_error_boundaries_passed"
         result["unmeasured"] = [
             "allocation counts, allocated peak bytes and per-case process RSS",
-            "cumulative work-unit telemetry beyond the fixed guard checks",
+            "internal cumulative work counters and a monotonicity/accounting proof; quota boundaries are measured separately",
             "representative PDFs and arithmetic/text/halftone corpus",
             "dedicated-host latency/RSS gate", "owner ratification of proposed median/p95 thresholds",
         ]
@@ -315,7 +379,10 @@ def main():
     except (OSError, ValueError) as error:
         print(f"performance setup failed: {error}", file=sys.stderr)
         return 1
-    print(json.dumps({"status": report["status"], "timing_gate": report.get("timing_gate", "unavailable")}))
+    print(json.dumps({
+        "status": report["status"], "timing_gate": report.get("timing_gate", "unavailable"),
+        "resource_gate": report.get("resource_gate", "not_established"),
+    }))
     return 0 if report["status"] == "passed" else 1
 
 

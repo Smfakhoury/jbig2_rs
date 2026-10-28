@@ -102,6 +102,77 @@ fn validate(case: &Case, output: &Result<DecodedDocument, DecodeError>) -> Resul
     }
 }
 
+struct WorkQuota {
+    admitted_limit: Option<u64>,
+    rejected_limit: u64,
+    rejected_actual: u64,
+}
+
+fn work_rejection(
+    case: &Case,
+    output: &Result<DecodedDocument, DecodeError>,
+    limit: u64,
+) -> Result<u64, String> {
+    match output {
+        Err(DecodeError::LimitExceeded(detail))
+            if detail.kind == LimitKind::Work && detail.limit == limit && detail.actual > limit =>
+        {
+            Ok(detail.actual)
+        }
+        _ => Err(format!(
+            "{}: expected typed work rejection at {limit}, got {output:?}",
+            case.id
+        )),
+    }
+}
+
+fn measure_work_quota(case: &Case, limits: Limits) -> Result<WorkQuota, String> {
+    if case.outcome == "work-limit" {
+        return Ok(WorkQuota {
+            admitted_limit: None,
+            rejected_limit: limits.max_work_units,
+            rejected_actual: work_rejection(
+                case,
+                &Decoder::new(limits).decode(&case.input),
+                limits.max_work_units,
+            )?,
+        });
+    }
+    let mut lower = 0;
+    let mut upper = limits.max_work_units;
+    while lower < upper {
+        let candidate = lower + (upper - lower) / 2;
+        let mut probe = limits;
+        probe.max_work_units = candidate;
+        let output = Decoder::new(probe).decode(&case.input);
+        if matches!(&output, Err(DecodeError::LimitExceeded(detail)) if detail.kind == LimitKind::Work)
+        {
+            work_rejection(case, &output, candidate)?;
+            lower = candidate + 1;
+        } else {
+            validate(case, &output)?;
+            upper = candidate;
+        }
+    }
+    let rejected_limit = lower
+        .checked_sub(1)
+        .ok_or("missing work rejection boundary")?;
+    let mut probe = limits;
+    probe.max_work_units = lower;
+    validate(case, &Decoder::new(probe).decode(&case.input))?;
+    probe.max_work_units = rejected_limit;
+    let rejected_actual = work_rejection(
+        case,
+        &Decoder::new(probe).decode(&case.input),
+        rejected_limit,
+    )?;
+    Ok(WorkQuota {
+        admitted_limit: Some(lower),
+        rejected_limit,
+        rejected_actual,
+    })
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
     let iterations: usize = arguments.first().ok_or("missing iterations")?.parse()?;
@@ -124,6 +195,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         let decoder = Decoder::new(limits);
         let bytes = validate(&case, &decoder.decode(&case.input))?;
+        let quota = measure_work_quota(&case, limits)?;
+        let admitted_limit = quota
+            .admitted_limit
+            .map_or_else(|| "null".to_owned(), |value| value.to_string());
         let mut samples = timing::sample(
             iterations,
             || decoder.decode(&case.input),
@@ -133,12 +208,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let median = samples[samples.len() / 2];
         let p95 = samples[timing::percentile_index(samples.len(), 95)];
         records.push(format!(
-            "{{\"id\":\"{}\",\"input_bytes\":{},\"output_bytes\":{bytes},\"outcome\":\"{}\",\"exact_output_checked\":true,\"median_ns\":{median},\"p95_ns\":{p95},\"samples_ns\":{samples:?}}}",
-            case.id, case.input.len(), case.outcome,
+            "{{\"id\":\"{}\",\"input_bytes\":{},\"output_bytes\":{bytes},\"outcome\":\"{}\",\"exact_output_checked\":true,\"work_quota\":{{\"admitted_limit\":{admitted_limit},\"rejected_limit\":{},\"rejected_actual\":{},\"rejected_kind\":\"Work\"}},\"median_ns\":{median},\"p95_ns\":{p95},\"samples_ns\":{samples:?}}}",
+            case.id, case.input.len(), case.outcome, quota.rejected_limit, quota.rejected_actual,
         ));
     }
     println!(
-        "{{\"schema_version\":1,\"scope\":\"decode call and returned ownership; validation, hashing and drop outside timing\",\"iterations\":{iterations},\"cases\":[{}]}}",
+        "{{\"schema_version\":2,\"scope\":\"decode call and returned ownership; validation, work-quota probes, hashing and drop outside timing\",\"resource_scope\":\"public max_work_units admission boundaries, not internal work counters, allocations or RSS\",\"iterations\":{iterations},\"cases\":[{}]}}",
         records.join(",")
     );
     Ok(())

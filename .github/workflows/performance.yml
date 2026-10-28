@@ -26,16 +26,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
         with:
           toolchain: 1.89.0
-      - name: Validate real slowdown and exact-output controls
+      - name: Validate real slowdown, work-quota and exact-output controls
         run: python -B tools/check_performance_controls.py --output-dir target/performance-controls
-      - name: Compare generated outputs and informational same-host timings
+      - name: Compare exact outputs, work quotas and informational timings
         env:
           BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: >-
           python -B tools/run_performance.py
           --base-ref "$BASE_REF"
           --output-dir target/performance-comparison
-      - name: Summarize correctness and informational timing scope
+      - name: Summarize deterministic quota gate and informational timings
         if: always()
         shell: bash
         run: |
