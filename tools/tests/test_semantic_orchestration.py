@@ -107,6 +107,42 @@ class SemanticOrchestrationTests(unittest.TestCase):
         Path(command[-1]).write_text(json.dumps(report))
         return SimpleNamespace(returncode=0)
 
+    def test_colliding_trait_receipts_reject_missing_or_swapped_native_scopes(self):
+        (self.root / "src/lib.rs").write_text("mod owner;\nmod left;\nmod right;\n")
+        (self.root / "src/owner.rs").write_text("pub struct Failure;\n")
+        cases = []
+        for scope, kind in (("left", "u8"), ("right", "u16")):
+            (self.root / f"src/{scope}.rs").write_text(
+                "#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+                f"impl From<{kind}> for crate::owner::Failure {{ fn from(value: {kind}) -> Self {{ Self }} }}\n"
+            )
+            cases.append({
+                "id": scope, "file": f"src/{scope}.rs", "module": "owner",
+                "verification_module": scope, "function": "Failure::from",
+            })
+        (self.root / "tools/conversion.py").write_text("CASES = " + repr(cases) + "\n")
+        bindings = {
+            f"src/{scope}.rs": runner.digest(self.root / f"src/{scope}.rs")
+            for scope in ("left", "right")
+        }
+        report = evidence()
+        report["source_bindings"] = bindings
+        report["counterexamples"] = []
+        for case in cases:
+            record = copy.deepcopy(evidence()["counterexamples"][0])
+            record.update(
+                id=case["id"], function="owner::Failure::from",
+                verification_module=case["verification_module"], source_file=case["file"],
+            )
+            report["counterexamples"].append(record)
+        check = ("conversions", "conversion.py", 2, "strong_contract", "weaker_control")
+        runner.check_bound_report(self.root, check, report, bindings)
+        for field, value in (("verification_module", None), ("verification_module", "right"), ("source_file", "src/right.rs")):
+            broken = copy.deepcopy(report)
+            broken["counterexamples"][0][field] = value
+            with self.subTest(field=field, value=value), self.assertRaisesRegex(ValueError, "exact source scope"):
+                runner.check_bound_report(self.root, check, broken, bindings)
+
     def test_manifest_covers_every_semantic_checker_without_fixed_group_or_case_totals(self):
         checks = runner.configured_checks()
         self.assertEqual(len({row[0] for row in checks}), len(checks))
@@ -128,6 +164,19 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("verification/Cargo.toml", bindings)
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
+
+    def test_error_conversion_uses_existing_whole_role_without_reassigning_prior_shards(self):
+        actual = runner.configured_shards()
+        previous = tuple(row for row in runner.CHECKS if row[0] != "error-conversion")
+        with patch.object(runner, "CHECKS", previous):
+            self.assertEqual(actual, runner.configured_shards())
+        self.assertEqual(
+            [row[0] for row in runner.configured_whole_checks()],
+            ["arithmetic-codec", "value-bridge", "error-conversion"],
+        )
+        self.assertEqual(len(actual), 6)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 277)
+        self.assertEqual(len(runner.configured_checks()), 35)
 
     def test_manifest_binds_relocated_metadata_and_opaque_agent_profiles_not_generated_json(self):
         (self.root / "verification/target").mkdir(parents=True)
@@ -396,7 +445,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "1050"):
                 runner.measured_shard_seconds(rows)
 
-    def test_current_roles_replay_qualified_timing_inputs_without_more_jobs_or_raised_guards(self):
+    @patch.object(runner, "CHECKS", tuple(row for row in runner.CHECKS if row[0] != "error-conversion"))
+    def test_pre_conversion_roles_replay_qualified_timing_inputs_without_more_jobs_or_raised_guards(self):
         # Planning only: completed f294 groups; completed shard-5 ZIP timestamps
         # plus allowance; current local value/Huffman runs plus 10%, rounded up.
         # These inputs cannot grant current-head or interrupted-run acceptance.
@@ -434,6 +484,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         rows = [{"id": row[0], "status": "passed", "seconds": weights[row[0]]} for row in checks]
         self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
 
+    @patch.object(runner, "CHECKS", tuple(row for row in runner.CHECKS if row[0] != "error-conversion"))
     def test_completed_f53_costs_rebalance_without_accepting_its_rejected_collection(self):
         # All 40412207379 producers completed, but its collector rejected the
         # overloaded shard. These costs are scheduling inputs, not acceptance.
@@ -513,7 +564,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
 
-    def test_existing_job_capacity_covers_three_profile_per_group_maxima(self):
+    @patch.object(runner, "CHECKS", tuple(row for row in runner.CHECKS if row[0] != "error-conversion"))
+    def test_pre_conversion_job_capacity_covers_three_profile_per_group_maxima(self):
         # Planning only: prior qualified estimates and completed f53/7ae groups,
         # taking each group's maximum and rounding up. Failed collections gain
         # no acceptance credit; current measured receipts remain mandatory.

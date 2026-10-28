@@ -790,3 +790,6 @@ impl From<io::Error> for DecodeError {
         Self::Io(error.kind().into())
     }
 }
+
+#[cfg(test)]
+mod tests;

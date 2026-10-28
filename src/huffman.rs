@@ -11,6 +11,8 @@ use crate::{
 use vstd::layout;
 #[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
+#[cfg(verus_keep_ghost)]
+use vstd::std_specs::convert::FromSpecImpl;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -68,6 +70,7 @@ impl From<LimitExceeded> for HuffmanError {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<HuffmanError> for DecodeError {
     fn from(error: HuffmanError) -> Self {
         match error {
@@ -77,6 +80,26 @@ impl From<HuffmanError> for DecodeError {
             }
         }
     }
+}
+
+#[cfg(verus_keep_ghost)]
+verus! {
+
+// Project error policy, discharged by the executing From body through the pinned trait contract.
+impl FromSpecImpl<HuffmanError> for DecodeError {
+    open spec fn obeys_from_spec() -> bool {
+        true
+    }
+
+    closed spec fn from_spec(error: HuffmanError) -> DecodeError {
+        match error {
+            HuffmanError::Decode(error) => error,
+            HuffmanError::InvalidTable(kind) =>
+                DecodeError::Malformed(MalformedError::InvalidHuffman(kind)),
+        }
+    }
+}
+
 }
 
 /// The result of decoding one Huffman-coded value.

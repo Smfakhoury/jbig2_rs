@@ -14,6 +14,8 @@ use crate::segment_data::RegionInfo;
 use crate::{Bitmap, DecodeError, GenericRegionErrorKind, Limits, MalformedError};
 #[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
+#[cfg(verus_keep_ghost)]
+use vstd::std_specs::convert::FromSpecImpl;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -168,6 +170,7 @@ impl From<MmrError> for GenericRegionError {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<GenericRegionError> for DecodeError {
     fn from(error: GenericRegionError) -> Self {
         let kind = match error {
@@ -197,6 +200,40 @@ impl From<GenericRegionError> for DecodeError {
         };
         Self::Malformed(MalformedError::InvalidGenericRegion(kind))
     }
+}
+
+#[cfg(verus_keep_ghost)]
+verus! {
+
+// Project error policy, discharged by the executing From body through the pinned trait contract.
+impl FromSpecImpl<GenericRegionError> for DecodeError {
+    open spec fn obeys_from_spec() -> bool {
+        true
+    }
+
+    closed spec fn from_spec(error: GenericRegionError) -> DecodeError {
+        match error {
+            GenericRegionError::Decode(error) => error,
+            GenericRegionError::ReservedFlags(flags) => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::ReservedFlags(flags))),
+            GenericRegionError::InvalidFlags(flags) => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::InvalidFlags(flags))),
+            GenericRegionError::InvalidAdaptivePixel { number, x, y } => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::InvalidAdaptivePixel { number, x, y })),
+            GenericRegionError::InvalidSkipDimensions => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::InvalidSkipDimensions)),
+            GenericRegionError::InvalidArithmeticTerminator => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::InvalidArithmeticTerminator)),
+            GenericRegionError::UnexpectedArithmeticMarker { offset, code } => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::UnexpectedArithmeticMarker { offset, code })),
+            GenericRegionError::RowCountMismatch { expected, actual } => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::RowCountMismatch { expected, actual })),
+            GenericRegionError::ContextIndex { index, count } => DecodeError::Malformed(
+                MalformedError::InvalidGenericRegion(GenericRegionErrorKind::ContextIndex { index, count })),
+        }
+    }
+}
+
 }
 
 /// A signed template offset.

@@ -14,6 +14,8 @@ use crate::reader::{bit_reader, BitReader};
 use crate::{DecodeError, LimitExceeded, LimitKind, Limits, MalformedError, MmrErrorKind};
 #[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
+#[cfg(verus_keep_ghost)]
+use vstd::std_specs::convert::FromSpecImpl;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -143,6 +145,7 @@ impl From<MalformedError> for MmrError {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MmrError> for DecodeError {
     fn from(error: MmrError) -> Self {
         let kind = match error {
@@ -168,6 +171,49 @@ impl From<MmrError> for DecodeError {
         };
         Self::Malformed(MalformedError::InvalidMmr(kind))
     }
+}
+
+#[cfg(verus_keep_ghost)]
+verus! {
+
+// Project error policy, discharged by the executing From body through the pinned trait contract.
+impl FromSpecImpl<MmrError> for DecodeError {
+    open spec fn obeys_from_spec() -> bool {
+        true
+    }
+
+    closed spec fn from_spec(error: MmrError) -> DecodeError {
+        match error {
+            MmrError::Reader(error) => DecodeError::Malformed(error),
+            MmrError::Bitmap(error) => error,
+            MmrError::Allocation { requested_bytes } => DecodeError::Allocation { requested_bytes },
+            MmrError::IntegerOverflow => DecodeError::Malformed(MalformedError::IntegerOverflow),
+            MmrError::InvalidMode { bit_offset } => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::InvalidMode { bit_offset })),
+            MmrError::ExtensionMode { bit_offset } => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::ExtensionMode { bit_offset })),
+            MmrError::InvalidRunCode { bit_offset, black } => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::InvalidRunCode { bit_offset, black })),
+            MmrError::RunExceedsRow => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::RunExceedsRow)),
+            MmrError::InvalidTransition => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::InvalidTransition)),
+            MmrError::NonProgress => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::NonProgress)),
+            MmrError::TooManyModes => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::TooManyModes)),
+            MmrError::MissingEofb => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::MissingEofb)),
+            MmrError::InvalidEofb => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::InvalidEofb)),
+            MmrError::TrailingData => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::TrailingData)),
+            MmrError::NonZeroEofbPadding => DecodeError::Malformed(
+                MalformedError::InvalidMmr(MmrErrorKind::NonZeroPadding)),
+        }
+    }
+}
+
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

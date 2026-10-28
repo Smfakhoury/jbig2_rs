@@ -16,6 +16,55 @@ from proof_sensitivity import check_semantic_cases, positive_baseline, selected_
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_colliding_trait_names_get_separate_selected_baselines_and_scoped_receipts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "source"
+            directory = Path(temporary) / "proof"
+            (root / "src").mkdir(parents=True)
+            (root / "src/lib.rs").write_text("mod owner;\nmod left;\nmod right;\n")
+            (root / "src/owner.rs").write_text("pub struct Failure;\n")
+            cases = []
+            for scope, kind in (("left", "u8"), ("right", "u16")):
+                (root / f"src/{scope}.rs").write_text(
+                    "// guarantee\n#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+                    f"impl From<{kind}> for crate::owner::Failure {{ fn from(value: {kind}) -> Self {{ Self }} }}\n"
+                )
+                cases.append({
+                    "id": scope, "file": f"src/{scope}.rs", "module": "owner",
+                    "verification_module": scope, "function": "Failure::from",
+                    "site": f"fn from(value: {kind}) -> Self {{ Self }}",
+                    "replacement": f"fn from(value: {kind}) -> Self {{ let _ = value; Self }}",
+                    "controls": (("// guarantee", "// weakened guarantee"),),
+                })
+            shutil.copytree(root, directory)
+            calls = []
+
+            @contextmanager
+            def workspace(*args):
+                yield directory, {}, "pinned", "rust"
+
+            def verify(executable, checkout, environment, failure, module, function, *, verification_module):
+                calls.append((verification_module, failure))
+                return {"verified": 1, "errors": int(failure), "is-verifying-entire-crate": False}
+
+            with patch("proof_sensitivity.proof_workspace", workspace), patch(
+                "proof_sensitivity.selected_proof", side_effect=verify,
+            ), patch(
+                "proof_sensitivity.positive_baseline", side_effect=AssertionError("ambiguous inheritance"),
+            ), patch("proof_sensitivity.run"):
+                result = check_semantic_cases(
+                    root, Path("/verus"), tuple(cases),
+                    ("src/left.rs", "src/right.rs"), "fixture-", "scope",
+                )
+            self.assertEqual(calls, [
+                ("left", False), ("left", True), ("left", False),
+                ("right", False), ("right", True), ("right", False),
+            ])
+            self.assertEqual(
+                [(row["verification_module"], row["source_file"]) for row in result["counterexamples"]],
+                [("left", "src/left.rs"), ("right", "src/right.rs")],
+            )
+
     def test_whole_metadata_is_validated_once_and_snapshot_changes_fail_closed(self):
         import hashlib
 

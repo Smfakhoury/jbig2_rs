@@ -135,7 +135,15 @@ def verification_scope(module, function, inventory):
 
 def relocate_cases(root, cases, baseline_groups, files):
     inventory = source_functions(root) if any(name.startswith("src/") for name in files) else []
-    targets = {(case["module"], case["function"]) for case in cases}
+    explicit = {
+        (case["module"], case["function"]) for case in cases if "verification_module" in case
+    }
+    if any((module, name) in explicit for module, names in baseline_groups for name in names):
+        raise ValueError("explicit native scopes cannot use a name-only shared baseline")
+    targets = {
+        (case["module"], case["function"]) for case in cases
+        if "verification_module" not in case
+    }
     relocated = {
         target: relocated_target(root, *target, files, inventory) for target in targets
     }
@@ -143,6 +151,18 @@ def relocate_cases(root, cases, baseline_groups, files):
         raise ValueError("relocation collapsed distinct semantic targets")
     prepared = []
     for case in cases:
+        if "verification_module" in case:
+            matches = [
+                row for row in inventory
+                if row["file"] == case["file"] and row["file"] in files
+                and row["verification_scope"] == case["verification_module"]
+                and row["verifier_module"] == case["module"]
+                and (row["owner"] + "::" if row["owner"] else "") + row["name"] == case["function"]
+            ]
+            if len(matches) != 1 or not matches[0]["verification_requested"]:
+                raise ValueError("explicit semantic scope must bind one verified native declaration")
+            prepared.append(dict(case))
+            continue
         module, function = relocated[(case["module"], case["function"])]
         prepared.append({
             **case, "module": module, "function": function,

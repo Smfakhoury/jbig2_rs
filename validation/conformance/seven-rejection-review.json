@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "Live source identity rebinding for the publication-layout refactor only. Original bf3d525 official execution revisions, ordinary source/decoder/asset hashes, diagnostic origins, historical source_selection, all seven pending classifications and permissions remain unchanged. The new implementation preserves all 659 native executable token streams, attached contracts, data and executing macros; current source/file identities reflect decomposition and separate tests. No official assets or oracles were accessed or rerun, and no new official-vector result, rejection credit, normative approval or release permission is claimed.",
+  "metadata_only_update": "Live source/test/tool identity refresh for project-owned typed error conversion proof strengthening. All 659 native function bodies, existing capacity behavior and mathematical model/proof files are unchanged; four new scalar conversion tests and exact variant/payload contracts are added. Historical bf3d525 official execution revisions, decoder/asset hashes, source selections, diagnostic origins, seven pending classifications and all permission/approval fields remain unchanged. No protected document, official vector or oracle was accessed or rerun; no conformance result, rejection credit, normative approval or release permission is created.",
   "recorded_at": "2026-10-25T20:20:57.607829+00:00",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
@@ -32,7 +32,8 @@
     "src/document/references.rs": "211469b5b0d1e5b507459d718e3f97623897c9acb0a8639a077f2d7e12f5a80b",
     "src/document/tests.rs": "cf866552dd84abdbc15d5289ec34845d25b78d872fc017e4a5cafeac7ba6fdba",
     "src/document.rs": "bbe60471c5016b81d5f5ef4e8bd4cb86157bb960cf2ef65356767e294b182122",
-    "src/error.rs": "8a994ea5d6904dbc786d794ba7d99511c3ede4bcbecfed0d99de30f19af335a4",
+    "src/error/tests.rs": "68fdeaf68ac8edcfa031947fed4954a9b083efe85f60e09ad4f7d3a3d5eb550c",
+    "src/error.rs": "d0773bf4f303b8af8b6701f475abccbf9d3ee34eb3ed817228e40c04adf992ee",
     "src/file_header/tests.rs": "9cf885b2dbb65a3ad32c364237ef7eb96974eacc6812f24bc710564a057b0f2d",
     "src/file_header.rs": "9011f761698f3772c953980e2d2d56ed5ece4f792c8e318ca89a0e0f8d326e11",
     "src/generic_region/contexts.rs": "d8e8a6bf536faf6327f60f6204b69f6443e8702d8d767614d53496c271652ae5",
@@ -43,7 +44,7 @@
     "src/generic_region/segments.rs": "6e8918967325260f447d318d9fc3fc655f736fadb754a7bd7bd6a21f19edd2c6",
     "src/generic_region/support.rs": "f564fa0bda614940d4592b8958b236a1c8978ed56cf1ee9102e745f20ce62f16",
     "src/generic_region/tests.rs": "be9a03a5edde4b24dc69a446a7c95761834f99649c06756aaae93cc1f4739088",
-    "src/generic_region.rs": "871d37bf047f1dacbf6196afc75a6efbc5bcfdf459756c129f6cb7a0a2bdbd52",
+    "src/generic_region.rs": "cd305a525d2386d23e6246d7e431978608d3081d5f8e2a9250d9bd811165e784",
     "src/generic_row_ring/tests.rs": "0a196dd58ed1db7f9e76c0974a14fd5b99df44b22ab1c31779e97efcc0164f8c",
     "src/generic_row_ring.rs": "59d5360e87b884be4d940fb87ff431fa1963c05a274ed7ea674fec392c8a5bf4",
     "src/halftone/headers.rs": "363497a0fdf003435987f0fa64e793d7d61d7d9de4a65c58c0e66571394cdda0",
@@ -53,11 +54,11 @@
     "src/halftone/tests.rs": "924a396899694321674460d8deb8144ac291038c8befadb98501dc5cf4caecb8",
     "src/halftone.rs": "78131542ee8334b837839c032e9f9fb9b87e88c864efcd50ff804cf721958098",
     "src/huffman/tests.rs": "f381ff3140134f282547de09735f18a47a3802bfa19aa10fd8c69d7025d7f36e",
-    "src/huffman.rs": "9ac4dc062265c398839fb7acf6e57c6baabadb82ee29236503276a8245748e63",
+    "src/huffman.rs": "da734ce1a5ae0e37dc2eee0709b3839ac6cc0f556c3ff9d7350fbbad48977a9f",
     "src/lib.rs": "351b3bbb606a834a9db224fe84f8329920bd5be34b0890e03b51e65f6cf0166c",
     "src/limits.rs": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516",
     "src/mmr/tests.rs": "c58cff417d07b40f19235130e3b879d3008d8f55e4f13785c593b49c3bf85498",
-    "src/mmr.rs": "b3a7c6e68d677933e922b7194d5c1f8c7e2dcc37cf1314b8c061d50cfa407367",
+    "src/mmr.rs": "2592b84eed9af854f58e4f9a7b25fd87e545066d5730bd2143ccba4a3a573c8a",
     "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
     "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
     "src/segment_data/tests.rs": "7b082bcee501bd86382474823db6af59afb56842b7d053c3de8b77d2e5edfc15",
@@ -72,7 +73,7 @@
     "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
     "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
     "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27",
-    "src/symbol_text.rs": "60f999d26e6c222058346c90bc397ea1283db91b81bc86aabab6cf77e5db9da3"
+    "src/symbol_text.rs": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146"
   },
   "ordinary_runtime_source_sha256": "9522006a853643a5022479a2f2ee5e1855df1c883f42eeda02a431a5372b3778",
   "normal_decoder_sha256": "c4c2fdfee4a849fb12a88fb8aa2f33d2df9dfa501df1cc8a118f1a9f29ec7a7f",
@@ -116,7 +117,7 @@
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",
     "tools/verify_provenance.py": "d0cc2c988fac932c8ce2582e730a8c86dc31844c7c95f72fbd2c239451d4688d",
     "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
-    "validation/conformance/expected-differences.json": "1ae5e21d63beabd39e42468f604b59a4258d205470989f3386c7a132de4fd573"
+    "validation/conformance/expected-differences.json": "123b7af94c4667c6ecfec0e2359b6558127ee4eebd508b3f5f16b254621ba529"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
