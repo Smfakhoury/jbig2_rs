@@ -475,7 +475,7 @@ fn export_run_errors_preserve_classification_work_and_unread_input() {
                 SymbolTextError::UnexpectedOutOfBand(expected),
             )
             | (SymbolTextError::InvalidState(actual), SymbolTextError::InvalidState(expected)) => {
-                assert_eq!(actual, expected)
+                assert_eq!(actual, expected);
             }
             (
                 SymbolTextError::Decode(DecodeError::Malformed(actual)),
@@ -705,7 +705,7 @@ fn assert_resource_guard_result(
     match actual {
         Ok(()) => assert_eq!(expected, Ok(())),
         Err(SymbolTextError::Decode(DecodeError::Malformed(MalformedError::IntegerOverflow))) => {
-            assert_eq!(expected, Err(None))
+            assert_eq!(expected, Err(None));
         }
         Err(SymbolTextError::Decode(DecodeError::LimitExceeded(error))) => {
             assert_eq!(expected, Err(Some(error)));
