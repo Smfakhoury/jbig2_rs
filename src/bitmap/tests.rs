@@ -1,4 +1,5 @@
 #![cfg(test)]
+#![allow(clippy::duplicated_attributes)]
 
 use super::access::copy_row_bytes;
 use super::chunks::{
