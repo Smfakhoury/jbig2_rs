@@ -25,7 +25,7 @@ use vstd::layout;
 #[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 #[cfg(verus_keep_ghost)]
-use vstd::std_specs::convert::FromSpecImpl;
+use vstd::std_specs::convert::{FromSpec, FromSpecImpl};
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -98,42 +98,49 @@ pub(crate) enum SymbolTextError {
     InvalidState(&'static str),
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<DecodeError> for SymbolTextError {
     fn from(error: DecodeError) -> Self {
         Self::Decode(error)
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MalformedError> for SymbolTextError {
     fn from(error: MalformedError) -> Self {
         Self::Decode(error.into())
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<LimitExceeded> for SymbolTextError {
     fn from(error: LimitExceeded) -> Self {
         Self::Decode(error.into())
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<HuffmanError> for SymbolTextError {
     fn from(error: HuffmanError) -> Self {
         Self::Decode(error.into())
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<GenericRegionError> for SymbolTextError {
     fn from(error: GenericRegionError) -> Self {
         Self::Decode(error.into())
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MmrError> for SymbolTextError {
     fn from(error: MmrError) -> Self {
         Self::Decode(error.into())
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<ArithmeticError> for SymbolTextError {
     fn from(error: ArithmeticError) -> Self {
         Self::Decode(error.into())
@@ -168,6 +175,62 @@ impl From<SymbolTextError> for DecodeError {
 
 #[cfg(verus_keep_ghost)]
 verus! {
+
+impl FromSpecImpl<DecodeError> for SymbolTextError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: DecodeError) -> SymbolTextError {
+        SymbolTextError::Decode(error)
+    }
+}
+
+impl FromSpecImpl<MalformedError> for SymbolTextError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MalformedError) -> SymbolTextError {
+        SymbolTextError::Decode(DecodeError::Malformed(error))
+    }
+}
+
+impl FromSpecImpl<LimitExceeded> for SymbolTextError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: LimitExceeded) -> SymbolTextError {
+        SymbolTextError::Decode(DecodeError::LimitExceeded(error))
+    }
+}
+
+impl FromSpecImpl<HuffmanError> for SymbolTextError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: HuffmanError) -> SymbolTextError {
+        SymbolTextError::Decode(<DecodeError as FromSpec<HuffmanError>>::from_spec(error))
+    }
+}
+
+impl FromSpecImpl<GenericRegionError> for SymbolTextError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: GenericRegionError) -> SymbolTextError {
+        SymbolTextError::Decode(<DecodeError as FromSpec<GenericRegionError>>::from_spec(error))
+    }
+}
+
+impl FromSpecImpl<MmrError> for SymbolTextError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MmrError) -> SymbolTextError {
+        SymbolTextError::Decode(<DecodeError as FromSpec<MmrError>>::from_spec(error))
+    }
+}
+
+impl FromSpecImpl<ArithmeticError> for SymbolTextError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: ArithmeticError) -> SymbolTextError {
+        SymbolTextError::Decode(<DecodeError as FromSpec<ArithmeticError>>::from_spec(error))
+    }
+}
 
 // Project error policy, discharged by the executing From body through the pinned trait contract.
 impl FromSpecImpl<SymbolTextError> for DecodeError {

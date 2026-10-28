@@ -152,16 +152,27 @@ def relocate_cases(root, cases, baseline_groups, files):
     prepared = []
     for case in cases:
         if "verification_module" in case:
-            matches = [
+            selected = [
                 row for row in inventory
                 if row["file"] == case["file"] and row["file"] in files
                 and row["verification_scope"] == case["verification_module"]
                 and row["verifier_module"] == case["module"]
                 and (row["owner"] + "::" if row["owner"] else "") + row["name"] == case["function"]
+                and row["verification_requested"]
             ]
-            if len(matches) != 1 or not matches[0]["verification_requested"]:
+            matches = [
+                row for row in selected
+                if "impl_trait" not in case or row["impl_trait"] == case["impl_trait"]
+            ]
+            if len(matches) != 1:
                 raise ValueError("explicit semantic scope must bind one verified native declaration")
-            prepared.append(dict(case))
+            prepared_case = dict(case)
+            if "impl_trait" in case:
+                traits = [row["impl_trait"] for row in selected]
+                if any(not isinstance(trait, str) for trait in traits) or len(set(traits)) != len(traits):
+                    raise ValueError("selected implementation traits must be nonempty and unique")
+                prepared_case["selected_impl_traits"] = sorted(traits)
+            prepared.append(prepared_case)
             continue
         module, function = relocated[(case["module"], case["function"])]
         prepared.append({

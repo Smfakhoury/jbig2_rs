@@ -494,6 +494,7 @@ impl fmt::Display for ArithmeticError {
 
 impl std::error::Error for ArithmeticError {}
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MalformedError> for ArithmeticError {
     fn from(error: MalformedError) -> Self {
         Self::Malformed(error)
@@ -526,10 +527,32 @@ impl ArithmeticError {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<ArithmeticError> for DecodeError {
     fn from(error: ArithmeticError) -> Self {
         error.into_decode()
     }
+}
+
+#[cfg(verus_keep_ghost)]
+verus! {
+
+impl vstd::std_specs::convert::FromSpecImpl<MalformedError> for ArithmeticError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MalformedError) -> ArithmeticError {
+        ArithmeticError::Malformed(error)
+    }
+}
+
+impl vstd::std_specs::convert::FromSpecImpl<ArithmeticError> for DecodeError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: ArithmeticError) -> DecodeError {
+        arithmetic_spec::decode_error(error)
+    }
+}
+
 }
 
 /// Result of an Annex A arithmetic integer decode.

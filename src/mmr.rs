@@ -139,6 +139,7 @@ pub(crate) enum MmrError {
     IntegerOverflow,
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MalformedError> for MmrError {
     fn from(error: MalformedError) -> Self {
         Self::Reader(error)
@@ -176,14 +177,28 @@ impl From<MmrError> for DecodeError {
 #[cfg(verus_keep_ghost)]
 verus! {
 
+impl FromSpecImpl<MalformedError> for MmrError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MalformedError) -> MmrError {
+        MmrError::Reader(error)
+    }
+}
+
 // Project error policy, discharged by the executing From body through the pinned trait contract.
 impl FromSpecImpl<MmrError> for DecodeError {
     open spec fn obeys_from_spec() -> bool {
         true
     }
 
-    closed spec fn from_spec(error: MmrError) -> DecodeError {
-        match error {
+    open spec fn from_spec(error: MmrError) -> DecodeError {
+        mmr_error_result(error)
+    }
+}
+
+// Keep the project mapping opaque externally; the open trait bridge exposes no private fields.
+pub closed spec fn mmr_error_result(error: MmrError) -> DecodeError {
+    match error {
             MmrError::Reader(error) => DecodeError::Malformed(error),
             MmrError::Bitmap(error) => error,
             MmrError::Allocation { requested_bytes } => DecodeError::Allocation { requested_bytes },
@@ -210,7 +225,6 @@ impl FromSpecImpl<MmrError> for DecodeError {
                 MalformedError::InvalidMmr(MmrErrorKind::TrailingData)),
             MmrError::NonZeroEofbPadding => DecodeError::Malformed(
                 MalformedError::InvalidMmr(MmrErrorKind::NonZeroPadding)),
-        }
     }
 }
 

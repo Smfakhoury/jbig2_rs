@@ -152,3 +152,23 @@ class SourceGroupTests(unittest.TestCase):
                     self.root, ({**cases[0], **change},), (),
                     SourceGroup(self.root, "src/codec.rs").names,
                 )
+
+    def test_same_scope_trait_parameters_cannot_alias_or_hide_selected_peers(self):
+        (self.root / "src/codec.rs").write_text("pub struct Failure;\nmod run;\n")
+        (self.root / "src/codec/run.rs").write_text(
+            "#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+            "impl From<u8> for super::Failure { fn from(value: u8) -> Self { Self } }\n"
+            "#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+            "impl From<u16> for super::Failure { fn from(value: u16) -> Self { Self } }\n"
+        )
+        files = SourceGroup(self.root, "src/codec.rs").names
+        case = {
+            "id": "u8", "file": "src/codec/run.rs", "module": "codec",
+            "verification_module": "codec::run", "function": "Failure::from",
+            "impl_trait": "From<u8>",
+        }
+        prepared, _ = relocate_cases(self.root, (case,), (), files)
+        self.assertEqual(prepared[0]["selected_impl_traits"], ["From<u16>", "From<u8>"])
+        for changed in ({key: value for key, value in case.items() if key != "impl_trait"}, {**case, "impl_trait": "From<u32>"}):
+            with self.assertRaisesRegex(ValueError, "one verified native declaration"):
+                relocate_cases(self.root, (changed,), (), files)

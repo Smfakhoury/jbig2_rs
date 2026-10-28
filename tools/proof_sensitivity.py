@@ -156,7 +156,9 @@ def check_semantic_cases(
     }
     scoped_targets = {}
     for case in cases:
-        scoped_targets.setdefault((case["module"], case["function"]), set()).add(case["verification_module"])
+        scoped_targets.setdefault((case["module"], case["function"]), set()).add(
+            (case["verification_module"], case.get("impl_trait"))
+        )
     collisions = {target for target, scopes in scoped_targets.items() if len(scopes) > 1}
     if any((module, function) in collisions for module, functions in baseline_groups for function in functions):
         raise ValueError("shared baseline cannot alias distinct native implementation scopes")
@@ -199,7 +201,7 @@ def check_semantic_cases(
             identity = (case["module"], case["function"])
             target = (*identity, case["verification_module"])
             if target not in baselines:
-                if identity in collisions:
+                if identity in collisions or "impl_trait" in case:
                     baselines[target] = selected_proof(
                         executable, directory, environment, False, *identity,
                         verification_module=case["verification_module"],
@@ -210,6 +212,8 @@ def check_semantic_cases(
                         verification_module=case["verification_module"],
                     )
                 baseline_targets[target] = [case["function"]]
+            if "impl_trait" in case and baselines[target]["verified"] != len(case["selected_impl_traits"]):
+                raise ValueError("selected pristine baseline must prove every colliding implementation")
             source = replace_once(original, case["site"], case["replacement"])
             try:
                 group.write(directory, source)
@@ -222,6 +226,12 @@ def check_semantic_cases(
                 rejected = selected_proof(executable, directory, environment, True, *identity, **options)
                 group.write(directory, weakened_contract(source, case))
                 control = selected_proof(executable, directory, environment, False, *identity, **options)
+                if "impl_trait" in case and (
+                    rejected["errors"] != 1
+                    or rejected["verified"] != len(case["selected_impl_traits"]) - 1
+                    or control["verified"] != len(case["selected_impl_traits"])
+                ):
+                    raise ValueError("mutant must fail only its implementation while peers and the weaker control verify")
                 record = {
                     "id": case["id"], "function": "::".join(identity),
                     "normal_rust_compiles": True, "strong_contract": "rejected",
@@ -230,9 +240,15 @@ def check_semantic_cases(
                     "baseline_selected_verification": baselines[target],
                     "baseline_selected_functions": baseline_targets[target],
                 }
-                if identity in collisions:
+                if identity in collisions or "impl_trait" in case:
                     record.update(
                         verification_module=case["verification_module"], source_file=case["file"],
+                    )
+                if "impl_trait" in case:
+                    record.update(
+                        impl_trait=case["impl_trait"], selected_impl_traits=case["selected_impl_traits"],
+                        strong_verified_functions=rejected["verified"],
+                        control_verified_functions=control["verified"],
                     )
                 results.append(record)
             finally:

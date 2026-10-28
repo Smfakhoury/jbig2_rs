@@ -60,6 +60,33 @@ This closes four directly proved project conversion boundaries. It does not
 prove arbitrary I/O, formatting, sinks or orchestration, resolve capacity
 accounting, or approve any standard-facing model.
 
+### Owned error wrappers
+
+Twenty formerly audited `From` wrappers now prove their own project contracts.
+They preserve wrapped public errors, malformed/limit fields and composition
+through the already proved codec conversions. The halftone conversion helper
+also has an exact variant/payload result contract. Project policy functions
+separate those result equations from trait bridges without cyclic proof
+dependencies or new trusted declarations; native bodies are unchanged.
+
+Several implementations share both a displayed method name and a lexical
+scope. Evidence therefore additionally binds the actual source trait/type
+parameters. A pristine selected baseline must prove every selected peer; each
+mutant fails exactly its own implementation while all other peers still prove.
+Only that implementation's conditional mapping is weakened for its control,
+which must restore proof of the complete selected set. Missing, swapped or
+incomplete implementation/peer records fail collection.
+
+The basic and region groups run in the existing serial whole/collector roles.
+Only the new symbol-wrapper group is appended to shard four; every previous
+shard membership, the six-shard/max-four policy, eight producers, solver limits,
+job caps and actual 1,050-second guards remain unchanged.
+
+The three remaining audited forwarders are the two default constructors and
+the owned page collector's sink wrapper. This does not close the twenty
+reviewed standard/callback/orchestration limitations or the held capacity
+divergence, nor does it establish normative model fidelity.
+
 ## Blocking capacity/getter decision
 
 The remaining MMR divergence is `prepare_transition_storage` capacity-based

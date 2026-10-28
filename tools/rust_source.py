@@ -260,7 +260,7 @@ def _source_functions(root: Path, snapshot=None, module_catalog=None) -> list[di
         file_hashes[path] = hashlib.sha256(source).hexdigest()
         walk(parse(source), module, path, None, False)
 
-    def walk(container, module, path, owner, verify_impl):
+    def walk(container, module, path, owner, verify_impl, impl_trait=None):
         for node, attributes in items(container):
             if node.type in {"function_item", "function_signature_item"}:
                 def nested_function(child):
@@ -287,6 +287,7 @@ def _source_functions(root: Path, snapshot=None, module_catalog=None) -> list[di
                     "file": path.relative_to(root).as_posix(),
                     "visibility": visibility,
                     "owner": owner,
+                    "impl_trait": impl_trait,
                     "verifier_module": module,
                     "verification_scope": module,
                     "file_module": visited[path],
@@ -310,10 +311,11 @@ def _source_functions(root: Path, snapshot=None, module_catalog=None) -> list[di
                 )
                 body = node.child_by_field_name("body")
                 if body is not None:
+                    trait = node.child_by_field_name("trait") if node.type == "impl_item" else None
                     walk(body, module, path, type_name(target), any(
                         re.search(rb"\bverus_verify\b", attribute.text)
                         for attribute in attributes
-                    ))
+                    ), "".join(trait.text.decode("utf-8").split()) if trait is not None else None)
             elif node.type in {"struct_item", "enum_item", "type_item"}:
                 name = node.child_by_field_name("name").text.decode("utf-8")
                 definitions.setdefault(name, set()).add(module)

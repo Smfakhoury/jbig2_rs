@@ -16,6 +16,68 @@ from proof_sensitivity import check_semantic_cases, positive_baseline, selected_
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_same_scope_impls_share_only_a_complete_selected_peer_baseline(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root, directory = Path(temporary) / "source", Path(temporary) / "proof"
+            (root / "src").mkdir(parents=True)
+            (root / "src/lib.rs").write_text("mod owner;\nmod left;\n")
+            (root / "src/owner.rs").write_text("pub struct Failure;\n")
+            source, cases = "", []
+            for kind in ("u8", "u16"):
+                source += (
+                    f"// guarantee {kind}\n#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+                    f"impl From<{kind}> for crate::owner::Failure {{ fn from(value: {kind}) -> Self {{ Self }} }}\n"
+                )
+                cases.append({
+                    "id": kind, "file": "src/left.rs", "module": "owner",
+                    "verification_module": "left", "function": "Failure::from",
+                    "impl_trait": f"From<{kind}>",
+                    "site": f"fn from(value: {kind}) -> Self {{ Self }}",
+                    "replacement": f"fn from(value: {kind}) -> Self {{ let _ = value; Self }}",
+                    "controls": ((f"// guarantee {kind}", f"// weak {kind}"),),
+                })
+            (root / "src/left.rs").write_text(source)
+            shutil.copytree(root, directory)
+
+            @contextmanager
+            def workspace(*args):
+                yield directory, {}, "pinned", "rust"
+
+            for broken in (None, "baseline", "strong", "control"):
+                calls = []
+
+                def verify(executable, checkout, environment, failure, module, function, *, verification_module):
+                    position = len(calls)
+                    calls.append((verification_module, failure))
+                    verified = 1 if failure else 2
+                    if (broken == "baseline" and position == 0) or (broken == "control" and position == 2):
+                        verified = 1
+                    if broken == "strong" and failure:
+                        verified = 0
+                    return {"verified": verified, "errors": int(failure), "is-verifying-entire-crate": False}
+
+                with patch("proof_sensitivity.proof_workspace", workspace), patch(
+                    "proof_sensitivity.selected_proof", side_effect=verify,
+                ), patch(
+                    "proof_sensitivity.positive_baseline", side_effect=AssertionError("name-only inheritance"),
+                ), patch("proof_sensitivity.run"):
+                    if broken:
+                        with self.assertRaises(ValueError):
+                            check_semantic_cases(root, Path("/verus"), tuple(cases), ("src/left.rs",), "fixture-", "scope")
+                    else:
+                        report = check_semantic_cases(root, Path("/verus"), tuple(cases), ("src/left.rs",), "fixture-", "scope")
+                        self.assertEqual(len(calls), 5)
+                        self.assertEqual(
+                            [row["impl_trait"] for row in report["counterexamples"]],
+                            ["From<u8>", "From<u16>"],
+                        )
+                        self.assertTrue(all(
+                            row["selected_impl_traits"] == ["From<u16>", "From<u8>"]
+                            and row["strong_verified_functions"] == 1
+                            and row["control_verified_functions"] == 2
+                            for row in report["counterexamples"]
+                        ))
+
     def test_colliding_trait_names_get_separate_selected_baselines_and_scoped_receipts(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "source"
