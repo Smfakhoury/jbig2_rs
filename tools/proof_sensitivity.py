@@ -57,11 +57,16 @@ def selected_proof(
         or expect_failure and not isinstance(function, str)
     ):
         raise ValueError("selected proof needs unique targets; failures must select one function")
+    # Verus cannot strip a lexical scope from a method reported under its parent type.
+    selector = (
+        ("*::" if verification_module and verification_module != module else "") + function
+        if isinstance(function, str) else commonprefix(functions) + "*"
+    )
     command = [
         str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
         "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
         "--verify-only-module", verification_module or module, "--verify-function",
-        function if isinstance(function, str) else commonprefix(functions) + "*",
+        selector,
         "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
     ]
     if expect_failure:

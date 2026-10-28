@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "792f17fd71e86bde2c2cbd1cc4aa3af4518b2253",
+  "source_revision": "ce2ea4c4fc2150b3d30f192cac78badabc323461",
   "scope": "Publication-layout refactor of the single executing Rust implementation. All 659 original native declarations preserve executable tokens, attached function/loop contracts, data declarations and executing macros; mathematical models are byte-identical. Detailed tests and proof-only reasoning now live outside focused runtime modules. No source-policy, resource, standard-trust or normative approval change.",
   "toolchain": {
     "manifest": "config/toolchain.json",

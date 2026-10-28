@@ -316,6 +316,28 @@ class SelectedProofEvidenceTests(unittest.TestCase):
             command = run.call_args.args[0]
             self.assertEqual(command[command.index("--verify-function") + 1], name)
 
+    def test_single_method_selector_is_suffix_anchored_against_longer_method_names(self):
+        report = self.report()
+        report["func-details"] = {"jbig2_rs_production::bitmap::Bitmap::compose": {}}
+        process = CompletedProcess([], 0, json.dumps(report), "")
+        with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+            selected_proof(
+                Path("/verus"), TOOLS.parent, {}, False,
+                "bitmap", "Bitmap::compose", verification_module="bitmap::compose",
+            )
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("--verify-function") + 1], "*::Bitmap::compose")
+        self.assertEqual(command[command.index("--verify-only-module") + 1], "bitmap::compose")
+        report["func-details"] = {"jbig2_rs_production::bitmap::Bitmap::compose_chunked": {}}
+        with patch(
+            "proof_sensitivity.subprocess.run",
+            return_value=CompletedProcess([], 0, json.dumps(report), ""),
+        ), self.assertRaisesRegex(ValueError, "did not target"):
+            selected_proof(
+                Path("/verus"), TOOLS.parent, {}, False,
+                "bitmap", "Bitmap::compose", verification_module="bitmap::compose",
+            )
+
     def test_shared_baseline_runs_once_on_pristine_source_and_keeps_every_case_query(self):
         with tempfile.TemporaryDirectory() as path:
             root = Path(path) / "source"

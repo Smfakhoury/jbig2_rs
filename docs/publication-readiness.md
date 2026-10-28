@@ -26,7 +26,7 @@ Local acceptance of the integrated layout includes:
   limitations, 23 audited forwarders and one runtime/proof divergence.
 - All 141 existing native mutants compile and are detected. Real operator-bit
   and document-count strong/weaker contrasts also pass the strict collector.
-- All 510 tooling tests pass. A real 71-file archive passes its extracted tests,
+- All 511 tooling tests pass. A real 71-file archive passes its extracted tests,
   doctest and exact downstream-output check on Rust 1.88.0 with a fresh offline
   Cargo home and no normal dependencies.
 - Fresh LLVM coverage covers 48 executing files: 11,460/12,716 lines,
