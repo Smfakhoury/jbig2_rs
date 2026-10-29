@@ -124,6 +124,21 @@ manifest is accepted. Semantic receipts also hash nested verification Rust,
 Cargo, control and status inputs so a changed proposed interface invalidates
 the receipt. Generated targets remain excluded.
 
+Cargo focus caches its production root under verus-partial; changing only
+the selection does not reliably invalidate that compilation. Before every
+selected query, the adapter uses locked offline cargo clean for only the
+production package in that exact partial target. Dependency metadata remains
+reusable, but every production solver query, lifetime and erasure check is
+fresh. Failed cleaning or missing actual reports is fatal.
+
+The actual regression switches targets and repeats the first target without
+changing any source bytes or timestamps. All three queries produce fresh
+reports with their actual obligation counts (1, 2, 1), and the interface's
+Rust/Verus metadata hashes and timestamps remain unchanged:
+  python3 verification/proposals/validate_selected_cache.py --verus /path/to/pinned/verus
+The initial complete-run attempt which exposed cached empty output was
+stopped and explicitly not accepted; its original logs remain preserved.
+
 The complete application semantic suite is a separate validation step;
 local interface controls and a whole proof are not substitutes. Any complete
 local run records its exact frozen source and all producer results under
@@ -136,7 +151,7 @@ Even a successful local profile does not grant hosted or trust acceptance.
 Actual selected controls through this new dependency wiring passed all
 11 MMR-reference, two concrete collector-sink and two reset contrasts. Every
 strong mutant compiles and fails semantically, and its corresponding weaker
-control proves. All 94 relevant orchestration, selected-proof and strict
+control proves. All 95 relevant orchestration, selected-proof and strict
 extractor regressions pass. The independent
 candidate consumer records these actual results and the exact-source audit in
 target/capacity-proposal/pipeline-evidence.json with foundation, hosted,

@@ -69,6 +69,24 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         self.assertEqual(command.count("--verify-function"), 1)
         self.assertIn("--offline", command)
         self.assertIn("--locked", command)
+        clean = run.call_args_list[0].args[0]
+        self.assertEqual(clean, [
+            "cargo", "clean", "--package", "jbig2_rs_verification",
+            "--manifest-path", environment["JBIG2_SELECTED_CARGO_MANIFEST"],
+            "--target-dir", "/isolated/proof-target/verus-partial", "--offline", "--locked",
+        ])
+        self.assertEqual(run.call_count, 2)
+
+    def test_selected_cargo_does_not_verify_if_root_invalidation_fails(self):
+        with patch("proof_sensitivity.run", side_effect=CalledProcessError(101, ["cargo", "clean"])):
+            with patch("proof_sensitivity.subprocess.run") as verify:
+                with self.assertRaises(CalledProcessError):
+                    selected_proof(
+                        Path("/tools/verus"), Path("/isolated"),
+                        {"JBIG2_SELECTED_CARGO_MANIFEST": "/isolated/verification/Cargo.toml"},
+                        False, "document", "finalize_pages",
+                    )
+                verify.assert_not_called()
 
     def test_selected_cargo_rejects_a_foreign_source_graph_before_running(self):
         with patch("proof_sensitivity.subprocess.run") as run:

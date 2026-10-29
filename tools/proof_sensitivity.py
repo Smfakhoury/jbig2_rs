@@ -85,6 +85,14 @@ def selected_proof(
     if manifest is not None:
         if Path(manifest).resolve() != (directory / "verification/Cargo.toml").resolve():
             raise ValueError("selected Cargo manifest must belong to the isolated proof workspace")
+        # The pinned focus mode appends verus-partial to its requested target.
+        run(
+            ["cargo", "clean", "--package", "jbig2_rs_verification",
+             "--manifest-path", manifest,
+             "--target-dir", str(directory / "proof-target/verus-partial"),
+             "--offline", "--locked"],
+            directory, environment, capture=True,
+        )
         command = [
             str(executable.resolve().parent / "cargo-verus"), "focus",
             "--manifest-path", manifest, "--offline", "--locked",
