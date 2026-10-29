@@ -63,3 +63,30 @@ native and semantic controls; fresh exact-source whole/compiled verification;
 updated honest source-bound attestations; all required hosted jobs, coverage,
 native mutations and actual downstream package checks. Human normative/legal
 and asset approvals remain separate.
+
+Local implementation snapshot
+-----------------------------
+Checked application source: 0ab88b0f776f0b85664b9f1105a3e251641e1b20.
+Fresh unfiltered application result under this proposed interface: 1276
+verified, zero errors, with a nonempty compiled production library.
+Conditional exact-source accounting: 642 direct, 20 reviewed limitations,
+zero audited forwarders, zero runtime/proof divergences, zero incomplete
+functions, zero native assumptions. The additional standard getter declaration
+is nevertheless an unapproved trust boundary and is not included in that
+native-assumption count.
+
+Native tests: 491 library/integration passes, two performance-driver passes,
+one doctest; 14 existing ignored microbenchmarks. Formatting and strict Clippy
+pass. Both observed-capacity defect controls compile and fail when their
+post-reservation checks are removed; restored source passes.
+
+Coverage passes all unchanged per-file baseline floors and release goals:
+11497/12744 lines, 11008/12982 regions, 2246/2640 branch outcomes.
+Actual 72-file package tests/doctest, fresh offline MSRV consumer, hidden-hook
+rejection and unsafe strong/weaker controls pass; runtime dependencies remain
+empty and every registry pin/checksum is unchanged.
+
+These are local proposal results only. The existing strict Cargo report
+extractor still rejects the declaration-only dependency, no hosted current-head
+acceptance was granted, accepted main remains unchanged, and no standard-trust,
+normative, legal, visibility or publication approval is asserted.
