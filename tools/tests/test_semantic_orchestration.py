@@ -39,6 +39,13 @@ PRE_ENVELOPE_WHOLE_GROUPS = (
     "arithmetic-codec", "value-bridge", "reset", "error-conversion", "default-limits-1",
 )
 PRE_ENVELOPE_SHARD_MOVES = {**PRE_COLLECTOR_REBALANCE_MOVES, "default-limits-5": 4}
+PRE_NATIVE_LOAD_COLLECTOR_GROUPS = (
+    "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
+)
+PRE_NATIVE_LOAD_SHARD_MOVES = {
+    **runner.DEFAULT_SHARD_REBALANCE, "default-limits-2": 5,
+    "default-limits-3": 1, "default-decoder-3": 2, "default-decoder-4": 4,
+}
 
 DOCUMENT_PARTITION_GROUPS = (
     ("iaid-state", 6), ("arithmetic-initialization", 6), ("text-batch", 11),
@@ -345,7 +352,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         whole = runner.configured_whole_checks()
         collector = runner.configured_collector_checks()
         self.assertEqual(whole[-1][0], "default-limits-5")
-        self.assertEqual(collector[-1][0], "error-wrappers-regions")
+        self.assertEqual(collector[-1][0], "default-limits-3")
         self.assertNotIn("reset", [row[0] for row in whole])
         self.assertIn("retention", [row[0] for row in collector])
         for name, index in (
@@ -364,10 +371,12 @@ class SemanticOrchestrationTests(unittest.TestCase):
         })
         expected.pop("default-limits-4")
         expected.pop("default-limits-5")
+        expected.pop("default-limits-2")
+        expected.pop("default-limits-3")
         expected.update({
-            "region-dispatch": 2, "default-limits-2": 5,
+            "region-dispatch": 2,
             "error-wrappers-basic": 0, "huffman-assignment": 3,
-            "default-decoder-4": 4, "reader-error": 2, "operator-bit": 0,
+            "default-decoder-3": 0, "default-decoder-4": 0, "reader-error": 2, "operator-bit": 0,
             "arithmetic-integer": 1, "bitmap-chunk": 1,
             "black-span": 1, "reset": 1, "page-finish": 4,
         })
@@ -413,6 +422,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     @patch.object(runner, "WHOLE_GROUPS", PRE_ENVELOPE_WHOLE_GROUPS)
     @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_ENVELOPE_SHARD_MOVES)
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_NATIVE_LOAD_COLLECTOR_GROUPS)
     def test_completed_unique_reuse_profile_rebalances_the_remaining_collector_overload(self):
         # Complete 40873336428 inputs, rounded up; its 1078.132 collector rejection is not acceptance.
         costs = {
@@ -440,6 +450,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1010)
         self.assertLessEqual(measured[0] + 208, 1200)
 
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_NATIVE_LOAD_COLLECTOR_GROUPS)
+    @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_NATIVE_LOAD_SHARD_MOVES)
     def test_same_harness_per_group_maxima_fit_without_relaxing_any_guard(self):
         # Per-group maxima of complete 40873336428/40883755135, rounded up; neither run is accepted.
         costs = {
@@ -465,6 +477,35 @@ class SemanticOrchestrationTests(unittest.TestCase):
         measured = [sum(costs[row[0]] for row in role) for role in roles]
         self.assertEqual({row[0] for role in roles for row in role}, set(costs))
         self.assertEqual(measured, [900, 1015, 1043, 1046, 1027, 1024, 1040, 1044])
+        self.assertLessEqual(max(measured), 1050)
+        self.assertLessEqual(measured[0] + 208, 1200)
+
+    def test_complete_native_cache_profile_uses_existing_cohort_headroom(self):
+        # Complete 40906782428 inputs, rounded up; its 1091.433 shard rejection is not acceptance.
+        costs = {
+            "arithmetic-decision": 313, "document-count": 273, "retention": 64,
+            "error-wrappers-regions": 178, "default-decoder-4": 73,
+            "integer-state": 248, "bitmap-copy": 189, "error-wrappers-symbol": 179,
+            "segment-data": 240, "page-finish": 165, "bitmap-chunk": 97,
+            "document-layout": 307, "arithmetic-normalization": 149,
+            "default-limits-3": 72, "arithmetic-integer": 221, "black-span": 153,
+            "reset": 50, "default-limits-2": 72, "segment-header": 243,
+            "mmr-span": 200, "halftone-header": 211, "page-state": 306,
+            "operator-bit": 75, "mmr-reference": 244, "arithmetic-refill": 112,
+            "symbol-cardinality": 202, "error-wrappers-basic": 129,
+            "huffman-assignment": 110, "mmr-prefix": 101, "mmr-run": 102,
+            "text-batch": 255, "arithmetic-initialization": 140,
+            "default-decoder-1": 70, "page-public": 206, "arithmetic-codec": 377,
+            "value-bridge": 100, "error-conversion": 201, "default-limits-1": 58,
+            "default-limits-4": 58, "default-limits-5": 57, "region-dispatch": 74,
+            "reader-error": 212, "mmr-horizontal": 183, "iaid-state": 151,
+            "default-decoder-2": 73, "default-decoder-3": 73,
+            "bitmap-compose": 168, "default-decoder-5": 73,
+        }
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
+        measured = [sum(costs[row[0]] for row in role) for role in roles]
+        self.assertEqual({row[0] for role in roles for row in role}, set(costs))
+        self.assertEqual(measured, [851, 972, 908, 977, 934, 984, 1021, 960])
         self.assertLessEqual(max(measured), 1050)
         self.assertLessEqual(measured[0] + 208, 1200)
 

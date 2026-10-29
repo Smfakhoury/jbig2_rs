@@ -23,7 +23,10 @@ WHOLE_GROUPS = (
     "arithmetic-codec", "value-bridge", "error-conversion",
     "default-limits-1", "default-limits-4", "default-limits-5",
 )
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "retention", "error-wrappers-regions")
+COLLECTOR_GROUPS = (
+    "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
+    "default-limits-2", "default-limits-3",
+)
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
@@ -39,16 +42,17 @@ REBALANCED_SHARD_GROUPS = {
 DEFAULT_SHARD_REBALANCE = {
     "mmr-reference": 0, "arithmetic-refill": 0, "symbol-cardinality": 0,
     "error-wrappers-basic": 0, "operator-bit": 0,
-    "document-layout": 1, "arithmetic-normalization": 1, "default-limits-3": 1,
+    "default-decoder-3": 0, "default-decoder-4": 0,
+    "document-layout": 1, "arithmetic-normalization": 1,
     "arithmetic-integer": 1, "bitmap-chunk": 1, "black-span": 1, "reset": 1,
     "region-dispatch": 2, "reader-error": 2, "mmr-horizontal": 2,
-    "iaid-state": 2, "default-decoder-2": 2, "default-decoder-3": 2,
+    "iaid-state": 2, "default-decoder-2": 2,
     "bitmap-compose": 2, "default-decoder-5": 2,
     "huffman-assignment": 3, "text-batch": 3, "arithmetic-initialization": 3,
     "default-decoder-1": 3, "mmr-prefix": 3, "mmr-run": 3, "page-public": 3,
-    "default-decoder-4": 4, "integer-state": 4, "bitmap-copy": 4,
+    "integer-state": 4, "bitmap-copy": 4,
     "error-wrappers-symbol": 4, "segment-data": 4, "page-finish": 4,
-    "default-limits-2": 5, "segment-header": 5, "mmr-span": 5,
+    "segment-header": 5, "mmr-span": 5,
     "halftone-header": 5, "page-state": 5,
 }
 RECEIPT_SCHEMA = 3
