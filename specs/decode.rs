@@ -83,7 +83,7 @@ pub(super) open spec fn collector_decoded_limit(
     collector.decoded_limit
 }
 
-// Model navigation: spec::collector_result [project-result]
+// Model navigation: spec::collector_result [project-result-model]
 // Purpose: Successful owned-page append and bitmap-byte accounting, or unchanged page state on error.
 // Mapping: no registered requirement/locator mapping.
 // Fidelity: unresolved; no independent normative approval.
