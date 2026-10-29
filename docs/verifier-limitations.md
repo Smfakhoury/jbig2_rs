@@ -110,22 +110,30 @@ annotations remain inactive for ordinary Rust consumers.
 Thirty compiling contrasts independently set each default field to zero.
 Each must fail its exact implementation's contract; a control omitting only
 that field must prove the other fourteen. Exact file, lexical scope and
-`Default` implementation identity are required, including one selected
-pristine body, zero verified bodies/one error for the mutant and one verified
+`Default` implementation identity are required, including a pristine positive
+proof, zero verified bodies/one error for the mutant and one verified
 body for the weaker control. A native public-API test separately checks every
 constant through both constructors.
 
 The thirty cases are partitioned into ten three-field cohorts. The first
 hosted five-field profile reached its added whole-role cohort but exceeded
 the unchanged 20-minute whole-job cap; it grants no acceptance credit.
-Complete preceding-profile timings and the local families, each over six
-minutes, inform the smaller cohorts: one each in whole and collector, one in
-shard zero, three in shard one, two in shard two, none in shard three, and
-one each in shards four and five. All previous
-cases and shard memberships remain, along with eight producers,
+The second profile completed every query, but its final collector correctly
+rejected several measured workloads over 1,050 seconds. Its complete
+per-group timings now inform an explicit six-shard rebalance. Reset moves
+to whole and retention to collector to account for the whole job's measured
+setup overhead as well. Every previous case remains, along with eight producers,
 six one-worker shards, max-four semantic concurrency and unchanged measured
 guards and job caps. Hosted acceptance must include the actual complete
 new profile; a local proof or estimated schedule is not acceptance credit.
+
+The existing same-run whole-positive reuse also covers a trait implementation
+only when the complete native inventory has exactly one such qualified name,
+with matching file, lexical scope and trait, verified marking and no divergence.
+The receipt retains the **actual whole-proof count**, not a fabricated selected
+count. Missing/stale receipts and ambiguous names still fail closed; colliding
+implementations still require their fresh selected peer baselines. Every
+mutant compilation and strong/weaker query remains independent and fresh.
 
 ### Owned page-collector sink
 
@@ -146,7 +154,7 @@ Two compiling contrasts reject a successful return that drops the page and
 an error returned after an append. Their weaker controls omit only the
 corresponding success/error requirement on the concrete sink wrapper; the
 constructor and helper contracts remain intact. Evidence binds the exact
-file, lexical scope and `PageSink` implementation with one pristine body,
+file, lexical scope and `PageSink` implementation with a bound pristine proof,
 zero verified bodies/one error for each mutant and one body for each control.
 The complete group runs in existing shard one without moving previous cases.
 
