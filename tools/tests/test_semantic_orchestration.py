@@ -382,15 +382,12 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(sum(len(role) for role in roles), 48)
         self.assertEqual(sum(row[2] for role in roles for row in role), 327)
 
-    def test_owned_sink_uses_existing_shard_without_changing_prior_memberships(self):
+    def test_owned_sink_uses_existing_whole_role_without_changing_shards(self):
         actual = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_SINK_CHECKS):
             previous = runner.configured_shards()
-        for index in range(6):
-            self.assertEqual(
-                tuple(row for row in actual[index] if row[0] != "collector-sink"), previous[index],
-            )
-        self.assertEqual([row[0] for row in actual[3]].count("collector-sink"), 1)
+        self.assertEqual(actual, previous)
+        self.assertEqual([row[0] for row in runner.configured_whole_checks()].count("collector-sink"), 1)
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *actual]
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 49)

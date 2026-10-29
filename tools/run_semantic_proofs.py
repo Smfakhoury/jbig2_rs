@@ -21,7 +21,7 @@ WORKERS = 2
 CI_SHARDS = 6
 WHOLE_GROUPS = (
     "arithmetic-codec", "value-bridge", "error-conversion",
-    "default-limits-1", "default-limits-4", "default-limits-5",
+    "default-limits-1", "default-limits-4", "default-limits-5", "collector-sink",
 )
 COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "retention", "error-wrappers-regions")
 ADDED_SHARD_GROUPS = {
@@ -31,7 +31,6 @@ ADDED_SHARD_GROUPS = {
     "default-decoder-1": 3,
     "default-decoder-2": 2, "default-decoder-3": 2,
     "default-decoder-4": 4, "default-decoder-5": 5,
-    "collector-sink": 3,
 }
 REBALANCED_SHARD_GROUPS = {
     "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
