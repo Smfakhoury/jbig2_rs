@@ -344,9 +344,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
             expected = {row[0]: index for index, shard in enumerate(runner.configured_shards()) for row in shard}
         whole = runner.configured_whole_checks()
         collector = runner.configured_collector_checks()
-        self.assertEqual(whole[-1][0], "default-limits-1")
+        self.assertEqual(whole[-1][0], "default-limits-5")
         self.assertEqual(collector[-1][0], "error-wrappers-regions")
-        self.assertIn("reset", [row[0] for row in whole])
+        self.assertNotIn("reset", [row[0] for row in whole])
         self.assertIn("retention", [row[0] for row in collector])
         for name, index in (
             ("default-limits-2", 0), ("default-limits-3", 1),
@@ -362,13 +362,16 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "page-public": 3, "default-limits-4": 4, "segment-data": 4,
             "default-limits-5": 4, "halftone-header": 5, "page-state": 5,
         })
-        expected.pop("black-span")
+        expected.pop("default-limits-4")
+        expected.pop("default-limits-5")
         expected.update({
             "region-dispatch": 2, "default-limits-2": 5,
-            "error-wrappers-basic": 1, "huffman-assignment": 3,
-            "default-decoder-4": 4, "default-limits-4": 1,
+            "error-wrappers-basic": 0, "huffman-assignment": 3,
+            "default-decoder-4": 4, "reader-error": 2, "operator-bit": 0,
+            "arithmetic-integer": 1, "bitmap-chunk": 1,
+            "black-span": 1, "reset": 1, "page-finish": 4,
         })
-        self.assertIn("black-span", [row[0] for row in whole])
+        self.assertIn("default-limits-4", [row[0] for row in whole])
         self.assertEqual(
             {row[0]: index for index, shard in enumerate(shards) for row in shard}, expected,
         )
@@ -461,7 +464,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
         measured = [sum(costs[row[0]] for row in role) for role in roles]
         self.assertEqual({row[0] for role in roles for row in role}, set(costs))
-        self.assertEqual(measured, [967, 1015, 1002, 1038, 1021, 1024, 1028, 1044])
+        self.assertEqual(measured, [900, 1015, 1043, 1046, 1027, 1024, 1040, 1044])
         self.assertLessEqual(max(measured), 1050)
         self.assertLessEqual(measured[0] + 208, 1200)
 
