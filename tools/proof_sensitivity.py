@@ -109,6 +109,18 @@ def selected_proof(
     return result
 
 
+def compile_native_mutant(directory: Path, environment: dict, rust: str):
+    native_environment = {
+        **environment,
+        "CARGO_TARGET_DIR": str(directory / "target"),
+        "CARGO_INCREMENTAL": "1",
+    }
+    return run(
+        ["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
+        directory, native_environment, capture=True,
+    )
+
+
 def weakened_contract(source: str, case: dict) -> str:
     controls = case["controls"] if "controls" in case else ((case["control"], ""),)
     if not controls:
@@ -224,8 +236,7 @@ def check_semantic_cases(
             source = replace_once(original, case["site"], case["replacement"])
             try:
                 group.write(directory, source)
-                run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
-                    directory, environment, capture=True)
+                compile_native_mutant(directory, environment, rust)
                 options = (
                     {"verification_module": case["verification_module"]}
                     if case["verification_module"] != case["module"] else {}

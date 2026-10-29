@@ -157,6 +157,14 @@ count. Missing/stale receipts and ambiguous names still fail closed; colliding
 implementations still require their fresh selected peer baselines. Every
 mutant compilation and strong/weaker query remains independent and fresh.
 
+Ordinary Rust mutant checks use Cargo's incremental compiler only inside
+their temporary workspace, with an explicit workspace-local target directory.
+The proof environment is not mutated and no verifier query is cached or
+skipped. A real warm-cache control rejected an ill-typed mutant with `E0308`
+and accepted the restored source; repeated native checks fell from about
+1.0 seconds to 0.33 seconds. This does not disable lifetime, erasure, trait
+conflict or semantic checks, and the cache is discarded with the workspace.
+
 ### Owned page-collector sink
 
 The concrete `PageSink for PageCollector` wrapper now proves its own checked

@@ -8,8 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from check_distribution import run
-from proof_sensitivity import positive_baseline, proof_workspace, replace_once, selected_proof
+from proof_sensitivity import compile_native_mutant, positive_baseline, proof_workspace, replace_once, selected_proof
 from source_group import bound_source_groups, runtime_function
 
 
@@ -286,8 +285,7 @@ def check_document_count_proof(executable: Path, case_group: str | None = None) 
             module = records[case["function"]]["verifier_module"]
             try:
                 document.write(directory, source)
-                run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
-                    directory, environment, capture=True)
+                compile_native_mutant(directory, environment, rust)
                 rejected = selected_proof(
                     executable, directory, environment, True, module, case["function"],
                 )
