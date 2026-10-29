@@ -152,18 +152,21 @@ impl std::error::Error for GenericRegionError {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<DecodeError> for GenericRegionError {
     fn from(error: DecodeError) -> Self {
         Self::Decode(error)
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MalformedError> for GenericRegionError {
     fn from(error: MalformedError) -> Self {
         Self::Decode(error.into())
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MmrError> for GenericRegionError {
     fn from(error: MmrError) -> Self {
         Self::Decode(error.into())
@@ -204,6 +207,30 @@ impl From<GenericRegionError> for DecodeError {
 
 #[cfg(verus_keep_ghost)]
 verus! {
+
+impl FromSpecImpl<DecodeError> for GenericRegionError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: DecodeError) -> GenericRegionError {
+        GenericRegionError::Decode(error)
+    }
+}
+
+impl FromSpecImpl<MalformedError> for GenericRegionError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MalformedError) -> GenericRegionError {
+        GenericRegionError::Decode(DecodeError::Malformed(error))
+    }
+}
+
+impl FromSpecImpl<MmrError> for GenericRegionError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MmrError) -> GenericRegionError {
+        GenericRegionError::Decode(crate::mmr::mmr_error_result(error))
+    }
+}
 
 // Project error policy, discharged by the executing From body through the pinned trait contract.
 impl FromSpecImpl<GenericRegionError> for DecodeError {

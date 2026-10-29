@@ -12,12 +12,19 @@ from proof_sensitivity import check_semantic_cases
 
 ROOT = Path(__file__).resolve().parents[1]
 OBEYS = "open spec fn obeys_from_spec() -> bool { true }"
+ERROR_TYPES = {
+    "generic_region": "GenericRegionError", "huffman": "HuffmanError",
+    "mmr": "MmrError", "symbol_text": "SymbolTextError",
+}
 CASES = tuple(
     {
         "id": identity, "file": f"src/{scope}.rs", "module": "error",
         "verification_module": scope, "function": "DecodeError::from",
         "site": site, "replacement": replacement,
-        "controls": ((OBEYS, OBEYS.replace("true", "false")),),
+        "controls": ((
+            f"impl FromSpecImpl<{ERROR_TYPES[scope]}> for DecodeError {{ " + OBEYS,
+            f"impl FromSpecImpl<{ERROR_TYPES[scope]}> for DecodeError {{ " + OBEYS.replace("true", "false"),
+        ),),
     }
     for identity, scope, site, replacement in (
         (

@@ -52,18 +52,21 @@ pub(crate) enum HuffmanError {
     InvalidTable(HuffmanTableError),
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<DecodeError> for HuffmanError {
     fn from(error: DecodeError) -> Self {
         Self::Decode(error)
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MalformedError> for HuffmanError {
     fn from(error: MalformedError) -> Self {
         Self::Decode(error.into())
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<LimitExceeded> for HuffmanError {
     fn from(error: LimitExceeded) -> Self {
         Self::Decode(error.into())
@@ -84,6 +87,30 @@ impl From<HuffmanError> for DecodeError {
 
 #[cfg(verus_keep_ghost)]
 verus! {
+
+impl FromSpecImpl<DecodeError> for HuffmanError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: DecodeError) -> HuffmanError {
+        HuffmanError::Decode(error)
+    }
+}
+
+impl FromSpecImpl<MalformedError> for HuffmanError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MalformedError) -> HuffmanError {
+        HuffmanError::Decode(DecodeError::Malformed(error))
+    }
+}
+
+impl FromSpecImpl<LimitExceeded> for HuffmanError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: LimitExceeded) -> HuffmanError {
+        HuffmanError::Decode(DecodeError::LimitExceeded(error))
+    }
+}
 
 // Project error policy, discharged by the executing From body through the pinned trait contract.
 impl FromSpecImpl<HuffmanError> for DecodeError {

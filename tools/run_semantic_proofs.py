@@ -19,8 +19,13 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion")
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions")
+ADDED_SHARD_GROUPS = {"error-wrappers-symbol": 4, "error-wrappers-basic": 5}
+REBALANCED_SHARD_GROUPS = {
+    "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
+    "mmr-run": 3, "bitmap-chunk": 4,
+}
 RECEIPT_SCHEMA = 3
 CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
@@ -58,6 +63,9 @@ CHECKS = (
     ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
     ("error-conversion", "check_error_conversion_proofs.py", 8, "strong_contract", "weaker_control"),
+    ("error-wrappers-basic", "check_error_wrapper_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("error-wrappers-regions", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("error-wrappers-symbol", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -110,7 +118,21 @@ def configured_shards():
         if check[0] not in (*WHOLE_GROUPS, *COLLECTOR_GROUPS)
     )
     count = min(CI_SHARDS, len(checks))
-    return tuple(checks[index::count] for index in range(count))
+    # Preserve prior memberships; these two shards have measured headroom for new groups.
+    previous = tuple(check for check in checks if check[0] not in ADDED_SHARD_GROUPS)
+    shards = [list(previous[index::count]) for index in range(count)]
+    for check in checks:
+        if check[0] in ADDED_SHARD_GROUPS:
+            shards[min(ADDED_SHARD_GROUPS[check[0]], count - 1)].append(check)
+    if any(check[0] == "error-wrappers-basic" for check in checks):
+        for identity, destination in REBALANCED_SHARD_GROUPS.items():
+            for shard in shards:
+                match = next((check for check in shard if check[0] == identity), None)
+                if match is not None:
+                    shard.remove(match)
+                    shards[min(destination, count - 1)].append(match)
+                    break
+    return tuple(tuple(shard) for shard in shards)
 
 
 def configured_whole_checks():
@@ -298,14 +320,25 @@ def check_bound_report(root, check, report, bindings, whole=None):
             raise ValueError("missing, duplicate or stale selected cases/baselines")
         scoped_targets = {}
         for case in cases:
-            scoped_targets.setdefault((case["module"], case["function"]), set()).add(case["verification_module"])
+            scoped_targets.setdefault((case["module"], case["function"]), set()).add(
+                (case["verification_module"], case.get("impl_trait"))
+            )
         for case, row in zip(cases, report["counterexamples"]):
-            if len(scoped_targets[(case["module"], case["function"])]) > 1 and (
+            if (len(scoped_targets[(case["module"], case["function"])]) > 1 or "impl_trait" in case) and (
                 row.get("verification_module") != case["verification_module"]
                 or row.get("source_file") != case["file"]
                 or row["baseline_selected_verification"].get("is-verifying-entire-crate") is not False
             ):
                 raise ValueError("ambiguous function name needs its exact source scope and fresh selected baseline")
+            if "impl_trait" in case and (
+                row.get("impl_trait") != case["impl_trait"]
+                or row.get("selected_impl_traits") != case["selected_impl_traits"]
+                or row["baseline_selected_verification"]["verified"] != len(case["selected_impl_traits"])
+                or row.get("strong_verified_functions") != len(case["selected_impl_traits"]) - 1
+                or row["strong_verifier_errors"] != 1
+                or row.get("control_verified_functions") != len(case["selected_impl_traits"])
+            ):
+                raise ValueError("implementation-specific evidence must preserve all selected peer bodies")
         if document_cases:
             functions = sorted({case["function"] for case in cases})
             if (
@@ -394,6 +427,7 @@ def run_checks(
             result["checker_sha256"] = digest(source)
             selection = ["--case-group", identity] if script in {
                 "check_document_count_proof.py", "check_page_state_proofs.py",
+                "check_error_wrapper_proofs.py",
             } else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(

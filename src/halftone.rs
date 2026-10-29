@@ -79,12 +79,14 @@ pub(crate) enum HalftoneError {
     },
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<DecodeError> for HalftoneError {
     fn from(error: DecodeError) -> Self {
         Self::Decode(error)
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<MalformedError> for HalftoneError {
     fn from(error: MalformedError) -> Self {
         Self::Decode(error.into())
@@ -557,13 +559,16 @@ impl WorkBudget {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<LimitExceeded> for HalftoneError {
     fn from(error: LimitExceeded) -> Self {
         Self::Decode(error.into())
     }
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == halftone_error_result(error),
+))]
 pub(crate) fn halftone_error_into_decode(error: HalftoneError) -> DecodeError {
     let kind = match error {
         HalftoneError::Decode(error) => return error,
@@ -604,10 +609,74 @@ pub(crate) fn halftone_error_into_decode(error: HalftoneError) -> DecodeError {
     DecodeError::Malformed(MalformedError::InvalidHalftone(kind))
 }
 
+#[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<HalftoneError> for DecodeError {
     fn from(error: HalftoneError) -> Self {
         halftone_error_into_decode(error)
     }
+}
+
+#[cfg(verus_keep_ghost)]
+verus! {
+
+impl vstd::std_specs::convert::FromSpecImpl<DecodeError> for HalftoneError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: DecodeError) -> HalftoneError {
+        HalftoneError::Decode(error)
+    }
+}
+
+impl vstd::std_specs::convert::FromSpecImpl<MalformedError> for HalftoneError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: MalformedError) -> HalftoneError {
+        HalftoneError::Decode(DecodeError::Malformed(error))
+    }
+}
+
+impl vstd::std_specs::convert::FromSpecImpl<LimitExceeded> for HalftoneError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: LimitExceeded) -> HalftoneError {
+        HalftoneError::Decode(DecodeError::LimitExceeded(error))
+    }
+}
+
+impl vstd::std_specs::convert::FromSpecImpl<HalftoneError> for DecodeError {
+    open spec fn obeys_from_spec() -> bool { true }
+
+    closed spec fn from_spec(error: HalftoneError) -> DecodeError {
+        halftone_error_result(error)
+    }
+}
+
+pub(crate) open spec fn halftone_error_result(error: HalftoneError) -> DecodeError {
+    match error {
+            HalftoneError::Decode(error) => error,
+            HalftoneError::InvalidPatternDictionaryFlags(flags) => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::InvalidPatternDictionaryFlags(flags))),
+            HalftoneError::InvalidPatternDimensions { width, height } => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::InvalidPatternDimensions { width, height })),
+            HalftoneError::InvalidHalftoneFlags(flags) => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::InvalidHalftoneFlags(flags))),
+            HalftoneError::InvalidHalftoneConfiguration => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::InvalidConfiguration)),
+            HalftoneError::InvalidBitmapDimensions { expected_width, expected_height, actual_width, actual_height } =>
+                DecodeError::Malformed(MalformedError::InvalidHalftone(HalftoneErrorKind::InvalidBitmapDimensions {
+                    expected_width, expected_height, actual_width, actual_height,
+                })),
+            HalftoneError::InvalidGrayBitDepth(depth) => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::InvalidGrayBitDepth(depth))),
+            HalftoneError::EmptyPatternDictionary => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::EmptyPatternDictionary)),
+            HalftoneError::InconsistentPatternDimensions => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::InconsistentPatternDimensions)),
+            HalftoneError::InvalidPatternIndex { index, pattern_count } => DecodeError::Malformed(
+                MalformedError::InvalidHalftone(HalftoneErrorKind::InvalidPatternIndex { index, pattern_count })),
+    }
+}
+
 }
 
 /// Parsed seven-byte pattern-dictionary data header.

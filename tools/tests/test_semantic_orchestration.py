@@ -17,6 +17,9 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
+PRE_WRAPPER_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("error-wrappers-"))
+PRE_CONVERSION_CHECKS = tuple(row for row in PRE_WRAPPER_CHECKS if row[0] != "error-conversion")
+
 DOCUMENT_PARTITION_GROUPS = (
     ("iaid-state", 6), ("arithmetic-initialization", 6), ("text-batch", 11),
     ("black-span", 6), ("segment-data", 10), ("value-bridge", 5), ("mmr-span", 8),
@@ -143,6 +146,123 @@ class SemanticOrchestrationTests(unittest.TestCase):
             with self.subTest(field=field, value=value), self.assertRaisesRegex(ValueError, "exact source scope"):
                 runner.check_bound_report(self.root, check, broken, bindings)
 
+    def test_same_scope_trait_receipts_require_exact_type_parameters_and_all_peers(self):
+        (self.root / "src/lib.rs").write_text("mod owner;\nmod left;\n")
+        (self.root / "src/owner.rs").write_text("pub struct Failure;\n")
+        source, cases = "", []
+        for kind in ("u8", "u16"):
+            source += (
+                "#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+                f"impl From<{kind}> for crate::owner::Failure {{ fn from(value: {kind}) -> Self {{ Self }} }}\n"
+            )
+            cases.append({
+                "id": kind, "file": "src/left.rs", "module": "owner",
+                "verification_module": "left", "function": "Failure::from",
+                "impl_trait": f"From<{kind}>",
+            })
+        (self.root / "src/left.rs").write_text(source)
+        (self.root / "tools/conversion.py").write_text("CASES = " + repr(cases) + "\n")
+        bindings = {"src/left.rs": runner.digest(self.root / "src/left.rs")}
+        report = evidence()
+        report["source_bindings"] = bindings
+        report["counterexamples"] = []
+        for case in cases:
+            record = copy.deepcopy(evidence()["counterexamples"][0])
+            record.update(
+                id=case["id"], function="owner::Failure::from", verification_module="left",
+                source_file="src/left.rs", impl_trait=case["impl_trait"],
+                selected_impl_traits=["From<u16>", "From<u8>"],
+                strong_verified_functions=1, control_verified_functions=2,
+            )
+            record["baseline_selected_verification"]["verified"] = 2
+            report["counterexamples"].append(record)
+        check = ("conversions", "conversion.py", 2, "strong_contract", "weaker_control")
+        runner.check_bound_report(self.root, check, report, bindings)
+        for field, value in (
+            ("impl_trait", "From<u16>"), ("selected_impl_traits", ["From<u8>"]),
+            ("strong_verified_functions", 0), ("control_verified_functions", 1),
+        ):
+            broken = copy.deepcopy(report)
+            broken["counterexamples"][0][field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "selected peer bodies"):
+                runner.check_bound_report(self.root, check, broken, bindings)
+
+    def test_wrapper_group_selection_is_forwarded_to_its_shared_checker(self):
+        script = "check_error_wrapper_proofs.py"
+        (self.root / "tools" / script).write_text(
+            "CASES = ({'id':'case','module':'module','function':'function'},)\n"
+            "CASE_GROUPS = {'error-wrappers-basic': CASES}\n"
+        )
+        check = ("error-wrappers-basic", script, 1, "strong_contract", "weaker_control")
+
+        def process(command, **kwargs):
+            self.assertEqual(command[command.index("--case-group") + 1], "error-wrappers-basic")
+            report = evidence()
+            report["case_group"] = "error-wrappers-basic"
+            report["source_bindings"] = {"src/example.rs": runner.digest(self.root / "src/example.rs")}
+            Path(command[-1]).write_text(json.dumps(report))
+            return SimpleNamespace(returncode=0)
+
+        with patch.object(runner, "CHECKS", (check,)), patch.object(runner.subprocess, "run", side_effect=process):
+            result = runner.run_checks(self.root, self.root / "verus", self.output, only="error-wrappers-basic")
+        self.assertEqual(result["status"], "passed")
+
+    def test_new_wrapper_groups_rebalance_two_measured_memberships_without_more_producers(self):
+        shards = runner.configured_shards()
+        with patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS), patch.object(
+            runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge", "error-conversion"),
+        ):
+            before = runner.configured_shards()
+        symbol = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-symbol")
+        basic = next(row for row in runner.configured_checks() if row[0] == "error-wrappers-basic")
+        expected = [list(shard) for shard in before]
+        expected[4].append(symbol)
+        expected[5].append(basic)
+        retention = next(row for row in expected[2] if row[0] == "retention")
+        expected[2].remove(retention)
+        for name, old, new in (
+            ("huffman-assignment", 5, 1), ("operator-bit", 1, 2),
+            ("mmr-prefix", 4, 3), ("mmr-run", 4, 3), ("bitmap-chunk", 3, 4),
+        ):
+            row = next(row for row in expected[old] if row[0] == name)
+            expected[old].remove(row)
+            expected[new].append(row)
+        self.assertEqual(shards, tuple(tuple(shard) for shard in expected))
+        self.assertNotIn("error-wrappers-basic", [row[0] for row in runner.configured_whole_checks()])
+        self.assertIn("retention", [row[0] for row in runner.configured_whole_checks()])
+        self.assertIn("error-wrappers-regions", [row[0] for row in runner.configured_collector_checks()])
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *shards]
+        self.assertEqual(len(roles), 8)
+        self.assertEqual(sum(len(role) for role in roles), 38)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 297)
+
+    def test_completed_rejected_wrapper_profiles_rebalance_below_original_guards(self):
+        # All producers in40760950278 completed; its guard rejection grants no acceptance credit.
+        # Combine both complete rejected profiles with accepted #111; round maxima up.
+        costs = {
+            "mmr-reference": 352, "reader-error": 228, "black-span": 163,
+            "arithmetic-refill": 160, "region-dispatch": 81,
+            "document-layout": 314, "page-public": 223, "page-finish": 169,
+            "arithmetic-normalization": 147, "operator-bit": 94,
+            "page-state": 331, "arithmetic-integer": 235, "mmr-horizontal": 192,
+            "iaid-state": 159, "retention": 77,
+            "text-batch": 266, "halftone-header": 215, "bitmap-compose": 172,
+            "arithmetic-initialization": 145, "bitmap-chunk": 96,
+            "symbol-cardinality": 265, "integer-state": 265, "bitmap-copy": 195,
+            "mmr-run": 105, "mmr-prefix": 108, "error-wrappers-symbol": 185,
+            "segment-data": 270, "segment-header": 266, "mmr-span": 222,
+            "huffman-assignment": 126, "error-wrappers-basic": 217,
+            "arithmetic-codec": 448, "value-bridge": 117, "error-conversion": 238,
+            "arithmetic-decision": 398, "document-count": 326, "reset": 52,
+            "error-wrappers-regions": 213,
+        }
+        rejected = ("segment-data", "segment-header", "mmr-span", "huffman-assignment", "error-wrappers-basic")
+        self.assertGreater(sum(costs[name] for name in rejected), 1050)
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
+        measured = [sum(costs[row[0]] for row in role) for role in roles]
+        self.assertLessEqual(max(measured), 1020)
+        self.assertLessEqual(measured[0] + 211, 1200)
+
     def test_manifest_covers_every_semantic_checker_without_fixed_group_or_case_totals(self):
         checks = runner.configured_checks()
         self.assertEqual(len({row[0] for row in checks}), len(checks))
@@ -165,6 +285,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
 
+    @patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge", "error-conversion"))
     def test_error_conversion_uses_existing_whole_role_without_reassigning_prior_shards(self):
         actual = runner.configured_shards()
         previous = tuple(row for row in runner.CHECKS if row[0] != "error-conversion")
@@ -445,7 +567,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "1050"):
                 runner.measured_shard_seconds(rows)
 
-    @patch.object(runner, "CHECKS", tuple(row for row in runner.CHECKS if row[0] != "error-conversion"))
+    @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
     def test_pre_conversion_roles_replay_qualified_timing_inputs_without_more_jobs_or_raised_guards(self):
         # Planning only: completed f294 groups; completed shard-5 ZIP timestamps
         # plus allowance; current local value/Huffman runs plus 10%, rounded up.
@@ -484,7 +607,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
         rows = [{"id": row[0], "status": "passed", "seconds": weights[row[0]]} for row in checks]
         self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
 
-    @patch.object(runner, "CHECKS", tuple(row for row in runner.CHECKS if row[0] != "error-conversion"))
+    @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
     def test_completed_f53_costs_rebalance_without_accepting_its_rejected_collection(self):
         # All 40412207379 producers completed, but its collector rejected the
         # overloaded shard. These costs are scheduling inputs, not acceptance.
@@ -564,7 +688,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             estimates.append(seconds)
         self.assertLessEqual(max(estimates), 1000)
 
-    @patch.object(runner, "CHECKS", tuple(row for row in runner.CHECKS if row[0] != "error-conversion"))
+    @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
     def test_pre_conversion_job_capacity_covers_three_profile_per_group_maxima(self):
         # Planning only: prior qualified estimates and completed f53/7ae groups,
         # taking each group's maximum and rounding up. Failed collections gain

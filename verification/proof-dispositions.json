@@ -5,23 +5,9 @@
     {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
+      "file_sha256": "39cea23f3e6553e50b0106d5e91185fafc55c34df62ba45f35de33be222f1c92",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus does not directly verify the remaining standard From and formatting trait implementations; Annex A decoder algorithms and default context construction are directly verified."
-    },
-    {
-      "id": "arithmetic::ArithmeticError::from",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "arithmetic::DecodeError::from",
-      "file": "src/arithmetic.rs",
-      "file_sha256": "a37cd7dec00171bb8733a90c8dcf8341ef4569acb9e0a23c592c5d86a57d0ea2",
-      "status": "audited-forwarder",
-      "reason": "One-line trait forwarder to the verified ArithmeticError::into_decode method; reviewed explicitly, not directly verified as a From implementation."
     },
     {
       "id": "decode::PageSink::write_page",
@@ -159,86 +145,16 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "cd305a525d2386d23e6246d7e431978608d3081d5f8e2a9250d9bd811165e784",
+      "file_sha256": "4c753c336c16bb615977a1074edbb71ccb158b3fd4d8120876d9c24f21f4f0ef",
       "status": "reviewed-verifier-limitation",
       "reason": "Standard Display formatting uses formatting machinery not directly verified by pinned Verus; this is not a raster-kernel or fallible-allocation limitation."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "cd305a525d2386d23e6246d7e431978608d3081d5f8e2a9250d9bd811165e784",
+      "file_sha256": "4c753c336c16bb615977a1074edbb71ccb158b3fd4d8120876d9c24f21f4f0ef",
       "status": "reviewed-verifier-limitation",
       "reason": "The standard Error trait source method is not directly verified by pinned Verus; raster algorithms and allocation specifications are accounted for separately."
-    },
-    {
-      "id": "generic_region::GenericRegionError::from",
-      "file": "src/generic_region.rs",
-      "file_sha256": "cd305a525d2386d23e6246d7e431978608d3081d5f8e2a9250d9bd811165e784",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "generic_region::GenericRegionError::from#2",
-      "file": "src/generic_region.rs",
-      "file_sha256": "cd305a525d2386d23e6246d7e431978608d3081d5f8e2a9250d9bd811165e784",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "generic_region::GenericRegionError::from#3",
-      "file": "src/generic_region.rs",
-      "file_sha256": "cd305a525d2386d23e6246d7e431978608d3081d5f8e2a9250d9bd811165e784",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "halftone::HalftoneError::from",
-      "file": "src/halftone.rs",
-      "file_sha256": "78131542ee8334b837839c032e9f9fb9b87e88c864efcd50ff804cf721958098",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "halftone::HalftoneError::from#2",
-      "file": "src/halftone.rs",
-      "file_sha256": "78131542ee8334b837839c032e9f9fb9b87e88c864efcd50ff804cf721958098",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "halftone::HalftoneError::from#3",
-      "file": "src/halftone.rs",
-      "file_sha256": "78131542ee8334b837839c032e9f9fb9b87e88c864efcd50ff804cf721958098",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "halftone::DecodeError::from",
-      "file": "src/halftone.rs",
-      "file_sha256": "78131542ee8334b837839c032e9f9fb9b87e88c864efcd50ff804cf721958098",
-      "status": "audited-forwarder",
-      "reason": "One-line trait forwarder to verified halftone_error_into_decode; the From implementation itself is not directly verified."
-    },
-    {
-      "id": "huffman::HuffmanError::from",
-      "file": "src/huffman.rs",
-      "file_sha256": "da734ce1a5ae0e37dc2eee0709b3839ac6cc0f556c3ff9d7350fbbad48977a9f",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "huffman::HuffmanError::from#2",
-      "file": "src/huffman.rs",
-      "file_sha256": "da734ce1a5ae0e37dc2eee0709b3839ac6cc0f556c3ff9d7350fbbad48977a9f",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "huffman::HuffmanError::from#3",
-      "file": "src/huffman.rs",
-      "file_sha256": "da734ce1a5ae0e37dc2eee0709b3839ac6cc0f556c3ff9d7350fbbad48977a9f",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
       "id": "limits::Limits::default",
@@ -248,67 +164,11 @@
       "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     },
     {
-      "id": "mmr::MmrError::from",
-      "file": "src/mmr.rs",
-      "file_sha256": "2592b84eed9af854f58e4f9a7b25fd87e545066d5730bd2143ccba4a3a573c8a",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
       "id": "mmr::prepare_transition_storage",
       "file": "src/mmr.rs",
-      "file_sha256": "2592b84eed9af854f58e4f9a7b25fd87e545066d5730bd2143ccba4a3a573c8a",
+      "file_sha256": "bbc2fe89da27c9855708a41406665e0096d749a309093c52cba463cf5640c959",
       "status": "runtime-proof-divergence",
       "reason": "Normal-only capacity-based memory accounting and release checks are excluded from the proof build. Including them is rejected by pinned Verus on Vec::capacity and Result::unwrap_or. Runtime limit handling remains unverified; replacing capacity with length or adding project assumptions is not closure."
-    },
-    {
-      "id": "symbol_text::SymbolTextError::from",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "symbol_text::SymbolTextError::from#2",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "symbol_text::SymbolTextError::from#3",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "symbol_text::SymbolTextError::from#4",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "symbol_text::SymbolTextError::from#5",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "symbol_text::SymbolTextError::from#6",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
-      "id": "symbol_text::SymbolTextError::from#7",
-      "file": "src/symbol_text.rs",
-      "file_sha256": "50e35ff528250814a1793a8cde113a50e3a563c25bcd3e38608de5b76c09c146",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
     }
   ]
 }

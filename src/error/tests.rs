@@ -2,10 +2,12 @@
 #![allow(clippy::duplicated_attributes)]
 
 use super::{
-    DecodeError, GenericRegionErrorKind, HuffmanErrorKind, IoErrorKind, LimitExceeded, LimitKind,
-    MalformedError, MmrErrorKind, UnsupportedFeature,
+    DecodeError, GenericRegionErrorKind, HalftoneErrorKind, HuffmanErrorKind, IoErrorKind,
+    LimitExceeded, LimitKind, MalformedError, MmrErrorKind, UnsupportedFeature,
 };
+use crate::arithmetic::ArithmeticError;
 use crate::generic_region::GenericRegionError;
+use crate::halftone::HalftoneError;
 use crate::huffman::HuffmanError;
 use crate::mmr::MmrError;
 use crate::symbol_text::SymbolTextError;
@@ -55,6 +57,260 @@ fn wrapped_errors() -> [DecodeError; 5] {
 fn passthrough<E: Into<DecodeError>>(wrap: fn(DecodeError) -> E) {
     for (input, expected) in wrapped_errors().into_iter().zip(wrapped_errors()) {
         same_error(wrap(input).into(), expected);
+    }
+}
+
+macro_rules! check_inner_decode {
+    ($target:ident, $source:expr, $expected:expr) => {
+        match $target::from($source) {
+            $target::Decode(actual) => same_error(actual, $expected),
+            other => panic!("wrapper changed error class: {other:?}"),
+        }
+    };
+}
+
+macro_rules! check_public_wrappers {
+    ($target:ident) => {
+        for (input, expected) in wrapped_errors().into_iter().zip(wrapped_errors()) {
+            check_inner_decode!($target, input, expected);
+        }
+        check_inner_decode!(
+            $target,
+            MalformedError::UnexpectedEof {
+                offset: 23,
+                needed: 17,
+                remaining: 5
+            },
+            DecodeError::Malformed(MalformedError::UnexpectedEof {
+                offset: 23,
+                needed: 17,
+                remaining: 5
+            })
+        );
+    };
+}
+
+#[test]
+fn owned_public_error_wrappers_preserve_the_inner_class_and_fields() {
+    check_public_wrappers!(GenericRegionError);
+    check_public_wrappers!(HalftoneError);
+    check_public_wrappers!(HuffmanError);
+    check_public_wrappers!(SymbolTextError);
+    check_inner_decode!(
+        HuffmanError,
+        LimitExceeded {
+            kind: LimitKind::Work,
+            limit: 37,
+            actual: u64::MAX,
+        },
+        DecodeError::LimitExceeded(LimitExceeded {
+            kind: LimitKind::Work,
+            limit: 37,
+            actual: u64::MAX,
+        })
+    );
+    check_inner_decode!(
+        HalftoneError,
+        LimitExceeded {
+            kind: LimitKind::PagePixels,
+            limit: 11,
+            actual: u64::MAX
+        },
+        DecodeError::LimitExceeded(LimitExceeded {
+            kind: LimitKind::PagePixels,
+            limit: 11,
+            actual: u64::MAX
+        })
+    );
+    check_inner_decode!(
+        SymbolTextError,
+        LimitExceeded {
+            kind: LimitKind::DecodedBitmapBytes,
+            limit: 41,
+            actual: u64::MAX
+        },
+        DecodeError::LimitExceeded(LimitExceeded {
+            kind: LimitKind::DecodedBitmapBytes,
+            limit: 41,
+            actual: u64::MAX
+        })
+    );
+}
+
+#[test]
+fn composed_codec_wrappers_preserve_literal_diagnostics() {
+    check_inner_decode!(
+        GenericRegionError,
+        MmrError::InvalidRunCode {
+            bit_offset: usize::MAX,
+            black: true
+        },
+        DecodeError::Malformed(MalformedError::InvalidMmr(MmrErrorKind::InvalidRunCode {
+            bit_offset: usize::MAX,
+            black: true
+        }))
+    );
+    check_inner_decode!(
+        SymbolTextError,
+        HuffmanError::InvalidTable(HuffmanErrorKind::InvalidBounds {
+            low: i32::MIN,
+            high: i32::MAX
+        }),
+        DecodeError::Malformed(MalformedError::InvalidHuffman(
+            HuffmanErrorKind::InvalidBounds {
+                low: i32::MIN,
+                high: i32::MAX
+            }
+        ))
+    );
+    check_inner_decode!(
+        SymbolTextError,
+        GenericRegionError::RowCountMismatch {
+            expected: 0,
+            actual: u32::MAX
+        },
+        DecodeError::Malformed(MalformedError::InvalidGenericRegion(
+            GenericRegionErrorKind::RowCountMismatch {
+                expected: 0,
+                actual: u32::MAX
+            }
+        ))
+    );
+    check_inner_decode!(
+        SymbolTextError,
+        MmrError::Allocation {
+            requested_bytes: u64::MAX
+        },
+        DecodeError::Allocation {
+            requested_bytes: u64::MAX
+        }
+    );
+    check_inner_decode!(
+        SymbolTextError,
+        ArithmeticError::InvalidContextState {
+            state_index: u8::MAX,
+            mps: 7
+        },
+        DecodeError::Malformed(MalformedError::InvalidArithmeticContextState {
+            state_index: u8::MAX,
+            mps: 7
+        })
+    );
+    match MmrError::from(MalformedError::InvalidFileSignature) {
+        MmrError::Reader(actual) => assert_eq!(actual, MalformedError::InvalidFileSignature),
+        other => panic!("reader wrapper changed class: {other:?}"),
+    }
+}
+
+#[test]
+fn arithmetic_wrappers_preserve_each_error_variant() {
+    match ArithmeticError::from(MalformedError::InvalidFileSignature) {
+        ArithmeticError::Malformed(actual) => {
+            assert_eq!(actual, MalformedError::InvalidFileSignature);
+        }
+        other => panic!("arithmetic wrapper changed class: {other:?}"),
+    }
+    for (input, expected) in [
+        (
+            ArithmeticError::Malformed(MalformedError::InvalidFileSignature),
+            MalformedError::InvalidFileSignature,
+        ),
+        (
+            ArithmeticError::InvalidContextState {
+                state_index: u8::MAX,
+                mps: 7,
+            },
+            MalformedError::InvalidArithmeticContextState {
+                state_index: u8::MAX,
+                mps: 7,
+            },
+        ),
+        (
+            ArithmeticError::InsufficientContexts {
+                required: usize::MAX,
+                actual: 3,
+            },
+            MalformedError::InsufficientArithmeticContexts {
+                required: usize::MAX,
+                actual: 3,
+            },
+        ),
+        (
+            ArithmeticError::InvalidIaidCodeLength(u8::MAX),
+            MalformedError::InvalidIaidCodeLength(u8::MAX),
+        ),
+    ] {
+        same_error(input.into(), DecodeError::Malformed(expected));
+    }
+}
+
+#[test]
+fn halftone_conversion_helper_and_wrapper_preserve_every_variant() {
+    passthrough(HalftoneError::Decode);
+    for (input, expected) in [
+        (
+            HalftoneError::InvalidPatternDictionaryFlags(u8::MAX),
+            HalftoneErrorKind::InvalidPatternDictionaryFlags(u8::MAX),
+        ),
+        (
+            HalftoneError::InvalidPatternDimensions {
+                width: 0,
+                height: u8::MAX,
+            },
+            HalftoneErrorKind::InvalidPatternDimensions {
+                width: 0,
+                height: u8::MAX,
+            },
+        ),
+        (
+            HalftoneError::InvalidHalftoneFlags(0),
+            HalftoneErrorKind::InvalidHalftoneFlags(0),
+        ),
+        (
+            HalftoneError::InvalidHalftoneConfiguration,
+            HalftoneErrorKind::InvalidConfiguration,
+        ),
+        (
+            HalftoneError::InvalidBitmapDimensions {
+                expected_width: 7,
+                expected_height: 9,
+                actual_width: u32::MAX,
+                actual_height: 0,
+            },
+            HalftoneErrorKind::InvalidBitmapDimensions {
+                expected_width: 7,
+                expected_height: 9,
+                actual_width: u32::MAX,
+                actual_height: 0,
+            },
+        ),
+        (
+            HalftoneError::InvalidGrayBitDepth(u8::MAX),
+            HalftoneErrorKind::InvalidGrayBitDepth(u8::MAX),
+        ),
+        (
+            HalftoneError::EmptyPatternDictionary,
+            HalftoneErrorKind::EmptyPatternDictionary,
+        ),
+        (
+            HalftoneError::InconsistentPatternDimensions,
+            HalftoneErrorKind::InconsistentPatternDimensions,
+        ),
+        (
+            HalftoneError::InvalidPatternIndex {
+                index: u32::MAX,
+                pattern_count: u64::MAX,
+            },
+            HalftoneErrorKind::InvalidPatternIndex {
+                index: u32::MAX,
+                pattern_count: u64::MAX,
+            },
+        ),
+    ] {
+        same_error(
+            input.into(),
+            DecodeError::Malformed(MalformedError::InvalidHalftone(expected)),
+        );
     }
 }
 
