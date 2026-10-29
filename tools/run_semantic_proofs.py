@@ -19,7 +19,7 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 8
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge")
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "collector-sink")
 COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
@@ -101,6 +101,7 @@ CHECKS = (
     ("default-decoder-3", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
     ("default-decoder-4", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
     ("default-decoder-5", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("collector-sink", "check_collector_sink_proof.py", 2, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"

@@ -31,6 +31,12 @@ different owners/modules are not interchangeable evidence.
 Formatting/error traits, `std::io::Read` and caller-provided sink behavior remain
 important reviewed boundaries. Reader/public API runtime regressions do not
 turn arbitrary external callbacks into formally verified implementations.
+The pin includes formatting-trait precondition specifications, but a focused
+checked probe still rejects `Formatter::write_str`. Separate probes reject
+the standard `io::ErrorKind` type and even an empty dynamic `Error` source.
+Those are concrete missing interfaces, not an assertion that the pin has no
+formatting support at all. No local trusted type, function or trait declaration
+has been added to bypass them.
 Fallible reservation and deterministic stores have enabled many direct proofs;
 do not repeat obsolete broad claims that all allocation or all registries are
 unverified. Inspect each current disposition and actual `requires`/`ensures`.
@@ -88,7 +94,7 @@ overhead is included in planning. Rejected-run timings remain planning inputs,
 not acceptance credit. Every case/query, the six-shard/max-four policy, eight
 producers, solver/job caps and actual 1,050-second guards remain intact.
 
-The remaining audited forwarder is the owned page collector's sink wrapper.
+No audited forwarders remain after the public-default and owned-sink proofs.
 This does not close the twenty
 reviewed standard/callback/orchestration limitations or the held capacity
 divergence, nor does it establish normative model fidelity.
@@ -180,13 +186,42 @@ The 1,050-second per-producer guard, 20-minute whole/collector caps,
 No canceled, incomplete or over-budget profile is accepted.
 
 Sizing uses each group's rounded maximum from both complete native-cache
-profiles. Whole/collector/eight shards cost
+profiles. The preceding default profile's whole/collector/eight shards cost
 511/703/828/828/887/857/860/829/888/887 seconds under those planning inputs.
-Whole again handles arithmetic-codec/value-bridge and collector handles
-arithmetic-decision/document-count/reset. All other groups have an explicit
-eight-shard assignment. Earlier six-shard fixtures remain frozen, while
-current tests require all eight exact shard receipts and fail on any missing
-one. Actual complete same-head hosted validation is still required.
+Whole handles arithmetic-codec/value-bridge and the owned-sink group below;
+collector handles arithmetic-decision/document-count/reset. All other groups
+have an explicit eight-shard assignment. Earlier six-shard fixtures remain
+frozen, while current tests require all eight exact shard receipts and fail
+on any missing one. Actual complete same-head hosted validation is still required.
+
+### Owned page-collector sink
+
+The concrete `PageSink for PageCollector` wrapper now proves its own checked
+append/result relation. Its existing `push_page` helper exposes the same
+contract as `collect_page`: success appends the exact page and updates the
+bitmap-byte counter within the named project counters; errors preserve the
+page list and bitmap-byte count. The executing bodies are unchanged.
+
+The old contract is factored into `collector_result` outside the runtime
+source. A separately verified definitional bridge lets the implementation
+use this closed predicate without exposing private collector field projections
+through a public trait method's postcondition. This is a project-result
+definition and checked lemma, not a trusted declaration or an approved T.88
+rule. Its author navigation classification does not confer normative approval.
+
+Two compiling contrasts reject a successful return that drops the page and
+an error returned after an append. Their weaker controls omit only the
+corresponding success/error requirement on the concrete sink wrapper; the
+constructor and helper contracts remain intact. Evidence binds the exact
+file, lexical scope and `PageSink` implementation with a bound pristine proof,
+zero verified bodies/one error for each mutant and one body for each control.
+The complete group runs in the existing whole role without moving previous cases.
+
+This says nothing about arbitrary caller-provided sinks, exact error-variant
+priority, actual reserved capacity or allocator/RSS bounds. In particular,
+the known observed-capacity hold below remains unresolved. The complete
+unfiltered proof must verify the bridge as well as the implementation;
+selected-body success alone is insufficient.
 
 ## Blocking capacity/getter decision
 

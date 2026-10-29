@@ -25,7 +25,7 @@ CURRENT_TOPOLOGY = {
 }
 SIX_SHARD_WHOLE_GROUPS = (
     "arithmetic-codec", "value-bridge", "error-conversion",
-    "default-limits-1", "default-limits-4", "default-limits-5",
+    "default-limits-1", "default-limits-4", "default-limits-5", "collector-sink",
 )
 SIX_SHARD_COLLECTOR_GROUPS = (
     "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
@@ -45,7 +45,8 @@ SIX_SHARD_MOVES = {
     "segment-data": 4, "page-finish": 4,
     "segment-header": 5, "mmr-span": 5, "halftone-header": 5, "page-state": 5,
 }
-PRE_DEFAULT_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("default-"))
+PRE_SINK_CHECKS = tuple(row for row in runner.CHECKS if row[0] != "collector-sink")
+PRE_DEFAULT_CHECKS = tuple(row for row in PRE_SINK_CHECKS if not row[0].startswith("default-"))
 PRE_WRAPPER_CHECKS = tuple(row for row in PRE_DEFAULT_CHECKS if not row[0].startswith("error-wrappers-"))
 PRE_CONVERSION_CHECKS = tuple(row for row in PRE_WRAPPER_CHECKS if row[0] != "error-conversion")
 PRE_DEFAULT_WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention")
@@ -161,6 +162,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.environment.start()
         self.addCleanup(self.environment.stop)
 
+    @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     def test_eight_shard_profile_preserves_all_queries_and_bounded_concurrency(self):
         with patch.multiple(runner, **CURRENT_TOPOLOGY):
             shards = runner.configured_shards()
@@ -417,6 +419,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1020)
         self.assertLessEqual(measured[0] + 211, 1200)
 
+    @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     def test_default_groups_use_existing_roles_and_the_complete_measured_rebalance(self):
         shards = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS), patch.object(
@@ -463,6 +466,19 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(sum(len(role) for role in roles), 48)
         self.assertEqual(sum(row[2] for role in roles for row in role), 327)
 
+    @patch.multiple(runner, **CURRENT_TOPOLOGY)
+    def test_owned_sink_uses_existing_whole_role_without_changing_shards(self):
+        actual = runner.configured_shards()
+        with patch.object(runner, "CHECKS", PRE_SINK_CHECKS):
+            previous = runner.configured_shards()
+        self.assertEqual(actual, previous)
+        self.assertEqual([row[0] for row in runner.configured_whole_checks()].count("collector-sink"), 1)
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *actual]
+        self.assertEqual(len(roles), 10)
+        self.assertEqual(sum(len(role) for role in roles), 49)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 329)
+
+    @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     @patch.object(runner, "COLLECTOR_GROUPS", PRE_COLLECTOR_REBALANCE_GROUPS)
     @patch.object(runner, "ADDED_SHARD_GROUPS", PRE_COLLECTOR_REBALANCE_ADDED)
     @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_COLLECTOR_REBALANCE_MOVES)
@@ -494,6 +510,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1050)
         self.assertLessEqual(measured[0] + 208, 1200)
 
+    @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     @patch.object(runner, "WHOLE_GROUPS", PRE_ENVELOPE_WHOLE_GROUPS)
     @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_ENVELOPE_SHARD_MOVES)
     @patch.object(runner, "COLLECTOR_GROUPS", PRE_NATIVE_LOAD_COLLECTOR_GROUPS)
@@ -524,6 +541,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1010)
         self.assertLessEqual(measured[0] + 208, 1200)
 
+    @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     @patch.object(runner, "COLLECTOR_GROUPS", PRE_NATIVE_LOAD_COLLECTOR_GROUPS)
     @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_NATIVE_LOAD_SHARD_MOVES)
     def test_same_harness_per_group_maxima_fit_without_relaxing_any_guard(self):
@@ -554,6 +572,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1050)
         self.assertLessEqual(measured[0] + 208, 1200)
 
+    @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     def test_complete_native_cache_profile_uses_existing_cohort_headroom(self):
         # Complete 40906782428 inputs, rounded up; its 1091.433 shard rejection is not acceptance.
         costs = {
