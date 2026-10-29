@@ -51,12 +51,31 @@ gate remains blocked until a foundation decision and full integration
 acceptance are recorded. No main branch, toolchain pin, approval field,
 repository visibility, publication flag or protected fixture was changed.
 
-The existing production Cargo-stream extractor deliberately rejects the new
-declaration-only dependency report with zero obligations. It was not weakened.
-Candidate-only analysis selects the unchanged actual application report and
-records the zero-obligation trusted-interface dependency separately. This is
-not production Cargo-stream acceptance; explicit reviewed handling of that
-dependency remains an integration requirement.
+The initial declaration-only dependency produced a zero-obligation report,
+which the unchanged strict Cargo-stream extractor correctly rejected. That
+historical stream remains preserved. The dependency now includes a checked
+boundary function that calls the proposed getter once, returns that observed
+count alongside its byte charge, and proves exact multiplication and the
+accepted limit. Conversion/multiplication overflow and over-budget charges
+return None. This establishes callability and numeric guard behavior for an
+unconstrained returned capacity; it adds no standard capacity facts and is not
+a proof of allocator behavior or approval of the trusted declaration.
+
+The fresh stream includes the actual dependency proof (one obligation) and
+the application proof (1276 obligations). The unchanged strict extractor
+accepts all reports and selects the application. No zero report was skipped,
+no count was synthesized, and no extractor guard was relaxed. Six existing
+extractor regressions still reject failed, partial, vacuous, duplicate-root
+and wrong-pin evidence. Local stream validation is not main or hosted
+acceptance, and does not change the unapproved trust status.
+
+Run the actual interface boundary controls from the repository root:
+  python3 verification/proposals/validate_capacity_interface.py --verus /path/to/pinned/verus
+The valid boundary and restored source each verify one obligation; removing
+the limit check fails its postcondition; weakening only that limit clause
+passes. These are isolated dependency controls, not additional native decoder
+mutants or additions to the accepted-main semantic-case count. The dependency
+also compiles with ordinary Cargo with its verifier-only code erased.
 
 Required before integration: explicit standard-boundary approval; complete
 native and semantic controls; fresh exact-source whole/compiled verification;
@@ -79,6 +98,8 @@ Native tests: 491 library/integration passes, two performance-driver passes,
 one doctest; 14 existing ignored microbenchmarks. Formatting and strict Clippy
 pass. Both observed-capacity defect controls compile and fail when their
 post-reservation checks are removed; restored source passes.
+All 141 inherited native mutation controls also bind unambiguously, compile
+and fail their exact tests on this proposal's actual native implementation.
 
 Coverage passes all unchanged per-file baseline floors and release goals:
 11497/12744 lines, 11008/12982 regions, 2246/2640 branch outcomes.
@@ -86,7 +107,13 @@ Actual 72-file package tests/doctest, fresh offline MSRV consumer, hidden-hook
 rejection and unsafe strong/weaker controls pass; runtime dependencies remain
 empty and every registry pin/checksum is unchanged.
 
-These are local proposal results only. The existing strict Cargo report
-extractor still rejects the declaration-only dependency, no hosted current-head
-acceptance was granted, accepted main remains unchanged, and no standard-trust,
-normative, legal, visibility or publication approval is asserted.
+These are local proposal results only. No hosted current-head acceptance was
+granted, accepted main remains unchanged, and no standard-trust, normative,
+legal, visibility or publication approval is asserted. Selected proof
+workspaces now copy the actual verification manifests, lockfile and proposed
+dependency, stage locked public proof dependencies into a fresh Cargo home,
+and use offline Cargo focus for the exact module/function. Native checks
+remain offline and workspace-local. No ambient proof target or foreign
+manifest is accepted. The complete application semantic suite and hosted
+acceptance under this proposed boundary remain outstanding; local interface
+controls and a whole proof are not substitutes.

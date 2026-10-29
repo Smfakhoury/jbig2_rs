@@ -12,11 +12,74 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from proof_sensitivity import compile_native_mutant, check_semantic_cases, positive_baseline, selected_proof, weakened_contract
+from proof_sensitivity import compile_native_mutant, check_semantic_cases, positive_baseline, proof_workspace, selected_proof, weakened_contract
 from source_group import whole_binds_unique_implementation
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_workspace_copies_the_actual_verification_dependency_graph(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for name in ("src", "specs", "proofs", "config", "verification/proposals/interface"):
+                (root / name).mkdir(parents=True)
+            for name in ("Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
+                         "verification/Cargo.toml", "verification/Cargo.lock",
+                         "verification/proposals/interface/lib.rs"):
+                (root / name).write_text(name)
+            (root / "config/toolchain.json").write_text(json.dumps({
+                "verus": {"version": "pinned", "rust_toolchain": "rust"},
+            }))
+            with patch("proof_sensitivity.run", return_value="Version: pinned") as run:
+                with proof_workspace(root, Path("/tools/verus"), "jbig2-workspace-test-") as (
+                    directory, environment, expected, rust,
+                ):
+                    self.assertEqual(expected, "pinned")
+                    self.assertEqual(rust, "rust")
+                    for name in ("verification/Cargo.toml", "verification/Cargo.lock",
+                                 "verification/proposals/interface/lib.rs"):
+                        self.assertEqual((directory / name).read_bytes(), (root / name).read_bytes())
+                    self.assertEqual(environment["JBIG2_SELECTED_CARGO_MANIFEST"],
+                                     str(directory / "verification/Cargo.toml"))
+                    self.assertEqual(environment["VERUS_PATH"], "/tools/verus")
+                    self.assertEqual(environment["CARGO_NET_OFFLINE"], "true")
+                    command, fetched_directory, fetched_environment = run.call_args.args
+                    self.assertEqual(command, [
+                        "cargo", "+rust", "fetch", "--locked", "--manifest-path",
+                        str(directory / "verification/Cargo.toml"),
+                    ])
+                    self.assertEqual(fetched_directory, directory)
+                    self.assertEqual(fetched_environment["CARGO_NET_OFFLINE"], "false")
+                    self.assertFalse(directory.is_relative_to(root))
+            self.assertFalse(directory.exists())
+
+    def test_selected_cargo_uses_focus_and_the_isolated_graph_without_changing_targets(self):
+        directory = Path("/isolated")
+        environment = {"JBIG2_SELECTED_CARGO_MANIFEST": "/isolated/verification/Cargo.toml"}
+        process = CompletedProcess([], 0, json.dumps(self.report()), "")
+        with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+            selected_proof(Path("/tools/verus"), directory, environment, False,
+                           "document", "finalize_pages")
+        command = run.call_args.args[0]
+        self.assertEqual(command[:2], ["/tools/cargo-verus", "focus"])
+        self.assertEqual(command[command.index("--manifest-path") + 1],
+                         environment["JBIG2_SELECTED_CARGO_MANIFEST"])
+        self.assertEqual(command[command.index("--target-dir") + 1], "/isolated/proof-target")
+        self.assertEqual(command[command.index("--verify-function") + 1], "finalize_pages")
+        self.assertEqual(command[command.index("--verify-only-module") + 1], "document")
+        self.assertEqual(command.count("--verify-function"), 1)
+        self.assertIn("--offline", command)
+        self.assertIn("--locked", command)
+
+    def test_selected_cargo_rejects_a_foreign_source_graph_before_running(self):
+        with patch("proof_sensitivity.subprocess.run") as run:
+            with self.assertRaisesRegex(ValueError, "isolated proof workspace"):
+                selected_proof(
+                    Path("/verus"), Path("/isolated"),
+                    {"JBIG2_SELECTED_CARGO_MANIFEST": "/foreign/verification/Cargo.toml"},
+                    False, "document", "finalize_pages",
+                )
+            run.assert_not_called()
+
     def test_native_cache_is_workspace_local_and_does_not_change_the_proof_environment(self):
         environment = {"CARGO_INCREMENTAL": "0", "CARGO_TARGET_DIR": "/unrelated", "PATH": "/tools"}
         original = dict(environment)
