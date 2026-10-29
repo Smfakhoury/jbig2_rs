@@ -1173,15 +1173,8 @@ fn both_transition_vectors_are_counted_as_managed_memory() {
         ..Limits::default()
     };
     let error = decode_mmr(&[0x80], 8, 1, &limits, EofbPolicy::Optional)
-        .expect_err("bitmap plus two width+2 transition vectors need 81 bytes");
-    assert!(matches!(
-        error,
-        MmrError::Bitmap(DecodeError::LimitExceeded(LimitExceeded {
-            kind: LimitKind::Memory,
-            limit: 80,
-            actual: 81
-        }))
-    ));
+        .expect_err("reserved bitmap plus both transition vectors exceed the budget");
+    assert_limit(error, LimitKind::Memory, 80, bitmap_capacity_charge(8) + 80);
 }
 
 #[test]
@@ -1286,6 +1279,11 @@ fn fresh_capacity_charge(width: u32) -> u64 {
     u64::try_from((first.capacity() + second.capacity()) * core::mem::size_of::<u32>()).unwrap()
 }
 
+fn bitmap_capacity_charge(width: u32) -> u64 {
+    let bitmap = Bitmap::blank(width, 1, &Limits::default()).unwrap();
+    u64::try_from(bitmap.data.capacity()).unwrap()
+}
+
 fn assert_limit(error: MmrError, kind: LimitKind, limit: u64, actual: u64) {
     let DecodeError::LimitExceeded(found) = DecodeError::from(error) else {
         panic!("expected an unchanged resource-limit error");
@@ -1384,15 +1382,15 @@ fn reused_scratch_recovers_after_decode_and_framing_errors_then_shrinks() {
         &mut scratch,
     )
     .unwrap_err();
-    assert_limit(error, LimitKind::Memory, 80, 81);
+    assert_limit(error, LimitKind::Memory, 80, bitmap_capacity_charge(8) + 80);
     // The requested-size rejection precedes any retained-capacity release.
     assert_cleared(&scratch, charge);
     assert_eq!(scratch.reserve_events, 2);
     let tight = Limits {
-        max_decoder_managed_memory_bytes: 1 + fresh_capacity_charge(8),
+        max_decoder_managed_memory_bytes: bitmap_capacity_charge(8) + fresh_capacity_charge(8),
         ..limits
     };
-    assert!(charge + 1 > tight.max_decoder_managed_memory_bytes);
+    assert!(charge + bitmap_capacity_charge(8) > tight.max_decoder_managed_memory_bytes);
     let bitmap = decode_mmr_reused(
         &[0x26, 0xA2, 0x80],
         8,
@@ -1411,8 +1409,9 @@ fn reused_scratch_recovers_after_decode_and_framing_errors_then_shrinks() {
 #[test]
 fn requested_and_actual_capacity_limits_are_distinct_inclusive_and_recoverable() {
     let width = 1;
-    let requested = 1 + u64::from(width + 2) * 2 * 4;
-    let actual = 1 + fresh_capacity_charge(width);
+    let bitmap_bytes = bitmap_capacity_charge(width);
+    let requested = bitmap_bytes + u64::from(width + 2) * 2 * 4;
+    let actual = bitmap_bytes + fresh_capacity_charge(width);
     assert!(
         requested < actual,
         "the minimum u32 Vec capacity rounds three elements up"
@@ -1455,7 +1454,7 @@ fn requested_and_actual_capacity_limits_are_distinct_inclusive_and_recoverable()
     .unwrap();
     assert_eq!((bitmap.width, bitmap.height, bitmap.stride), (1, 1, 1));
     assert_eq!(bitmap.bytes(), &[0]);
-    assert_cleared(&scratch, actual - 1);
+    assert_cleared(&scratch, actual - bitmap_bytes);
     assert_eq!(scratch.reserve_events, 2);
 }
 

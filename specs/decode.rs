@@ -100,9 +100,11 @@ pub closed spec fn collector_result(
                     + bitmap_byte_count(page_bitmap(&page))
             && collector_bitmap_bytes(after) <= collector_decoded_limit(after)
             && collector_bitmap_bytes(after) <= collector_memory_limit(after)
+            && after.allocated_bitmap_bytes <= collector_memory_limit(after)
             && collector_pages(after) == collector_pages(before).push(page),
         Err(_) =>
             collector_bitmap_bytes(after) == collector_bitmap_bytes(before)
+            && after.allocated_bitmap_bytes == before.allocated_bitmap_bytes
             && collector_pages(after) == collector_pages(before),
     }
 }
@@ -122,9 +124,11 @@ pub(super) proof fn collector_result_definition()
                                 + bitmap_byte_count(page_bitmap(&page))
                         && collector_bitmap_bytes(after) <= collector_decoded_limit(after)
                         && collector_bitmap_bytes(after) <= collector_memory_limit(after)
+                        && after.allocated_bitmap_bytes <= collector_memory_limit(after)
                         && collector_pages(after) == collector_pages(before).push(page),
                     Err(_) =>
                         collector_bitmap_bytes(after) == collector_bitmap_bytes(before)
+                        && after.allocated_bitmap_bytes == before.allocated_bitmap_bytes
                         && collector_pages(after) == collector_pages(before),
                 },
 {

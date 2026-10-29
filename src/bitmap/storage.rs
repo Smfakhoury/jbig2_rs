@@ -67,6 +67,11 @@ pub(super) fn checked_bitmap_layout(
 }
 
 impl Bitmap {
+    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    pub(crate) fn allocated_bytes(&self) -> Result<u64, DecodeError> {
+        u64::try_from(self.data.capacity()).map_err(|_error| MalformedError::IntegerOverflow.into())
+    }
+
     /// Allocates a zero-filled bitmap under the supplied resource limits.
     ///
     /// # Errors
@@ -117,6 +122,13 @@ impl Bitmap {
                 requested_bytes: length_u64,
             });
         }
+        let reserved_bytes =
+            u64::try_from(data.capacity()).map_err(|_error| MalformedError::IntegerOverflow)?;
+        enforce_limit(
+            LimitKind::Memory,
+            limits.max_decoder_managed_memory_bytes,
+            reserved_bytes,
+        )?;
         data.resize(length, if value { 0xFF } else { 0 });
 
         if value && width % 8 != 0 {

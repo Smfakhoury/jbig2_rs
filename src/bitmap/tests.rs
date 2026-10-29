@@ -11,6 +11,34 @@ use crate::{DecodeError, LimitExceeded, LimitKind, Limits, MalformedError};
 use std::hint::black_box;
 use std::time::{Duration, Instant};
 
+#[test]
+fn filled_bitmap_enforces_observed_capacity() {
+    let mut probe = Vec::<u8>::new();
+    probe.try_reserve(1).unwrap();
+    let observed = u64::try_from(probe.capacity()).unwrap();
+    for value in [false, true] {
+        for limit in [0, 1, observed.saturating_sub(1), observed, observed + 1] {
+            let limits = Limits {
+                max_decoder_managed_memory_bytes: limit,
+                ..Limits::default()
+            };
+            match Bitmap::filled(1, 1, value, &limits) {
+                Ok(bitmap) => {
+                    assert!(u64::try_from(bitmap.data.capacity()).unwrap() <= limit);
+                    assert_eq!(bitmap.bytes(), &[if value { 0x80 } else { 0 }]);
+                }
+                Err(DecodeError::LimitExceeded(error)) => {
+                    assert_eq!(error.kind, LimitKind::Memory);
+                    assert_eq!(error.limit, limit);
+                    assert_eq!(error.actual, if limit < 1 { 1 } else { observed });
+                    assert!(error.actual > limit);
+                }
+                Err(error) => panic!("unexpected bitmap quota error: {error:?}"),
+            }
+        }
+    }
+}
+
 fn scalar_compose(
     destination: &mut Bitmap,
     source: &Bitmap,

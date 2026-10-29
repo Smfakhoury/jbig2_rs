@@ -1,5 +1,10 @@
 # jbig2-decoder
 
+> **Unapproved capacity-foundation proposal branch.** This checkout includes
+> a proposed proof-only standard getter interface and observed-capacity repairs.
+> It is not accepted main or release evidence. See the
+> [proposal status](verification/proposals/STATUS.txt) before interpreting results.
+
 `jbig2-decoder` is a strict, dependency-free Rust JBIG2 decoder under active
 development. **It is not yet suitable for untrusted production documents.**
 The repository remains private; the crate is unpublished, version `0.0.1`,

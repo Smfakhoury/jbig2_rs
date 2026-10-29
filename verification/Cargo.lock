@@ -31,9 +31,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "jbig2_capacity_interface_proposal"
+version = "0.0.0"
+dependencies = [
+ "vstd",
+]
+
+[[package]]
 name = "jbig2_rs_verification"
 version = "0.0.1"
 dependencies = [
+ "jbig2_capacity_interface_proposal",
  "vstd",
 ]
 

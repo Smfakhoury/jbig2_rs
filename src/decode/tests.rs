@@ -374,7 +374,22 @@ fn raw_referred_tables_preserve_order_repeats_missing_keys_and_retention() {
 
 #[test]
 fn raw_page_collector_guards_preserve_order_pixels_and_rejected_totals() {
-    for memory_limit in [0, 1, 2, 3, 4, u64::MAX] {
+    let reserved = Bitmap::blank(9, 1, &Limits::default())
+        .unwrap()
+        .allocated_bytes()
+        .unwrap();
+    for memory_limit in [
+        0,
+        1,
+        2,
+        3,
+        4,
+        reserved - 1,
+        reserved,
+        reserved * 2 - 1,
+        reserved * 2,
+        u64::MAX,
+    ] {
         for decoded_limit in [0, 1, 2, 3, 4, u64::MAX] {
             let limits = Limits {
                 max_decoder_managed_memory_bytes: memory_limit,
@@ -387,22 +402,37 @@ fn raw_page_collector_guards_preserve_order_pixels_and_rejected_totals() {
                 let mut bitmap = Bitmap::blank(9, 1, &Limits::default()).unwrap();
                 bitmap.set_pixel(8, 0, true).unwrap();
                 let expected = collector.bitmap_bytes + 2;
+                let expected_allocated =
+                    collector.allocated_bitmap_bytes + bitmap.allocated_bytes().unwrap();
                 let result = collector.write_page(Page { number, bitmap });
-                if expected > decoded_limit || expected > memory_limit {
-                    let (kind, limit) = if expected > decoded_limit {
-                        (crate::LimitKind::DecodedBitmapBytes, decoded_limit)
+                if expected > decoded_limit
+                    || expected > memory_limit
+                    || expected_allocated > memory_limit
+                {
+                    let (kind, limit, expected_actual) = if expected > decoded_limit {
+                        (
+                            crate::LimitKind::DecodedBitmapBytes,
+                            decoded_limit,
+                            expected,
+                        )
+                    } else if expected > memory_limit {
+                        (crate::LimitKind::Memory, memory_limit, expected)
                     } else {
-                        (crate::LimitKind::Memory, memory_limit)
+                        (crate::LimitKind::Memory, memory_limit, expected_allocated)
                     };
                     assert!(matches!(result, Err(DecodeError::LimitExceeded(
                         crate::LimitExceeded { kind: actual_kind, limit: actual_limit, actual }
-                    )) if actual_kind == kind && actual_limit == limit && actual == expected));
+                    )) if actual_kind == kind && actual_limit == limit && actual == expected_actual));
                 } else {
                     result.unwrap();
                     accepted += 1;
                 }
                 assert_eq!(collector.pages.len(), accepted);
                 assert_eq!(collector.bitmap_bytes, u64::try_from(accepted).unwrap() * 2);
+                assert_eq!(
+                    collector.allocated_bitmap_bytes,
+                    u64::try_from(accepted).unwrap() * reserved
+                );
                 for page in &collector.pages {
                     assert_eq!(page.bitmap.bytes(), &[0, 0x80]);
                 }
@@ -681,6 +711,59 @@ fn borrowed_symbol_memory_counts_only_pointer_capacity() {
         u64::try_from(count * core::mem::size_of::<&Bitmap>()).expect("allocation")
     );
     assert_eq!(peak, retained + allocation);
+}
+
+#[test]
+fn borrowed_symbol_collection_enforces_observed_capacity() {
+    let mut symbols = Vec::new();
+    for number in [10, 20] {
+        symbols.push((
+            number,
+            SymbolResource {
+                exported: vec![Bitmap::blank(9, 1, &Limits::default()).unwrap()],
+                contexts: None,
+            },
+        ));
+    }
+    let segment = symbol_reference_segment(&[10, 20]);
+    let mut probe: Vec<&Bitmap> = Vec::new();
+    probe.try_reserve(2).unwrap();
+    let requested_bytes = u64::try_from(2 * core::mem::size_of::<&Bitmap>()).unwrap();
+    let observed_bytes = u64::try_from(probe.capacity() * core::mem::size_of::<&Bitmap>()).unwrap();
+    let retained = 4096;
+    let requested_peak = retained + requested_bytes;
+    let observed_peak = retained + observed_bytes;
+    for limit in [requested_peak - 1, observed_peak - 1, observed_peak] {
+        let limits = Limits {
+            max_decoder_managed_memory_bytes: limit,
+            ..Limits::default()
+        };
+        match collect_referred_symbols(&segment, &symbols, retained, &limits) {
+            Ok(collected) => {
+                let CollectedSymbols::Borrowed(pointers) = collected else {
+                    panic!("two nonempty resources need borrowed pointers");
+                };
+                let actual =
+                    u64::try_from(pointers.capacity() * core::mem::size_of::<&Bitmap>()).unwrap();
+                assert!(retained + actual <= limit);
+                assert_eq!(pointers.len(), 2);
+            }
+            Err(DecodeError::LimitExceeded(error)) => {
+                assert!(limit < observed_peak);
+                assert_eq!(error.kind, crate::LimitKind::Memory);
+                assert_eq!(error.limit, limit);
+                assert_eq!(
+                    error.actual,
+                    if limit < requested_peak {
+                        requested_peak
+                    } else {
+                        observed_peak
+                    },
+                );
+            }
+            Err(error) => panic!("unexpected borrowed capacity failure: {error:?}"),
+        }
+    }
 }
 
 fn symbol_reference_segment(references: &[u32]) -> ParsedSegment<'static> {
@@ -1804,8 +1887,12 @@ fn owned_document_enforces_cumulative_page_memory() {
     bytes.extend_from_slice(&page_data());
     bytes.extend_from_slice(&segment_header(3, 49, 2, 0));
 
+    let reserved = Bitmap::blank(8, 1, &Limits::default())
+        .unwrap()
+        .allocated_bytes()
+        .unwrap();
     let limits = Limits {
-        max_decoder_managed_memory_bytes: 1,
+        max_decoder_managed_memory_bytes: reserved,
         ..Limits::default()
     };
     let mut emitted = 0;
@@ -1820,9 +1907,9 @@ fn owned_document_enforces_cumulative_page_memory() {
         Decoder::new(limits).decode(&bytes),
         Err(DecodeError::LimitExceeded(crate::LimitExceeded {
             kind: crate::LimitKind::Memory,
-            limit: 1,
-            actual: 2
-        }))
+            limit,
+            actual
+        })) if limit == reserved && actual == reserved * 2
     ));
 }
 

@@ -1,0 +1,55 @@
+UNAPPROVED CAPACITY-FOUNDATION IMPLEMENTATION PROPOSAL
+
+Accepted main baseline: 6b7e08a659975d7a7547242a91765ebb9b8f052d.
+This branch is not accepted main and is not authorized for publication.
+
+Proposed standard boundary
+--------------------------
+The verification-only jbig2_capacity_interface_proposal path dependency adds
+one allocator-generic Vec::capacity interface with no requires/ensures facts
+about returned capacity, vector length, requested reservation or allocator
+usable size. The native decoder has no new dependency and retains
+#![forbid(unsafe_code)] unchanged.
+
+The standard-interface macro generates unsafe verifier glue. It is isolated
+in the proposed verification dependency, not allowed inside the decoder
+crate's unsafe-forbidden scope. That dependency is an additional unapproved
+standard-library trust boundary, even though its return is unconstrained.
+No standard-trust approval, normative approval or release acceptance is
+implied by a successful candidate proof.
+
+Candidate implementation
+------------------------
+- MMR preparation executes the same retained-capacity release, observation
+  and rejection logic in ordinary and proof builds. Saturating conversion
+  matches the old native unwrap_or behavior without an unsupported getter
+  or Result::unwrap_or in the application proof body.
+- Bitmap allocation checks the actual reserved Vec capacity after fallible
+  reservation, not only the requested logical byte length.
+- Borrowed-symbol pointer storage checks requested preflight ordering first
+  and the actual reserved pointer capacity after reservation.
+- Owned collection tracks logical decoded bitmap bytes separately from
+  observed allocated bitmap bytes; existing decoded-byte error priority is
+  retained, while memory checks use the appropriate observed counter.
+- Candidate postconditions include retained/allocated counter bounds and
+  exact requested/peak arithmetic. They do not prove allocator usable size,
+  process RSS, allocation peak, arbitrary callbacks or normative conformance.
+
+Evidence and acceptance
+-----------------------
+Candidate-only logs/reports are under target/capacity-proposal. The inherited
+verification/proof-attestation.json, proof-dispositions.json, traceability
+bindings and conformance attestations remain historical accepted-main records;
+they are intentionally not rehashed or relabeled as accepted proposal evidence.
+
+An exact-source coverage audit under the proposed interface is useful review
+evidence, not approval of the interface. Main's existing exact-source release
+gate remains blocked until a foundation decision and full integration
+acceptance are recorded. No main branch, toolchain pin, approval field,
+repository visibility, publication flag or protected fixture was changed.
+
+Required before integration: explicit standard-boundary approval; complete
+native and semantic controls; fresh exact-source whole/compiled verification;
+updated honest source-bound attestations; all required hosted jobs, coverage,
+native mutations and actual downstream package checks. Human normative/legal
+and asset approvals remain separate.
