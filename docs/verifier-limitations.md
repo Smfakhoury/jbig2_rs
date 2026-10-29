@@ -133,6 +133,16 @@ Its complete timings move the first decoder-default cohort to shard three
 and the last limits-default cohort from shard five to shard four. Both
 preceding profiles remain frozen planning inputs, not acceptance credit.
 
+A fourth complete profile again passed every query but exceeded two shard
+guards. The subsequent partition takes each group's maximum from both
+complete runs using the identical proof harness, rather than relying on one
+run's faster workers. With every value rounded up, whole/collector/shards
+cost 967/1015/1002/1038/1021/1024/1028/1044 seconds; whole also includes the
+observed 208-second setup allowance under its unchanged job cap. Black-span
+joins whole, and an explicit complete shard map prevents a removed group
+from silently shifting round-robin membership. These are conservative
+planning inputs only: fresh complete hosted acceptance remains mandatory.
+
 The existing same-run whole-positive reuse also covers a trait implementation
 only when the complete native inventory has exactly one such qualified name,
 with matching file, lexical scope and trait, verified marking and no divergence.
