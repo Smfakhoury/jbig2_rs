@@ -307,7 +307,7 @@ impl PageCollector {
         }
         let next_allocated_bytes = self
             .allocated_bitmap_bytes
-            .checked_add(page.bitmap.allocated_bytes()?)
+            .checked_add(page.bitmap.allocated_bytes())
             .ok_or(MalformedError::IntegerOverflow)?;
         if next_allocated_bytes > self.memory_limit {
             return Err(crate::LimitExceeded {

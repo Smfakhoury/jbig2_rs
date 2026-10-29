@@ -1137,10 +1137,7 @@ fn prepare_transition_storage(
     let all_transition_bytes = transition_bytes
         .checked_mul(2)
         .ok_or(MmrError::IntegerOverflow)?;
-    let bitmap_bytes = match bitmap.allocated_bytes() {
-        Ok(bytes) => bytes,
-        Err(error) => return Err(MmrError::Bitmap(error)),
-    };
+    let bitmap_bytes = bitmap.allocated_bytes();
     let total = bitmap_bytes
         .checked_add(all_transition_bytes)
         .ok_or(MmrError::IntegerOverflow)?;
@@ -1209,14 +1206,8 @@ fn prepare_transition_storage(
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 fn observed_transition_bytes(scratch: &MmrScratch) -> u64 {
-    let first = match u64::try_from(scratch.transitions.capacity()) {
-        Ok(value) => value,
-        Err(_) => u64::MAX,
-    };
-    let second = match u64::try_from(scratch.row_transitions.capacity()) {
-        Ok(value) => value,
-        Err(_) => u64::MAX,
-    };
+    let first = scratch.transitions.capacity() as u64;
+    let second = scratch.row_transitions.capacity() as u64;
     first.saturating_add(second).saturating_mul(4)
 }
 

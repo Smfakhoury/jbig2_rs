@@ -376,8 +376,7 @@ fn raw_referred_tables_preserve_order_repeats_missing_keys_and_retention() {
 fn raw_page_collector_guards_preserve_order_pixels_and_rejected_totals() {
     let reserved = Bitmap::blank(9, 1, &Limits::default())
         .unwrap()
-        .allocated_bytes()
-        .unwrap();
+        .allocated_bytes();
     for memory_limit in [
         0,
         1,
@@ -403,7 +402,7 @@ fn raw_page_collector_guards_preserve_order_pixels_and_rejected_totals() {
                 bitmap.set_pixel(8, 0, true).unwrap();
                 let expected = collector.bitmap_bytes + 2;
                 let expected_allocated =
-                    collector.allocated_bitmap_bytes + bitmap.allocated_bytes().unwrap();
+                    collector.allocated_bitmap_bytes + bitmap.allocated_bytes();
                 let result = collector.write_page(Page { number, bitmap });
                 if expected > decoded_limit
                     || expected > memory_limit
@@ -457,6 +456,23 @@ fn raw_page_collector_guards_preserve_order_pixels_and_rejected_totals() {
         Err(DecodeError::Malformed(MalformedError::IntegerOverflow))
     ));
     assert_eq!(collector.bitmap_bytes, u64::MAX);
+    assert!(collector.pages.is_empty());
+}
+
+#[test]
+fn owned_page_collector_rejects_allocated_counter_overflow_without_mutation() {
+    let mut collector = PageCollector::new(&Limits::default());
+    collector.allocated_bitmap_bytes = u64::MAX;
+    let result = collector.write_page(Page {
+        number: 1,
+        bitmap: Bitmap::blank(1, 1, &Limits::default()).unwrap(),
+    });
+    assert!(matches!(
+        result,
+        Err(DecodeError::Malformed(MalformedError::IntegerOverflow))
+    ));
+    assert_eq!(collector.allocated_bitmap_bytes, u64::MAX);
+    assert_eq!(collector.bitmap_bytes, 0);
     assert!(collector.pages.is_empty());
 }
 
@@ -1889,8 +1905,7 @@ fn owned_document_enforces_cumulative_page_memory() {
 
     let reserved = Bitmap::blank(8, 1, &Limits::default())
         .unwrap()
-        .allocated_bytes()
-        .unwrap();
+        .allocated_bytes();
     let limits = Limits {
         max_decoder_managed_memory_bytes: reserved,
         ..Limits::default()

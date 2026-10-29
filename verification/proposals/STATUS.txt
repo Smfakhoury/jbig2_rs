@@ -24,6 +24,9 @@ Candidate implementation
   and rejection logic in ordinary and proof builds. Saturating conversion
   matches the old native unwrap_or behavior without an unsupported getter
   or Result::unwrap_or in the application proof body.
+- An explicit compile-time guard requires pointer widths no larger than the
+  u64 resource-accounting domain. On supported 32/64-bit targets, observed
+  usize capacities convert without a fallible error path or truncation.
 - Bitmap allocation checks the actual reserved Vec capacity after fallible
   reservation, not only the requested logical byte length.
 - Borrowed-symbol pointer storage checks requested preflight ordering first
@@ -47,6 +50,13 @@ evidence, not approval of the interface. Main's existing exact-source release
 gate remains blocked until a foundation decision and full integration
 acceptance are recorded. No main branch, toolchain pin, approval field,
 repository visibility, publication flag or protected fixture was changed.
+
+The existing production Cargo-stream extractor deliberately rejects the new
+declaration-only dependency report with zero obligations. It was not weakened.
+Candidate-only analysis selects the unchanged actual application report and
+records the zero-obligation trusted-interface dependency separately. This is
+not production Cargo-stream acceptance; explicit reviewed handling of that
+dependency remains an integration requirement.
 
 Required before integration: explicit standard-boundary approval; complete
 native and semantic controls; fresh exact-source whole/compiled verification;
