@@ -13,7 +13,7 @@ sys.path.insert(0, str(TOOLS))
 
 from run_performance import (
     RSS_SCOPE, RSS_SOURCE, compare_runs, comparison, environment, markdown_report,
-    resolve_base, summarize_rss, validate_measurement, validate_rss,
+    library_name, resolve_base, summarize_rss, validate_measurement, validate_rss,
 )
 from metrics import relative_spread
 
@@ -57,6 +57,26 @@ def rss_runs():
 
 
 class PerformanceReportTests(unittest.TestCase):
+    def test_base_head_linkage_uses_each_actual_library_name_and_cargo_normalization(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for package, library, expected in (
+                ("jbig2_rs", "jbig2_rs", "jbig2_rs"),
+                ("jbig2-decoder", "jbig2_decoder", "jbig2_decoder"),
+                ("jbig2-decoder", None, "jbig2_decoder"),
+            ):
+                contents = f'[package]\nname = "{package}"\n'
+                if library is not None:
+                    contents += f'[lib]\nname = "{library}"\n'
+                (root / "Cargo.toml").write_text(contents)
+                self.assertEqual(library_name(root), expected)
+            for invalid in ("../outside", "invalid-name", "", "2invalid"):
+                (root / "Cargo.toml").write_text(
+                    '[package]\nname = "jbig2-decoder"\n[lib]\nname = ' + repr(invalid) + "\n"
+                )
+                with self.assertRaises(ValueError):
+                    library_name(root)
+
     def test_unavailable_push_baseline_falls_back_to_origin_main(self):
         with patch("run_performance.subprocess.run", side_effect=[
             subprocess.CompletedProcess([], 128, "", "unknown revision"),

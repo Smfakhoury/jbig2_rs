@@ -1,5 +1,5 @@
 [package]
-name = "jbig2_rs-fuzz"
+name = "jbig2-decoder-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2021"
@@ -9,7 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-jbig2_rs = { path = ".." }
+jbig2-decoder = { path = ".." }
 
 [[bin]]
 name = "file_header_arbitrary"

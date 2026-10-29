@@ -1,6 +1,6 @@
 //! Generated clause-specific header and document-count checks for T.88 5.4.2 and D.4.
 
-use jbig2_rs::{inspect_file_header, DecodeError, Decoder, MalformedError, Organization};
+use jbig2_decoder::{inspect_file_header, DecodeError, Decoder, MalformedError, Organization};
 
 const SIGNATURE: [u8; 8] = [0x97, 0x4a, 0x42, 0x32, 0x0d, 0x0a, 0x1a, 0x0a];
 
@@ -267,7 +267,7 @@ fn colour_header_is_not_accepted_as_document_metadata() {
                 assert!(matches!(
                     result,
                     Err(DecodeError::Unsupported(
-                        jbig2_rs::UnsupportedFeature::Colour
+                        jbig2_decoder::UnsupportedFeature::Colour
                     ))
                 ));
             }

@@ -1,6 +1,6 @@
 use std::io::Cursor;
 
-use jbig2_rs::{DecodeError, Decoder, Limits, Page};
+use jbig2_decoder::{DecodeError, Decoder, Limits, Page};
 
 fn segment(number: u32, kind: u8, page: u8, payload: &[u8], output: &mut Vec<u8>) {
     output.extend_from_slice(&number.to_be_bytes());

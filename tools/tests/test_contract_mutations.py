@@ -24,7 +24,7 @@ class ContractMutationTests(unittest.TestCase):
             executable.parent.mkdir()
             executable.write_bytes(b"test executable")
             for target, kind, name in [
-                ("lib", ["lib"], "jbig2_rs"),
+                ("lib", ["lib"], "jbig2_decoder"),
                 ("public_api", ["test"], "public_api"),
             ]:
                 artifact = {
@@ -54,7 +54,7 @@ class ContractMutationTests(unittest.TestCase):
             executable.write_bytes(b"test executable")
             artifact = {
                 "reason": "compiler-artifact",
-                "target": {"kind": ["lib"], "name": "jbig2_rs"},
+                "target": {"kind": ["lib"], "name": "jbig2_decoder"},
                 "profile": {"test": True},
                 "executable": str(executable),
             }

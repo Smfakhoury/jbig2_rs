@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "schema_version": 1,
-  "project": "jbig2_rs",
+  "project": "jbig2-decoder",
   "milestone": "phase-1-decoder",
   "approval": {
     "status": "approved_with_delegated_limit_defaults",

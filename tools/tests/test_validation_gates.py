@@ -155,13 +155,13 @@ class PackageAuditTests(unittest.TestCase):
         self.assertEqual(package.audit(sorted(package.REQUIRED)), [])
 
     def test_archive_root(self):
-        paths = [f"jbig2_rs-0.0.1/{path}" for path in sorted(package.REQUIRED)]
+        paths = [f"jbig2-decoder-0.0.1/{path}" for path in sorted(package.REQUIRED)]
         self.assertEqual(package.audit(paths), [])
 
     def test_windows_cargo_paths(self):
         paths = [path.replace("/", "\\") for path in sorted(package.REQUIRED)]
         self.assertEqual(package.audit(paths), [])
-        prefixed = [f"jbig2_rs-0.0.1\\{path}" for path in paths]
+        prefixed = [f"jbig2-decoder-0.0.1\\{path}" for path in paths]
         self.assertEqual(package.audit(prefixed), [])
         self.assertTrue(package.audit(paths + ["src/lib.rs"]))
 
@@ -182,9 +182,9 @@ class PackageAuditTests(unittest.TestCase):
 
     def test_reject_duplicates_and_mixed_roots(self):
         self.assertTrue(package.audit(sorted(package.REQUIRED) + ["src/lib.rs"]))
-        self.assertTrue(package.audit(sorted(package.REQUIRED) + ["jbig2_rs-0.0.1/LICENSE"]))
+        self.assertTrue(package.audit(sorted(package.REQUIRED) + ["jbig2-decoder-0.0.1/LICENSE"]))
         self.assertTrue(package.audit([
-            "jbig2_rs-0.0.1/src/lib.rs", "jbig2_rs-0.0.2/Cargo.toml",
+            "jbig2-decoder-0.0.1/src/lib.rs", "jbig2-decoder-0.0.2/Cargo.toml",
         ]))
 
     def test_cli_exit_status(self):

@@ -13,5 +13,5 @@ fuzz_target!(|input: (u8, Option<u32>, Vec<u8>)| {
         bytes.extend_from_slice(&count.to_be_bytes());
     }
     bytes.extend_from_slice(&trailing);
-    let _ = jbig2_rs::inspect_file_header(&bytes);
+    let _ = jbig2_decoder::inspect_file_header(&bytes);
 });

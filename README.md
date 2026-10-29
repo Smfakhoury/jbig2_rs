@@ -1,6 +1,6 @@
-# jbig2_rs
+# jbig2-decoder
 
-`jbig2_rs` is a strict, dependency-free Rust JBIG2 decoder under active
+`jbig2-decoder` is a strict, dependency-free Rust JBIG2 decoder under active
 development. **It is not yet suitable for untrusted production documents.**
 The repository remains private; the crate is unpublished, version `0.0.1`,
 with `publish = false`.
@@ -35,6 +35,15 @@ I/O failure have distinct typed errors.
 
 ### Decode a document
 
+The Cargo package is `jbig2-decoder`; its Rust import is `jbig2_decoder`.
+The repository is still named `microsoft/jbig2_rs`. While unpublished, use a
+local checkout dependency:
+
+```toml
+[dependencies]
+jbig2-decoder = { path = "/path/to/checkout" }
+```
+
 The public API is ordinary Rust; consumers do not need Verus. This crate is
 still unpublished, so use a checkout or local path dependency while evaluating
 it. The example uses a reader so the decoder applies its input limit while
@@ -42,7 +51,7 @@ reading, rather than asking the caller to allocate an unbounded input first.
 
 ```rust,no_run
 use std::fs::File;
-use jbig2_rs::{Decoder, Limits};
+use jbig2_decoder::{Decoder, Limits};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let decoder = Decoder::new(Limits::default());
@@ -159,6 +168,11 @@ This verifies and builds the production library. **Python is not required for
 this command.** The isolated manifest targets the same `src/lib.rs` as ordinary
 Cargo; its pinned `vstd` dependency is separate from the dependency-free runtime.
 Bare `cargo verus verify` against the runtime manifest is not an acceptance gate.
+
+The internal proof package/library retain the legacy
+`jbig2_rs_verification` / `jbig2_rs_production` identities so existing qualified
+proof records remain comparable. They are not published package names or a
+second decoder; both manifests still target the same runtime source.
 
 ### Interpret the result
 

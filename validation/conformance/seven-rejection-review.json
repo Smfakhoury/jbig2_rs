@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "Live source/test/tool refresh for direct proofs of twenty project-owned From error wrappers and stronger halftone project error policy. All 659 native function bodies, existing capacity behavior and mathematical model/proof files remain unchanged; scalar error-oracle tests are added. Historical bf3d525 official execution revisions, decoder/asset hashes, source selections, diagnostic origins, seven pending classifications and all permission/approval fields remain unchanged. No protected documents, official vectors or oracles were accessed or rerun, and no new conformance result, rejection credit, normative approval or release permission exists.",
+  "metadata_only_update": "Live source/test/tool identity refresh for the public Cargo/runtime import rename to jbig2-decoder/jbig2_decoder. Native algorithms, all 659 function bodies, existing proof namespace/contracts and capacity behavior remain unchanged. Historical bf3d525 official execution revisions, decoder/asset names and binary hashes, source selections, diagnostics, seven pending classifications and permission/approval fields remain unchanged. No protected documents or official inputs were accessed, no official-vector oracle execution was rerun, and the crate rename does not relabel execution results or create conformance/rejection credit, normative approval or publication permission.",
   "recorded_at": "2026-10-25T20:20:57.607829+00:00",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
@@ -55,7 +55,7 @@
     "src/halftone.rs": "006e5a831d3f09a8b3be41782424261a52bf375544befd7e45c522d0ab00ba36",
     "src/huffman/tests.rs": "f381ff3140134f282547de09735f18a47a3802bfa19aa10fd8c69d7025d7f36e",
     "src/huffman.rs": "7d2e7ce370edd68b45e7fdf009687e4793e9db57777d4392e6c0eb024134a7ed",
-    "src/lib.rs": "351b3bbb606a834a9db224fe84f8329920bd5be34b0890e03b51e65f6cf0166c",
+    "src/lib.rs": "ba30d35302ac584d8b5a569e331a3e744a48f2e58ac2a0a576eae629b599e164",
     "src/limits.rs": "13b7882d86b018d4e635786a4f3a56d4d082c056c00336f0e2025f6f5b70e516",
     "src/mmr/tests.rs": "c58cff417d07b40f19235130e3b879d3008d8f55e4f13785c593b49c3bf85498",
     "src/mmr.rs": "bbc2fe89da27c9855708a41406665e0096d749a309093c52cba463cf5640c959",
@@ -111,7 +111,7 @@
   "validation_files_sha256": {
     "validation/conformance/run_itu.py": "a5a29e1f004ea1dacaee963478b363c6cadf23b8b38460abceb64226eb188e89",
     "validation/differential/run_oracles.py": "0ddc98d3d9a443b9a3b0ee1241916d7096fab90198a27e08a55caa5f9b373c8c",
-    "tools/tests/test_validation_gates.py": "a69271c3cfea29f2ebf8521048d9865d333aa8f1a8df724ecfe47c589907a42e",
+    "tools/tests/test_validation_gates.py": "d71fa195ffd93161e33835a531fa3cdd78a231ed190ca70f11c007e08f748e3a",
     "tools/tests/test_proof_audits.py": "854c2aa22f3d99d0203baab77c8988d5571c665dbdea1fd9f54899b3fca44755",
     "tools/evidence.schema.json": "0437f5c06fc86d36bfa86279c3c9f7c0105bc6b52b303549aa811ad0991b2098",
     "tools/evidence.py": "874876ec5d9c413881011157c7c1b671ecd89c4a121632cab8f20c292ec1fd08",

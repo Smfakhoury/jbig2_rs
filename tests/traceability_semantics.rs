@@ -1,6 +1,6 @@
 //! Generated page/resource examples for provisional P04 records, not official vectors.
 
-use jbig2_rs::{DecodeError, Decoder, MalformedError, UnsupportedFeature};
+use jbig2_decoder::{DecodeError, Decoder, MalformedError, UnsupportedFeature};
 
 fn header(number: u32, kind: u8, page: u8, length: u32) -> Vec<u8> {
     let mut bytes = number.to_be_bytes().to_vec();

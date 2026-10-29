@@ -4,7 +4,7 @@
 mod codec_scenarios;
 
 use codec_scenarios::{exercise, limits, Fixture, FAULTS, LIMITS, OPERATIONS, SHAPE_BYTES};
-use jbig2_rs::Decoder;
+use jbig2_decoder::Decoder;
 
 #[test]
 fn halftone_family_matches_literal_pixels_errors_limits_and_boundaries() {
@@ -120,7 +120,7 @@ fn check_shapes_and_truncations(family: u8) {
                 for end in 0..valid.len() {
                     match context.decode(&valid[..end]) {
                         Ok(document) => fixture.check(&document),
-                        Err(jbig2_rs::DecodeError::Malformed(_)) => {}
+                        Err(jbig2_decoder::DecodeError::Malformed(_)) => {}
                         outcome => panic!("unexpected prefix outcome: {outcome:?}"),
                     }
                 }

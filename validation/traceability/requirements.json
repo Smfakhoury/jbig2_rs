@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "89c4f459c65b92b49e547f6477fd6aa11a221c54aa0383fe6d52f8393035fa06",
+    "project_source_sha256": "9a119bf1d1b376139fe9537a48fe8623d313be16f262f719d7f728be70c6f74b",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1753,7 +1753,7 @@
     "src/halftone/tests.rs": "924a396899694321674460d8deb8144ac291038c8befadb98501dc5cf4caecb8",
     "src/huffman.rs": "7d2e7ce370edd68b45e7fdf009687e4793e9db57777d4392e6c0eb024134a7ed",
     "src/huffman/tests.rs": "f381ff3140134f282547de09735f18a47a3802bfa19aa10fd8c69d7025d7f36e",
-    "src/lib.rs": "351b3bbb606a834a9db224fe84f8329920bd5be34b0890e03b51e65f6cf0166c",
+    "src/lib.rs": "ba30d35302ac584d8b5a569e331a3e744a48f2e58ac2a0a576eae629b599e164",
     "src/mmr.rs": "bbc2fe89da27c9855708a41406665e0096d749a309093c52cba463cf5640c959",
     "src/mmr/tests.rs": "c58cff417d07b40f19235130e3b879d3008d8f55e4f13785c593b49c3bf85498",
     "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
@@ -1770,10 +1770,10 @@
     "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
     "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
     "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27",
-    "tests/catalog_contracts.rs": "92bfc8ee2d1b2ba66a6867767fb07d8e0e1bd66d7a56607e3df45ab696afafb4",
-    "tests/spec_header.rs": "d7713a63bedcba608bba7b0919e0f6ee554299043d7ebb78cc6288c0bdd22616",
-    "tests/traceability_organization.rs": "a2d27269d2a9dfda87e01e89d609c9d5b069c16a5db27db25be1922d002e4652",
-    "tests/traceability_semantics.rs": "3a04feba62b0f7da748b00ed03df1b7a8e516e568809effa23f38c3abd096c6d"
+    "tests/catalog_contracts.rs": "d4eb4fd3d554494fcd99fa58def0eaa542fca7f97ff32c2083cfa0d3e1545da2",
+    "tests/spec_header.rs": "6c8d30477d3be9080827bf0eab191739ab4fe844fe856c60020eb53a50cbcdda",
+    "tests/traceability_organization.rs": "967cd92362829cc4258db0ab7300a8f28b53055dbd61489c3c3262ee6d539b5f",
+    "tests/traceability_semantics.rs": "e7189d9cb70fa9b021b221f02942d90e64e9f96f9d38040edf4fa8599dfaa5f9"
   },
   "definitions": {
     "mmr-mode-table-entry": {

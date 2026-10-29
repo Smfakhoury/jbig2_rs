@@ -14,7 +14,7 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from audit_package import REQUIRED
+from audit_package import REQUIRED, audit
 from check_distribution import (
     check_package_metadata, check_unsafe_policy, extract_archive, isolated_environment,
     require_rejected_check,
@@ -27,7 +27,7 @@ class DistributionTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.directory = Path(self.temporary.name)
         self.archive = self.directory / "package.crate"
-        self.package_root = "jbig2_rs-0.0.1"
+        self.package_root = "jbig2-decoder-0.0.1"
 
     def write_archive(self, paths=None, extra=None):
         paths = paths if paths is not None else sorted(REQUIRED)
@@ -49,6 +49,10 @@ class DistributionTests(unittest.TestCase):
             self.assertEqual(
                 (output / self.package_root / path).read_bytes(), b"generated archive fixture",
             )
+
+    def test_old_package_root_is_not_accepted_as_the_requested_public_crate(self):
+        self.assertTrue(audit([f"jbig2_rs-0.0.1/{path}" for path in sorted(REQUIRED)]))
+        self.assertFalse(audit([f"jbig2-decoder-0.0.1/{path}" for path in sorted(REQUIRED)]))
 
     def test_rejects_missing_license_and_proof_assets(self):
         for paths in (
@@ -107,15 +111,19 @@ class DistributionTests(unittest.TestCase):
     def test_metadata_rejects_proof_dependencies_or_features(self):
         extracted = self.directory / self.package_root
         metadata = {"packages": [{
-            "name": "jbig2_rs", "license": "MIT", "rust_version": "1.89.0",
+            "name": "jbig2-decoder", "license": "MIT", "rust_version": "1.89.0",
             "dependencies": [], "features": {}, "publish": [],
             "manifest_path": str(extracted / "Cargo.toml"),
+            "targets": [{"kind": ["lib"], "name": "jbig2_decoder"}],
         }]}
         check_package_metadata(metadata, extracted, "1.89.0")
         for change in (
             {"dependencies": [{"name": "vstd"}]}, {"features": {"verus": []}},
             {"license": None}, {"rust_version": "1.88.0"}, {"publish": None},
             {"manifest_path": str(self.directory / "checkout" / "Cargo.toml")},
+            {"name": "jbig2_rs"}, {"targets": None},
+            {"targets": [{"kind": ["lib"], "name": "jbig2_rs"}]},
+            {"targets": []},
         ):
             broken = copy.deepcopy(metadata)
             broken["packages"][0].update(change)

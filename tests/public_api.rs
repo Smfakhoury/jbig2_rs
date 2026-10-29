@@ -3,7 +3,7 @@
 use std::cell::Cell;
 use std::io::{self, Cursor, Read};
 
-use jbig2_rs::{DecodeError, Decoder, IoErrorKind, LimitKind, Limits, MalformedError, Page};
+use jbig2_decoder::{DecodeError, Decoder, IoErrorKind, LimitKind, Limits, MalformedError, Page};
 
 #[path = "../tools/distribution_consumer.rs"]
 mod distribution_consumer;

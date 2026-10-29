@@ -1,6 +1,6 @@
 //! Generated organization examples for the provisional P04 evidence ledger.
 
-use jbig2_rs::{DecodeError, Decoder, MalformedError};
+use jbig2_decoder::{DecodeError, Decoder, MalformedError};
 
 fn segment_header(number: u32, kind: u8, page: u8, length: u32) -> Vec<u8> {
     let mut bytes = number.to_be_bytes().to_vec();

@@ -1,6 +1,6 @@
 //! Exact public-API regressions for negative and metamorphic catalog claims.
 
-use jbig2_rs::{DecodeError, Decoder, MalformedError};
+use jbig2_decoder::{DecodeError, Decoder, MalformedError};
 
 #[allow(dead_code)]
 #[path = "../tools/distribution_consumer.rs"]

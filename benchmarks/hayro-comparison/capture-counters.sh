@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-engine="${1:-jbig2_rs}"
+engine="${1:-jbig2-decoder}"
 width="${2:-2048}"
 height="${3:-2048}"
 iterations="${4:-100}"

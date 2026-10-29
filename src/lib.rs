@@ -14,7 +14,7 @@
 //!
 //! ```no_run
 //! use std::fs::File;
-//! use jbig2_rs::{Decoder, Limits};
+//! use jbig2_decoder::{Decoder, Limits};
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let decoder = Decoder::new(Limits::default());
