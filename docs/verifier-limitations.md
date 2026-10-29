@@ -156,7 +156,7 @@ corresponding success/error requirement on the concrete sink wrapper; the
 constructor and helper contracts remain intact. Evidence binds the exact
 file, lexical scope and `PageSink` implementation with a bound pristine proof,
 zero verified bodies/one error for each mutant and one body for each control.
-The complete group runs in existing shard one without moving previous cases.
+The complete group runs in existing shard three without moving previous cases.
 
 This says nothing about arbitrary caller-provided sinks, exact error-variant
 priority, actual reserved capacity or allocator/RSS bounds. In particular,

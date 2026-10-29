@@ -363,7 +363,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(
                 tuple(row for row in actual[index] if row[0] != "collector-sink"), previous[index],
             )
-        self.assertEqual([row[0] for row in actual[1]].count("collector-sink"), 1)
+        self.assertEqual([row[0] for row in actual[3]].count("collector-sink"), 1)
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *actual]
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 49)

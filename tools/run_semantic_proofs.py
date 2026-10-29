@@ -27,7 +27,7 @@ ADDED_SHARD_GROUPS = {
     "default-limits-4": 1, "default-limits-5": 1,
     "default-decoder-2": 2, "default-decoder-3": 2,
     "default-decoder-4": 4, "default-decoder-5": 5,
-    "collector-sink": 1,
+    "collector-sink": 3,
 }
 REBALANCED_SHARD_GROUPS = {
     "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
