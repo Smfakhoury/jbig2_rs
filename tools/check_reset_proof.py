@@ -9,8 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from check_distribution import run
-from proof_sensitivity import positive_baseline, proof_workspace, selected_proof as verify_selected
+from proof_sensitivity import compile_native_mutant, positive_baseline, proof_workspace, selected_proof as verify_selected
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,8 +60,7 @@ def check_reset_proof(executable: Path) -> dict:
         for state_index, mps in ((1, 0), (0, 1)):
             source = mutated_reset(original, state_index, mps)
             path.write_text(source, encoding="utf-8")
-            run(["cargo", f"+{rust}", "check", "--offline", "--locked", "--lib"],
-                directory, environment, capture=True)
+            compile_native_mutant(directory, environment, rust)
             rejected = selected_proof(executable, directory, environment, expect_failure=True)
             path.write_text(validity_only_contract(source), encoding="utf-8")
             control = selected_proof(executable, directory, environment, expect_failure=False)

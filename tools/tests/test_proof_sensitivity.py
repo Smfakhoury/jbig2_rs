@@ -5,18 +5,38 @@ import tempfile
 import unittest
 from contextlib import contextmanager
 from pathlib import Path
-from subprocess import CompletedProcess
+from subprocess import CalledProcessError, CompletedProcess
 from unittest.mock import patch
 
 
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from proof_sensitivity import check_semantic_cases, positive_baseline, selected_proof, weakened_contract
+from proof_sensitivity import compile_native_mutant, check_semantic_cases, positive_baseline, selected_proof, weakened_contract
 from source_group import whole_binds_unique_implementation
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_native_cache_is_workspace_local_and_does_not_change_the_proof_environment(self):
+        environment = {"CARGO_INCREMENTAL": "0", "CARGO_TARGET_DIR": "/unrelated", "PATH": "/tools"}
+        original = dict(environment)
+        directory = Path("/isolated")
+        with patch("proof_sensitivity.run", return_value="checked") as native:
+            self.assertEqual(compile_native_mutant(directory, environment, "pinned"), "checked")
+        command, checkout, native_environment = native.call_args.args
+        self.assertEqual(command, ["cargo", "+pinned", "check", "--offline", "--locked", "--lib"])
+        self.assertEqual(checkout, directory)
+        self.assertEqual(native_environment["CARGO_TARGET_DIR"], str(directory / "target"))
+        self.assertEqual(native_environment["CARGO_INCREMENTAL"], "1")
+        self.assertEqual(environment, original)
+        self.assertTrue(native.call_args.kwargs["capture"])
+
+    def test_native_compile_errors_are_not_hidden_by_incremental_reuse(self):
+        error = CalledProcessError(101, ["cargo", "check"])
+        with patch("proof_sensitivity.run", side_effect=error):
+            with self.assertRaises(CalledProcessError):
+                compile_native_mutant(Path("/isolated"), {}, "pinned")
+
     def test_whole_trait_binding_requires_one_exact_verified_nondivergent_declaration(self):
         case = {
             "module": "value", "function": "Value::default", "file": "src/value.rs",
