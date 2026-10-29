@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "Live source/test/tool refresh for direct public default-policy proofs. All 659 native bodies, capacity behavior and mathematical models/proofs are unchanged; a scalar public-API default-policy test is added. Historical bf3d525 official execution revisions, decoder/asset hashes, source selections, diagnostic origins, seven pending classifications and all permission/approval fields remain unchanged. No protected documents or official inputs were processed and no official-vector oracle execution was rerun. No new conformance credit, normative approval or release permission.",
+  "metadata_only_update": "Live source/tool binding refresh for the directly proved owned collector sink. All 659 executing bodies and observed-capacity behavior are unchanged. The existing bitmap-counter/append/error contract is factored into a project-result predicate with a checked definition bridge, not a normative translation. Historical bf3d525 official execution revisions, decoder/asset hashes, source selections, diagnostics, seven pending classifications and all permission/approval fields remain unchanged. No protected standards or official inputs were processed and no official-vector oracle execution was rerun. No new conformance credit, normative approval or release permission.",
   "recorded_at": "2026-10-25T20:20:57.607829+00:00",
   "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "checkout_policy_sha256": "6372065150a93b9028bf00d296a15dd8e3cafab583b46ccedd53332bbeb5cb34",
@@ -25,7 +25,7 @@
     "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
     "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",
     "src/decode/tests.rs": "4e5b0d88e93b50e5b6bc4884e34f91b76a41fd5f2dfcb92111f6638b80825552",
-    "src/decode.rs": "82fef2e311d659c4ee5271056b092827f5ed6a046a5f52f1ff28e8a1746e4aea",
+    "src/decode.rs": "b755b3246df2e1fa77fe5ac68453091fbe620283dfed32de809163bacdf79d32",
     "src/document/input.rs": "f0ceeff7566058b8ad1f83709b32cfa513b0de506020fdc2e5dd24c63ef9f860",
     "src/document/pages.rs": "f11a042b00dfab74c94454999b7d3c9ba575ff3c77b8fafd54ec692b7c4649a0",
     "src/document/parsing.rs": "ce5a558c99b64b8d3ec7af95a35bd8c563ddcf09f65c760a7cb31eaebc93aa54",

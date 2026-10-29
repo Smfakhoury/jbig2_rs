@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "b9cae5441cd58a829ff6e27fae37073a3a059bb81726d9cdc77982b6572c4bd7",
+    "project_source_sha256": "99d910c0bac4ab5815bd6a2205869931f884a05fd5063a08c7035e0839a2448f",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1720,7 +1720,7 @@
     "proofs/spec_properties/readers.rs": "01efdc55fd62e5bc34b97275a23d6b683af934d6739a7e284f08f991af883fd3",
     "specs/arithmetic.rs": "6ca6ba7feba16d866d06e8704ff4ee609153e10e1097514a12b0947b4868eea5",
     "specs/bitmap.rs": "9d4da6608d7ee55fdf0ab7d8d47f6105e75e656c1f31589610d47a67a61218cf",
-    "specs/decode.rs": "ab6fe9a6db39686699b54c70c9008659bf9119da6f31982de143a40dd1f4266f",
+    "specs/decode.rs": "f51317ee90021629d5b1396ad7a56830ae5a6f326ff7e291a3caff90d239d61e",
     "specs/document.rs": "d43cce6057c5297741909e7574665548117cfe2c74f36ea9639966748ee6f97a",
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
     "specs/generic_region.rs": "61f8a7afbfc236f462c592a0b3be830ad286f2838c01cde9cc24f275b82bd115",
@@ -1738,7 +1738,7 @@
     "src/bitmap/operators.rs": "ca7c9f926f1c71d74bfc938798dfdf8ab22c53fee7e1843ca6def5d3bd86729d",
     "src/bitmap/storage.rs": "79cc6fae082551302ca8498d48d6be48f692c44460c6bf84104d3368798ab2d9",
     "src/bitmap/tests.rs": "56531c5e069e258cfef00309813661c46a64c8840410befbbd98d9cb7aae3f1e",
-    "src/decode.rs": "82fef2e311d659c4ee5271056b092827f5ed6a046a5f52f1ff28e8a1746e4aea",
+    "src/decode.rs": "b755b3246df2e1fa77fe5ac68453091fbe620283dfed32de809163bacdf79d32",
     "src/decode/dispatch.rs": "3f5776dcc0d85b78c0696508b0fa0bb23f062362ef38bf4aaeb526265652e7b0",
     "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
     "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",

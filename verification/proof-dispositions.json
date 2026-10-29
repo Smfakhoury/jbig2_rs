@@ -12,14 +12,14 @@
     {
       "id": "decode::PageSink::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "82fef2e311d659c4ee5271056b092827f5ed6a046a5f52f1ff28e8a1746e4aea",
+      "file_sha256": "b755b3246df2e1fa77fe5ac68453091fbe620283dfed32de809163bacdf79d32",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
       "id": "decode::F::write_page",
       "file": "src/decode.rs",
-      "file_sha256": "82fef2e311d659c4ee5271056b092827f5ed6a046a5f52f1ff28e8a1746e4aea",
+      "file_sha256": "b755b3246df2e1fa77fe5ac68453091fbe620283dfed32de809163bacdf79d32",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
@@ -45,16 +45,9 @@
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
     {
-      "id": "decode::PageCollector::write_page",
-      "file": "src/decode.rs",
-      "file_sha256": "82fef2e311d659c4ee5271056b092827f5ed6a046a5f52f1ff28e8a1746e4aea",
-      "status": "audited-forwarder",
-      "reason": "One-line standard trait wrapper around an already verified typed constructor or conversion; body hash changes invalidate this audit."
-    },
-    {
       "id": "decode::write_page_to_sink",
       "file": "src/decode.rs",
-      "file_sha256": "82fef2e311d659c4ee5271056b092827f5ed6a046a5f52f1ff28e8a1746e4aea",
+      "file_sha256": "b755b3246df2e1fa77fe5ac68453091fbe620283dfed32de809163bacdf79d32",
       "status": "reviewed-verifier-limitation",
       "reason": "Pinned Verus lacks fallible allocation, trait callback, page-sink, and composed resource-lifetime specifications required by remaining orchestration paths."
     },
