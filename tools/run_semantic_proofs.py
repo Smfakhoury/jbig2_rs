@@ -18,15 +18,9 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
-CI_SHARDS = 6
-WHOLE_GROUPS = (
-    "arithmetic-codec", "value-bridge", "error-conversion",
-    "default-limits-1", "default-limits-4", "default-limits-5",
-)
-COLLECTOR_GROUPS = (
-    "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
-    "default-limits-2", "default-limits-3",
-)
+CI_SHARDS = 8
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
@@ -40,20 +34,22 @@ REBALANCED_SHARD_GROUPS = {
     "mmr-run": 3, "bitmap-chunk": 4,
 }
 DEFAULT_SHARD_REBALANCE = {
-    "mmr-reference": 0, "arithmetic-refill": 0, "symbol-cardinality": 0,
-    "error-wrappers-basic": 0, "operator-bit": 0,
-    "default-decoder-3": 0, "default-decoder-4": 0,
-    "document-layout": 1, "arithmetic-normalization": 1,
-    "arithmetic-integer": 1, "bitmap-chunk": 1, "black-span": 1, "reset": 1,
-    "region-dispatch": 2, "reader-error": 2, "mmr-horizontal": 2,
-    "iaid-state": 2, "default-decoder-2": 2,
-    "bitmap-compose": 2, "default-decoder-5": 2,
-    "huffman-assignment": 3, "text-batch": 3, "arithmetic-initialization": 3,
-    "default-decoder-1": 3, "mmr-prefix": 3, "mmr-run": 3, "page-public": 3,
-    "integer-state": 4, "bitmap-copy": 4,
-    "error-wrappers-symbol": 4, "segment-data": 4, "page-finish": 4,
-    "segment-header": 5, "mmr-span": 5,
-    "halftone-header": 5, "page-state": 5,
+    "mmr-reference": 0, "error-wrappers-regions": 0, "arithmetic-normalization": 0,
+    "region-dispatch": 0, "default-decoder-5": 0,
+    "document-layout": 1, "mmr-span": 1, "iaid-state": 1,
+    "bitmap-chunk": 1, "default-limits-2": 1,
+    "page-state": 2, "bitmap-copy": 2, "black-span": 2, "operator-bit": 2,
+    "default-decoder-2": 2, "default-limits-5": 2,
+    "integer-state": 3, "page-public": 3, "page-finish": 3,
+    "arithmetic-initialization": 3, "default-decoder-1": 3,
+    "symbol-cardinality": 4, "halftone-header": 4, "bitmap-compose": 4,
+    "arithmetic-refill": 4, "retention": 4,
+    "text-batch": 5, "reader-error": 5, "error-wrappers-symbol": 5,
+    "mmr-run": 5, "default-limits-3": 5,
+    "segment-data": 6, "error-conversion": 6, "error-wrappers-basic": 6,
+    "huffman-assignment": 6, "default-decoder-4": 6, "default-limits-4": 6,
+    "segment-header": 7, "arithmetic-integer": 7, "mmr-horizontal": 7,
+    "mmr-prefix": 7, "default-decoder-3": 7, "default-limits-1": 7,
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
@@ -157,7 +153,7 @@ def configured_shards():
         if check[0] not in (*WHOLE_GROUPS, *COLLECTOR_GROUPS)
     )
     count = min(CI_SHARDS, len(checks))
-    # Append new cohorts without changing prior round-robin memberships.
+    # Keep legacy ordering deterministic before applying the explicit current profile.
     previous = tuple(check for check in checks if check[0] not in ADDED_SHARD_GROUPS)
     shards = [list(previous[index::count]) for index in range(count)]
     for check in checks:

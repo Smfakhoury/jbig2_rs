@@ -17,6 +17,34 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
+CURRENT_TOPOLOGY = {
+    "CI_SHARDS": runner.CI_SHARDS,
+    "WHOLE_GROUPS": runner.WHOLE_GROUPS,
+    "COLLECTOR_GROUPS": runner.COLLECTOR_GROUPS,
+    "DEFAULT_SHARD_REBALANCE": runner.DEFAULT_SHARD_REBALANCE,
+}
+SIX_SHARD_WHOLE_GROUPS = (
+    "arithmetic-codec", "value-bridge", "error-conversion",
+    "default-limits-1", "default-limits-4", "default-limits-5",
+)
+SIX_SHARD_COLLECTOR_GROUPS = (
+    "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
+    "default-limits-2", "default-limits-3",
+)
+SIX_SHARD_MOVES = {
+    "mmr-reference": 0, "arithmetic-refill": 0, "symbol-cardinality": 0,
+    "error-wrappers-basic": 0, "operator-bit": 0,
+    "default-decoder-3": 0, "default-decoder-4": 0,
+    "document-layout": 1, "arithmetic-normalization": 1, "arithmetic-integer": 1,
+    "bitmap-chunk": 1, "black-span": 1, "reset": 1,
+    "region-dispatch": 2, "reader-error": 2, "mmr-horizontal": 2, "iaid-state": 2,
+    "default-decoder-2": 2, "bitmap-compose": 2, "default-decoder-5": 2,
+    "huffman-assignment": 3, "text-batch": 3, "arithmetic-initialization": 3,
+    "default-decoder-1": 3, "mmr-prefix": 3, "mmr-run": 3, "page-public": 3,
+    "integer-state": 4, "bitmap-copy": 4, "error-wrappers-symbol": 4,
+    "segment-data": 4, "page-finish": 4,
+    "segment-header": 5, "mmr-span": 5, "halftone-header": 5, "page-state": 5,
+}
 PRE_DEFAULT_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("default-"))
 PRE_WRAPPER_CHECKS = tuple(row for row in PRE_DEFAULT_CHECKS if not row[0].startswith("error-wrappers-"))
 PRE_CONVERSION_CHECKS = tuple(row for row in PRE_WRAPPER_CHECKS if row[0] != "error-conversion")
@@ -43,7 +71,7 @@ PRE_NATIVE_LOAD_COLLECTOR_GROUPS = (
     "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
 )
 PRE_NATIVE_LOAD_SHARD_MOVES = {
-    **runner.DEFAULT_SHARD_REBALANCE, "default-limits-2": 5,
+    **SIX_SHARD_MOVES, "default-limits-2": 5,
     "default-limits-3": 1, "default-decoder-3": 2, "default-decoder-4": 4,
 }
 
@@ -97,6 +125,12 @@ def evidence():
 
 class SemanticOrchestrationTests(unittest.TestCase):
     def setUp(self):
+        legacy = patch.multiple(
+            runner, CI_SHARDS=6, WHOLE_GROUPS=SIX_SHARD_WHOLE_GROUPS,
+            COLLECTOR_GROUPS=SIX_SHARD_COLLECTOR_GROUPS, DEFAULT_SHARD_REBALANCE=SIX_SHARD_MOVES,
+        )
+        legacy.start()
+        self.addCleanup(legacy.stop)
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
@@ -126,6 +160,46 @@ class SemanticOrchestrationTests(unittest.TestCase):
         })
         self.environment.start()
         self.addCleanup(self.environment.stop)
+
+    def test_eight_shard_profile_preserves_all_queries_and_bounded_concurrency(self):
+        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+            shards = runner.configured_shards()
+            whole = runner.configured_whole_checks()
+            collector = runner.configured_collector_checks()
+            self.assertEqual(len(shards), 8)
+            self.assertEqual([row[0] for row in whole], ["arithmetic-codec", "value-bridge"])
+            self.assertEqual(
+                [row[0] for row in collector], ["arithmetic-decision", "document-count", "reset"],
+            )
+            assigned = [row for role in (whole, collector, *shards) for row in role]
+            self.assertEqual(len(assigned), 48)
+            self.assertEqual(len({row[0] for row in assigned}), 48)
+            self.assertEqual(sum(row[2] for row in assigned), 327)
+            self.assertEqual(set(assigned), set(runner.configured_checks()))
+            costs = {
+                "arithmetic-decision": 355, "document-count": 298, "retention": 71,
+                "error-wrappers-regions": 198, "default-decoder-4": 73,
+                "integer-state": 259, "bitmap-copy": 201, "error-wrappers-symbol": 188,
+                "segment-data": 252, "page-finish": 173, "bitmap-chunk": 97,
+                "document-layout": 307, "arithmetic-normalization": 149,
+                "default-limits-3": 72, "arithmetic-integer": 221, "black-span": 153,
+                "reset": 50, "default-limits-2": 72, "segment-header": 246,
+                "mmr-span": 201, "halftone-header": 211, "page-state": 306,
+                "operator-bit": 91, "mmr-reference": 333, "arithmetic-refill": 149,
+                "symbol-cardinality": 258, "error-wrappers-basic": 169,
+                "huffman-assignment": 111, "mmr-prefix": 102, "mmr-run": 102,
+                "text-batch": 255, "arithmetic-initialization": 144,
+                "default-decoder-1": 71, "page-public": 210, "arithmetic-codec": 400,
+                "value-bridge": 111, "error-conversion": 221, "default-limits-1": 62,
+                "default-limits-4": 62, "default-limits-5": 63, "region-dispatch": 75,
+                "reader-error": 212, "mmr-horizontal": 183, "iaid-state": 151,
+                "default-decoder-2": 73, "default-decoder-3": 73,
+                "bitmap-compose": 171, "default-decoder-5": 73,
+            }
+            measured = [sum(costs[row[0]] for row in role) for role in (whole, collector, *shards)]
+            self.assertEqual(measured, [511, 703, 828, 828, 887, 857, 860, 829, 888, 887])
+            self.assertLessEqual(max(measured), 1050)
+            self.assertLessEqual(measured[0] + 208, 1200)
 
     def run_fixture(self, process):
         with patch.object(runner, "CHECKS", self.checks), patch.object(runner.subprocess, "run", side_effect=process):
@@ -1341,6 +1415,25 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertTrue((self.output / runner.TRACE / runner.SUMMARY).is_file())
         for identity, *_ in self.checks:
             self.assertTrue((self.output / runner.TRACE / f"{identity}-proof-sensitivity.json").is_file())
+
+    def test_eight_shard_aggregate_requires_each_exact_producer(self):
+        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+            inputs = self.collection_fixture()
+            result = self.collect(inputs)
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(result["matrix_shards"], 8)
+            self.assertEqual(result["matrix_max_parallel"], 4)
+            self.assertEqual(result["workers"], 1)
+            for index in range(8):
+                path = inputs / (runner.artifact_prefix() + f"shard-{index}")
+                moved = self.root / "removed"
+                path.rename(moved)
+                try:
+                    with self.subTest(shard=index), self.assertRaises(ValueError):
+                        self.collect(inputs)
+                    self.assertFalse((self.output / runner.TRACE / runner.SUMMARY).exists())
+                finally:
+                    moved.rename(path)
 
     def test_missing_whole_or_each_shard_fails_and_removes_stale_success(self):
         inputs = self.collection_fixture()

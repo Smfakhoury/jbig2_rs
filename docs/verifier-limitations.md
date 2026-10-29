@@ -122,10 +122,9 @@ The second profile completed every query, but its final collector correctly
 rejected several measured workloads over 1,050 seconds. Its complete
 per-group timings now inform an explicit six-shard rebalance. Reset moves
 to whole and retention to collector to account for the whole job's measured
-setup overhead as well. Every previous case remains, along with eight producers,
-six one-worker shards, max-four semantic concurrency and unchanged measured
-guards and job caps. Hosted acceptance must include the actual complete
-new profile; a local proof or estimated schedule is not acceptance credit.
+setup overhead as well. Those candidate profiles retained eight producers,
+six one-worker shards, max-four semantic concurrency and the measured
+guards and job caps. They are historical planning inputs, not acceptance credit.
 
 The next complete profile passed every query and all six measured shard
 workloads, but its collector measured 1,078.132 seconds and was rejected.
@@ -168,6 +167,26 @@ cohort transfers use its existing measured headroom; rounded whole/collector/
 shard costs are 851/972/908/977/934/984/1021/960 seconds. Earlier profiles
 remain frozen regression inputs. Actual exact-head acceptance is still
 required, rather than treating those planning numbers as a successful run.
+
+### Current CI scheduling revision
+
+The expanded profile now uses **eight one-worker semantic shards**, plus the
+existing whole and collector producers. This intentionally revises the former
+six-shard/eight-producer scheduling contract: there are ten producer receipts
+and 23 workflow jobs, or 24 checks including CLA. The two additional setup
+jobs do not raise peak concurrency: at most four semantic jobs run at once.
+The 1,050-second per-producer guard, 20-minute whole/collector caps,
+30-minute semantic caps, pinned solver/toolchain and every case/query remain.
+No canceled, incomplete or over-budget profile is accepted.
+
+Sizing uses each group's rounded maximum from both complete native-cache
+profiles. Whole/collector/eight shards cost
+511/703/828/828/887/857/860/829/888/887 seconds under those planning inputs.
+Whole again handles arithmetic-codec/value-bridge and collector handles
+arithmetic-decision/document-count/reset. All other groups have an explicit
+eight-shard assignment. Earlier six-shard fixtures remain frozen, while
+current tests require all eight exact shard receipts and fail on any missing
+one. Actual complete same-head hosted validation is still required.
 
 ## Blocking capacity/getter decision
 
@@ -274,9 +293,9 @@ the same-run `verus-partial-RUN-ATTEMPT-whole` artifact into a separate director
 in each semantic job, and passes that directory as `--whole-baseline` alongside the
 existing shard arguments. Do not place it inside the shard output directory.
 The collector revalidates every reused baseline against the whole artifact it
-collects. Preserve six one-worker shards, at most four active semantic jobs,
+collects. Preserve eight one-worker shards, at most four active semantic jobs,
 20-minute whole/collector caps, the owner-merged 30-minute semantic-job caps
-and the existing stable check topology. The measured 1050-second semantic
+and the revision-qualified complete check topology. The measured 1050-second semantic
 workload guard remains unchanged.
 
 The existing whole-proof job also executes the complete `arithmetic-codec` and
@@ -284,7 +303,7 @@ The existing whole-proof job also executes the complete `arithmetic-codec` and
 This uses spare time in an existing job, not additional jobs, solver workers,
 larger timeouts or omitted cases. Their reports remain outside the immutable
 positive receipt and are separately source/run/hash validated by the collector,
-alongside all six shard receipts. Every configured group executes exactly once.
+alongside all eight shard receipts. Every configured group executes exactly once.
 The existing collector job also runs the complete `arithmetic-decision`,
 `document-count` and `reset` groups serially before aggregation. Its separately
 required `collector` receipt has the same source/tool/run/attempt and individual
@@ -305,8 +324,8 @@ producer total above the unchanged 1050-second measurement guard.
 The stable `verify` collector requires the whole proof/build, its assigned
 contrast receipt and same-run shard
 receipts, exact membership and individual report/log/checker hashes with matching
-source/tool/run/attempt identities. Shards are sequential and worker/job budgets
-are unchanged; old verification results, canceled/partial collections or merely
+source/tool/run/attempt identities. Shards are sequential, with unchanged peak
+concurrency and per-job budgets; old verification results, canceled/partial collections or merely
 predicted timings are not acceptance evidence. Current accepted group/contrast counts and runs are in the
 snapshot, not repeated as mutable progress totals here.
 

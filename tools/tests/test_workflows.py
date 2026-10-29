@@ -384,7 +384,7 @@ class WorkflowPolicyTests(unittest.TestCase):
                 with self.subTest(name=name, change=change), self.assertRaisesRegex(ValueError, "validation runs"):
                     check_workflow(document, f"{name}.yml")
 
-    def test_complete_pr_profile_uses_twenty_one_jobs_without_dropping_platforms(self):
+    def test_complete_pr_profile_uses_twenty_three_jobs_without_more_peak_concurrency(self):
         from run_semantic_proofs import configured_shards
 
         count = 0
@@ -405,7 +405,9 @@ class WorkflowPolicyTests(unittest.TestCase):
                 self.assertEqual(document["jobs"]["distribution"]["strategy"]["matrix"], {
                     "os": expected_os, "toolchain": ["1.88.0", "stable"],
                 })
-        self.assertEqual(count, 21)
+            if name == "verus":
+                self.assertEqual(document["jobs"]["semantic"]["strategy"]["max-parallel"], "4")
+        self.assertEqual(count, 23)
 
     def test_verus_download_retries_remain_bounded_and_hash_checked(self):
         actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
