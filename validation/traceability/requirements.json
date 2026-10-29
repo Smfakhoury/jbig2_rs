@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "9a119bf1d1b376139fe9537a48fe8623d313be16f262f719d7f728be70c6f74b",
+    "project_source_sha256": "b9cae5441cd58a829ff6e27fae37073a3a059bb81726d9cdc77982b6572c4bd7",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1733,7 +1733,7 @@
     "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
     "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",
     "src/decode/tests.rs": "4e5b0d88e93b50e5b6bc4884e34f91b76a41fd5f2dfcb92111f6638b80825552",
-    "src/document.rs": "bbe60471c5016b81d5f5ef4e8bd4cb86157bb960cf2ef65356767e294b182122",
+    "src/document.rs": "86ab2d38d7c07f09d443e5b9d658f90503ae0c071640560ad5e5c477cfb6ed36",
     "src/document/pages.rs": "f11a042b00dfab74c94454999b7d3c9ba575ff3c77b8fafd54ec692b7c4649a0",
     "src/document/parsing.rs": "ce5a558c99b64b8d3ec7af95a35bd8c563ddcf09f65c760a7cb31eaebc93aa54",
     "src/document/references.rs": "211469b5b0d1e5b507459d718e3f97623897c9acb0a8639a077f2d7e12f5a80b",
