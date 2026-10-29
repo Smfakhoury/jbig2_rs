@@ -73,12 +73,16 @@ def cases(owner, module):
 LIMITS_CASES = cases("Limits", "limits")
 DECODER_CASES = cases("Decoder", "document")
 CASE_GROUPS = {
-    "default-limits-1": LIMITS_CASES[:5],
-    "default-limits-2": LIMITS_CASES[5:10],
-    "default-limits-3": LIMITS_CASES[10:],
-    "default-decoder-1": DECODER_CASES[:5],
-    "default-decoder-2": DECODER_CASES[5:10],
-    "default-decoder-3": DECODER_CASES[10:],
+    "default-limits-1": LIMITS_CASES[:3],
+    "default-limits-2": LIMITS_CASES[3:6],
+    "default-limits-3": LIMITS_CASES[6:9],
+    "default-limits-4": LIMITS_CASES[9:12],
+    "default-limits-5": LIMITS_CASES[12:],
+    "default-decoder-1": DECODER_CASES[:3],
+    "default-decoder-2": DECODER_CASES[3:6],
+    "default-decoder-3": DECODER_CASES[6:9],
+    "default-decoder-4": DECODER_CASES[9:12],
+    "default-decoder-5": DECODER_CASES[12:],
 }
 FILES = ("src/limits.rs", "src/document.rs")
 

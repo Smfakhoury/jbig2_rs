@@ -277,20 +277,25 @@ class SemanticOrchestrationTests(unittest.TestCase):
         collector = runner.configured_collector_checks()
         self.assertEqual(whole[-1][0], "default-limits-1")
         self.assertEqual(collector[-1][0], "default-decoder-1")
-        for index, name in enumerate((
-            "default-limits-2", "default-limits-3", "default-decoder-2", "default-decoder-3",
-        )):
+        for name, index in (
+            ("default-limits-2", 0), ("default-limits-3", 1),
+            ("default-limits-4", 1), ("default-limits-5", 1),
+            ("default-decoder-2", 2), ("default-decoder-3", 2),
+            ("default-decoder-4", 4), ("default-decoder-5", 5),
+        ):
             self.assertIn(name, [row[0] for row in shards[index]])
         roles = [whole, collector, *shards]
         self.assertEqual(len(roles), 8)
-        self.assertEqual(sum(len(role) for role in roles), 44)
+        self.assertEqual(sum(len(role) for role in roles), 48)
         self.assertEqual(sum(row[2] for role in roles for row in role), 327)
 
     def test_default_group_selection_is_forwarded_to_its_shared_checker(self):
         script = "check_default_proofs.py"
         for identity in (
             "default-limits-1", "default-limits-2", "default-limits-3",
+            "default-limits-4", "default-limits-5",
             "default-decoder-1", "default-decoder-2", "default-decoder-3",
+            "default-decoder-4", "default-decoder-5",
         ):
             with self.subTest(group=identity):
                 (self.root / "tools" / script).write_text(

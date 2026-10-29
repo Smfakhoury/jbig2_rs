@@ -115,10 +115,13 @@ pristine body, zero verified bodies/one error for the mutant and one verified
 body for the weaker control. A native public-API test separately checks every
 constant through both constructors.
 
-The thirty cases are partitioned into six five-field cohorts: one each in the
-existing whole and collector roles, and one each in shards zero through three.
-The complete local fifteen-field families each took over six minutes; keeping
-them as two large serial groups would overload those roles. All previous
+The thirty cases are partitioned into ten three-field cohorts. The first
+hosted five-field profile reached its added whole-role cohort but exceeded
+the unchanged 20-minute whole-job cap; it grants no acceptance credit.
+Complete preceding-profile timings and the local families, each over six
+minutes, inform the smaller cohorts: one each in whole and collector, one in
+shard zero, three in shard one, two in shard two, none in shard three, and
+one each in shards four and five. All previous
 cases and shard memberships remain, along with eight producers,
 six one-worker shards, max-four semantic concurrency and unchanged measured
 guards and job caps. Hosted acceptance must include the actual complete
