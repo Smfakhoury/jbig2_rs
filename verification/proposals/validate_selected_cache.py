@@ -25,9 +25,16 @@ with proof_workspace(ROOT, arguments.verus.resolve(), "jbig2-selected-cache-") a
         for path in (directory / name).rglob("*.rs")
     }
     dependencies = None
-    for function in ("observed_transition_bytes", "reference_elements", "observed_transition_bytes"):
+    for module, function, scope in (
+        ("mmr", "observed_transition_bytes", None),
+        ("mmr", "reference_elements", None),
+        ("mmr", "observed_transition_bytes", None),
+        ("symbol_text", ("ArithmeticCodec::decode_integer", "ArithmeticCodec::decode_symbol_id"),
+         "symbol_text::codec"),
+    ):
         result = selected_proof(
-            arguments.verus.resolve(), directory, environment, False, "mmr", function,
+            arguments.verus.resolve(), directory, environment, False, module, function,
+            verification_module=scope,
         )
         if type(result["verified"]) is not int or result["verified"] < 1 or result["errors"] != 0:
             raise ValueError(f"the unchanged-source query must freshly prove its target: {function}: {result}")
@@ -51,7 +58,10 @@ with proof_workspace(ROOT, arguments.verus.resolve(), "jbig2-selected-cache-") a
                 })
             )
         dependencies = current
-        results.append({"function": function, "verification": result})
+        results.append({
+            "module": module, "function": function,
+            "verification_module": scope or module, "verification": result,
+        })
     if any((path.read_bytes(), path.stat().st_mtime_ns) != original
            for path, original in source_files.items()):
         raise ValueError("fresh selected queries must not require source edits or timestamp touches")

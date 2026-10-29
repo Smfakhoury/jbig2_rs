@@ -617,6 +617,23 @@ class SelectedProofEvidenceTests(unittest.TestCase):
             command = run.call_args.args[0]
             self.assertEqual(command[command.index("--verify-function") + 1], name)
 
+    def test_grouped_methods_keep_the_lexical_scope_suffix_selector(self):
+        names = ("ArithmeticCodec::decode_integer", "ArithmeticCodec::decode_symbol_id")
+        report = self.report()
+        report["verification-results"]["verified"] = 2
+        report["func-details"] = {
+            f"jbig2_rs_production::symbol_text::{name}": {} for name in names
+        }
+        process = CompletedProcess([], 0, json.dumps(report), "")
+        with patch("proof_sensitivity.subprocess.run", return_value=process) as run:
+            selected_proof(
+                Path("/verus"), TOOLS.parent, {}, False, "symbol_text", names,
+                verification_module="symbol_text::codec",
+            )
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("--verify-function") + 1], "*::ArithmeticCodec::decode_*")
+        self.assertEqual(command[command.index("--verify-only-module") + 1], "symbol_text::codec")
+
     def test_single_method_selector_is_suffix_anchored_against_longer_method_names(self):
         report = self.report()
         report["func-details"] = {"jbig2_rs_production::bitmap::Bitmap::compose": {}}

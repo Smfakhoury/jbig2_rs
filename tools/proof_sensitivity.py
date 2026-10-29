@@ -72,10 +72,9 @@ def selected_proof(
     ):
         raise ValueError("selected proof needs unique targets; failures must select one function")
     # Verus cannot strip a lexical scope from a method reported under its parent type.
-    selector = (
-        ("*::" if verification_module and verification_module != module else "") + function
-        if isinstance(function, str) else commonprefix(functions) + "*"
-    )
+    selector = function if isinstance(function, str) else commonprefix(functions) + "*"
+    if verification_module and verification_module != module:
+        selector = "*::" + selector
     arguments = [
         "--verify-only-module", verification_module or module, "--verify-function",
         selector,

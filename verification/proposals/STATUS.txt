@@ -138,6 +138,10 @@ Rust/Verus metadata hashes and timestamps remain unchanged:
   python3 verification/proposals/validate_selected_cache.py --verus /path/to/pinned/verus
 The initial complete-run attempt which exposed cached empty output was
 stopped and explicitly not accepted; its original logs remain preserved.
+The regression also verifies the grouped arithmetic integer/symbol-ID methods
+in their actual relocated lexical module. Group selectors retain the same
+qualified suffix anchoring as single-method selectors, so fresh baselines
+do not depend on whole-proof reuse to avoid a missing-function selection.
 
 The complete application semantic suite is a separate validation step;
 local interface controls and a whole proof are not substitutes. Any complete
@@ -151,7 +155,7 @@ Even a successful local profile does not grant hosted or trust acceptance.
 Actual selected controls through this new dependency wiring passed all
 11 MMR-reference, two concrete collector-sink and two reset contrasts. Every
 strong mutant compiles and fails semantically, and its corresponding weaker
-control proves. All 95 relevant orchestration, selected-proof and strict
+control proves. All 96 relevant orchestration, selected-proof and strict
 extractor regressions pass. The independent
 candidate consumer records these actual results and the exact-source audit in
 target/capacity-proposal/pipeline-evidence.json with foundation, hosted,
