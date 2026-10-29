@@ -19,9 +19,13 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention", "default-limits")
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions", "default-decoder")
-ADDED_SHARD_GROUPS = {"error-wrappers-symbol": 4, "error-wrappers-basic": 5}
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention", "default-limits-1")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions", "default-decoder-1")
+ADDED_SHARD_GROUPS = {
+    "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
+    "default-limits-2": 0, "default-limits-3": 1,
+    "default-decoder-2": 2, "default-decoder-3": 3,
+}
 REBALANCED_SHARD_GROUPS = {
     "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
     "mmr-run": 3, "bitmap-chunk": 4,
@@ -66,8 +70,12 @@ CHECKS = (
     ("error-wrappers-basic", "check_error_wrapper_proofs.py", 6, "strong_contract", "weaker_control"),
     ("error-wrappers-regions", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
     ("error-wrappers-symbol", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
-    ("default-limits", "check_default_proofs.py", 15, "strong_contract", "weaker_control"),
-    ("default-decoder", "check_default_proofs.py", 15, "strong_contract", "weaker_control"),
+    ("default-limits-1", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("default-limits-2", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("default-limits-3", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("default-decoder-1", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("default-decoder-2", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("default-decoder-3", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -120,7 +128,7 @@ def configured_shards():
         if check[0] not in (*WHOLE_GROUPS, *COLLECTOR_GROUPS)
     )
     count = min(CI_SHARDS, len(checks))
-    # Preserve prior memberships; these two shards have measured headroom for new groups.
+    # Append new cohorts without changing prior round-robin memberships.
     previous = tuple(check for check in checks if check[0] not in ADDED_SHARD_GROUPS)
     shards = [list(previous[index::count]) for index in range(count)]
     for check in checks:

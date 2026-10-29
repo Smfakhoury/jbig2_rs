@@ -16,13 +16,20 @@ class DefaultProofTests(unittest.TestCase):
         names = {name for name, _ in checker.FIELDS}
         self.assertEqual(len(names), 15)
         self.assertTrue(all(int(value.replace("_", "")) > 0 for _, value in checker.FIELDS))
-        for module, group in (("limits", "default-limits"), ("document", "default-decoder")):
-            cases = checker.CASE_GROUPS[group]
+        for module, cases in (("limits", checker.LIMITS_CASES), ("document", checker.DECODER_CASES)):
             self.assertEqual(len(cases), 15)
             self.assertEqual({case["id"] for case in cases}, {
                 f"{module}-default-{name}" for name in names
             })
             self.assertTrue(all(case["impl_trait"] == "Default" for case in cases))
+
+    def test_six_cohorts_preserve_all_thirty_cases_exactly_once(self):
+        self.assertEqual(len(checker.CASE_GROUPS), 6)
+        self.assertTrue(all(len(cases) == 5 for cases in checker.CASE_GROUPS.values()))
+        actual = [case["id"] for cases in checker.CASE_GROUPS.values() for case in cases]
+        expected = [case["id"] for case in (*checker.LIMITS_CASES, *checker.DECODER_CASES)]
+        self.assertCountEqual(actual, expected)
+        self.assertEqual(len(set(actual)), 30)
 
     def test_each_mutant_changes_only_its_named_policy_field(self):
         for cases in checker.CASE_GROUPS.values():

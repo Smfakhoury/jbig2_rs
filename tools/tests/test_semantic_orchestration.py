@@ -269,19 +269,29 @@ class SemanticOrchestrationTests(unittest.TestCase):
     def test_default_groups_use_existing_roles_without_reassigning_prior_shards(self):
         shards = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS):
-            self.assertEqual(shards, runner.configured_shards())
+            self.assertEqual(
+                tuple(tuple(row for row in shard if not row[0].startswith("default-")) for shard in shards),
+                runner.configured_shards(),
+            )
         whole = runner.configured_whole_checks()
         collector = runner.configured_collector_checks()
-        self.assertEqual(whole[-1][0], "default-limits")
-        self.assertEqual(collector[-1][0], "default-decoder")
+        self.assertEqual(whole[-1][0], "default-limits-1")
+        self.assertEqual(collector[-1][0], "default-decoder-1")
+        for index, name in enumerate((
+            "default-limits-2", "default-limits-3", "default-decoder-2", "default-decoder-3",
+        )):
+            self.assertIn(name, [row[0] for row in shards[index]])
         roles = [whole, collector, *shards]
         self.assertEqual(len(roles), 8)
-        self.assertEqual(sum(len(role) for role in roles), 40)
+        self.assertEqual(sum(len(role) for role in roles), 44)
         self.assertEqual(sum(row[2] for role in roles for row in role), 327)
 
     def test_default_group_selection_is_forwarded_to_its_shared_checker(self):
         script = "check_default_proofs.py"
-        for identity in ("default-limits", "default-decoder"):
+        for identity in (
+            "default-limits-1", "default-limits-2", "default-limits-3",
+            "default-decoder-1", "default-decoder-2", "default-decoder-3",
+        ):
             with self.subTest(group=identity):
                 (self.root / "tools" / script).write_text(
                     "CASES = ({'id':'case','module':'module','function':'function'},)\n"
