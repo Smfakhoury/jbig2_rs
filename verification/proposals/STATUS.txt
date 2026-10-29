@@ -120,14 +120,24 @@ workspaces now copy the actual verification manifests, lockfile and proposed
 dependency, stage locked public proof dependencies into a fresh Cargo home,
 and use offline Cargo focus for the exact module/function. Native checks
 remain offline and workspace-local. No ambient proof target or foreign
-manifest is accepted. The complete application semantic suite and hosted
-acceptance under this proposed boundary remain outstanding; local interface
-controls and a whole proof are not substitutes.
+manifest is accepted. Semantic receipts also hash nested verification Rust,
+Cargo, control and status inputs so a changed proposed interface invalidates
+the receipt. Generated targets remain excluded.
+
+The complete application semantic suite is a separate validation step;
+local interface controls and a whole proof are not substitutes. Any complete
+local run records its exact frozen source and all producer results under
+target/capacity-proposal/full-semantics-*/full-local-evidence.json. Require all
+49 groups and 329 cases, complete strong/weaker controls and the unchanged
+1050-second measured producer guard before accepting that local profile.
+Read its actual result rather than inferring completion from this document.
+Even a successful local profile does not grant hosted or trust acceptance.
 
 Actual selected controls through this new dependency wiring passed all
 11 MMR-reference, two concrete collector-sink and two reset contrasts. Every
 strong mutant compiles and fails semantically, and its corresponding weaker
-control proves. All 31 targeted tooling regressions pass. The independent
+control proves. All 94 relevant orchestration, selected-proof and strict
+extractor regressions pass. The independent
 candidate consumer records these actual results and the exact-source audit in
 target/capacity-proposal/pipeline-evidence.json with foundation, hosted,
 normative and publication approval explicitly false.
