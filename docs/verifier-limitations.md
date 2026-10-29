@@ -168,6 +168,13 @@ and accepted the restored source; repeated native checks fell from about
 1.0 seconds to 0.33 seconds. This does not disable lifetime, erasure, trait
 conflict or semantic checks, and the cache is discarded with the workspace.
 
+The first complete native-cache profile passed every query but measured
+1,091.433 seconds on one shard and was correctly rejected. Four small
+cohort transfers use its existing measured headroom; rounded whole/collector/
+shard costs are 851/972/908/977/934/984/1021/960 seconds. Earlier profiles
+remain frozen regression inputs. Actual exact-head acceptance is still
+required, rather than treating those planning numbers as a successful run.
+
 ### Owned page-collector sink
 
 The concrete `PageSink for PageCollector` wrapper now proves its own checked
