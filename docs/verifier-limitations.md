@@ -31,6 +31,12 @@ different owners/modules are not interchangeable evidence.
 Formatting/error traits, `std::io::Read` and caller-provided sink behavior remain
 important reviewed boundaries. Reader/public API runtime regressions do not
 turn arbitrary external callbacks into formally verified implementations.
+The pin includes formatting-trait precondition specifications, but a focused
+checked probe still rejects `Formatter::write_str`. Separate probes reject
+the standard `io::ErrorKind` type and even an empty dynamic `Error` source.
+Those are concrete missing interfaces, not an assertion that the pin has no
+formatting support at all. No local trusted type, function or trait declaration
+has been added to bypass them.
 Fallible reservation and deterministic stores have enabled many direct proofs;
 do not repeat obsolete broad claims that all allocation or all registries are
 unverified. Inspect each current disposition and actual `requires`/`ensures`.
