@@ -127,6 +127,12 @@ six one-worker shards, max-four semantic concurrency and unchanged measured
 guards and job caps. Hosted acceptance must include the actual complete
 new profile; a local proof or estimated schedule is not acceptance credit.
 
+The next complete profile passed every query and all six measured shard
+workloads, but its collector measured 1,078.132 seconds and was rejected.
+Its complete timings move the first decoder-default cohort to shard three
+and the last limits-default cohort from shard five to shard four. Both
+preceding profiles remain frozen planning inputs, not acceptance credit.
+
 The existing same-run whole-positive reuse also covers a trait implementation
 only when the complete native inventory has exactly one such qualified name,
 with matching file, lexical scope and trait, verified marking and no divergence.

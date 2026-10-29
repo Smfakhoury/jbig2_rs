@@ -20,11 +20,12 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
 WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "reset", "error-conversion", "default-limits-1")
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "retention", "error-wrappers-regions", "default-decoder-1")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "retention", "error-wrappers-regions")
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
     "default-limits-4": 1, "default-limits-5": 1,
+    "default-decoder-1": 3,
     "default-decoder-2": 2, "default-decoder-3": 2,
     "default-decoder-4": 4, "default-decoder-5": 5,
 }
@@ -36,7 +37,7 @@ DEFAULT_SHARD_REBALANCE = {
     "symbol-cardinality": 0, "default-decoder-4": 1, "operator-bit": 1,
     "bitmap-compose": 2, "default-decoder-5": 2, "error-wrappers-basic": 3,
     "page-public": 3, "default-limits-4": 4, "segment-data": 4,
-    "default-limits-5": 5, "halftone-header": 5, "page-state": 5,
+    "default-limits-5": 4, "halftone-header": 5, "page-state": 5,
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
