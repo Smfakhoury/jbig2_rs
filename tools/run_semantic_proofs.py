@@ -219,7 +219,8 @@ def manifest(root):
     checks = configured_checks()
     paths = set()
     for directory, patterns in (
-        ("config", ("*.json",)), ("verification", ("*.json",)),
+        ("config", ("*.json",)),
+        ("verification", ("*.json", "*.rs", "Cargo.toml", "Cargo.lock", "*.py", "*.txt")),
         ("src", ("*.rs",)), ("specs", ("*.rs", "*.md")), ("proofs", ("*.rs",)),
         ("tools", ("*.py", "*.txt", "*.json")), ("docs", ("*.md",)),
         ("validation", ("*.json", "*.md")), (".github", ("*.yml", "*.yaml", "*.md")),

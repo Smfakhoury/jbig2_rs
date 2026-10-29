@@ -645,13 +645,29 @@ class SemanticOrchestrationTests(unittest.TestCase):
         verification.mkdir()
         for name in ("Cargo.toml", "Cargo.lock"):
             (verification / name).write_text("pinned verification fixture\n")
+        dependency = verification / "proposals/capacity-interface"
+        dependency.mkdir(parents=True)
+        for name in ("Cargo.toml", "Cargo.lock", "lib.rs"):
+            (dependency / name).write_text("pinned interface fixture\n")
+        (verification / "proposals/validate_interface.py").write_text("# checked control\n")
+        (verification / "proposals/STATUS.txt").write_text("unapproved\n")
         (verification / "target").mkdir()
         (verification / "target/Cargo.toml").write_text("not an input\n")
+        (verification / "target/lib.rs").write_text("not an input\n")
         with patch.object(runner, "CHECKS", self.checks):
             bindings = runner.manifest(self.root)["source_bindings"]
+            original = bindings["verification/proposals/capacity-interface/lib.rs"]
+            (dependency / "lib.rs").write_text("changed interface fixture\n")
+            changed = runner.manifest(self.root)["source_bindings"]
+        for name in ("Cargo.toml", "Cargo.lock", "lib.rs"):
+            self.assertIn(f"verification/proposals/capacity-interface/{name}", bindings)
+        self.assertIn("verification/proposals/validate_interface.py", bindings)
+        self.assertIn("verification/proposals/STATUS.txt", bindings)
+        self.assertNotEqual(original, changed["verification/proposals/capacity-interface/lib.rs"])
         self.assertIn("verification/Cargo.toml", bindings)
         self.assertIn("verification/Cargo.lock", bindings)
         self.assertNotIn("verification/target/Cargo.toml", bindings)
+        self.assertNotIn("verification/target/lib.rs", bindings)
 
     @patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS)
     @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge", "error-conversion"))
