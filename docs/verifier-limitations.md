@@ -143,11 +143,14 @@ A fourth complete profile again passed every query but exceeded two shard
 guards. The subsequent partition takes each group's maximum from both
 complete runs using the identical proof harness, rather than relying on one
 run's faster workers. With every value rounded up, whole/collector/shards
-cost 967/1015/1002/1038/1021/1024/1028/1044 seconds; whole also includes the
-observed 208-second setup allowance under its unchanged job cap. Black-span
-joins whole, and an explicit complete shard map prevents a removed group
-from silently shifting round-robin membership. These are conservative
-planning inputs only: fresh complete hosted acceptance remains mandatory.
+initially cost 967/1015/1002/1038/1021/1024/1028/1044 seconds, but the whole
+job still exceeded its wall-clock cap. The revised whole assignment costs
+900 seconds under the same rounded envelope, leaving 92 seconds beyond the
+observed 208-second setup allowance under its unchanged cap. Other roles
+cost 1015/1043/1046/1027/1024/1040/1044 seconds. An explicit complete shard
+map prevents removed groups from silently shifting round-robin membership.
+These are conservative planning inputs only: fresh complete hosted
+acceptance remains mandatory.
 
 The existing same-run whole-positive reuse also covers a trait implementation
 only when the complete native inventory has exactly one such qualified name,
