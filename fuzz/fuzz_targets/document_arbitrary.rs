@@ -3,7 +3,7 @@
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|input: &[u8]| {
-    let mut limits = jbig2_rs::Limits::default();
+    let mut limits = jbig2_decoder::Limits::default();
     limits.max_width = 1024;
     limits.max_height = 1024;
     limits.max_pixels_per_page = 1 << 18;
@@ -19,7 +19,7 @@ fuzz_target!(|input: &[u8]| {
     limits.max_work_units = 1 << 20;
     limits.max_cumulative_decoded_bitmap_bytes = 1 << 23;
     limits.max_retained_state_bytes = 1 << 22;
-    let decoder = jbig2_rs::Decoder::new(limits);
+    let decoder = jbig2_decoder::Decoder::new(limits);
     let _ = decoder.inspect(input);
     let _ = decoder.inspect_embedded(input);
     let _ = decoder.decode(input);

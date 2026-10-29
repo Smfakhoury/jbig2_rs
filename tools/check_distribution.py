@@ -12,7 +12,7 @@ import tempfile
 import tomllib
 from pathlib import Path
 
-from audit_package import REQUIRED, audit
+from audit_package import LIBRARY_NAME, PACKAGE_NAME, REQUIRED, audit
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -81,7 +81,7 @@ def check_package_metadata(document: dict, extracted: Path, msrv: str) -> None:
         raise ValueError("packaged decoder must have no runtime or development dependencies")
     package = packages[0]
     if (
-        package["name"] != "jbig2_rs"
+        package["name"] != PACKAGE_NAME
         or package["license"] != "MIT"
         or package["rust_version"] != msrv
         or package["dependencies"]
@@ -90,6 +90,12 @@ def check_package_metadata(document: dict, extracted: Path, msrv: str) -> None:
         or Path(package["manifest_path"]).resolve() != (extracted / "Cargo.toml").resolve()
     ):
         raise ValueError("unexpected isolated package metadata or proof/validation features")
+    targets = package.get("targets")
+    if not isinstance(targets, list) or any(not isinstance(target, dict) for target in targets):
+        raise ValueError("packaged decoder must provide Cargo library target metadata")
+    libraries = [target for target in targets if target.get("kind") == ["lib"]]
+    if len(libraries) != 1 or libraries[0]["name"] != LIBRARY_NAME:
+        raise ValueError("packaged Rust library must expose the public jbig2_decoder import")
 
 
 def require_rejected_check(
@@ -163,7 +169,7 @@ def check_distribution(toolchain: str) -> dict:
         (consumer / "src").mkdir(parents=True)
         (consumer / "Cargo.toml").write_text(
             '[package]\nname = "distribution-consumer"\nversion = "0.0.0"\nedition = "2021"\n'
-            '[workspace]\n[dependencies]\njbig2_rs = { path = '
+            '[workspace]\n[dependencies]\njbig2-decoder = { path = '
             + json.dumps(extracted.as_posix(), ensure_ascii=False) + ' }\n',
             encoding="utf-8",
         )
@@ -171,14 +177,15 @@ def check_distribution(toolchain: str) -> dict:
         main.write_bytes((ROOT / "tools" / "distribution_consumer.rs").read_bytes())
         run(cargo + ["generate-lockfile", "--offline"], consumer, environment)
         graph = metadata(cargo, consumer, environment)
-        if {package["name"] for package in graph["packages"]} != {"jbig2_rs", "distribution-consumer"}:
+        if {package["name"] for package in graph["packages"]} != {PACKAGE_NAME, "distribution-consumer"}:
             raise ValueError("unexpected downstream dependencies")
         run(cargo + ["run", "--offline", "--locked"], consumer, environment)
 
-        main.write_text("use jbig2_rs::runtime_access;\nfn main() {}\n", encoding="utf-8")
+        main.write_text("use jbig2_decoder::runtime_access;\nfn main() {}\n", encoding="utf-8")
         require_rejected_check(cargo, consumer, environment, "E0432", "runtime_access")
         return {
             "schema_version": 1, "status": "passed",
+            "package_name": PACKAGE_NAME, "library_name": LIBRARY_NAME,
             "toolchain": toolchain,
             "rustc": run(["rustc", f"+{toolchain}", "--version"], directory, environment, True).strip(),
             "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),

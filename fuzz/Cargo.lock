@@ -44,14 +44,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "jbig2_rs"
+name = "jbig2-decoder"
 version = "0.0.1"
 
 [[package]]
-name = "jbig2_rs-fuzz"
+name = "jbig2-decoder-fuzz"
 version = "0.0.0"
 dependencies = [
- "jbig2_rs",
+ "jbig2-decoder",
  "libfuzzer-sys",
 ]
 

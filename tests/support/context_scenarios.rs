@@ -1,6 +1,6 @@
 use std::io::Cursor;
 
-use jbig2_rs::{DecodeError, DecodedDocument, Decoder, LimitKind, Limits, MalformedError};
+use jbig2_decoder::{DecodeError, DecodedDocument, Decoder, LimitKind, Limits, MalformedError};
 
 #[allow(dead_code)]
 #[path = "../../benchmarks/generated.rs"]
@@ -136,7 +136,7 @@ impl Fixture {
         assert_eq!(pages, document.pages());
     }
 
-    fn check_globals(&self, decoder: &Decoder, context: &mut jbig2_rs::DecoderContext<'_>) {
+    fn check_globals(&self, decoder: &Decoder, context: &mut jbig2_decoder::DecoderContext<'_>) {
         assert_errors(
             context
                 .parse_globals(&self.input)

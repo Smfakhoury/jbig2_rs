@@ -11,12 +11,14 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import tomllib
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "benchmarks/hayro-comparison"))
 from metrics import relative_spread
+from audit_package import LIBRARY_NAME
 
 
 CASES = (
@@ -26,6 +28,7 @@ CASES = (
 HARNESS_FILES = (
     "examples/performance_ci.rs", "benchmarks/generated.rs", "benchmarks/timing.rs",
     "benchmarks/hayro-comparison/metrics.py", "tools/run_performance.py",
+    "tools/audit_package.py",
     "validation/performance/scenarios.json",
 )
 RSS_SOURCE = "linux_proc_self_status_VmHWM"
@@ -42,6 +45,16 @@ def digest(root: Path, names) -> str:
 def runtime_identity(root: Path) -> str:
     names = [path.relative_to(root).as_posix() for path in (root / "src").rglob("*.rs")]
     return digest(root, names + ["Cargo.toml", "Cargo.lock"])
+
+def library_name(root: Path) -> str:
+    manifest = tomllib.loads((root / "Cargo.toml").read_text(encoding="utf-8"))
+    package = manifest["package"]["name"]
+    if not isinstance(package, str) or not package:
+        raise ValueError("benchmark source needs a Cargo package name")
+    name = manifest.get("lib", {}).get("name", package.replace("-", "_"))
+    if not isinstance(name, str) or not name.isidentifier() or not name.isascii():
+        raise ValueError("benchmark source needs a valid Rust library name")
+    return name
 
 
 def resolve_base(reference: str, root: Path) -> tuple[str, str | None]:
@@ -359,6 +372,8 @@ def comparison(arguments, root=ROOT):
             result["base_runtime_sha256"] = runtime_identity(base_root)
             binaries = {}
             for name, source in (("base", base_root), ("head", root)):
+                crate = library_name(source)
+                result[name + "_library_name"] = crate
                 build = output / (name + "-build")
                 execute(
                     ["cargo", "+" + rust, "build", "--offline", "--locked", "--release",
@@ -374,7 +389,7 @@ def comparison(arguments, root=ROOT):
                 execute(
                     ["rustc", "+" + rust, "--edition=2021", "-O",
                      str(root / "examples/performance_ci.rs"), "--crate-name", "jbig2_perf_driver",
-                     "--extern", "jbig2_rs=" + str(build / "release/libjbig2_rs.rlib"),
+                     "--extern", LIBRARY_NAME + "=" + str(build / f"release/lib{crate}.rlib"),
                      "-L", "dependency=" + str(build / "release/deps"), "-o", str(binary)],
                     root, env, output / (name + "-driver.log"), 120,
                 )

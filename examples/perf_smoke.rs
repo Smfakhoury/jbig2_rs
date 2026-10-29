@@ -2,7 +2,7 @@
 
 use std::time::Instant;
 
-use jbig2_rs::Decoder;
+use jbig2_decoder::Decoder;
 
 #[path = "../benchmarks/generated.rs"]
 mod generated;

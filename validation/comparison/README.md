@@ -1,6 +1,6 @@
 # Optional Hayro comparison
 
-This unpublished harness compares `jbig2_rs` with `hayro-jbig2` 0.3.1.
+This unpublished harness compares `jbig2-decoder` with `hayro-jbig2` 0.3.1.
 Superseded single-run measurements are recoverable in Git history and retained
 CI artifacts, not copied into a source archive or used as live release baselines.
 **No current-main performance or normative conformance claim follows from those
@@ -20,7 +20,7 @@ benchmarks/hayro-comparison/run-stability.sh 50
 ```
 
 The comparison script runs default-SIMD and scalar-to-scalar tracks. Hayro uses
-its default SIMD feature; `jbig2_rs` has no SIMD backend. Generated fixtures are
+its default SIMD feature; `jbig2-decoder` has no SIMD backend. Generated fixtures are
 shared with the runtime performance lane. New records include median and
 nearest-rank p95. Record actual source/tool/host identities for each run rather
 than reusing historical revision labels or measurements.
@@ -34,12 +34,17 @@ timing, not sufficient dedicated-host release evidence.
 For an authorized host with hardware-counter access:
 
 ```sh
-benchmarks/hayro-comparison/capture-counters.sh jbig2_rs
+benchmarks/hayro-comparison/capture-counters.sh jbig2-decoder
 benchmarks/hayro-comparison/capture-counters.sh hayro_jbig2
 ```
 
 Unavailable Linux `perf` access fails explicitly rather than producing empty
 success-shaped counters.
+
+The preferred engine argument is `jbig2-decoder`; `jbig2_rs` remains an accepted
+legacy engine ID. Existing JSON metric keys keep that legacy ID for comparison
+compatibility. Those identifiers and historical results are not crate names or
+new measurements.
 
 Only with already approved external assets:
 

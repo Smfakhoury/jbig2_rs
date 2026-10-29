@@ -2,7 +2,7 @@
 
 use std::io::Cursor;
 
-use jbig2_rs::{
+use jbig2_decoder::{
     DecodeError, DecodedDocument, Decoder, HalftoneErrorKind, HuffmanErrorKind, LimitKind, Limits,
     MalformedError,
 };

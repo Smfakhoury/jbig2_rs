@@ -4,6 +4,8 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PACKAGE_NAME = "jbig2-decoder"
+LIBRARY_NAME = "jbig2_decoder"
 REQUIRED = {"Cargo.toml", "README.md", "SECURITY.md", "LICENSE"} | {
     path.relative_to(ROOT).as_posix() for path in (ROOT / "src").rglob("*.rs")
 }
@@ -39,7 +41,7 @@ def audit(lines: list[str]) -> list[str]:
             failures.append(f"invalid package path: {entry}")
             continue
         first, separator, remainder = entry.partition("/")
-        prefix = first if separator and first.startswith("jbig2_rs-") else ""
+        prefix = first if separator and first.startswith(PACKAGE_NAME + "-") else ""
         prefixes.add(prefix)
         if prefix:
             entry = remainder

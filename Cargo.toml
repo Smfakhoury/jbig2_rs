@@ -1,5 +1,5 @@
 [package]
-name = "jbig2_rs"
+name = "jbig2-decoder"
 version = "0.0.1"
 edition = "2021"
 rust-version = "1.88.0"
@@ -16,7 +16,7 @@ include = [
 ]
 
 [lib]
-name = "jbig2_rs"
+name = "jbig2_decoder"
 path = "src/lib.rs"
 
 [lints.rust]

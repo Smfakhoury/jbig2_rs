@@ -821,7 +821,7 @@ def build_test_binary(cargo: list[str], directory: Path, environment: dict, targ
             raise ValueError("invalid Cargo test artifact metadata")
         selected = (
             metadata.get("kind") == (["lib"] if target == "lib" else ["test"])
-            and metadata.get("name") == ("jbig2_rs" if target == "lib" else target)
+            and metadata.get("name") == ("jbig2_decoder" if target == "lib" else target)
         )
         if not selected or profile.get("test") is not True:
             continue

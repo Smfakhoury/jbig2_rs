@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use hayro_jbig2::{Decoder as HayroDecoder, Image};
-use jbig2_rs::Decoder;
+use jbig2_decoder::Decoder;
 use serde::Serialize;
 
 #[path = "../../generated.rs"]
@@ -180,16 +180,17 @@ fn run_single(
 }
 
 fn run_single_input(engine: &str, input: &[u8], iterations: usize) -> Result<TimingResult, String> {
+    let engine = if engine == "jbig2-decoder" { "jbig2_rs" } else { engine };
     let operation: fn(&[u8]) -> Result<BitmapResult, String> = match engine {
         "jbig2_rs" => decode_ours,
         "hayro_jbig2" => decode_hayro,
-        _ => return Err("engine must be jbig2_rs or hayro_jbig2".into()),
+        _ => return Err("engine must be jbig2-decoder (legacy jbig2_rs) or hayro_jbig2".into()),
     };
     let output = operation(input)?;
     let parse_operation: fn(&[u8]) -> Result<u64, String> = match engine {
         "jbig2_rs" => parse_ours,
         "hayro_jbig2" => parse_hayro,
-        _ => return Err("engine must be jbig2_rs or hayro_jbig2".into()),
+        _ => return Err("engine must be jbig2-decoder (legacy jbig2_rs) or hayro_jbig2".into()),
     };
     let parse_timing =
         timing_stats_batched(iterations, PARSE_BATCH_SIZE, || parse_operation(input))?;

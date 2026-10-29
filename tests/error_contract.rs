@@ -4,7 +4,7 @@ use std::error::Error;
 use std::fmt;
 use std::io;
 
-use jbig2_rs::{
+use jbig2_decoder::{
     DecodeError, GenericRegionErrorKind, HalftoneErrorKind, HuffmanErrorKind, IoErrorKind,
     LimitExceeded, LimitKind, MalformedError, MmrErrorKind, UnsupportedFeature,
 };

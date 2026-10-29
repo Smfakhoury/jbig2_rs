@@ -19,7 +19,7 @@ FIXTURE = """#![no_main]
 use libfuzzer_sys::fuzz_target;
 fuzz_target!(|input: &[u8]| {
     assert_ne!(input, b"generated-fuzz-control-v1", "synthetic harness failure control");
-    let _ = jbig2_rs::inspect_file_header(input);
+    let _ = jbig2_decoder::inspect_file_header(input);
 });
 """
 
@@ -41,10 +41,11 @@ def check_controls(output: Path) -> dict:
             ["git", "clone", "--quiet", "--no-local", "--single-branch", str(ROOT), str(directory)],
             check=True,
         )
-        for name in ("src",):
+        for name in ("src", "fuzz/fuzz_targets"):
             shutil.copytree(ROOT / name, directory / name, dirs_exist_ok=True)
         files = [
             "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
+            "fuzz/Cargo.toml", "fuzz/Cargo.lock",
             "config/toolchain.json", "validation/runtime_access.rs", "examples/fuzz_seeds.rs",
             "tools/distribution_consumer.rs", "tools/run_fuzz.py",
             "tools/maintain_fuzz_corpus.py", "tools/check_fuzz_controls.py",

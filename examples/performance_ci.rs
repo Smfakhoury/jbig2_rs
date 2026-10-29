@@ -1,6 +1,6 @@
 //! Generated correctness-gated runtime timings for same-host base/head comparison.
 
-use jbig2_rs::{DecodeError, DecodedDocument, Decoder, LimitKind, Limits, MalformedError};
+use jbig2_decoder::{DecodeError, DecodedDocument, Decoder, LimitKind, Limits, MalformedError};
 
 #[path = "../benchmarks/generated.rs"]
 mod generated;
