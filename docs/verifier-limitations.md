@@ -115,10 +115,13 @@ pristine body, zero verified bodies/one error for the mutant and one verified
 body for the weaker control. A native public-API test separately checks every
 constant through both constructors.
 
-The thirty cases are partitioned into six five-field cohorts: one each in the
-existing whole and collector roles, and one each in shards zero through three.
-The complete local fifteen-field families each took over six minutes; keeping
-them as two large serial groups would overload those roles. All previous
+The thirty cases are partitioned into ten three-field cohorts. The first
+hosted five-field profile reached its added whole-role cohort but exceeded
+the unchanged 20-minute whole-job cap; it grants no acceptance credit.
+Complete preceding-profile timings and the local families, each over six
+minutes, inform the smaller cohorts: one each in whole and collector, one in
+shard zero, three in shard one, two in shard two, none in shard three, and
+one each in shards four and five. All previous
 cases and shard memberships remain, along with eight producers,
 six one-worker shards, max-four semantic concurrency and unchanged measured
 guards and job caps. Hosted acceptance must include the actual complete
@@ -145,7 +148,7 @@ corresponding success/error requirement on the concrete sink wrapper; the
 constructor and helper contracts remain intact. Evidence binds the exact
 file, lexical scope and `PageSink` implementation with one pristine body,
 zero verified bodies/one error for each mutant and one body for each control.
-The complete group runs in existing shard five without moving previous cases.
+The complete group runs in existing shard one without moving previous cases.
 
 This says nothing about arbitrary caller-provided sinks, exact error-variant
 priority, actual reserved capacity or allocator/RSS bounds. In particular,

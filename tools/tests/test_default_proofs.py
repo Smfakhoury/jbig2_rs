@@ -23,9 +23,9 @@ class DefaultProofTests(unittest.TestCase):
             })
             self.assertTrue(all(case["impl_trait"] == "Default" for case in cases))
 
-    def test_six_cohorts_preserve_all_thirty_cases_exactly_once(self):
-        self.assertEqual(len(checker.CASE_GROUPS), 6)
-        self.assertTrue(all(len(cases) == 5 for cases in checker.CASE_GROUPS.values()))
+    def test_ten_cohorts_preserve_all_thirty_cases_exactly_once(self):
+        self.assertEqual(len(checker.CASE_GROUPS), 10)
+        self.assertTrue(all(len(cases) == 3 for cases in checker.CASE_GROUPS.values()))
         actual = [case["id"] for cases in checker.CASE_GROUPS.values() for case in cases]
         expected = [case["id"] for case in (*checker.LIMITS_CASES, *checker.DECODER_CASES)]
         self.assertCountEqual(actual, expected)
