@@ -73,15 +73,6 @@ CHECKS = (
     ("error-wrappers-basic", "check_error_wrapper_proofs.py", 6, "strong_contract", "weaker_control"),
     ("error-wrappers-regions", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
     ("error-wrappers-symbol", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
-<<<<<<< HEAD
-    ("default-limits-1", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("default-limits-2", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("default-limits-3", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("default-decoder-1", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("default-decoder-2", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("default-decoder-3", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
-    ("collector-sink", "check_collector_sink_proof.py", 2, "strong_contract", "weaker_control"),
-=======
     ("default-limits-1", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
     ("default-limits-2", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
     ("default-limits-3", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
@@ -92,7 +83,7 @@ CHECKS = (
     ("default-decoder-3", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
     ("default-decoder-4", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
     ("default-decoder-5", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
->>>>>>> ee0ddfc (Fit every default contrast into smaller measured proof cohorts)
+    ("collector-sink", "check_collector_sink_proof.py", 2, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"

@@ -296,8 +296,10 @@ class SemanticOrchestrationTests(unittest.TestCase):
         with patch.object(runner, "CHECKS", PRE_SINK_CHECKS):
             previous = runner.configured_shards()
         for index in range(6):
-            self.assertEqual(actual[index][:-1] if index == 1 else actual[index], previous[index])
-        self.assertEqual(actual[1][-1][0], "collector-sink")
+            self.assertEqual(
+                tuple(row for row in actual[index] if row[0] != "collector-sink"), previous[index],
+            )
+        self.assertEqual([row[0] for row in actual[1]].count("collector-sink"), 1)
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *actual]
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 49)
