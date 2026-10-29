@@ -86,6 +86,12 @@ and asset approvals remain separate.
 Local implementation snapshot
 -----------------------------
 Checked application source: 0ab88b0f776f0b85664b9f1105a3e251641e1b20.
+Checked pipeline/interface source: b6d75ad007da7fd166e8e4be5ed9146d435e1d3d.
+Application executing bodies, specs and proof bodies remain byte-identical
+to that earlier application snapshot. The final fresh complete Cargo stream
+contains 2060 vstd, one interface-boundary and 1276 application obligations,
+all with zero errors, and a nonempty compiled production library. The strict
+production extractor is unchanged.
 Fresh unfiltered application result under this proposed interface: 1276
 verified, zero errors, with a nonempty compiled production library.
 Conditional exact-source accounting: 642 direct, 20 reviewed limitations,
@@ -117,3 +123,11 @@ remain offline and workspace-local. No ambient proof target or foreign
 manifest is accepted. The complete application semantic suite and hosted
 acceptance under this proposed boundary remain outstanding; local interface
 controls and a whole proof are not substitutes.
+
+Actual selected controls through this new dependency wiring passed all
+11 MMR-reference, two concrete collector-sink and two reset contrasts. Every
+strong mutant compiles and fails semantically, and its corresponding weaker
+control proves. All 31 targeted tooling regressions pass. The independent
+candidate consumer records these actual results and the exact-source audit in
+target/capacity-proposal/pipeline-evidence.json with foundation, hosted,
+normative and publication approval explicitly false.
