@@ -13,7 +13,8 @@ from os.path import commonprefix
 from pathlib import Path
 
 from check_distribution import isolated_environment, run
-from source_group import SourceGroup, bound_source_groups, relocate_cases
+from rust_source import source_functions
+from source_group import SourceGroup, bound_source_groups, relocate_cases, whole_binds_unique_implementation
 
 
 def replace_once(source: str, original: str, replacement: str) -> str:
@@ -168,6 +169,7 @@ def check_semantic_cases(
         from run_semantic_proofs import load_whole_baseline
 
         whole = load_whole_baseline(root, Path(receipt))
+    inventory = source_functions(root) if whole is not None and any("impl_trait" in case for case in cases) else []
     results = []
     with proof_workspace(root, executable, prefix) as (
         directory, environment, expected, rust,
@@ -201,7 +203,9 @@ def check_semantic_cases(
             identity = (case["module"], case["function"])
             target = (*identity, case["verification_module"])
             if target not in baselines:
-                if identity in collisions or "impl_trait" in case:
+                if identity in collisions or "impl_trait" in case and not (
+                    whole is not None and whole_binds_unique_implementation(case, inventory)
+                ):
                     baselines[target] = selected_proof(
                         executable, directory, environment, False, *identity,
                         verification_module=case["verification_module"],
@@ -212,7 +216,10 @@ def check_semantic_cases(
                         verification_module=case["verification_module"],
                     )
                 baseline_targets[target] = [case["function"]]
-            if "impl_trait" in case and baselines[target]["verified"] != len(case["selected_impl_traits"]):
+            if (
+                "impl_trait" in case and "whole_positive" not in baselines[target]
+                and baselines[target]["verified"] != len(case["selected_impl_traits"])
+            ):
                 raise ValueError("selected pristine baseline must prove every colliding implementation")
             source = replace_once(original, case["site"], case["replacement"])
             try:

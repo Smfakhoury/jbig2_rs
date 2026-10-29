@@ -133,6 +133,23 @@ def verification_scope(module, function, inventory):
     return matches[0]["verification_scope"] if matches else module
 
 
+def whole_binds_unique_implementation(case, inventory):
+    if "impl_trait" not in case or case.get("selected_impl_traits") != [case["impl_trait"]]:
+        return False
+    matches = [
+        row for row in inventory
+        if row["verifier_module"] == case["module"]
+        and (row["owner"] + "::" if row["owner"] else "") + row["name"] == case["function"]
+    ]
+    return len(matches) == 1 and all((
+        matches[0]["file"] == case["file"],
+        matches[0]["verification_scope"] == case["verification_module"],
+        matches[0]["impl_trait"] == case["impl_trait"],
+        matches[0]["verification_requested"],
+        not matches[0]["runtime_proof_divergence"],
+    ))
+
+
 def relocate_cases(root, cases, baseline_groups, files):
     inventory = source_functions(root) if any(name.startswith("src/") for name in files) else []
     explicit = {

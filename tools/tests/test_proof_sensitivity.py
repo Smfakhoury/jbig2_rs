@@ -13,9 +13,98 @@ TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
 from proof_sensitivity import check_semantic_cases, positive_baseline, selected_proof, weakened_contract
+from source_group import whole_binds_unique_implementation
 
 
 class SelectedProofEvidenceTests(unittest.TestCase):
+    def test_whole_trait_binding_requires_one_exact_verified_nondivergent_declaration(self):
+        case = {
+            "module": "value", "function": "Value::default", "file": "src/value.rs",
+            "verification_module": "value", "impl_trait": "Default",
+            "selected_impl_traits": ["Default"],
+        }
+        row = {
+            "verifier_module": "value", "owner": "Value", "name": "default",
+            "file": "src/value.rs", "verification_scope": "value", "impl_trait": "Default",
+            "verification_requested": True, "runtime_proof_divergence": False,
+        }
+        self.assertTrue(whole_binds_unique_implementation(case, [row]))
+        for field, value in (
+            ("file", "src/other.rs"), ("verification_scope", "other"),
+            ("impl_trait", "Other"), ("verification_requested", False),
+            ("runtime_proof_divergence", True),
+        ):
+            with self.subTest(field=field):
+                self.assertFalse(whole_binds_unique_implementation(case, [{**row, field: value}]))
+        self.assertFalse(whole_binds_unique_implementation(case, []))
+        self.assertFalse(whole_binds_unique_implementation(case, [row, {**row, "verification_scope": "other"}]))
+        self.assertFalse(whole_binds_unique_implementation(
+            {**case, "selected_impl_traits": ["Default", "Other"]}, [row],
+        ))
+
+    def test_unique_trait_reuses_actual_whole_count_but_runs_both_case_queries(self):
+        import hashlib
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root, directory = Path(temporary) / "source", Path(temporary) / "proof"
+            (root / "src").mkdir(parents=True)
+            (root / "src/lib.rs").write_text("mod value;\n")
+            source = (
+                "struct Value;\n// guarantee\n"
+                "#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+                "impl Default for Value { fn default() -> Self { Self } }\n"
+            )
+            (root / "src/value.rs").write_text(source)
+            shutil.copytree(root, directory)
+            case = {
+                "id": "unique", "file": "src/value.rs", "module": "value",
+                "verification_module": "value", "function": "Value::default",
+                "impl_trait": "Default", "site": "fn default() -> Self { Self }",
+                "replacement": "fn default() -> Self { let _ = 0; Self }",
+                "controls": (("// guarantee", "// weak"),),
+            }
+            snapshot = {"source_bindings": {
+                f"src/{name}": hashlib.sha256((root / "src" / name).read_bytes()).hexdigest()
+                for name in ("lib.rs", "value.rs")
+            }}
+            whole = {
+                "receipt_sha256": "1" * 64, "report_sha256": "2" * 64,
+                "manifest": snapshot, "files": {"baseline": "3" * 64},
+                "report": {
+                    "verification-results": {
+                        "success": True, "is-verifying-entire-crate": True,
+                        "verified": 999, "errors": 0,
+                    },
+                    "func-details": {"jbig2_rs_production::value::Value::default": {}},
+                },
+            }
+
+            @contextmanager
+            def workspace(*args):
+                yield directory, {}, "pinned", "rust"
+
+            def verify(executable, checkout, environment, failure, module, function):
+                return {"verified": 0 if failure else 1, "errors": int(failure)}
+
+            with patch.dict("os.environ", {"JBIG2_WHOLE_BASELINE": "/receipt"}), patch(
+                "run_semantic_proofs.load_whole_baseline", return_value=whole,
+            ), patch("run_semantic_proofs.manifest", return_value=snapshot), patch(
+                "run_semantic_proofs.whole_files", return_value=whole["files"],
+            ), patch("run_semantic_proofs.digest", return_value="1" * 64), patch(
+                "proof_sensitivity.proof_workspace", workspace,
+            ), patch("proof_sensitivity.selected_proof", side_effect=verify) as queries, patch(
+                "proof_sensitivity.run",
+            ):
+                report = check_semantic_cases(
+                    root, Path("/verus"), (case,), ("src/value.rs",), "fixture-", "scope",
+                )
+            self.assertEqual(queries.call_count, 2)
+            record = report["counterexamples"][0]
+            self.assertEqual(record["baseline_selected_verification"]["verified"], 999)
+            self.assertTrue(record["baseline_selected_verification"]["is-verifying-entire-crate"])
+            self.assertEqual(record["strong_verified_functions"], 0)
+            self.assertEqual(record["control_verified_functions"], 1)
+
     def test_same_scope_impls_share_only_a_complete_selected_peer_baseline(self):
         with tempfile.TemporaryDirectory() as temporary:
             root, directory = Path(temporary) / "source", Path(temporary) / "proof"

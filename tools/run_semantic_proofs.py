@@ -19,8 +19,8 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention", "default-limits-1")
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions", "default-decoder-1")
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "reset", "error-conversion", "default-limits-1")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "retention", "error-wrappers-regions", "default-decoder-1")
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
@@ -31,6 +31,12 @@ ADDED_SHARD_GROUPS = {
 REBALANCED_SHARD_GROUPS = {
     "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
     "mmr-run": 3, "bitmap-chunk": 4,
+}
+DEFAULT_SHARD_REBALANCE = {
+    "symbol-cardinality": 0, "default-decoder-4": 1, "operator-bit": 1,
+    "bitmap-compose": 2, "default-decoder-5": 2, "error-wrappers-basic": 3,
+    "page-public": 3, "default-limits-4": 4, "segment-data": 4,
+    "default-limits-5": 5, "halftone-header": 5, "page-state": 5,
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
@@ -141,7 +147,10 @@ def configured_shards():
         if check[0] in ADDED_SHARD_GROUPS:
             shards[min(ADDED_SHARD_GROUPS[check[0]], count - 1)].append(check)
     if any(check[0] == "error-wrappers-basic" for check in checks):
-        for identity, destination in REBALANCED_SHARD_GROUPS.items():
+        moves = REBALANCED_SHARD_GROUPS
+        if any(check[0].startswith("default-") for check in checks):
+            moves = {**moves, **DEFAULT_SHARD_REBALANCE}
+        for identity, destination in moves.items():
             for shard in shards:
                 match = next((check for check in shard if check[0] == identity), None)
                 if match is not None:
@@ -309,7 +318,8 @@ def check_bound_report(root, check, report, bindings, whole=None):
             cases = module.CASE_GROUPS[identity]
         else:
             cases = module.CASES
-        from source_group import relocate_cases
+        from rust_source import source_functions
+        from source_group import relocate_cases, whole_binds_unique_implementation
 
         document_cases = identity in {"document-count", "document-layout"}
         configured_baseline_groups = getattr(module, "BASELINE_GROUPS", ())
@@ -339,17 +349,25 @@ def check_bound_report(root, check, report, bindings, whole=None):
             scoped_targets.setdefault((case["module"], case["function"]), set()).add(
                 (case["verification_module"], case.get("impl_trait"))
             )
+        inventory = source_functions(root) if any(
+            "whole_positive" in row["baseline_selected_verification"] and "impl_trait" in case
+            for case, row in zip(cases, report["counterexamples"])
+        ) else []
         for case, row in zip(cases, report["counterexamples"]):
+            inherited = "whole_positive" in row["baseline_selected_verification"]
             if (len(scoped_targets[(case["module"], case["function"])]) > 1 or "impl_trait" in case) and (
                 row.get("verification_module") != case["verification_module"]
                 or row.get("source_file") != case["file"]
-                or row["baseline_selected_verification"].get("is-verifying-entire-crate") is not False
+                or (
+                    not whole_binds_unique_implementation(case, inventory) if inherited
+                    else row["baseline_selected_verification"].get("is-verifying-entire-crate") is not False
+                )
             ):
                 raise ValueError("ambiguous function name needs its exact source scope and fresh selected baseline")
             if "impl_trait" in case and (
                 row.get("impl_trait") != case["impl_trait"]
                 or row.get("selected_impl_traits") != case["selected_impl_traits"]
-                or row["baseline_selected_verification"]["verified"] != len(case["selected_impl_traits"])
+                or not inherited and row["baseline_selected_verification"]["verified"] != len(case["selected_impl_traits"])
                 or row.get("strong_verified_functions") != len(case["selected_impl_traits"]) - 1
                 or row["strong_verifier_errors"] != 1
                 or row.get("control_verified_functions") != len(case["selected_impl_traits"])
