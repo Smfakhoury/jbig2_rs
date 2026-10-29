@@ -19,8 +19,8 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention")
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions")
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention", "default-limits")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions", "default-decoder")
 ADDED_SHARD_GROUPS = {"error-wrappers-symbol": 4, "error-wrappers-basic": 5}
 REBALANCED_SHARD_GROUPS = {
     "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
@@ -66,6 +66,8 @@ CHECKS = (
     ("error-wrappers-basic", "check_error_wrapper_proofs.py", 6, "strong_contract", "weaker_control"),
     ("error-wrappers-regions", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
     ("error-wrappers-symbol", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("default-limits", "check_default_proofs.py", 15, "strong_contract", "weaker_control"),
+    ("default-decoder", "check_default_proofs.py", 15, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -428,6 +430,7 @@ def run_checks(
             selection = ["--case-group", identity] if script in {
                 "check_document_count_proof.py", "check_page_state_proofs.py",
                 "check_error_wrapper_proofs.py",
+                "check_default_proofs.py",
             } else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(

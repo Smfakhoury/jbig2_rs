@@ -429,7 +429,14 @@ impl Decoder {
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verifier::verify)]
 impl Default for Decoder {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures document_spec::default_limits(
+            document_spec::decoder_limits(&out),
+        ),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn default() -> Self {
         Self::project_default()
     }

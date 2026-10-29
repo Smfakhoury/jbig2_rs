@@ -88,10 +88,38 @@ overhead is included in planning. Rejected-run timings remain planning inputs,
 not acceptance credit. Every case/query, the six-shard/max-four policy, eight
 producers, solver/job caps and actual 1,050-second guards remain intact.
 
-The three remaining audited forwarders are the two default constructors and
-the owned page collector's sink wrapper. This does not close the twenty
+The remaining audited forwarder is the owned page collector's sink wrapper.
+This does not close the twenty
 reviewed standard/callback/orchestration limitations or the held capacity
 divergence, nor does it establish normative model fidelity.
+
+### Public default constructors
+
+`Limits::default` now proves all fifteen approved default resource values.
+`Decoder::default` proves the existing project default-limits predicate over
+its stored configuration. The executing one-line wrappers and their already
+verified constructors are unchanged.
+
+These are checked implementation postconditions under the pinned library's
+existing `Default` trait specification, not new trusted standard-library
+declarations. The impls use the public `verifier::verify` attribute directly:
+the pin's `verus_verify` convenience macro otherwise injects a second method
+attribute before the conditional explicit contract has expanded. All
+annotations remain inactive for ordinary Rust consumers.
+
+Thirty compiling contrasts independently set each default field to zero.
+Each must fail its exact implementation's contract; a control omitting only
+that field must prove the other fourteen. Exact file, lexical scope and
+`Default` implementation identity are required, including one selected
+pristine body, zero verified bodies/one error for the mutant and one verified
+body for the weaker control. A native public-API test separately checks every
+constant through both constructors.
+
+The two groups run serially in the existing whole and collector roles. All
+previous cases and shard memberships remain, along with eight producers,
+six one-worker shards, max-four semantic concurrency and unchanged measured
+guards and job caps. Hosted acceptance must include the actual complete
+new profile; a local proof or estimated schedule is not acceptance credit.
 
 ## Blocking capacity/getter decision
 

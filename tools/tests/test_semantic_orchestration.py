@@ -17,7 +17,8 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
-PRE_WRAPPER_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("error-wrappers-"))
+PRE_DEFAULT_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("default-"))
+PRE_WRAPPER_CHECKS = tuple(row for row in PRE_DEFAULT_CHECKS if not row[0].startswith("error-wrappers-"))
 PRE_CONVERSION_CHECKS = tuple(row for row in PRE_WRAPPER_CHECKS if row[0] != "error-conversion")
 
 DOCUMENT_PARTITION_GROUPS = (
@@ -207,6 +208,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             result = runner.run_checks(self.root, self.root / "verus", self.output, only="error-wrappers-basic")
         self.assertEqual(result["status"], "passed")
 
+    @patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS)
     def test_new_wrapper_groups_rebalance_two_measured_memberships_without_more_producers(self):
         shards = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS), patch.object(
@@ -236,6 +238,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(sum(len(role) for role in roles), 38)
         self.assertEqual(sum(row[2] for role in roles for row in role), 297)
 
+    @patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS)
     def test_completed_rejected_wrapper_profiles_rebalance_below_original_guards(self):
         # All producers in40760950278 completed; its guard rejection grants no acceptance credit.
         # Combine both complete rejected profiles with accepted #111; round maxima up.
@@ -262,6 +265,43 @@ class SemanticOrchestrationTests(unittest.TestCase):
         measured = [sum(costs[row[0]] for row in role) for role in roles]
         self.assertLessEqual(max(measured), 1020)
         self.assertLessEqual(measured[0] + 211, 1200)
+
+    def test_default_groups_use_existing_roles_without_reassigning_prior_shards(self):
+        shards = runner.configured_shards()
+        with patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS):
+            self.assertEqual(shards, runner.configured_shards())
+        whole = runner.configured_whole_checks()
+        collector = runner.configured_collector_checks()
+        self.assertEqual(whole[-1][0], "default-limits")
+        self.assertEqual(collector[-1][0], "default-decoder")
+        roles = [whole, collector, *shards]
+        self.assertEqual(len(roles), 8)
+        self.assertEqual(sum(len(role) for role in roles), 40)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 327)
+
+    def test_default_group_selection_is_forwarded_to_its_shared_checker(self):
+        script = "check_default_proofs.py"
+        for identity in ("default-limits", "default-decoder"):
+            with self.subTest(group=identity):
+                (self.root / "tools" / script).write_text(
+                    "CASES = ({'id':'case','module':'module','function':'function'},)\n"
+                    f"CASE_GROUPS = {{{identity!r}: CASES}}\n"
+                )
+                check = (identity, script, 1, "strong_contract", "weaker_control")
+
+                def process(command, **kwargs):
+                    self.assertEqual(command[command.index("--case-group") + 1], identity)
+                    report = evidence()
+                    report["case_group"] = identity
+                    report["source_bindings"] = {"src/example.rs": runner.digest(self.root / "src/example.rs")}
+                    Path(command[-1]).write_text(json.dumps(report))
+                    return SimpleNamespace(returncode=0)
+
+                with patch.object(runner, "CHECKS", (check,)), patch.object(
+                    runner.subprocess, "run", side_effect=process,
+                ):
+                    result = runner.run_checks(self.root, self.root / "verus", self.output, only=identity)
+                self.assertEqual(result["status"], "passed")
 
     def test_manifest_covers_every_semantic_checker_without_fixed_group_or_case_totals(self):
         checks = runner.configured_checks()
