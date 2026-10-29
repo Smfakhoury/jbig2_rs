@@ -49,6 +49,27 @@ fn downstream_distribution_smoke_is_also_a_runtime_regression() {
 }
 
 #[test]
+fn both_public_defaults_preserve_every_project_limit() {
+    for limits in [Limits::default(), *Decoder::default().limits()] {
+        assert_eq!(limits.max_width, 1_000_000);
+        assert_eq!(limits.max_height, 1_000_000);
+        assert_eq!(limits.max_pixels_per_page, 1_000_000_000);
+        assert_eq!(limits.max_decoder_managed_memory_bytes, 1_073_741_824);
+        assert_eq!(limits.max_stream_bytes, 1_073_741_824);
+        assert_eq!(limits.max_pages, 10_000);
+        assert_eq!(limits.max_segments, 100_000);
+        assert_eq!(limits.max_symbols, 1_000_000);
+        assert_eq!(limits.max_references_per_segment, 4_096);
+        assert_eq!(limits.max_total_references, 1_000_000);
+        assert_eq!(limits.max_reference_graph_depth, 128);
+        assert_eq!(limits.max_nesting_depth, 128);
+        assert_eq!(limits.max_work_units, 2_000_000_000);
+        assert_eq!(limits.max_cumulative_decoded_bitmap_bytes, 4_294_967_296);
+        assert_eq!(limits.max_retained_state_bytes, 536_870_912);
+    }
+}
+
+#[test]
 fn short_reads_preserve_inspection_decode_and_sink_output() {
     let (input, _) = distribution_consumer::generated_page();
     let decoder = Decoder::default();

@@ -88,10 +88,105 @@ overhead is included in planning. Rejected-run timings remain planning inputs,
 not acceptance credit. Every case/query, the six-shard/max-four policy, eight
 producers, solver/job caps and actual 1,050-second guards remain intact.
 
-The three remaining audited forwarders are the two default constructors and
-the owned page collector's sink wrapper. This does not close the twenty
+The remaining audited forwarder is the owned page collector's sink wrapper.
+This does not close the twenty
 reviewed standard/callback/orchestration limitations or the held capacity
 divergence, nor does it establish normative model fidelity.
+
+### Public default constructors
+
+`Limits::default` now proves all fifteen approved default resource values.
+`Decoder::default` proves the existing project default-limits predicate over
+its stored configuration. The executing one-line wrappers and their already
+verified constructors are unchanged.
+
+These are checked implementation postconditions under the pinned library's
+existing `Default` trait specification, not new trusted standard-library
+declarations. The impls use the public `verifier::verify` attribute directly:
+the pin's `verus_verify` convenience macro otherwise injects a second method
+attribute before the conditional explicit contract has expanded. All
+annotations remain inactive for ordinary Rust consumers.
+
+Thirty compiling contrasts independently set each default field to zero.
+Each must fail its exact implementation's contract; a control omitting only
+that field must prove the other fourteen. Exact file, lexical scope and
+`Default` implementation identity are required, including a pristine positive
+proof, zero verified bodies/one error for the mutant and one verified
+body for the weaker control. A native public-API test separately checks every
+constant through both constructors.
+
+The thirty cases are partitioned into ten three-field cohorts. The first
+hosted five-field profile reached its added whole-role cohort but exceeded
+the unchanged 20-minute whole-job cap; it grants no acceptance credit.
+The second profile completed every query, but its final collector correctly
+rejected several measured workloads over 1,050 seconds. Its complete
+per-group timings now inform an explicit six-shard rebalance. Reset moves
+to whole and retention to collector to account for the whole job's measured
+setup overhead as well. Those candidate profiles retained eight producers,
+six one-worker shards, max-four semantic concurrency and the measured
+guards and job caps. They are historical planning inputs, not acceptance credit.
+
+The next complete profile passed every query and all six measured shard
+workloads, but its collector measured 1,078.132 seconds and was rejected.
+Its complete timings move the first decoder-default cohort to shard three
+and the last limits-default cohort from shard five to shard four. Both
+preceding profiles remain frozen planning inputs, not acceptance credit.
+
+A fourth complete profile again passed every query but exceeded two shard
+guards. The subsequent partition takes each group's maximum from both
+complete runs using the identical proof harness, rather than relying on one
+run's faster workers. With every value rounded up, whole/collector/shards
+initially cost 967/1015/1002/1038/1021/1024/1028/1044 seconds, but the whole
+job still exceeded its wall-clock cap. The revised whole assignment costs
+900 seconds under the same rounded envelope, leaving 92 seconds beyond the
+observed 208-second setup allowance under its unchanged cap. Other roles
+cost 1015/1043/1046/1027/1024/1040/1044 seconds. An explicit complete shard
+map prevents removed groups from silently shifting round-robin membership.
+These are conservative planning inputs only: fresh complete hosted
+acceptance remains mandatory.
+
+The existing same-run whole-positive reuse also covers a trait implementation
+only when the complete native inventory has exactly one such qualified name,
+with matching file, lexical scope and trait, verified marking and no divergence.
+The receipt retains the **actual whole-proof count**, not a fabricated selected
+count. Missing/stale receipts and ambiguous names still fail closed; colliding
+implementations still require their fresh selected peer baselines. Every
+mutant compilation and strong/weaker query remains independent and fresh.
+
+Ordinary Rust mutant checks use Cargo's incremental compiler only inside
+their temporary workspace, with an explicit workspace-local target directory.
+The proof environment is not mutated and no verifier query is cached or
+skipped. A real warm-cache control rejected an ill-typed mutant with `E0308`
+and accepted the restored source; repeated native checks fell from about
+1.0 seconds to 0.33 seconds. This does not disable lifetime, erasure, trait
+conflict or semantic checks, and the cache is discarded with the workspace.
+
+The first complete native-cache profile passed every query but measured
+1,091.433 seconds on one shard and was correctly rejected. Four small
+cohort transfers use its existing measured headroom; rounded whole/collector/
+shard costs are 851/972/908/977/934/984/1021/960 seconds. Earlier profiles
+remain frozen regression inputs. Actual exact-head acceptance is still
+required, rather than treating those planning numbers as a successful run.
+
+### Current CI scheduling revision
+
+The expanded profile now uses **eight one-worker semantic shards**, plus the
+existing whole and collector producers. This intentionally revises the former
+six-shard/eight-producer scheduling contract: there are ten producer receipts
+and 23 workflow jobs, or 24 checks including CLA. The two additional setup
+jobs do not raise peak concurrency: at most four semantic jobs run at once.
+The 1,050-second per-producer guard, 20-minute whole/collector caps,
+30-minute semantic caps, pinned solver/toolchain and every case/query remain.
+No canceled, incomplete or over-budget profile is accepted.
+
+Sizing uses each group's rounded maximum from both complete native-cache
+profiles. Whole/collector/eight shards cost
+511/703/828/828/887/857/860/829/888/887 seconds under those planning inputs.
+Whole again handles arithmetic-codec/value-bridge and collector handles
+arithmetic-decision/document-count/reset. All other groups have an explicit
+eight-shard assignment. Earlier six-shard fixtures remain frozen, while
+current tests require all eight exact shard receipts and fail on any missing
+one. Actual complete same-head hosted validation is still required.
 
 ## Blocking capacity/getter decision
 
@@ -198,9 +293,9 @@ the same-run `verus-partial-RUN-ATTEMPT-whole` artifact into a separate director
 in each semantic job, and passes that directory as `--whole-baseline` alongside the
 existing shard arguments. Do not place it inside the shard output directory.
 The collector revalidates every reused baseline against the whole artifact it
-collects. Preserve six one-worker shards, at most four active semantic jobs,
+collects. Preserve eight one-worker shards, at most four active semantic jobs,
 20-minute whole/collector caps, the owner-merged 30-minute semantic-job caps
-and the existing stable check topology. The measured 1050-second semantic
+and the revision-qualified complete check topology. The measured 1050-second semantic
 workload guard remains unchanged.
 
 The existing whole-proof job also executes the complete `arithmetic-codec` and
@@ -208,7 +303,7 @@ The existing whole-proof job also executes the complete `arithmetic-codec` and
 This uses spare time in an existing job, not additional jobs, solver workers,
 larger timeouts or omitted cases. Their reports remain outside the immutable
 positive receipt and are separately source/run/hash validated by the collector,
-alongside all six shard receipts. Every configured group executes exactly once.
+alongside all eight shard receipts. Every configured group executes exactly once.
 The existing collector job also runs the complete `arithmetic-decision`,
 `document-count` and `reset` groups serially before aggregation. Its separately
 required `collector` receipt has the same source/tool/run/attempt and individual
@@ -229,8 +324,8 @@ producer total above the unchanged 1050-second measurement guard.
 The stable `verify` collector requires the whole proof/build, its assigned
 contrast receipt and same-run shard
 receipts, exact membership and individual report/log/checker hashes with matching
-source/tool/run/attempt identities. Shards are sequential and worker/job budgets
-are unchanged; old verification results, canceled/partial collections or merely
+source/tool/run/attempt identities. Shards are sequential, with unchanged peak
+concurrency and per-job budgets; old verification results, canceled/partial collections or merely
 predicted timings are not acceptance evidence. Current accepted group/contrast counts and runs are in the
 snapshot, not repeated as mutable progress totals here.
 

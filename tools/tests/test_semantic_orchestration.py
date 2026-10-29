@@ -17,8 +17,63 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
-PRE_WRAPPER_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("error-wrappers-"))
+CURRENT_TOPOLOGY = {
+    "CI_SHARDS": runner.CI_SHARDS,
+    "WHOLE_GROUPS": runner.WHOLE_GROUPS,
+    "COLLECTOR_GROUPS": runner.COLLECTOR_GROUPS,
+    "DEFAULT_SHARD_REBALANCE": runner.DEFAULT_SHARD_REBALANCE,
+}
+SIX_SHARD_WHOLE_GROUPS = (
+    "arithmetic-codec", "value-bridge", "error-conversion",
+    "default-limits-1", "default-limits-4", "default-limits-5",
+)
+SIX_SHARD_COLLECTOR_GROUPS = (
+    "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
+    "default-limits-2", "default-limits-3",
+)
+SIX_SHARD_MOVES = {
+    "mmr-reference": 0, "arithmetic-refill": 0, "symbol-cardinality": 0,
+    "error-wrappers-basic": 0, "operator-bit": 0,
+    "default-decoder-3": 0, "default-decoder-4": 0,
+    "document-layout": 1, "arithmetic-normalization": 1, "arithmetic-integer": 1,
+    "bitmap-chunk": 1, "black-span": 1, "reset": 1,
+    "region-dispatch": 2, "reader-error": 2, "mmr-horizontal": 2, "iaid-state": 2,
+    "default-decoder-2": 2, "bitmap-compose": 2, "default-decoder-5": 2,
+    "huffman-assignment": 3, "text-batch": 3, "arithmetic-initialization": 3,
+    "default-decoder-1": 3, "mmr-prefix": 3, "mmr-run": 3, "page-public": 3,
+    "integer-state": 4, "bitmap-copy": 4, "error-wrappers-symbol": 4,
+    "segment-data": 4, "page-finish": 4,
+    "segment-header": 5, "mmr-span": 5, "halftone-header": 5, "page-state": 5,
+}
+PRE_DEFAULT_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("default-"))
+PRE_WRAPPER_CHECKS = tuple(row for row in PRE_DEFAULT_CHECKS if not row[0].startswith("error-wrappers-"))
 PRE_CONVERSION_CHECKS = tuple(row for row in PRE_WRAPPER_CHECKS if row[0] != "error-conversion")
+PRE_DEFAULT_WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention")
+PRE_DEFAULT_COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions")
+PRE_WRAPPER_COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
+PRE_COLLECTOR_REBALANCE_GROUPS = (
+    "arithmetic-decision", "document-count", "retention", "error-wrappers-regions", "default-decoder-1",
+)
+PRE_COLLECTOR_REBALANCE_ADDED = {
+    name: index for name, index in runner.ADDED_SHARD_GROUPS.items() if name != "default-decoder-1"
+}
+PRE_COLLECTOR_REBALANCE_MOVES = {
+    "symbol-cardinality": 0, "default-decoder-4": 1, "operator-bit": 1,
+    "bitmap-compose": 2, "default-decoder-5": 2, "error-wrappers-basic": 3,
+    "page-public": 3, "default-limits-4": 4, "segment-data": 4,
+    "default-limits-5": 5, "halftone-header": 5, "page-state": 5,
+}
+PRE_ENVELOPE_WHOLE_GROUPS = (
+    "arithmetic-codec", "value-bridge", "reset", "error-conversion", "default-limits-1",
+)
+PRE_ENVELOPE_SHARD_MOVES = {**PRE_COLLECTOR_REBALANCE_MOVES, "default-limits-5": 4}
+PRE_NATIVE_LOAD_COLLECTOR_GROUPS = (
+    "arithmetic-decision", "document-count", "retention", "error-wrappers-regions",
+)
+PRE_NATIVE_LOAD_SHARD_MOVES = {
+    **SIX_SHARD_MOVES, "default-limits-2": 5,
+    "default-limits-3": 1, "default-decoder-3": 2, "default-decoder-4": 4,
+}
 
 DOCUMENT_PARTITION_GROUPS = (
     ("iaid-state", 6), ("arithmetic-initialization", 6), ("text-batch", 11),
@@ -70,6 +125,12 @@ def evidence():
 
 class SemanticOrchestrationTests(unittest.TestCase):
     def setUp(self):
+        legacy = patch.multiple(
+            runner, CI_SHARDS=6, WHOLE_GROUPS=SIX_SHARD_WHOLE_GROUPS,
+            COLLECTOR_GROUPS=SIX_SHARD_COLLECTOR_GROUPS, DEFAULT_SHARD_REBALANCE=SIX_SHARD_MOVES,
+        )
+        legacy.start()
+        self.addCleanup(legacy.stop)
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name).resolve()
@@ -99,6 +160,46 @@ class SemanticOrchestrationTests(unittest.TestCase):
         })
         self.environment.start()
         self.addCleanup(self.environment.stop)
+
+    def test_eight_shard_profile_preserves_all_queries_and_bounded_concurrency(self):
+        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+            shards = runner.configured_shards()
+            whole = runner.configured_whole_checks()
+            collector = runner.configured_collector_checks()
+            self.assertEqual(len(shards), 8)
+            self.assertEqual([row[0] for row in whole], ["arithmetic-codec", "value-bridge"])
+            self.assertEqual(
+                [row[0] for row in collector], ["arithmetic-decision", "document-count", "reset"],
+            )
+            assigned = [row for role in (whole, collector, *shards) for row in role]
+            self.assertEqual(len(assigned), 48)
+            self.assertEqual(len({row[0] for row in assigned}), 48)
+            self.assertEqual(sum(row[2] for row in assigned), 327)
+            self.assertEqual(set(assigned), set(runner.configured_checks()))
+            costs = {
+                "arithmetic-decision": 355, "document-count": 298, "retention": 71,
+                "error-wrappers-regions": 198, "default-decoder-4": 73,
+                "integer-state": 259, "bitmap-copy": 201, "error-wrappers-symbol": 188,
+                "segment-data": 252, "page-finish": 173, "bitmap-chunk": 97,
+                "document-layout": 307, "arithmetic-normalization": 149,
+                "default-limits-3": 72, "arithmetic-integer": 221, "black-span": 153,
+                "reset": 50, "default-limits-2": 72, "segment-header": 246,
+                "mmr-span": 201, "halftone-header": 211, "page-state": 306,
+                "operator-bit": 91, "mmr-reference": 333, "arithmetic-refill": 149,
+                "symbol-cardinality": 258, "error-wrappers-basic": 169,
+                "huffman-assignment": 111, "mmr-prefix": 102, "mmr-run": 102,
+                "text-batch": 255, "arithmetic-initialization": 144,
+                "default-decoder-1": 71, "page-public": 210, "arithmetic-codec": 400,
+                "value-bridge": 111, "error-conversion": 221, "default-limits-1": 62,
+                "default-limits-4": 62, "default-limits-5": 63, "region-dispatch": 75,
+                "reader-error": 212, "mmr-horizontal": 183, "iaid-state": 151,
+                "default-decoder-2": 73, "default-decoder-3": 73,
+                "bitmap-compose": 171, "default-decoder-5": 73,
+            }
+            measured = [sum(costs[row[0]] for row in role) for role in (whole, collector, *shards)]
+            self.assertEqual(measured, [511, 703, 828, 828, 887, 857, 860, 829, 888, 887])
+            self.assertLessEqual(max(measured), 1050)
+            self.assertLessEqual(measured[0] + 208, 1200)
 
     def run_fixture(self, process):
         with patch.object(runner, "CHECKS", self.checks), patch.object(runner.subprocess, "run", side_effect=process):
@@ -187,6 +288,53 @@ class SemanticOrchestrationTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaisesRegex(ValueError, "selected peer bodies"):
                 runner.check_bound_report(self.root, check, broken, bindings)
 
+    def test_whole_trait_receipt_needs_global_uniqueness_and_the_exact_whole_identity(self):
+        (self.root / "src/example.rs").write_text(
+            "struct Value;\n#[cfg_attr(verus_keep_ghost, verus_verify)]\n"
+            "impl Default for Value { fn default() -> Self { Self } }\n"
+        )
+        case = {
+            "id": "case", "module": "module", "function": "Value::default",
+            "file": "src/example.rs", "verification_module": "module", "impl_trait": "Default",
+        }
+        (self.root / "tools/unique.py").write_text("CASES = " + repr((case,)) + "\n")
+        bindings = {"src/example.rs": runner.digest(self.root / "src/example.rs")}
+        report = evidence()
+        report["source_bindings"] = bindings
+        whole = {
+            "receipt_sha256": "1" * 64, "report_sha256": "2" * 64,
+            "report": {
+                "verification-results": {
+                    **report["counterexamples"][0]["baseline_selected_verification"],
+                    "is-verifying-entire-crate": True, "verified": 999,
+                },
+                "func-details": {"jbig2_rs_production::module::Value::default": {}},
+            },
+        }
+        row = report["counterexamples"][0]
+        row.update(
+            function="module::Value::default", verification_module="module",
+            source_file="src/example.rs", impl_trait="Default", selected_impl_traits=["Default"],
+            strong_verified_functions=0, control_verified_functions=1,
+            baseline_selected_verification=runner.baseline_from_whole(
+                whole, ["jbig2_rs_production::module::Value::default"],
+            ),
+        )
+        check = ("unique", "unique.py", 1, "strong_contract", "weaker_control")
+        runner.check_bound_report(self.root, check, report, bindings, whole)
+        self.assertEqual(row["baseline_selected_verification"]["verified"], 999)
+        broken = copy.deepcopy(report)
+        broken["counterexamples"][0]["baseline_selected_verification"]["whole_positive"]["receipt_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "selected cases/baselines"):
+            runner.check_bound_report(self.root, check, broken, bindings, whole)
+        (self.root / "src/example.rs").write_text(
+            (self.root / "src/example.rs").read_text()
+            + "impl Value { fn default() -> Self { Self } }\n"
+        )
+        bindings["src/example.rs"] = runner.digest(self.root / "src/example.rs")
+        with self.assertRaisesRegex(ValueError, "exact source scope"):
+            runner.check_bound_report(self.root, check, report, bindings, whole)
+
     def test_wrapper_group_selection_is_forwarded_to_its_shared_checker(self):
         script = "check_error_wrapper_proofs.py"
         (self.root / "tools" / script).write_text(
@@ -207,6 +355,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
             result = runner.run_checks(self.root, self.root / "verus", self.output, only="error-wrappers-basic")
         self.assertEqual(result["status"], "passed")
 
+    @patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", PRE_DEFAULT_WHOLE_GROUPS)
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_DEFAULT_COLLECTOR_GROUPS)
     def test_new_wrapper_groups_rebalance_two_measured_memberships_without_more_producers(self):
         shards = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS), patch.object(
@@ -236,6 +387,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(sum(len(role) for role in roles), 38)
         self.assertEqual(sum(row[2] for role in roles for row in role), 297)
 
+    @patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS)
+    @patch.object(runner, "WHOLE_GROUPS", PRE_DEFAULT_WHOLE_GROUPS)
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_DEFAULT_COLLECTOR_GROUPS)
     def test_completed_rejected_wrapper_profiles_rebalance_below_original_guards(self):
         # All producers in40760950278 completed; its guard rejection grants no acceptance credit.
         # Combine both complete rejected profiles with accepted #111; round maxima up.
@@ -263,6 +417,201 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1020)
         self.assertLessEqual(measured[0] + 211, 1200)
 
+    def test_default_groups_use_existing_roles_and_the_complete_measured_rebalance(self):
+        shards = runner.configured_shards()
+        with patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS), patch.object(
+            runner, "WHOLE_GROUPS", PRE_DEFAULT_WHOLE_GROUPS,
+        ), patch.object(runner, "COLLECTOR_GROUPS", PRE_DEFAULT_COLLECTOR_GROUPS):
+            expected = {row[0]: index for index, shard in enumerate(runner.configured_shards()) for row in shard}
+        whole = runner.configured_whole_checks()
+        collector = runner.configured_collector_checks()
+        self.assertEqual(whole[-1][0], "default-limits-5")
+        self.assertEqual(collector[-1][0], "default-limits-3")
+        self.assertNotIn("reset", [row[0] for row in whole])
+        self.assertIn("retention", [row[0] for row in collector])
+        for name, index in (
+            ("default-limits-2", 0), ("default-limits-3", 1),
+            ("default-limits-4", 1), ("default-limits-5", 1),
+            ("default-decoder-1", 3),
+            ("default-decoder-2", 2), ("default-decoder-3", 2),
+            ("default-decoder-4", 4), ("default-decoder-5", 5),
+        ):
+            expected[name] = index
+        expected.update({
+            "symbol-cardinality": 0, "default-decoder-4": 1, "operator-bit": 1,
+            "bitmap-compose": 2, "default-decoder-5": 2, "error-wrappers-basic": 3,
+            "page-public": 3, "default-limits-4": 4, "segment-data": 4,
+            "default-limits-5": 4, "halftone-header": 5, "page-state": 5,
+        })
+        expected.pop("default-limits-4")
+        expected.pop("default-limits-5")
+        expected.pop("default-limits-2")
+        expected.pop("default-limits-3")
+        expected.update({
+            "region-dispatch": 2,
+            "error-wrappers-basic": 0, "huffman-assignment": 3,
+            "default-decoder-3": 0, "default-decoder-4": 0, "reader-error": 2, "operator-bit": 0,
+            "arithmetic-integer": 1, "bitmap-chunk": 1,
+            "black-span": 1, "reset": 1, "page-finish": 4,
+        })
+        self.assertIn("default-limits-4", [row[0] for row in whole])
+        self.assertEqual(
+            {row[0]: index for index, shard in enumerate(shards) for row in shard}, expected,
+        )
+        roles = [whole, collector, *shards]
+        self.assertEqual(len(roles), 8)
+        self.assertEqual(sum(len(role) for role in roles), 48)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 327)
+
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_COLLECTOR_REBALANCE_GROUPS)
+    @patch.object(runner, "ADDED_SHARD_GROUPS", PRE_COLLECTOR_REBALANCE_ADDED)
+    @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_COLLECTOR_REBALANCE_MOVES)
+    @patch.object(runner, "WHOLE_GROUPS", PRE_ENVELOPE_WHOLE_GROUPS)
+    def test_complete_rejected_default_profile_fits_the_unchanged_guards_after_rebalance(self):
+        # All 40861606251 queries passed; its measured-profile rejection grants no acceptance credit.
+        costs = {
+            "arithmetic-decision": 360, "document-count": 305, "reset": 49,
+            "error-wrappers-regions": 204, "default-decoder-1": 87,
+            "symbol-cardinality": 267, "integer-state": 255, "bitmap-copy": 192,
+            "error-wrappers-symbol": 182, "default-decoder-4": 84, "bitmap-chunk": 95,
+            "page-state": 328, "arithmetic-integer": 237, "mmr-horizontal": 194,
+            "iaid-state": 163, "default-decoder-2": 94, "default-decoder-3": 94,
+            "operator-bit": 101, "document-layout": 316, "page-public": 226,
+            "page-finish": 176, "arithmetic-normalization": 162,
+            "default-limits-3": 89, "default-limits-4": 90, "default-limits-5": 87,
+            "huffman-assignment": 118, "segment-data": 232, "segment-header": 229,
+            "mmr-span": 186, "error-wrappers-basic": 187, "default-decoder-5": 80,
+            "text-batch": 262, "halftone-header": 208, "bitmap-compose": 167,
+            "arithmetic-initialization": 144, "mmr-prefix": 104, "mmr-run": 105,
+            "mmr-reference": 231, "reader-error": 164, "black-span": 128,
+            "arithmetic-refill": 128, "region-dispatch": 62, "default-limits-2": 64,
+            "arithmetic-codec": 461, "value-bridge": 120, "retention": 72,
+            "error-conversion": 245, "default-limits-1": 84,
+        }
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
+        measured = [sum(costs[row[0]] for row in role) for role in roles]
+        self.assertEqual({row[0] for role in roles for row in role}, set(costs))
+        self.assertLessEqual(max(measured), 1050)
+        self.assertLessEqual(measured[0] + 208, 1200)
+
+    @patch.object(runner, "WHOLE_GROUPS", PRE_ENVELOPE_WHOLE_GROUPS)
+    @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_ENVELOPE_SHARD_MOVES)
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_NATIVE_LOAD_COLLECTOR_GROUPS)
+    def test_completed_unique_reuse_profile_rebalances_the_remaining_collector_overload(self):
+        # Complete 40873336428 inputs, rounded up; its 1078.132 collector rejection is not acceptance.
+        costs = {
+            "arithmetic-decision": 395, "document-count": 323, "retention": 76,
+            "error-wrappers-regions": 212, "default-decoder-1": 74,
+            "mmr-reference": 231, "reader-error": 153, "black-span": 109,
+            "arithmetic-refill": 107, "region-dispatch": 53, "default-limits-2": 52,
+            "symbol-cardinality": 194, "document-layout": 312, "page-finish": 171,
+            "arithmetic-normalization": 152, "default-limits-3": 73,
+            "huffman-assignment": 115, "operator-bit": 97, "default-decoder-4": 75,
+            "arithmetic-integer": 221, "mmr-horizontal": 180, "iaid-state": 149,
+            "default-decoder-2": 72, "default-decoder-3": 72, "bitmap-compose": 168,
+            "default-decoder-5": 72, "text-batch": 220, "arithmetic-initialization": 120,
+            "mmr-prefix": 86, "mmr-run": 86, "error-wrappers-basic": 142,
+            "page-public": 176, "integer-state": 196, "bitmap-copy": 150,
+            "error-wrappers-symbol": 143, "bitmap-chunk": 77, "default-limits-4": 57,
+            "segment-data": 192, "segment-header": 245, "mmr-span": 198,
+            "default-limits-5": 72, "halftone-header": 217, "page-state": 309,
+            "arithmetic-codec": 333, "value-bridge": 84, "reset": 34,
+            "error-conversion": 171, "default-limits-1": 49,
+        }
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
+        measured = [sum(costs[row[0]] for row in role) for role in roles]
+        self.assertEqual({row[0] for role in roles for row in role}, set(costs))
+        self.assertLessEqual(max(measured), 1010)
+        self.assertLessEqual(measured[0] + 208, 1200)
+
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_NATIVE_LOAD_COLLECTOR_GROUPS)
+    @patch.object(runner, "DEFAULT_SHARD_REBALANCE", PRE_NATIVE_LOAD_SHARD_MOVES)
+    def test_same_harness_per_group_maxima_fit_without_relaxing_any_guard(self):
+        # Per-group maxima of complete 40873336428/40883755135, rounded up; neither run is accepted.
+        costs = {
+            "arithmetic-decision": 395, "document-count": 328, "retention": 77,
+            "error-wrappers-regions": 215, "default-decoder-1": 74,
+            "segment-header": 245, "mmr-span": 198, "default-limits-5": 72,
+            "halftone-header": 217, "page-state": 309, "integer-state": 238,
+            "bitmap-copy": 172, "error-wrappers-symbol": 165, "bitmap-chunk": 87,
+            "default-limits-4": 62, "segment-data": 219, "mmr-reference": 350,
+            "reader-error": 227, "black-span": 159, "arithmetic-refill": 151,
+            "region-dispatch": 77, "default-limits-2": 75, "symbol-cardinality": 274,
+            "text-batch": 266, "arithmetic-initialization": 147, "mmr-prefix": 105,
+            "mmr-run": 104, "error-wrappers-basic": 171, "page-public": 213,
+            "arithmetic-integer": 221, "mmr-horizontal": 180, "iaid-state": 150,
+            "default-decoder-2": 74, "default-decoder-3": 75, "bitmap-compose": 172,
+            "default-decoder-5": 72, "document-layout": 312, "page-finish": 171,
+            "arithmetic-normalization": 152, "default-limits-3": 73,
+            "huffman-assignment": 115, "operator-bit": 97, "default-decoder-4": 75,
+            "arithmetic-codec": 392, "value-bridge": 102, "reset": 42,
+            "error-conversion": 211, "default-limits-1": 61,
+        }
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
+        measured = [sum(costs[row[0]] for row in role) for role in roles]
+        self.assertEqual({row[0] for role in roles for row in role}, set(costs))
+        self.assertEqual(measured, [900, 1015, 1043, 1046, 1027, 1024, 1040, 1044])
+        self.assertLessEqual(max(measured), 1050)
+        self.assertLessEqual(measured[0] + 208, 1200)
+
+    def test_complete_native_cache_profile_uses_existing_cohort_headroom(self):
+        # Complete 40906782428 inputs, rounded up; its 1091.433 shard rejection is not acceptance.
+        costs = {
+            "arithmetic-decision": 313, "document-count": 273, "retention": 64,
+            "error-wrappers-regions": 178, "default-decoder-4": 73,
+            "integer-state": 248, "bitmap-copy": 189, "error-wrappers-symbol": 179,
+            "segment-data": 240, "page-finish": 165, "bitmap-chunk": 97,
+            "document-layout": 307, "arithmetic-normalization": 149,
+            "default-limits-3": 72, "arithmetic-integer": 221, "black-span": 153,
+            "reset": 50, "default-limits-2": 72, "segment-header": 243,
+            "mmr-span": 200, "halftone-header": 211, "page-state": 306,
+            "operator-bit": 75, "mmr-reference": 244, "arithmetic-refill": 112,
+            "symbol-cardinality": 202, "error-wrappers-basic": 129,
+            "huffman-assignment": 110, "mmr-prefix": 101, "mmr-run": 102,
+            "text-batch": 255, "arithmetic-initialization": 140,
+            "default-decoder-1": 70, "page-public": 206, "arithmetic-codec": 377,
+            "value-bridge": 100, "error-conversion": 201, "default-limits-1": 58,
+            "default-limits-4": 58, "default-limits-5": 57, "region-dispatch": 74,
+            "reader-error": 212, "mmr-horizontal": 183, "iaid-state": 151,
+            "default-decoder-2": 73, "default-decoder-3": 73,
+            "bitmap-compose": 168, "default-decoder-5": 73,
+        }
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *runner.configured_shards()]
+        measured = [sum(costs[row[0]] for row in role) for role in roles]
+        self.assertEqual({row[0] for role in roles for row in role}, set(costs))
+        self.assertEqual(measured, [851, 972, 908, 977, 934, 984, 1021, 960])
+        self.assertLessEqual(max(measured), 1050)
+        self.assertLessEqual(measured[0] + 208, 1200)
+
+    def test_default_group_selection_is_forwarded_to_its_shared_checker(self):
+        script = "check_default_proofs.py"
+        for identity in (
+            "default-limits-1", "default-limits-2", "default-limits-3",
+            "default-limits-4", "default-limits-5",
+            "default-decoder-1", "default-decoder-2", "default-decoder-3",
+            "default-decoder-4", "default-decoder-5",
+        ):
+            with self.subTest(group=identity):
+                (self.root / "tools" / script).write_text(
+                    "CASES = ({'id':'case','module':'module','function':'function'},)\n"
+                    f"CASE_GROUPS = {{{identity!r}: CASES}}\n"
+                )
+                check = (identity, script, 1, "strong_contract", "weaker_control")
+
+                def process(command, **kwargs):
+                    self.assertEqual(command[command.index("--case-group") + 1], identity)
+                    report = evidence()
+                    report["case_group"] = identity
+                    report["source_bindings"] = {"src/example.rs": runner.digest(self.root / "src/example.rs")}
+                    Path(command[-1]).write_text(json.dumps(report))
+                    return SimpleNamespace(returncode=0)
+
+                with patch.object(runner, "CHECKS", (check,)), patch.object(
+                    runner.subprocess, "run", side_effect=process,
+                ):
+                    result = runner.run_checks(self.root, self.root / "verus", self.output, only=identity)
+                self.assertEqual(result["status"], "passed")
+
     def test_manifest_covers_every_semantic_checker_without_fixed_group_or_case_totals(self):
         checks = runner.configured_checks()
         self.assertEqual(len({row[0] for row in checks}), len(checks))
@@ -287,6 +636,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     @patch.object(runner, "CHECKS", PRE_WRAPPER_CHECKS)
     @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge", "error-conversion"))
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_WRAPPER_COLLECTOR_GROUPS)
     def test_error_conversion_uses_existing_whole_role_without_reassigning_prior_shards(self):
         actual = runner.configured_shards()
         previous = tuple(row for row in runner.CHECKS if row[0] != "error-conversion")
@@ -569,6 +919,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
     @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_WRAPPER_COLLECTOR_GROUPS)
     def test_pre_conversion_roles_replay_qualified_timing_inputs_without_more_jobs_or_raised_guards(self):
         # Planning only: completed f294 groups; completed shard-5 ZIP timestamps
         # plus allowance; current local value/Huffman runs plus 10%, rounded up.
@@ -609,6 +960,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
     @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_WRAPPER_COLLECTOR_GROUPS)
     def test_completed_f53_costs_rebalance_without_accepting_its_rejected_collection(self):
         # All 40412207379 producers completed, but its collector rejected the
         # overloaded shard. These costs are scheduling inputs, not acceptance.
@@ -690,6 +1042,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     @patch.object(runner, "CHECKS", PRE_CONVERSION_CHECKS)
     @patch.object(runner, "WHOLE_GROUPS", ("arithmetic-codec", "value-bridge"))
+    @patch.object(runner, "COLLECTOR_GROUPS", PRE_WRAPPER_COLLECTOR_GROUPS)
     def test_pre_conversion_job_capacity_covers_three_profile_per_group_maxima(self):
         # Planning only: prior qualified estimates and completed f53/7ae groups,
         # taking each group's maximum and rounding up. Failed collections gain
@@ -1062,6 +1415,25 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertTrue((self.output / runner.TRACE / runner.SUMMARY).is_file())
         for identity, *_ in self.checks:
             self.assertTrue((self.output / runner.TRACE / f"{identity}-proof-sensitivity.json").is_file())
+
+    def test_eight_shard_aggregate_requires_each_exact_producer(self):
+        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+            inputs = self.collection_fixture()
+            result = self.collect(inputs)
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(result["matrix_shards"], 8)
+            self.assertEqual(result["matrix_max_parallel"], 4)
+            self.assertEqual(result["workers"], 1)
+            for index in range(8):
+                path = inputs / (runner.artifact_prefix() + f"shard-{index}")
+                moved = self.root / "removed"
+                path.rename(moved)
+                try:
+                    with self.subTest(shard=index), self.assertRaises(ValueError):
+                        self.collect(inputs)
+                    self.assertFalse((self.output / runner.TRACE / runner.SUMMARY).exists())
+                finally:
+                    moved.rename(path)
 
     def test_missing_whole_or_each_shard_fails_and_removes_stale_success(self):
         inputs = self.collection_fixture()

@@ -18,13 +18,38 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
-CI_SHARDS = 6
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "error-conversion", "retention")
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset", "error-wrappers-regions")
-ADDED_SHARD_GROUPS = {"error-wrappers-symbol": 4, "error-wrappers-basic": 5}
+CI_SHARDS = 8
+WHOLE_GROUPS = ("arithmetic-codec", "value-bridge")
+COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
+ADDED_SHARD_GROUPS = {
+    "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
+    "default-limits-2": 0, "default-limits-3": 1,
+    "default-limits-4": 1, "default-limits-5": 1,
+    "default-decoder-1": 3,
+    "default-decoder-2": 2, "default-decoder-3": 2,
+    "default-decoder-4": 4, "default-decoder-5": 5,
+}
 REBALANCED_SHARD_GROUPS = {
     "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
     "mmr-run": 3, "bitmap-chunk": 4,
+}
+DEFAULT_SHARD_REBALANCE = {
+    "mmr-reference": 0, "error-wrappers-regions": 0, "arithmetic-normalization": 0,
+    "region-dispatch": 0, "default-decoder-5": 0,
+    "document-layout": 1, "mmr-span": 1, "iaid-state": 1,
+    "bitmap-chunk": 1, "default-limits-2": 1,
+    "page-state": 2, "bitmap-copy": 2, "black-span": 2, "operator-bit": 2,
+    "default-decoder-2": 2, "default-limits-5": 2,
+    "integer-state": 3, "page-public": 3, "page-finish": 3,
+    "arithmetic-initialization": 3, "default-decoder-1": 3,
+    "symbol-cardinality": 4, "halftone-header": 4, "bitmap-compose": 4,
+    "arithmetic-refill": 4, "retention": 4,
+    "text-batch": 5, "reader-error": 5, "error-wrappers-symbol": 5,
+    "mmr-run": 5, "default-limits-3": 5,
+    "segment-data": 6, "error-conversion": 6, "error-wrappers-basic": 6,
+    "huffman-assignment": 6, "default-decoder-4": 6, "default-limits-4": 6,
+    "segment-header": 7, "arithmetic-integer": 7, "mmr-horizontal": 7,
+    "mmr-prefix": 7, "default-decoder-3": 7, "default-limits-1": 7,
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
@@ -66,6 +91,16 @@ CHECKS = (
     ("error-wrappers-basic", "check_error_wrapper_proofs.py", 6, "strong_contract", "weaker_control"),
     ("error-wrappers-regions", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
     ("error-wrappers-symbol", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
+    ("default-limits-1", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-limits-2", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-limits-3", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-limits-4", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-limits-5", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-decoder-1", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-decoder-2", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-decoder-3", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-decoder-4", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
+    ("default-decoder-5", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -118,14 +153,17 @@ def configured_shards():
         if check[0] not in (*WHOLE_GROUPS, *COLLECTOR_GROUPS)
     )
     count = min(CI_SHARDS, len(checks))
-    # Preserve prior memberships; these two shards have measured headroom for new groups.
+    # Keep legacy ordering deterministic before applying the explicit current profile.
     previous = tuple(check for check in checks if check[0] not in ADDED_SHARD_GROUPS)
     shards = [list(previous[index::count]) for index in range(count)]
     for check in checks:
         if check[0] in ADDED_SHARD_GROUPS:
             shards[min(ADDED_SHARD_GROUPS[check[0]], count - 1)].append(check)
     if any(check[0] == "error-wrappers-basic" for check in checks):
-        for identity, destination in REBALANCED_SHARD_GROUPS.items():
+        moves = REBALANCED_SHARD_GROUPS
+        if any(check[0].startswith("default-") for check in checks):
+            moves = {**moves, **DEFAULT_SHARD_REBALANCE}
+        for identity, destination in moves.items():
             for shard in shards:
                 match = next((check for check in shard if check[0] == identity), None)
                 if match is not None:
@@ -293,7 +331,8 @@ def check_bound_report(root, check, report, bindings, whole=None):
             cases = module.CASE_GROUPS[identity]
         else:
             cases = module.CASES
-        from source_group import relocate_cases
+        from rust_source import source_functions
+        from source_group import relocate_cases, whole_binds_unique_implementation
 
         document_cases = identity in {"document-count", "document-layout"}
         configured_baseline_groups = getattr(module, "BASELINE_GROUPS", ())
@@ -323,17 +362,25 @@ def check_bound_report(root, check, report, bindings, whole=None):
             scoped_targets.setdefault((case["module"], case["function"]), set()).add(
                 (case["verification_module"], case.get("impl_trait"))
             )
+        inventory = source_functions(root) if any(
+            "whole_positive" in row["baseline_selected_verification"] and "impl_trait" in case
+            for case, row in zip(cases, report["counterexamples"])
+        ) else []
         for case, row in zip(cases, report["counterexamples"]):
+            inherited = "whole_positive" in row["baseline_selected_verification"]
             if (len(scoped_targets[(case["module"], case["function"])]) > 1 or "impl_trait" in case) and (
                 row.get("verification_module") != case["verification_module"]
                 or row.get("source_file") != case["file"]
-                or row["baseline_selected_verification"].get("is-verifying-entire-crate") is not False
+                or (
+                    not whole_binds_unique_implementation(case, inventory) if inherited
+                    else row["baseline_selected_verification"].get("is-verifying-entire-crate") is not False
+                )
             ):
                 raise ValueError("ambiguous function name needs its exact source scope and fresh selected baseline")
             if "impl_trait" in case and (
                 row.get("impl_trait") != case["impl_trait"]
                 or row.get("selected_impl_traits") != case["selected_impl_traits"]
-                or row["baseline_selected_verification"]["verified"] != len(case["selected_impl_traits"])
+                or not inherited and row["baseline_selected_verification"]["verified"] != len(case["selected_impl_traits"])
                 or row.get("strong_verified_functions") != len(case["selected_impl_traits"]) - 1
                 or row["strong_verifier_errors"] != 1
                 or row.get("control_verified_functions") != len(case["selected_impl_traits"])
@@ -428,6 +475,7 @@ def run_checks(
             selection = ["--case-group", identity] if script in {
                 "check_document_count_proof.py", "check_page_state_proofs.py",
                 "check_error_wrapper_proofs.py",
+                "check_default_proofs.py",
             } else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(
