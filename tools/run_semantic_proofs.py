@@ -25,6 +25,7 @@ ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
     "default-decoder-2": 2, "default-decoder-3": 3,
+    "collector-sink": 5,
 }
 REBALANCED_SHARD_GROUPS = {
     "huffman-assignment": 1, "operator-bit": 2, "mmr-prefix": 3,
@@ -76,6 +77,7 @@ CHECKS = (
     ("default-decoder-1", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
     ("default-decoder-2", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
     ("default-decoder-3", "check_default_proofs.py", 5, "strong_contract", "weaker_control"),
+    ("collector-sink", "check_collector_sink_proof.py", 2, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"

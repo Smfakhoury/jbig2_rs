@@ -17,7 +17,8 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
-PRE_DEFAULT_CHECKS = tuple(row for row in runner.CHECKS if not row[0].startswith("default-"))
+PRE_SINK_CHECKS = tuple(row for row in runner.CHECKS if row[0] != "collector-sink")
+PRE_DEFAULT_CHECKS = tuple(row for row in PRE_SINK_CHECKS if not row[0].startswith("default-"))
 PRE_WRAPPER_CHECKS = tuple(row for row in PRE_DEFAULT_CHECKS if not row[0].startswith("error-wrappers-"))
 PRE_CONVERSION_CHECKS = tuple(row for row in PRE_WRAPPER_CHECKS if row[0] != "error-conversion")
 
@@ -266,6 +267,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1020)
         self.assertLessEqual(measured[0] + 211, 1200)
 
+    @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     def test_default_groups_use_existing_roles_without_reassigning_prior_shards(self):
         shards = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS):
@@ -285,6 +287,18 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 44)
         self.assertEqual(sum(row[2] for role in roles for row in role), 327)
+
+    def test_owned_sink_uses_last_shard_without_changing_existing_memberships(self):
+        actual = runner.configured_shards()
+        with patch.object(runner, "CHECKS", PRE_SINK_CHECKS):
+            previous = runner.configured_shards()
+        self.assertEqual(actual[:5], previous[:5])
+        self.assertEqual(actual[5][:-1], previous[5])
+        self.assertEqual(actual[5][-1][0], "collector-sink")
+        roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *actual]
+        self.assertEqual(len(roles), 8)
+        self.assertEqual(sum(len(role) for role in roles), 45)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 329)
 
     def test_default_group_selection_is_forwarded_to_its_shared_checker(self):
         script = "check_default_proofs.py"

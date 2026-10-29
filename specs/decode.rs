@@ -83,6 +83,53 @@ pub(super) open spec fn collector_decoded_limit(
     collector.decoded_limit
 }
 
+// Model navigation: spec::collector_result [project-result]
+// Purpose: Successful owned-page append and bitmap-byte accounting, or unchanged page state on error.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
+pub closed spec fn collector_result(
+    before: &crate::decode::PageCollector,
+    after: &crate::decode::PageCollector,
+    page: crate::decode::Page,
+    result: Result<(), crate::DecodeError>,
+) -> bool {
+    match result {
+        Ok(()) =>
+            collector_bitmap_bytes(after) as nat
+                == collector_bitmap_bytes(before) as nat
+                    + bitmap_byte_count(page_bitmap(&page))
+            && collector_bitmap_bytes(after) <= collector_decoded_limit(after)
+            && collector_bitmap_bytes(after) <= collector_memory_limit(after)
+            && collector_pages(after) == collector_pages(before).push(page),
+        Err(_) =>
+            collector_bitmap_bytes(after) == collector_bitmap_bytes(before)
+            && collector_pages(after) == collector_pages(before),
+    }
+}
+
+// A checked bridge exposes the closed policy without publishing private field projections.
+pub(super) proof fn collector_result_definition()
+    ensures
+        forall|before: &crate::decode::PageCollector,
+               after: &crate::decode::PageCollector,
+               page: crate::decode::Page,
+               result: Result<(), crate::DecodeError>|
+            #[trigger] collector_result(before, after, page, result)
+                == match result {
+                    Ok(()) =>
+                        collector_bitmap_bytes(after) as nat
+                            == collector_bitmap_bytes(before) as nat
+                                + bitmap_byte_count(page_bitmap(&page))
+                        && collector_bitmap_bytes(after) <= collector_decoded_limit(after)
+                        && collector_bitmap_bytes(after) <= collector_memory_limit(after)
+                        && collector_pages(after) == collector_pages(before).push(page),
+                    Err(_) =>
+                        collector_bitmap_bytes(after) == collector_bitmap_bytes(before)
+                        && collector_pages(after) == collector_pages(before),
+                },
+{
+}
+
 // Model navigation: spec::retained_bytes [proof-support]
 // Purpose: Private decode/resource projections, dispatch codes and intersection vocabulary.
 // Mapping: no registered requirement/locator mapping.

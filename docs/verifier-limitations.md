@@ -88,7 +88,7 @@ overhead is included in planning. Rejected-run timings remain planning inputs,
 not acceptance credit. Every case/query, the six-shard/max-four policy, eight
 producers, solver/job caps and actual 1,050-second guards remain intact.
 
-The remaining audited forwarder is the owned page collector's sink wrapper.
+No audited forwarders remain after the public-default and owned-sink proofs.
 This does not close the twenty
 reviewed standard/callback/orchestration limitations or the held capacity
 divergence, nor does it establish normative model fidelity.
@@ -123,6 +123,35 @@ cases and shard memberships remain, along with eight producers,
 six one-worker shards, max-four semantic concurrency and unchanged measured
 guards and job caps. Hosted acceptance must include the actual complete
 new profile; a local proof or estimated schedule is not acceptance credit.
+
+### Owned page-collector sink
+
+The concrete `PageSink for PageCollector` wrapper now proves its own checked
+append/result relation. Its existing `push_page` helper exposes the same
+contract as `collect_page`: success appends the exact page and updates the
+bitmap-byte counter within the named project counters; errors preserve the
+page list and bitmap-byte count. The executing bodies are unchanged.
+
+The old contract is factored into `collector_result` outside the runtime
+source. A separately verified definitional bridge lets the implementation
+use this closed predicate without exposing private collector field projections
+through a public trait method's postcondition. This is a project-result
+definition and checked lemma, not a trusted declaration or an approved T.88
+rule. Its author navigation classification does not confer normative approval.
+
+Two compiling contrasts reject a successful return that drops the page and
+an error returned after an append. Their weaker controls omit only the
+corresponding success/error requirement on the concrete sink wrapper; the
+constructor and helper contracts remain intact. Evidence binds the exact
+file, lexical scope and `PageSink` implementation with one pristine body,
+zero verified bodies/one error for each mutant and one body for each control.
+The complete group runs in existing shard five without moving previous cases.
+
+This says nothing about arbitrary caller-provided sinks, exact error-variant
+priority, actual reserved capacity or allocator/RSS bounds. In particular,
+the known observed-capacity hold below remains unresolved. The complete
+unfiltered proof must verify the bridge as well as the implementation;
+selected-body success alone is insufficient.
 
 ## Blocking capacity/getter decision
 

@@ -375,6 +375,16 @@
       {
         "file": "specs/decode.rs",
         "members": [
+          "spec::collector_result"
+        ],
+        "classification": "project-result-model",
+        "justification": "Factors the existing owned collector contract: successful page append and bitmap-byte accounting within the named project counters, or unchanged pages and bitmap-byte count on error. The owned PageSink implementation forwards this checked relation without specifying arbitrary caller sinks.",
+        "ambiguity": "",
+        "caveats": "This is not observed-capacity accounting, exact error-variant selection, normative page semantics or a guarantee about external callbacks."
+      },
+      {
+        "file": "specs/decode.rs",
+        "members": [
           "spec::collected_symbol_count",
           "spec::first_symbol_index",
           "spec::referred_symbol_count",

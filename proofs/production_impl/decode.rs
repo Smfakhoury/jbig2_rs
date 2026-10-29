@@ -28,6 +28,7 @@ macro_rules! production_collector_fields {
     ($collector:expr) => {
         proof! {
             decode_shared::collector_fields($collector);
+            decode_spec::collector_result_definition();
         }
     };
 }

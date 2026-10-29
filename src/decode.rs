@@ -273,25 +273,7 @@ impl PageCollector {
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures match out {
-            Ok(()) =>
-                decode_spec::collector_bitmap_bytes(final(self)) as nat
-                    == decode_spec::collector_bitmap_bytes(old(self)) as nat
-                        + decode_spec::bitmap_byte_count(
-                            decode_spec::page_bitmap(&page),
-                        )
-                && decode_spec::collector_bitmap_bytes(final(self))
-                    <= decode_spec::collector_decoded_limit(final(self))
-                && decode_spec::collector_bitmap_bytes(final(self))
-                    <= decode_spec::collector_memory_limit(final(self))
-                && decode_spec::collector_pages(final(self))
-                    == decode_spec::collector_pages(old(self)).push(page),
-            Err(_) =>
-                decode_spec::collector_bitmap_bytes(final(self))
-                    == decode_spec::collector_bitmap_bytes(old(self))
-                && decode_spec::collector_pages(final(self))
-                    == decode_spec::collector_pages(old(self)),
-        },
+        ensures decode_spec::collector_result(old(self), final(self), page, out),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn collect_page(&mut self, page: Page) -> Result<(), DecodeError> {
@@ -337,13 +319,21 @@ impl PageCollector {
         Ok(())
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures decode_spec::collector_result(old(self), final(self), page, out),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn push_page(&mut self, page: Page) -> Result<(), DecodeError> {
         self.collect_page(page)
     }
 }
 
+#[cfg_attr(verus_keep_ghost, verifier::verify)]
 impl PageSink for PageCollector {
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures decode_spec::collector_result(old(self), final(self), page, out),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     fn write_page(&mut self, page: Page) -> Result<(), DecodeError> {
         self.push_page(page)
     }
