@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "029739081b472e5558651c9213113c4b5d5e1c5671d6d9d40158da0595691179",
+    "project_source_sha256": "8eca79307c1ffc1af089cb104d0872ae0106c3f1b22da82dd47a41633c3435ee",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1792,7 +1792,7 @@
     "src/decode/dispatch/references.rs": "52e7500e0cef622729c3b19f535c8d0824644b5a954dd373ffeadeb34e649c67",
     "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
     "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",
-    "src/decode/tests/container_routes.rs": "aeeda8acf7fc38595c86a85328ecef9d1fb201c2dd5fb1bac5da4abf6f5a4cf1",
+    "src/decode/tests/container_routes.rs": "3e8e84cae3d340c972f170914bbf61a2c944c0056a3201e1f192a135b7775bfe",
     "src/decode/tests/direct_and_reuse.rs": "d46a5cbd0ee0791141d8b6115f090faa7a0315dc51437dcfb643dce6b58e116c",
     "src/decode/tests/symbol_resources.rs": "f23d5ba103db106eed1cf7d9c8eef395ce060e7eedf2226d7eb38f923dff3431",
     "src/document.rs": "86ab2d38d7c07f09d443e5b9d658f90503ae0c071640560ad5e5c477cfb6ed36",
@@ -1861,7 +1861,7 @@
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
-    "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27",
+    "src/symbol_text/text.rs": "9836469e8583c51cd9a3d9e29e4b8e093b92238855eab7c2c381e465f8455d8f",
     "tests/catalog_contracts.rs": "d4eb4fd3d554494fcd99fa58def0eaa542fca7f97ff32c2083cfa0d3e1545da2",
     "tests/spec_header.rs": "6c8d30477d3be9080827bf0eab191739ab4fe844fe856c60020eb53a50cbcdda",
     "tests/traceability_organization.rs": "967cd92362829cc4258db0ab7300a8f28b53055dbd61489c3c3262ee6d539b5f",

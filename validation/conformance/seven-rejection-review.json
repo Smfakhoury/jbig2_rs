@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation. No protected standard text, new encoded fixture family, sample-software oracle, new native/Hayro oracle or instrumented entropy experiment was used for this accepted evidence. All seven normative approval flags and the release block remain unchanged.",
+  "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation on the same approved10streams. An existing pinned native black-box diagnostic and private replay of unchanged TT1 dictionary payloads separately anchor the terminator correction; historical oracle results and hypotheses below are not relabeled fresh. No protected standard text, new encoded refinement/aggregation/custom-Huffman family, sample-software oracle or normative exception is introduced. All seven approval flags remain false.",
   "recorded_at": "2026-10-30T01:46:50.577253+00:00",
-  "source_revision": "bc1ed61f012e4186c682a15a09eeb5c99f4ae9bf",
+  "source_revision": "ee5c7bd5bbde91e310ff5c3214eaf2354a211720",
   "checkout_policy_sha256": "d03e7c2e8df08a9bc503b971dcacf1487847dd473a5d34a21b315e48febea132",
-  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after the single-instance routing fix:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
+  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after final text-strip terminator consumption:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
@@ -38,7 +38,7 @@
     "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
     "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",
     "src/decode/tests/budgets_and_pages.rs": "6722bfaca28932881be9c72bc81ad5669064d5736edf777e6cf7716fc4f127e5",
-    "src/decode/tests/container_routes.rs": "aeeda8acf7fc38595c86a85328ecef9d1fb201c2dd5fb1bac5da4abf6f5a4cf1",
+    "src/decode/tests/container_routes.rs": "3e8e84cae3d340c972f170914bbf61a2c944c0056a3201e1f192a135b7775bfe",
     "src/decode/tests/direct_and_reuse.rs": "d46a5cbd0ee0791141d8b6115f090faa7a0315dc51437dcfb643dce6b58e116c",
     "src/decode/tests/dispatch_and_resources.rs": "76315dc7e019fae9cc4abece4df46a94e12895dfcc0be2e5f82c1e55f5621995",
     "src/decode/tests/error_adapters.rs": "9ac3cef9467c3e007eba07beb57007762b30c0729023a2daa1c3fa5b3a5331cf",
@@ -147,13 +147,14 @@
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
-    "src/symbol_text/tests.rs": "da1627864256241f42095ed1bfa6e1b7d3feec1d275ab500363c38e0bddc7794",
-    "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27",
+    "src/symbol_text/tests/text_termination.rs": "4e4fa55513bfccf9f958440adc27c13c4e393a198f15891981e78d4d03dc1410",
+    "src/symbol_text/tests.rs": "22a8432dd448faf4235183179e4babeda66cb0198367b9904cd8e0d46f4b5979",
+    "src/symbol_text/text.rs": "9836469e8583c51cd9a3d9e29e4b8e093b92238855eab7c2c381e465f8455d8f",
     "src/symbol_text/validation.rs": "3183d1d504cc9b396095eff62a9215165ab9e5acf82fe53415e9b1e3a5e2fb44",
     "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e"
   },
   "ordinary_runtime_source_sha256": "9522006a853643a5022479a2f2ee5e1855df1c883f42eeda02a431a5372b3778",
-  "normal_decoder_sha256": "c76d7d53de8736ff43965aeb963553a415b4ad8ea47a09fa37ad0a0efca70696",
+  "normal_decoder_sha256": "e2f1a7ae1774a6acca031e91f5dc0cb9b729ed8c8cab89af0f20c99625e22594",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -194,7 +195,7 @@
     "tools/evidence.py": "1286345e1679a72362fc4cc60f3ef1d6294b19df4edcea7c6d0f74970d117571",
     "tools/verify_provenance.py": "703d1e11f2eaf7a19270173d53d94e7a841ea35f72a417aa9e4d308d6563d9e1",
     "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
-    "validation/conformance/expected-differences.json": "576eb10e07daff782906bc7bf458f3331f2fe642e3efeb7ccb8147d3dac99e23"
+    "validation/conformance/expected-differences.json": "b6bc07ed6f71c83fd6b9e7f4089ab5d24b143777d35555e3f78d737d17e4646e"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -1076,9 +1077,9 @@
   },
   "historical_diagnosis_source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "current_normal_decoder_observation": {
-    "source_revision": "bc1ed61f012e4186c682a15a09eeb5c99f4ae9bf",
-    "runtime_sha256": "ad08ca17c72ce2e14add10b95c24dba9ef526fbcabd09a91ea4fde13df464e33",
-    "decoder_sha256": "c76d7d53de8736ff43965aeb963553a415b4ad8ea47a09fa37ad0a0efca70696",
+    "source_revision": "ee5c7bd5bbde91e310ff5c3214eaf2354a211720",
+    "runtime_sha256": "7c66860d98271fdd3ed1ca922e36bdc0233ffa9e9aa69196b26d1a0fc2bbec14",
+    "decoder_sha256": "e2f1a7ae1774a6acca031e91f5dc0cb9b729ed8c8cab89af0f20c99625e22594",
     "runner_exit_code": 1,
     "counts": {
       "total": 10,

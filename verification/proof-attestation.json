@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "bc1ed61f012e4186c682a15a09eeb5c99f4ae9bf",
-  "scope": "Fresh unfiltered verification and compilation of the actual one-instance dictionary refinement dispatch correction. The required Some(1) count now reaches the existing refinement helper; the invalid direct-coded aggregation-count guard is in its intended branch. No function/loop contract, model, standard-library fact or proof-strength category is weakened. All662native declarations remain accounted:642direct20reviewed0forwarders0divergences0incomplete0native assumptions, with the separately disclosed unconstrained standard getter still trusted.",
+  "source_revision": "ee5c7bd5bbde91e310ff5c3214eaf2354a211720",
+  "scope": "Fresh unfiltered verification and compilation of the actual final text-strip terminator consumption correction. The declared instance count no longer skips the enclosing strip terminator; extra S values reject before further T/ID/refinement fields. All function/loop contracts and invariants remain unchanged. Exact accounting remains662native declarations: 642direct20reviewed0forwarders0divergences0incomplete0nativeassumptions, with the separately disclosed unconstrained standard getter still trusted.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/single-refinement/fresh-proof-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/text-strip-fix/fresh-proof-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1276,
     "verified_production_functions": 642,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "6bc4bb18bf8739e55345abca8bc9751022056de2dc593cd196537076014ae951",
+  "production_proof_coverage_sha256": "1a8f274166fc60d0890fbd08474ff4201dc0e6391563fc1b1bc8cc765c7d5956",
   "proof_dispositions_sha256": "3173c7216fe2080f85ed15c7b490d2b07f5d81e32545f20311a92faf0487201a",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "The actual corrected branch is freshly proved and compiled. Raw scripted regressions and two additional native mutation controls cover routing, typed rejection, resource effects and parameter consumption only; no new encoded fixture or normative refinement-bitmap claim is supplied. Actual approved10stream re-observation remains2pass7pending1unsupported0rejectioncredit. Full exact-head hosted semantic/native/coverage/platform acceptance remains separate.",
+  "current_evidence_note": "The actual corrected entropy continuation is freshly proved and compiled. Raw scripted continuation/rejection regressions, corrected existing standard-Huffman fixtures/emitter and three additional native controls preserve all existing families and assert exact fields/pixels/resources. Existing approved dictionary payload replay and the already pinned native black-box trace anchor the continuation diagnosis, not a normative exception. Full approved 10stream observations remain2pass7pending1unsupported0rejectioncredit; complete exact-head hosted profile acceptance remains separate.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
