@@ -6,7 +6,7 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, ValidationError, SchemaError
 
-from evidence import load_json, read_evidence, validate
+from evidence import load_json, read_evidence, reviewed_standard_interface, validate
 
 ROOT = Path(__file__).resolve().parents[1]
 JSON_FILES = (
@@ -69,6 +69,8 @@ for path in sorted(ROOT.rglob("*")):
                 validate(document, "coverage_baseline")
             elif path.relative_to(ROOT).as_posix() == "validation/traceability/requirements.json":
                 validate(document, "traceability")
+            elif path.relative_to(ROOT).as_posix() == "verification/stdlib/review.json":
+                validate(document, "standard_interface_review")
             elif path.relative_to(ROOT).as_posix() == "validation/conformance/expected-differences.json":
                 validate(document, "conformance_differences")
             elif path.relative_to(ROOT).as_posix() in {
@@ -113,6 +115,21 @@ if attestation["result"]["verified_obligations"] != coverage["verus_verified_obl
 if coverage["counts"].get("runtime-proof-divergence", 0):
     if attestation["result"]["algorithm_bodies_verified"] or attestation["release_gate"] != "blocked":
         fail("runtime/proof divergences must block exact-source release claims")
+
+standard_review = ROOT / "verification/stdlib/review.json"
+try:
+    review = reviewed_standard_interface(ROOT)
+except (OSError, ValueError, KeyError, ValidationError) as error:
+    fail(f"standard-interface review: {error}")
+if review is not None:
+    boundary = attestation.get("standard_library_boundary")
+    if not isinstance(boundary, dict) or (
+        boundary.get("manifest_sha256") != hashlib.sha256(standard_review.read_bytes()).hexdigest()
+        or boundary.get("interfaces") != 1
+    ):
+        fail("missing or stale separately accounted standard-library trust boundary")
+elif attestation.get("standard_library_boundary") is not None:
+    fail("standard-library boundary refers to a missing review manifest")
 
 provenance = load_json(ROOT / "validation/source-provenance.json")
 differences = read_evidence(

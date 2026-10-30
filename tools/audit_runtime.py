@@ -3,12 +3,19 @@ import re
 import sys
 from pathlib import Path
 
+from jsonschema import ValidationError
+
+from evidence import reviewed_standard_interface
 from rust_source import production_code
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 PROOF_ROOTS = (ROOT / "proofs", ROOT / "specs")
+CAPACITY_DECLARATION = (
+    "pub assume_specification<T, A: Allocator>[ Vec::<T, A>::capacity ]"
+    "(value: &Vec<T, A>) -> usize;"
+)
 PROOF_POLICY_PATTERNS = {
     "Verus external body": re.compile(r"\bexternal_body\b"),
     "Verus assumption": re.compile(r"\b(?:assume|admit)\s*(?:!\s*)?\("),
@@ -59,6 +66,33 @@ for proof_root in PROOF_ROOTS:
                 f"{path.relative_to(ROOT)}:{line}: duplicate executable proof source"
             )
 
+reviewed_source = None
+try:
+    review = reviewed_standard_interface(ROOT)
+    if review is not None:
+        reviewed_source = ROOT / review["source"]
+except (OSError, ValueError, KeyError, ValidationError) as error:
+    failures.append(f"verification/stdlib/review.json: {error}")
+
+for path in sorted((ROOT / "verification").rglob("*.rs")):
+    if "target" in path.relative_to(ROOT).parts:
+        continue
+    try:
+        text = production_code(path.read_bytes(), exclude_proofs=False)
+    except ValueError as error:
+        failures.append(f"{path.relative_to(ROOT)}: {error}")
+        continue
+    if path == reviewed_source:
+        if text.count(CAPACITY_DECLARATION) != 1:
+            failures.append(f"{path.relative_to(ROOT)}: expected the exact unconstrained capacity interface")
+        else:
+            text = text.replace(CAPACITY_DECLARATION, "", 1)
+    for label, pattern in PATTERNS.items():
+        match = pattern.search(text)
+        if match is not None:
+            line = text.count("\n", 0, match.start()) + 1
+            failures.append(f"{path.relative_to(ROOT)}:{line}: {label}")
+
 if failures:
     print("runtime audit failed:", file=sys.stderr)
     for failure in failures:
@@ -66,3 +100,5 @@ if failures:
     raise SystemExit(1)
 
 print("runtime audit passed")
+if reviewed_source is not None:
+    print("reviewed proof-only standard interfaces: 1; normative approval: false")

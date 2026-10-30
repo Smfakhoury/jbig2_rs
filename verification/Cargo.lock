@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "jbig2_capacity_interface_proposal"
+name = "jbig2_capacity_interface"
 version = "0.0.0"
 dependencies = [
  "vstd",
@@ -41,7 +41,7 @@ dependencies = [
 name = "jbig2_rs_verification"
 version = "0.0.1"
 dependencies = [
- "jbig2_capacity_interface_proposal",
+ "jbig2_capacity_interface",
  "vstd",
 ]
 

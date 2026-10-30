@@ -69,6 +69,7 @@ scopes are checked separately when an impl lives below its owning type.
 | [`verification/proof-dispositions.json`](../verification/proof-dispositions.json) | Reviewed qualified production identities, boundary reasons and source hashes; generated proposals are not approval |
 | [`verification/production-proof-coverage.json`](../verification/production-proof-coverage.json) | Checked production inventory/accounting baseline; not a normative coverage percentage |
 | [`verification/proof-attestation.json`](../verification/proof-attestation.json) | Revision-bound proof result/limitations and release status; not a substitute for a fresh candidate run |
+| [`verification/stdlib/`](../verification/stdlib/) | One proof-only standard getter interface, checked numeric boundary, exact review manifest and reproducible controls; excluded from the runtime package |
 | [`validation/traceability/requirements.json`](../validation/traceability/requirements.json) | Selected requirement IDs, source locators, contracts/models/proofs/tests, strength, gaps and provisional review |
 | [`validation/coverage/baseline.json`](../validation/coverage/baseline.json) | Reviewed aggregate/per-file runtime coverage ratchet; never updated automatically |
 | [`validation/conformance/attestation.json`](../validation/conformance/attestation.json) | Revision-qualified conformance summary with honest unresolved/unsupported outcomes |

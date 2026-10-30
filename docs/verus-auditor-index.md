@@ -188,6 +188,7 @@ debugging, source binding, runtime tests and mutation sensitivity. Every include
 support file must participate in source identity.
 
 Do not infer standard/model approval, conformance or observed-capacity enforcement
-from stronger project contracts. The held getter boundary, unresolved official
+from stronger project contracts. The reviewed getter remains an additional
+explicit standard boundary, not normative approval. Unresolved official
 positives, retention conflict and protected encoded-family fixtures remain
 blocked as recorded in [publication readiness](publication-readiness.md).

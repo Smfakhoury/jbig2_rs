@@ -153,4 +153,4 @@ mod invariants;
 mod reader_properties;
 
 #[cfg(verus_keep_ghost)]
-extern crate jbig2_capacity_interface_proposal;
+extern crate jbig2_capacity_interface;

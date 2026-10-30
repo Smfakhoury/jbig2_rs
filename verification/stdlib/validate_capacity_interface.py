@@ -1,4 +1,4 @@
-"""Exercise the proposed getter's checked boundary without approving its trust."""
+"""Exercise the reviewed getter's checked boundary without granting release credit."""
 
 import argparse
 import json
@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--verus", type=Path, required=True)
 arguments = parser.parse_args()
 pin = json.loads((ROOT / "config/toolchain.json").read_text())["verus"]
-SOURCE = ROOT / "verification/proposals/vec-capacity-interface"
+SOURCE = ROOT / "verification/stdlib/vec-capacity-interface"
 OUTPUT = ROOT / "target/capacity-proposal/interface-controls"
 OUTPUT.mkdir(parents=True, exist_ok=True)
 EXECUTABLE = arguments.verus.resolve().parent / "cargo-verus"
@@ -42,7 +42,7 @@ def reports(text):
         values.append(value)
     return [
         value for value in values
-        if "jbig2_capacity_interface_proposal::observe_capacity_budget" in value.get("func-details", {})
+        if "jbig2_capacity_interface::observe_capacity_budget" in value.get("func-details", {})
     ]
 
 
@@ -108,7 +108,7 @@ with tempfile.TemporaryDirectory(prefix="jbig2-capacity-interface-control-") as 
 if (SOURCE / "lib.rs").read_text() != original:
     raise ValueError("interface source changed while running isolated controls")
 report = {
-    "status": "passed", "foundation_approved": False,
+    "status": "passed", "trust_decision_from_controls": False, "normative_approval": False,
     "scope": "Actual checked callability/numeric-budget boundary; not standard semantic approval",
     "cases": results,
 }

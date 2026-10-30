@@ -20,11 +20,15 @@ class SelectedProofEvidenceTests(unittest.TestCase):
     def test_workspace_copies_the_actual_verification_dependency_graph(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            for name in ("src", "specs", "proofs", "config", "verification/proposals/interface"):
+            for name in (
+                "src", "specs", "proofs", "config",
+                "verification/proposals/interface", "verification/stdlib/interface",
+            ):
                 (root / name).mkdir(parents=True)
             for name in ("Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
                          "verification/Cargo.toml", "verification/Cargo.lock",
-                         "verification/proposals/interface/lib.rs"):
+                         "verification/proposals/interface/lib.rs",
+                         "verification/stdlib/interface/lib.rs"):
                 (root / name).write_text(name)
             (root / "config/toolchain.json").write_text(json.dumps({
                 "verus": {"version": "pinned", "rust_toolchain": "rust"},
@@ -36,7 +40,8 @@ class SelectedProofEvidenceTests(unittest.TestCase):
                     self.assertEqual(expected, "pinned")
                     self.assertEqual(rust, "rust")
                     for name in ("verification/Cargo.toml", "verification/Cargo.lock",
-                                 "verification/proposals/interface/lib.rs"):
+                                 "verification/proposals/interface/lib.rs",
+                                 "verification/stdlib/interface/lib.rs"):
                         self.assertEqual((directory / name).read_bytes(), (root / name).read_bytes())
                     self.assertEqual(environment["JBIG2_SELECTED_CARGO_MANIFEST"],
                                      str(directory / "verification/Cargo.toml"))

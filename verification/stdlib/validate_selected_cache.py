@@ -41,7 +41,7 @@ with proof_workspace(ROOT, arguments.verus.resolve(), "jbig2-selected-cache-") a
         current = {
             path.name: (hashlib.sha256(path.read_bytes()).hexdigest(), path.stat().st_mtime_ns)
             for path in (directory / "proof-target/verus-partial/debug/deps").glob(
-                "libjbig2_capacity_interface_proposal-*"
+                "libjbig2_capacity_interface-*"
             )
             if path.suffix in {".rmeta", ".vir"}
         }
@@ -52,7 +52,7 @@ with proof_workspace(ROOT, arguments.verus.resolve(), "jbig2-selected-cache-") a
                     "previous": dependencies, "current": current,
                     "artifact_locations": [
                         path.relative_to(directory).as_posix()
-                        for path in directory.rglob("*jbig2_capacity_interface_proposal*")
+                        for path in directory.rglob("*jbig2_capacity_interface*")
                         if path.is_file()
                     ],
                 })
@@ -68,7 +68,7 @@ with proof_workspace(ROOT, arguments.verus.resolve(), "jbig2-selected-cache-") a
 report = {
     "status": "passed", "source_modified": False,
     "interface_artifact_reused": True, "queries": results,
-    "standard_interface_approved": False, "hosted_acceptance": False,
+    "trust_decision_from_controls": False, "hosted_acceptance": False,
 }
 output = ROOT / "target/capacity-proposal/selected-cache-regression.json"
 output.parent.mkdir(parents=True, exist_ok=True)

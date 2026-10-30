@@ -40,9 +40,10 @@ def proof_workspace(root: Path, executable: Path, prefix: str):
         (directory / "verification").mkdir()
         for name in ("Cargo.toml", "Cargo.lock"):
             shutil.copyfile(root / "verification" / name, directory / "verification" / name)
-        proposals = root / "verification/proposals"
-        if proposals.is_dir():
-            shutil.copytree(proposals, directory / "verification/proposals")
+        for name in ("stdlib", "proposals"):
+            dependency_root = root / "verification" / name
+            if dependency_root.is_dir():
+                shutil.copytree(dependency_root, directory / "verification" / name)
         environment = isolated_environment(directory)
         environment["RUSTUP_TOOLCHAIN"] = rust
         environment["VERUS_PATH"] = str(executable.resolve())
@@ -219,9 +220,14 @@ def check_semantic_cases(
         directory, environment, expected, rust,
     ):
         if whole is not None:
-            copied_names = {"Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE"}
+            copied_names = {
+                "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
+                "verification/Cargo.toml", "verification/Cargo.lock",
+            }
             for name, expected_hash in whole["manifest"]["source_bindings"].items():
-                if name in files or name in copied_names or name.startswith(("src/", "specs/", "proofs/")):
+                if name in files or name in copied_names or name.startswith((
+                    "src/", "specs/", "proofs/", "verification/stdlib/", "verification/proposals/",
+                )):
                     if hashlib.sha256((directory / name).read_bytes()).hexdigest() != expected_hash:
                         raise ValueError("isolated source differs from the whole-positive snapshot")
         baselines = {}

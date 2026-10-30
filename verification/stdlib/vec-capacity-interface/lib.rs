@@ -1,4 +1,4 @@
-//! Unapproved standard-interface proposal, excluded from the runtime package.
+//! Reviewed proof-only standard interface, excluded from the runtime package.
 //! No capacity/length/reservation equality or lower bound is asserted.
 
 #![cfg_attr(verus_keep_ghost, feature(allocator_api))]

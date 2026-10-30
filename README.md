@@ -1,10 +1,5 @@
 # jbig2-decoder
 
-> **Unapproved capacity-foundation proposal branch.** This checkout includes
-> a proposed proof-only standard getter interface and observed-capacity repairs.
-> It is not accepted main or release evidence. See the
-> [proposal status](verification/proposals/STATUS.txt) before interpreting results.
-
 `jbig2-decoder` is a strict, dependency-free Rust JBIG2 decoder under active
 development. **It is not yet suitable for untrusted production documents.**
 The repository remains private; the crate is unpublished, version `0.0.1`,
@@ -155,9 +150,12 @@ ordinary archive; they are not textually stripped.
 The runtime crate forbids handwritten unsafe Rust. Compiler-generated derives,
 standard-library internals, the compiler and pinned Verus/vstd contracts remain
 trust boundaries. This is **not** a binary-wide no-unsafe or no-panic proof.
+The [reviewed proof-only capacity getter](verification/stdlib/STATUS.txt) is
+an additional explicit standard-library boundary. It asserts no facts about
+capacity, length or reservation; executable callers check the observed value.
 Some verified contracts establish bounds or state preservation rather than
-decoded-output semantics, and a disclosed runtime/proof divergence still
-blocks a complete exact-source claim.
+complete decoded-output semantics. Source-bound accounting and exact-source
+checks remain separate from normative conformance and release approval.
 
 ### Run Verus through Cargo
 
@@ -171,7 +169,8 @@ cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked -- \
 
 This verifies and builds the production library. **Python is not required for
 this command.** The isolated manifest targets the same `src/lib.rs` as ordinary
-Cargo; its pinned `vstd` dependency is separate from the dependency-free runtime.
+Cargo; its pinned `vstd` and reviewed standard-interface dependencies are
+separate from the dependency-free runtime.
 Bare `cargo verus verify` against the runtime manifest is not an acceptance gate.
 
 The internal proof package/library retain the legacy
@@ -189,9 +188,9 @@ second decoder; both manifests still target the same runtime source.
   statements, nor proof that every contract specifies complete decoded output.
 - A focused/module/function run is partial debugging evidence, even with zero
   errors. It does not replace the unfiltered proof and compiled library.
-- Complete production *accounting* includes reviewed limitations and forwarders;
-  it does not mean every body is directly proved. The remaining runtime/proof
-  divergence still blocks the exact-source release gate.
+- Complete production *accounting* includes reviewed limitations; it does not
+  mean every body is directly proved. Exact-source checks additionally reject
+  divergences and incomplete functions, not the explicitly reviewed boundaries.
 - Functional project contracts, independent standard-to-model review, and
   official conformance results are separate evidence.
 
@@ -240,7 +239,8 @@ act monotonically as guards; the measurement does not prove that accounting
 property. Lower thresholds still require accounting review, not automatic
 optimization credit. Probes and validation run outside the timed interval;
 hosted timings remain informational. No new corpus families or protected
-fixtures are used, and the capacity-accounting hold remains open.
+fixtures are used. These observations do not replace the executing
+post-reservation capacity checks.
 
 On Linux, add `--measure-rss` to either command for **observational per-case
 process peak RSS**. Each sample starts a fresh Rust process, constructs only the
@@ -256,8 +256,8 @@ the launcher separately must not contaminate the child measurement. Requested
 RSS collection fails explicitly on unsupported hosts or missing/invalid data.
 This is **not allocator peak bytes, isolated decoder allocation, a memory-limit
 proof or a release-memory regression gate**. Hosted RSS ratios remain
-informational; the existing memory thresholds and held capacity decision are
-not changed.
+informational; they do not change the existing memory thresholds or prove
+allocator usable size and total process-memory bounds.
 
 ## Evidence and publication status
 

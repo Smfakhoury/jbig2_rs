@@ -224,8 +224,8 @@ interface or authorize main integration, normative processing or publication.
 The concrete `PageSink for PageCollector` wrapper now proves its own checked
 append/result relation. Its existing `push_page` helper exposes the same
 contract as `collect_page`: success appends the exact page and updates the
-bitmap-byte counter within the named project counters; errors preserve the
-page list and bitmap-byte count. The executing bodies are unchanged.
+logical and observed allocated bitmap-byte counters within the named project
+limits; errors preserve the page list and both counters.
 
 The old contract is factored into `collector_result` outside the runtime
 source. A separately verified definitional bridge lets the implementation
@@ -240,37 +240,48 @@ corresponding success/error requirement on the concrete sink wrapper; the
 constructor and helper contracts remain intact. Evidence binds the exact
 file, lexical scope and `PageSink` implementation with a bound pristine proof,
 zero verified bodies/one error for each mutant and one body for each control.
-The complete group runs in the existing whole role without moving previous cases.
+The original profile ran this group in whole; the current measured profile
+assigns it to a semantic shard without dropping any case.
 
-This says nothing about arbitrary caller-provided sinks, exact error-variant
-priority, actual reserved capacity or allocator/RSS bounds. In particular,
-the known observed-capacity hold below remains unresolved. The complete
+This says nothing about arbitrary caller-provided sinks, complete error-variant
+identity or allocator usable-size/RSS bounds. The executing integration uses
+actual observed capacity for its managed counters, as described below. The complete
 unfiltered proof must verify the bridge as well as the implementation;
 selected-body success alone is insufficient.
 
-## Blocking capacity/getter decision
+## Observed-capacity integration
 
-The remaining MMR divergence is `prepare_transition_storage` capacity-based
-memory accounting. Its executing blocks encounter unsupported `Vec::capacity`
-and `Result::unwrap_or` surfaces in the pinned verifier. Vector length is not
-capacity; requested storage is not necessarily observed reserved storage.
-One-byte requested/eight-byte reserved behavior remains a relevant regression
-case. Safety/bounds proofs do not establish the missing managed-memory result.
+The prior MMR divergence omitted retained-capacity observation/release checks
+from the proof-selected path because the pin lacked a callable capacity getter.
+The integration executes the same path in native and proof builds. Checked
+and saturating arithmetic replaces the unsupported `Result::unwrap_or` spelling
+without substituting requested length for observed capacity. A compile-time
+pointer-width guard keeps infallible capacity conversion within the existing
+u64 resource-accounting domain.
 
-A separate collector observation accepts a 4,112-byte limit with a 4,128-byte
-observed managed total: a 16-byte pointer reservation reports 32 bytes of
-capacity. A native-only borrowed-capacity repair has not been integrated into
-accepted proof evidence. These are `Vec::capacity()` observations, **not**
+Bitmap allocation checks actual post-reservation capacity. Borrowed-pointer
+storage preserves requested-preflight ordering and then checks the observed
+reservation. Owned collection keeps logical decoded bytes separate from
+allocated bitmap bytes, retaining the existing error priority and no-mutation
+error frame. Native regressions cover a one-byte request/eight-byte reservation,
+a 4,112-byte limit/4,128-byte managed total and counter overflow. Removing the
+relevant post-reservation checks must make the real regressions fail.
+These are `Vec::capacity()` observations, **not**
 allocator usable size, total process memory or RSS measurements.
 
-The owner standard-trust decision is held. An isolated getter probe and closure
-of [upstream issue #3304](https://github.com/verus-lang/verus/issues/3304)
-do not approve a local trusted getter declaration or close either integration.
-The upstream reservation contract in
+The additional getter signature is explicitly reviewed for private integration
+under delegated engineering authority, isolated from the unsafe-forbidden
+runtime, and bound by the exact
+[standard-interface review](../verification/stdlib/review.json). It asserts no
+requires/ensures facts about capacity, length or reservation. Its numeric
+boundary helper is verified, not trusted; the strict Cargo stream must validate
+the dependency and application reports without dropping zero/failed results.
+This is not a new named-human normative adjudication or public-release decision.
+An isolated upstream probe alone would not establish these integration facts.
+The reservation contract in
 [PR #3094](https://github.com/verus-lang/verus/pull/3094) does not itself specify
-the getter. No local standard/equality specification, assumption, termination
-waiver, pin update or further external outreach is authorized to bypass this
-boundary.
+the getter. No capacity/equality axiom, algorithm assumption, termination waiver
+or pin update is introduced.
 
 ## Exact-source and trust gates
 
@@ -284,8 +295,8 @@ python3 -B tools/audit_production_coverage.py \
 `--require-complete` means every production identity is accounted for and any
 non-direct status reviewed. It does **not** mean every body is directly proved.
 The release-level `--require-exact` additionally rejects known runtime/proof
-divergences and currently must fail on the remaining backlog. Routine inventory
-success cannot bypass it.
+divergences and incomplete functions. CI applies both gates; ordinary complete
+accounting cannot bypass the exact-source check or grant normative approval.
 
 The proof manifest is `verification/Cargo.toml`, targeting the same `src/lib.rs`
 as the dependency-free runtime manifest. Its locked `vstd` is proof-only.
@@ -314,6 +325,14 @@ and never substitutes for whole-crate verification and compilation.
 
 The source trust audit rejects project-local trusted standard specifications,
 verification exclusions and exec termination waivers in runtime/models/proofs.
+The one separately reviewed proof-only `Vec::capacity` signature lives under
+`verification/stdlib`, not in those codec/model/proof roots. Its typed review
+manifest binds the exact package/source hashes and immutable allocator-generic
+signature, with no capacity facts and explicit false normative approval.
+Unknown declarations, added facts, stale reviews or a changed dependency graph
+fail closed. The separately verified numeric boundary helper is not trusted.
+This delegated technical review is not a named-human standards adjudication
+or authority to publish the crate or change repository visibility.
 Codec algorithms may not use `external_body`, `assume` or `admit` as proof
 shortcuts. Enabled exec-loop decreases checks are lightweight and conditional
 on callees terminating, not a universal service-availability proof.
@@ -401,7 +420,7 @@ other.
 
 | Backlog | Required closure | Authoritative detail |
 | --- | --- | --- |
-| Exact executing-source correspondence | Resolve the known capacity-accounting divergence through an authorized, verified integration; do not replace observed capacity with requested size | [Dispositions](../verification/proof-dispositions.json) and the capacity section above |
+| Exact executing-source correspondence | Retain actual observed-capacity checks, verified current-source contracts and exact reviewed standard-interface identities; do not replace observations with requested size | [Dispositions](../verification/proof-dispositions.json) and the capacity section above |
 | Reviewed native/standard/callback boundaries | Directly prove the relevant body or retain an explicitly justified conditional trust contract; arbitrary caller I/O/sink behavior is not proved by testing a wrapper | Every named [disposition](../verification/proof-dispositions.json) |
 | Observable algorithm and caller semantics | Strengthen required bounds/state-only results to actual input/output, error and resource relations, including Huffman canonical/prefix behavior, page/stripe lifecycle, symbol/text/refinement/halftone composition, references/retention and globals | Each statement's `gaps` and each feature's `remaining_scope` in the [ledger](../validation/traceability/requirements.json) |
 | Exhaustive standard coverage and model fidelity | Complete the in-scope statement decomposition and independently review standard-to-model, table and caller interpretation; selected records are not an exhaustive denominator | [Requirements](../validation/traceability/requirements.json) and [traceability guide](spec-traceability.md) |

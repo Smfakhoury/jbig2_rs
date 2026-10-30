@@ -1,6 +1,31 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
+    "standard_interface_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version", "review_kind", "package", "manifest", "source",
+        "manifest_sha256", "source_sha256", "target", "requires", "ensures",
+        "native_runtime_dependency", "normative_approval", "decision_reference", "review"
+      ],
+      "properties": {
+        "schema_version": {"const": 1},
+        "review_kind": {"const": "delegated_engineering_review"},
+        "package": {"const": "jbig2_capacity_interface"},
+        "manifest": {"const": "verification/stdlib/vec-capacity-interface/Cargo.toml"},
+        "source": {"const": "verification/stdlib/vec-capacity-interface/lib.rs"},
+        "manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "target": {"const": "std::vec::Vec<T, A>::capacity"},
+        "requires": {"const": []},
+        "ensures": {"const": []},
+        "native_runtime_dependency": {"const": false},
+        "normative_approval": {"const": false},
+        "decision_reference": {"type": "string", "pattern": "^https://github\\.com/microsoft/jbig2_rs/issues/116#issuecomment-[0-9]+$"},
+        "review": {"type": "string", "minLength": 100}
+      }
+    },
     "conformance_differences": {
       "type": "object", "required": ["schema_version", "cases"],
       "additionalProperties": false,
@@ -369,6 +394,17 @@
         "production_proof_coverage_sha256": {"$ref": "#/$defs/sha256"},
         "proof_dispositions_sha256": {"$ref": "#/$defs/sha256"},
         "release_gate": {"type": "string"},
+        "standard_library_boundary": {
+          "type": "object", "additionalProperties": false,
+          "required": ["manifest", "manifest_sha256", "interfaces", "review_kind", "normative_approval"],
+          "properties": {
+            "manifest": {"const": "verification/stdlib/review.json"},
+            "manifest_sha256": {"$ref": "#/$defs/sha256"},
+            "interfaces": {"const": 1},
+            "review_kind": {"const": "delegated_engineering_review"},
+            "normative_approval": {"const": false}
+          }
+        },
         "result": {
           "type": "object",
           "required": ["verified_obligations", "verified_production_functions", "reviewed_verifier_limitations", "audited_forwarders", "incomplete_functions", "algorithm_bodies_verified", "native_assumptions"],
