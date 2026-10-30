@@ -91,22 +91,27 @@ pub(crate) fn validate(
             }
             Ok(bytes)
         }
-        ("work-limit", Err(DecodeError::LimitExceeded(limit)))
-            if limit.kind == LimitKind::Work
+        (_, Err(error)) if expected_error(case, error) => Ok(0),
+        _ => Err(format!("{}: unexpected result {output:?}", case.id)),
+    }
+}
+
+pub(crate) fn expected_error(case: &Case, error: &DecodeError) -> bool {
+    match (case.outcome, error) {
+        ("work-limit", DecodeError::LimitExceeded(limit)) => {
+            limit.kind == LimitKind::Work
                 && limit.actual == u64::try_from(case.input.len()).expect("input length")
-                && limit.limit + 1 == limit.actual =>
-        {
-            Ok(0)
+                && limit.limit + 1 == limit.actual
         }
         (
             "eof",
-            Err(DecodeError::Malformed(MalformedError::UnexpectedEof {
+            DecodeError::Malformed(MalformedError::UnexpectedEof {
                 offset,
                 needed: 4,
                 remaining: 3,
-            })),
-        ) if *offset == u64::try_from(case.input.len() - 16).expect("body offset") => Ok(0),
-        _ => Err(format!("{}: unexpected result {output:?}", case.id)),
+            }),
+        ) => *offset == u64::try_from(case.input.len() - 16).expect("body offset"),
+        _ => false,
     }
 }
 

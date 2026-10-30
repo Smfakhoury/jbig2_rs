@@ -142,8 +142,10 @@ python3 -B tools/check_contract_mutations.py --toolchain 1.89.0 \
   --output target/traceability/mutations.json
 ```
 
-The exact-source release gate currently fails on the disclosed MMR capacity
-divergence; complete inventory alone does not claim every body is proved.
+The former MMR capacity omission is closed by the exact-body proof and separately
+reviewed unconstrained getter. Exactness still rejects runtime/proof substitutions
+or incomplete functions; complete inventory does not claim every body is proved
+or remove the reviewed standard-library/callback boundaries.
 `update_proof_dispositions.py --output NEW_FILE` creates unreviewed proposals
 only; use an ignored `target/` output and do not overwrite reviewed decisions.
 

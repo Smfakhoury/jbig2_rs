@@ -46,6 +46,7 @@ jobs:
         run: >-
           python -B tools/run_allocation.py
           --base-ref "$BASE_REF"
+          --measure-phases
           --output-dir target/allocation-comparison
       - name: Summarize deterministic quota gate and informational timings
         if: always()
@@ -69,3 +70,4 @@ jobs:
             target/performance-controls/*/*.md
             target/allocation-comparison/*.json
             target/allocation-comparison/*.log
+            target/allocation-comparison/phases/*.json

@@ -5,6 +5,7 @@ use jbig2_decoder::Decoder;
 
 #[path = "../cases.rs"]
 mod case_data;
+mod phases;
 
 const INFLATION_BYTES: usize = 64 * 1024;
 
@@ -44,20 +45,26 @@ fn measure_case(
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments: Vec<_> = std::env::args().skip(1).collect();
-    if arguments.is_empty()
-        || arguments.len() > 2
-        || arguments
-            .get(1)
-            .is_some_and(|argument| argument != "--inflate")
-    {
-        return Err("usage: jbig2-allocation-probe CASE [--inflate]".into());
-    }
+    let (phase_mode, inflate) = match arguments.as_slice() {
+        [_] => (false, false),
+        [_, option] if option == "--inflate" => (false, true),
+        [_, option] if option == "--phases" => (true, false),
+        [_, mode, option] if mode == "--phases" && option == "--inflate-validation" => (true, true),
+        _ => {
+            return Err(
+                "usage: jbig2-allocation-probe CASE [--inflate | --phases [--inflate-validation]]"
+                    .into(),
+            )
+        }
+    };
     let selected = case_data::cases(Some(&arguments[0]));
     if selected.len() != 1 {
         return Err(format!("unknown generated case: {}", arguments[0]).into());
     }
     let case = &selected[0];
-    let inflate = arguments.len() == 2;
+    if phase_mode {
+        return phases::print(case, inflate);
+    }
     let (info, output_bytes) = measure_case(case, inflate)?;
     println!(
         "{{\"schema_version\":1,\"id\":\"{}\",\"outcome\":\"{}\",\
