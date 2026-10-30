@@ -95,9 +95,10 @@ not acceptance credit. Every case/query, the six-shard/max-four policy, eight
 producers, solver/job caps and actual 1,050-second guards remain intact.
 
 No audited forwarders remain after the public-default and owned-sink proofs.
-This does not close the twenty
-reviewed standard/callback/orchestration limitations or the held capacity
-divergence, nor does it establish normative model fidelity.
+This does not close the twenty reviewed standard/callback/orchestration
+limitations or establish normative model fidelity. The former capacity
+divergence is closed separately by the exact-body proof and disclosed boundary
+in [observed-capacity integration](#observed-capacity-integration).
 
 ### Public default constructors
 

@@ -163,7 +163,7 @@ denominator; see [traceability](spec-traceability.md).
 tests; supported official positives decode exactly or have reviewed normative
 exceptions. Unresolved cases block the corresponding conformance claim.
 The exact-source release audit must reject remaining divergences.
-See [limitations](verifier-limitations.md) for the held capacity/getter decision,
+See [limitations](verifier-limitations.md) for the reviewed capacity/getter boundary,
 and [validation](../validation/README.md) for protected fixture boundaries.
 
 ## P06 — Measure coverage and fill test gaps
