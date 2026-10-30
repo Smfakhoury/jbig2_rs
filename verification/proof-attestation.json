@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "e781aff6c5de6cba4924dfde52dc78d4c78dc15a",
+  "source_revision": "8b0192c9e4d57fd7b9d7b0db45576187b4eab916",
   "scope": "Responsibility-based layout of the sole executable decoder, models, proofs and tests. All662 native signatures, body tokens including string contents, attached contracts and proof markings and all74 constant/macro items are preserved. Fresh whole verification and compilation yields1276/0, with642directly verified and20unchanged reviewed limitations; zero native assumptions, forwarders, divergences or incomplete functions. One separately disclosed unconstrained standard getter remains trusted. The800-line file budget does not weaken contracts or grant normative/public approval.",
   "toolchain": {
     "manifest": "config/toolchain.json",
@@ -9,7 +9,7 @@
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/file-reduction/fresh-proof-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/file-reduction/review-fixed-proof-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1276,
     "verified_production_functions": 642,

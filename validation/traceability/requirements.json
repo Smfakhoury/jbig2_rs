@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "6b402c202407e89851d581cd698d4b8fd7d428c9e44f2f40fb0b091b39c65801",
+    "project_source_sha256": "0619717f0656f2978db03d2fea8c52108f9688a829565ce4621dfbf7297124a0",
     "families": [
       {
         "file": "specs/readers.rs",
