@@ -48,39 +48,13 @@ mod symbol_text_properties;
 #[path = "../proofs/production_impl/symbol_text.rs"]
 mod symbol_text_proofs;
 
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out as int == value as int,
-))]
-fn widen_u32_i64(value: u32) -> i64 {
-    i64::from(value)
-}
 
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out as int == value as int,
-))]
-fn widen_u8_i64(value: u8) -> i64 {
-    i64::from(value)
-}
 
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out as int == value as int,
-))]
-fn widen_u8_i32(value: u8) -> i32 {
-    i32::from(value)
-}
 
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out == if value { 1i64 } else { 0i64 },
-))]
-// The pinned verifier needs the explicit Boolean relation instead of From<bool>.
-#[allow(clippy::bool_to_int_with_if)]
-fn widen_bool_i64(value: bool) -> i64 {
-    if value {
-        1
-    } else {
-        0
-    }
-}
+
+
+
+
 
 /// Internal symbol/text decoding failure.
 #[derive(Debug)]
@@ -348,81 +322,6 @@ pub(crate) struct ResourceTracker {
     pub(crate) decoded_bitmap_bytes: u64,
 }
 
-impl ResourceTracker {
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures symbol_text_spec::work_charge_effect(
-            old(self), final(self), units, limits, out.is_ok(),
-        ),
-        match out {
-            Ok(()) =>
-                symbol_text_spec::work_units(final(self))
-                    == symbol_text_spec::work_units(old(self)) + units
-                && symbol_text_spec::work_units(final(self)) <= limits.max_work_units
-                && symbol_text_spec::bitmap_bytes(final(self))
-                    == symbol_text_spec::bitmap_bytes(old(self)),
-            Err(_) => symbol_text_spec::bitmap_bytes(final(self))
-                == symbol_text_spec::bitmap_bytes(old(self)),
-        },
-    ))]
-    pub(crate) fn charge_work(
-        &mut self,
-        units: u64,
-        limits: &Limits,
-    ) -> Result<(), SymbolTextError> {
-        #[cfg(verus_keep_ghost)]
-        production_symbol_tracker_fields!(self);
-        self.work_units = self
-            .work_units
-            .checked_add(units)
-            .ok_or(MalformedError::IntegerOverflow)?;
-        enforce_limit(LimitKind::Work, limits.max_work_units, self.work_units)?;
-        Ok(())
-    }
-
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures symbol_text_spec::bitmap_charge_effect(
-            old(self), final(self), width, height, limits, out.is_ok(),
-        ),
-        match out {
-            Ok(()) =>
-                symbol_text_spec::work_units(final(self))
-                    == symbol_text_spec::work_units(old(self))
-                && symbol_text_spec::bitmap_bytes(final(self))
-                    == symbol_text_spec::bitmap_bytes(old(self))
-                        + ((width as u64 + 7) / 8) * height as u64
-                && symbol_text_spec::bitmap_bytes(final(self))
-                    <= limits.max_cumulative_decoded_bitmap_bytes,
-            Err(_) => symbol_text_spec::work_units(final(self))
-                == symbol_text_spec::work_units(old(self)),
-        },
-    ))]
-    pub(crate) fn charge_bitmap(
-        &mut self,
-        width: u32,
-        height: u32,
-        limits: &Limits,
-    ) -> Result<(), SymbolTextError> {
-        check_dimensions(width, height, limits)?;
-        let stride = u64::from(width)
-            .checked_add(7)
-            .ok_or(MalformedError::IntegerOverflow)?
-            / 8;
-        let bytes = stride
-            .checked_mul(u64::from(height))
-            .ok_or(MalformedError::IntegerOverflow)?;
-        self.decoded_bitmap_bytes = self
-            .decoded_bitmap_bytes
-            .checked_add(bytes)
-            .ok_or(MalformedError::IntegerOverflow)?;
-        enforce_limit(
-            LimitKind::DecodedBitmapBytes,
-            limits.max_cumulative_decoded_bitmap_bytes,
-            self.decoded_bitmap_bytes,
-        )?;
-        Ok(())
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) enum TableChoice {
@@ -547,25 +446,6 @@ pub(crate) struct DictionaryClassState {
     pub(crate) class_open: bool,
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures match out {
-        Ok(value) =>
-            value as int == current as int + delta as int
-            && value <= maximum,
-        Err(_) => true,
-    },
-))]
-fn checked_unsigned_delta(current: u32, delta: i64, maximum: u32) -> Result<u32, SymbolTextError> {
-    let result = widen_u32_i64(current)
-        .checked_add(delta)
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let result = u32::try_from(result).map_err(|_error| SymbolTextError::InvalidDimensions)?;
-    if result > maximum {
-        return Err(SymbolTextError::InvalidDimensions);
-    }
-    Ok(result)
-}
-
 /// One decoded symbol-code-length run.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -573,23 +453,6 @@ pub(crate) enum SymbolLengthRun {
     Literal(u8),
     RepeatPrevious(u8),
     Zeros(u16),
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires symbol_text_spec::codec_valid(old(codec)),
-    ensures match out {
-        Ok(_) => symbol_text_spec::codec_valid(final(codec)),
-        Err(_) => true,
-    },
-))]
-fn required_integer(
-    codec: &mut SymbolCodec<'_>,
-    field: IntegerField,
-) -> Result<i64, SymbolTextError> {
-    match codec.decode_integer(field)? {
-        EntropyInteger::Value(value) => Ok(value),
-        EntropyInteger::OutOfBand => Err(SymbolTextError::UnexpectedOutOfBand("required integer")),
-    }
 }
 
 /// Physical top-left placement of one decoded symbol bitmap.
@@ -639,56 +502,6 @@ pub(crate) struct PlacementBatch<'a> {
     pub(crate) height: u32,
     pub(crate) source_shift: u32,
     pub(crate) destination_shift: u32,
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures out.is_ok() == (
-        width <= limits.max_width
-        && height <= limits.max_height
-        && width as nat * height as nat <= limits.max_pixels_per_page
-    ),
-    match out {
-        Ok(()) =>
-            width <= limits.max_width
-            && height <= limits.max_height
-            && width as nat * height as nat <= limits.max_pixels_per_page,
-        Err(_) => true,
-    },
-))]
-fn check_dimensions(width: u32, height: u32, limits: &Limits) -> Result<(), SymbolTextError> {
-    enforce_limit(
-        LimitKind::Width,
-        u64::from(limits.max_width),
-        u64::from(width),
-    )?;
-    enforce_limit(
-        LimitKind::Height,
-        u64::from(limits.max_height),
-        u64::from(height),
-    )?;
-    let pixels = u64::from(width)
-        .checked_mul(u64::from(height))
-        .ok_or(MalformedError::IntegerOverflow)?;
-    enforce_limit(LimitKind::PagePixels, limits.max_pixels_per_page, pixels)?;
-    Ok(())
-}
-
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures match out {
-        Ok(()) => actual <= limit,
-        Err(_) => actual > limit,
-    },
-))]
-fn enforce_limit(kind: LimitKind, limit: u64, actual: u64) -> Result<(), SymbolTextError> {
-    if actual > limit {
-        return Err(LimitExceeded {
-            kind,
-            limit,
-            actual,
-        }
-        .into());
-    }
-    Ok(())
 }
 
 /// Complete, validated symbol-dictionary segment data header.
@@ -764,75 +577,6 @@ struct HuffmanFieldChoices<'a> {
 enum HuffmanChoiceSet<'a> {
     Dictionary(HuffmanFieldChoices<'a>),
     TextRegion(HuffmanFieldChoices<'a>),
-}
-
-macro_rules! materialize_huffman_tables {
-    ($choice_set:expr, $limits:expr) => {{
-        let choice_set = $choice_set;
-        let limits = $limits;
-        let mut standard_tables = StandardHuffmanTables::empty();
-        macro_rules! resolve {
-            ($choice:expr) => {
-                materialize_huffman_table($choice, &mut standard_tables, limits)?
-            };
-        }
-
-        let tables = match choice_set {
-            HuffmanChoiceSet::Dictionary(choices) => {
-                let height_delta = resolve!(choices.height_delta);
-                let width_delta = resolve!(choices.width_delta);
-                let export_run = resolve!(choices.export_run);
-                let dictionary_bitmap_size = resolve!(choices.dictionary_bitmap_size);
-                let aggregation_instances = resolve!(choices.aggregation_instances);
-                let refinement_x = resolve!(choices.refinement_x);
-                let refinement_y = resolve!(choices.refinement_y);
-                let refinement_size = resolve!(choices.refinement_size);
-                HuffmanFieldTables {
-                    standard_tables,
-                    aggregation_instances,
-                    height_delta,
-                    width_delta,
-                    export_run,
-                    strip_delta: None,
-                    first_s: None,
-                    subsequent_s: None,
-                    refinement_width: None,
-                    refinement_height: None,
-                    refinement_x,
-                    refinement_y,
-                    refinement_size,
-                    dictionary_bitmap_size,
-                }
-            }
-            HuffmanChoiceSet::TextRegion(choices) => {
-                let first_s = resolve!(choices.first_s);
-                let subsequent_s = resolve!(choices.subsequent_s);
-                let strip_delta = resolve!(choices.strip_delta);
-                let refinement_width = resolve!(choices.refinement_width);
-                let refinement_height = resolve!(choices.refinement_height);
-                let refinement_x = resolve!(choices.refinement_x);
-                let refinement_y = resolve!(choices.refinement_y);
-                let refinement_size = resolve!(choices.refinement_size);
-                HuffmanFieldTables {
-                    standard_tables,
-                    aggregation_instances: None,
-                    height_delta: None,
-                    width_delta: None,
-                    export_run: None,
-                    strip_delta,
-                    first_s,
-                    subsequent_s,
-                    refinement_width,
-                    refinement_height,
-                    refinement_x,
-                    refinement_y,
-                    refinement_size,
-                    dictionary_bitmap_size: None,
-                }
-            }
-        };
-        Ok::<HuffmanFieldTables<'_>, SymbolTextError>(tables)
-    }};
 }
 
 /// Resolved Huffman tables for every table-backed [`IntegerField`].
@@ -924,105 +668,11 @@ struct HuffmanCodec<'a> {
     refinement_work: u64,
 }
 
-macro_rules! prepare_symbol_ids {
-    ($codec:expr, $symbol_count:expr, $limits:expr) => {{
-        let codec = $codec;
-        let symbol_count = $symbol_count;
-        let limits = $limits;
-        let runcode_lines = read_symbol_id_runcode_lines(&mut codec.reader)?;
-        let runcode_table = HuffmanTable::new(&runcode_lines, limits)?;
-        let lengths =
-            decode_symbol_id_code_lengths(&mut codec.reader, &runcode_table, symbol_count, limits)?;
-        codec.symbol_id_table = Some(HuffmanTable::new_symbol_ids(&lengths, limits)?);
-        byte_align(&mut codec.reader)?;
-        Ok::<(), SymbolTextError>(())
-    }};
-}
-
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) enum SymbolCodebook<'a> {
     Contiguous(&'a [Bitmap]),
     Borrowed(&'a [&'a Bitmap]),
-}
-
-impl<'a> SymbolCodebook<'a> {
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures out as nat == symbol_text_spec::codebook_len(self),
-    ))]
-    pub(crate) fn len(self) -> usize {
-        match self {
-            Self::Contiguous(symbols) => symbols.len(),
-            Self::Borrowed(symbols) => symbols.len(),
-        }
-    }
-
-    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        requires symbol_text_spec::codebook_valid(self),
-        ensures match out {
-            Some(bitmap) => crate::spec::bitmap::storage_valid(bitmap)
-                && symbol_text_spec::codebook_selects(self, index as nat, bitmap),
-            None => index as nat >= symbol_text_spec::codebook_len(self),
-        },
-    ))]
-    pub(crate) fn get(self, index: usize) -> Option<&'a Bitmap> {
-        match self {
-            Self::Contiguous(symbols) => symbols.get(index),
-            Self::Borrowed(symbols) => match symbols.get(index) {
-                Some(bitmap) => Some(*bitmap),
-                None => None,
-            },
-        }
-    }
-}
-
-/// Looks up a symbol by ID across the imported and already-decoded-new
-/// symbol collections, as used by T.88 6.5.8.2.2's single-instance
-/// refinement/aggregate procedure.
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires
-        symbol_text_spec::codebook_valid(imported),
-        symbol_text_spec::bitmaps_valid(new_symbols@),
-    ensures match out {
-        Ok(bitmap) => crate::spec::bitmap::storage_valid(bitmap)
-            && symbol_text_spec::symbol_id_selects(imported, new_symbols@, id, bitmap),
-        Err(_) => true,
-    },
-    (symbol_text_spec::codebook_len(imported) + new_symbols@.len() <= usize::MAX
-        && symbol_text_spec::codebook_len(imported) + new_symbols@.len() <= u32::MAX
-        && (id as nat) < symbol_text_spec::codebook_len(imported) + new_symbols@.len())
-        ==> out.is_ok(),
-))]
-fn symbol_by_id<'a>(
-    imported: SymbolCodebook<'a>,
-    new_symbols: &'a [Bitmap],
-    id: u32,
-) -> Result<&'a Bitmap, SymbolTextError> {
-    let id_usize = usize::try_from(id).map_err(|_error| MalformedError::IntegerOverflow)?;
-    let available = imported
-        .len()
-        .checked_add(new_symbols.len())
-        .ok_or(MalformedError::IntegerOverflow)?;
-    let available_u32 =
-        u32::try_from(available).map_err(|_error| MalformedError::IntegerOverflow)?;
-    if id_usize < imported.len() {
-        imported
-            .get(id_usize)
-            .ok_or(SymbolTextError::SymbolIdOutOfRange {
-                id,
-                available: available_u32,
-            })
-    } else {
-        let new_index = id_usize - imported.len();
-        if new_index < new_symbols.len() {
-            Ok(&new_symbols[new_index])
-        } else {
-            Err(SymbolTextError::SymbolIdOutOfRange {
-                id,
-                available: available_u32,
-            })
-        }
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1088,6 +738,17 @@ pub(crate) struct TextRegionOutput {
     pub(crate) bitmap: Bitmap,
     pub(crate) consumed_bytes: usize,
 }
+
+mod numbers;
+mod resources;
+mod validation;
+#[macro_use]
+mod macros;
+mod codebook;
+
+use codebook::symbol_by_id;
+use numbers::{widen_bool_i64, widen_u32_i64, widen_u8_i32, widen_u8_i64};
+use validation::{check_dimensions, checked_unsigned_delta, enforce_limit, required_integer};
 
 mod bitmap;
 mod codec;

@@ -47,10 +47,13 @@ python3 -B tools/audit_production_coverage.py \
 ```
 
 Completeness means accounted-for inventory, not universally verified bodies.
-Exactness currently fails on the disclosed capacity-accounting divergence.
-The standard-trust decision and protected encoded-family fixture holds remain
-in force; no assumptions, local std/equality specifications, termination waivers,
-pin changes or lower gates may bypass them.
+Exactness rejects runtime/proof substitutions and incomplete functions. The
+observed-capacity integration removes the former MMR omission using the
+separately reviewed unconstrained standard getter; this is not a proof of
+allocator behavior or removal of the reviewed standard/callback limitations.
+The exact standard-interface review boundary and protected encoded-family
+fixture holds remain in force; no assumptions, strengthened std/equality
+specifications, termination waivers, pin changes or lower gates may bypass them.
 
 See [publication readiness](docs/publication-readiness.md) for the qualified
 snapshot, [P01–P12](docs/open-source-readiness-plan.md) for complete acceptance

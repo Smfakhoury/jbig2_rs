@@ -71,11 +71,11 @@ the next byte?**
    (BYTEIN)**. The [notation guide](../docs/verus-auditor-index.md#arithmetic-notation-and-obligations)
    connects the standard's register names to the code's fields. Read the
    standard first; do not use the Rust implementation as the normative answer.
-3. Now open the [Rust arithmetic decoder](../src/arithmetic.rs) and find
+3. Now open the [Rust arithmetic refill implementation](../src/arithmetic/refill.rs) and find
    `byte_in_signal`. Read its `ensures` conditions: these are the promises
    the implementation proof makes. Check whether its preconditions rule out
    inputs the decoder should support.
-4. Open the separate [arithmetic tests](../src/arithmetic/tests.rs) and find
+4. Open the separate [decoder-register tests](../src/arithmetic/tests/decoder_registers.rs) and find
    `marker_is_strictly_greater_than_8f_and_is_not_consumed`.
    A concrete test helps explain the behavior; it does not replace checking
    the model against the standard.

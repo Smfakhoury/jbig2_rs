@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 from proof_sensitivity import check_semantic_cases
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,10 +34,9 @@ if sign == 0 {
     let negative = -magnitude;
     Ok(ArithmeticInteger::Value(negative))
 }"""
-PAYLOAD_RETURN = """Ok(value)
-}
-
-/// Returns a recognized marker without consuming it."""
+PAYLOAD_RETURN = runtime_function(
+    ROOT, "arithmetic", "ArithmeticDecoder::decode_integer_bits",
+)["body_text"]
 SIGN = "let sign = self.decode_integer_bit(&mut previous, contexts)?;"
 
 

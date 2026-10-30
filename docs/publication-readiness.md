@@ -6,7 +6,44 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
-## Current private capacity-integration evidence
+## Current responsibility-based file budget
+
+The immutable Rust-layout snapshot is
+`8b0192c9e4d57fd7b9d7b0db45576187b4eab916`. It adds focused arithmetic,
+Huffman, MMR, symbol/text and dispatch modules and partitions large regression
+suites, two model groups and a shared proof group. Every handwritten owned Rust
+file is at most 800 lines; the largest runtime/model/proof files are
+795/795/784 lines. The runtime audit checks the budget, with explicit 800/801
+boundary tests. This is a smaller reading-unit guarantee, not line compression
+or a reduction in total implementation size.
+
+| Local evidence for that Rust layout | Actual result |
+| --- | --- |
+| Preservation | All 662 native signatures, body tokens including string contents, attached function/loop contracts and proof markings; all 74 constant/macro items preserved; public decoder API unchanged |
+| Whole verification and compilation | Fresh strict Cargo stream: 1,276 application obligations, zero errors and a nonempty production library |
+| Native accounting | 642 direct, 20 unchanged reviewed standard/callback limitations; zero native assumptions, forwarders, divergences or incomplete functions; the separate reviewed standard getter remains disclosed |
+| Native regressions | 493 tests and 1 doctest pass; 14 existing ignored microbenchmarks; formatting and strict Clippy pass |
+| Native sensitivity | All 141 actual native mutants compile and fail their exact relocated tests; both newly injected diagnostic paths use qualified types rather than relying on former parent imports |
+| Tooling and traceability | 575 tooling tests pass; actual verifier identities and Cargo test discovery checked; 266 selected requirements remain provisional, with 418 purposes and 180 registered definitions |
+| Coverage | 73 executing files; 11,529/12,776 lines, 11,008/12,982 regions and 2,246/2,640 outcomes. All 48 original source-component floors and the aggregate are nonregressing against both the reviewed ratchet and actual prior measurement; 32 added physical lines are all covered |
+| Ordinary distribution | Actual 148-file archive, extracted tests/doctest and a fresh offline Rust 1.88.0 consumer pass, including exact output and hidden-hook/unsafe controls; zero normal dependencies |
+
+Independent review found a misplaced test-only oracle ghost contract that
+ordinary tests erase and the production proof excludes. The original attachment
+is restored; all 605 test/helper declarations and 502 attached attributes across
+61 files now match their original associations. Two regressions recreate and
+reject the actual misattachment. This structural check does not claim formal
+verification of test-only helpers. The independent follow-up closed the finding;
+fresh whole proof, coverage and extracted-package validation were rerun.
+
+New physical-file coverage floors bind the actual measurements; release goals,
+exclusions and all original component comparisons are unchanged. Nested test
+names are rebound in exact selectors, not replaced with broader filters.
+Complete current-head hosted semantic, native-mutation, fuzz, platform and
+distribution acceptance remains a separate requirement. Earlier capacity and
+official-vector observations below retain their original revisions.
+
+## Private capacity-integration reference
 
 The fresh compilation snapshot is `7752b9aab6e2308ba718264989f6f6866cfdb8dc`.
 Its standard-interface layout and trust audit are described in the

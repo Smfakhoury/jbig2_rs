@@ -9,15 +9,14 @@ import subprocess
 import sys
 
 from proof_sensitivity import check_semantic_cases, replace_once
-from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FUNCTIONS = {row["id"]: row for row in source_functions(ROOT)}
-FULL = FUNCTIONS["mmr::reference_elements"]["body_text"]
-FROM = FUNCTIONS["mmr::reference_elements_from"]["body_text"]
-RASTER = FUNCTIONS["mmr::decode_bitmap"]["body_text"]
-FINISH = FUNCTIONS["mmr::finish_required_prefix"]["body_text"]
+FULL = runtime_function(ROOT, "mmr", "reference_elements")["body_text"]
+FROM = runtime_function(ROOT, "mmr", "reference_elements_from")["body_text"]
+RASTER = runtime_function(ROOT, "mmr", "decode_bitmap")["body_text"]
+FINISH = runtime_function(ROOT, "mmr", "finish_required_prefix")["body_text"]
 FULL_PAIR = """&& mmr_spec::reference_pair_matches(
     transitions@, x, black, width, initial, 0, b1, b2,
 )"""

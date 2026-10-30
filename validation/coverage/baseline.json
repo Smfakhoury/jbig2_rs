@@ -2,10 +2,10 @@
   "schema_version": 1,
   "scope_version": 1,
   "status": "layout_rebound_ratchet_release_goals_met",
-  "policy": "Physical-source layout rebinding from a fresh complete pinned Linux LLVM collection. All 659 native executable token streams, attached function/loop contracts, data and executing macros are preserved. Each new executing file maps to exactly one original source component; every original component is nonregressing against both the previous ratchet and the stronger recent accepted reference. Against that recent reference, branch and region totals are unchanged; 74 added physical lines are covered and the number of uncovered lines is unchanged. Test-only files and declaration-only facades are not executing-runtime denominators. All 48 new per-file floors are locked to the actual measured values. Global release goals remain 90% lines and 85% branch outcomes; no tests, cases or budget/trust constraints were removed. P06 and normative review remain incomplete.",
-  "source_revision": "9774ba9bb1f50a0cac1702ede078e1f0eba56e80",
-  "source_sha256": "558505e869c3ed4aadc37da2a5bd9373aa15b898ec6122401d8ac6e4a6c43d17",
-  "test_source_sha256": "381a803a66febf8c0d579adf5a795a8c43f99e5e4ed6a3e428c09fd1cfff743d",
+  "policy": "Physical-source rebinding after complete native662/body/contract and74data/macro preservation. Every executing file has exactly one old physical-source owner. All48old component floors and the aggregate are nonregressing against both the reviewed ratchet and actual accepted reference. Region/branch counts and covered counts are unchanged;32additional physical lines are all covered, with no added uncovered lines. Every new per-file floor is locked to its actual fresh pinned LLVM measurement. No coverage exclusions, tests, release goals or source/trust/resource guards are weakened; normative/conformance gates remain open.",
+  "source_revision": "e781aff6c5de6cba4924dfde52dc78d4c78dc15a",
+  "source_sha256": "a992ebea86f79418a11291f6bc86e72ab51e8c1e4f012710aec2e138c17830c6",
+  "test_source_sha256": "9cedccf84b31007efe58beabdf40abb1f95d4d3e4fb5540d90de337a1778da76",
   "toolchain": {
     "rust_toolchain": "nightly-2026-10-12",
     "cargo_llvm_cov_version": "0.9.1",
@@ -18,31 +18,73 @@
   },
   "totals": {
     "lines": {
-      "covered": 11460,
-      "count": 12716
+      "covered": 11529,
+      "count": 12776
     },
     "regions": {
-      "covered": 10974,
-      "count": 12953
+      "covered": 11008,
+      "count": 12982
     },
     "branches": {
-      "covered": 2245,
+      "covered": 2246,
       "count": 2640
     }
   },
   "files": {
-    "src/arithmetic.rs": {
+    "src/arithmetic/decoding.rs": {
       "lines": {
-        "covered": 335,
-        "count": 344
+        "covered": 99,
+        "count": 100
       },
       "regions": {
-        "covered": 326,
-        "count": 340
+        "covered": 93,
+        "count": 96
       },
       "branches": {
-        "covered": 84,
-        "count": 90
+        "covered": 23,
+        "count": 24
+      }
+    },
+    "src/arithmetic/integers.rs": {
+      "lines": {
+        "covered": 99,
+        "count": 104
+      },
+      "regions": {
+        "covered": 103,
+        "count": 111
+      },
+      "branches": {
+        "covered": 28,
+        "count": 30
+      }
+    },
+    "src/arithmetic/refill.rs": {
+      "lines": {
+        "covered": 67,
+        "count": 67
+      },
+      "regions": {
+        "covered": 67,
+        "count": 67
+      },
+      "branches": {
+        "covered": 24,
+        "count": 24
+      }
+    },
+    "src/arithmetic.rs": {
+      "lines": {
+        "covered": 70,
+        "count": 73
+      },
+      "regions": {
+        "covered": 63,
+        "count": 66
+      },
+      "branches": {
+        "covered": 9,
+        "count": 12
       }
     },
     "src/bitmap/access.rs": {
@@ -117,12 +159,12 @@
     },
     "src/bitmap/storage.rs": {
       "lines": {
-        "covered": 95,
-        "count": 99
+        "covered": 104,
+        "count": 108
       },
       "regions": {
-        "covered": 85,
-        "count": 95
+        "covered": 93,
+        "count": 103
       },
       "branches": {
         "covered": 10,
@@ -143,18 +185,32 @@
         "count": 0
       }
     },
-    "src/decode/dispatch.rs": {
+    "src/decode/dispatch/references.rs": {
       "lines": {
-        "covered": 415,
-        "count": 553
+        "covered": 102,
+        "count": 104
       },
       "regions": {
-        "covered": 375,
-        "count": 559
+        "covered": 93,
+        "count": 100
       },
       "branches": {
-        "covered": 83,
-        "count": 112
+        "covered": 28,
+        "count": 30
+      }
+    },
+    "src/decode/dispatch.rs": {
+      "lines": {
+        "covered": 322,
+        "count": 458
+      },
+      "regions": {
+        "covered": 293,
+        "count": 470
+      },
+      "branches": {
+        "covered": 55,
+        "count": 82
       }
     },
     "src/decode/orchestration.rs": {
@@ -201,16 +257,16 @@
     },
     "src/decode.rs": {
       "lines": {
-        "covered": 103,
-        "count": 104
+        "covered": 117,
+        "count": 118
       },
       "regions": {
-        "covered": 84,
-        "count": 90
+        "covered": 92,
+        "count": 98
       },
       "branches": {
-        "covered": 4,
-        "count": 4
+        "covered": 6,
+        "count": 6
       }
     },
     "src/document/input.rs": {
@@ -507,18 +563,74 @@
         "count": 16
       }
     },
-    "src/huffman.rs": {
+    "src/huffman/construction.rs": {
       "lines": {
-        "covered": 759,
-        "count": 835
+        "covered": 189,
+        "count": 224
       },
       "regions": {
-        "covered": 736,
-        "count": 855
+        "covered": 186,
+        "count": 247
       },
       "branches": {
-        "covered": 201,
-        "count": 232
+        "covered": 54,
+        "count": 64
+      }
+    },
+    "src/huffman/decoding.rs": {
+      "lines": {
+        "covered": 168,
+        "count": 188
+      },
+      "regions": {
+        "covered": 147,
+        "count": 181
+      },
+      "branches": {
+        "covered": 32,
+        "count": 42
+      }
+    },
+    "src/huffman/validation.rs": {
+      "lines": {
+        "covered": 207,
+        "count": 226
+      },
+      "regions": {
+        "covered": 167,
+        "count": 189
+      },
+      "branches": {
+        "covered": 67,
+        "count": 76
+      }
+    },
+    "src/huffman/wide.rs": {
+      "lines": {
+        "covered": 89,
+        "count": 89
+      },
+      "regions": {
+        "covered": 119,
+        "count": 119
+      },
+      "branches": {
+        "covered": 46,
+        "count": 46
+      }
+    },
+    "src/huffman.rs": {
+      "lines": {
+        "covered": 112,
+        "count": 114
+      },
+      "regions": {
+        "covered": 117,
+        "count": 119
+      },
+      "branches": {
+        "covered": 2,
+        "count": 4
       }
     },
     "src/limits.rs": {
@@ -535,18 +647,102 @@
         "count": 0
       }
     },
-    "src/mmr.rs": {
+    "src/mmr/codes.rs": {
       "lines": {
-        "covered": 600,
-        "count": 622
+        "covered": 128,
+        "count": 130
       },
       "regions": {
-        "covered": 545,
-        "count": 615
+        "covered": 136,
+        "count": 150
       },
       "branches": {
-        "covered": 138,
-        "count": 150
+        "covered": 52,
+        "count": 54
+      }
+    },
+    "src/mmr/memory.rs": {
+      "lines": {
+        "covered": 86,
+        "count": 94
+      },
+      "regions": {
+        "covered": 50,
+        "count": 62
+      },
+      "branches": {
+        "covered": 13,
+        "count": 16
+      }
+    },
+    "src/mmr/raster.rs": {
+      "lines": {
+        "covered": 119,
+        "count": 123
+      },
+      "regions": {
+        "covered": 125,
+        "count": 139
+      },
+      "branches": {
+        "covered": 9,
+        "count": 14
+      }
+    },
+    "src/mmr/reference.rs": {
+      "lines": {
+        "covered": 69,
+        "count": 69
+      },
+      "regions": {
+        "covered": 54,
+        "count": 65
+      },
+      "branches": {
+        "covered": 28,
+        "count": 28
+      }
+    },
+    "src/mmr/spans.rs": {
+      "lines": {
+        "covered": 52,
+        "count": 53
+      },
+      "regions": {
+        "covered": 42,
+        "count": 44
+      },
+      "branches": {
+        "covered": 12,
+        "count": 12
+      }
+    },
+    "src/mmr/termination.rs": {
+      "lines": {
+        "covered": 57,
+        "count": 58
+      },
+      "regions": {
+        "covered": 54,
+        "count": 67
+      },
+      "branches": {
+        "covered": 23,
+        "count": 24
+      }
+    },
+    "src/mmr.rs": {
+      "lines": {
+        "covered": 98,
+        "count": 98
+      },
+      "regions": {
+        "covered": 88,
+        "count": 90
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
       }
     },
     "src/reader.rs": {
@@ -605,32 +801,144 @@
         "count": 30
       }
     },
-    "src/symbol_text/codec.rs": {
+    "src/symbol_text/codebook.rs": {
       "lines": {
-        "covered": 429,
-        "count": 676
+        "covered": 33,
+        "count": 38
       },
       "regions": {
-        "covered": 359,
-        "count": 626
+        "covered": 22,
+        "count": 27
       },
       "branches": {
-        "covered": 104,
-        "count": 128
+        "covered": 3,
+        "count": 4
+      }
+    },
+    "src/symbol_text/codec/arithmetic.rs": {
+      "lines": {
+        "covered": 98,
+        "count": 199
+      },
+      "regions": {
+        "covered": 80,
+        "count": 162
+      },
+      "branches": {
+        "covered": 16,
+        "count": 26
+      }
+    },
+    "src/symbol_text/codec/huffman.rs": {
+      "lines": {
+        "covered": 64,
+        "count": 156
+      },
+      "regions": {
+        "covered": 39,
+        "count": 127
+      },
+      "branches": {
+        "covered": 3,
+        "count": 8
+      }
+    },
+    "src/symbol_text/codec/refinement.rs": {
+      "lines": {
+        "covered": 64,
+        "count": 69
+      },
+      "regions": {
+        "covered": 57,
+        "count": 76
+      },
+      "branches": {
+        "covered": 5,
+        "count": 8
+      }
+    },
+    "src/symbol_text/codec/symbols.rs": {
+      "lines": {
+        "covered": 175,
+        "count": 214
+      },
+      "regions": {
+        "covered": 163,
+        "count": 232
+      },
+      "branches": {
+        "covered": 80,
+        "count": 86
+      }
+    },
+    "src/symbol_text/codec.rs": {
+      "lines": {
+        "covered": 35,
+        "count": 45
+      },
+      "regions": {
+        "covered": 20,
+        "count": 29
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
+      }
+    },
+    "src/symbol_text/dictionary/arithmetic.rs": {
+      "lines": {
+        "covered": 61,
+        "count": 293
+      },
+      "regions": {
+        "covered": 48,
+        "count": 283
+      },
+      "branches": {
+        "covered": 5,
+        "count": 44
+      }
+    },
+    "src/symbol_text/dictionary/exports.rs": {
+      "lines": {
+        "covered": 147,
+        "count": 164
+      },
+      "regions": {
+        "covered": 123,
+        "count": 152
+      },
+      "branches": {
+        "covered": 24,
+        "count": 32
+      }
+    },
+    "src/symbol_text/dictionary/huffman.rs": {
+      "lines": {
+        "covered": 152,
+        "count": 207
+      },
+      "regions": {
+        "covered": 140,
+        "count": 237
+      },
+      "branches": {
+        "covered": 22,
+        "count": 38
       }
     },
     "src/symbol_text/dictionary.rs": {
       "lines": {
-        "covered": 423,
-        "count": 754
+        "covered": 63,
+        "count": 90
       },
       "regions": {
-        "covered": 370,
-        "count": 754
+        "covered": 59,
+        "count": 82
       },
       "branches": {
-        "covered": 59,
-        "count": 134
+        "covered": 8,
+        "count": 20
       }
     },
     "src/symbol_text/headers.rs": {
@@ -647,6 +955,20 @@
         "count": 70
       }
     },
+    "src/symbol_text/numbers.rs": {
+      "lines": {
+        "covered": 14,
+        "count": 14
+      },
+      "regions": {
+        "covered": 14,
+        "count": 14
+      },
+      "branches": {
+        "covered": 2,
+        "count": 2
+      }
+    },
     "src/symbol_text/placement.rs": {
       "lines": {
         "covered": 167,
@@ -659,6 +981,20 @@
       "branches": {
         "covered": 36,
         "count": 36
+      }
+    },
+    "src/symbol_text/resources.rs": {
+      "lines": {
+        "covered": 37,
+        "count": 37
+      },
+      "regions": {
+        "covered": 28,
+        "count": 30
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
       }
     },
     "src/symbol_text/tables.rs": {
@@ -689,18 +1025,32 @@
         "count": 86
       }
     },
-    "src/symbol_text.rs": {
+    "src/symbol_text/validation.rs": {
       "lines": {
-        "covered": 160,
-        "count": 169
+        "covered": 57,
+        "count": 58
       },
       "regions": {
-        "covered": 133,
-        "count": 146
+        "covered": 40,
+        "count": 43
       },
       "branches": {
-        "covered": 9,
-        "count": 10
+        "covered": 4,
+        "count": 4
+      }
+    },
+    "src/symbol_text.rs": {
+      "lines": {
+        "covered": 34,
+        "count": 34
+      },
+      "regions": {
+        "covered": 32,
+        "count": 32
+      },
+      "branches": {
+        "covered": 0,
+        "count": 0
       }
     }
   }

@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 from proof_sensitivity import check_semantic_cases
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +27,7 @@ RETURN_SITE = """if code.terminal {
     }
     return Ok(total);
 }"""
-HEAD = """fn decode_run(reader: &mut BitReader<'_>, black: bool, remaining: u32) -> Result<u32, MmrError> {"""
+HEAD = runtime_function(ROOT, "mmr", "decode_run")["body_text"].split("{", 1)[0] + "{"
 
 
 def case(identity, site, replacement, extra=()):

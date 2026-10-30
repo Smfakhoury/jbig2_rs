@@ -96,6 +96,20 @@ class RuntimeProofPolicyTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("missing production crate root", result.stderr)
 
+    def test_exact_source_line_budget_is_not_a_test_or_proof_exemption(self):
+        for directory in ("src", "specs", "proofs", "tests", "examples", "verification"):
+            with self.subTest(directory=directory):
+                (self.root / directory).mkdir(exist_ok=True)
+                path = self.root / directory / "line_budget.rs"
+                path.write_text("// source line\n" * 800)
+                result = self.run_audit()
+                self.assertEqual(result.returncode, 0, result.stderr)
+                path.write_text("// source line\n" * 801)
+                result = self.run_audit()
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn("800-line source budget", result.stderr)
+                path.unlink()
+
     def reviewed_interface(self):
         dependency = self.root / "verification/stdlib/vec-capacity-interface"
         dependency.mkdir(parents=True)

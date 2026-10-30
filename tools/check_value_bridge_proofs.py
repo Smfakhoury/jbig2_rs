@@ -20,7 +20,7 @@ def numeric_case(name, argument, result):
     contract = f"""#[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures out as int == value as int,
     ))]
-    fn {name}"""
+    pub(super) fn {name}"""
     return {
         "id": f"{name}_changes_value", "file": "src/symbol_text.rs",
         "module": "symbol_text", "function": name,

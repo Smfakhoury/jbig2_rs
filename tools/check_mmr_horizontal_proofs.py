@@ -8,14 +8,11 @@ import subprocess
 import sys
 
 from proof_sensitivity import check_semantic_cases, replace_once
-from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BODY = next(
-    row["body_text"] for row in source_functions(ROOT)
-    if row["id"] == "mmr::decode_horizontal_runs"
-)
+BODY = runtime_function(ROOT, "mmr", "decode_horizontal_runs")["body_text"]
 RELATION = """&& mmr_spec::horizontal_pair(
     black, old(reader).bytes@, old(reader).bit_position as nat,
     final(reader).bit_position as nat, x, width, after_first, end,

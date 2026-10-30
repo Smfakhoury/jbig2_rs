@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from proof_sensitivity import check_semantic_cases, replace_once
-from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,9 +57,8 @@ BITMAP_LIMIT_CALL = """enforce_limit(
     limits.max_cumulative_decoded_bitmap_bytes,
     self.decoded_bitmap_bytes,
 )?;"""
-BODIES = {entry["id"]: entry["body_text"] for entry in source_functions(ROOT)}
-DIMENSION_BODY = BODIES["symbol_text::check_dimensions"]
-CURRENT_BODY = BODIES["symbol_text::text::TextRegionState::place_current"]
+DIMENSION_BODY = runtime_function(ROOT, "symbol_text", "check_dimensions")["body_text"]
+CURRENT_BODY = runtime_function(ROOT, "symbol_text", "TextRegionState::place_current")["body_text"]
 CASES = (
     {
         "id": "empty_batch_mutates_storage", "file": "src/symbol_text.rs",
@@ -97,7 +96,7 @@ CASES = (
 if self.work_units > limits.max_work_units {
     let charged = self.work_units;
     self.work_units -= units;
-    return Err(SymbolTextError::Decode(DecodeError::LimitExceeded(LimitExceeded {
+    return Err(SymbolTextError::Decode(crate::DecodeError::LimitExceeded(crate::LimitExceeded {
         kind: LimitKind::Work, limit: limits.max_work_units, actual: charged,
     })));
 }
@@ -112,7 +111,7 @@ if self.work_units > limits.max_work_units {
 if self.decoded_bitmap_bytes > limits.max_cumulative_decoded_bitmap_bytes {
     let charged = self.decoded_bitmap_bytes;
     self.decoded_bitmap_bytes -= bytes;
-    return Err(SymbolTextError::Decode(DecodeError::LimitExceeded(LimitExceeded {
+    return Err(SymbolTextError::Decode(crate::DecodeError::LimitExceeded(crate::LimitExceeded {
         kind: LimitKind::DecodedBitmapBytes,
         limit: limits.max_cumulative_decoded_bitmap_bytes, actual: charged,
     })));
