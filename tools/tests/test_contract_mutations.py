@@ -11,12 +11,31 @@ sys.path.insert(0, str(TOOLS))
 
 from source_group import source_text
 from check_contract_mutations import MUTATIONS, mutate
+from check_huffman_assignment_proofs import CASES as HUFFMAN_CASES
 import check_contract_mutations
 from evidence import load_json, validate
+from proof_sensitivity import replace_once, weakened_contract
 from rust_tests import test_inventory as inventory_tests
 
 
 class ContractMutationTests(unittest.TestCase):
+    def test_total_line_controls_keep_original_success_bounds_and_error_extent(self):
+        cases = [case for case in HUFFMAN_CASES if case["function"] == "decode_line"]
+        self.assertEqual(len(cases), 4)
+        for case in cases:
+            with self.subTest(case=case["id"]):
+                source = source_text(TOOLS.parent, case["file"])
+                changed = replace_once(source, case["site"], case["replacement"])
+                weaker = weakened_contract(changed, case)
+                self.assertIn("huffman_spec::reader_valid(old(reader))", weaker)
+                self.assertIn("huffman_spec::reader_valid(final(reader))", weaker)
+                self.assertIn("final(reader).bytes@ == old(reader).bytes@", weaker)
+                self.assertIn("huffman_spec::decoded_line_value(", weaker)
+                self.assertIn("line.kind == LineKind::OutOfBand", weaker)
+                self.assertIn("line.range_len <= 32", weaker)
+                self.assertIn("final(reader).bit_position == old(reader).bit_position", weaker)
+                self.assertNotIn("match crate::spec::readers::bit_read_error(", weaker)
+
     def test_build_selects_exact_existing_test_executable(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary).resolve()
@@ -153,7 +172,7 @@ class ContractMutationTests(unittest.TestCase):
 
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
-        self.assertEqual(len(identifiers), 153)
+        self.assertEqual(len(identifiers), 157)
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):
@@ -207,7 +226,7 @@ class ContractMutationTests(unittest.TestCase):
                     identity = (reference["target"], reference["name"])
                     self.assertIn(identity, tests, case["id"])
                     self.assertFalse(tests[identity]["ignored"], case["id"])
-        self.assertEqual(structured, 87)
+        self.assertEqual(structured, 88)
 
 
 if __name__ == "__main__":

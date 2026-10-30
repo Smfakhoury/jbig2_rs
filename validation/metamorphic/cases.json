@@ -2,6 +2,14 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-HUFFMAN-TOTAL-LINE-OUTCOMES",
+      "transformation": "all u8 suffix widths and valid cursors over five literal patterns, four line kinds and thirteen signed/output boundary bases",
+      "invariant": "1664000 raw metadata cases match an i128 result/error oracle, exact acceptance and consumed extent, unchanged buffers and the next field; OOB, integers, invalid widths, EOF and both overflow classes are nonempty",
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance"}
+      ]
+    },
+    {
       "id": "META-RAW-HUFFMAN-LITERAL-FIELDS",
       "transformation": "all u8 widths and valid bit cursors over five literal byte patterns, through raw, concrete integer/untabled ID and enum adapters",
       "invariant": "exact MSB-first value or typed error, consumed extent, unchanged error cursor and codec frame, and the next literal field; 32000 raw, 64000 integer and 32000 ID input cases",

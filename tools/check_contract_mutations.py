@@ -79,7 +79,7 @@ MUTATIONS = tuple(
         "id": "huffman-assignment-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],
         "target": "lib",
-        "test": "huffman::tests::table_validation::" + (
+        "test": case["native_test"] if "native_test" in case else "huffman::tests::table_validation::" + (
             "wide_zero_constructor_matches_default_and_array_initialization"
             if case["function"] == "WideCode::zero"
             else "raw_canonical_assignment_matches_numeric_histogram_and_stable_order"

@@ -3,6 +3,133 @@
 
 use super::*;
 
+fn raw_line_oracle(
+    line: HuffmanLine,
+    bytes: &[u8],
+    start: usize,
+) -> (Result<HuffmanValue, MalformedError>, usize, usize) {
+    if line.kind == LineKind::OutOfBand {
+        return (Ok(HuffmanValue::OutOfBand), start, 0);
+    }
+    if line.range_len > 32 {
+        return (
+            Err(MalformedError::InvalidBitCount(line.range_len)),
+            start,
+            2,
+        );
+    }
+    let remaining = bytes.len() * 8 - start;
+    if usize::from(line.range_len) > remaining {
+        return (
+            Err(MalformedError::UnexpectedEof {
+                offset: u64::try_from(start).unwrap(),
+                needed: u64::from(line.range_len),
+                remaining: u64::try_from(remaining).unwrap(),
+            }),
+            start,
+            3,
+        );
+    }
+    let end = start + usize::from(line.range_len);
+    let offset = (start..end).fold(0_i128, |value, bit| {
+        (value << 1) | i128::from((bytes[bit / 8] >> (7 - bit % 8)) & 1)
+    });
+    let candidate = if line.kind == LineKind::Lower {
+        i128::from(line.range_low) - offset
+    } else {
+        i128::from(line.range_low) + offset
+    };
+    match i32::try_from(candidate) {
+        Ok(value) => (Ok(HuffmanValue::Integer(value)), end, 1),
+        Err(_) => (
+            Err(MalformedError::IntegerOverflow),
+            end,
+            if candidate < i128::from(i64::MIN) || candidate > i128::from(i64::MAX) {
+                4
+            } else {
+                5
+            },
+        ),
+    }
+}
+
+#[test]
+fn raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance() {
+    let samples: [&[u8]; 5] = [
+        &[],
+        &[0],
+        &[0xff],
+        &[0xa5, 0x32, 0xdc, 0x4f, 0x80],
+        &[0xff; 8],
+    ];
+    let bases = [
+        i64::MIN,
+        i64::MIN + 1,
+        i64::from(i32::MIN) - 1,
+        i64::from(i32::MIN),
+        i64::from(i32::MIN) + 1,
+        -1,
+        0,
+        1,
+        i64::from(i32::MAX) - 1,
+        i64::from(i32::MAX),
+        i64::from(i32::MAX) + 1,
+        i64::MAX - 1,
+        i64::MAX,
+    ];
+    let mut outcomes = [0_usize; 6];
+    for bytes in samples {
+        for start in 0..=bytes.len() * 8 {
+            for range_len in 0..=u8::MAX {
+                for kind in [
+                    LineKind::Normal,
+                    LineKind::Lower,
+                    LineKind::Upper,
+                    LineKind::OutOfBand,
+                ] {
+                    for range_low in bases {
+                        let line = HuffmanLine {
+                            prefix_len: range_len.wrapping_mul(3),
+                            range_len,
+                            range_low,
+                            kind,
+                        };
+                        let (expected, position, outcome) = raw_line_oracle(line, bytes, start);
+                        let mut reader = bit_reader(bytes);
+                        reader.bit_position = start;
+                        let actual = crate::huffman::decoding::decode_line(line, &mut reader);
+                        match (actual, expected) {
+                            (Ok(actual), Ok(expected)) => assert_eq!(actual, expected),
+                            (
+                                Err(HuffmanError::Decode(DecodeError::Malformed(actual))),
+                                Err(expected),
+                            ) => assert_eq!(actual, expected),
+                            (actual, expected) => {
+                                panic!(
+                                    "line {line:?} at {start}: {actual:?}, expected {expected:?}"
+                                )
+                            }
+                        }
+                        assert_eq!(reader.bytes, bytes);
+                        assert_eq!(reader.bit_position, position);
+                        let next_count = u8::try_from((bytes.len() * 8 - position).min(8)).unwrap();
+                        let expected_next = (position..position + usize::from(next_count)).fold(
+                            0_u32,
+                            |value, bit| {
+                                (value << 1) | u32::from((bytes[bit / 8] >> (7 - bit % 8)) & 1)
+                            },
+                        );
+                        assert_eq!(reader.read_bits(next_count).unwrap(), expected_next);
+                        outcomes[outcome] += 1;
+                    }
+                }
+            }
+        }
+    }
+    assert_eq!(outcomes.iter().sum::<usize>(), 1_664_000);
+    assert!(outcomes.into_iter().all(|count| count > 0));
+}
+
 #[test]
 fn annex_b_table_a_codes_and_endpoints() {
     let table =

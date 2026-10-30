@@ -8175,23 +8175,29 @@
       ],
       "models": [
         "huffman-decoded-value",
-        "bit-value"
+        "bit-value",
+        "reader-bit-error",
+        "reader-eof-error"
       ],
       "proof_macros": [],
       "tests": [
         {
           "target": "lib",
           "name": "huffman::tests::canonical_decoding::every_line_of_every_standard_table_decodes"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "On integer success, the selected line's suffix has exactly range_len bits and the returned value satisfies the local base-plus-offset model for normal/upper lines.",
+      "scope_of_formal_result": "For an already selected normal/upper line, the exact reader error is returned without consumption, or the successful suffix is consumed and the mathematical base-plus-offset result is accepted exactly when it fits i32. Signed arithmetic/output overflow returns the existing IntegerOverflow diagnostic after suffix consumption. Original successful value, buffer and validity guarantees remain. This is a total project selected-line result, not prefix selection, full table decoding or independent normative fidelity.",
       "assumptions": [
         "The input line has already been selected and the bit reader is valid; decoded_line_value distinguishes lower subtraction from normal/upper addition."
       ],
       "gaps": [
-        "Independently review the model and prove correct prefix-to-line selection and acceptance/overflow behavior; this is not a whole-Huffman-decoder theorem."
+        "Independently review the model and prove correct prefix-to-line selection and full table/stream composition; this is not a whole-Huffman-decoder theorem."
       ],
       "functional_evidence": [
         {
@@ -8201,6 +8207,14 @@
             "Ok(HuffmanValue::Integer(value)) =>",
             "final(reader).bit_position == old(reader).bit_position + line.range_len as usize",
             "huffman_spec::decoded_line_value(line, crate::spec::readers::bits_value(old(reader).bytes@, old(reader).bit_position as nat, line.range_len as nat,), value,)"
+          ]
+        },
+        {
+          "runtime": "huffman::decoding::decode_line",
+          "section": "ensures",
+          "tokens": [
+            "out == if i32::MIN as int <= candidate <= i32::MAX as int {",
+            "Some(error) => out == Err(HuffmanError::Decode(DecodeError::Malformed(error))) && final(reader).bit_position == old(reader).bit_position"
           ]
         }
       ],
@@ -8217,7 +8231,9 @@
       ],
       "models": [
         "huffman-decoded-value",
-        "bit-value"
+        "bit-value",
+        "reader-bit-error",
+        "reader-eof-error"
       ],
       "proof_macros": [],
       "tests": [
@@ -8228,16 +8244,20 @@
         {
           "target": "lib",
           "name": "huffman::tests::table_validation::open_ranges_reject_values_outside_i32"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful integer output satisfies decoded_line_value, whose lower-line branch subtracts the exact consumed suffix from range_low.",
+      "scope_of_formal_result": "An already selected lower line returns the exact read error without consumption, or consumes its suffix and accepts exactly the i32-fitting mathematical range_low-minus-offset result. Signed arithmetic/output overflow returns the existing IntegerOverflow diagnostic after consumption. Original successful decoded_line_value and frame guarantees remain; normative fidelity, prefix selection and full table/stream semantics are separate.",
       "assumptions": [
-        "The selected line is a lower line and the input reader is valid; this success implication does not assert acceptance of every valid lower-line value."
+        "The line is already selected and the input reader is valid; exact checked arithmetic/error behavior is a project result, not independent normative approval."
       ],
       "gaps": [
-        "Review the signed lower-range model independently and prove line selection, error classification and complete success conditions."
+        "Review the signed lower-range model independently and prove prefix-to-line selection and complete table/stream composition."
       ],
       "functional_evidence": [
         {
@@ -8247,6 +8267,14 @@
             "Ok(HuffmanValue::Integer(value)) =>",
             "final(reader).bit_position == old(reader).bit_position + line.range_len as usize",
             "huffman_spec::decoded_line_value(line, crate::spec::readers::bits_value(old(reader).bytes@, old(reader).bit_position as nat, line.range_len as nat,), value,)"
+          ]
+        },
+        {
+          "runtime": "huffman::decoding::decode_line",
+          "section": "ensures",
+          "tokens": [
+            "let candidate = if line.kind == LineKind::Lower { line.range_low as int - offset",
+            "out == if i32::MIN as int <= candidate <= i32::MAX as int {"
           ]
         }
       ],
@@ -8271,16 +8299,20 @@
         {
           "target": "lib",
           "name": "huffman::tests::table_validation::parses_oob_custom_table"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful OOB output implies an OOB line and unchanged suffix-reader position; the prefix has already been consumed by another helper.",
+      "scope_of_formal_result": "A selected OOB line always returns OOB without consuming a suffix, including raw metadata with otherwise invalid suffix widths. Conversely, successful OOB output still requires an OOB line. The prefix has already been selected/consumed by another helper; this project helper result does not prove that selection or normative OOB use.",
       "assumptions": [
         "The caller selects the appropriate table line; HTOOB/table construction and caller use of OOB are separate obligations."
       ],
       "gaps": [
-        "Prove table-level OOB presence/selection and caller termination semantics; the contract does not state the converse success guarantee."
+        "Prove table-level OOB presence/selection and caller termination semantics against independently reviewed normative models."
       ],
       "functional_evidence": [
         {
@@ -8288,6 +8320,13 @@
           "section": "ensures",
           "tokens": [
             "Ok(HuffmanValue::OutOfBand) => line.kind == LineKind::OutOfBand && final(reader).bit_position == old(reader).bit_position"
+          ]
+        },
+        {
+          "runtime": "huffman::decoding::decode_line",
+          "section": "ensures",
+          "tokens": [
+            "LineKind::OutOfBand => out == Ok(HuffmanValue::OutOfBand) && final(reader).bit_position == old(reader).bit_position"
           ]
         }
       ],
