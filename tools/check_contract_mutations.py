@@ -793,6 +793,34 @@ MUTATIONS = tuple(
         "target": "lib",
         "test": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle",
     },
+    {
+        "id": "single-refinement-rejects-required-instance-count",
+        "file": "src/symbol_text.rs",
+        "before": "} else {\n            decode_dictionary_single_instance_refinement(",
+        "after": """} else {
+            if aggregation_instances.is_some() {
+                return Err(SymbolTextError::InvalidState(
+                    "aggregation count on direct-coded symbol",
+                ));
+            }
+            decode_dictionary_single_instance_refinement(""",
+        "target": "lib",
+        "test": "symbol_text::tests::dictionary_dispatch::single_instance_refinement_reaches_the_existing_raw_callback",
+        "whitespace_flexible": True,
+    },
+    {
+        "id": "direct-symbol-ignores-unexpected-instance-count",
+        "file": "src/symbol_text.rs",
+        "before": """if aggregation_instances.is_some() {
+            return Err(SymbolTextError::InvalidState(
+                "aggregation count on direct-coded symbol",
+            ));
+        }""",
+        "after": "let _ignored_aggregation_count = aggregation_instances;",
+        "target": "lib",
+        "test": "symbol_text::tests::dictionary_dispatch::direct_coded_symbol_rejects_an_aggregation_count_before_decoding",
+        "whitespace_flexible": True,
+    },
 )
 
 

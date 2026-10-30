@@ -112,6 +112,13 @@ That observation is not a normative cause. The T.88 7.2.4 field-definition versu
 7.2.8 worked-example retention conflict still needs owner adjudication.
 See the source-bound review for all cases, not a copied progress log.
 
+Raw dictionary-dispatch regressions exercise the existing scripted callback
+without constructing an encoded refinement/aggregation stream. A required
+count of one reaches the refinement callback; direct-coded paths reject an
+unexpected count, and refinement rejects missing/zero counts. These tests check
+routing, typed failures, resource effects and raw parameter consumption, not
+encoded bitmap semantics or resolution of the official disagreements.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered

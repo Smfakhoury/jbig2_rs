@@ -5191,7 +5191,8 @@
       "title": "Interpret the dictionary refinement/aggregation mode flag",
       "feature": "refinement_aggregation",
       "runtime": [
-        "symbol_text::headers::parse_symbol_dictionary_flags"
+        "symbol_text::headers::parse_symbol_dictionary_flags",
+        "symbol_text::dictionary::arithmetic::decode_one_new_symbol"
       ],
       "models": [
         "dictionary-config-safe"
@@ -5201,6 +5202,18 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::flags_and_tables::validates_symbol_dictionary_flags"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::dictionary_dispatch::single_instance_refinement_reaches_the_existing_raw_callback"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::dictionary_dispatch::direct_coded_symbol_rejects_an_aggregation_count_before_decoding"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::dictionary_dispatch::refinement_still_rejects_missing_and_zero_instance_counts"
         }
       ],
       "strength": "functional_contract",
@@ -5210,7 +5223,8 @@
         "The field is supplied as a parsed flag word; the standard distinguishes direct-coded and refinement/aggregate-coded symbol paths."
       ],
       "gaps": [
-        "Prove field extraction, instance-count decoding, count-one/count-many dispatch and all aggregation parameter/output relations."
+        "Prove field extraction, instance-count decoding, count-one/count-many dispatch and all aggregation parameter/output relations.",
+        "Raw scripted dispatch regressions cover the required count-one route and invalid-count rejection only; they do not establish encoded refinement/aggregation or normative output fidelity."
       ],
       "functional_evidence": [
         {

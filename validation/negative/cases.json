@@ -2,6 +2,15 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-RAW-DICTIONARY-INSTANCE-COUNT-DISPATCH",
+      "surface": "raw scripted dictionary dispatch parameters; no encoded refinement or aggregation fixture",
+      "expected": "an aggregation count on a direct-coded path is rejected before entropy/resource changes, while refinement still rejects missing and zero counts",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::dictionary_dispatch::direct_coded_symbol_rejects_an_aggregation_count_before_decoding"},
+        {"target": "lib", "name": "symbol_text::tests::dictionary_dispatch::refinement_still_rejects_missing_and_zero_instance_counts"}
+      ]
+    },
+    {
       "id": "NEG-RAW-CONTEXT-RESTORE-FRAMES",
       "surface": "raw refinement context snapshots, template/layout compatibility and retained/managed limits",
       "expected": "all retained states copy exactly and remain independent; wrong-template/layout and limit failures preserve complete destination statistics and exact diagnostic fields",
