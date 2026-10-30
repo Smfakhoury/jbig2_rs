@@ -52,7 +52,7 @@ DEFAULT_SHARD_REBALANCE = {
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
-    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 19, "strong_contract", "weaker_control"),
+    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 25, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 5, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),

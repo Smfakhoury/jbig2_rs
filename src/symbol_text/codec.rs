@@ -19,10 +19,37 @@ use vstd::prelude::*;
 impl<'a> SymbolCodec<'a> {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires symbol_text_spec::codec_valid(old(self)),
-        ensures match out {
-            Ok(_) => symbol_text_spec::codec_valid(final(self)),
-            Err(_) => true,
-        },
+        ensures
+            match out {
+                Ok(_) => symbol_text_spec::codec_valid(final(self)),
+                Err(_) => true,
+            },
+            match *old(self) {
+                Self::Huffman(before) => match *final(self) {
+                    Self::Huffman(after) =>
+                        (field == IntegerField::WithinStripT
+                            || field == IntegerField::RefinementIndicator) ==> {
+                            let count = if field == IntegerField::WithinStripT {
+                                before.log_strip_size
+                            } else { 1u8 };
+                            &&& after.reader.bytes@ == before.reader.bytes@
+                            &&& out == match crate::spec::readers::bit_read_error(
+                                before.reader.bytes@, before.reader.bit_position, count,
+                            ) {
+                                Some(error) => Err(SymbolTextError::Decode(DecodeError::Malformed(error))),
+                                None => Ok(EntropyInteger::Value(crate::spec::readers::bits_value(
+                                    before.reader.bytes@, before.reader.bit_position as nat, count as nat,
+                                ) as i64)),
+                            }
+                            &&& after.reader.bit_position == before.reader.bit_position
+                                + if crate::spec::readers::bit_read_error(
+                                    before.reader.bytes@, before.reader.bit_position, count,
+                                ).is_none() { count as nat } else { 0nat }
+                        },
+                    _ => false,
+                },
+                _ => true,
+            },
     ))]
     pub(super) fn decode_integer(
         &mut self,
@@ -41,10 +68,33 @@ impl<'a> SymbolCodec<'a> {
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires symbol_text_spec::codec_valid(old(self)),
-        ensures match out {
-            Ok(_) => symbol_text_spec::codec_valid(final(self)),
-            Err(_) => true,
-        },
+        ensures
+            match out {
+                Ok(_) => symbol_text_spec::codec_valid(final(self)),
+                Err(_) => true,
+            },
+            match *old(self) {
+                Self::Huffman(before) => match *final(self) {
+                    Self::Huffman(after) => before.symbol_id_table.is_none() ==> {
+                        &&& after.reader.bytes@ == before.reader.bytes@
+                        &&& out == match crate::spec::readers::bit_read_error(
+                            before.reader.bytes@, before.reader.bit_position, request.code_length,
+                        ) {
+                            Some(error) => Err(SymbolTextError::Decode(DecodeError::Malformed(error))),
+                            None => Ok(crate::spec::readers::bits_value(
+                                before.reader.bytes@, before.reader.bit_position as nat,
+                                request.code_length as nat,
+                            ) as u32),
+                        }
+                        &&& after.reader.bit_position == before.reader.bit_position
+                            + if crate::spec::readers::bit_read_error(
+                                before.reader.bytes@, before.reader.bit_position, request.code_length,
+                            ).is_none() { request.code_length as nat } else { 0nat }
+                    },
+                    _ => false,
+                },
+                _ => true,
+            },
     ))]
     pub(super) fn decode_symbol_id(
         &mut self,

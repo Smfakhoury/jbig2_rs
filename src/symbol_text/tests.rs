@@ -5,6 +5,7 @@ mod benchmarks;
 mod codec_and_exports;
 mod dictionary_dispatch;
 mod flags_and_tables;
+mod huffman_fields;
 mod placement_render;
 mod placement_state;
 mod resource_accounting;

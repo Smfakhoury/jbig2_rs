@@ -8836,7 +8836,12 @@
       "title": "Read packed bits from the high bit of each byte before advancing to the next byte",
       "feature": "decoder",
       "runtime": [
-        "reader::BitReader::read_bits"
+        "reader::BitReader::read_bits",
+        "symbol_text::codec::huffman::HuffmanCodec::read_raw_bits",
+        "symbol_text::codec::huffman::HuffmanCodec::decode_integer",
+        "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
+        "symbol_text::codec::SymbolCodec::decode_integer",
+        "symbol_text::codec::SymbolCodec::decode_symbol_id"
       ],
       "models": [
         "bit-value",
@@ -8860,11 +8865,23 @@
         {
           "target": "lib",
           "name": "reader::tests::every_bit_count_and_position_has_exact_value_error_and_frame"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_fields::raw_huffman_bits_preserve_exact_value_cursor_error_frame_and_next_field"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_fields::fixed_huffman_integer_fields_match_literal_bits_through_both_adapters"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_fields::literal_huffman_symbol_ids_match_all_widths_through_both_adapters"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful bounded reads equal the recursive bit-value model and advance by the requested count; errors preserve the cursor. The new auxiliary API error relation preserves invalid-count payload/priority, gives exact EOF fields and excludes false overflow or false valid-width rejection under unchanged cursor/length preconditions. Existing successful value semantics are unchanged.",
+      "scope_of_formal_result": "Successful bounded reads equal the recursive bit-value model and advance by the requested count; errors preserve the cursor. The API error relation preserves invalid-count payload/priority, gives exact EOF fields and excludes false overflow or false valid-width rejection under unchanged cursor/length preconditions. These exact values, typed errors and consumed extents now propagate through the Huffman raw reader, its WithinStripT/RefinementIndicator fixed integer fields, untabled literal symbol IDs and both enum dispatch callers. Raw-reader codec metadata is framed. Conditional literal-field guarantees do not prove table-backed Huffman values, prepared ID tables, normative field selection or full stream semantics.",
       "assumptions": [
         "Reader cursor and bit-length representability are unchanged caller preconditions; the extraction model's independent normative review remains provisional."
       ],
@@ -8876,6 +8893,46 @@
           "tokens": [
             "value as nat == crate::spec::readers::bits_value(",
             "final(self).bit_position == old(self).bit_position + count"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::huffman::HuffmanCodec::read_raw_bits",
+          "section": "ensures",
+          "tokens": [
+            "out == match crate::spec::readers::bit_read_error(",
+            "value as nat == crate::spec::readers::bits_value("
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::huffman::HuffmanCodec::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "(field == IntegerField::WithinStripT || field == IntegerField::RefinementIndicator) ==> {",
+            "None => Ok(EntropyInteger::Value(crate::spec::readers::bits_value("
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "old(self).symbol_id_table.is_none() ==> {",
+            "out == match crate::spec::readers::bit_read_error("
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "Self::Huffman(before) => match *final(self)",
+            "None => Ok(EntropyInteger::Value(crate::spec::readers::bits_value("
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "before.symbol_id_table.is_none() ==> {",
+            "out == match crate::spec::readers::bit_read_error("
           ]
         }
       ],

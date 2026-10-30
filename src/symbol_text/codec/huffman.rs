@@ -92,7 +92,35 @@ pub(in crate::symbol_text) fn new_huffman_codec<'a>(
 impl HuffmanCodec<'_> {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
-        ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+        ensures
+            crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+            final(self).reader.bytes@ == old(self).reader.bytes@,
+            final(self).tables == old(self).tables,
+            final(self).log_strip_size == old(self).log_strip_size,
+            final(self).symbol_id_table == old(self).symbol_id_table,
+            final(self).refinement == old(self).refinement,
+            final(self).refinement_work == old(self).refinement_work,
+            match out {
+                Ok(value) =>
+                    count <= 32
+                        && value as nat == crate::spec::readers::bits_value(
+                            old(self).reader.bytes@, old(self).reader.bit_position as nat,
+                            count as nat,
+                        ),
+                Err(_) => true,
+            },
+            out == match crate::spec::readers::bit_read_error(
+                old(self).reader.bytes@, old(self).reader.bit_position, count,
+            ) {
+                Some(error) => Err(SymbolTextError::Decode(DecodeError::Malformed(error))),
+                None => Ok(crate::spec::readers::bits_value(
+                    old(self).reader.bytes@, old(self).reader.bit_position as nat, count as nat,
+                ) as u32),
+            },
+            final(self).reader.bit_position == old(self).reader.bit_position
+                + if crate::spec::readers::bit_read_error(
+                    old(self).reader.bytes@, old(self).reader.bit_position, count,
+                ).is_none() { count as nat } else { 0nat },
     ))]
     pub(in crate::symbol_text) fn read_raw_bits(
         &mut self,
@@ -103,7 +131,28 @@ impl HuffmanCodec<'_> {
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
-        ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+        ensures
+            crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+            final(self).log_strip_size == old(self).log_strip_size,
+            (field == IntegerField::WithinStripT || field == IntegerField::RefinementIndicator)
+                ==> {
+                    let count = if field == IntegerField::WithinStripT {
+                        old(self).log_strip_size
+                    } else { 1u8 };
+                    &&& final(self).reader.bytes@ == old(self).reader.bytes@
+                    &&& out == match crate::spec::readers::bit_read_error(
+                        old(self).reader.bytes@, old(self).reader.bit_position, count,
+                    ) {
+                        Some(error) => Err(SymbolTextError::Decode(DecodeError::Malformed(error))),
+                        None => Ok(EntropyInteger::Value(crate::spec::readers::bits_value(
+                            old(self).reader.bytes@, old(self).reader.bit_position as nat, count as nat,
+                        ) as i64)),
+                    }
+                    &&& final(self).reader.bit_position == old(self).reader.bit_position
+                        + if crate::spec::readers::bit_read_error(
+                            old(self).reader.bytes@, old(self).reader.bit_position, count,
+                        ).is_none() { count as nat } else { 0nat }
+                },
     ))]
     pub(in crate::symbol_text) fn decode_integer(
         &mut self,
@@ -130,7 +179,24 @@ impl HuffmanCodec<'_> {
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
-        ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+        ensures
+            crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+            old(self).symbol_id_table.is_none() ==> {
+                &&& final(self).reader.bytes@ == old(self).reader.bytes@
+                &&& out == match crate::spec::readers::bit_read_error(
+                    old(self).reader.bytes@, old(self).reader.bit_position, request.code_length,
+                ) {
+                    Some(error) => Err(SymbolTextError::Decode(DecodeError::Malformed(error))),
+                    None => Ok(crate::spec::readers::bits_value(
+                        old(self).reader.bytes@, old(self).reader.bit_position as nat,
+                        request.code_length as nat,
+                    ) as u32),
+                }
+                &&& final(self).reader.bit_position == old(self).reader.bit_position
+                    + if crate::spec::readers::bit_read_error(
+                        old(self).reader.bytes@, old(self).reader.bit_position, request.code_length,
+                    ).is_none() { request.code_length as nat } else { 0nat }
+            },
     ))]
     pub(in crate::symbol_text) fn decode_symbol_id(
         &mut self,

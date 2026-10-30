@@ -19,9 +19,25 @@ from rust_source import parse
 
 
 class ArithmeticCodecProofTests(unittest.TestCase):
+    def test_literal_controls_retain_each_original_validity_boundary(self):
+        literals = [case for case in CASES if "native_test" in case]
+        self.assertEqual(len(literals), 6)
+        self.assertEqual(len({case["function"] for case in literals}), 5)
+        for case in literals:
+            with self.subTest(case=case["id"]):
+                strong, weaker = case["controls"][0]
+                self.assertIn("bit_read_error", strong)
+                self.assertNotIn("bit_read_error", weaker)
+                if case["function"].startswith("SymbolCodec::"):
+                    self.assertIn("requires symbol_text_spec::codec_valid(old(self))", weaker)
+                    self.assertIn("Ok(_) => symbol_text_spec::codec_valid(final(self))", weaker)
+                else:
+                    self.assertIn("reader_valid(&old(self).reader)", weaker)
+                    self.assertIn("reader_valid(&final(self).reader)", weaker)
+
     def test_unique_sites_and_relation_specific_controls(self):
-        self.assertEqual(len(CASES), 19)
-        self.assertEqual(len({case["id"] for case in CASES}), 19)
+        self.assertEqual(len(CASES), 25)
+        self.assertEqual(len({case["id"] for case in CASES}), 25)
         for case in CASES:
             source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]):

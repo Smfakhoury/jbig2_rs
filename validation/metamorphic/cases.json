@@ -2,6 +2,16 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-HUFFMAN-LITERAL-FIELDS",
+      "transformation": "all u8 widths and valid bit cursors over five literal byte patterns, through raw, concrete integer/untabled ID and enum adapters",
+      "invariant": "exact MSB-first value or typed error, consumed extent, unchanged error cursor and codec frame, and the next literal field; 32000 raw, 64000 integer and 32000 ID input cases",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::huffman_fields::raw_huffman_bits_preserve_exact_value_cursor_error_frame_and_next_field"},
+        {"target": "lib", "name": "symbol_text::tests::huffman_fields::fixed_huffman_integer_fields_match_literal_bits_through_both_adapters"},
+        {"target": "lib", "name": "symbol_text::tests::huffman_fields::literal_huffman_symbol_ids_match_all_widths_through_both_adapters"}
+      ]
+    },
+    {
       "id": "META-RAW-TEXT-STRIP-CONTINUATION",
       "transformation": "one/two instances, arithmetic/Huffman scripted dispatch, and one/multiple strips followed by an independent dictionary-field sentinel",
       "invariant": "consume exactly each strip's terminator, preserve the next field, produce exact literal pixels and charge only the existing instance/pixel work",
