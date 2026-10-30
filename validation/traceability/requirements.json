@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "8eca79307c1ffc1af089cb104d0872ae0106c3f1b22da82dd47a41633c3435ee",
+    "project_source_sha256": "36ccaead6405944f69441ffa537f87a799e17a5e1e27af64b5dd243ef7255348",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1852,10 +1852,10 @@
     "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
     "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
     "src/symbol_text/dictionary/arithmetic.rs": "5d82d904114766a9e486a1b40b7fbd1e9cfac43ab705b0ae87ce2ef8e70ad86a",
-    "src/symbol_text/dictionary/exports.rs": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+    "src/symbol_text/dictionary/exports.rs": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
     "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
     "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
-    "src/symbol_text/tests/codec_and_exports.rs": "2bd307278a2720ca95014e37d7b0b9d5be2b2eaee7a74e7b14921b7886dc94bd",
+    "src/symbol_text/tests/codec_and_exports.rs": "3d6a65ecebfdc20876243ed67356e61e296b39d65d4ba44e75ab7781c0bd9fd5",
     "src/symbol_text/tests/dictionary_dispatch.rs": "e7e1f462adae411123ac93888bd87db1573b9b519bbb3c8c8e045b4697854181",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",

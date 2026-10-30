@@ -6567,7 +6567,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+      "file_sha256": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::new"
       ]
@@ -6578,7 +6578,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+      "file_sha256": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::begin_height_class"
       ]
@@ -6589,7 +6589,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+      "file_sha256": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::add_symbol"
       ]
@@ -6600,7 +6600,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+      "file_sha256": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::finish_height_class"
       ]
@@ -6611,7 +6611,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+      "file_sha256": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::DictionaryClassState::finish"
       ]
@@ -6622,7 +6622,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+      "file_sha256": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::dictionary::exports::decode_export_runs"
       ]
@@ -6633,7 +6633,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+      "file_sha256": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::dictionary::exports::assemble_exported_symbols"
       ]
