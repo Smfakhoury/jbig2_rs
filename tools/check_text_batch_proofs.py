@@ -96,7 +96,7 @@ CASES = (
 if self.work_units > limits.max_work_units {
     let charged = self.work_units;
     self.work_units -= units;
-    return Err(SymbolTextError::Decode(DecodeError::LimitExceeded(LimitExceeded {
+    return Err(SymbolTextError::Decode(crate::DecodeError::LimitExceeded(crate::LimitExceeded {
         kind: LimitKind::Work, limit: limits.max_work_units, actual: charged,
     })));
 }
@@ -111,7 +111,7 @@ if self.work_units > limits.max_work_units {
 if self.decoded_bitmap_bytes > limits.max_cumulative_decoded_bitmap_bytes {
     let charged = self.decoded_bitmap_bytes;
     self.decoded_bitmap_bytes -= bytes;
-    return Err(SymbolTextError::Decode(DecodeError::LimitExceeded(LimitExceeded {
+    return Err(SymbolTextError::Decode(crate::DecodeError::LimitExceeded(crate::LimitExceeded {
         kind: LimitKind::DecodedBitmapBytes,
         limit: limits.max_cumulative_decoded_bitmap_bytes, actual: charged,
     })));

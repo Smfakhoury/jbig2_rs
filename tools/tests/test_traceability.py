@@ -1397,10 +1397,10 @@ class TraceabilityTests(unittest.TestCase):
                     "check_traceability.py", flag, "--verus-json", "fixture.json",
                     "--discover-tests", "--output", str(output),
                 ]
-                with patch.object(checker, "ROOT", self.root), patch.object(sys, "argv", arguments), \
-                        patch.object(checker, "read_evidence", side_effect=read), \
-                        patch.object(checker, "discover_tests", return_value=self.discovered), \
-                        patch.object(checker.subprocess, "run", return_value=SimpleNamespace(stdout="fixture\n")), \
+                with patch.object(checker, "ROOT", self.root), patch.object(sys, "argv", arguments),\
+                        patch.object(checker, "read_evidence", side_effect=read),\
+                        patch.object(checker, "discover_tests", return_value=self.discovered),\
+                        patch.object(checker.subprocess, "run", return_value=SimpleNamespace(stdout="fixture\n")),\
                         redirect_stdout(StringIO()), redirect_stderr(StringIO()):
                     self.assertEqual(checker.main(), expected)
                 result = load_json(output)
@@ -1898,8 +1898,8 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertEqual(row["standard"], "ITU-T T.88 (08/2018)")
                 callers = {
                     "symbol_text::IntegerField::slot",
-                    "symbol_text::codec::ArithmeticCodec::decode_integer",
-                    "symbol_text::codec::ArithmeticCodec::decode_symbol_id",
+                    'symbol_text::codec::arithmetic::ArithmeticCodec::decode_integer',
+                    'symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id',
                 } if name in {
                     "INTEGER-PROCEDURE-BANKS", "IAID-LENGTH", "IAID-STORAGE",
                 } else set()
@@ -1943,9 +1943,9 @@ class TraceabilityTests(unittest.TestCase):
                     "name": "arithmetic::tests::qe_table_matches_annex_e_table_e_1",
                 }, row["tests"])
                 self.assertEqual(row["runtime"], [
-                    "arithmetic::ArithmeticDecoder::decode_signal",
-                    "arithmetic::ArithmeticDecoder::decode_lower_signal",
-                    "arithmetic::ArithmeticDecoder::decode_upper_signal",
+                    'arithmetic::decoding::ArithmeticDecoder::decode_signal',
+                    'arithmetic::decoding::ArithmeticDecoder::decode_lower_signal',
+                    'arithmetic::decoding::ArithmeticDecoder::decode_upper_signal',
                 ])
         for index in range(1, 15):
             row = rows[f"T88-ARITHMETIC-INTEGER-TABLE-ROW-{index:02}"]
@@ -1953,8 +1953,8 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertTrue(row["clause"].startswith(f"A.2, Table A.1, row {index} ("))
                 self.assertTrue(row["clause"].endswith("(p. 91)"))
                 self.assertEqual(row["runtime"], [
-                    "arithmetic::ArithmeticDecoder::decode_integer",
-                    "arithmetic::ArithmeticDecoder::decode_integer_bits",
+                    'arithmetic::integers::ArithmeticDecoder::decode_integer',
+                    'arithmetic::integers::ArithmeticDecoder::decode_integer_bits',
                 ])
         for name in ("LENGTH", "SEED", "CONTEXT", "HISTORY", "ITERATIONS",
                      "CLEAR-SENTINEL", "RESULT", "STORAGE"):
@@ -2021,8 +2021,8 @@ class TraceabilityTests(unittest.TestCase):
         } <= set(assignment["models"]))
         self.assertEqual(
             {claim["runtime"] for claim in assignment["functional_evidence"]},
-            {"huffman::HuffmanTable::from_line_source", "huffman::HuffmanTable::new",
-             "huffman::WideCode::zero"},
+            {'huffman::construction::HuffmanTable::from_line_source', 'huffman::construction::HuffmanTable::new',
+             'huffman::wide::WideCode::zero'},
         )
         for name in (
             "T6-REFERENCE-FIRST-WHITE", "T6-REFERENCE-NEXT-LINE", "T6-PASS-TRANSITION",
@@ -2037,7 +2037,7 @@ class TraceabilityTests(unittest.TestCase):
         polarity = rows["T88-MMR-BINARY-POLARITY"]
         self.assertTrue({"mmr-input-bitmap", "mmr-bounded-bitmap"} <= set(polarity["models"]))
         claims = {claim["runtime"]: claim["tokens"] for claim in polarity["functional_evidence"]}
-        self.assertTrue(any("mmr_spec::bitmap_decodes(" in token for token in claims["mmr::decode_bitmap"]))
+        self.assertTrue(any("mmr_spec::bitmap_decodes(" in token for token in claims['mmr::raster::decode_bitmap']))
         self.assertTrue(any("mmr_spec::bounded_bitmap_decodes(" in token for token in claims["mmr::decode_mmr"]))
         self.assertIn("T.6", " ".join(polarity["assumptions"]))
 

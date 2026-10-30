@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "1926b8a313e35f5b455f8e1b5c2cc1b567732bd109c80a3206dda0cc33f0146a",
+    "project_source_sha256": "6b402c202407e89851d581cd698d4b8fd7d428c9e44f2f40fb0b091b39c65801",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -479,17 +479,14 @@
         "caveats": "Typed errors are project policy. These actual contracts do not add ended checks to stripe acceptance or require ended for conversion; they must not be silently equated to the separate abstract page_step lifecycle."
       },
       {
-        "file": "specs/document.rs",
+        "file": "specs/document/policy.rs",
         "members": [
           "spec::contiguous_pages",
           "spec::is_last_use",
-          "spec::page_association_allowed",
           "spec::producer_retained_for_later_use",
           "spec::reference_class_allowed",
-          "spec::references_resolve_lower",
           "spec::release_allowed",
           "spec::segment_policy_allowed",
-          "spec::unique_numbers",
           "spec::valid_profiles"
         ],
         "classification": "candidate-standard-facing-model",
@@ -500,9 +497,30 @@
       {
         "file": "specs/document.rs",
         "members": [
+          "spec::page_association_allowed",
+          "spec::references_resolve_lower",
+          "spec::unique_numbers"
+        ],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies express abstract numbering/page order, lower resolved reference edges, allowed owner/reference classes, last-use/retention implication and global/page profile inclusion. proofs/spec_properties/document.rs proves properties of these abstract candidates; their purpose is proposed container/caller interpretation, not just Rust storage. Unregistered helpers retain no requirement links.",
+        "ambiguity": "",
+        "caveats": "Author purpose only: independent source/model/caller approval remains pending. In particular release_allowed merely delegates to is_last_use, and the retention conflict remains held; abstract theorems do not prove complete executing retention/lifecycle behavior."
+      },
+      {
+        "file": "specs/document/policy.rs",
+        "members": [
           "spec::final_height",
           "spec::initial_page_state",
-          "spec::page_step",
+          "spec::page_step"
+        ],
+        "classification": "candidate-standard-facing-model",
+        "justification": "Bodies define a separate abstract PageState event transition/final-height interpretation and marker extent/row-count predicates. proofs/spec_properties/document.rs proves properties of these abstract candidates. page_step rejects content/stripe after ended, unlike the narrower production stripe_accepted helper; these are not interchangeable source-bound API results. Unregistered helpers retain no requirement links.",
+        "ambiguity": "",
+        "caveats": "No independent normative fidelity or full native lifecycle/unknown-length binding is approved. Marker predicates constrain offsets/counts, not actual marker-byte recognition or complete raster output."
+      },
+      {
+        "file": "specs/document.rs",
+        "members": [
           "spec::unknown_marker_fits",
           "spec::unknown_marker_valid"
         ],
@@ -512,7 +530,7 @@
         "caveats": "No independent normative fidelity or full native lifecycle/unknown-length binding is approved. Marker predicates constrain offsets/counts, not actual marker-byte recognition or complete raster output."
       },
       {
-        "file": "specs/document.rs",
+        "file": "specs/document/policy.rs",
         "members": [
           "spec::depth_witness",
           "spec::lower_chain"
@@ -966,10 +984,18 @@
           "spec::placement_batch_valid",
           "spec::placement_within_extents",
           "spec::prepared_placement_valid",
-          "spec::symbol_code_length_valid",
           "spec::table_bindings_valid",
           "spec::text_state_valid",
           "spec::valid_strip_size"
+        ],
+        "classification": "representation-invariant",
+        "justification": "Bodies quantify decoder/bank/bitmap validity, constrain optional table slots, export indices and decoded counters, and bound prepared/batched source/destination rectangles. valid_strip_size and symbol_code_length_valid only restrict admissible sizes; the latter does not equate length to ceil-log2. src/symbol_text.rs uses these safe-state pre/postconditions without thereby promising symbol contents or placement coordinates.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/symbol_text/symbol_ids.rs",
+        "members": [
+          "spec::symbol_code_length_valid"
         ],
         "classification": "representation-invariant",
         "justification": "Bodies quantify decoder/bank/bitmap validity, constrain optional table slots, export indices and decoded counters, and bound prepared/batched source/destination rectangles. valid_strip_size and symbol_code_length_valid only restrict admissible sizes; the latter does not equate length to ceil-log2. src/symbol_text.rs uses these safe-state pre/postconditions without thereby promising symbol contents or placement coordinates.",
@@ -1024,8 +1050,17 @@
           "spec::refinement_choice_result",
           "spec::refinement_template_matches",
           "spec::strip_log_valid",
-          "spec::symbol_code_length_expected",
           "spec::two_bit_choice_result"
+        ],
+        "classification": "project-result-model",
+        "justification": "Bodies translate arithmetic integer/OOB/ID/errors to codec result enums, map encoded choices/templates to returned enums, and prescribe exact strip logs/ceil-log2 symbol length. src/symbol_text.rs helper/codec contracts bind actual returned values to these relations and arithmetic::decode_error.",
+        "ambiguity": "",
+        "caveats": "Table-choice enums and field-slot selection do not prove normative table data, caller field selection or full entropy streams; default template branches are only the stated project mapping."
+      },
+      {
+        "file": "specs/symbol_text/symbol_ids.rs",
+        "members": [
+          "spec::symbol_code_length_expected"
         ],
         "classification": "project-result-model",
         "justification": "Bodies translate arithmetic integer/OOB/ID/errors to codec result enums, map encoded choices/templates to returned enums, and prescribe exact strip logs/ceil-log2 symbol length. src/symbol_text.rs helper/codec contracts bind actual returned values to these relations and arithmetic::decode_error.",
@@ -1054,9 +1089,17 @@
           "spec::export_progress_measure",
           "spec::floor_half",
           "spec::integer_field_slot",
-          "spec::pow2",
           "spec::signed_byte",
           "spec::work_units"
+        ],
+        "classification": "proof-support",
+        "justification": "Bodies project tracker/codebook/field-bank values, supply signed/floor-half and clipped endpoint vocabulary, double powers and combine remaining work/index into an export decrease. src/symbol_text.rs contracts and shared/property proofs use these helpers to state content, placement and resource results; a measure/projection alone is not decoding.",
+        "ambiguity": ""
+      },
+      {
+        "file": "specs/symbol_text/symbol_ids.rs",
+        "members": [
+          "spec::pow2"
         ],
         "classification": "proof-support",
         "justification": "Bodies project tracker/codebook/field-bank values, supply signed/floor-half and clipped endpoint vocabulary, double powers and combine remaining work/index into an export decrease. src/symbol_text.rs contracts and shared/property proofs use these helpers to state content, placement and resource results; a measure/projection alone is not decoding.",
@@ -1714,14 +1757,14 @@
     "proofs/production_impl/segment_data.rs": "23a12b1085c3b23ffbeefff83e5f1608fb73250465fcebccdb4e34e74000ab79",
     "proofs/production_impl/segment_header.rs": "8951757eb8f9baf48e1d9258992cc896481c6ad53a2fb9169742a686327dbcb0",
     "proofs/production_impl/symbol_text.rs": "14fa5b7faee06db57008773f5b0d0d6acb4dc6791409d6bea703b7999953571b",
-    "proofs/shared/bitmap.rs": "4698b6d24d60eb65e8a75694bccfb5ba34b0561a8b96814e7cd5d71ae6897af1",
+    "proofs/shared/bitmap.rs": "23b05abecff52de3ecd806a3dce30459ad3cf96dc150b11658c05731e768f4ec",
     "proofs/spec_properties/arithmetic.rs": "a43e10db2c92bd58127314f9307993264998373a6f71cb0dd66b8402020e68b0",
     "proofs/spec_properties/mmr.rs": "16035dc09a1720c7677dcf3f57fd5e92cec44efd3af3c672716a2614e6e7844c",
     "proofs/spec_properties/readers.rs": "01efdc55fd62e5bc34b97275a23d6b683af934d6739a7e284f08f991af883fd3",
     "specs/arithmetic.rs": "6ca6ba7feba16d866d06e8704ff4ee609153e10e1097514a12b0947b4868eea5",
     "specs/bitmap.rs": "9d4da6608d7ee55fdf0ab7d8d47f6105e75e656c1f31589610d47a67a61218cf",
     "specs/decode.rs": "acc5afe72a14eb8e48e3a193608a2a89bec966b97757201d6ce3d9bc9a404e24",
-    "specs/document.rs": "d43cce6057c5297741909e7574665548117cfe2c74f36ea9639966748ee6f97a",
+    "specs/document.rs": "1eab675da2cb26fbd23fdf8ef6a8995476587cf0d58062f71fad58558d789af6",
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
     "specs/generic_region.rs": "61f8a7afbfc236f462c592a0b3be830ad286f2838c01cde9cc24f275b82bd115",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
@@ -1730,24 +1773,35 @@
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "7678c7167ed4ccba27b2e8f8a66481a606a2207f33600cef7e967d9c2df74776",
     "specs/segments.rs": "a4a19a65babe5a29532273f3374434762cf0fd63d3336b0f49e4914e3e390bc0",
-    "specs/symbol_text.rs": "ca8bdc6faee0922a6fb52dc897e480c6b91ead709dff1ccf99dd14de32fc2778",
-    "src/arithmetic.rs": "39cea23f3e6553e50b0106d5e91185fafc55c34df62ba45f35de33be222f1c92",
-    "src/arithmetic/tests.rs": "27e00332c635db8eea68bb61c9f0649c84326fdb40d6ef56309c102c392e4120",
+    "specs/symbol_text.rs": "48823c89848c74e46e2ca7b794b3793872a1d568676012d1ffb7248b939c6c2c",
+    "src/arithmetic.rs": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
+    "src/arithmetic/decoding.rs": "537afa619108dc6ce7773688683d85eb5b4251dbb75a939c92223746b7a90fd5",
+    "src/arithmetic/integers.rs": "06a449da712e7823486cc3d7ba3c30afb3a19f4aecb2db2bb4cd1b5756e2aa99",
+    "src/arithmetic/refill.rs": "737ee41e1e4bfd62104fd48dcc612ff83ba9cc1b6b0ec1ca0e741909ce505769",
+    "src/arithmetic/tests.rs": "24fa75f21b569d1518fdf5191d21b38aeb430c04695e9d103f3ff0ee8f495e8f",
+    "src/arithmetic/tests/context_state.rs": "cf1908a60d5aa6cf91d8522644169a9eebe2521c0bd114f3950b29df5900566f",
+    "src/arithmetic/tests/decoder_registers.rs": "eb973972578c2b74f0d2d5a390d2b169807f3ce970d7908d1b5453cf6156121d",
+    "src/arithmetic/tests/integer_procedures.rs": "e4ef8b7ba3c44b87cb05a1b04bc2739b738bd8b10b17b9d55cbee88f06b6aca2",
     "src/bitmap.rs": "7151eb22ac6ebf41ed4cb75d3698e43eab4277dbf6667dc8c7fd699a48988e94",
     "src/bitmap/access.rs": "ce458c26068422e717e32672c57eda03168d8118806d39ffaed278622e74fae3",
     "src/bitmap/operators.rs": "ca7c9f926f1c71d74bfc938798dfdf8ab22c53fee7e1843ca6def5d3bd86729d",
     "src/bitmap/storage.rs": "8f6ce10586869f2b0ec85214156dcd6ead236b88f7465f107f54df90698524e4",
-    "src/bitmap/tests.rs": "f292633ddb13271e078a70dbac0e7ad7dacc8823591f913e941d3e264576c24a",
+    "src/bitmap/tests/composition.rs": "6e1643c277251306450aa427f99a143a82be3e1d32cb81ef037d6b527c92a9ba",
+    "src/bitmap/tests/layout_and_access.rs": "794454828d33bf94749c93ec3091be8d216a05375088d42e68aafe44effad84a",
     "src/decode.rs": "25f6a7996ad876f05a9ec1db834ffc113f101a5861913491551ca2b0d18bf6e7",
-    "src/decode/dispatch.rs": "9ec9288fd871a537c93eaf0542a4a58b47d29a7f716f0634b29266f22d6d1dba",
+    "src/decode/dispatch/references.rs": "52e7500e0cef622729c3b19f535c8d0824644b5a954dd373ffeadeb34e649c67",
     "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
     "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",
-    "src/decode/tests.rs": "cd2ef59f9f9b1378f07362bff89d7f4c799dfeb0451905b5d199ed7ad0bede18",
+    "src/decode/tests/container_routes.rs": "aeeda8acf7fc38595c86a85328ecef9d1fb201c2dd5fb1bac5da4abf6f5a4cf1",
+    "src/decode/tests/direct_and_reuse.rs": "d46a5cbd0ee0791141d8b6115f090faa7a0315dc51437dcfb643dce6b58e116c",
+    "src/decode/tests/symbol_resources.rs": "f23d5ba103db106eed1cf7d9c8eef395ce060e7eedf2226d7eb38f923dff3431",
     "src/document.rs": "86ab2d38d7c07f09d443e5b9d658f90503ae0c071640560ad5e5c477cfb6ed36",
     "src/document/pages.rs": "f11a042b00dfab74c94454999b7d3c9ba575ff3c77b8fafd54ec692b7c4649a0",
     "src/document/parsing.rs": "ce5a558c99b64b8d3ec7af95a35bd8c563ddcf09f65c760a7cb31eaebc93aa54",
     "src/document/references.rs": "211469b5b0d1e5b507459d718e3f97623897c9acb0a8639a077f2d7e12f5a80b",
-    "src/document/tests.rs": "cf866552dd84abdbc15d5289ec34845d25b78d872fc017e4a5cafeac7ba6fdba",
+    "src/document/tests.rs": "ecb5c496a4c564ca0e578e2eec861370a81661c6687399f0bfc671bc1c7c9e0c",
+    "src/document/tests/container_inspection.rs": "8a0674aa12018a9be10be61dcbb9c003b1e08647a058b9b8eee909710ec4c876",
+    "src/document/tests/payload_windows.rs": "a5ea365a525b36f3ca92894ab3157d8b03382419e3ca434e154b7cdc3000f02e",
     "src/file_header.rs": "9011f761698f3772c953980e2d2d56ed5ece4f792c8e318ca89a0e0f8d326e11",
     "src/generic_region.rs": "4c753c336c16bb615977a1074edbb71ccb158b3fd4d8120876d9c24f21f4f0ef",
     "src/generic_region/contexts.rs": "d8e8a6bf536faf6327f60f6204b69f6443e8702d8d767614d53496c271652ae5",
@@ -1755,30 +1809,56 @@
     "src/generic_region/headers.rs": "d116c691bcc2c0f94f4a39a0984b7576a492f9b4411159aaf00a901cce2d3ac8",
     "src/generic_region/refinement.rs": "defb4386d60cf2b85b7de320ce5c8a53e83d4483ee30668e0cc3ab5a54e7b35c",
     "src/generic_region/support.rs": "f564fa0bda614940d4592b8958b236a1c8978ed56cf1ee9102e745f20ce62f16",
-    "src/generic_region/tests.rs": "be9a03a5edde4b24dc69a446a7c95761834f99649c06756aaae93cc1f4739088",
+    "src/generic_region/tests/diagnostics.rs": "53850441984da91d10fcff41c144041ddb2102d03742aeadfac62b1fb40b01db",
+    "src/generic_region/tests/headers_and_prediction.rs": "8acb2f4b3dcb2858b67b1b95a822950c7dd2c2e05e93b10d514565d04f5f0997",
+    "src/generic_region/tests/raster_parity.rs": "a10224aebcc8c0864ad093f51a6b9eb3a7c7de2af2e7e4865481d8c4e123bbd9",
+    "src/generic_region/tests/segment_framing.rs": "306d93b4bac38a15c3a733cc58d034b23ffcbe008039e6333d641bf3569c5cd3",
     "src/halftone.rs": "006e5a831d3f09a8b3be41782424261a52bf375544befd7e45c522d0ab00ba36",
     "src/halftone/headers.rs": "363497a0fdf003435987f0fa64e793d7d61d7d9de4a65c58c0e66571394cdda0",
     "src/halftone/planes.rs": "563d5b285cad5af7644babe50c6f5103a1b914af52d0156098438fcd196f73b0",
     "src/halftone/render.rs": "c45d1d1a4af09551053de75d9c49e4f1bd06de0456f279e7d4f88abdfcb57cd4",
-    "src/halftone/tests.rs": "924a396899694321674460d8deb8144ac291038c8befadb98501dc5cf4caecb8",
-    "src/huffman.rs": "7d2e7ce370edd68b45e7fdf009687e4793e9db57777d4392e6c0eb024134a7ed",
-    "src/huffman/tests.rs": "f381ff3140134f282547de09735f18a47a3802bfa19aa10fd8c69d7025d7f36e",
+    "src/halftone/tests/codec_state.rs": "51027604dd118a9109fb60505b855c467332d536dbf5e3d3088e2a365afd6d99",
+    "src/halftone/tests/geometry_and_render.rs": "c2ded87b15b0342969b81b7e98f6a617098302ab6e56f28d6cabba8aafc850cd",
+    "src/halftone/tests/headers_and_patterns.rs": "ef5f90a9b1eaf32619dc22c6f49b5d6d6ccbf32f9bdacfc6507f29c15efa9f70",
+    "src/huffman.rs": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+    "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
+    "src/huffman/decoding.rs": "126547624cf5e3fdc514ec2eba18b85677e3c5b8750a231b3e290f591d109412",
+    "src/huffman/tests/canonical_decoding.rs": "cae4a3395ad275cc20f6db069a382647bca28e7d4ff206dae6896ef812490022",
+    "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
+    "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
+    "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",
+    "src/huffman/wide.rs": "4f37abac40efc66f0c3eaa2637d211eaca5a5ea4fa7a14d7aadb07fbe2a8f0b0",
     "src/lib.rs": "f2dfb100e93774f893e47f2c02d7cf56c8083da41126dfbe3557c7eac43b9697",
-    "src/mmr.rs": "9ef1f69c8c60fe22996de8e6e4f5cef6aca930c1b6a537661dd38a0c76cd2d9e",
-    "src/mmr/tests.rs": "79118514b98b34d3cdb666929befa658922386b5105c640b0d083e4cf2648250",
+    "src/mmr.rs": "c82fd282e7fb194576ea34b8f501b9ed5ecb56075e44c70bd8131a4ab4929ca9",
+    "src/mmr/codes.rs": "46cf39eb4756da06aeb34aa32dbe75e13dcbd911b3a5b9d9afa80065966a7857",
+    "src/mmr/raster.rs": "bd03d34f4154e629fce76707fae6dc06c12d2077a3e56fafd0198b6ae8176e4b",
+    "src/mmr/reference.rs": "f188b7e27296b8449df1aa17d5d48678977ac195fe381824626618ce5da7c818",
+    "src/mmr/spans.rs": "75b86fc99088936b2596ba6b5810a414f331caeec38a3c0dbc19518ac38857cc",
+    "src/mmr/termination.rs": "ff5db8bf291a8c7d5d398f3317463aacd7b6d21cd8f340bceeffe403f046b5fc",
+    "src/mmr/tests/horizontal_runs.rs": "41f42cc4973a92ca9ce650d3e976f9d54c278529c628e1c87f587c9adf7df516",
+    "src/mmr/tests/normative_decode.rs": "348fff90ffa25826a8b86c4604e7006dfaaf5224201f0928c8d87523e74a2dc8",
+    "src/mmr/tests/prefix_codes.rs": "d9251b5c996b597cee637f8ea706e3d7f2a38267933ff7d96656641fbb06c325",
+    "src/mmr/tests/transition_cache.rs": "9694dc1674f651d821c3a40de0b2c052fc06d9c67f7a558a7856f6d917be41b2",
     "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
     "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
     "src/segment_data.rs": "6fb360c3b8cc52b7405e5c3f106aef139f44ef52fef13990c709e4f39fbf992d",
     "src/segment_data/tests.rs": "7b082bcee501bd86382474823db6af59afb56842b7d053c3de8b77d2e5edfc15",
     "src/segment_header.rs": "8e69bfe6071c90755cd91d35b295d326c897ab58ba00a1f19537630a8c0e2745",
     "src/segment_header/tests.rs": "06a6e803fa33e41df721b64bd4e94c744bf57f8001fcbbf4e4dfc73334b949b8",
-    "src/symbol_text.rs": "b7fbb9c15c264d29d2b20447cd3f484c549f81c4e13d0551f0c8a61cb90466f3",
+    "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e",
     "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
-    "src/symbol_text/codec.rs": "7f0bb1b12f0303784e7714fd718fb43e8630cb98f36193a5509f5cd58098fbeb",
-    "src/symbol_text/dictionary.rs": "4f7cf086642c510d3ac5fa589a7cc081754b654ab0ee1cfdeeff8d838ebb1210",
+    "src/symbol_text/codebook.rs": "3ad3dd4131dbb7343a3267f32718d4c5278f029c1b90937f45d06363b8defbcc",
+    "src/symbol_text/codec/arithmetic.rs": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+    "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
+    "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
+    "src/symbol_text/dictionary/exports.rs": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
     "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
     "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
-    "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
+    "src/symbol_text/tests/codec_and_exports.rs": "2bd307278a2720ca95014e37d7b0b9d5be2b2eaee7a74e7b14921b7886dc94bd",
+    "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
+    "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
+    "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
+    "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
     "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27",
     "tests/catalog_contracts.rs": "d4eb4fd3d554494fcd99fa58def0eaa542fca7f97ff32c2083cfa0d3e1545da2",
     "tests/spec_header.rs": "6c8d30477d3be9080827bf0eab191739ab4fe844fe856c60020eb53a50cbcdda",
@@ -3579,7 +3659,7 @@
       "title": "Use an imaginary white reference line before decoding the first row",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_bitmap"
+        "mmr::raster::decode_bitmap"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -3616,7 +3696,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "mmr_spec::bitmap_decodes(data@, width, height, &bitmap, reader.bit_position as nat,)"
@@ -3625,7 +3705,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(&bitmap)",
@@ -3641,7 +3721,7 @@
       "title": "Use each completed decoded row as the following row's reference",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_bitmap"
+        "mmr::raster::decode_bitmap"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -3684,7 +3764,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "mmr_spec::bitmap_decodes(data@, width, height, &bitmap, reader.bit_position as nat,)"
@@ -3693,7 +3773,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(&bitmap)"
@@ -3708,9 +3788,9 @@
       "title": "Locate bounded reference changing-element positions for mode decoding",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::reference_elements_from",
-        "mmr::reference_elements",
-        "mmr::decode_bitmap"
+        "mmr::reference::reference_elements_from",
+        "mmr::reference::reference_elements",
+        "mmr::raster::decode_bitmap"
       ],
       "models": [
         "mmr-reference-line-valid",
@@ -3746,7 +3826,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::reference_elements",
+          "runtime": "mmr::reference::reference_elements",
           "section": "ensures",
           "tokens": [
             "out.is_ok()",
@@ -3754,7 +3834,7 @@
           ]
         },
         {
-          "runtime": "mmr::reference_elements_from",
+          "runtime": "mmr::reference::reference_elements_from",
           "section": "ensures",
           "tokens": [
             "out.is_ok()",
@@ -3766,7 +3846,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::reference_elements_from",
+          "runtime": "mmr::reference::reference_elements_from",
           "section": "ensures",
           "tokens": [
             "*final(search_start) < transitions@.len()",
@@ -3782,7 +3862,7 @@
       "title": "Advance a pass-mode coding position to the second reference changing element",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_bitmap"
+        "mmr::raster::decode_bitmap"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -3815,7 +3895,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "mmr_spec::bitmap_decodes(data@, width, height, &bitmap, reader.bit_position as nat,)"
@@ -3824,7 +3904,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(&bitmap)"
@@ -3839,7 +3919,7 @@
       "title": "Interpret vertical mode as a signed displacement from the first reference changing element",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_bitmap"
+        "mmr::raster::decode_bitmap"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -3876,7 +3956,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "mmr_spec::bitmap_decodes(data@, width, height, &bitmap, reader.bit_position as nat,)"
@@ -3885,7 +3965,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(&bitmap)"
@@ -3900,7 +3980,7 @@
       "title": "Dispatch the coding-mode prefix through the implementation mode table",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_mode"
+        "mmr::codes::decode_mode"
       ],
       "models": [
         "mmr-reader-valid",
@@ -3930,7 +4010,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_mode",
+          "runtime": "mmr::codes::decode_mode",
           "section": "ensures",
           "tokens": [
             "mmr_spec::mode_code_in_implementation_table(code)",
@@ -3942,7 +4022,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_mode",
+          "runtime": "mmr::codes::decode_mode",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))",
@@ -3960,9 +4040,9 @@
       "title": "Decode two successive opposite-colour runs after a horizontal mode",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_bitmap",
-        "mmr::decode_run",
-        "mmr::decode_horizontal_runs"
+        "mmr::raster::decode_bitmap",
+        "mmr::codes::decode_run",
+        "mmr::codes::decode_horizontal_runs"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -4005,7 +4085,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_horizontal_runs",
+          "runtime": "mmr::codes::decode_horizontal_runs",
           "section": "ensures",
           "tokens": [
             "x <= after_first <= end <= width",
@@ -4016,14 +4096,14 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(&bitmap)"
           ]
         },
         {
-          "runtime": "mmr::decode_run",
+          "runtime": "mmr::codes::decode_run",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))"
@@ -4038,7 +4118,7 @@
       "title": "Look up a supplied white-run code key in the white/common implementation tables",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::find_run_code"
+        "mmr::codes::find_run_code"
       ],
       "models": [
         "mmr-run-table-entry",
@@ -4066,7 +4146,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::find_run_code",
+          "runtime": "mmr::codes::find_run_code",
           "section": "ensures",
           "tokens": [
             "mmr_spec::run_code_in_implementation_tables(black, code)",
@@ -4083,7 +4163,7 @@
       "title": "Look up a supplied black-run code key in the black/common implementation tables",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::find_run_code"
+        "mmr::codes::find_run_code"
       ],
       "models": [
         "mmr-run-table-entry",
@@ -4111,7 +4191,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::find_run_code",
+          "runtime": "mmr::codes::find_run_code",
           "section": "ensures",
           "tokens": [
             "mmr_spec::run_code_in_implementation_tables(black, code)",
@@ -4128,7 +4208,7 @@
       "title": "Accumulate make-up lengths followed by a terminating run code",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_run"
+        "mmr::codes::decode_run"
       ],
       "models": [
         "mmr-reader-valid",
@@ -4166,7 +4246,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_run",
+          "runtime": "mmr::codes::decode_run",
           "section": "ensures",
           "tokens": [
             "exists|codes: Seq<RunCode>| mmr_spec::complete_run(black, old(reader).bytes@, old(reader).bit_position as nat, final(reader).bit_position as nat, total, codes,)"
@@ -4175,7 +4255,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_run",
+          "runtime": "mmr::codes::decode_run",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))",
@@ -4191,7 +4271,7 @@
       "title": "Handle the imaginary initial white element and zero-length leading white run",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::decode_bitmap"
+        "mmr::raster::decode_bitmap"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -4228,7 +4308,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "mmr_spec::bitmap_decodes(data@, width, height, &bitmap, reader.bit_position as nat,)"
@@ -4237,7 +4317,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "crate::spec::bitmap::storage_valid(&bitmap)"
@@ -4252,7 +4332,7 @@
       "title": "Finish the reference representation with bounded width-position sentinels",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::finish_transition_row"
+        "mmr::spans::finish_transition_row"
       ],
       "models": [
         "mmr-reference-line-valid",
@@ -4285,7 +4365,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::finish_transition_row",
+          "runtime": "mmr::spans::finish_transition_row",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reference_line_valid(final(transitions)@, width)",
@@ -4303,7 +4383,7 @@
       "title": "Recognize the T.6 end-of-facsimile-block marker when framing requires it",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::finish_block"
+        "mmr::termination::finish_block"
       ],
       "models": [
         "mmr-exact-eofb",
@@ -4331,7 +4411,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::finish_block",
+          "runtime": "mmr::termination::finish_block",
           "section": "ensures",
           "tokens": [
             "EofbPolicy::Required => final(reader).bit_position == old(reader).bytes@.len() * 8",
@@ -4348,8 +4428,8 @@
       "title": "Check zero-valued padding in T.6 post-EOFB framing",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::finish_block",
-        "mmr::finish_required_prefix",
+        "mmr::termination::finish_block",
+        "mmr::termination::finish_required_prefix",
         "mmr::decode_mmr_prefix"
       ],
       "models": [
@@ -4379,14 +4459,14 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::finish_block",
+          "runtime": "mmr::termination::finish_block",
           "section": "ensures",
           "tokens": [
             "mmr_spec::required_eofb_prefix(old(reader).bytes@, old(reader).bit_position as nat, final(reader).bit_position as nat,)"
           ]
         },
         {
-          "runtime": "mmr::finish_required_prefix",
+          "runtime": "mmr::termination::finish_required_prefix",
           "section": "ensures",
           "tokens": [
             "mmr_spec::required_eofb_prefix(old(reader).bytes@, old(reader).bit_position as nat, final(reader).bit_position as nat,)"
@@ -4402,14 +4482,14 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::finish_block",
+          "runtime": "mmr::termination::finish_block",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))"
           ]
         },
         {
-          "runtime": "mmr::finish_required_prefix",
+          "runtime": "mmr::termination::finish_required_prefix",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))"
@@ -4427,7 +4507,7 @@
       "policy_source": "public_api",
       "policy_row_sha256": "8d9dbb2e932f8f9b0ad7fa522da2e5f942742ca1e6b6fd15d08f43b61049c467",
       "runtime": [
-        "mmr::decode_run_code"
+        "mmr::codes::decode_run_code"
       ],
       "models": [
         "mmr-reader-valid",
@@ -4456,7 +4536,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_run_code",
+          "runtime": "mmr::codes::decode_run_code",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))",
@@ -4475,7 +4555,7 @@
       "policy_source": "public_api",
       "policy_row_sha256": "8d9dbb2e932f8f9b0ad7fa522da2e5f942742ca1e6b6fd15d08f43b61049c467",
       "runtime": [
-        "mmr::decode_run"
+        "mmr::codes::decode_run"
       ],
       "models": [
         "mmr-reader-valid"
@@ -4499,7 +4579,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "mmr::decode_run",
+          "runtime": "mmr::codes::decode_run",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))",
@@ -4518,8 +4598,8 @@
       "policy_source": "public_api",
       "policy_row_sha256": "8d9dbb2e932f8f9b0ad7fa522da2e5f942742ca1e6b6fd15d08f43b61049c467",
       "runtime": [
-        "mmr::finish_block",
-        "mmr::finish_required_prefix"
+        "mmr::termination::finish_block",
+        "mmr::termination::finish_required_prefix"
       ],
       "models": [
         "mmr-reader-valid"
@@ -4547,14 +4627,14 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "mmr::finish_block",
+          "runtime": "mmr::termination::finish_block",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))"
           ]
         },
         {
-          "runtime": "mmr::finish_required_prefix",
+          "runtime": "mmr::termination::finish_required_prefix",
           "section": "ensures",
           "tokens": [
             "mmr_spec::reader_valid(final(reader))"
@@ -5150,7 +5230,7 @@
       "title": "Compute shared text-refinement dimensions and floor-half reference offsets",
       "feature": "refinement_aggregation",
       "runtime": [
-        "symbol_text::codec::refinement_geometry"
+        "symbol_text::codec::refinement::refinement_geometry"
       ],
       "models": [
         "text-floor-half"
@@ -5173,7 +5253,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::codec::refinement_geometry",
+          "runtime": "symbol_text::codec::refinement::refinement_geometry",
           "section": "ensures",
           "tokens": [
             "geometry.width as int == base_width as int + delta_width as int",
@@ -5435,9 +5515,9 @@
       "obligation_kind": "project_profile_policy",
       "policy_row_sha256": "4cfe363f77d12f62f57222bd6bd76222e3333e94f85c9a8bc0d25b77b1f0fdee",
       "runtime": [
-        "symbol_text::codec::checked_symbol_id",
-        "symbol_text::SymbolCodebook::get",
-        "symbol_text::symbol_by_id"
+        "symbol_text::codec::symbols::checked_symbol_id",
+        "symbol_text::codebook::SymbolCodebook::get",
+        "symbol_text::codebook::symbol_by_id"
       ],
       "models": [
         "symbol-bitmap-contents-match",
@@ -5462,7 +5542,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::codec::checked_symbol_id",
+          "runtime": "symbol_text::codec::symbols::checked_symbol_id",
           "section": "ensures",
           "tokens": [
             "Ok(value) => value == id && value < available_symbols"
@@ -6335,7 +6415,7 @@
       "title": "Accumulate symbol dimensions and decoded counts within a dictionary height class",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::dictionary::DictionaryClassState::add_symbol"
+        "symbol_text::dictionary::exports::DictionaryClassState::add_symbol"
       ],
       "models": [
         "dictionary-state-valid"
@@ -6359,7 +6439,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "symbol_text::dictionary::DictionaryClassState::add_symbol",
+          "runtime": "symbol_text::dictionary::exports::DictionaryClassState::add_symbol",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::dictionary_state_valid(final(self))",
@@ -6375,7 +6455,7 @@
       "title": "Return the declared number of in-range dictionary export indices",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::dictionary::decode_export_runs"
+        "symbol_text::dictionary::exports::decode_export_runs"
       ],
       "models": [
         "export-indices-valid"
@@ -6406,7 +6486,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::dictionary::decode_export_runs",
+          "runtime": "symbol_text::dictionary::exports::decode_export_runs",
           "section": "ensures",
           "tokens": [
             "exported@.len() == expected_exports",
@@ -6423,12 +6503,12 @@
       "title": "Assemble exports in the selected order over imported then new symbols",
       "feature": "symbol_dictionaries",
       "runtime": [
-        "symbol_text::dictionary::assemble_exported_symbols",
-        "symbol_text::SymbolCodebook::get",
-        "symbol_text::symbol_by_id",
+        "symbol_text::dictionary::exports::assemble_exported_symbols",
+        "symbol_text::codebook::SymbolCodebook::get",
+        "symbol_text::codebook::symbol_by_id",
         "decode::resources::symbol_index",
         "decode::resources::get_symbol_resource",
-        "decode::dispatch::collect_referred_symbols",
+        "decode::dispatch::references::collect_referred_symbols",
         "decode::CollectedSymbols::codebook"
       ],
       "models": [
@@ -6474,14 +6554,14 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::SymbolCodebook::get",
+          "runtime": "symbol_text::codebook::SymbolCodebook::get",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::codebook_selects(self, index as nat, bitmap)"
           ]
         },
         {
-          "runtime": "symbol_text::symbol_by_id",
+          "runtime": "symbol_text::codebook::symbol_by_id",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::symbol_id_selects(imported, new_symbols@, id, bitmap)",
@@ -6489,7 +6569,7 @@
           ]
         },
         {
-          "runtime": "symbol_text::dictionary::assemble_exported_symbols",
+          "runtime": "symbol_text::dictionary::exports::assemble_exported_symbols",
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::exported_contents_match(imported, new_symbols@, exported_indices@, exported@,)"
@@ -6512,7 +6592,7 @@
           ]
         },
         {
-          "runtime": "decode::dispatch::collect_referred_symbols",
+          "runtime": "decode::dispatch::references::collect_referred_symbols",
           "section": "ensures",
           "tokens": [
             "decode_spec::collected_symbol_count(&bitmaps) == decode_spec::referred_symbol_count(symbols@, segment.header.referred_segments@, segment.header.referred_segments@.len(),)"
@@ -6526,7 +6606,7 @@
           ]
         },
         {
-          "runtime": "symbol_text::dictionary::assemble_exported_symbols",
+          "runtime": "symbol_text::dictionary::exports::assemble_exported_symbols",
           "section": "ensures",
           "tokens": [
             "exported@.len() == exported_indices@.len()",
@@ -6628,7 +6708,7 @@
       "title": "Preserve an accepted symbol index while rejecting indices outside the supplied codebook extent",
       "feature": "text_regions",
       "runtime": [
-        "symbol_text::codec::checked_symbol_id"
+        "symbol_text::codec::symbols::checked_symbol_id"
       ],
       "models": [],
       "proof_macros": [],
@@ -6649,7 +6729,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "symbol_text::codec::checked_symbol_id",
+          "runtime": "symbol_text::codec::symbols::checked_symbol_id",
           "section": "ensures",
           "tokens": [
             "Ok(value) => value == id && value < available_symbols",
@@ -7649,7 +7729,7 @@
       "title": "Extract whether a custom Huffman table has an out-of-band line",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::encoded_table_fields"
+        "huffman::validation::encoded_table_fields"
       ],
       "models": [],
       "proof_macros": [],
@@ -7670,7 +7750,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "huffman::encoded_table_fields",
+          "runtime": "huffman::validation::encoded_table_fields",
           "section": "ensures",
           "tokens": [
             "out.0 == (flags & 1 != 0)"
@@ -7686,7 +7766,7 @@
       "title": "Interpret the custom-table prefix-size field width with its one-bit bias",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::encoded_table_fields"
+        "huffman::validation::encoded_table_fields"
       ],
       "models": [],
       "proof_macros": [],
@@ -7707,7 +7787,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "huffman::encoded_table_fields",
+          "runtime": "huffman::validation::encoded_table_fields",
           "section": "ensures",
           "tokens": [
             "out.1 == ((((flags >> 1) & 7) as u16 + 1) as u8)"
@@ -7723,7 +7803,7 @@
       "title": "Interpret the custom-table range-size field width with its one-bit bias",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::encoded_table_fields"
+        "huffman::validation::encoded_table_fields"
       ],
       "models": [],
       "proof_macros": [],
@@ -7748,7 +7828,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "huffman::encoded_table_fields",
+          "runtime": "huffman::validation::encoded_table_fields",
           "section": "ensures",
           "tokens": [
             "out.2 == ((((flags >> 4) & 7) as u16 + 1) as u8)"
@@ -7764,7 +7844,7 @@
       "title": "Reject a custom-table flag byte with its reserved bit set",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::from_encoded"
+        "huffman::construction::HuffmanTable::from_encoded"
       ],
       "models": [],
       "proof_macros": [],
@@ -7793,7 +7873,7 @@
       "title": "Read signed custom-table lower and exclusive upper bounds",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::from_encoded"
+        "huffman::construction::HuffmanTable::from_encoded"
       ],
       "models": [],
       "proof_macros": [],
@@ -7826,7 +7906,7 @@
       "title": "Advance normal custom-table ranges using each decoded range width",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::from_encoded"
+        "huffman::construction::HuffmanTable::from_encoded"
       ],
       "models": [],
       "proof_macros": [],
@@ -7859,7 +7939,7 @@
       "title": "Construct custom-table lower, upper and optional out-of-band lines",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::from_encoded"
+        "huffman::construction::HuffmanTable::from_encoded"
       ],
       "models": [],
       "proof_macros": [],
@@ -7892,9 +7972,9 @@
       "title": "Assign canonical prefixes by length and original table-line order",
       "feature": "custom_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::from_line_source",
-        "huffman::HuffmanTable::new",
-        "huffman::WideCode::zero"
+        "huffman::construction::HuffmanTable::from_line_source",
+        "huffman::construction::HuffmanTable::new",
+        "huffman::wide::WideCode::zero"
       ],
       "models": [
         "huffman-canonical-assignment",
@@ -7945,7 +8025,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "huffman::HuffmanTable::from_line_source",
+          "runtime": "huffman::construction::HuffmanTable::from_line_source",
           "section": "ensures",
           "tokens": [
             "huffman_spec::is_raw(lines)",
@@ -7956,14 +8036,14 @@
           ]
         },
         {
-          "runtime": "huffman::HuffmanTable::new",
+          "runtime": "huffman::construction::HuffmanTable::new",
           "section": "ensures",
           "tokens": [
             "huffman_spec::canonical_assignment(lines@, &table)"
           ]
         },
         {
-          "runtime": "huffman::WideCode::zero",
+          "runtime": "huffman::wide::WideCode::zero",
           "section": "ensures",
           "tokens": [
             "out.limbs@ == seq![0u64, 0u64, 0u64, 0u64]"
@@ -7979,7 +8059,7 @@
       "title": "Select and construct the fifteen predefined Huffman tables",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::standard",
+        "huffman::construction::HuffmanTable::standard",
         "huffman::standard_lines"
       ],
       "models": [],
@@ -8013,7 +8093,7 @@
       "title": "Match a Huffman prefix before decoding its selected line",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::HuffmanTable::decode"
+        "huffman::decoding::HuffmanTable::decode"
       ],
       "models": [
         "huffman-reader-valid"
@@ -8045,7 +8125,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "huffman::HuffmanTable::decode",
+          "runtime": "huffman::decoding::HuffmanTable::decode",
           "section": "ensures",
           "tokens": [
             "huffman_spec::reader_valid(final(reader))"
@@ -8060,7 +8140,7 @@
       "title": "Interpret the suffix of an already selected normal or upper Huffman line",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decode_line"
+        "huffman::decoding::decode_line"
       ],
       "models": [
         "huffman-decoded-value",
@@ -8084,7 +8164,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "huffman::decode_line",
+          "runtime": "huffman::decoding::decode_line",
           "section": "ensures",
           "tokens": [
             "Ok(HuffmanValue::Integer(value)) =>",
@@ -8102,7 +8182,7 @@
       "title": "Subtract the decoded suffix from an already selected lower-range line's base",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decode_line"
+        "huffman::decoding::decode_line"
       ],
       "models": [
         "huffman-decoded-value",
@@ -8130,7 +8210,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "huffman::decode_line",
+          "runtime": "huffman::decoding::decode_line",
           "section": "ensures",
           "tokens": [
             "Ok(HuffmanValue::Integer(value)) =>",
@@ -8148,7 +8228,7 @@
       "title": "Return an out-of-band result only for the selected out-of-band line without consuming a suffix",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decode_line"
+        "huffman::decoding::decode_line"
       ],
       "models": [],
       "proof_macros": [],
@@ -8173,7 +8253,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "huffman::decode_line",
+          "runtime": "huffman::decoding::decode_line",
           "section": "ensures",
           "tokens": [
             "Ok(HuffmanValue::OutOfBand) => line.kind == LineKind::OutOfBand && final(reader).bit_position == old(reader).bit_position"
@@ -8190,9 +8270,9 @@
       "feature": "mmr_coding",
       "runtime": [
         "mmr::decode_mmr",
-        "mmr::decode_bitmap",
-        "mmr::fill_span",
-        "mmr::fill_recorded_span"
+        "mmr::raster::decode_bitmap",
+        "mmr::spans::fill_span",
+        "mmr::spans::fill_recorded_span"
       ],
       "models": [
         "bitmap-storage-valid",
@@ -8248,7 +8328,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::decode_bitmap",
+          "runtime": "mmr::raster::decode_bitmap",
           "section": "ensures",
           "tokens": [
             "mmr_spec::bitmap_decodes(data@, width, height, &bitmap, reader.bit_position as nat,)"
@@ -8264,7 +8344,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "mmr::fill_span",
+          "runtime": "mmr::spans::fill_span",
           "section": "ensures",
           "tokens": [
             "(out.is_ok() && crate::spec::bitmap::storage_valid(old(bitmap)) && start <= end <= old(bitmap).width && row < old(bitmap).height) ==> mmr_spec::span_result(old(bitmap), final(bitmap), row, start, end, black)"
@@ -8278,7 +8358,7 @@
           ]
         },
         {
-          "runtime": "mmr::fill_span",
+          "runtime": "mmr::spans::fill_span",
           "section": "ensures",
           "tokens": [
             "mmr_spec::bitmap_storage_valid(final(bitmap))",
@@ -8294,7 +8374,7 @@
       "title": "Finish an EOFB-terminated MMR prefix at a byte boundary",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::finish_required_prefix"
+        "mmr::termination::finish_required_prefix"
       ],
       "models": [
         "mmr-reader-valid",
@@ -8322,7 +8402,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::finish_required_prefix",
+          "runtime": "mmr::termination::finish_required_prefix",
           "section": "ensures",
           "tokens": [
             "Ok(()) => old(reader).bit_position as nat + 24 <= final(reader).bit_position as nat",
@@ -8341,7 +8421,7 @@
       "title": "Require the MMR end marker when the encoded byte count is unknown",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::finish_block"
+        "mmr::termination::finish_block"
       ],
       "models": [
         "mmr-reader-valid",
@@ -8373,7 +8453,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::finish_block",
+          "runtime": "mmr::termination::finish_block",
           "section": "ensures",
           "tokens": [
             "EofbPolicy::Required => final(reader).bit_position == old(reader).bytes@.len() * 8",
@@ -8390,7 +8470,7 @@
       "title": "Permit omission of the MMR end marker when the encoded byte count is known",
       "feature": "mmr_coding",
       "runtime": [
-        "mmr::finish_block"
+        "mmr::termination::finish_block"
       ],
       "models": [
         "mmr-reader-valid"
@@ -8413,7 +8493,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "mmr::finish_block",
+          "runtime": "mmr::termination::finish_block",
           "section": "ensures",
           "tokens": [
             "EofbPolicy::Optional => final(reader).bit_position == old(reader).bit_position"
@@ -9485,7 +9565,7 @@
       "title": "Produce the prescribed arithmetic decision and probability-state transition",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "context-valid",
@@ -9519,7 +9599,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))",
@@ -9640,12 +9720,12 @@
       "title": "Keep the named integer procedures' probability contexts in distinct namespaces",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_iaid",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid",
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
-        "symbol_text::codec::ArithmeticCodec::decode_integer",
-        "symbol_text::codec::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_integer",
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -9688,7 +9768,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -9703,7 +9783,7 @@
       "title": "Begin each integer invocation with only the history sentinel set",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer"
       ],
       "models": [
         "decoder-state-valid",
@@ -9747,7 +9827,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -9758,7 +9838,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -9773,7 +9853,7 @@
       "title": "Select a procedure-local decision context from the low nine history bits",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer_bit"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bit"
       ],
       "models": [
         "decoder-state-valid",
@@ -9815,7 +9895,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bit",
           "section": "ensures",
           "tokens": [
             "decision == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous),).0",
@@ -9826,7 +9906,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bit",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -9841,7 +9921,7 @@
       "title": "Append a decision while the history has not reached its rolling window",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer_bit"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bit"
       ],
       "models": [
         "decoder-state-valid",
@@ -9883,7 +9963,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bit",
           "section": "ensures",
           "tokens": [
             "decision == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous),).0",
@@ -9894,7 +9974,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bit",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -9909,7 +9989,7 @@
       "title": "Retain the recent eight decisions and restore the history sentinel",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer_bit"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bit"
       ],
       "models": [
         "decoder-state-valid",
@@ -9951,7 +10031,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bit",
           "section": "ensures",
           "tokens": [
             "decision == arithmetic_spec::integer_bit_state(old(self), old(contexts)@, *old(previous),).0",
@@ -9962,7 +10042,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bit",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bit",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -9977,7 +10057,7 @@
       "title": "Provide the complete nine-bit context address space for each integer procedure",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer"
       ],
       "models": [
         "decoder-state-valid",
@@ -10013,7 +10093,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10028,7 +10108,7 @@
       "title": "Decode the sign before choosing an integer magnitude leaf",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer"
       ],
       "models": [
         "decoder-state-valid",
@@ -10070,7 +10150,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10081,7 +10161,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10096,8 +10176,8 @@
       "title": "Use a 2-bit magnitude payload and offset 0 at magnitude leaf 1",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10142,7 +10222,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10153,7 +10233,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10168,8 +10248,8 @@
       "title": "Use a 4-bit magnitude payload and offset 4 at magnitude leaf 2",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10214,7 +10294,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10225,7 +10305,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10240,8 +10320,8 @@
       "title": "Use a 6-bit magnitude payload and offset 20 at magnitude leaf 3",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10286,7 +10366,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10297,7 +10377,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10312,8 +10392,8 @@
       "title": "Use a 8-bit magnitude payload and offset 84 at magnitude leaf 4",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10358,7 +10438,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10369,7 +10449,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10384,8 +10464,8 @@
       "title": "Use a 12-bit magnitude payload and offset 340 at magnitude leaf 5",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10430,7 +10510,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10441,7 +10521,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10456,8 +10536,8 @@
       "title": "Use a 32-bit magnitude payload and offset 4436 at magnitude leaf 6",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10502,7 +10582,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10513,7 +10593,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10528,7 +10608,7 @@
       "title": "Accumulate each magnitude payload with its earliest decoded bit most significant",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10573,7 +10653,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bits",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bits",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_bits_run(*old(self), old(contexts)@, *old(previous), bit_count, 0,).0",
@@ -10585,7 +10665,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer_bits",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer_bits",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10600,7 +10680,7 @@
       "title": "Return the magnitude when the decoded sign is clear",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer"
       ],
       "models": [
         "decoder-state-valid",
@@ -10644,7 +10724,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10655,7 +10735,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10670,7 +10750,7 @@
       "title": "Negate a nonzero magnitude when the decoded sign is set",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer"
       ],
       "models": [
         "decoder-state-valid",
@@ -10714,7 +10794,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10725,7 +10805,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10740,7 +10820,7 @@
       "title": "Interpret a signed zero magnitude as the out-of-band result",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer"
       ],
       "models": [
         "decoder-state-valid",
@@ -10784,7 +10864,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::integer_state(*old(self), old(contexts)@).0",
@@ -10795,7 +10875,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10810,8 +10890,8 @@
       "title": "Interpret the smallest nonnegative magnitude family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10846,7 +10926,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10861,8 +10941,8 @@
       "title": "Interpret the dedicated negative-unit representation",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10897,7 +10977,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10912,8 +10992,8 @@
       "title": "Interpret the remaining negative values of the smallest magnitude leaf",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10948,7 +11028,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -10963,8 +11043,8 @@
       "title": "Interpret the positive four-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -10999,7 +11079,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11014,8 +11094,8 @@
       "title": "Interpret the negative four-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11050,7 +11130,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11065,8 +11145,8 @@
       "title": "Interpret the positive six-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11101,7 +11181,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11116,8 +11196,8 @@
       "title": "Interpret the negative six-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11152,7 +11232,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11167,8 +11247,8 @@
       "title": "Interpret the positive eight-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11203,7 +11283,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11218,8 +11298,8 @@
       "title": "Interpret the negative eight-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11254,7 +11334,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11269,8 +11349,8 @@
       "title": "Interpret the positive twelve-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11305,7 +11385,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11320,8 +11400,8 @@
       "title": "Interpret the negative twelve-bit payload family",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11356,7 +11436,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11371,8 +11451,8 @@
       "title": "Interpret the positive wide-tail family using its finite payload",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11407,7 +11487,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11422,8 +11502,8 @@
       "title": "Interpret the negative wide-tail family using its finite payload",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11458,7 +11538,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11473,8 +11553,8 @@
       "title": "Interpret the table's exceptional signed-zero representation",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_integer",
-        "arithmetic::ArithmeticDecoder::decode_integer_bits"
+        "arithmetic::integers::ArithmeticDecoder::decode_integer",
+        "arithmetic::integers::ArithmeticDecoder::decode_integer_bits"
       ],
       "models": [
         "decoder-state-valid",
@@ -11509,7 +11589,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_integer",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11524,11 +11604,11 @@
       "title": "Use the caller's symbol-code length for an IAID invocation",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid",
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid",
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
-        "symbol_text::codec::ArithmeticCodec::decode_integer",
-        "symbol_text::codec::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_integer",
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -11581,7 +11661,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11596,7 +11676,7 @@
       "title": "Seed IAID's untruncated context history with one",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid"
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid"
       ],
       "models": [
         "decoder-state-valid",
@@ -11638,7 +11718,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
@@ -11649,7 +11729,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11664,7 +11744,7 @@
       "title": "Address the IAID context using the code-length-plus-one history bits",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid"
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid"
       ],
       "models": [
         "decoder-state-valid",
@@ -11706,7 +11786,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
@@ -11717,7 +11797,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11732,7 +11812,7 @@
       "title": "Append every IAID decision without the integer procedure's nine-bit truncation",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid"
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid"
       ],
       "models": [
         "decoder-state-valid",
@@ -11774,7 +11854,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
@@ -11785,7 +11865,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11800,7 +11880,7 @@
       "title": "Decode exactly the requested number of IAID decisions",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid"
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid"
       ],
       "models": [
         "decoder-state-valid",
@@ -11842,7 +11922,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
@@ -11853,7 +11933,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11868,7 +11948,7 @@
       "title": "Remove IAID's leading sentinel after all requested decisions",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid"
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid"
       ],
       "models": [
         "decoder-state-valid",
@@ -11910,7 +11990,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
@@ -11921,7 +12001,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -11936,7 +12016,7 @@
       "title": "Return the sentinel-free history as the decoded symbol identifier",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid"
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid"
       ],
       "models": [
         "decoder-state-valid",
@@ -11978,7 +12058,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
@@ -11989,7 +12069,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12004,11 +12084,11 @@
       "title": "Size the IAID context address space from the symbol-code length",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_iaid",
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid",
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
-        "symbol_text::codec::ArithmeticCodec::decode_integer",
-        "symbol_text::codec::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_integer",
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -12061,7 +12141,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_iaid",
+          "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12076,7 +12156,7 @@
       "title": "Decode a binary decision from compressed state and a caller-selected adaptive context",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode"
+        "arithmetic::decoding::ArithmeticDecoder::decode"
       ],
       "models": [
         "decoder-state-valid"
@@ -12105,7 +12185,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12120,8 +12200,8 @@
       "title": "Initialize an arithmetic stream before decoding its context-selected decisions",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::new",
-        "arithmetic::ArithmeticDecoder::decode"
+        "arithmetic::decoding::ArithmeticDecoder::new",
+        "arithmetic::decoding::ArithmeticDecoder::decode"
       ],
       "models": [
         "decoder-valid"
@@ -12150,7 +12230,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::new",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::new",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_valid(&decoder)"
@@ -12165,7 +12245,7 @@
       "title": "Use the model's matching context sequence and stop when its decisions are exhausted",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode",
+        "arithmetic::decoding::ArithmeticDecoder::decode",
         "arithmetic::ArithmeticContext::from_state",
         "generic_region::contexts::validate_probability_states",
         "generic_region::generic::probability_signal_error",
@@ -12217,7 +12297,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12232,7 +12312,7 @@
       "title": "Treat the two code halves as a single register while comparing only its high half",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -12261,7 +12341,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12276,8 +12356,8 @@
       "title": "Feed aligned input into the low code half and shift new information into the high half",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal",
-        "arithmetic::ArithmeticDecoder::renormalize_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
+        "arithmetic::refill::ArithmeticDecoder::renormalize_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12316,7 +12396,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "final(self).code == arithmetic_spec::normalized_state(old(self)).4"
@@ -12325,7 +12405,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12340,7 +12420,7 @@
       "title": "Make the decoder's interval and code comparisons logically unsigned",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -12369,7 +12449,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12384,7 +12464,7 @@
       "title": "Read the current estimate through the selected context's pre-decision index",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -12416,7 +12496,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12431,7 +12511,7 @@
       "title": "Remove the current estimate from the interval before classifying the decision",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12471,7 +12551,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::decision_state(old(self), *old(context)).0",
@@ -12486,7 +12566,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12501,7 +12581,7 @@
       "title": "Route the strict lower code subinterval separately from the greater-or-equal case",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12539,7 +12619,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::decision_state(old(self), *old(context)).0",
@@ -12554,7 +12634,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12569,7 +12649,7 @@
       "title": "Remove the estimate from the high code half on the upper path",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12607,7 +12687,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::decision_state(old(self), *old(context)).0",
@@ -12622,7 +12702,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12637,7 +12717,7 @@
       "title": "Return the old MPS without a probability update when the residual interval is already normalized",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12675,7 +12755,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::decision_state(old(self), *old(context)).0",
@@ -12690,7 +12770,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12705,7 +12785,7 @@
       "title": "Run MPS-path exchange and renormalize only when the upper residual interval needs normalization",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12743,7 +12823,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::decision_state(old(self), *old(context)).0",
@@ -12758,7 +12838,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12773,7 +12853,7 @@
       "title": "Run LPS-path exchange and renormalization for the lower code subinterval",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12811,7 +12891,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::decision_state(old(self), *old(context)).0",
@@ -12826,7 +12906,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12841,7 +12921,7 @@
       "title": "Return the exchange-selected decision after the required state update",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -12881,7 +12961,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "out == arithmetic_spec::decision_state(old(self), *old(context)).0",
@@ -12896,7 +12976,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12911,7 +12991,7 @@
       "title": "Distinguish conditional exchange using the residual interval and the old estimate",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -12942,7 +13022,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_upper_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -12957,7 +13037,7 @@
       "title": "Choose the old MPS and its next-MPS index on the MPS-result branch",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -12988,7 +13068,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_upper_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13003,7 +13083,7 @@
       "title": "Choose the complement of the old MPS on the LPS-result branch",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13034,7 +13114,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_upper_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13049,7 +13129,7 @@
       "title": "Invert the stored MPS only for a switch-enabled LPS update",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13080,7 +13160,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_upper_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13095,7 +13175,7 @@
       "title": "Store the next-LPS index without changing the already selected output decision",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13126,7 +13206,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_upper_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13141,7 +13221,7 @@
       "title": "Distinguish conditional exchange using the residual interval and the old estimate",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_lower_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13172,7 +13252,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_lower_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13187,7 +13267,7 @@
       "title": "Choose the old MPS and its next-MPS index on the MPS-result branch",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_lower_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13218,7 +13298,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_lower_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13233,7 +13313,7 @@
       "title": "Choose the complement of the old MPS on the LPS-result branch",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_lower_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13264,7 +13344,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_lower_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13279,7 +13359,7 @@
       "title": "Invert the stored MPS only for a switch-enabled LPS update",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_lower_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13310,7 +13390,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_lower_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13325,7 +13405,7 @@
       "title": "Store the next-LPS index without changing the already selected output decision",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_lower_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13356,7 +13436,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_lower_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13371,7 +13451,7 @@
       "title": "Replace the interval by the old estimate on both lower-path exchange outcomes",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_lower_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13402,7 +13482,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_lower_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13417,7 +13497,7 @@
       "title": "Refill the code register before a shift when the available-bit counter is empty",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::renormalize_signal"
+        "arithmetic::refill::ArithmeticDecoder::renormalize_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -13457,7 +13537,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "final(self).byte_position == arithmetic_spec::normalized_state(old(self)).2"
@@ -13466,7 +13546,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13481,7 +13561,7 @@
       "title": "Double the interval once per normalization iteration",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::renormalize_signal"
+        "arithmetic::refill::ArithmeticDecoder::renormalize_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -13521,7 +13601,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "final(self).interval == arithmetic_spec::normalized_state(old(self)).1"
@@ -13530,7 +13610,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13545,7 +13625,7 @@
       "title": "Double the code register alongside each interval shift",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::renormalize_signal"
+        "arithmetic::refill::ArithmeticDecoder::renormalize_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -13585,7 +13665,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "final(self).code == arithmetic_spec::normalized_state(old(self)).4"
@@ -13594,7 +13674,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13609,7 +13689,7 @@
       "title": "Consume one available code bit for each normalization shift",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::renormalize_signal"
+        "arithmetic::refill::ArithmeticDecoder::renormalize_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -13649,7 +13729,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "final(self).bit_count == arithmetic_spec::normalized_state(old(self)).5"
@@ -13658,7 +13738,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13673,7 +13753,7 @@
       "title": "Finish normalization when the interval reaches its normalized range",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::renormalize_signal"
+        "arithmetic::refill::ArithmeticDecoder::renormalize_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -13713,7 +13793,7 @@
       ],
       "functional_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "final(self).interval == arithmetic_spec::normalized_state(old(self)).1",
@@ -13723,7 +13803,7 @@
       ],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::renormalize_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::renormalize_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13738,7 +13818,7 @@
       "title": "Distinguish an FF prefix from ordinary compressed input",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid",
@@ -13781,7 +13861,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13796,7 +13876,7 @@
       "title": "Classify the byte after FF using a strict marker threshold",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13830,7 +13910,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13845,7 +13925,7 @@
       "title": "Leave the input pointer on the marker's FF prefix",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13879,7 +13959,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13894,7 +13974,7 @@
       "title": "Feed marker-backed one bits into the aligned low code half",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13928,7 +14008,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13943,7 +14023,7 @@
       "title": "Make eight fill bits available when a real marker is encountered",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -13977,7 +14057,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -13992,7 +14072,7 @@
       "title": "Advance past FF to the stuffed data byte when lookahead is not a marker",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14026,7 +14106,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14041,7 +14121,7 @@
       "title": "Align the stuffed byte so its carry bit reaches the low edge of the high code half",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14075,7 +14155,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14090,7 +14170,7 @@
       "title": "Expose seven usable bits after a stuffed byte",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14124,7 +14204,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14139,7 +14219,7 @@
       "title": "Advance to the next compressed byte on ordinary input",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14173,7 +14253,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14188,7 +14268,7 @@
       "title": "Insert the ordinary byte into the high byte of the low code half",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14222,7 +14302,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14237,7 +14317,7 @@
       "title": "Expose eight usable bits after ordinary input",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::byte_in_signal"
+        "arithmetic::refill::ArithmeticDecoder::byte_in_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14271,7 +14351,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::byte_in_signal",
+          "runtime": "arithmetic::refill::ArithmeticDecoder::byte_in_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14286,7 +14366,7 @@
       "title": "Start at the first byte of the caller's arithmetic stream",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::new"
+        "arithmetic::decoding::ArithmeticDecoder::new"
       ],
       "models": [
         "decoder-valid"
@@ -14320,7 +14400,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::new",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::new",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_valid(&decoder)"
@@ -14335,7 +14415,7 @@
       "title": "Seed the code register from the first compressed byte with the prescribed alignment",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::new"
+        "arithmetic::decoding::ArithmeticDecoder::new"
       ],
       "models": [
         "decoder-valid"
@@ -14369,7 +14449,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::new",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::new",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_valid(&decoder)"
@@ -14384,7 +14464,7 @@
       "title": "Apply the ordinary BYTEIN rules while initializing the code register",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::new"
+        "arithmetic::decoding::ArithmeticDecoder::new"
       ],
       "models": [
         "decoder-valid",
@@ -14427,7 +14507,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::new",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::new",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_valid(&decoder)"
@@ -14442,7 +14522,7 @@
       "title": "Shift the seeded and refilled code register into its decoding alignment",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::new"
+        "arithmetic::decoding::ArithmeticDecoder::new"
       ],
       "models": [
         "decoder-valid"
@@ -14476,7 +14556,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::new",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::new",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_valid(&decoder)"
@@ -14491,7 +14571,7 @@
       "title": "Remove the initialization alignment bits from the available-bit count",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::new"
+        "arithmetic::decoding::ArithmeticDecoder::new"
       ],
       "models": [
         "decoder-valid"
@@ -14525,7 +14605,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::new",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::new",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_valid(&decoder)"
@@ -14540,7 +14620,7 @@
       "title": "Begin decision decoding with the prescribed initial interval",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::new"
+        "arithmetic::decoding::ArithmeticDecoder::new"
       ],
       "models": [
         "decoder-valid"
@@ -14574,7 +14654,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::new",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::new",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_valid(&decoder)"
@@ -14589,9 +14669,9 @@
       "title": "Use the integer estimate representation consistently with the table's probability convention",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14627,7 +14707,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14642,9 +14722,9 @@
       "title": "Update the probability state only on paths requiring renormalization",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14680,7 +14760,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14695,9 +14775,9 @@
       "title": "Select the next-MPS index while retaining the MPS sense on an MPS update",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14733,7 +14813,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14748,9 +14828,9 @@
       "title": "Select the next-LPS index and conditionally invert the MPS sense on an LPS update",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14786,7 +14866,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14801,9 +14881,9 @@
       "title": "Permit the terminal table state to retain a fixed half-probability estimate",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14839,7 +14919,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14854,9 +14934,9 @@
       "title": "Bind probability-state index 0 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14885,7 +14965,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14900,9 +14980,9 @@
       "title": "Bind probability-state index 1 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14931,7 +15011,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14946,9 +15026,9 @@
       "title": "Bind probability-state index 2 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -14977,7 +15057,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -14992,9 +15072,9 @@
       "title": "Bind probability-state index 3 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15023,7 +15103,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15038,9 +15118,9 @@
       "title": "Bind probability-state index 4 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15069,7 +15149,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15084,9 +15164,9 @@
       "title": "Bind probability-state index 5 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15115,7 +15195,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15130,9 +15210,9 @@
       "title": "Bind probability-state index 6 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15161,7 +15241,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15176,9 +15256,9 @@
       "title": "Bind probability-state index 7 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15207,7 +15287,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15222,9 +15302,9 @@
       "title": "Bind probability-state index 8 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15253,7 +15333,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15268,9 +15348,9 @@
       "title": "Bind probability-state index 9 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15299,7 +15379,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15314,9 +15394,9 @@
       "title": "Bind probability-state index 10 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15345,7 +15425,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15360,9 +15440,9 @@
       "title": "Bind probability-state index 11 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15391,7 +15471,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15406,9 +15486,9 @@
       "title": "Bind probability-state index 12 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15437,7 +15517,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15452,9 +15532,9 @@
       "title": "Bind probability-state index 13 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15483,7 +15563,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15498,9 +15578,9 @@
       "title": "Bind probability-state index 14 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15529,7 +15609,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15544,9 +15624,9 @@
       "title": "Bind probability-state index 15 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15575,7 +15655,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15590,9 +15670,9 @@
       "title": "Bind probability-state index 16 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15621,7 +15701,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15636,9 +15716,9 @@
       "title": "Bind probability-state index 17 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15667,7 +15747,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15682,9 +15762,9 @@
       "title": "Bind probability-state index 18 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15713,7 +15793,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15728,9 +15808,9 @@
       "title": "Bind probability-state index 19 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15759,7 +15839,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15774,9 +15854,9 @@
       "title": "Bind probability-state index 20 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15805,7 +15885,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15820,9 +15900,9 @@
       "title": "Bind probability-state index 21 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15851,7 +15931,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15866,9 +15946,9 @@
       "title": "Bind probability-state index 22 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15897,7 +15977,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15912,9 +15992,9 @@
       "title": "Bind probability-state index 23 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15943,7 +16023,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -15958,9 +16038,9 @@
       "title": "Bind probability-state index 24 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -15989,7 +16069,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16004,9 +16084,9 @@
       "title": "Bind probability-state index 25 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16035,7 +16115,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16050,9 +16130,9 @@
       "title": "Bind probability-state index 26 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16081,7 +16161,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16096,9 +16176,9 @@
       "title": "Bind probability-state index 27 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16127,7 +16207,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16142,9 +16222,9 @@
       "title": "Bind probability-state index 28 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16173,7 +16253,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16188,9 +16268,9 @@
       "title": "Bind probability-state index 29 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16219,7 +16299,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16234,9 +16314,9 @@
       "title": "Bind probability-state index 30 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16265,7 +16345,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16280,9 +16360,9 @@
       "title": "Bind probability-state index 31 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16311,7 +16391,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16326,9 +16406,9 @@
       "title": "Bind probability-state index 32 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16357,7 +16437,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16372,9 +16452,9 @@
       "title": "Bind probability-state index 33 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16403,7 +16483,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16418,9 +16498,9 @@
       "title": "Bind probability-state index 34 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16449,7 +16529,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16464,9 +16544,9 @@
       "title": "Bind probability-state index 35 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16495,7 +16575,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16510,9 +16590,9 @@
       "title": "Bind probability-state index 36 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16541,7 +16621,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16556,9 +16636,9 @@
       "title": "Bind probability-state index 37 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16587,7 +16667,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16602,9 +16682,9 @@
       "title": "Bind probability-state index 38 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16633,7 +16713,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16648,9 +16728,9 @@
       "title": "Bind probability-state index 39 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16679,7 +16759,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16694,9 +16774,9 @@
       "title": "Bind probability-state index 40 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16725,7 +16805,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16740,9 +16820,9 @@
       "title": "Bind probability-state index 41 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16771,7 +16851,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16786,9 +16866,9 @@
       "title": "Bind probability-state index 42 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16817,7 +16897,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16832,9 +16912,9 @@
       "title": "Bind probability-state index 43 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16863,7 +16943,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16878,9 +16958,9 @@
       "title": "Bind probability-state index 44 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16909,7 +16989,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16924,9 +17004,9 @@
       "title": "Bind probability-state index 45 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -16955,7 +17035,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"
@@ -16970,9 +17050,9 @@
       "title": "Bind probability-state index 46 to its estimate and all three transition fields",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::ArithmeticDecoder::decode_signal",
-        "arithmetic::ArithmeticDecoder::decode_lower_signal",
-        "arithmetic::ArithmeticDecoder::decode_upper_signal"
+        "arithmetic::decoding::ArithmeticDecoder::decode_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+        "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
         "decoder-state-valid"
@@ -17001,7 +17081,7 @@
       "functional_evidence": [],
       "invariant_evidence": [
         {
-          "runtime": "arithmetic::ArithmeticDecoder::decode_signal",
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_signal",
           "section": "ensures",
           "tokens": [
             "arithmetic_spec::decoder_state_valid(final(self))"

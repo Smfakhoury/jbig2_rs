@@ -5,7 +5,7 @@
     {
       "id": "arithmetic::ArithmeticError::fmt",
       "file": "src/arithmetic.rs",
-      "file_sha256": "39cea23f3e6553e50b0106d5e91185fafc55c34df62ba45f35de33be222f1c92",
+      "file_sha256": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
       "status": "reviewed-verifier-limitation",
       "reason": "The remaining standard Formatter operations used by this Display body are unsupported by the pin. Formatting trait precondition models exist; this is not a claim that every formatting model is absent. No standard formatting behavior or complete diagnostic text is inferred from codec proofs."
     },

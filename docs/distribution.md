@@ -91,9 +91,9 @@ of the runtime minimum. Verus, coverage and fuzz use their separate pins.
 
 Passing distribution checks establishes that the ordinary crate is independent
 of repository proof files and tools. It does not establish full JBIG2
-conformance or close the remaining runtime/proof divergence tracked in
-[verifier-limitations.md](verifier-limitations.md). Those remain separate,
-release-blocking P05 work.
+conformance or remove the reviewed standard-library/callback limitations tracked
+in [verifier-limitations.md](verifier-limitations.md). Exact native-body
+accounting does not remove that separate, release-blocking P05 scope.
 
 The unsafe-code control checks crate-authored source. Compiler-generated
 derives can contain internal unsafe implementations/intrinsics, and the

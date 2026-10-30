@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "7752b9aab6e2308ba718264989f6f6866cfdb8dc",
-  "scope": "Fresh unfiltered verification and compilation of the exact native implementation, including actual retained/reserved-capacity observation, checks and allocated-byte ledgers. Every native declaration is accounted for: 642 directly proved and 20 explicitly reviewed standard/callback limitations. The one separately reviewed unconstrained standard getter is an additional trusted boundary, not a native algorithm assumption, allocator/RSS guarantee or normative/public-release approval.",
+  "source_revision": "e781aff6c5de6cba4924dfde52dc78d4c78dc15a",
+  "scope": "Responsibility-based layout of the sole executable decoder, models, proofs and tests. All662 native signatures, body tokens including string contents, attached contracts and proof markings and all74 constant/macro items are preserved. Fresh whole verification and compilation yields1276/0, with642directly verified and20unchanged reviewed limitations; zero native assumptions, forwarders, divergences or incomplete functions. One separately disclosed unconstrained standard getter remains trusted. The800-line file budget does not weaken contracts or grant normative/public approval.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/integration-fresh-whole-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/file-reduction/fresh-proof-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1276,
     "verified_production_functions": 642,
@@ -24,8 +24,8 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "69b5e1f4c1cb91c0ee4489aced067ed595f714934ded6f3e75db9d0666127c52",
-  "proof_dispositions_sha256": "61cbead97997a54f66d775b96ecc39f32c071dbeff2714a5f03c6cc10a3a99c0",
+  "production_proof_coverage_sha256": "ed637d9aba386882219ac3695bbf3bc4eeb5c6f9b888a19414503b3eb8cf6ccb",
+  "proof_dispositions_sha256": "3173c7216fe2080f85ed15c7b490d2b07f5d81e32545f20311a92faf0487201a",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
     "manifest_sha256": "5f007f853c6caad16d6d318bde996373c6a6f886e8949cd0df62612e5408a92c",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Actual strict Cargo stream: vstd2060, reviewed interface-boundary1, application1276, all zero errors. No dependency report is discarded and no positive count fabricated. The MMR divergence is closed only because its actual native body is now directly verified. The current fourteen-shard proposal retains all49groups329contrasts, max-four concurrency, one solver worker,16mandatory producer receipts and unchanged1050-second/20-minute/30-minute guards. Fresh exact-head hosted acceptance remains separate from these local immutable-source observations.",
+  "current_evidence_note": "Fresh unfiltered compilation of the relocated code and unchanged native-body/data audit. Independent exact-head hosted semantic/mutation/coverage/package acceptance is separate. All266 selected requirements remain provisional; no new conformance credit is claimed.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
