@@ -869,6 +869,62 @@ class TraceabilityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
 
+    def test_packet_binds_local_standard_sources_graph_review_and_controls(self):
+        names = {
+            "verification/stdlib/fixture/lib.rs": "pub fn trusted_fixture() {}\n",
+            "verification/stdlib/fixture/Cargo.toml": "[package]\nname = 'fixture'\n",
+            "verification/stdlib/fixture/Cargo.lock": "version = 4\n",
+            "verification/stdlib/review.json": '{"normative_approval": false}\n',
+            "verification/stdlib/check_controls.py": "print('control')\n",
+            "verification/stdlib/STATUS.txt": "Unreviewed fixture; no approval.\n",
+        }
+        for name, contents in names.items():
+            self.write(name, contents)
+        self.write("verification/stdlib/fixture/target/generated.rs", "generated build output")
+        packet, relative = self.packet_fixture()
+        for name in names:
+            self.assertEqual(
+                packet["source_bindings"][name], hashlib.sha256((self.root / name).read_bytes()).hexdigest(),
+            )
+        self.assertNotIn(
+            "verification/stdlib/fixture/target/generated.rs", packet["source_bindings"],
+        )
+        checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
+        self.assertIs(packet["normative_approval"], False)
+        self.assertIs(packet["document_processing_authorized"], False)
+        for name in names:
+            path = self.root / name
+            original = path.read_bytes()
+            path.write_bytes(original + b"\n")
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
+            path.write_bytes(original)
+
+    def test_packet_rejects_added_or_removed_local_standard_inputs(self):
+        name = "verification/stdlib/fixture/lib.rs"
+        self.write(name, "pub fn trusted_fixture() {}\n")
+        packet, relative = self.packet_fixture()
+        path = self.root / name
+        path.unlink()
+        with self.assertRaises(ValueError):
+            checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
+        self.write(name, "pub fn trusted_fixture() {}\n")
+        self.write("verification/stdlib/fixture/extra.rs", "pub fn added() {}\n")
+        with self.assertRaises(ValueError):
+            checker.check_audit_packet(self.root, self.ledger, packet, packet["packet_sha256"], relative)
+
+    def test_packet_rejects_symlinked_local_standard_source_directories(self):
+        packet, relative = self.packet_fixture()
+        self.write("external/hidden.rs", "hidden source")
+        (self.root / "verification/stdlib").mkdir(parents=True)
+        link = self.root / "verification/stdlib/hidden"
+        try:
+            link.symlink_to(self.root / "external", target_is_directory=True)
+        except OSError as error:
+            self.skipTest(f"symlink unavailable: {error}")
+        with self.assertRaisesRegex(ValueError, "symlinks"):
+            checker.audit_packet(self.root, self.ledger, ["T88-FIXTURE"], relative)
+
     def test_audit_snapshot_cannot_forge_approval_scope_types_or_selected_rows(self):
         packet, relative = self.packet_fixture()
         for key, value in (
