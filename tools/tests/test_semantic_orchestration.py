@@ -86,9 +86,13 @@ SIX_SHARD_MOVES = {
     "segment-data": 4, "page-finish": 4,
     "segment-header": 5, "mmr-span": 5, "halftone-header": 5, "page-state": 5,
 }
+PRE_LITERAL_FIELDS_CHECKS = tuple(
+    (name, script, 19 if name == "arithmetic-codec" else count, strong, weaker)
+    for name, script, count, strong, weaker in runner.CHECKS
+)
 PRE_EXPORT_ORDER_CHECKS = tuple(
     (name, script, 11 if name == "symbol-cardinality" else count, strong, weaker)
-    for name, script, count, strong, weaker in runner.CHECKS
+    for name, script, count, strong, weaker in PRE_LITERAL_FIELDS_CHECKS
 )
 PRE_SINK_CHECKS = tuple(row for row in PRE_EXPORT_ORDER_CHECKS if row[0] != "collector-sink")
 PRE_DEFAULT_CHECKS = tuple(row for row in PRE_SINK_CHECKS if not row[0].startswith("default-"))
@@ -259,7 +263,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 49)
             self.assertEqual(len({row[0] for row in assigned}), 49)
-            self.assertEqual(sum(row[2] for row in assigned), 330)
+            self.assertEqual(sum(row[2] for row in assigned), 336)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             rows = [
                 {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}

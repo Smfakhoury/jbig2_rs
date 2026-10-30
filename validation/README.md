@@ -138,6 +138,17 @@ original bounds, count and resource frame remain. This is not a proof of encoded
 run membership or normative fidelity. The separate assembly helper continues to
 preserve explicit caller selections, including repeated IDs.
 
+Huffman literal fields carry the existing bit-value/error model through the raw
+reader, concrete fixed-width integer and untabled symbol-ID adapters, and the
+two enum-dispatch callers. Successful reads have exact values and consumed
+extents; invalid widths and EOF preserve the cursor and typed diagnostics.
+Independent raw-byte oracles cover 128,000 input cases across all u8 widths and
+valid cursors, concrete/enum parity, codec frames and the next field. Six real
+compiling wrong-value/error/width/dispatch controls distinguish these contracts
+from their original validity-only boundaries. No new encoded family is built;
+table-backed Huffman decoding, prepared symbol-ID tables and independent
+normative field interpretation remain separate.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered

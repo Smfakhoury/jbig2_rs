@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check arithmetic caller result/error projection and context-bank isolation."""
+"""Check entropy-adapter results, exact literal bits and arithmetic bank isolation."""
 
 import argparse
 import json
@@ -9,6 +9,7 @@ import sys
 
 from proof_sensitivity import check_semantic_cases, replace_once
 from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +19,11 @@ BASELINE_GROUPS = (
         "integer_overflow", "probability_signal_error", "unexpected_eof", "validate_probability_states",
     )),
     ("symbol_text", ("ArithmeticCodec::decode_integer", "ArithmeticCodec::decode_symbol_id")),
+    ("symbol_text", (
+        "HuffmanCodec::read_raw_bits", "HuffmanCodec::decode_integer",
+        "HuffmanCodec::decode_symbol_id",
+    )),
+    ("symbol_text", ("SymbolCodec::decode_integer", "SymbolCodec::decode_symbol_id")),
 )
 ERROR_POST = "out == arithmetic_spec::decode_error(self),"
 SLOT_POST = "out == symbol_text_spec::integer_field_slot(self),"
@@ -87,6 +93,32 @@ def case(identity, module, function, site, replacement, control, weaker=""):
         "id": identity, "file": f"src/{module}.rs", "module": module,
         "function": function, "site": site, "replacement": replacement,
         "controls": ((control, weaker),),
+    }
+
+
+def literal_case(identity, function, site, replacement, test):
+    row = runtime_function(ROOT, "symbol_text", function)
+    attributes = [attribute for attribute in row["attributes"] if "verus_spec(" in attribute]
+    if len(attributes) != 1:
+        raise ValueError("literal adapter needs one exact attached contract")
+    if function.startswith("SymbolCodec::"):
+        weaker = """#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+            requires symbol_text_spec::codec_valid(old(self)),
+            ensures match out {
+                Ok(_) => symbol_text_spec::codec_valid(final(self)),
+                Err(_) => true,
+            },
+        ))]"""
+    else:
+        weaker = """#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+            requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
+            ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+        ))]"""
+    return {
+        "id": identity, "file": row["file"], "module": "symbol_text",
+        "function": function, "site": site, "replacement": replacement,
+        "controls": ((attributes[0], weaker),),
+        "native_test": "symbol_text::tests::huffman_fields::" + test,
     }
 
 
@@ -236,6 +268,47 @@ CASES = (
         ),
         OVERFLOW_POST, "ensures true,",
     ),
+    literal_case(
+        "huffman_raw_bits_discard_value", "HuffmanCodec::read_raw_bits",
+        "Ok(self.reader.read_bits(count)?)",
+        "let _discarded = self.reader.read_bits(count)?; Ok(0)",
+        "raw_huffman_bits_preserve_exact_value_cursor_error_frame_and_next_field",
+    ),
+    literal_case(
+        "huffman_raw_bits_reclassify_error", "HuffmanCodec::read_raw_bits",
+        "Ok(self.reader.read_bits(count)?)",
+        """match self.reader.read_bits(count) {
+            Ok(value) => Ok(value),
+            Err(_) => Err(SymbolTextError::Decode(crate::DecodeError::Malformed(
+                MalformedError::IntegerOverflow,
+            ))),
+        }""",
+        "raw_huffman_bits_preserve_exact_value_cursor_error_frame_and_next_field",
+    ),
+    literal_case(
+        "huffman_strip_field_reads_one_bit", "HuffmanCodec::decode_integer",
+        "self.read_raw_bits(self.log_strip_size)?", "self.read_raw_bits(1_u8)?",
+        "fixed_huffman_integer_fields_match_literal_bits_through_both_adapters",
+    ),
+    literal_case(
+        "huffman_literal_id_reads_one_bit", "HuffmanCodec::decode_symbol_id",
+        "self.read_raw_bits(request.code_length)", "self.read_raw_bits(1_u8)",
+        "literal_huffman_symbol_ids_match_all_widths_through_both_adapters",
+    ),
+    literal_case(
+        "huffman_integer_caller_selects_indicator", "SymbolCodec::decode_integer",
+        "Self::Huffman(codec) => codec.decode_integer(field),",
+        "Self::Huffman(codec) => codec.decode_integer(IntegerField::RefinementIndicator),",
+        "fixed_huffman_integer_fields_match_literal_bits_through_both_adapters",
+    ),
+    literal_case(
+        "huffman_id_caller_discards_code_length", "SymbolCodec::decode_symbol_id",
+        "Self::Huffman(codec) => codec.decode_symbol_id(request),",
+        """Self::Huffman(codec) => codec.decode_symbol_id(
+            SymbolIdRequest { code_length: 1, ..request }
+        ),""",
+        "literal_huffman_symbol_ids_match_all_widths_through_both_adapters",
+    ),
 )
 
 
@@ -250,7 +323,7 @@ def main():
             ("src/arithmetic.rs", "src/symbol_text.rs", "src/generic_region.rs",
              "specs/arithmetic.rs", "specs/symbol_text.rs", "specs/generic_region.rs"),
             "jbig2-arithmetic-codec-",
-            "Exact project arithmetic error/value projection, integer field/bank identity, integer/IAID decoder/bank frames and generic raw-context first-failure/signal/EOF/overflow diagnostics; normative call-site identity, entropy/raster and full streams remain separate",
+            "Exact project arithmetic error/value projection, integer field/bank identity, integer/IAID frames and generic raw-context diagnostics, plus Huffman literal raw/fixed integer/untabled ID values, cursor/error projection and enum callers. Table-backed Huffman semantics, normative field selection, entropy/raster and full streams remain separate",
             baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:

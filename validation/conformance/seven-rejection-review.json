@@ -3,9 +3,9 @@
   "status": "blocked_pending_normative_review",
   "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation. No protected standard text, new encoded fixture family, sample-software oracle, new native/Hayro oracle or instrumented entropy experiment was used for this accepted evidence. All seven normative approval flags and the release block remain unchanged.",
   "recorded_at": "2026-10-30T01:46:50.577253+00:00",
-  "source_revision": "12d8ce68f461e1b4639280c8527e54648144b3af",
+  "source_revision": "765bd5203bdcdc2844a982c94564d2e2b708e302",
   "checkout_policy_sha256": "d03e7c2e8df08a9bc503b971dcacf1487847dd473a5d34a21b315e48febea132",
-  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after strict export-index ordering contract:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
+  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after exact Huffman literal-field contracts:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
@@ -126,10 +126,10 @@
     "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
     "src/symbol_text/codebook.rs": "3ad3dd4131dbb7343a3267f32718d4c5278f029c1b90937f45d06363b8defbcc",
     "src/symbol_text/codec/arithmetic.rs": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
-    "src/symbol_text/codec/huffman.rs": "49f4405b6cb5f7b0748b23fd8a1b72ff69a3c2b2ca2967793d49af9221c3a5c2",
+    "src/symbol_text/codec/huffman.rs": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
     "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
     "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
-    "src/symbol_text/codec.rs": "cffb79c1c750de9e84b948d3ad857b53abb4f4e454ac92c43e32ac03dcebaa0d",
+    "src/symbol_text/codec.rs": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
     "src/symbol_text/dictionary/arithmetic.rs": "5d82d904114766a9e486a1b40b7fbd1e9cfac43ab705b0ae87ce2ef8e70ad86a",
     "src/symbol_text/dictionary/exports.rs": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
     "src/symbol_text/dictionary/huffman.rs": "3c3ce88664f1d3109e4c84999e9abc9fe20f69cb6f342c78a9f099e462a11144",
@@ -144,11 +144,12 @@
     "src/symbol_text/tests/codec_and_exports.rs": "3d6a65ecebfdc20876243ed67356e61e296b39d65d4ba44e75ab7781c0bd9fd5",
     "src/symbol_text/tests/dictionary_dispatch.rs": "e7e1f462adae411123ac93888bd87db1573b9b519bbb3c8c8e045b4697854181",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
+    "src/symbol_text/tests/huffman_fields.rs": "0606c1abcdeb019dc0906db95343df0f896378b14cc05f3d4aadac1da0eb0df2",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
     "src/symbol_text/tests/text_termination.rs": "4e4fa55513bfccf9f958440adc27c13c4e393a198f15891981e78d4d03dc1410",
-    "src/symbol_text/tests.rs": "22a8432dd448faf4235183179e4babeda66cb0198367b9904cd8e0d46f4b5979",
+    "src/symbol_text/tests.rs": "45a14818c7b494984b942e271279a0857dcdd64350c5818e25cad821f69597d0",
     "src/symbol_text/text.rs": "9836469e8583c51cd9a3d9e29e4b8e093b92238855eab7c2c381e465f8455d8f",
     "src/symbol_text/validation.rs": "3183d1d504cc9b396095eff62a9215165ab9e5acf82fe53415e9b1e3a5e2fb44",
     "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e"
@@ -195,7 +196,7 @@
     "tools/evidence.py": "1286345e1679a72362fc4cc60f3ef1d6294b19df4edcea7c6d0f74970d117571",
     "tools/verify_provenance.py": "703d1e11f2eaf7a19270173d53d94e7a841ea35f72a417aa9e4d308d6563d9e1",
     "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
-    "validation/conformance/expected-differences.json": "3b9c6d3e464b0a0aca55cf39e3cb735e82b9a3807d4bef3af4190b6de159b2de"
+    "validation/conformance/expected-differences.json": "1b9a23d2ac8d9c23c71159837e1a546ea16c87d21a9b3dc4dbc2a40689dc6f9b"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -1077,8 +1078,8 @@
   },
   "historical_diagnosis_source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "current_normal_decoder_observation": {
-    "source_revision": "12d8ce68f461e1b4639280c8527e54648144b3af",
-    "runtime_sha256": "46cfac95b223d5d782c712f887c385a3f02f3cb66c2f4dd5b962af3e32c8d82d",
+    "source_revision": "765bd5203bdcdc2844a982c94564d2e2b708e302",
+    "runtime_sha256": "3970e64f82ee0dc3c4cd882de3a6de4d599d9e2b38a0c69b28d22135f5560aee",
     "decoder_sha256": "9f3f21c82d990a474829750af3beccad1584e35ab1b48b93718847d2a14b56ae",
     "runner_exit_code": 1,
     "counts": {
