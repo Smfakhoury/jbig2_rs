@@ -19,6 +19,7 @@ current. Every source-bound record speaks only for its recorded revision.
 | `verification/Cargo.toml`, `verification/Cargo.lock` | Isolated pinned proof dependency graph targeting `src/lib.rs`; not runtime dependencies |
 | `tools/`, `tools/tests/`, `tools/requirements.txt` | Audits, collectors, generators and their tests/development dependencies |
 | `fuzz/`, `benchmarks/` | Bounded fuzz targets and generated performance/optional comparison harnesses |
+| `benchmarks/allocation-probe/` | Isolated pinned allocator-requested payload observer; never a runtime dependency or published package input |
 
 The Cargo include list is the distribution authority, checked against a real
 archive. Separate proof, validation, fuzz, tool and benchmark assets are not
@@ -69,6 +70,13 @@ the actual module graph. Their temporary edits are written back to individual
 physical files; the combined inspection text is never compiled as a substitute
 implementation. Ordinary function identities and physical verifier-selection
 scopes are checked separately when an impl lives below its owning type.
+
+Timing/RSS and allocator-requested payload drivers reuse
+[`benchmarks/cases.rs`](../benchmarks/cases.rs) for approved generated inputs,
+typed outcomes and exact bitmap validation. Only the isolated allocator probe
+links the pinned thread-local counter; the decoder's dependency graph and
+ordinary distribution are unchanged. Allocator payloads and process RSS are
+different measurements, not interchangeable memory guarantees.
 
 ## Policy, baselines and source-bound records
 
