@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "ee5c7bd5bbde91e310ff5c3214eaf2354a211720",
-  "scope": "Current normal-decoder re-observation of the same approved10officialstreams after the final text-strip terminator consumption correction;2pass7pending1unsupported, no new standard interpretation or rejection credit. Differential oracle observations remain historical.",
+  "source_revision": "12d8ce68f461e1b4639280c8527e54648144b3af",
+  "scope": "Current normal-decoder re-observation of the same approved10officialstreams after proof-only export-index order strengthening;2pass7pending1unsupported. Native runtime statements, standard interpretation and rejection credit are unchanged. Differential oracle observations remain historical; no private instrumentation is relabeled fresh.",
   "implementation_tests": {
     "total": 511,
     "passed": 497,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "ee5c7bd5bbde91e310ff5c3214eaf2354a211720",
+    "source_revision": "12d8ce68f461e1b4639280c8527e54648144b3af",
     "scope": "Actual complete library/integration tests; two driver tests and one doctest pass separately."
   },
   "normative_vectors": {
@@ -20,7 +20,7 @@
     "unsupported_profile": 1,
     "unresolved_failures": 7,
     "results_sha256": "da94a11bc11f7c3dbe247472bb5971a98ad53997b361316d7e84ed506c28ef1a",
-    "review_sha256": "dc50fc3e0938f4f443036ba817e94e4410c28dcee18c3b57904ab6b4131c733e"
+    "review_sha256": "e614f805eae168b7253742926a1d9716b914d612535c015ced75b7e02717f517"
   },
   "community_regressions": {
     "total": 0,

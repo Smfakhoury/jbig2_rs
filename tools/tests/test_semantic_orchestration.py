@@ -86,7 +86,11 @@ SIX_SHARD_MOVES = {
     "segment-data": 4, "page-finish": 4,
     "segment-header": 5, "mmr-span": 5, "halftone-header": 5, "page-state": 5,
 }
-PRE_SINK_CHECKS = tuple(row for row in runner.CHECKS if row[0] != "collector-sink")
+PRE_EXPORT_ORDER_CHECKS = tuple(
+    (name, script, 11 if name == "symbol-cardinality" else count, strong, weaker)
+    for name, script, count, strong, weaker in runner.CHECKS
+)
+PRE_SINK_CHECKS = tuple(row for row in PRE_EXPORT_ORDER_CHECKS if row[0] != "collector-sink")
 PRE_DEFAULT_CHECKS = tuple(row for row in PRE_SINK_CHECKS if not row[0].startswith("default-"))
 PRE_WRAPPER_CHECKS = tuple(row for row in PRE_DEFAULT_CHECKS if not row[0].startswith("error-wrappers-"))
 PRE_CONVERSION_CHECKS = tuple(row for row in PRE_WRAPPER_CHECKS if row[0] != "error-conversion")
@@ -255,7 +259,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 49)
             self.assertEqual(len({row[0] for row in assigned}), 49)
-            self.assertEqual(sum(row[2] for row in assigned), 329)
+            self.assertEqual(sum(row[2] for row in assigned), 330)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             rows = [
                 {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}
@@ -544,6 +548,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(sum(row[2] for role in roles for row in role), 327)
 
     @patch.multiple(runner, **EIGHT_SHARD_TOPOLOGY)
+    @patch.object(runner, "CHECKS", PRE_EXPORT_ORDER_CHECKS)
     def test_owned_sink_uses_existing_whole_role_without_changing_shards(self):
         actual = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_SINK_CHECKS):

@@ -186,6 +186,9 @@ impl DictionaryClassState {
                 && symbol_text_spec::export_indices_valid(
                     exported@, total_candidates
                 )
+                && (forall|left: int, right: int|
+                    0 <= left < right < exported@.len() ==>
+                        #[trigger] exported@[left] < #[trigger] exported@[right])
                 && symbol_text_spec::bitmap_bytes(final(resources))
                     == symbol_text_spec::bitmap_bytes(old(resources)),
         Err(_) => true,
@@ -227,6 +230,9 @@ pub(in crate::symbol_text) fn decode_export_runs(
             exported@.len() <= capacity,
             forall|offset: int| 0 <= offset < exported@.len()
                 ==> #[trigger] exported@[offset] < index,
+            forall|left: int, right: int|
+                0 <= left < right < exported@.len() ==>
+                    #[trigger] exported@[left] < #[trigger] exported@[right],
         decreases limits.max_work_units - symbol_text_spec::work_units(resources),
     ))]
     while index < total_candidates {
@@ -255,6 +261,9 @@ pub(in crate::symbol_text) fn decode_export_runs(
                     exported@.len() <= capacity,
                     forall|offset: int| 0 <= offset < exported@.len()
                         ==> #[trigger] exported@[offset] < candidate,
+                    forall|left: int, right: int|
+                        0 <= left < right < exported@.len() ==>
+                            #[trigger] exported@[left] < #[trigger] exported@[right],
                 decreases end - candidate,
             ))]
             while candidate < end {

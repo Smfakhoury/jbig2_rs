@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation on the same approved10streams. An existing pinned native black-box diagnostic and private replay of unchanged TT1 dictionary payloads separately anchor the terminator correction; historical oracle results and hypotheses below are not relabeled fresh. No protected standard text, new encoded refinement/aggregation/custom-Huffman family, sample-software oracle or normative exception is introduced. All seven approval flags remain false.",
+  "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation. No protected standard text, new encoded fixture family, sample-software oracle, new native/Hayro oracle or instrumented entropy experiment was used for this accepted evidence. All seven normative approval flags and the release block remain unchanged.",
   "recorded_at": "2026-10-30T01:46:50.577253+00:00",
-  "source_revision": "ee5c7bd5bbde91e310ff5c3214eaf2354a211720",
+  "source_revision": "12d8ce68f461e1b4639280c8527e54648144b3af",
   "checkout_policy_sha256": "d03e7c2e8df08a9bc503b971dcacf1487847dd473a5d34a21b315e48febea132",
-  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after final text-strip terminator consumption:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
+  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after strict export-index ordering contract:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
@@ -131,7 +131,7 @@
     "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
     "src/symbol_text/codec.rs": "cffb79c1c750de9e84b948d3ad857b53abb4f4e454ac92c43e32ac03dcebaa0d",
     "src/symbol_text/dictionary/arithmetic.rs": "5d82d904114766a9e486a1b40b7fbd1e9cfac43ab705b0ae87ce2ef8e70ad86a",
-    "src/symbol_text/dictionary/exports.rs": "e628ec646f7d9089ef4d62399c68d7f2c5656c60bd872555f0f0b3608d50f5b1",
+    "src/symbol_text/dictionary/exports.rs": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
     "src/symbol_text/dictionary/huffman.rs": "3c3ce88664f1d3109e4c84999e9abc9fe20f69cb6f342c78a9f099e462a11144",
     "src/symbol_text/dictionary.rs": "b5d49186bdcfae55eade410897bd2e9e9d63cd19261e0f310d47daee513bdfbc",
     "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
@@ -141,7 +141,7 @@
     "src/symbol_text/resources.rs": "d0058f5f9532361b8c5300cb1454a752fa2a30eecb2531948ab551a49bd05cc1",
     "src/symbol_text/tables.rs": "24c797e6407a5392491e1bb852d8aacafcaa83bb748bf66b52028a88664ae2fb",
     "src/symbol_text/tests/benchmarks.rs": "fd66c5b4223c0359159d1698e1f4770d888a91feb3761f3c5cd2d78c642a8775",
-    "src/symbol_text/tests/codec_and_exports.rs": "2bd307278a2720ca95014e37d7b0b9d5be2b2eaee7a74e7b14921b7886dc94bd",
+    "src/symbol_text/tests/codec_and_exports.rs": "3d6a65ecebfdc20876243ed67356e61e296b39d65d4ba44e75ab7781c0bd9fd5",
     "src/symbol_text/tests/dictionary_dispatch.rs": "e7e1f462adae411123ac93888bd87db1573b9b519bbb3c8c8e045b4697854181",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
@@ -154,7 +154,7 @@
     "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e"
   },
   "ordinary_runtime_source_sha256": "9522006a853643a5022479a2f2ee5e1855df1c883f42eeda02a431a5372b3778",
-  "normal_decoder_sha256": "e2f1a7ae1774a6acca031e91f5dc0cb9b729ed8c8cab89af0f20c99625e22594",
+  "normal_decoder_sha256": "9f3f21c82d990a474829750af3beccad1584e35ab1b48b93718847d2a14b56ae",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -195,7 +195,7 @@
     "tools/evidence.py": "1286345e1679a72362fc4cc60f3ef1d6294b19df4edcea7c6d0f74970d117571",
     "tools/verify_provenance.py": "703d1e11f2eaf7a19270173d53d94e7a841ea35f72a417aa9e4d308d6563d9e1",
     "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
-    "validation/conformance/expected-differences.json": "b6bc07ed6f71c83fd6b9e7f4089ab5d24b143777d35555e3f78d737d17e4646e"
+    "validation/conformance/expected-differences.json": "3b9c6d3e464b0a0aca55cf39e3cb735e82b9a3807d4bef3af4190b6de159b2de"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -1077,9 +1077,9 @@
   },
   "historical_diagnosis_source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "current_normal_decoder_observation": {
-    "source_revision": "ee5c7bd5bbde91e310ff5c3214eaf2354a211720",
-    "runtime_sha256": "7c66860d98271fdd3ed1ca922e36bdc0233ffa9e9aa69196b26d1a0fc2bbec14",
-    "decoder_sha256": "e2f1a7ae1774a6acca031e91f5dc0cb9b729ed8c8cab89af0f20c99625e22594",
+    "source_revision": "12d8ce68f461e1b4639280c8527e54648144b3af",
+    "runtime_sha256": "46cfac95b223d5d782c712f887c385a3f02f3cb66c2f4dd5b962af3e32c8d82d",
+    "decoder_sha256": "9f3f21c82d990a474829750af3beccad1584e35ab1b48b93718847d2a14b56ae",
     "runner_exit_code": 1,
     "counts": {
       "total": 10,

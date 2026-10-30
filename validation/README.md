@@ -128,6 +128,16 @@ standard-Huffman text fixture includes its terminator and separately rejects
 its former unterminated zero-padding form. No encoded refinement/aggregation
 fixture or official conformance exception is introduced.
 
+Successful export-run decoding now formally guarantees strictly increasing,
+duplicate-free candidate indices in addition to the existing count and bounds.
+The raw scripted oracle checks all 2,047 selections over zero through ten
+candidates, including leading zero-run pairs, exact work and an unread sentinel.
+A compiling duplicate-index mutant is rejected by the order guarantee but
+accepted when only the new order postcondition/invariants are removed; the
+original bounds, count and resource frame remain. This is not a proof of encoded
+run membership or normative fidelity. The separate assembly helper continues to
+preserve explicit caller selections, including repeated IDs.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered
