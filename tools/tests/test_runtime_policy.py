@@ -170,7 +170,7 @@ class RuntimeProofPolicyTests(unittest.TestCase):
         other.write_text("verus! { pub assume_specification [other]() -> usize; }\n")
         result = self.run_audit()
         self.assertEqual(result.returncode, 1)
-        self.assertIn("verification/stdlib/other.rs:", result.stderr)
+        self.assertIn(str(other.relative_to(self.root)) + ":", result.stderr)
         other.unlink()
         (self.root / "verification/Cargo.toml").write_text("[dependencies]\n")
         result = self.run_audit()

@@ -45,7 +45,7 @@ class SelectedProofEvidenceTests(unittest.TestCase):
                         self.assertEqual((directory / name).read_bytes(), (root / name).read_bytes())
                     self.assertEqual(environment["JBIG2_SELECTED_CARGO_MANIFEST"],
                                      str(directory / "verification/Cargo.toml"))
-                    self.assertEqual(environment["VERUS_PATH"], "/tools/verus")
+                    self.assertEqual(environment["VERUS_PATH"], str(Path("/tools/verus").resolve()))
                     self.assertEqual(environment["CARGO_NET_OFFLINE"], "true")
                     command, fetched_directory, fetched_environment = run.call_args.args
                     self.assertEqual(command, [
@@ -65,10 +65,10 @@ class SelectedProofEvidenceTests(unittest.TestCase):
             selected_proof(Path("/tools/verus"), directory, environment, False,
                            "document", "finalize_pages")
         command = run.call_args.args[0]
-        self.assertEqual(command[:2], ["/tools/cargo-verus", "focus"])
+        self.assertEqual(command[:2], [str(Path("/tools/verus").resolve().parent / "cargo-verus"), "focus"])
         self.assertEqual(command[command.index("--manifest-path") + 1],
                          environment["JBIG2_SELECTED_CARGO_MANIFEST"])
-        self.assertEqual(command[command.index("--target-dir") + 1], "/isolated/proof-target")
+        self.assertEqual(command[command.index("--target-dir") + 1], str(directory / "proof-target"))
         self.assertEqual(command[command.index("--verify-function") + 1], "finalize_pages")
         self.assertEqual(command[command.index("--verify-only-module") + 1], "document")
         self.assertEqual(command.count("--verify-function"), 1)
@@ -78,7 +78,7 @@ class SelectedProofEvidenceTests(unittest.TestCase):
         self.assertEqual(clean, [
             "cargo", "clean", "--package", "jbig2_rs_verification",
             "--manifest-path", environment["JBIG2_SELECTED_CARGO_MANIFEST"],
-            "--target-dir", "/isolated/proof-target/verus-partial", "--offline", "--locked",
+            "--target-dir", str(directory / "proof-target/verus-partial"), "--offline", "--locked",
         ])
         self.assertEqual(run.call_count, 2)
 
