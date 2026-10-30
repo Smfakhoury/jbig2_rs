@@ -479,13 +479,6 @@ pub(super) fn decode_text_region_body(
             decreases number_of_instances - decoded,
         ))]
         loop {
-            if decoded >= number_of_instances {
-                #[cfg(verus_keep_ghost)]
-                proof! {
-                    assert(decoded > strip_start);
-                }
-                break;
-            }
             let delta_s = if first {
                 None
             } else {
@@ -500,6 +493,9 @@ pub(super) fn decode_text_region_body(
                     }
                 }
             };
+            if decoded >= number_of_instances {
+                return Err(SymbolTextError::InvalidCount("too many text instances"));
+            }
             let within_strip_t = if config.strip_size > 1 {
                 match codec.decode_integer(IntegerField::WithinStripT)? {
                     EntropyInteger::Value(value) => u8::try_from(value).map_err(|_| {

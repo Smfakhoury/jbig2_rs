@@ -821,6 +821,37 @@ MUTATIONS = tuple(
         "test": "symbol_text::tests::dictionary_dispatch::direct_coded_symbol_rejects_an_aggregation_count_before_decoding",
         "whitespace_flexible": True,
     },
+    {
+        "id": "text-count-skips-final-strip-terminator",
+        "file": "src/symbol_text.rs",
+        "before": "let delta_s = if first {\n                None\n            } else {",
+        "after": """if decoded >= number_of_instances { break; }
+            let delta_s = if first {
+                None
+            } else {""",
+        "target": "lib",
+        "test": "symbol_text::tests::text_termination::final_strip_terminator_precedes_following_dictionary_fields",
+        "whitespace_flexible": True,
+    },
+    {
+        "id": "text-count-delays-overfull-strip-rejection",
+        "file": "src/symbol_text.rs",
+        "before": """if decoded >= number_of_instances {
+                return Err(SymbolTextError::InvalidCount("too many text instances"));
+            }""",
+        "after": "let _ignored_declared_text_limit = decoded >= number_of_instances;",
+        "target": "lib",
+        "test": "symbol_text::tests::text_termination::declared_instance_count_does_not_hide_a_missing_or_overfull_strip_end",
+        "whitespace_flexible": True,
+    },
+    {
+        "id": "generated-text-omits-final-strip-terminator",
+        "file": "tests/support/codec_scenarios.rs",
+        "before": "bits.put(1, 2); // Table H OOB terminates the final strip.",
+        "after": "let _omitted_final_strip = self.instances;",
+        "target": "fuzz_codec_families",
+        "test": "tiny_generated_families_have_literal_packed_oracles",
+    },
 )
 
 

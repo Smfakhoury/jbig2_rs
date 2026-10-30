@@ -8,6 +8,7 @@ mod flags_and_tables;
 mod placement_render;
 mod placement_state;
 mod resource_accounting;
+mod text_termination;
 
 use super::bitmap::{bitmap_from_packed_bytes, clone_bitmap};
 use super::codec::{decode_refined_bitmap, expand_symbol_code_lengths};

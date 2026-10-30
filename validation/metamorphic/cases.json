@@ -2,6 +2,15 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-TEXT-STRIP-CONTINUATION",
+      "transformation": "one/two instances, arithmetic/Huffman scripted dispatch, and one/multiple strips followed by an independent dictionary-field sentinel",
+      "invariant": "consume exactly each strip's terminator, preserve the next field, produce exact literal pixels and charge only the existing instance/pixel work",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::text_termination::final_strip_terminator_precedes_following_dictionary_fields"},
+        {"target": "lib", "name": "symbol_text::tests::text_termination::every_strip_consumes_its_own_terminator_without_eating_the_next_field"}
+      ]
+    },
+    {
       "id": "META-RAW-SINGLE-REFINEMENT-COUNT-DISPATCH",
       "transformation": "the existing scripted refinement callback under arithmetic and Huffman dispatch, with only the latter's raw declared-size parameter",
       "invariant": "the required single-instance count reaches the callback, produces the requested blank test bitmap, consumes exactly the supplied raw parameters and preserves the work counter",

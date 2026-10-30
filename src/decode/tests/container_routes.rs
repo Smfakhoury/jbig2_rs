@@ -369,6 +369,7 @@ fn decodes_huffman_symbol_dictionary_and_text_instance() {
     text.extend_from_slice(&1_u32.to_be_bytes());
     text.push(0x01);
     text.extend_from_slice(&[0_u8; 19]);
+    *text.last_mut().expect("Huffman entropy byte") = 0x04; // Final Table H OOB, then zero padding.
 
     let mut page = page_data();
     page[0..4].copy_from_slice(&1_u32.to_be_bytes());
@@ -393,6 +394,7 @@ fn decodes_huffman_symbol_dictionary_and_text_instance() {
         0,
         u32::try_from(text.len()).expect("text payload fits"),
     ));
+    let entropy_tail = bytes.len() + text.len() - 1;
     bytes.extend_from_slice(&text);
     bytes.extend_from_slice(&segment_header(3, 49, 1, 0));
 
@@ -400,6 +402,13 @@ fn decodes_huffman_symbol_dictionary_and_text_instance() {
         .decode(&bytes)
         .expect("Huffman text document decodes");
     assert_eq!(document.pages()[0].bitmap().bytes(), &[0x80]);
+    bytes[entropy_tail] = 0;
+    assert!(matches!(
+        Decoder::default().decode(&bytes),
+        Err(DecodeError::Malformed(MalformedError::InvalidSymbolText(
+            "too many text instances"
+        )))
+    ));
 }
 
 #[test]
