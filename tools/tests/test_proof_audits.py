@@ -73,7 +73,9 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
         source = TOOLS.parent
         review = load_json(source / "validation/conformance/seven-rejection-review.json")
         paths = sorted(
-            {".gitattributes"} | set(review["source_files_sha256"]) | set(review["validation_files_sha256"])
+            {".gitattributes", "verification/stdlib/vec-capacity-interface/Cargo.toml",
+             "verification/stdlib/vec-capacity-interface/lib.rs"}
+            | set(review["source_files_sha256"]) | set(review["validation_files_sha256"])
         )
         process = subprocess.run(
             ["git", "check-attr", "eol", "--", *paths],

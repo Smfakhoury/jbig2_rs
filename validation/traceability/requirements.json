@@ -3598,11 +3598,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::all_white_uses_vertical_zero"
+          "name": "mmr::tests::normative_decode::all_white_uses_vertical_zero"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row"
+          "name": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row"
         }
       ],
       "strength": "functional_contract",
@@ -3658,19 +3658,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::identical_black_rows_update_the_reference_line"
+          "name": "mmr::tests::normative_decode::identical_black_rows_update_the_reference_line"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::identical_islands_use_three_vertical_zero_codes"
+          "name": "mmr::tests::normative_decode::identical_islands_use_three_vertical_zero_codes"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::recorded_span_cache_tracks_scalar_pixels_across_zero_and_colored_runs"
+          "name": "mmr::tests::transition_cache::recorded_span_cache_tracks_scalar_pixels_across_zero_and_colored_runs"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row"
+          "name": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row"
         }
       ],
       "strength": "functional_contract",
@@ -3726,11 +3726,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::monotone_reference_cursor_matches_full_scan_exactly"
+          "name": "mmr::tests::transition_cache::monotone_reference_cursor_matches_full_scan_exactly"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors"
+          "name": "mmr::tests::transition_cache::reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors"
         }
       ],
       "strength": "functional_contract",
@@ -3797,11 +3797,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::pass_skips_reference_island"
+          "name": "mmr::tests::normative_decode::pass_skips_reference_island"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::incremental_transitions_match_scan_for_normative_modes"
+          "name": "mmr::tests::transition_cache::incremental_transitions_match_scan_for_normative_modes"
         }
       ],
       "strength": "functional_contract",
@@ -3854,15 +3854,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::island_shift_left_uses_vertical_left_one"
+          "name": "mmr::tests::normative_decode::island_shift_left_uses_vertical_left_one"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::island_shift_right_uses_vertical_right_one"
+          "name": "mmr::tests::normative_decode::island_shift_right_uses_vertical_right_one"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::identical_islands_use_three_vertical_zero_codes"
+          "name": "mmr::tests::normative_decode::identical_islands_use_three_vertical_zero_codes"
         }
       ],
       "strength": "functional_contract",
@@ -3911,11 +3911,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::every_mode_table_entry_decodes"
+          "name": "mmr::tests::prefix_codes::every_mode_table_entry_decodes"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::every_mode_window_and_alignment_matches_scalar_prefix_lookup"
+          "name": "mmr::tests::prefix_codes::every_mode_window_and_alignment_matches_scalar_prefix_lookup"
         }
       ],
       "strength": "functional_contract",
@@ -3973,23 +3973,23 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::all_black_uses_zero_white_horizontal_run"
+          "name": "mmr::tests::normative_decode::all_black_uses_zero_white_horizontal_run"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::horizontal_white_makeup_run_decodes"
+          "name": "mmr::tests::normative_decode::horizontal_white_makeup_run_decodes"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::horizontal_black_makeup_run_decodes"
+          "name": "mmr::tests::normative_decode::horizontal_black_makeup_run_decodes"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::horizontal_pairs_match_numeric_endpoints_and_previous_inline_procedure"
+          "name": "mmr::tests::horizontal_runs::horizontal_pairs_match_numeric_endpoints_and_previous_inline_procedure"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::horizontal_pair_partial_failures_preserve_previous_error_fields_and_cursor"
+          "name": "mmr::tests::horizontal_runs::horizontal_pair_partial_failures_preserve_previous_error_fields_and_cursor"
         }
       ],
       "strength": "functional_contract",
@@ -4048,11 +4048,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::every_run_table_entry_decodes_for_its_colour"
+          "name": "mmr::tests::prefix_codes::every_run_table_entry_decodes_for_its_colour"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::all_normative_run_codes_are_unique_per_colour"
+          "name": "mmr::tests::prefix_codes::all_normative_run_codes_are_unique_per_colour"
         }
       ],
       "strength": "functional_contract",
@@ -4093,11 +4093,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::every_run_table_entry_decodes_for_its_colour"
+          "name": "mmr::tests::prefix_codes::every_run_table_entry_decodes_for_its_colour"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::all_normative_run_codes_are_unique_per_colour"
+          "name": "mmr::tests::prefix_codes::all_normative_run_codes_are_unique_per_colour"
         }
       ],
       "strength": "functional_contract",
@@ -4138,19 +4138,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::horizontal_white_makeup_run_decodes"
+          "name": "mmr::tests::normative_decode::horizontal_white_makeup_run_decodes"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::horizontal_black_makeup_run_decodes"
+          "name": "mmr::tests::normative_decode::horizontal_black_makeup_run_decodes"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::makeup_terminal_sequences_have_exact_sums_extent_and_overshoot_errors"
+          "name": "mmr::tests::horizontal_runs::makeup_terminal_sequences_have_exact_sums_extent_and_overshoot_errors"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::makeup_without_terminal_reports_exact_physical_eof_after_the_code"
+          "name": "mmr::tests::horizontal_runs::makeup_without_terminal_reports_exact_physical_eof_after_the_code"
         }
       ],
       "strength": "functional_contract",
@@ -4206,15 +4206,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::all_black_uses_zero_white_horizontal_run"
+          "name": "mmr::tests::normative_decode::all_black_uses_zero_white_horizontal_run"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::zero_length_spans_and_same_x_transitions_match_scan"
+          "name": "mmr::tests::transition_cache::zero_length_spans_and_same_x_transitions_match_scan"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::recorded_span_cache_tracks_scalar_pixels_across_zero_and_colored_runs"
+          "name": "mmr::tests::transition_cache::recorded_span_cache_tracks_scalar_pixels_across_zero_and_colored_runs"
         }
       ],
       "strength": "functional_contract",
@@ -4263,15 +4263,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::incremental_transitions_match_scan_for_random_small_bitmaps"
+          "name": "mmr::tests::transition_cache::incremental_transitions_match_scan_for_random_small_bitmaps"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::monotone_reference_cursor_matches_full_scan_exactly"
+          "name": "mmr::tests::transition_cache::monotone_reference_cursor_matches_full_scan_exactly"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row"
+          "name": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row"
         }
       ],
       "strength": "functional_contract",
@@ -4313,11 +4313,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::required_eofb_can_start_off_byte_boundary"
+          "name": "mmr::tests::normative_decode::required_eofb_can_start_off_byte_boundary"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::required_eofb_rejects_omission"
+          "name": "mmr::tests::normative_decode::required_eofb_rejects_omission"
         }
       ],
       "strength": "functional_contract",
@@ -4361,11 +4361,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::prefix_decoder_rejects_nonzero_alignment_padding"
+          "name": "mmr::tests::normative_decode::prefix_decoder_rejects_nonzero_alignment_padding"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::required_eofb_can_start_off_byte_boundary"
+          "name": "mmr::tests::normative_decode::required_eofb_can_start_off_byte_boundary"
         }
       ],
       "strength": "functional_contract",
@@ -4437,11 +4437,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::truncated_horizontal_run_is_rejected"
+          "name": "mmr::tests::normative_decode::truncated_horizontal_run_is_rejected"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::every_run_window_colour_and_alignment_matches_scalar_prefix_lookup"
+          "name": "mmr::tests::prefix_codes::every_run_window_colour_and_alignment_matches_scalar_prefix_lookup"
         }
       ],
       "strength": "state_preservation",
@@ -4484,7 +4484,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::run_overshoot_is_rejected"
+          "name": "mmr::tests::normative_decode::run_overshoot_is_rejected"
         }
       ],
       "strength": "state_preservation",
@@ -4528,11 +4528,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::required_eofb_rejects_omission"
+          "name": "mmr::tests::normative_decode::required_eofb_rejects_omission"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::prefix_decoder_rejects_truncated_eofb"
+          "name": "mmr::tests::normative_decode::prefix_decoder_rejects_truncated_eofb"
         }
       ],
       "strength": "state_preservation",
@@ -4578,7 +4578,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::parses_pattern_header_and_rejects_invalid_flags_and_sizes"
+          "name": "halftone::tests::headers_and_patterns::parses_pattern_header_and_rejects_invalid_flags_and_sizes"
         }
       ],
       "strength": "functional_contract",
@@ -4615,11 +4615,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::pattern_decode_supplies_normative_generic_parameters"
+          "name": "halftone::tests::headers_and_patterns::pattern_decode_supplies_normative_generic_parameters"
         },
         {
           "target": "lib",
-          "name": "halftone::tests::parses_pattern_header_and_rejects_invalid_flags_and_sizes"
+          "name": "halftone::tests::headers_and_patterns::parses_pattern_header_and_rejects_invalid_flags_and_sizes"
         }
       ],
       "strength": "functional_contract",
@@ -4659,7 +4659,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::slices_collective_bitmap_without_row_aliasing"
+          "name": "halftone::tests::headers_and_patterns::slices_collective_bitmap_without_row_aliasing"
         }
       ],
       "strength": "state_preservation",
@@ -4701,11 +4701,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::grid_math_uses_signed_arithmetic_shift"
+          "name": "halftone::tests::headers_and_patterns::grid_math_uses_signed_arithmetic_shift"
         },
         {
           "target": "lib",
-          "name": "halftone::tests::grid_math_extremes_fit_signed_intermediates"
+          "name": "halftone::tests::headers_and_patterns::grid_math_extremes_fit_signed_intermediates"
         }
       ],
       "strength": "functional_contract",
@@ -4752,11 +4752,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::gray_depth_is_exact_at_every_power_of_two"
+          "name": "halftone::tests::headers_and_patterns::gray_depth_is_exact_at_every_power_of_two"
         },
         {
           "target": "lib",
-          "name": "halftone::tests::one_pattern_uses_no_gray_plane"
+          "name": "halftone::tests::headers_and_patterns::one_pattern_uses_no_gray_plane"
         }
       ],
       "strength": "functional_contract",
@@ -4797,15 +4797,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::bytewise_gray_xor_matches_scalar_pixels_randomized"
+          "name": "halftone::tests::geometry_and_render::bytewise_gray_xor_matches_scalar_pixels_randomized"
         },
         {
           "target": "lib",
-          "name": "halftone::tests::reconstructs_gray_planes_most_significant_first"
+          "name": "halftone::tests::headers_and_patterns::reconstructs_gray_planes_most_significant_first"
         },
         {
           "target": "lib",
-          "name": "halftone::tests::fixed_gray_extraction_matches_scalar_oracle"
+          "name": "halftone::tests::geometry_and_render::fixed_gray_extraction_matches_scalar_oracle"
         }
       ],
       "strength": "state_preservation",
@@ -4844,7 +4844,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::skip_mask_obeys_half_open_boundary_rules"
+          "name": "halftone::tests::geometry_and_render::skip_mask_obeys_half_open_boundary_rules"
         }
       ],
       "strength": "functional_contract",
@@ -4883,11 +4883,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::clipped_replace_rendering_and_order_are_deterministic"
+          "name": "halftone::tests::geometry_and_render::clipped_replace_rendering_and_order_are_deterministic"
         },
         {
           "target": "lib",
-          "name": "halftone::tests::clipped_pattern_rendering_exhaustively_matches_scalar_oracle"
+          "name": "halftone::tests::geometry_and_render::clipped_pattern_rendering_exhaustively_matches_scalar_oracle"
         }
       ],
       "strength": "state_preservation",
@@ -4926,7 +4926,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "decode::tests::direct_page_matches_intermediate_compose_oracle"
+          "name": "decode::tests::direct_and_reuse::direct_page_matches_intermediate_compose_oracle"
         },
         {
           "target": "traceability_semantics",
@@ -4973,7 +4973,7 @@
         },
         {
           "target": "lib",
-          "name": "bitmap::tests::composition_clips_and_applies_operators"
+          "name": "bitmap::tests::composition::composition_clips_and_applies_operators"
         }
       ],
       "strength": "state_preservation",
@@ -5012,7 +5012,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "decode::tests::rejects_region_that_modifies_a_sealed_stripe"
+          "name": "decode::tests::container_routes::rejects_region_that_modifies_a_sealed_stripe"
         }
       ],
       "strength": "functional_contract",
@@ -5120,7 +5120,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::validates_symbol_dictionary_flags"
+          "name": "symbol_text::tests::flags_and_tables::validates_symbol_dictionary_flags"
         }
       ],
       "strength": "functional_contract",
@@ -5159,7 +5159,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::refinement_geometry_uses_mathematical_floor"
+          "name": "symbol_text::tests::placement_render::refinement_geometry_uses_mathematical_floor"
         }
       ],
       "strength": "functional_contract",
@@ -5203,7 +5203,7 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::embedded_page_resolves_reusable_globals_explicitly"
+          "name": "document::tests::container_inspection::embedded_page_resolves_reusable_globals_explicitly"
         }
       ],
       "strength": "safety_only",
@@ -5263,7 +5263,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "bitmap::tests::every_combination_operator_matches_boolean_definition"
+          "name": "bitmap::tests::composition::every_combination_operator_matches_boolean_definition"
         }
       ],
       "strength": "functional_contract",
@@ -5448,7 +5448,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::rejects_unused_fixed_length_symbol_ids"
+          "name": "symbol_text::tests::flags_and_tables::rejects_unused_fixed_length_symbol_ids"
         }
       ],
       "strength": "functional_contract",
@@ -5492,7 +5492,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::exported_symbols_match_exact_clone_oracle"
+          "name": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle"
         }
       ],
       "strength": "functional_contract",
@@ -5534,11 +5534,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "decode::tests::embedded_halftone_uses_reusable_global_pattern_dictionary"
+          "name": "decode::tests::container_routes::embedded_halftone_uses_reusable_global_pattern_dictionary"
         },
         {
           "target": "lib",
-          "name": "decode::tests::embedded_text_uses_reusable_global_symbol_dictionary"
+          "name": "decode::tests::container_routes::embedded_text_uses_reusable_global_symbol_dictionary"
         }
       ],
       "strength": "safety_only",
@@ -5623,11 +5623,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
@@ -5692,7 +5692,7 @@
         },
         {
           "target": "lib",
-          "name": "bitmap::tests::filled_layout_and_padding_are_deterministic"
+          "name": "bitmap::tests::layout_and_access::filled_layout_and_padding_are_deterministic"
         },
         {
           "target": "lib",
@@ -5700,11 +5700,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
@@ -5772,11 +5772,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
@@ -5841,11 +5841,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
@@ -5907,11 +5907,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
@@ -5976,11 +5976,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ],
       "strength": "functional_contract",
@@ -6093,7 +6093,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "document::tests::finalizes_unknown_height_from_stripe"
+          "name": "document::tests::container_inspection::finalizes_unknown_height_from_stripe"
         },
         {
           "target": "traceability_semantics",
@@ -6158,7 +6158,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "generic_region::tests::refinement_templates_and_sltp_indices_are_exact"
+          "name": "generic_region::tests::headers_and_prediction::refinement_templates_and_sltp_indices_are_exact"
         }
       ],
       "strength": "functional_contract",
@@ -6199,7 +6199,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "generic_region::tests::refinement_templates_and_sltp_indices_are_exact"
+          "name": "generic_region::tests::headers_and_prediction::refinement_templates_and_sltp_indices_are_exact"
         }
       ],
       "strength": "functional_contract",
@@ -6238,7 +6238,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "generic_region::tests::parses_refinement_headers_and_nominal_adaptive_pixels"
+          "name": "generic_region::tests::headers_and_prediction::parses_refinement_headers_and_nominal_adaptive_pixels"
         }
       ],
       "strength": "safety_only",
@@ -6270,11 +6270,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "generic_region::tests::specialized_refinement_kernels_match_scalar_oracle_randomized"
+          "name": "generic_region::tests::raster_parity::specialized_refinement_kernels_match_scalar_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "generic_region::tests::bounded_refinement_uses_shared_arithmetic_decoder"
+          "name": "generic_region::tests::segment_framing::bounded_refinement_uses_shared_arithmetic_decoder"
         }
       ],
       "strength": "safety_only",
@@ -6305,7 +6305,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::validates_symbol_dictionary_flags"
+          "name": "symbol_text::tests::flags_and_tables::validates_symbol_dictionary_flags"
         }
       ],
       "strength": "functional_contract",
@@ -6344,7 +6344,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::checks_cumulative_dictionary_dimensions_and_counts"
+          "name": "symbol_text::tests::resource_accounting::checks_cumulative_dictionary_dimensions_and_counts"
         }
       ],
       "strength": "state_preservation",
@@ -6384,15 +6384,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::decodes_export_runs_including_zero_length_toggles"
+          "name": "symbol_text::tests::resource_accounting::decodes_export_runs_including_zero_length_toggles"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::export_run_errors_preserve_classification_work_and_unread_input"
+          "name": "symbol_text::tests::codec_and_exports::export_run_errors_preserve_classification_work_and_unread_input"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::export_runs_match_every_small_selection_with_exact_work_and_input_frames"
+          "name": "symbol_text::tests::codec_and_exports::export_runs_match_every_small_selection_with_exact_work_and_input_frames"
         }
       ],
       "strength": "functional_contract",
@@ -6447,19 +6447,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::exported_symbols_match_exact_clone_oracle"
+          "name": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::sparse_new_exports_preserve_scalar_order"
+          "name": "symbol_text::tests::resource_accounting::sparse_new_exports_preserve_scalar_order"
         },
         {
           "target": "lib",
-          "name": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget"
+          "name": "decode::tests::symbol_resources::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget"
         },
         {
           "target": "lib",
-          "name": "decode::tests::first_matching_symbol_group_controls_duplicate_keys_and_collection_count"
+          "name": "decode::tests::symbol_resources::first_matching_symbol_group_controls_duplicate_keys_and_collection_count"
         }
       ],
       "strength": "functional_contract",
@@ -6551,7 +6551,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::validates_text_flags_and_signed_offset"
+          "name": "symbol_text::tests::flags_and_tables::validates_text_flags_and_signed_offset"
         }
       ],
       "strength": "functional_contract",
@@ -6593,11 +6593,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::computes_strip_placement_and_reference_corners"
+          "name": "symbol_text::tests::placement_render::computes_strip_placement_and_reference_corners"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::current_text_placement_matches_wide_coordinates_and_partial_failure_state"
+          "name": "symbol_text::tests::placement_state::current_text_placement_matches_wide_coordinates_and_partial_failure_state"
         }
       ],
       "strength": "functional_contract",
@@ -6635,7 +6635,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::rejects_unused_fixed_length_symbol_ids"
+          "name": "symbol_text::tests::flags_and_tables::rejects_unused_fixed_length_symbol_ids"
         }
       ],
       "strength": "functional_contract",
@@ -6675,11 +6675,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "symbol_text::tests::clipped_symbol_placement_matches_scalar_oracle"
+          "name": "symbol_text::tests::placement_render::clipped_symbol_placement_matches_scalar_oracle"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::randomized_placement_batches_match_scalar_oracle"
+          "name": "symbol_text::tests::placement_render::randomized_placement_batches_match_scalar_oracle"
         }
       ],
       "strength": "state_preservation",
@@ -6738,15 +6738,15 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+          "name": "document::tests::payload_windows::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+          "name": "document::tests::payload_windows::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+          "name": "document::tests::payload_windows::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         },
         {
           "target": "lib",
@@ -6754,11 +6754,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         },
         {
           "target": "lib",
@@ -6838,15 +6838,15 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+          "name": "document::tests::payload_windows::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+          "name": "document::tests::payload_windows::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+          "name": "document::tests::payload_windows::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         }
       ],
       "strength": "functional_contract",
@@ -6916,11 +6916,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+          "name": "document::tests::payload_windows::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+          "name": "document::tests::payload_windows::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
         },
         {
           "target": "lib",
@@ -6932,11 +6932,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         },
         {
           "target": "lib",
@@ -7013,11 +7013,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+          "name": "document::tests::payload_windows::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+          "name": "document::tests::payload_windows::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
         },
         {
           "target": "lib",
@@ -7086,11 +7086,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+          "name": "document::tests::payload_windows::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+          "name": "document::tests::payload_windows::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
         },
         {
           "target": "lib",
@@ -7161,15 +7161,15 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+          "name": "document::tests::payload_windows::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+          "name": "document::tests::payload_windows::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+          "name": "document::tests::payload_windows::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         },
         {
           "target": "lib",
@@ -7177,11 +7177,11 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         },
         {
           "target": "lib",
@@ -7437,23 +7437,23 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+          "name": "document::tests::payload_windows::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+          "name": "document::tests::payload_windows::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+          "name": "document::tests::payload_windows::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+          "name": "document::tests::payload_windows::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+          "name": "document::tests::payload_windows::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
         },
         {
           "target": "lib",
@@ -7561,23 +7561,23 @@
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
+          "name": "document::tests::payload_windows::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
+          "name": "document::tests::payload_windows::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
+          "name": "document::tests::payload_windows::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+          "name": "document::tests::payload_windows::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+          "name": "document::tests::payload_windows::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
         },
         {
           "target": "lib",
@@ -7656,7 +7656,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::parses_oob_custom_table"
+          "name": "huffman::tests::table_validation::parses_oob_custom_table"
         }
       ],
       "strength": "functional_contract",
@@ -7693,7 +7693,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::parses_oob_custom_table"
+          "name": "huffman::tests::table_validation::parses_oob_custom_table"
         }
       ],
       "strength": "functional_contract",
@@ -7730,11 +7730,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::parses_oob_custom_table"
+          "name": "huffman::tests::table_validation::parses_oob_custom_table"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::rejects_invalid_bounds_partition_and_range_length"
+          "name": "huffman::tests::table_validation::rejects_invalid_bounds_partition_and_range_length"
         }
       ],
       "strength": "functional_contract",
@@ -7771,7 +7771,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::rejects_reserved_flags_and_nonzero_padding"
+          "name": "huffman::tests::table_validation::rejects_reserved_flags_and_nonzero_padding"
         }
       ],
       "strength": "safety_only",
@@ -7800,11 +7800,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::parses_annex_b_example_table"
+          "name": "huffman::tests::table_validation::parses_annex_b_example_table"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::rejects_invalid_bounds_partition_and_range_length"
+          "name": "huffman::tests::table_validation::rejects_invalid_bounds_partition_and_range_length"
         }
       ],
       "strength": "safety_only",
@@ -7833,11 +7833,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::parses_annex_b_example_table"
+          "name": "huffman::tests::table_validation::parses_annex_b_example_table"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::rejects_invalid_bounds_partition_and_range_length"
+          "name": "huffman::tests::table_validation::rejects_invalid_bounds_partition_and_range_length"
         }
       ],
       "strength": "safety_only",
@@ -7866,11 +7866,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::parses_oob_custom_table"
+          "name": "huffman::tests::table_validation::parses_oob_custom_table"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::parses_annex_b_example_table"
+          "name": "huffman::tests::table_validation::parses_annex_b_example_table"
         }
       ],
       "strength": "safety_only",
@@ -7907,31 +7907,31 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::canonical_assignment_follows_table_order"
+          "name": "huffman::tests::table_validation::canonical_assignment_follows_table_order"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::supports_prefixes_longer_than_machine_words"
+          "name": "huffman::tests::wide_arithmetic::supports_prefixes_longer_than_machine_words"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::rejects_oversubscribed_and_structurally_invalid_tables"
+          "name": "huffman::tests::table_validation::rejects_oversubscribed_and_structurally_invalid_tables"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::wide_code_fit_matches_independent_significant_bit_counts"
+          "name": "huffman::tests::wide_arithmetic::wide_code_fit_matches_independent_significant_bit_counts"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::canonical_width_boundaries_reject_oversubscription_and_preserve_valid_codes"
+          "name": "huffman::tests::wide_arithmetic::canonical_width_boundaries_reject_oversubscription_and_preserve_valid_codes"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::raw_canonical_assignment_matches_numeric_histogram_and_stable_order"
+          "name": "huffman::tests::table_validation::raw_canonical_assignment_matches_numeric_histogram_and_stable_order"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::wide_zero_constructor_matches_default_and_array_initialization"
+          "name": "huffman::tests::table_validation::wide_zero_constructor_matches_default_and_array_initialization"
         }
       ],
       "strength": "functional_contract",
@@ -7987,11 +7987,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::standard_prefixes_match_every_annex_b_table"
+          "name": "huffman::tests::canonical_decoding::standard_prefixes_match_every_annex_b_table"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::every_line_of_every_standard_table_decodes"
+          "name": "huffman::tests::canonical_decoding::every_line_of_every_standard_table_decodes"
         }
       ],
       "strength": "safety_only",
@@ -8022,15 +8022,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::prefix_lookup_matches_canonical_for_all_standard_prefixes"
+          "name": "huffman::tests::canonical_decoding::prefix_lookup_matches_canonical_for_all_standard_prefixes"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::randomized_custom_prefix_lookup_matches_canonical"
+          "name": "huffman::tests::canonical_decoding::randomized_custom_prefix_lookup_matches_canonical"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::invalid_prefix_and_eof_are_oob_safe"
+          "name": "huffman::tests::table_validation::invalid_prefix_and_eof_are_oob_safe"
         }
       ],
       "strength": "state_preservation",
@@ -8070,7 +8070,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::every_line_of_every_standard_table_decodes"
+          "name": "huffman::tests::canonical_decoding::every_line_of_every_standard_table_decodes"
         }
       ],
       "strength": "functional_contract",
@@ -8112,11 +8112,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::every_line_of_every_standard_table_decodes"
+          "name": "huffman::tests::canonical_decoding::every_line_of_every_standard_table_decodes"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::open_ranges_reject_values_outside_i32"
+          "name": "huffman::tests::table_validation::open_ranges_reject_values_outside_i32"
         }
       ],
       "strength": "functional_contract",
@@ -8155,11 +8155,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "huffman::tests::annex_b_table_b_oob_and_fixed_values"
+          "name": "huffman::tests::canonical_decoding::annex_b_table_b_oob_and_fixed_values"
         },
         {
           "target": "lib",
-          "name": "huffman::tests::parses_oob_custom_table"
+          "name": "huffman::tests::table_validation::parses_oob_custom_table"
         }
       ],
       "strength": "functional_contract",
@@ -8210,31 +8210,31 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::all_white_uses_vertical_zero"
+          "name": "mmr::tests::normative_decode::all_white_uses_vertical_zero"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::all_black_uses_zero_white_horizontal_run"
+          "name": "mmr::tests::normative_decode::all_black_uses_zero_white_horizontal_run"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::optimized_span_dispatch_matches_scalar_pixels_and_full_storage"
+          "name": "mmr::tests::transition_cache::optimized_span_dispatch_matches_scalar_pixels_and_full_storage"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::recorded_span_matches_scalar_storage_and_exact_transition_updates"
+          "name": "mmr::tests::transition_cache::recorded_span_matches_scalar_storage_and_exact_transition_updates"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::transition_span_complete_output_matrix_preserves_empty_and_same_colour_frames"
+          "name": "mmr::tests::transition_cache::transition_span_complete_output_matrix_preserves_empty_and_same_colour_frames"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::recorded_span_cache_tracks_scalar_pixels_across_zero_and_colored_runs"
+          "name": "mmr::tests::transition_cache::recorded_span_cache_tracks_scalar_pixels_across_zero_and_colored_runs"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row"
+          "name": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row"
         }
       ],
       "strength": "functional_contract",
@@ -8304,11 +8304,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::prefix_decoder_consumes_two_concatenated_eofb_planes"
+          "name": "mmr::tests::normative_decode::prefix_decoder_consumes_two_concatenated_eofb_planes"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::prefix_decoder_rejects_nonzero_alignment_padding"
+          "name": "mmr::tests::normative_decode::prefix_decoder_rejects_nonzero_alignment_padding"
         }
       ],
       "strength": "functional_contract",
@@ -8351,15 +8351,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::required_eofb_can_start_off_byte_boundary"
+          "name": "mmr::tests::normative_decode::required_eofb_can_start_off_byte_boundary"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::required_eofb_rejects_omission"
+          "name": "mmr::tests::normative_decode::required_eofb_rejects_omission"
         },
         {
           "target": "lib",
-          "name": "mmr::tests::prefix_decoder_rejects_truncated_eofb"
+          "name": "mmr::tests::normative_decode::prefix_decoder_rejects_truncated_eofb"
         }
       ],
       "strength": "functional_contract",
@@ -8399,7 +8399,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "mmr::tests::optional_eofb_accepts_bounded_remainder"
+          "name": "mmr::tests::normative_decode::optional_eofb_accepts_bounded_remainder"
         }
       ],
       "strength": "functional_contract",
@@ -9164,7 +9164,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "document::tests::rejects_page_count_mismatch"
+          "name": "document::tests::container_inspection::rejects_page_count_mismatch"
         },
         {
           "target": "spec_header",
@@ -9321,7 +9321,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "generic_region::tests::generic_template_geometry_and_sltp_indices_are_exact"
+          "name": "generic_region::tests::headers_and_prediction::generic_template_geometry_and_sltp_indices_are_exact"
         }
       ],
       "strength": "functional_contract",
@@ -9362,7 +9362,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "generic_region::tests::generic_template_geometry_and_sltp_indices_are_exact"
+          "name": "generic_region::tests::headers_and_prediction::generic_template_geometry_and_sltp_indices_are_exact"
         }
       ],
       "strength": "functional_contract",
@@ -9401,7 +9401,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::contexts_reset_and_restore_safely"
+          "name": "arithmetic::tests::context_state::contexts_reset_and_restore_safely"
         }
       ],
       "strength": "functional_contract",
@@ -9439,15 +9439,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::contexts_reset_and_restore_safely"
+          "name": "arithmetic::tests::context_state::contexts_reset_and_restore_safely"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::batch_reset_zeros_all_stored_byte_pairs_and_is_idempotent"
+          "name": "arithmetic::tests::context_state::batch_reset_zeros_all_stored_byte_pairs_and_is_idempotent"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::batch_reset_only_changes_the_selected_slice"
+          "name": "arithmetic::tests::context_state::batch_reset_only_changes_the_selected_slice"
         }
       ],
       "strength": "functional_contract",
@@ -9495,15 +9495,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::successful_decisions_and_contexts_cover_every_probability_row_and_route"
+          "name": "arithmetic::tests::decoder_registers::successful_decisions_and_contexts_cover_every_probability_row_and_route"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::exchange_context_update_precedes_truncation_and_keeps_supplied_mps_distinct"
+          "name": "arithmetic::tests::decoder_registers::exchange_context_update_precedes_truncation_and_keeps_supplied_mps_distinct"
         }
       ],
       "strength": "state_preservation",
@@ -9553,31 +9553,31 @@
       "tests": [
         {
           "target": "lib",
-          "name": "generic_region::tests::tpgd_toggles_and_copies_without_pixel_decisions"
+          "name": "generic_region::tests::headers_and_prediction::tpgd_toggles_and_copies_without_pixel_decisions"
         },
         {
           "target": "lib",
-          "name": "generic_region::tests::first_typical_generic_row_is_zero"
+          "name": "generic_region::tests::headers_and_prediction::first_typical_generic_row_is_zero"
         },
         {
           "target": "lib",
-          "name": "generic_region::tests::typical_row_copy_preserves_source_and_other_rows"
+          "name": "generic_region::tests::headers_and_prediction::typical_row_copy_preserves_source_and_other_rows"
         },
         {
           "target": "lib",
-          "name": "bitmap::tests::row_copy_rejects_invalid_indices_and_storage_without_mutation"
+          "name": "bitmap::tests::layout_and_access::row_copy_rejects_invalid_indices_and_storage_without_mutation"
         },
         {
           "target": "lib",
-          "name": "bitmap::tests::chunk_span_fill_and_row_copy_match_scalar_oracles"
+          "name": "bitmap::tests::layout_and_access::chunk_span_fill_and_row_copy_match_scalar_oracles"
         },
         {
           "target": "lib",
-          "name": "bitmap::tests::row_copy_bytes_and_chunk_access_have_exact_boundaries"
+          "name": "bitmap::tests::layout_and_access::row_copy_bytes_and_chunk_access_have_exact_boundaries"
         },
         {
           "target": "lib",
-          "name": "bitmap::tests::blank_storage_is_zero_for_empty_and_partial_rows"
+          "name": "bitmap::tests::layout_and_access::blank_storage_is_zero_for_empty_and_partial_rows"
         }
       ],
       "strength": "functional_contract",
@@ -9662,15 +9662,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::arithmetic_integer_caller_matches_direct_procedure_and_preserves_other_banks"
+          "name": "symbol_text::tests::codec_and_exports::arithmetic_integer_caller_matches_direct_procedure_and_preserves_other_banks"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
+          "name": "symbol_text::tests::codec_and_exports::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
         }
       ],
       "strength": "state_preservation",
@@ -9717,19 +9717,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+          "name": "arithmetic::tests::integer_procedures::integer_context_history_uses_annex_a_indices"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -9789,15 +9789,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+          "name": "arithmetic::tests::integer_procedures::integer_context_history_uses_annex_a_indices"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
+          "name": "arithmetic::tests::integer_procedures::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
         }
       ],
       "strength": "functional_contract",
@@ -9857,15 +9857,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+          "name": "arithmetic::tests::integer_procedures::integer_context_history_uses_annex_a_indices"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
+          "name": "arithmetic::tests::integer_procedures::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
         }
       ],
       "strength": "functional_contract",
@@ -9925,15 +9925,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+          "name": "arithmetic::tests::integer_procedures::integer_context_history_uses_annex_a_indices"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
+          "name": "arithmetic::tests::integer_procedures::integer_bit_history_and_context_frames_match_every_history_and_probability_row"
         }
       ],
       "strength": "functional_contract",
@@ -9991,11 +9991,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_context_history_uses_annex_a_indices"
+          "name": "arithmetic::tests::integer_procedures::integer_context_history_uses_annex_a_indices"
         }
       ],
       "strength": "state_preservation",
@@ -10041,19 +10041,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10112,19 +10112,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10184,19 +10184,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10256,19 +10256,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10328,19 +10328,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10400,19 +10400,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10472,19 +10472,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10543,19 +10543,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10615,19 +10615,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10685,19 +10685,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10755,19 +10755,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
+          "name": "arithmetic::tests::integer_procedures::integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations"
         }
       ],
       "strength": "functional_contract",
@@ -10824,11 +10824,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -10875,11 +10875,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -10926,11 +10926,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -10977,11 +10977,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11028,11 +11028,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11079,11 +11079,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11130,11 +11130,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11181,11 +11181,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11232,11 +11232,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11283,11 +11283,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11334,11 +11334,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11385,11 +11385,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11436,11 +11436,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11487,11 +11487,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::integer_tree_decodes_positive_negative_oob_and_wide_tail"
+          "name": "arithmetic::tests::integer_procedures::integer_tree_decodes_positive_negative_oob_and_wide_tail"
         }
       ],
       "strength": "state_preservation",
@@ -11546,23 +11546,23 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_preflight_errors_preserve_every_field_without_decoding"
+          "name": "arithmetic::tests::integer_procedures::iaid_preflight_errors_preserve_every_field_without_decoding"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::arithmetic_integer_caller_matches_direct_procedure_and_preserves_other_banks"
+          "name": "symbol_text::tests::codec_and_exports::arithmetic_integer_caller_matches_direct_procedure_and_preserves_other_banks"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
+          "name": "symbol_text::tests::codec_and_exports::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
         }
       ],
       "strength": "state_preservation",
@@ -11611,15 +11611,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
       "strength": "functional_contract",
@@ -11679,15 +11679,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
       "strength": "functional_contract",
@@ -11747,15 +11747,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
       "strength": "functional_contract",
@@ -11815,15 +11815,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
       "strength": "functional_contract",
@@ -11883,15 +11883,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
       "strength": "functional_contract",
@@ -11951,15 +11951,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+          "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
         }
       ],
       "strength": "functional_contract",
@@ -12026,23 +12026,23 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::concrete_integer_and_iaid_match_callback_reference_procedures"
+          "name": "arithmetic::tests::integer_procedures::concrete_integer_and_iaid_match_callback_reference_procedures"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_decodes_value_and_validates_context_storage"
+          "name": "arithmetic::tests::integer_procedures::iaid_decodes_value_and_validates_context_storage"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::iaid_preflight_errors_preserve_every_field_without_decoding"
+          "name": "arithmetic::tests::integer_procedures::iaid_preflight_errors_preserve_every_field_without_decoding"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::arithmetic_integer_caller_matches_direct_procedure_and_preserves_other_banks"
+          "name": "symbol_text::tests::codec_and_exports::arithmetic_integer_caller_matches_direct_procedure_and_preserves_other_banks"
         },
         {
           "target": "lib",
-          "name": "symbol_text::tests::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
+          "name": "symbol_text::tests::codec_and_exports::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
         }
       ],
       "strength": "state_preservation",
@@ -12085,11 +12085,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -12130,11 +12130,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -12185,23 +12185,23 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "generic_region::tests::probability_state_validation_matches_all_raw_fields_and_first_error"
+          "name": "generic_region::tests::diagnostics::probability_state_validation_matches_all_raw_fields_and_first_error"
         },
         {
           "target": "lib",
-          "name": "generic_region::tests::probability_failure_projection_preserves_context_and_decoder_errors"
+          "name": "generic_region::tests::diagnostics::probability_failure_projection_preserves_context_and_decoder_errors"
         },
         {
           "target": "lib",
-          "name": "generic_region::tests::generic_error_trait_projection_and_eof_factory_preserve_fields"
+          "name": "generic_region::tests::diagnostics::generic_error_trait_projection_and_eof_factory_preserve_fields"
         }
       ],
       "strength": "state_preservation",
@@ -12241,11 +12241,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -12288,19 +12288,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+          "name": "arithmetic::tests::decoder_registers::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
+          "name": "arithmetic::tests::decoder_registers::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
       "strength": "functional_contract",
@@ -12349,11 +12349,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -12395,11 +12395,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -12446,15 +12446,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
+          "name": "arithmetic::tests::decoder_registers::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
         }
       ],
       "strength": "functional_contract",
@@ -12514,15 +12514,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
+          "name": "arithmetic::tests::decoder_registers::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
         }
       ],
       "strength": "functional_contract",
@@ -12582,15 +12582,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
+          "name": "arithmetic::tests::decoder_registers::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
         }
       ],
       "strength": "functional_contract",
@@ -12650,15 +12650,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
+          "name": "arithmetic::tests::decoder_registers::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
         }
       ],
       "strength": "functional_contract",
@@ -12718,15 +12718,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
+          "name": "arithmetic::tests::decoder_registers::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
         }
       ],
       "strength": "functional_contract",
@@ -12786,15 +12786,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
+          "name": "arithmetic::tests::decoder_registers::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
         }
       ],
       "strength": "functional_contract",
@@ -12856,15 +12856,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
+          "name": "arithmetic::tests::decoder_registers::complete_decision_registers_match_wide_numeric_oracle_on_success_and_partial_errors"
         }
       ],
       "strength": "functional_contract",
@@ -12920,11 +12920,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -12966,11 +12966,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13012,11 +13012,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13058,11 +13058,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13104,11 +13104,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13150,11 +13150,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13196,11 +13196,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13242,11 +13242,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13288,11 +13288,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13334,11 +13334,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13380,11 +13380,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -13428,19 +13428,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::renormalization_shifts_until_interval_is_normalized"
+          "name": "arithmetic::tests::decoder_registers::renormalization_shifts_until_interval_is_normalized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+          "name": "arithmetic::tests::decoder_registers::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
+          "name": "arithmetic::tests::decoder_registers::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
       "strength": "functional_contract",
@@ -13492,19 +13492,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::renormalization_shifts_until_interval_is_normalized"
+          "name": "arithmetic::tests::decoder_registers::renormalization_shifts_until_interval_is_normalized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+          "name": "arithmetic::tests::decoder_registers::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
+          "name": "arithmetic::tests::decoder_registers::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
       "strength": "functional_contract",
@@ -13556,19 +13556,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::renormalization_shifts_until_interval_is_normalized"
+          "name": "arithmetic::tests::decoder_registers::renormalization_shifts_until_interval_is_normalized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+          "name": "arithmetic::tests::decoder_registers::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
+          "name": "arithmetic::tests::decoder_registers::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
       "strength": "functional_contract",
@@ -13620,19 +13620,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::renormalization_shifts_until_interval_is_normalized"
+          "name": "arithmetic::tests::decoder_registers::renormalization_shifts_until_interval_is_normalized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+          "name": "arithmetic::tests::decoder_registers::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
+          "name": "arithmetic::tests::decoder_registers::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
       "strength": "functional_contract",
@@ -13684,19 +13684,19 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::renormalization_shifts_until_interval_is_normalized"
+          "name": "arithmetic::tests::decoder_registers::renormalization_shifts_until_interval_is_normalized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
+          "name": "arithmetic::tests::decoder_registers::normalization_no_refill_matches_closed_form_and_exact_shift_boundaries"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
+          "name": "arithmetic::tests::decoder_registers::normalization_byte_pairs_and_partial_errors_match_wide_numeric_oracle"
         }
       ],
       "strength": "functional_contract",
@@ -13748,23 +13748,23 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::refill_byte_pairs_match_numeric_code_consumption_and_counter_boundaries"
+          "name": "arithmetic::tests::decoder_registers::refill_byte_pairs_match_numeric_code_consumption_and_counter_boundaries"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::refill_eof_and_existing_markers_preserve_exact_error_order_and_frames"
+          "name": "arithmetic::tests::decoder_registers::refill_eof_and_existing_markers_preserve_exact_error_order_and_frames"
         }
       ],
       "strength": "state_preservation",
@@ -13805,15 +13805,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -13854,15 +13854,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -13903,15 +13903,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -13952,15 +13952,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -14001,15 +14001,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -14050,15 +14050,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -14099,15 +14099,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -14148,15 +14148,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -14197,15 +14197,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -14246,15 +14246,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_fill_requires_a_real_marker"
+          "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         }
       ],
       "strength": "state_preservation",
@@ -14295,15 +14295,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::first_annex_h_decisions_follow_mps_state_transitions"
+          "name": "arithmetic::tests::decoder_registers::first_annex_h_decisions_follow_mps_state_transitions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"
+          "name": "arithmetic::tests::decoder_registers::initialization_and_byte_in_reject_truncation"
         }
       ],
       "strength": "state_preservation",
@@ -14344,15 +14344,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::first_annex_h_decisions_follow_mps_state_transitions"
+          "name": "arithmetic::tests::decoder_registers::first_annex_h_decisions_follow_mps_state_transitions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"
+          "name": "arithmetic::tests::decoder_registers::initialization_and_byte_in_reject_truncation"
         }
       ],
       "strength": "state_preservation",
@@ -14394,23 +14394,23 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::first_annex_h_decisions_follow_mps_state_transitions"
+          "name": "arithmetic::tests::decoder_registers::first_annex_h_decisions_follow_mps_state_transitions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"
+          "name": "arithmetic::tests::decoder_registers::initialization_and_byte_in_reject_truncation"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_accepts_every_byte_pair_and_preserves_suffixes"
+          "name": "arithmetic::tests::decoder_registers::initialization_accepts_every_byte_pair_and_preserves_suffixes"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_short_input_errors_preserve_exact_offsets"
+          "name": "arithmetic::tests::decoder_registers::initialization_short_input_errors_preserve_exact_offsets"
         }
       ],
       "strength": "state_preservation",
@@ -14451,15 +14451,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::first_annex_h_decisions_follow_mps_state_transitions"
+          "name": "arithmetic::tests::decoder_registers::first_annex_h_decisions_follow_mps_state_transitions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"
+          "name": "arithmetic::tests::decoder_registers::initialization_and_byte_in_reject_truncation"
         }
       ],
       "strength": "state_preservation",
@@ -14500,15 +14500,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::first_annex_h_decisions_follow_mps_state_transitions"
+          "name": "arithmetic::tests::decoder_registers::first_annex_h_decisions_follow_mps_state_transitions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"
+          "name": "arithmetic::tests::decoder_registers::initialization_and_byte_in_reject_truncation"
         }
       ],
       "strength": "state_preservation",
@@ -14549,15 +14549,15 @@
       "tests": [
         {
           "target": "lib",
-          "name": "arithmetic::tests::first_annex_h_decisions_follow_mps_state_transitions"
+          "name": "arithmetic::tests::decoder_registers::first_annex_h_decisions_follow_mps_state_transitions"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::marker_is_strictly_greater_than_8f_and_is_not_consumed"
+          "name": "arithmetic::tests::decoder_registers::marker_is_strictly_greater_than_8f_and_is_not_consumed"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"
+          "name": "arithmetic::tests::decoder_registers::initialization_and_byte_in_reject_truncation"
         }
       ],
       "strength": "state_preservation",
@@ -14606,11 +14606,11 @@
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -14659,11 +14659,11 @@
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -14712,11 +14712,11 @@
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -14765,11 +14765,11 @@
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -14818,11 +14818,11 @@
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::unchecked_hot_decoder_matches_checked_oracle_randomized"
+          "name": "arithmetic::tests::integer_procedures::unchecked_hot_decoder_matches_checked_oracle_randomized"
         },
         {
           "target": "lib",
-          "name": "arithmetic::tests::annex_h_decodes_all_256_decisions"
+          "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
       "strength": "state_preservation",
@@ -17027,7 +17027,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17071,7 +17071,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17115,7 +17115,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17159,7 +17159,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17203,7 +17203,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17247,7 +17247,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17291,7 +17291,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17335,7 +17335,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17379,7 +17379,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17423,7 +17423,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17467,7 +17467,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17511,7 +17511,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17555,7 +17555,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17599,7 +17599,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17643,7 +17643,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17687,7 +17687,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",
@@ -17731,7 +17731,7 @@
       "tests": [
         {
           "target": "lib",
-          "name": "halftone::tests::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
+          "name": "halftone::tests::codec_state::header_flags_fields_and_every_truncation_keep_exact_cursor_and_errors"
         }
       ],
       "strength": "functional_contract",

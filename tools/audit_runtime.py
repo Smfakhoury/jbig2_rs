@@ -37,6 +37,14 @@ PATTERNS = {
 
 
 failures: list[str] = []
+for directory in ("src", "specs", "proofs", "tests", "examples", "fuzz/fuzz_targets",
+                  "benchmarks", "tools", "verification"):
+    for path in sorted((ROOT / directory).rglob("*.rs")):
+        if any(part in {"target", "corpus", "artifacts"} for part in path.relative_to(ROOT).parts):
+            continue
+        lines = len(path.read_bytes().splitlines())
+        if lines > 800:
+            failures.append(f"{path.relative_to(ROOT)}: {lines} lines exceeds the 800-line source budget")
 if not (SRC / "lib.rs").is_file():
     failures.append("src/lib.rs: missing production crate root")
 for path in sorted(SRC.rglob("*.rs")):

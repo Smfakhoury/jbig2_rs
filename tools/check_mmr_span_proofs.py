@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from proof_sensitivity import check_semantic_cases, replace_once
-from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,10 +34,7 @@ ROW_PREFIX_RESULT = """mmr_spec::row_cache_prefix(
 ) ==> mmr_spec::row_cache_prefix(
     final(bitmap), row, final(transitions)@, *final(emitted_black), end,
 ),"""
-RECORDED = next(
-    row["body_text"] for row in source_functions(ROOT)
-    if row["id"] == "mmr::fill_recorded_span"
-)
+RECORDED = runtime_function(ROOT, "mmr", "fill_recorded_span")["body_text"]
 RECORD_CALL = "record_transition_span(transitions, emitted_black, start, end, width, black);"
 ROLLED_BACK = replace_once(
     replace_once(

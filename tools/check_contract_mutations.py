@@ -27,20 +27,20 @@ SEGMENT_DATA_TESTS = {
     "page_resolutions_swapped": "segment_data::tests::raw_page_information_preserves_every_literal_field_and_height_encoding",
     "profile_wire_values_discarded": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix",
     "profile_existing_prefix_corrupted": "segment_data::tests::raw_profile_lists_preserve_literal_values_prefix_extent_and_suffix",
-    "page_dispatch_returns_wrong_variant": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
-    "profile_dispatch_returns_wrong_variant": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
-    "stripe_dispatch_corrupts_value": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
-    "parse_sequential_discards_typed_page_metadata": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition",
-    "parse_random_access_discards_typed_page_metadata": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition",
+    "page_dispatch_returns_wrong_variant": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
+    "profile_dispatch_returns_wrong_variant": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
+    "stripe_dispatch_corrupts_value": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values",
+    "parse_sequential_discards_typed_page_metadata": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition",
+    "parse_random_access_discards_typed_page_metadata": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition",
 }
 TEXT_RUNTIME_TESTS = {
-    "rejected_work_charge_is_silently_rolled_back": "work_charges_match_wide_results_and_attempted_charge_failure_state",
-    "rejected_bitmap_charge_is_silently_rolled_back": "bitmap_charges_match_wide_priority_and_attempted_charge_failure_state",
-    "valid_empty_dimensions_are_rejected": "bitmap_charges_match_wide_priority_and_attempted_charge_failure_state",
-    "preflight_selects_wrong_in_bounds_source_column": "placement_preflight_matches_wide_geometry_and_resource_failure_frames",
-    "preflight_rejects_valid_origin": "placement_preflight_matches_wide_geometry_and_resource_failure_frames",
-    "initialization_rejects_valid_zero_instances": "text_state_initialization_matches_wide_checked_scaling_and_work_priority",
-    "current_placement_rejects_valid_single_pixel": "current_text_placement_matches_wide_coordinates_and_partial_failure_state",
+    "rejected_work_charge_is_silently_rolled_back": "resource_accounting::work_charges_match_wide_results_and_attempted_charge_failure_state",
+    "rejected_bitmap_charge_is_silently_rolled_back": "resource_accounting::bitmap_charges_match_wide_priority_and_attempted_charge_failure_state",
+    "valid_empty_dimensions_are_rejected": "resource_accounting::bitmap_charges_match_wide_priority_and_attempted_charge_failure_state",
+    "preflight_selects_wrong_in_bounds_source_column": "placement_state::placement_preflight_matches_wide_geometry_and_resource_failure_frames",
+    "preflight_rejects_valid_origin": "placement_state::placement_preflight_matches_wide_geometry_and_resource_failure_frames",
+    "initialization_rejects_valid_zero_instances": "placement_state::text_state_initialization_matches_wide_checked_scaling_and_work_priority",
+    "current_placement_rejects_valid_single_pixel": "placement_state::current_text_placement_matches_wide_coordinates_and_partial_failure_state",
 }
 DOCUMENT_WINDOW_TESTS = {
     "random_access_discards_consumed_segments": "raw_random_access_layout_matches_separate_literal_headers_and_payloads",
@@ -61,7 +61,7 @@ MUTATIONS = tuple(
         "id": "huffman-assignment-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],
         "target": "lib",
-        "test": "huffman::tests::" + (
+        "test": "huffman::tests::table_validation::" + (
             "wide_zero_constructor_matches_default_and_array_initialization"
             if case["function"] == "WideCode::zero"
             else "raw_canonical_assignment_matches_numeric_histogram_and_stable_order"
@@ -105,7 +105,7 @@ MUTATIONS = tuple(
     {
         "id": "document-window-" + case["id"],
         "file": "src/document.rs", "before": case["site"], "after": case["replacement"],
-        "target": "lib", "test": "document::tests::" + DOCUMENT_WINDOW_TESTS[case["id"]],
+        "target": "lib", "test": "document::tests::payload_windows::" + DOCUMENT_WINDOW_TESTS[case["id"]],
         "whitespace_flexible": True,
     }
     for case in DOCUMENT_CASES if case["id"] in DOCUMENT_WINDOW_TESTS
@@ -122,7 +122,7 @@ MUTATIONS = tuple(
             "            return Err(GenericRegionError::InvalidFlags(refinement_template_code("
         ),
         "target": "lib",
-        "test": "generic_region::tests::raw_refinement_snapshots_preserve_all_states_and_failure_frames",
+        "test": "generic_region::tests::sessions_and_snapshots::raw_refinement_snapshots_preserve_all_states_and_failure_frames",
     },
     {
         "id": "generic-template-one-history-bit-discarded",
@@ -130,7 +130,7 @@ MUTATIONS = tuple(
         "before": "(((top << 5) | previous) << 4) | (adaptive << 3) | history & 0x07",
         "after": "(((top << 5) | previous) << 4) | (adaptive << 3) | history & 0x03",
         "target": "lib",
-        "test": "generic_region::tests::raw_context_descriptors_match_literal_sampling_and_history_masks",
+        "test": "generic_region::tests::preflight_and_templates::raw_context_descriptors_match_literal_sampling_and_history_masks",
     },
     {
         "id": "halftone-memory-uses-smaller-stage-peak",
@@ -138,7 +138,7 @@ MUTATIONS = tuple(
         "before": "let peak = if gray_peak >= render_peak {",
         "after": "let peak = if gray_peak <= render_peak {",
         "target": "lib",
-        "test": "halftone::tests::raw_halftone_memory_peaks_match_wide_stage_arithmetic",
+        "test": "halftone::tests::geometry_and_render::raw_halftone_memory_peaks_match_wide_stage_arithmetic",
     },
     {
         "id": "collective-slicing-omits-pattern-vector-charge",
@@ -146,7 +146,7 @@ MUTATIONS = tuple(
         "before": "checked_memory_sum(collective_bytes, retained_pattern_bytes, vector_bytes, 0)",
         "after": "checked_memory_sum(collective_bytes, retained_pattern_bytes, 0, 0)",
         "target": "lib",
-        "test": "halftone::tests::raw_collective_slicing_matches_literal_pixels_and_exact_budget_boundaries",
+        "test": "halftone::tests::geometry_and_render::raw_collective_slicing_matches_literal_pixels_and_exact_budget_boundaries",
     },
     {
         "id": "page-collector-rejects-inclusive-decoded-limit",
@@ -154,7 +154,7 @@ MUTATIONS = tuple(
         "before": "if next_bytes > self.decoded_limit {",
         "after": "if next_bytes >= self.decoded_limit {",
         "target": "lib",
-        "test": "decode::tests::raw_page_collector_guards_preserve_order_pixels_and_rejected_totals",
+        "test": "decode::tests::dispatch_and_resources::raw_page_collector_guards_preserve_order_pixels_and_rejected_totals",
     },
     {
         "id": "wide-code-final-carry-capacity-inverted",
@@ -162,7 +162,7 @@ MUTATIONS = tuple(
         "before": "if self.limbs[3] != u64::MAX {",
         "after": "if self.limbs[3] == u64::MAX {",
         "target": "lib",
-        "test": "huffman::tests::raw_wide_code_arithmetic_matches_independent_bit_serial_oracles",
+        "test": "huffman::tests::wide_arithmetic::raw_wide_code_arithmetic_matches_independent_bit_serial_oracles",
     },
     {
         "id": "structural-work-drops-reference-count",
@@ -170,7 +170,7 @@ MUTATIONS = tuple(
         "before": "let Some(actual) = partial.checked_add(reference_work) else {",
         "after": "let Some(actual) = partial.checked_add(0) else {",
         "target": "lib",
-        "test": "document::tests::raw_structural_work_matches_wide_counts_and_exact_rejection_priority",
+        "test": "document::tests::payload_windows::raw_structural_work_matches_wide_counts_and_exact_rejection_priority",
     },
     {
         "id": "direct-dispatch-ignores-sealed-stripe",
@@ -178,7 +178,7 @@ MUTATIONS = tuple(
         "before": "|| page.last_stripe_end.is_some()\n        || page.open_stripe_max_row.is_some()",
         "after": "|| false && page.last_stripe_end.is_some()\n        || page.open_stripe_max_row.is_some()",
         "target": "lib",
-        "test": "decode::tests::raw_header_only_direct_dispatch_checks_every_page_gate_without_side_effects",
+        "test": "decode::tests::dispatch_and_resources::raw_header_only_direct_dispatch_checks_every_page_gate_without_side_effects",
     },
     {
         "id": "table-reference-gathering-discards-earlier-results",
@@ -186,7 +186,7 @@ MUTATIONS = tuple(
         "before": "result.push(table);",
         "after": "result.clear();\n            result.push(table);",
         "target": "lib",
-        "test": "decode::tests::raw_referred_tables_preserve_order_repeats_missing_keys_and_retention",
+        "test": "decode::tests::dispatch_and_resources::raw_referred_tables_preserve_order_repeats_missing_keys_and_retention",
     },
     {
         "id": "dictionary-reserved-bit-thirteen-accepted",
@@ -202,7 +202,7 @@ MUTATIONS = tuple(
             "            \"reserved symbol-dictionary flags\","
         ),
         "target": "lib",
-        "test": "symbol_text::tests::raw_dictionary_flag_words_match_independent_field_policy",
+        "test": "symbol_text::tests::flags_and_tables::raw_dictionary_flag_words_match_independent_field_policy",
     },
     {
         "id": "text-eight-row-strip-shrunk",
@@ -210,7 +210,7 @@ MUTATIONS = tuple(
         "before": "2 => 4,\n        _ => 8,",
         "after": "2 => 4,\n        _ => 4,",
         "target": "lib",
-        "test": "symbol_text::tests::raw_text_flag_words_preserve_geometry_and_error_precedence",
+        "test": "symbol_text::tests::flags_and_tables::raw_text_flag_words_preserve_geometry_and_error_precedence",
     },
     {
         "id": "text-refinement-height-selector-aliased",
@@ -218,7 +218,7 @@ MUTATIONS = tuple(
         "before": "let refinement_height = refinement_choice(text_huffman_selector(flags, 8))?;",
         "after": "let refinement_height = refinement_choice(text_huffman_selector(flags, 6))?;",
         "target": "lib",
-        "test": "symbol_text::tests::raw_text_table_selectors_match_complete_word_domain",
+        "test": "symbol_text::tests::flags_and_tables::raw_text_table_selectors_match_complete_word_domain",
     },
     {
         "id": "custom-table-oob-policy-inverted",
@@ -226,7 +226,7 @@ MUTATIONS = tuple(
         "before": "if supplied.has_oob != requires_oob {",
         "after": "if supplied.has_oob == requires_oob {",
         "target": "lib",
-        "test": "symbol_text::tests::raw_table_bindings_preserve_selector_order_identity_and_oob_policy",
+        "test": "symbol_text::tests::flags_and_tables::raw_table_bindings_preserve_selector_order_identity_and_oob_policy",
     },
     {
         "id": "dictionary-bitmap-size-table-aliased-to-refinement",
@@ -234,7 +234,7 @@ MUTATIONS = tuple(
         "before": "IntegerField::DictionaryBitmapSize => self.dictionary_bitmap_size.as_ref(),",
         "after": "IntegerField::DictionaryBitmapSize => self.refinement_size.as_ref(),",
         "target": "lib",
-        "test": "symbol_text::tests::raw_table_associations_reject_missing_fields_and_preserve_borrowed_tables",
+        "test": "symbol_text::tests::flags_and_tables::raw_table_associations_reject_missing_fields_and_preserve_borrowed_tables",
     },
     {
         "id": "standard-table-d-stored-in-e-slot",
@@ -242,7 +242,7 @@ MUTATIONS = tuple(
         "before": "StandardHuffmanTable::D => self.d = materialized,",
         "after": "StandardHuffmanTable::D => self.e = materialized,",
         "target": "lib",
-        "test": "symbol_text::tests::raw_standard_table_cache_covers_every_slot_and_failed_materialization",
+        "test": "symbol_text::tests::flags_and_tables::raw_standard_table_cache_covers_every_slot_and_failed_materialization",
     },
     {
         "id": "huffman-normal-partition-skips-one-value",
@@ -250,7 +250,7 @@ MUTATIONS = tuple(
         "before": "if previous.checked_add(1) != Some(line.range_low) {",
         "after": "if previous.checked_add(2) != Some(line.range_low) {",
         "target": "lib",
-        "test": "huffman::tests::raw_normal_ranges_match_wide_endpoint_and_contiguity_rules",
+        "test": "huffman::tests::table_validation::raw_normal_ranges_match_wide_endpoint_and_contiguity_rules",
     },
     {
         "id": "huffman-duplicate-low-line-accepted",
@@ -258,7 +258,7 @@ MUTATIONS = tuple(
         "before": "if lower.is_some() {",
         "after": "if false && lower.is_some() {",
         "target": "lib",
-        "test": "huffman::tests::raw_special_line_metadata_rejects_order_duplicates_and_invalid_fields",
+        "test": "huffman::tests::table_validation::raw_special_line_metadata_rejects_order_duplicates_and_invalid_fields",
     },
     {
         "id": "empty-unaligned-row-blit-rejected",
@@ -276,7 +276,7 @@ MUTATIONS = tuple(
             "        let mut source_bit = source_x;"
         ),
         "target": "lib",
-        "test": "bitmap::tests::zero_width_unaligned_row_blit_preserves_all_storage",
+        "test": "bitmap::tests::composition::zero_width_unaligned_row_blit_preserves_all_storage",
     },
     {
         "id": "row-blit-source-bit-alignment-discarded",
@@ -294,7 +294,7 @@ MUTATIONS = tuple(
             "                read_chunk(&self.data, destination_index).ok_or(MalformedError::IntegerOverflow)?;"
         ),
         "target": "lib",
-        "test": "bitmap::tests::row_batch_chunking_matches_independent_ordered_bit_updates",
+        "test": "bitmap::tests::composition::row_batch_chunking_matches_independent_ordered_bit_updates",
     },
     {
         "id": "generic-snapshot-rejects-inclusive-retained-limit",
@@ -302,7 +302,7 @@ MUTATIONS = tuple(
         "before": "if storage_bytes > limits.max_retained_state_bytes {",
         "after": "if storage_bytes >= limits.max_retained_state_bytes {",
         "target": "lib",
-        "test": "generic_region::tests::generic_snapshots_copy_all_states_and_preserve_rejected_targets",
+        "test": "generic_region::tests::sessions_and_snapshots::generic_snapshots_copy_all_states_and_preserve_rejected_targets",
     },
     {
         "id": "generic-typical-work-row-charge-lost",
@@ -310,7 +310,7 @@ MUTATIONS = tuple(
         "before": "work = next_work;\n    }\n    Ok(work)\n}",
         "after": "work = next_work - u64::from(rows);\n    }\n    Ok(work)\n}",
         "target": "lib",
-        "test": "generic_region::tests::raw_raster_work_guards_cover_exact_addition_overflow_boundaries",
+        "test": "generic_region::tests::preflight_and_templates::raw_raster_work_guards_cover_exact_addition_overflow_boundaries",
     },
     {
         "id": "reference-role-rejects-inclusive-table-count",
@@ -318,7 +318,7 @@ MUTATIONS = tuple(
         "before": "if table_count > maximum_tables {",
         "after": "if table_count >= maximum_tables {",
         "target": "lib",
-        "test": "document::tests::raw_reference_role_matrix_matches_numeric_tag_policy_locally_and_globally",
+        "test": "document::tests::quotas_and_references::raw_reference_role_matrix_matches_numeric_tag_policy_locally_and_globally",
     },
     {
         "id": "failed-stripe-seal-clobbers-last-end",
@@ -329,7 +329,7 @@ MUTATIONS = tuple(
             "    let next_open = checked_seal_stripe_state(page.open_stripe_max_row, row)?;"
         ),
         "target": "lib",
-        "test": "decode::tests::raw_stripe_sealing_preserves_pixels_and_rejected_page_state",
+        "test": "decode::tests::budgets_and_pages::raw_stripe_sealing_preserves_pixels_and_rejected_page_state",
     },
     {
         "id": "owned-generic-normalization-appends-wrong-marker",
@@ -343,7 +343,7 @@ MUTATIONS = tuple(
             "    decode_arithmetic_generic(&normalized, header, rows, None, limits)"
         ),
         "target": "lib",
-        "test": "generic_region::tests::known_length_normalization_preserves_zero_row_bitmap_geometry",
+        "test": "generic_region::tests::segment_framing::known_length_normalization_preserves_zero_row_bitmap_geometry",
     },
     {
         "id": "direct-generic-normalization-appends-wrong-marker",
@@ -357,7 +357,7 @@ MUTATIONS = tuple(
             "    decode_arithmetic_generic_into(&normalized, header, rows, limits, bitmap)"
         ),
         "target": "lib",
-        "test": "generic_region::tests::known_length_normalization_preserves_zero_row_bitmap_geometry",
+        "test": "generic_region::tests::segment_framing::known_length_normalization_preserves_zero_row_bitmap_geometry",
     },
     {
         "id": "unknown-generic-extent-includes-following-byte",
@@ -365,7 +365,7 @@ MUTATIONS = tuple(
         "before": "consumed: count_end,",
         "after": "consumed: count_end + 1,",
         "target": "lib",
-        "test": "generic_region::tests::unknown_length_framing_preserves_count_extent_and_exact_eof_fields",
+        "test": "generic_region::tests::segment_framing::unknown_length_framing_preserves_count_extent_and_exact_eof_fields",
     },
     {
         "id": "runtime-work-pair-rejects-inclusive-limit",
@@ -373,7 +373,7 @@ MUTATIONS = tuple(
         "before": "Some(used) => used <= limits.max_work_units,",
         "after": "Some(used) => used < limits.max_work_units,",
         "target": "lib",
-        "test": "decode::tests::runtime_budgets_match_wide_arithmetic_and_preserve_rejected_state",
+        "test": "decode::tests::budgets_and_pages::runtime_budgets_match_wide_arithmetic_and_preserve_rejected_state",
     },
     {
         "id": "referred-buffer-retention-polarity-reversed",
@@ -389,7 +389,7 @@ MUTATIONS = tuple(
             "            if let Some(buffer_index) = region_buffer_index(buffers, number) {"
         ),
         "target": "lib",
-        "test": "decode::tests::referred_bitmap_resources_release_only_selected_existing_keys_once",
+        "test": "decode::tests::budgets_and_pages::referred_bitmap_resources_release_only_selected_existing_keys_once",
     },
     {
         "id": "released-symbol-bitmap-bytes-not-deducted",
@@ -397,7 +397,7 @@ MUTATIONS = tuple(
         "before": ".checked_add(bitmap_byte_len(&resource.exported[bitmap_index])?)",
         "after": ".checked_add(0)",
         "target": "lib",
-        "test": "decode::tests::referred_bitmap_resources_release_only_selected_existing_keys_once",
+        "test": "decode::tests::budgets_and_pages::referred_bitmap_resources_release_only_selected_existing_keys_once",
     },
     {
         "id": "raw-bitmap-snapshot-discards-source-x",
@@ -405,7 +405,7 @@ MUTATIONS = tuple(
         "before": "snapshot.compose_region(\n            page,\n            region.x,",
         "after": "snapshot.compose_region(\n            page,\n            0,",
         "target": "lib",
-        "test": "decode::tests::raw_bitmap_snapshot_matches_literal_scalar_clipping_and_padding",
+        "test": "decode::tests::budgets_and_pages::raw_bitmap_snapshot_matches_literal_scalar_clipping_and_padding",
     },
     {
         "id": "reference-depth-fails-to-count-own-node",
@@ -413,7 +413,7 @@ MUTATIONS = tuple(
         "before": "let Some(candidate) = referred_depth.checked_add(1) else {",
         "after": "let Some(candidate) = referred_depth.checked_add(0) else {",
         "target": "lib",
-        "test": "document::tests::reference_depth_orders_raw_metadata_and_reports_missing_or_overflowed_ancestors",
+        "test": "document::tests::quotas_and_references::reference_depth_orders_raw_metadata_and_reports_missing_or_overflowed_ancestors",
     },
     {
         "id": "generic-probability-state-validation-skipped",
@@ -421,7 +421,7 @@ MUTATIONS = tuple(
         "before": "if let Err(error) = ArithmeticContext::from_state(context.state_index(), context.mps()) {",
         "after": "if let Err(error) = ArithmeticContext::from_state(0, 0) {",
         "target": "lib",
-        "test": "generic_region::tests::probability_state_validation_matches_all_raw_fields_and_first_error",
+        "test": "generic_region::tests::diagnostics::probability_state_validation_matches_all_raw_fields_and_first_error",
     },
     {
         "id": "generic-packed-eight-bit-window-rejected",
@@ -429,7 +429,7 @@ MUTATIONS = tuple(
         "before": "if count == 0 || count > 8 || row < 0 || row >= i64::from(bitmap.height) {",
         "after": "if count == 0 || count > 7 || row < 0 || row >= i64::from(bitmap.height) {",
         "target": "lib",
-        "test": "generic_region::tests::packed_rows_match_scalar_msb_windows_padding_and_numeric_edges",
+        "test": "generic_region::tests::diagnostics::packed_rows_match_scalar_msb_windows_padding_and_numeric_edges",
     },
     {
         "id": "generic-probability-context-error-fields-discarded",
@@ -449,7 +449,7 @@ MUTATIONS = tuple(
             "        }"
         ),
         "target": "lib",
-        "test": "generic_region::tests::probability_failure_projection_preserves_context_and_decoder_errors",
+        "test": "generic_region::tests::diagnostics::probability_failure_projection_preserves_context_and_decoder_errors",
     },
     {
         "id": "mmr-reference-cursor-update-discarded",
@@ -457,7 +457,7 @@ MUTATIONS = tuple(
         "before": "*search_start = index;",
         "after": "*search_start = 0;",
         "target": "lib",
-        "test": "mmr::tests::reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors",
+        "test": "mmr::tests::transition_cache::reference_search_matches_scalar_suffix_and_cursor_for_all_small_sorted_vectors",
     },
     {
         "id": "borrowed-symbol-peak-limit-off-by-one",
@@ -471,7 +471,7 @@ MUTATIONS = tuple(
             "    if peak >= limits.max_decoder_managed_memory_bytes {"
         ),
         "target": "lib",
-        "test": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
+        "test": "decode::tests::symbol_resources::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
     },
     {
         "id": "borrowed-symbol-group-loses-later-bitmaps",
@@ -479,7 +479,7 @@ MUTATIONS = tuple(
         "before": "imported.push(&resource.exported[bitmap_index]);",
         "after": "if bitmap_index == 0 { imported.push(&resource.exported[bitmap_index]); }",
         "target": "lib",
-        "test": "decode::tests::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
+        "test": "decode::tests::symbol_resources::referred_symbol_collection_preserves_order_identity_and_exact_borrow_budget",
     },
     {
         "id": "total-reference-limit-off-by-one",
@@ -487,7 +487,7 @@ MUTATIONS = tuple(
         "before": "if total_references > limits.max_total_references {",
         "after": "if total_references >= limits.max_total_references {",
         "target": "lib",
-        "test": "document::tests::reference_graph_retention_and_budget_precedence_match_scalar_policy",
+        "test": "document::tests::quotas_and_references::reference_graph_retention_and_budget_precedence_match_scalar_policy",
     },
     {
         "id": "halftone-gray-state-trailing-bytes-ignored",
@@ -495,7 +495,7 @@ MUTATIONS = tuple(
         "before": "if *offset != coded.len() {",
         "after": "if *offset > coded.len() {",
         "target": "lib",
-        "test": "halftone::tests::gray_mmr_consumes_exact_prefixes_and_requires_all_declared_bytes",
+        "test": "halftone::tests::codec_state::gray_mmr_consumes_exact_prefixes_and_requires_all_declared_bytes",
     },
     {
         "id": "pattern-mmr-single-use-check-disabled",
@@ -503,7 +503,7 @@ MUTATIONS = tuple(
         "before": "if *used {",
         "after": "if *used && 0_u8 == 1_u8 {",
         "target": "lib",
-        "test": "halftone::tests::pattern_mmr_is_single_use_and_mode_errors_do_not_consume_it",
+        "test": "halftone::tests::codec_state::pattern_mmr_is_single_use_and_mode_errors_do_not_consume_it",
     },
     {
         "id": "symbol-code-length-power-boundary-misclassified",
@@ -511,7 +511,7 @@ MUTATIONS = tuple(
         "before": "else if symbol_count <= 65_536 {",
         "after": "else if symbol_count <= 65_535 {",
         "target": "lib",
-        "test": "symbol_text::tests::symbol_code_length_is_minimal_at_every_u32_power_boundary",
+        "test": "symbol_text::tests::codec_and_exports::symbol_code_length_is_minimal_at_every_u32_power_boundary",
     },
     {
         "id": "packed-symbol-padding-check-weakened",
@@ -519,7 +519,7 @@ MUTATIONS = tuple(
         "before": "if bytes[final_byte] & padding_mask != 0 {",
         "after": "if bytes[final_byte] & padding_mask > 0x80 {",
         "target": "lib",
-        "test": "symbol_text::tests::packed_symbol_storage_matches_pixels_and_rejects_each_dirty_row",
+        "test": "symbol_text::tests::codec_and_exports::packed_symbol_storage_matches_pixels_and_rejects_each_dirty_row",
     },
     {
         "id": "generic-formatter-failure-swallowed",
@@ -527,7 +527,7 @@ MUTATIONS = tuple(
         "before": 'formatter.write_str("arithmetic region does not end in FF AC")',
         "after": '{ let _ = formatter.write_str("arithmetic region does not end in FF AC"); Ok(()) }',
         "target": "lib",
-        "test": "generic_region::tests::diagnostic_variants_preserve_fields_sources_and_formatter_failures",
+        "test": "generic_region::tests::diagnostics::diagnostic_variants_preserve_fields_sources_and_formatter_failures",
     },
     {
         "id": "io-kind-misclassification",
@@ -559,7 +559,7 @@ MUTATIONS = tuple(
         "before": "GenericRegionError::UnexpectedArithmeticMarker { offset, code } => {\n            GenericRegionErrorKind::UnexpectedArithmeticMarker { offset, code }\n        }",
         "after": "GenericRegionError::UnexpectedArithmeticMarker { offset: _offset, code } => {\n            GenericRegionErrorKind::UnexpectedArithmeticMarker { offset: 0, code }\n        }",
         "target": "lib",
-        "test": "decode::tests::generic_error_conversion_preserves_every_classification_and_field",
+        "test": "decode::tests::error_adapters::generic_error_conversion_preserves_every_classification_and_field",
     },
     {
         "id": "symbol-availability-discarded",
@@ -567,7 +567,7 @@ MUTATIONS = tuple(
         "before": "SymbolTextError::SymbolIdOutOfRange { id, available } => {\n            DecodeError::Malformed(MalformedError::SymbolIdOutOfRange { id, available })\n        }",
         "after": "SymbolTextError::SymbolIdOutOfRange { id, available: _available } => {\n            DecodeError::Malformed(MalformedError::SymbolIdOutOfRange { id, available: 0 })\n        }",
         "target": "lib",
-        "test": "decode::tests::symbol_error_conversion_preserves_reasons_and_structured_fields",
+        "test": "decode::tests::error_adapters::symbol_error_conversion_preserves_reasons_and_structured_fields",
     },
     {
         "id": "huffman-kind-misclassification",
@@ -575,7 +575,7 @@ MUTATIONS = tuple(
         "before": "HuffmanError::InvalidTable(kind) => {\n            DecodeError::Malformed(MalformedError::InvalidHuffman(kind))\n        }",
         "after": "HuffmanError::InvalidTable(_kind) => {\n            DecodeError::Malformed(MalformedError::IntegerOverflow)\n        }",
         "target": "lib",
-        "test": "decode::tests::huffman_error_conversion_preserves_every_table_kind_and_field",
+        "test": "decode::tests::error_adapters::huffman_error_conversion_preserves_every_table_kind_and_field",
     },
     {
         "id": "generic-decode-error-flattened",
@@ -583,7 +583,7 @@ MUTATIONS = tuple(
         "before": "GenericRegionError::Decode(error) => return error,",
         "after": "GenericRegionError::Decode(_error) => return DecodeError::Malformed(MalformedError::IntegerOverflow),",
         "target": "lib",
-        "test": "decode::tests::error_adapters_preserve_existing_decode_errors",
+        "test": "decode::tests::error_adapters::error_adapters_preserve_existing_decode_errors",
     },
     {
         "id": "reference-table-limit-off-by-one",
@@ -591,7 +591,7 @@ MUTATIONS = tuple(
         "before": "if table_count > maximum_tables {",
         "after": "if table_count > maximum_tables + 1 {",
         "target": "public_envelope",
-        "test": "reference_table_limits_count_tables_not_dictionaries_in_both_header_forms",
+        "test": "references::reference_table_limits_count_tables_not_dictionaries_in_both_header_forms",
     },
     {
         "id": "immediate-region-accepted-as-refinement-reference",
@@ -599,7 +599,7 @@ MUTATIONS = tuple(
         "before": "Some(kind) => is_intermediate_region(kind),",
         "after": "Some(_kind) => true,",
         "target": "public_envelope",
-        "test": "only_intermediate_region_roles_can_supply_explicit_refinement_references",
+        "test": "references::only_intermediate_region_roles_can_supply_explicit_refinement_references",
     },
     {
         "id": "halftone-reference-cardinality-weakened",
@@ -607,7 +607,7 @@ MUTATIONS = tuple(
         "before": "reference_count == 1\n                && matches!(",
         "after": "reference_count >= 1\n                && matches!(",
         "target": "public_envelope",
-        "test": "halftone_and_refinement_reference_cardinality_is_exact",
+        "test": "references::halftone_and_refinement_reference_cardinality_is_exact",
     },
     {
         "id": "global-reference-type-misclassification",
@@ -618,7 +618,7 @@ MUTATIONS = tuple(
             "    Some(SegmentType::SymbolDictionary)"
         ),
         "target": "public_envelope",
-        "test": "global_reference_roles_are_rechecked_without_mutating_shared_state",
+        "test": "references::global_reference_roles_are_rechecked_without_mutating_shared_state",
     },
     {
         "id": "table-body-error-misclassification",
@@ -629,7 +629,7 @@ MUTATIONS = tuple(
             "DecodeError::Malformed(MalformedError::IntegerOverflow),"
         ),
         "target": "public_envelope",
-        "test": "table_body_errors_precede_reference_role_checks_without_losing_error_fields",
+        "test": "references::table_body_errors_precede_reference_role_checks_without_losing_error_fields",
     },
     {
         "id": "document-stream-quota-rejects-inclusive-boundary",
@@ -649,7 +649,7 @@ MUTATIONS = tuple(
             "    if actual >= limits.max_stream_bytes {"
         ),
         "target": "lib",
-        "test": "document::tests::numeric_preflight_quotas_match_wide_results_and_priority",
+        "test": "document::tests::quotas_and_references::numeric_preflight_quotas_match_wide_results_and_priority",
     },
     {
         "id": "document-page-quota-discards-next-count",
@@ -663,7 +663,7 @@ MUTATIONS = tuple(
             "    let Some(next_count) = count.checked_add(0) else {"
         ),
         "target": "lib",
-        "test": "document::tests::numeric_preflight_quotas_match_wide_results_and_priority",
+        "test": "document::tests::quotas_and_references::numeric_preflight_quotas_match_wide_results_and_priority",
     },
     {
         "id": "filled-bitmap-loses-black-storage-bit",
@@ -671,7 +671,7 @@ MUTATIONS = tuple(
         "before": "data.resize(length, if value { 0xFF } else { 0 });",
         "after": "data.resize(length, if value { 0xFE } else { 0 });",
         "target": "lib",
-        "test": "bitmap::tests::filled_layout_and_padding_are_deterministic",
+        "test": "bitmap::tests::layout_and_access::filled_layout_and_padding_are_deterministic",
     },
     {
         "id": "filled-bitmap-keeps-black-padding",
@@ -679,7 +679,7 @@ MUTATIONS = tuple(
         "before": "data[final_byte] &= trailing_mask;",
         "after": "data[final_byte] |= trailing_mask;",
         "target": "lib",
-        "test": "bitmap::tests::filled_layout_and_padding_are_deterministic",
+        "test": "bitmap::tests::layout_and_access::filled_layout_and_padding_are_deterministic",
     },
     {
         "id": "mmr-raster-reference-pixels-corrupted-after-row-finish",
@@ -692,7 +692,7 @@ MUTATIONS = tuple(
             "        }"
         ),
         "target": "lib",
-        "test": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row",
+        "test": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row",
     },
     {
         "id": "mmr-raster-reference-cache-corrupted-after-row-swap",
@@ -703,7 +703,7 @@ MUTATIONS = tuple(
             "        if row == 0 && transitions.len() > 2 { transitions[0] = 0; }"
         ),
         "target": "lib",
-        "test": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row",
+        "test": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row",
     },
     {
         "id": "mmr-raster-output-discards-input-extent",
@@ -714,7 +714,7 @@ MUTATIONS = tuple(
             "    reader.bit_position = 0;"
         ),
         "target": "lib",
-        "test": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row",
+        "test": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row",
     },
     {
         "id": "mmr-raster-output-blackens-a-white-pixel",
@@ -728,7 +728,7 @@ MUTATIONS = tuple(
             "    }"
         ),
         "target": "lib",
-        "test": "mmr::tests::decoded_reference_cache_matches_the_last_physical_row",
+        "test": "mmr::tests::transition_cache::decoded_reference_cache_matches_the_last_physical_row",
     },
     {
         "id": "mmr-required-prefix-ignores-nonzero-padding",
@@ -740,7 +740,7 @@ MUTATIONS = tuple(
         ),
         "after": "let _padding_value = reader.read_bits(padding_count)?;",
         "target": "lib",
-        "test": "mmr::tests::prefix_decoder_rejects_nonzero_alignment_padding",
+        "test": "mmr::tests::normative_decode::prefix_decoder_rejects_nonzero_alignment_padding",
     },
     {
         "id": "contiguous-symbol-lookup-uses-first-bitmap",
@@ -751,7 +751,7 @@ MUTATIONS = tuple(
             "symbols.get(if index < symbols.len() { 0 } else { index }),"
         ),
         "target": "lib",
-        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+        "test": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle",
     },
     {
         "id": "borrowed-symbol-lookup-uses-first-bitmap",
@@ -762,7 +762,7 @@ MUTATIONS = tuple(
             "if index < symbols.len() { 0 } else { index }) {"
         ),
         "target": "lib",
-        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+        "test": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle",
     },
     {
         "id": "new-symbol-lookup-uses-first-bitmap",
@@ -770,7 +770,7 @@ MUTATIONS = tuple(
         "before": "Ok(&new_symbols[new_index])",
         "after": "Ok(&new_symbols[0])",
         "target": "lib",
-        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+        "test": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle",
     },
     {
         "id": "exported-symbols-repeat-first-selection",
@@ -778,7 +778,7 @@ MUTATIONS = tuple(
         "before": "let symbol_id = exported_indices[index];",
         "after": "let symbol_id = exported_indices[0];",
         "target": "lib",
-        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+        "test": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle",
     },
     {
         "id": "symbol-lookup-rejects-valid-representable-id",
@@ -791,7 +791,7 @@ MUTATIONS = tuple(
             "    if id_usize < imported.len() {"
         ),
         "target": "lib",
-        "test": "symbol_text::tests::exported_symbols_match_exact_clone_oracle",
+        "test": "symbol_text::tests::resource_accounting::exported_symbols_match_exact_clone_oracle",
     },
 )
 

@@ -6,7 +6,7 @@
       "surface": "raw refinement context snapshots, template/layout compatibility and retained/managed limits",
       "expected": "all retained states copy exactly and remain independent; wrong-template/layout and limit failures preserve complete destination statistics and exact diagnostic fields",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::raw_refinement_snapshots_preserve_all_states_and_failure_frames"}
+        {"target": "lib", "name": "generic_region::tests::sessions_and_snapshots::raw_refinement_snapshots_preserve_all_states_and_failure_frames"}
       ]
     },
     {
@@ -14,11 +14,11 @@
       "surface": "raw halftone grid arithmetic, pattern headers, bitmap shapes, collective slicing and signed clipping; no coded-family fixture",
       "expected": "wide stage peaks and exact inclusive memory/work limits; complete literal sliced pixels and padding; exact shape/header fields and preserved storage on overflow; half-open skip geometry",
       "tests": [
-        {"target": "lib", "name": "halftone::tests::raw_halftone_memory_peaks_match_wide_stage_arithmetic"},
-        {"target": "lib", "name": "halftone::tests::raw_pattern_and_bitmap_preflights_preserve_exact_fields_and_priority"},
-        {"target": "lib", "name": "halftone::tests::raw_collective_slicing_matches_literal_pixels_and_exact_budget_boundaries"},
-        {"target": "lib", "name": "halftone::tests::raw_render_extreme_coordinates_preserve_storage_on_checked_overflow"},
-        {"target": "lib", "name": "halftone::tests::raw_gray_shape_guards_and_skip_rectangles_use_exact_half_open_geometry"}
+        {"target": "lib", "name": "halftone::tests::geometry_and_render::raw_halftone_memory_peaks_match_wide_stage_arithmetic"},
+        {"target": "lib", "name": "halftone::tests::geometry_and_render::raw_pattern_and_bitmap_preflights_preserve_exact_fields_and_priority"},
+        {"target": "lib", "name": "halftone::tests::geometry_and_render::raw_collective_slicing_matches_literal_pixels_and_exact_budget_boundaries"},
+        {"target": "lib", "name": "halftone::tests::geometry_and_render::raw_render_extreme_coordinates_preserve_storage_on_checked_overflow"},
+        {"target": "lib", "name": "halftone::tests::geometry_and_render::raw_gray_shape_guards_and_skip_rectangles_use_exact_half_open_geometry"}
       ]
     },
     {
@@ -26,10 +26,10 @@
       "surface": "page collector quotas, structural-work arithmetic, profile/retention metadata and header-only generic direct-dispatch preflight",
       "expected": "exact overflow/limit/tag/retention diagnostics and counter effects; accepted page order/pixels; every direct-page gate and exact work boundary with no raster entropy input or mutation",
       "tests": [
-        {"target": "lib", "name": "decode::tests::raw_page_collector_guards_preserve_order_pixels_and_rejected_totals"},
-        {"target": "lib", "name": "document::tests::raw_structural_work_matches_wide_counts_and_exact_rejection_priority"},
-        {"target": "lib", "name": "document::tests::raw_profile_and_retention_metadata_rejects_inconsistent_tags_and_frames"},
-        {"target": "lib", "name": "decode::tests::raw_header_only_direct_dispatch_checks_every_page_gate_without_side_effects"}
+        {"target": "lib", "name": "decode::tests::dispatch_and_resources::raw_page_collector_guards_preserve_order_pixels_and_rejected_totals"},
+        {"target": "lib", "name": "document::tests::payload_windows::raw_structural_work_matches_wide_counts_and_exact_rejection_priority"},
+        {"target": "lib", "name": "document::tests::payload_windows::raw_profile_and_retention_metadata_rejects_inconsistent_tags_and_frames"},
+        {"target": "lib", "name": "decode::tests::dispatch_and_resources::raw_header_only_direct_dispatch_checks_every_page_gate_without_side_effects"}
       ]
     },
     {
@@ -37,7 +37,7 @@
       "surface": "actual From trait routes for symbol/text, arithmetic, generic, MMR and Huffman errors",
       "expected": "every symbol variant and complete nested marker/context/I/O/allocation payload is preserved without a success-shaped fallback",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::raw_error_trait_bridges_preserve_all_symbol_variants_and_nested_fields"}
+        {"target": "lib", "name": "symbol_text::tests::flags_and_tables::raw_error_trait_bridges_preserve_all_symbol_variants_and_nested_fields"}
       ]
     },
     {
@@ -45,8 +45,8 @@
       "surface": "raw normal and special line descriptors only, without encoded custom-Huffman fixtures",
       "expected": "wide endpoint/contiguity policy and explicit order, duplicate, active/disabled lower-bound and field cases produce exact overflow, partition and special-line classifications",
       "tests": [
-        {"target": "lib", "name": "huffman::tests::raw_normal_ranges_match_wide_endpoint_and_contiguity_rules"},
-        {"target": "lib", "name": "huffman::tests::raw_special_line_metadata_rejects_order_duplicates_and_invalid_fields"}
+        {"target": "lib", "name": "huffman::tests::table_validation::raw_normal_ranges_match_wide_endpoint_and_contiguity_rules"},
+        {"target": "lib", "name": "huffman::tests::table_validation::raw_special_line_metadata_rejects_order_duplicates_and_invalid_fields"}
       ]
     },
     {
@@ -54,8 +54,8 @@
       "surface": "raw imported/new/exported counts, unsigned deltas, symbol-code-length boundaries and table-memory arithmetic",
       "expected": "independent wide arithmetic preserves inclusive limits, exact actual/limit fields, overflow and rejection precedence; no large allocation or entropy payload is required",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::raw_symbol_counts_and_deltas_match_wide_integer_domains"},
-        {"target": "lib", "name": "huffman::tests::raw_table_memory_limits_match_wide_sizes_and_error_priority"}
+        {"target": "lib", "name": "symbol_text::tests::resource_accounting::raw_symbol_counts_and_deltas_match_wide_integer_domains"},
+        {"target": "lib", "name": "huffman::tests::table_validation::raw_table_memory_limits_match_wide_sizes_and_error_priority"}
       ]
     },
     {
@@ -63,11 +63,11 @@
       "surface": "local and immutable-global segment reference roles and cardinalities",
       "expected": "exact InvalidSegmentReferences consumer numbers for disallowed roles, zero/multiple required references and table counts above four/eight; no page delivery on rejection, shared globals remain unchanged and subsequent decoding recovers; positive controls assert inspection metadata only",
       "tests": [
-        {"target": "public_envelope", "name": "reference_roles_reject_invalid_consumers_before_page_delivery"},
-        {"target": "public_envelope", "name": "only_intermediate_region_roles_can_supply_explicit_refinement_references"},
-        {"target": "public_envelope", "name": "reference_table_limits_count_tables_not_dictionaries_in_both_header_forms"},
-        {"target": "public_envelope", "name": "halftone_and_refinement_reference_cardinality_is_exact"},
-        {"target": "public_envelope", "name": "global_reference_roles_are_rechecked_without_mutating_shared_state"}
+        {"target": "public_envelope", "name": "references::reference_roles_reject_invalid_consumers_before_page_delivery"},
+        {"target": "public_envelope", "name": "references::only_intermediate_region_roles_can_supply_explicit_refinement_references"},
+        {"target": "public_envelope", "name": "references::reference_table_limits_count_tables_not_dictionaries_in_both_header_forms"},
+        {"target": "public_envelope", "name": "references::halftone_and_refinement_reference_cardinality_is_exact"},
+        {"target": "public_envelope", "name": "references::global_reference_roles_are_rechecked_without_mutating_shared_state"}
       ]
     },
     {
@@ -75,7 +75,7 @@
       "surface": "eager custom-table payload validation and reference-check precedence",
       "expected": "exact payload-relative UnexpectedEof fields, reserved flags and nonzero-padding errors are preserved before invalid table-reference roles; no sink callbacks occur and subsequent decoding recovers",
       "tests": [
-        {"target": "public_envelope", "name": "table_body_errors_precede_reference_role_checks_without_losing_error_fields"}
+        {"target": "public_envelope", "name": "references::table_body_errors_precede_reference_role_checks_without_losing_error_fields"}
       ]
     },
     {
@@ -83,8 +83,8 @@
       "surface": "public standalone and embedded profile envelopes",
       "expected": "exact invalid profile segment numbers for placement, duplicate and non-superset declarations; exact u64 expected/actual payload lengths including the maximum count before allocation",
       "tests": [
-        {"target": "public_envelope", "name": "misplaced_duplicate_and_non_superset_profiles_have_exact_segment_numbers"},
-        {"target": "public_envelope", "name": "profile_lengths_report_exact_u64_expected_lengths_before_allocation"}
+        {"target": "public_envelope", "name": "metadata_extensions::misplaced_duplicate_and_non_superset_profiles_have_exact_segment_numbers"},
+        {"target": "public_envelope", "name": "metadata_extensions::profile_lengths_report_exact_u64_expected_lengths_before_allocation"}
       ]
     },
     {
@@ -92,8 +92,8 @@
       "surface": "optional comment and necessary extension envelopes",
       "expected": "malformed comment framing is rejected for both code-unit widths; short payload lengths and necessary extension types preserve exact fields rather than silently ignoring invalid data",
       "tests": [
-        {"target": "public_envelope", "name": "malformed_comment_framing_is_not_an_ignored_optional_extension"},
-        {"target": "public_envelope", "name": "extension_length_and_necessary_flag_errors_preserve_all_bits"}
+        {"target": "public_envelope", "name": "metadata_extensions::malformed_comment_framing_is_not_an_ignored_optional_extension"},
+        {"target": "public_envelope", "name": "metadata_extensions::extension_length_and_necessary_flag_errors_preserve_all_bits"}
       ]
     },
     {
@@ -101,8 +101,8 @@
       "surface": "page association, information, end-of-page and stripe boundaries",
       "expected": "exact missing/duplicate/after-end/page-association and stripe-row failures before any sink call; unknown-height width rejection preserves actual/limit values",
       "tests": [
-        {"target": "public_envelope", "name": "page_lifecycle_rejections_are_exact_and_precede_all_sink_effects"},
-        {"target": "public_envelope", "name": "stripe_end_boundaries_and_unknown_height_failures_are_typed"}
+        {"target": "public_envelope", "name": "page_lifecycle::page_lifecycle_rejections_are_exact_and_precede_all_sink_effects"},
+        {"target": "public_envelope", "name": "page_lifecycle::stripe_end_boundaries_and_unknown_height_failures_are_typed"}
       ]
     },
     {
@@ -110,8 +110,8 @@
       "surface": "embedded segment identity, page visibility and last-reference retention",
       "expected": "exact duplicate numbers, cross-page association and prematurely released segment/referred pairs; valid last-use release and reordered embedded headers remain accepted",
       "tests": [
-        {"target": "public_envelope", "name": "reference_retention_uses_the_last_reference_not_the_first_or_wire_order"},
-        {"target": "public_envelope", "name": "embedded_duplicate_numbers_and_cross_page_references_are_exact"}
+        {"target": "public_envelope", "name": "references::reference_retention_uses_the_last_reference_not_the_first_or_wire_order"},
+        {"target": "public_envelope", "name": "references::embedded_duplicate_numbers_and_cross_page_references_are_exact"}
       ]
     },
     {
@@ -119,9 +119,9 @@
       "surface": "immutable nonempty globals and consuming decoder limits",
       "expected": "inclusive retained-byte, per-segment/total-reference and global-to-local depth limits report exact fields; missing globals are typed and reusable state survives failures",
       "tests": [
-        {"target": "public_envelope", "name": "globals_retained_bytes_are_inclusive_and_rechecked_by_the_consuming_decoder"},
-        {"target": "public_envelope", "name": "public_reference_limits_accept_exact_counts_and_reject_one_less"},
-        {"target": "public_envelope", "name": "nonempty_global_reference_chains_reuse_immutable_state_and_exact_depth"}
+        {"target": "public_envelope", "name": "references::globals_retained_bytes_are_inclusive_and_rechecked_by_the_consuming_decoder"},
+        {"target": "public_envelope", "name": "references::public_reference_limits_accept_exact_counts_and_reject_one_less"},
+        {"target": "public_envelope", "name": "references::nonempty_global_reference_chains_reuse_immutable_state_and_exact_depth"}
       ]
     },
     {
@@ -129,7 +129,7 @@
       "surface": "unknown-length generated MMR segment envelope",
       "expected": "missing terminators and excessive terminal row counts have exact typed fields without scanning following sequential headers as a test oracle",
       "tests": [
-        {"target": "public_envelope", "name": "unknown_length_mmr_envelope_has_exact_terminator_and_row_count_errors"}
+        {"target": "public_envelope", "name": "organization_and_limits::unknown_length_mmr_envelope_has_exact_terminator_and_row_count_errors"}
       ]
     },
     {
@@ -137,7 +137,7 @@
       "surface": "sequential and random-access final payload boundaries",
       "expected": "exact trailing byte count through slice inspection and reader decoding",
       "tests": [
-        {"target": "public_envelope", "name": "trailing_bytes_are_counted_after_each_organization_payload_area"}
+        {"target": "public_envelope", "name": "organization_and_limits::trailing_bytes_are_counted_after_each_organization_payload_area"}
       ]
     },
     {
@@ -145,7 +145,7 @@
       "surface": "owned page delivery through slice and reader sinks",
       "expected": "the exact second-callback error and first two literal page effects are preserved; the third page is not delivered and subsequent decoding recovers",
       "tests": [
-        {"target": "public_envelope", "name": "second_page_sink_failure_preserves_prior_effects_and_prevents_third_delivery"}
+        {"target": "public_envelope", "name": "page_lifecycle::second_page_sink_failure_preserves_prior_effects_and_prevents_third_delivery"}
       ]
     },
     {
@@ -153,7 +153,7 @@
       "surface": "public document segment, page and structural-work limits",
       "expected": "exact inclusive and one-less page/segment/work boundaries for both standalone organizations",
       "tests": [
-        {"target": "public_envelope", "name": "page_segment_and_structural_work_limits_have_exact_boundary_values"}
+        {"target": "public_envelope", "name": "organization_and_limits::page_segment_and_structural_work_limits_have_exact_boundary_values"}
       ]
     },
     {
@@ -238,7 +238,7 @@
       "tests": [
         {"target": "catalog_contracts", "name": "global_page_number_collision_is_an_exact_duplicate_error"},
         {"target": "catalog_contracts", "name": "duplicate_local_wire_numbers_have_exact_order_errors"},
-        {"target": "lib", "name": "document::tests::raw_reference_duplicates_and_cross_page_links_preserve_exact_diagnostics"}
+        {"target": "lib", "name": "document::tests::quotas_and_references::raw_reference_duplicates_and_cross_page_links_preserve_exact_diagnostics"}
       ]
     },
     {
@@ -247,7 +247,7 @@
       "expected": "MalformedError::MissingReferredSegment",
       "tests": [
         {"target": "catalog_contracts", "name": "missing_reference_has_exact_segment_and_referred_numbers"},
-        {"target": "lib", "name": "document::tests::reference_depth_orders_raw_metadata_and_reports_missing_or_overflowed_ancestors"}
+        {"target": "lib", "name": "document::tests::quotas_and_references::reference_depth_orders_raw_metadata_and_reports_missing_or_overflowed_ancestors"}
       ]
     },
     {
@@ -255,7 +255,7 @@
       "surface": "reference graph",
       "expected": "LimitKind::ReferenceDepth",
       "tests": [
-        {"target": "lib", "name": "document::tests::enforces_total_reference_and_depth_limits"}
+        {"target": "lib", "name": "document::tests::container_inspection::enforces_total_reference_and_depth_limits"}
       ]
     },
     {
@@ -263,7 +263,7 @@
       "surface": "retained segment state",
       "expected": "MalformedError::InvalidRetentionFlags",
       "tests": [
-        {"target": "lib", "name": "document::tests::rejects_reference_to_nonretained_segment"}
+        {"target": "lib", "name": "document::tests::container_inspection::rejects_reference_to_nonretained_segment"}
       ]
     },
     {
@@ -272,7 +272,7 @@
       "expected": "LimitKind::Width, Height, PagePixels, or Memory",
       "tests": [
         {"target": "public_api", "name": "page_dimensions_and_structural_work_limits_are_inclusive"},
-        {"target": "lib", "name": "bitmap::tests::checked_layout_enforces_each_bitmap_limit"}
+        {"target": "lib", "name": "bitmap::tests::layout_and_access::checked_layout_enforces_each_bitmap_limit"}
       ]
     },
     {
@@ -280,8 +280,8 @@
       "surface": "arithmetic decoder",
       "expected": "MalformedError::UnexpectedEof",
       "tests": [
-        {"target": "lib", "name": "arithmetic::tests::initialization_and_byte_in_reject_truncation"},
-        {"target": "lib", "name": "arithmetic::tests::marker_fill_requires_a_real_marker"}
+        {"target": "lib", "name": "arithmetic::tests::decoder_registers::initialization_and_byte_in_reject_truncation"},
+        {"target": "lib", "name": "arithmetic::tests::decoder_registers::marker_fill_requires_a_real_marker"}
       ]
     },
     {
@@ -289,7 +289,7 @@
       "surface": "custom Huffman table",
       "expected": "HuffmanErrorKind::Oversubscribed",
       "tests": [
-        {"target": "lib", "name": "huffman::tests::rejects_oversubscribed_and_structurally_invalid_tables"}
+        {"target": "lib", "name": "huffman::tests::table_validation::rejects_oversubscribed_and_structurally_invalid_tables"}
       ]
     },
     {
@@ -297,7 +297,7 @@
       "surface": "MMR",
       "expected": "MmrErrorKind::ExtensionMode",
       "tests": [
-        {"target": "lib", "name": "mmr::tests::extension_mode_is_rejected"}
+        {"target": "lib", "name": "mmr::tests::normative_decode::extension_mode_is_rejected"}
       ]
     },
     {
@@ -305,7 +305,7 @@
       "surface": "MMR",
       "expected": "MmrErrorKind::RunExceedsRow",
       "tests": [
-        {"target": "lib", "name": "mmr::tests::run_overshoot_is_rejected"}
+        {"target": "lib", "name": "mmr::tests::normative_decode::run_overshoot_is_rejected"}
       ]
     },
     {
@@ -313,8 +313,8 @@
       "surface": "raw symbol/text work and cumulative bitmap counters",
       "expected": "exact wide-arithmetic overflow/limit priority and attempted-charge semantics: representable charges remain recorded on limit rejection; dimension/overflow failures preserve the primary counter",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::work_charges_match_wide_results_and_attempted_charge_failure_state"},
-        {"target": "lib", "name": "symbol_text::tests::bitmap_charges_match_wide_priority_and_attempted_charge_failure_state"}
+        {"target": "lib", "name": "symbol_text::tests::resource_accounting::work_charges_match_wide_results_and_attempted_charge_failure_state"},
+        {"target": "lib", "name": "symbol_text::tests::resource_accounting::bitmap_charges_match_wide_priority_and_attempted_charge_failure_state"}
       ]
     },
     {
@@ -322,7 +322,7 @@
       "surface": "raw placement reservation counts and requested-byte limits",
       "expected": "count clamps to sixteen; requested-byte limit is inclusive and pending logical state is preserved; no allocator-capacity upper bound is inferred",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::placement_batch_reservation_clamps_counts_and_preserves_pending_state"}
+        {"target": "lib", "name": "symbol_text::tests::placement_state::placement_batch_reservation_clamps_counts_and_preserves_pending_state"}
       ]
     },
     {
@@ -330,8 +330,8 @@
       "surface": "raw statistics memory and raster-work guard inputs",
       "expected": "wide-arithmetic overflow priority and exact inclusive retained, managed-memory and work limits without allocating large images",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::raw_context_memory_guards_match_wide_arithmetic_and_priority"},
-        {"target": "lib", "name": "generic_region::tests::raw_raster_work_guards_cover_exact_addition_overflow_boundaries"}
+        {"target": "lib", "name": "generic_region::tests::preflight_and_templates::raw_context_memory_guards_match_wide_arithmetic_and_priority"},
+        {"target": "lib", "name": "generic_region::tests::preflight_and_templates::raw_raster_work_guards_cover_exact_addition_overflow_boundaries"}
       ]
     },
     {
@@ -339,7 +339,7 @@
       "surface": "existing marker prefix with raw row counts, skip geometry and resource limits",
       "expected": "exact preflight errors preserve the stream registers, statistics, work counter and direct bitmap",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::generic_preflight_errors_preserve_stream_statistics_work_and_direct_bytes"}
+        {"target": "lib", "name": "generic_region::tests::segment_framing::generic_preflight_errors_preserve_stream_statistics_work_and_direct_bytes"}
       ]
     },
     {
@@ -347,8 +347,8 @@
       "surface": "raw generic framing and zero-row constructor preflight",
       "expected": "exact terminator, row-count, EOF and normalization-memory errors; rejected direct targets unchanged",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::known_length_normalization_reports_exact_errors_before_bitmap_mutation"},
-        {"target": "lib", "name": "generic_region::tests::unknown_length_framing_preserves_count_extent_and_exact_eof_fields"}
+        {"target": "lib", "name": "generic_region::tests::segment_framing::known_length_normalization_reports_exact_errors_before_bitmap_mutation"},
+        {"target": "lib", "name": "generic_region::tests::segment_framing::unknown_length_framing_preserves_count_extent_and_exact_eof_fields"}
       ]
     },
     {
@@ -356,7 +356,7 @@
       "surface": "raw work and retained-state counters",
       "expected": "wide-arithmetic overflow precedence, exact inclusive limit fields and unchanged rejected counters",
       "tests": [
-        {"target": "lib", "name": "decode::tests::runtime_budgets_match_wide_arithmetic_and_preserve_rejected_state"}
+        {"target": "lib", "name": "decode::tests::budgets_and_pages::runtime_budgets_match_wide_arithmetic_and_preserve_rejected_state"}
       ]
     },
     {
@@ -364,7 +364,7 @@
       "surface": "generic arithmetic context",
       "expected": "GenericRegionErrorKind::InvalidAdaptivePixel",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::rejects_reserved_flags_mmr_template_and_future_at"}
+        {"target": "lib", "name": "generic_region::tests::headers_and_prediction::rejects_reserved_flags_mmr_template_and_future_at"}
       ]
     },
     {
@@ -372,7 +372,7 @@
       "surface": "halftone",
       "expected": "HalftoneErrorKind::InvalidPatternIndex",
       "tests": [
-        {"target": "lib", "name": "halftone::tests::rejects_unused_gray_code_and_work_overrun"}
+        {"target": "lib", "name": "halftone::tests::headers_and_patterns::rejects_unused_gray_code_and_work_overrun"}
       ]
     },
     {
@@ -380,7 +380,7 @@
       "surface": "page composition",
       "expected": "MalformedError::InvalidPageState",
       "tests": [
-        {"target": "lib", "name": "decode::tests::rejects_region_that_modifies_a_sealed_stripe"}
+        {"target": "lib", "name": "decode::tests::container_routes::rejects_region_that_modifies_a_sealed_stripe"}
       ]
     }
   ]

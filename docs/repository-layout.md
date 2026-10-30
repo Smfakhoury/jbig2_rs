@@ -39,13 +39,24 @@ modules hold focused implementation responsibilities.
 | [`src/symbol_text.rs`](../src/symbol_text.rs) | [`symbol_text/`](../src/symbol_text): codecs, headers, tables, dictionaries, placement, text and bitmap support |
 | [`src/generic_region.rs`](../src/generic_region.rs) | [`generic_region/`](../src/generic_region): contexts, headers, generic/refinement engines and segment wiring |
 | [`src/halftone.rs`](../src/halftone.rs) | [`halftone/`](../src/halftone): headers, resources, planes and rendering |
+| [`src/arithmetic.rs`](../src/arithmetic.rs) | [`arithmetic/`](../src/arithmetic): probability tables, decisions, integer/IAID decoding and byte refill |
+| [`src/huffman.rs`](../src/huffman.rs) | [`huffman/`](../src/huffman): wide arithmetic, code construction, decoding, validation and standard tables |
+| [`src/mmr.rs`](../src/mmr.rs) | [`mmr/`](../src/mmr): tables, raster orchestration, storage, codes, reference rows, spans and termination |
 
-Unit tests live in each component's `tests.rs` rather than interrupting its
-implementation. They remain packaged and keep their logical Cargo test names.
+Unit tests start at each component's `tests.rs`; larger suites have focused
+child modules under `tests/`. They remain packaged. Nested module names are
+reflected in the exact Cargo selectors in the negative/metamorphic catalogs,
+native mutation checks and traceability ledger.
 Their file-local `cfg(test)` guards also let standalone source/coverage audits
 identify them as test-only; the narrow duplicate-attribute lint allowances are
 intentional. Internal fuzz/validation helpers retain their existing cfgs and
 are not moved into test-only modules.
+
+The runtime audit enforces at most 800 lines per handwritten owned Rust file,
+including models, proofs and tests. Split complete responsibilities into real
+modules, not `include!` fragments, forwarding wrappers or compressed formatting.
+No exception is needed for the current layout. The budget limits individual
+reading units; it is not a claim that the total implementation became smaller.
 
 Detailed proof reasoning stays in the corresponding proof files. Short
 contracts, loop invariants, local snapshots and calls to those helpers remain

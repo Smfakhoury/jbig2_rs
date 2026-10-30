@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from proof_sensitivity import check_semantic_cases, replace_once
-from rust_source import source_functions
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,9 +57,8 @@ BITMAP_LIMIT_CALL = """enforce_limit(
     limits.max_cumulative_decoded_bitmap_bytes,
     self.decoded_bitmap_bytes,
 )?;"""
-BODIES = {entry["id"]: entry["body_text"] for entry in source_functions(ROOT)}
-DIMENSION_BODY = BODIES["symbol_text::check_dimensions"]
-CURRENT_BODY = BODIES["symbol_text::text::TextRegionState::place_current"]
+DIMENSION_BODY = runtime_function(ROOT, "symbol_text", "check_dimensions")["body_text"]
+CURRENT_BODY = runtime_function(ROOT, "symbol_text", "TextRegionState::place_current")["body_text"]
 CASES = (
     {
         "id": "empty_batch_mutates_storage", "file": "src/symbol_text.rs",

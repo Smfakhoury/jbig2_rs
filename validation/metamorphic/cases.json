@@ -30,11 +30,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "document::tests::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
+          "name": "document::tests::payload_windows::raw_known_segment_dispatch_preserves_page_stripe_profile_variants_and_values"
         },
         {
           "target": "lib",
-          "name": "document::tests::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
+          "name": "document::tests::payload_windows::raw_page_metadata_survives_sequential_random_and_embedded_container_composition"
         }
       ]
     },
@@ -45,11 +45,11 @@
       "tests": [
         {
           "target": "lib",
-          "name": "document::tests::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
+          "name": "document::tests::payload_windows::raw_random_access_layout_matches_separate_literal_headers_and_payloads"
         },
         {
           "target": "lib",
-          "name": "document::tests::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
+          "name": "document::tests::payload_windows::standalone_random_access_origins_order_eof_and_trailing_bytes_match_raw_metadata"
         }
       ]
     },
@@ -69,7 +69,7 @@
       "transformation": "known raw lengths zero through32 at nonzero cursor and the existing approved unknown-length terminator metadata",
       "invariant": "returned bytes equal the original selected source window, cursor advances exactly and untouched suffix remains; no encoded-family fixture expansion",
       "tests": [
-        {"target": "lib", "name": "document::tests::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"}
+        {"target": "lib", "name": "document::tests::payload_windows::raw_payload_windows_keep_exact_known_and_existing_unknown_extents"}
       ]
     },
     {
@@ -77,8 +77,8 @@
       "transformation": "original optional-extension metadata with ordered/unordered numbers, optional EOF and known/unknown zero-page standalone headers versus embedded organization",
       "invariant": "exact literal header/payload windows, full input extent and public caller body origin; embedded order preserved, standalone number-order and trailing-byte errors remain exact",
       "tests": [
-        {"target": "lib", "name": "document::tests::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"},
-        {"target": "lib", "name": "document::tests::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"}
+        {"target": "lib", "name": "document::tests::payload_windows::raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy"},
+        {"target": "lib", "name": "document::tests::payload_windows::standalone_sequential_body_origin_is_exact_and_unordered_headers_are_rejected"}
       ]
     },
     {
@@ -94,8 +94,8 @@
       "transformation": "vary signed raw slot offsets, adaptive indices, literal bitmap samples and unmasked history values",
       "invariant": "exact planes/offsets/context sizes and scalar context bits, including nominal and nonnominal templates and history masks",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::raw_template_slots_preserve_offsets_planes_and_context_sizes"},
-        {"target": "lib", "name": "generic_region::tests::raw_context_descriptors_match_literal_sampling_and_history_masks"}
+        {"target": "lib", "name": "generic_region::tests::preflight_and_templates::raw_template_slots_preserve_offsets_planes_and_context_sizes"},
+        {"target": "lib", "name": "generic_region::tests::preflight_and_templates::raw_context_descriptors_match_literal_sampling_and_history_masks"}
       ]
     },
     {
@@ -103,8 +103,8 @@
       "transformation": "vary all limbs across zero, high-bit, one and maximum values with carry, borrow, shift, append and distance bounds",
       "invariant": "independent bit-serial and wide-integer oracles give exact 256-bit results, overflow shape and exclusive distance bounds",
       "tests": [
-        {"target": "lib", "name": "huffman::tests::raw_wide_code_arithmetic_matches_independent_bit_serial_oracles"},
-        {"target": "lib", "name": "huffman::tests::raw_wide_distances_match_bit_serial_subtraction_and_exclusive_bounds"}
+        {"target": "lib", "name": "huffman::tests::wide_arithmetic::raw_wide_code_arithmetic_matches_independent_bit_serial_oracles"},
+        {"target": "lib", "name": "huffman::tests::wide_arithmetic::raw_wide_distances_match_bit_serial_subtraction_and_exclusive_bounds"}
       ]
     },
     {
@@ -112,9 +112,9 @@
       "transformation": "vary complete template codes, page/region operators, resource key order, duplicate inserts and repeated/missing table references",
       "invariant": "exact selector policy, key order, borrowed table identity and repeated-reference order; duplicate inserts and repeated releases preserve unrelated state",
       "tests": [
-        {"target": "lib", "name": "decode::tests::raw_dispatch_selectors_match_complete_codes_and_operator_policy"},
-        {"target": "lib", "name": "decode::tests::raw_resource_maps_preserve_key_order_identity_and_duplicate_state"},
-        {"target": "lib", "name": "decode::tests::raw_referred_tables_preserve_order_repeats_missing_keys_and_retention"}
+        {"target": "lib", "name": "decode::tests::dispatch_and_resources::raw_dispatch_selectors_match_complete_codes_and_operator_policy"},
+        {"target": "lib", "name": "decode::tests::dispatch_and_resources::raw_resource_maps_preserve_key_order_identity_and_duplicate_state"},
+        {"target": "lib", "name": "decode::tests::dispatch_and_resources::raw_referred_tables_preserve_order_repeats_missing_keys_and_retention"}
       ]
     },
     {
@@ -122,9 +122,9 @@
       "transformation": "enumerate every raw dictionary/text flag word, both refinement modes and absent/present/reserved Huffman metadata; no coded-family payload is generated",
       "invariant": "literal independent field policy gives exact accepted fields, signed offsets, strip geometry, selectors and error precedence; colour remains unsupported",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::raw_dictionary_flag_words_match_independent_field_policy"},
-        {"target": "lib", "name": "symbol_text::tests::raw_text_flag_words_preserve_geometry_and_error_precedence"},
-        {"target": "lib", "name": "symbol_text::tests::raw_text_table_selectors_match_complete_word_domain"}
+        {"target": "lib", "name": "symbol_text::tests::flags_and_tables::raw_dictionary_flag_words_match_independent_field_policy"},
+        {"target": "lib", "name": "symbol_text::tests::flags_and_tables::raw_text_flag_words_preserve_geometry_and_error_precedence"},
+        {"target": "lib", "name": "symbol_text::tests::flags_and_tables::raw_text_table_selectors_match_complete_word_domain"}
       ]
     },
     {
@@ -132,9 +132,9 @@
       "transformation": "vary all eight-slot custom/standard masks and each missing field, then materialize all fifteen standard tables and reuse borrowed standard-table objects",
       "invariant": "exact selector order, table pointer identity, OOB metadata, missing-field diagnostics, raw-bit field exclusion, independent cache slots and preserved failed-materialization state",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::raw_table_bindings_preserve_selector_order_identity_and_oob_policy"},
-        {"target": "lib", "name": "symbol_text::tests::raw_table_associations_reject_missing_fields_and_preserve_borrowed_tables"},
-        {"target": "lib", "name": "symbol_text::tests::raw_standard_table_cache_covers_every_slot_and_failed_materialization"}
+        {"target": "lib", "name": "symbol_text::tests::flags_and_tables::raw_table_bindings_preserve_selector_order_identity_and_oob_policy"},
+        {"target": "lib", "name": "symbol_text::tests::flags_and_tables::raw_table_associations_reject_missing_fields_and_preserve_borrowed_tables"},
+        {"target": "lib", "name": "symbol_text::tests::flags_and_tables::raw_standard_table_cache_covers_every_slot_and_failed_materialization"}
       ]
     },
     {
@@ -142,9 +142,9 @@
       "transformation": "sequential/random-access/embedded documents, known/unknown declared counts, reversed page encounter order, zero dimensions and known/unknown stripe heights",
       "invariant": "all public metadata fields match literal declarations; metadata is page-number sorted while decoded/sink pages retain stream order; complete packed bytes and padding match literal expectations",
       "tests": [
-        {"target": "public_envelope", "name": "organizations_preserve_sorted_metadata_but_deliver_pages_in_stream_order"},
-        {"target": "public_envelope", "name": "empty_documents_and_zero_sized_bitmaps_have_complete_metadata"},
-        {"target": "public_envelope", "name": "stripe_metadata_and_zero_padding_follow_independently_declared_rows"}
+        {"target": "public_envelope", "name": "organization_and_limits::organizations_preserve_sorted_metadata_but_deliver_pages_in_stream_order"},
+        {"target": "public_envelope", "name": "organization_and_limits::empty_documents_and_zero_sized_bitmaps_have_complete_metadata"},
+        {"target": "public_envelope", "name": "page_lifecycle::stripe_metadata_and_zero_padding_follow_independently_declared_rows"}
       ]
     },
     {
@@ -152,8 +152,8 @@
       "transformation": "add empty or superset profile declarations, opaque optional extensions and empty/nonempty one-byte or UTF-16 comments",
       "invariant": "literal page metadata, dimensions, stride and complete packed output are unchanged; nonempty global profile streams are reusable",
       "tests": [
-        {"target": "public_envelope", "name": "profile_supersets_and_empty_profile_sets_are_accepted_without_changing_pixels"},
-        {"target": "public_envelope", "name": "optional_extensions_and_both_comment_encodings_preserve_literal_output"}
+        {"target": "public_envelope", "name": "metadata_extensions::profile_supersets_and_empty_profile_sets_are_accepted_without_changing_pixels"},
+        {"target": "public_envelope", "name": "metadata_extensions::optional_extensions_and_both_comment_encodings_preserve_literal_output"}
       ]
     },
     {
@@ -161,8 +161,8 @@
       "transformation": "reuse an immutable two-level extension-reference chain across contexts and reorder embedded global headers with deferred retention flags",
       "invariant": "exact global segment counts, local metadata and literal pixels; last-reference retention and graph depth are independent of wire encounter order",
       "tests": [
-        {"target": "public_envelope", "name": "nonempty_global_reference_chains_reuse_immutable_state_and_exact_depth"},
-        {"target": "public_envelope", "name": "reference_retention_uses_the_last_reference_not_the_first_or_wire_order"}
+        {"target": "public_envelope", "name": "references::nonempty_global_reference_chains_reuse_immutable_state_and_exact_depth"},
+        {"target": "public_envelope", "name": "references::reference_retention_uses_the_last_reference_not_the_first_or_wire_order"}
       ]
     },
     {
@@ -217,7 +217,7 @@
       "transformation": "sequential to random-access organization",
       "invariant": "decoded page dimensions and bitmap bytes",
       "tests": [
-        {"target": "lib", "name": "decode::tests::sequential_and_random_access_outputs_match"}
+        {"target": "lib", "name": "decode::tests::container_routes::sequential_and_random_access_outputs_match"}
       ]
     },
     {
@@ -242,7 +242,7 @@
       "transformation": "vary signed origins, empty/nonempty raw bitmaps and resource-counter limits",
       "invariant": "wide rectangle intersections determine exact source/destination geometry and work; bounded-coordinate errors and attempted-charge states match independently computed expectations",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::placement_preflight_matches_wide_geometry_and_resource_failure_frames"}
+        {"target": "lib", "name": "symbol_text::tests::placement_state::placement_preflight_matches_wide_geometry_and_resource_failure_frames"}
       ]
     },
     {
@@ -250,8 +250,8 @@
       "transformation": "vary compatible grouping, modulo alignment, capacity boundaries, overlapping blits, operators and empty spans",
       "invariant": "rejected groups preserve state; flush matches independent ordered bit truths, clears pending entries and preserves source/padding bytes",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::placement_batch_compatibility_uses_group_geometry_modulo_alignment_and_cap"},
-        {"target": "lib", "name": "symbol_text::tests::placement_batch_flush_matches_independent_bit_truths_and_preserves_sources"}
+        {"target": "lib", "name": "symbol_text::tests::placement_state::placement_batch_compatibility_uses_group_geometry_modulo_alignment_and_cap"},
+        {"target": "lib", "name": "symbol_text::tests::placement_state::placement_batch_flush_matches_independent_bit_truths_and_preserves_sources"}
       ]
     },
     {
@@ -259,7 +259,7 @@
       "transformation": "vary raw initial strip values, valid strip sizes, declared counts and work limits",
       "invariant": "wide checked intermediate scaling and negation determine exact initialization and error priority",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::text_state_initialization_matches_wide_checked_scaling_and_work_priority"}
+        {"target": "lib", "name": "symbol_text::tests::placement_state::text_state_initialization_matches_wide_checked_scaling_and_work_priority"}
       ]
     },
     {
@@ -267,8 +267,8 @@
       "transformation": "vary raw strip deltas, numeric boundaries and legal/illegal operation ordering",
       "invariant": "exact success and partial-error state/counter effects remain stable without resetting attempted charges",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::begin_strip_preserves_exact_partial_updates_on_checked_arithmetic_errors"},
-        {"target": "lib", "name": "symbol_text::tests::text_strip_order_guards_preserve_their_exact_state_and_charge_frames"}
+        {"target": "lib", "name": "symbol_text::tests::placement_state::begin_strip_preserves_exact_partial_updates_on_checked_arithmetic_errors"},
+        {"target": "lib", "name": "symbol_text::tests::placement_state::text_strip_order_guards_preserve_their_exact_state_and_charge_frames"}
       ]
     },
     {
@@ -276,7 +276,7 @@
       "transformation": "vary raw strip/reference-corner metadata, transposition, extents, within-strip coordinates and resource limits",
       "invariant": "independent wide-coordinate arithmetic agrees on accepted placements and exact partial failure frames",
       "tests": [
-        {"target": "lib", "name": "symbol_text::tests::current_text_placement_matches_wide_coordinates_and_partial_failure_state"}
+        {"target": "lib", "name": "symbol_text::tests::placement_state::current_text_placement_matches_wide_coordinates_and_partial_failure_state"}
       ]
     },
     {
@@ -284,9 +284,9 @@
       "transformation": "vary row-blit alignment, widths around byte/word boundaries, overlap order, operators and empty spans",
       "invariant": "all bytes match independent ordered bit updates, source bytes remain unchanged and zero-area requests are successful no-ops",
       "tests": [
-        {"target": "lib", "name": "bitmap::tests::row_batch_chunking_matches_independent_ordered_bit_updates"},
-        {"target": "lib", "name": "bitmap::tests::zero_height_row_batch_never_reads_blit_coordinates"},
-        {"target": "lib", "name": "bitmap::tests::zero_width_unaligned_row_blit_preserves_all_storage"}
+        {"target": "lib", "name": "bitmap::tests::composition::row_batch_chunking_matches_independent_ordered_bit_updates"},
+        {"target": "lib", "name": "bitmap::tests::composition::zero_height_row_batch_never_reads_blit_coordinates"},
+        {"target": "lib", "name": "bitmap::tests::composition::zero_width_unaligned_row_blit_preserves_all_storage"}
       ]
     },
     {
@@ -294,7 +294,7 @@
       "transformation": "retain/reset/restore raw valid statistics across all generic template layouts, incompatible layouts and inclusive memory limits",
       "invariant": "every state/MPS pair and ownership are preserved; incompatible or limited operations do not modify their targets",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::generic_snapshots_copy_all_states_and_preserve_rejected_targets"}
+        {"target": "lib", "name": "generic_region::tests::sessions_and_snapshots::generic_snapshots_copy_all_states_and_preserve_rejected_targets"}
       ]
     },
     {
@@ -302,7 +302,7 @@
       "transformation": "resolve raw numeric owner/target tags and reference cardinalities through local or global metadata",
       "invariant": "both resolution routes agree with the independent tag/cardinality matrix and preserve exact invalid-role diagnostics",
       "tests": [
-        {"target": "lib", "name": "document::tests::raw_reference_role_matrix_matches_numeric_tag_policy_locally_and_globally"}
+        {"target": "lib", "name": "document::tests::quotas_and_references::raw_reference_role_matrix_matches_numeric_tag_policy_locally_and_globally"}
       ]
     },
     {
@@ -310,8 +310,8 @@
       "transformation": "vary raw rectangle/stripe coordinates, numeric boundaries and existing open/sealed rows",
       "invariant": "wide intersection/error-priority rules agree; sealing preserves pixels and rejected page state",
       "tests": [
-        {"target": "lib", "name": "decode::tests::raw_page_write_bounds_match_wide_intersection_and_error_priority"},
-        {"target": "lib", "name": "decode::tests::raw_stripe_sealing_preserves_pixels_and_rejected_page_state"}
+        {"target": "lib", "name": "decode::tests::budgets_and_pages::raw_page_write_bounds_match_wide_intersection_and_error_priority"},
+        {"target": "lib", "name": "decode::tests::budgets_and_pages::raw_stripe_sealing_preserves_pixels_and_rejected_page_state"}
       ]
     },
     {
@@ -319,7 +319,7 @@
       "transformation": "vary raw bitmap crop origins and dimensions across empty, partial and out-of-page intersections",
       "invariant": "literal scalar pixels and zero padding agree; source pixels remain unchanged",
       "tests": [
-        {"target": "lib", "name": "decode::tests::raw_bitmap_snapshot_matches_literal_scalar_clipping_and_padding"}
+        {"target": "lib", "name": "decode::tests::budgets_and_pages::raw_bitmap_snapshot_matches_literal_scalar_clipping_and_padding"}
       ]
     },
     {
@@ -327,7 +327,7 @@
       "transformation": "vary sixteen raw retention masks with repeated, missing and unreferenced bitmap resource IDs; release twice",
       "invariant": "only selected existing keys are removed, surviving order and exact bitmap-byte accounting remain stable",
       "tests": [
-        {"target": "lib", "name": "decode::tests::referred_bitmap_resources_release_only_selected_existing_keys_once"}
+        {"target": "lib", "name": "decode::tests::budgets_and_pages::referred_bitmap_resources_release_only_selected_existing_keys_once"}
       ]
     },
     {
@@ -335,9 +335,9 @@
       "transformation": "owned/direct zero-row calls with complete or normalized arithmetic terminators and known/unknown lengths",
       "invariant": "geometry and blank bytes agree; reported consumption uses original input extent, not normalized allocation length",
       "tests": [
-        {"target": "lib", "name": "generic_region::tests::known_length_normalization_preserves_zero_row_bitmap_geometry"},
-        {"target": "lib", "name": "generic_region::tests::zero_row_dispatch_reports_original_not_normalized_input_extent"},
-        {"target": "lib", "name": "generic_region::tests::direct_generic_dispatch_declines_unsupported_routes_without_mutation"}
+        {"target": "lib", "name": "generic_region::tests::segment_framing::known_length_normalization_preserves_zero_row_bitmap_geometry"},
+        {"target": "lib", "name": "generic_region::tests::segment_framing::zero_row_dispatch_reports_original_not_normalized_input_extent"},
+        {"target": "lib", "name": "generic_region::tests::segment_framing::direct_generic_dispatch_declines_unsupported_routes_without_mutation"}
       ]
     },
     {
@@ -345,7 +345,7 @@
       "transformation": "Boolean inputs across all operators",
       "invariant": "OR/AND/XOR/XNOR/REPLACE truth tables",
       "tests": [
-        {"target": "lib", "name": "bitmap::tests::every_combination_operator_matches_boolean_definition"}
+        {"target": "lib", "name": "bitmap::tests::composition::every_combination_operator_matches_boolean_definition"}
       ]
     },
     {
