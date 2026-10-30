@@ -420,7 +420,8 @@ fn export_run_errors_preserve_classification_work_and_unread_input() {
 
 #[test]
 fn export_runs_match_every_small_selection_with_exact_work_and_input_frames() {
-    for count in 0_u32..=9 {
+    let mut checked = 0;
+    for count in 0_u32..=10 {
         for selected in 0_u32..(1 << count) {
             let expected: Vec<_> = (0..count)
                 .filter(|index| selected & (1 << index) != 0)
@@ -439,6 +440,9 @@ fn export_runs_match_every_small_selection_with_exact_work_and_input_frames() {
             }
             if count != 0 {
                 integers.push_back(EntropyInteger::Value(run));
+                for _ in 0..2 * (selected.count_ones() % 3) {
+                    integers.push_front(EntropyInteger::Value(0));
+                }
             }
             let work = u64::try_from(integers.len()).unwrap() + 5;
             integers.push_back(EntropyInteger::Value(-73));
@@ -463,6 +467,7 @@ fn export_runs_match_every_small_selection_with_exact_work_and_input_frames() {
             )
             .expect("scalar selection");
             assert_eq!(result, expected);
+            assert!(result.windows(2).all(|pair| pair[0] < pair[1]));
             assert_eq!(
                 resources,
                 ResourceTracker {
@@ -477,8 +482,10 @@ fn export_runs_match_every_small_selection_with_exact_work_and_input_frames() {
                 scripted.integers,
                 VecDeque::from([EntropyInteger::Value(-73)])
             );
+            checked += 1;
         }
     }
+    assert_eq!(checked, 2_047);
 }
 
 #[test]

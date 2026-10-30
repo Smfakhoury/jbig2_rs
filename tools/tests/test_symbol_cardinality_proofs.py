@@ -17,9 +17,23 @@ from proof_sensitivity import replace_once, weakened_contract
 
 
 class SymbolCardinalityProofTests(unittest.TestCase):
+    def test_export_order_control_keeps_count_bounds_and_resource_frame(self):
+        case = next(case for case in CASES if case["function"] == "decode_export_runs")
+        source = source_text(TOOLS.parent, case["file"])
+        changed = replace_once(source, case["site"], case["replacement"])
+        weaker = weakened_contract(changed, case)
+        self.assertEqual(source.count("forall|left: int, right: int|"), 3)
+        self.assertNotIn("forall|left: int, right: int|", weaker)
+        self.assertIn("exported@.len() == expected_exports", weaker)
+        self.assertIn("symbol_text_spec::export_indices_valid(", weaker)
+        self.assertIn("exported@[offset] < index", weaker)
+        self.assertIn("exported@[offset] < candidate", weaker)
+        self.assertIn("symbol_text_spec::bitmap_bytes(final(resources))", weaker)
+        self.assertIn("exported.push(index);", weaker)
+
     def test_unique_mutations_retain_existing_storage_and_lookup_bounds(self):
-        self.assertEqual(len(CASES), 11)
-        self.assertEqual(len({case["id"] for case in CASES}), 11)
+        self.assertEqual(len(CASES), 12)
+        self.assertEqual(len({case["id"] for case in CASES}), 12)
         for case in CASES:
             with self.subTest(case=case["id"]):
                 source = source_text(TOOLS.parent, case["file"])

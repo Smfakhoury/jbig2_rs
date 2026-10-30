@@ -19,11 +19,13 @@ BASELINE_GROUPS = (
     )),
     ("symbol_text", (
         "SymbolCodebook::get", "assemble_exported_symbols", "symbol_by_id",
+        "decode_export_runs",
     )),
 )
 GET = runtime_function(ROOT, "symbol_text", "SymbolCodebook::get")["body_text"]
 LOOKUP = runtime_function(ROOT, "symbol_text", "symbol_by_id")["body_text"]
 ASSEMBLE = runtime_function(ROOT, "symbol_text::dictionary", "assemble_exported_symbols")["body_text"]
+EXPORT_RUNS = runtime_function(ROOT, "symbol_text::dictionary", "decode_export_runs")["body_text"]
 CODEBOOK_COUNT = """crate::symbol_text::symbol_text_spec::codebook_len(out)
     == decode_spec::collected_symbol_count(self),"""
 GROUP_COUNT = """&& resource.exported@.len()
@@ -54,6 +56,13 @@ LOOKUP_ACCEPTS = """(symbol_text_spec::codebook_len(imported) + new_symbols@.len
     && symbol_text_spec::codebook_len(imported) + new_symbols@.len() <= u32::MAX
     && (id as nat) < symbol_text_spec::codebook_len(imported) + new_symbols@.len())
     ==> out.is_ok(),"""
+RUN_ORDER = """forall|left: int, right: int|
+    0 <= left < right < exported@.len() ==>
+        #[trigger] exported@[left] < #[trigger] exported@[right]"""
+RUN_OUTER_BOUND = """forall|offset: int| 0 <= offset < exported@.len()
+    ==> #[trigger] exported@[offset] < index,"""
+RUN_INNER_BOUND = """forall|offset: int| 0 <= offset < exported@.len()
+    ==> #[trigger] exported@[offset] < candidate,"""
 
 
 def case(identity, function, site, replacement, controls, *,
@@ -164,6 +173,17 @@ CASES = (
         ((LOOKUP_ACCEPTS, ""),),
         file="src/symbol_text.rs", module="symbol_text",
     ),
+    case(
+        "export_run_repeats_first_candidate_instead_of_strict_order",
+        "decode_export_runs", EXPORT_RUNS,
+        replace_once(EXPORT_RUNS, "exported.push(candidate);", "exported.push(index);"),
+        (
+            ("&& (" + RUN_ORDER + ")", ""),
+            (RUN_OUTER_BOUND + "\n" + RUN_ORDER + ",", RUN_OUTER_BOUND),
+            (RUN_INNER_BOUND + "\n" + RUN_ORDER + ",", RUN_INNER_BOUND),
+        ),
+        file="src/symbol_text.rs", module="symbol_text",
+    ),
 )
 
 
@@ -178,7 +198,7 @@ def main():
             ("src/decode.rs", "specs/decode.rs", "src/symbol_text.rs",
              "specs/symbol_text.rs", "src/bitmap.rs", "specs/bitmap.rs"),
             "jbig2-symbol-cardinality-",
-            "Exact project group/cardinality plus contiguous/borrowed bitmap content selection, imported/new ID mapping and all ordered/repeated owned export bytes/dimensions. Original shape controls remain; no encoded export-run selection, observed-capacity, independent normative or caller-stream claim",
+            "Exact project group/cardinality plus contiguous/borrowed bitmap content selection, imported/new ID mapping, all ordered/repeated owned export bytes/dimensions and strict duplicate-free decoded export indices. Original bounds/count controls remain; no encoded export-run selection, observed-capacity, independent normative or caller-stream claim",
             baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:

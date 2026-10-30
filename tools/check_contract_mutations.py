@@ -16,6 +16,7 @@ from check_huffman_assignment_proofs import CASES as HUFFMAN_ASSIGNMENT_CASES
 from check_page_state_proofs import CASES as PAGE_STATE_CASES
 from check_segment_data_proofs import CASES as SEGMENT_DATA_CASES
 from check_segment_header_proofs import CASES as HEADER_CASES
+from check_symbol_cardinality_proofs import CASES as SYMBOL_CARDINALITY_CASES
 from check_text_batch_proofs import CASES as TEXT_CASES
 from proof_sensitivity import replace_once
 
@@ -57,6 +58,15 @@ DOCUMENT_WINDOW_TESTS = {
     "embedded_discards_first_input_byte": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
 }
 MUTATIONS = tuple(
+    {
+        "id": "symbol-cardinality-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib",
+        "test": "symbol_text::tests::codec_and_exports::export_runs_match_every_small_selection_with_exact_work_and_input_frames",
+        "whitespace_flexible": True,
+    }
+    for case in SYMBOL_CARDINALITY_CASES if case["function"] == "decode_export_runs"
+) + tuple(
     {
         "id": "huffman-assignment-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],
