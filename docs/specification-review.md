@@ -57,8 +57,9 @@ Each auditor must challenge:
 - Bit/coordinate order, marker and initial/final boundary interpretation.
 - Caller obligations and project resource/error policy versus normative rules.
 
-Existing encoded-fixture, capacity/trust and official-positive interpretation
-holds remain in force. Do not reconstruct held fixtures to satisfy this list.
+The exact reviewed capacity-interface trust boundary and existing encoded-fixture
+and official-positive interpretation holds remain in force. Do not reconstruct
+held fixtures to satisfy this list.
 
 ## Generate an explicitly unreviewed packet
 
@@ -78,6 +79,11 @@ conservative source/configuration snapshot. Its state is always `unreviewed`;
 document-processing authorization and normative approval are false.
 It is **not** an approved normative-only model freeze. Its broad source binding
 is deliberately conservative and includes implementation dependencies.
+Local proof-only standard-interface sources, Cargo manifests/locks, review
+records and controls under `verification/stdlib/` are included. Changing, adding
+or removing one invalidates the pinned snapshot, even if runtime/model files
+are unchanged. Generated build/cache files are excluded, symlinks rejected and
+no standard text or new approval is introduced by this source binding.
 
 Supply the packet SHA-256 through the coordinator's separate assignment, then
 validate it before a read-only review:

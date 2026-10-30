@@ -358,7 +358,7 @@ def audit_packet(root, ledger, requirement_ids, ledger_path):
         identity: ledger["definitions"][identity]
         for row in requirements for identity in row["models"] + row["proof_macros"]
     }
-    for directory in ("src", "specs", "proofs", "tools", ".github/agents"):
+    for directory in ("src", "specs", "proofs", "tools", ".github/agents", "verification/stdlib"):
         if any(path.is_symlink() for path in (root / directory).rglob("*")):
             raise ValueError("audit source snapshots must not contain symlinks")
     paths = {
@@ -371,6 +371,13 @@ def audit_packet(root, ledger, requirement_ids, ledger_path):
         for pattern in ("*.py", "*.json", "*.txt")
         for path in (root / "tools").rglob(pattern)
         if "__pycache__" not in path.relative_to(root).parts
+    )
+    paths.update(
+        path.relative_to(root).as_posix()
+        for pattern in ("*.rs", "*.toml", "Cargo.lock", "*.json", "*.py", "*.txt")
+        for path in (root / "verification/stdlib").rglob(pattern)
+        if not any(part in {"target", "__pycache__", "corpus", "artifacts"}
+                   for part in path.relative_to(root).parts)
     )
     paths.update((
         ledger_path, "validation/source-provenance.json",
@@ -394,7 +401,7 @@ def audit_packet(root, ledger, requirement_ids, ledger_path):
     packet = {
         "schema_version": 1,
         "state": "unreviewed",
-        "scope": "Conservative all-Rust-source review snapshot, not an approved normative-only model freeze.",
+        "scope": "Conservative runtime/model/proof and local standard-interface source review snapshot, not an approved normative-only model freeze.",
         "requirement_ids": list(requirement_ids),
         "standards": [
             copy.deepcopy(row) for row in ledger["standards"]
