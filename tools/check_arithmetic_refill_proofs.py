@@ -95,7 +95,7 @@ CASES = (
         "function": "ArithmeticDecoder::byte_in",
         "site": CHECKED_SITE,
         "replacement": CHECKED_SITE.replace(
-            "Ok(())", "Err(ArithmeticError::Malformed(MalformedError::IntegerOverflow))",
+            "Ok(())", "Err(ArithmeticError::Malformed(crate::MalformedError::IntegerOverflow))",
         ),
         "controls": ((CHECKED_POST, "\n".join(FIELDS.values())),),
     },
