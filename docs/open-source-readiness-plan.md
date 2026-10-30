@@ -287,6 +287,7 @@ The timing/RSS and allocator drivers share their exact-output validator.
 
 ```sh
 python3 -B tools/run_allocation.py --base-ref origin/main \
+  --measure-phases \
   --output-dir target/allocation-comparison
 ```
 
@@ -297,9 +298,27 @@ an additional measurement-tool trust boundary, not a decoder dependency or
 standard-library proof axiom. First-party probe code forbids unsafe code.
 Requested `Layout` payloads do not include allocator metadata/usable-size slack,
 other threads or process RSS. All measurements remain informational; no
-release-memory threshold is ratified here. Broader corpus, phase-level and
-usable-size/overhead analysis, dedicated-host latency/RSS enforcement and
+release-memory threshold is ratified here. Broader corpus, internal entropy-only
+phase attribution and usable-size/overhead analysis, dedicated-host latency/RSS enforcement and
 ratification remain open.
+
+With `--measure-phases`, an additional raw lane separates public decoding,
+exact output validation and output destruction. Signed per-window deltas
+preserve releases of output allocated by an earlier window. Totals and live
+lifetime peaks must reconstruct a separate complete replay and match the
+original combined lane. Phase peaks are not summed: each local peak is offset
+by the allocations still live at that window's start. A real validation-only
+64 KiB allocation must change only its own phase and restore exactly.
+
+Measurement windows are never nested. The pinned counter's nested maximum
+aggregation overstates a lifetime peak when one phase frees temporary memory
+before the next allocates; the independent flat replay detects that error.
+Each phase sample executes decoding twice and public envelope inspection once.
+Inspection validates metadata without entropy decoding and is a separate,
+overlapping workload, not an internal parsing phase to subtract from decoding.
+Public decoding still includes parsing. This closes output-processing
+contamination in the measured subset, not internal entropy-only attribution,
+usable-size/overhead analysis or the remaining broader/dedicated-host gates.
 
 ## P10 — Integrate a documented CI quality contract
 
