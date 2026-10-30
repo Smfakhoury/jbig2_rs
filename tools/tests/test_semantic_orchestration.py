@@ -23,6 +23,47 @@ CURRENT_TOPOLOGY = {
     "COLLECTOR_GROUPS": runner.COLLECTOR_GROUPS,
     "DEFAULT_SHARD_REBALANCE": runner.DEFAULT_SHARD_REBALANCE,
 }
+EIGHT_SHARD_TOPOLOGY = {
+    "CI_SHARDS": 8,
+    "WHOLE_GROUPS": ("arithmetic-codec", "value-bridge", "collector-sink"),
+    "COLLECTOR_GROUPS": ("arithmetic-decision", "document-count", "reset"),
+    "DEFAULT_SHARD_REBALANCE": {
+        "mmr-reference": 0, "error-wrappers-regions": 0, "arithmetic-normalization": 0,
+        "region-dispatch": 0, "default-decoder-5": 0,
+        "document-layout": 1, "mmr-span": 1, "iaid-state": 1,
+        "bitmap-chunk": 1, "default-limits-2": 1,
+        "page-state": 2, "bitmap-copy": 2, "black-span": 2, "operator-bit": 2,
+        "default-decoder-2": 2, "default-limits-5": 2,
+        "integer-state": 3, "page-public": 3, "page-finish": 3,
+        "arithmetic-initialization": 3, "default-decoder-1": 3,
+        "symbol-cardinality": 4, "halftone-header": 4, "bitmap-compose": 4,
+        "arithmetic-refill": 4, "retention": 4,
+        "text-batch": 5, "reader-error": 5, "error-wrappers-symbol": 5,
+        "mmr-run": 5, "default-limits-3": 5,
+        "segment-data": 6, "error-conversion": 6, "error-wrappers-basic": 6,
+        "huffman-assignment": 6, "default-decoder-4": 6, "default-limits-4": 6,
+        "segment-header": 7, "arithmetic-integer": 7, "mmr-horizontal": 7,
+        "mmr-prefix": 7, "default-decoder-3": 7, "default-limits-1": 7,
+    },
+}
+CAPACITY_GROUP_SECONDS = {
+    "arithmetic-codec": 711, "value-bridge": 219, "collector-sink": 119,
+    "arithmetic-decision": 518, "document-count": 453, "reset": 120,
+    "mmr-reference": 532, "error-wrappers-regions": 287, "arithmetic-normalization": 235,
+    "region-dispatch": 148, "default-decoder-5": 147, "bitmap-chunk": 221,
+    "document-layout": 419, "mmr-span": 309, "iaid-state": 236, "default-limits-2": 146,
+    "operator-bit": 187, "page-state": 438, "bitmap-copy": 348, "black-span": 243,
+    "default-decoder-2": 148, "default-limits-5": 144, "integer-state": 352,
+    "page-public": 312, "page-finish": 257, "arithmetic-initialization": 233,
+    "default-decoder-1": 148, "symbol-cardinality": 436, "halftone-header": 307,
+    "bitmap-compose": 279, "arithmetic-refill": 231, "retention": 175, "mmr-run": 184,
+    "text-batch": 405, "reader-error": 328, "error-wrappers-symbol": 262,
+    "default-limits-3": 144, "huffman-assignment": 212, "segment-data": 350,
+    "error-conversion": 321, "error-wrappers-basic": 264, "default-decoder-4": 138,
+    "default-limits-4": 136, "mmr-prefix": 199, "segment-header": 332,
+    "arithmetic-integer": 301, "mmr-horizontal": 250, "default-decoder-3": 138,
+    "default-limits-1": 134,
+}
 SIX_SHARD_WHOLE_GROUPS = (
     "arithmetic-codec", "value-bridge", "error-conversion",
     "default-limits-1", "default-limits-4", "default-limits-5", "collector-sink",
@@ -164,7 +205,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
 
     @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     def test_eight_shard_profile_preserves_all_queries_and_bounded_concurrency(self):
-        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+        with patch.multiple(runner, **EIGHT_SHARD_TOPOLOGY):
             shards = runner.configured_shards()
             whole = runner.configured_whole_checks()
             collector = runner.configured_collector_checks()
@@ -202,6 +243,42 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(measured, [511, 703, 828, 828, 887, 857, 860, 829, 888, 887])
             self.assertLessEqual(max(measured), 1050)
             self.assertLessEqual(measured[0] + 208, 1200)
+
+    def test_capacity_profile_preserves_all_queries_and_measured_headroom(self):
+        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+            shards = runner.configured_shards()
+            whole = runner.configured_whole_checks()
+            collector = runner.configured_collector_checks()
+            self.assertEqual(len(shards), 14)
+            self.assertEqual([row[0] for row in whole], ["arithmetic-codec"])
+            self.assertEqual([row[0] for row in collector], ["arithmetic-decision", "reset"])
+            assigned = [row for role in (whole, collector, *shards) for row in role]
+            self.assertEqual(len(assigned), 49)
+            self.assertEqual(len({row[0] for row in assigned}), 49)
+            self.assertEqual(sum(row[2] for row in assigned), 329)
+            self.assertEqual(set(assigned), set(runner.configured_checks()))
+            rows = [
+                {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}
+                for row in runner.configured_checks()
+            ]
+            measured = runner.measured_shard_seconds(rows)
+            self.assertEqual(measured, [850, 837, 844, 844, 844, 844, 843, 845, 843, 847, 832, 846, 842, 846])
+            self.assertEqual(sum(CAPACITY_GROUP_SECONDS[row[0]] for row in whole), 711)
+            self.assertEqual(sum(CAPACITY_GROUP_SECONDS[row[0]] for row in collector), 638)
+            self.assertGreater(sum(measured), 13 * 850)
+            self.assertLessEqual(max(measured), 850)
+            exact = copy.deepcopy(rows)
+            next(row for row in exact if row["id"] == "mmr-reference")["seconds"] += 200
+            self.assertEqual(max(runner.measured_shard_seconds(exact)), 1050)
+            next(row for row in exact if row["id"] == "mmr-reference")["seconds"] += 1
+            with self.assertRaisesRegex(ValueError, "1050-second"):
+                runner.measured_shard_seconds(exact)
+            with patch.object(sys, "argv", ["runner", "--matrix"]), redirect_stdout(io.StringIO()) as stream:
+                self.assertEqual(runner.main(), 0)
+            self.assertEqual(json.loads(stream.getvalue()), {"shard": list(range(14))})
+        with patch.multiple(runner, **EIGHT_SHARD_TOPOLOGY):
+            with self.assertRaisesRegex(ValueError, "1050-second"):
+                runner.measured_shard_seconds(rows)
 
     def run_fixture(self, process):
         with patch.object(runner, "CHECKS", self.checks), patch.object(runner.subprocess, "run", side_effect=process):
@@ -466,7 +543,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(sum(len(role) for role in roles), 48)
         self.assertEqual(sum(row[2] for role in roles for row in role), 327)
 
-    @patch.multiple(runner, **CURRENT_TOPOLOGY)
+    @patch.multiple(runner, **EIGHT_SHARD_TOPOLOGY)
     def test_owned_sink_uses_existing_whole_role_without_changing_shards(self):
         actual = runner.configured_shards()
         with patch.object(runner, "CHECKS", PRE_SINK_CHECKS):
@@ -1452,7 +1529,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertTrue((self.output / runner.TRACE / f"{identity}-proof-sensitivity.json").is_file())
 
     def test_eight_shard_aggregate_requires_each_exact_producer(self):
-        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+        with patch.multiple(runner, **EIGHT_SHARD_TOPOLOGY):
             inputs = self.collection_fixture()
             result = self.collect(inputs)
             self.assertEqual(result["status"], "passed")
@@ -1465,6 +1542,35 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 path.rename(moved)
                 try:
                     with self.subTest(shard=index), self.assertRaises(ValueError):
+                        self.collect(inputs)
+                    self.assertFalse((self.output / runner.TRACE / runner.SUMMARY).exists())
+                finally:
+                    moved.rename(path)
+
+    def test_capacity_aggregate_requires_all_sixteen_exact_producers(self):
+        self.checks = tuple(
+            (str(index), f"{index}.py", 1, "strong_contract", "weaker_control")
+            for index in range(16)
+        )
+        for _, script, *_ in self.checks:
+            (self.root / "tools" / script).write_text(
+                'CASES = ({"id": "case", "module": "module", "function": "function"},)\n'
+            )
+        with patch.multiple(runner, **CURRENT_TOPOLOGY), patch.object(
+            runner, "WHOLE_GROUPS", ("0",),
+        ), patch.object(runner, "COLLECTOR_GROUPS", ("1",)):
+            inputs = self.collection_fixture()
+            result = self.collect(inputs)
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(result["matrix_shards"], 14)
+            self.assertEqual(result["matrix_max_parallel"], 4)
+            self.assertEqual(result["workers"], 1)
+            for identity in ("whole", "collector", *(f"shard-{index}" for index in range(14))):
+                path = inputs / (runner.artifact_prefix() + identity)
+                moved = self.root / "removed"
+                path.rename(moved)
+                try:
+                    with self.subTest(producer=identity), self.assertRaises(ValueError):
                         self.collect(inputs)
                     self.assertFalse((self.output / runner.TRACE / runner.SUMMARY).exists())
                 finally:

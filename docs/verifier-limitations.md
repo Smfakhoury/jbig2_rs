@@ -174,9 +174,9 @@ shard costs are 851/972/908/977/934/984/1021/960 seconds. Earlier profiles
 remain frozen regression inputs. Actual exact-head acceptance is still
 required, rather than treating those planning numbers as a successful run.
 
-### Current CI scheduling revision
+### Accepted eight-shard scheduling baseline
 
-The expanded profile now uses **eight one-worker semantic shards**, plus the
+The accepted baseline uses **eight one-worker semantic shards**, plus the
 existing whole and collector producers. This intentionally revises the former
 six-shard/eight-producer scheduling contract: there are ten producer receipts
 and 23 workflow jobs, or 24 checks including CLA. The two additional setup
@@ -191,8 +191,33 @@ profiles. The preceding default profile's whole/collector/eight shards cost
 Whole handles arithmetic-codec/value-bridge and the owned-sink group below;
 collector handles arithmetic-decision/document-count/reset. All other groups
 have an explicit eight-shard assignment. Earlier six-shard fixtures remain
-frozen, while current tests require all eight exact shard receipts and fail
+frozen, and its frozen tests require all eight exact shard receipts and fail
 on any missing one. Actual complete same-head hosted validation is still required.
+
+### Capacity proposal scheduling revision
+
+The review-only capacity proposal measured every one of the 49 groups and
+329 contrasts at source `f0b6c5f`. All case checks passed, but the complete
+13,132-second workload failed the unchanged 1,050-second producer guard.
+Its timings are rejected-profile inputs, not acceptance credit.
+
+The proposal now uses **fourteen one-worker semantic shards**, with the
+arithmetic-codec group in whole and arithmetic-decision/reset in collector.
+There are sixteen required producer receipts and 29 workflow jobs, or 30
+checks including CLA. The existing dynamic matrix adds six setup jobs without
+raising the max-four concurrency limit or changing any solver, query, pin,
+1,050-second guard, 20-minute whole/collector cap or 30-minute semantic cap.
+
+Balancing all rounded-up actual group costs gives whole/collector costs of
+711/638 seconds and shard costs of
+850/837/844/844/844/844/843/845/843/847/832/846/842/846 seconds.
+Fourteen is the minimum shard count for this workload at the 850-second
+target, retaining about 19% headroom. These are measured-input sizing values,
+not a fresh accepted profile. Tests preserve the former six/eight-shard
+fixtures, require all sixteen current receipts, and reject 1,051 seconds
+while permitting exactly 1,050. Fresh complete same-head validation remains
+required, and this scheduling decision does not approve the proposed standard
+interface or authorize main integration, normative processing or publication.
 
 ### Owned page-collector sink
 
@@ -328,19 +353,19 @@ the same-run `verus-partial-RUN-ATTEMPT-whole` artifact into a separate director
 in each semantic job, and passes that directory as `--whole-baseline` alongside the
 existing shard arguments. Do not place it inside the shard output directory.
 The collector revalidates every reused baseline against the whole artifact it
-collects. Preserve eight one-worker shards, at most four active semantic jobs,
+collects. The current proposal preserves fourteen one-worker shards, at most four active semantic jobs,
 20-minute whole/collector caps, the owner-merged 30-minute semantic-job caps
 and the revision-qualified complete check topology. The measured 1050-second semantic
 workload guard remains unchanged.
 
-The existing whole-proof job also executes the complete `arithmetic-codec` and
-`value-bridge` contrast groups sequentially after sealing its positive evidence.
+The existing whole-proof job also executes the complete `arithmetic-codec`
+contrast group after sealing its positive evidence.
 This uses spare time in an existing job, not additional jobs, solver workers,
 larger timeouts or omitted cases. Their reports remain outside the immutable
 positive receipt and are separately source/run/hash validated by the collector,
-alongside all eight shard receipts. Every configured group executes exactly once.
-The existing collector job also runs the complete `arithmetic-decision`,
-`document-count` and `reset` groups serially before aggregation. Its separately
+alongside all fourteen shard receipts. Every configured group executes exactly once.
+The existing collector job also runs the complete `arithmetic-decision`
+and `reset` groups serially before aggregation. Its separately
 required `collector` receipt has the same source/tool/run/attempt and individual
 checker/report/log checks as every shard. It reuses only the sealed pristine
 whole-positive baseline; each negative and weaker query remains fresh.

@@ -152,10 +152,28 @@ target/capacity-proposal/full-semantics-*/full-local-evidence.json. Require all
 Read its actual result rather than inferring completion from this document.
 Even a successful local profile does not grant hosted or trust acceptance.
 
+The f0b6c5f full local run completed all 49 groups/329 contrasts but its actual
+eight-shard timing profile failed the unchanged 1050-second guard. This
+proposal now has fourteen serial semantic shards and sixteen producer
+receipts, still with max-four concurrency, one solver worker per producer,
+the same whole/collector 20-minute caps and semantic 30-minute caps.
+Whole runs arithmetic-codec; collector runs arithmetic-decision/reset.
+Every other group is assigned exactly once to a semantic shard.
+
+All rounded-up measured costs fit at 711/638 seconds for whole/collector and
+832-850 seconds per shard. This is sizing evidence with about 19% headroom,
+not actual fresh profile acceptance. Prior six/eight-shard fixtures and the
+rejected full-run records remain historical. The new collector requires all
+sixteen receipts and the same 1050-second guard. Standard-trust approval in
+issue 116, exact-head hosted acceptance and release authorities are unchanged.
+Direct metadata imports measured only a 6.6% median improvement on paired
+fresh queries and were not adopted; no query, lifetime or erasure check is
+cached or omitted to fit the budget.
+
 Actual selected controls through this new dependency wiring passed all
 11 MMR-reference, two concrete collector-sink and two reset contrasts. Every
 strong mutant compiles and fails semantically, and its corresponding weaker
-control proves. All 96 relevant orchestration, selected-proof and strict
+control proves. All 98 relevant orchestration, selected-proof and strict
 extractor regressions pass. The independent
 candidate consumer records these actual results and the exact-source audit in
 target/capacity-proposal/pipeline-evidence.json with foundation, hosted,

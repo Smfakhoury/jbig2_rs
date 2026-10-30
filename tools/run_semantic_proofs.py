@@ -18,9 +18,9 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
-CI_SHARDS = 8
-WHOLE_GROUPS = ("arithmetic-codec", "value-bridge", "collector-sink")
-COLLECTOR_GROUPS = ("arithmetic-decision", "document-count", "reset")
+CI_SHARDS = 14
+WHOLE_GROUPS = ("arithmetic-codec",)
+COLLECTOR_GROUPS = ("arithmetic-decision", "reset")
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
@@ -34,22 +34,21 @@ REBALANCED_SHARD_GROUPS = {
     "mmr-run": 3, "bitmap-chunk": 4,
 }
 DEFAULT_SHARD_REBALANCE = {
-    "mmr-reference": 0, "error-wrappers-regions": 0, "arithmetic-normalization": 0,
-    "region-dispatch": 0, "default-decoder-5": 0,
-    "document-layout": 1, "mmr-span": 1, "iaid-state": 1,
-    "bitmap-chunk": 1, "default-limits-2": 1,
-    "page-state": 2, "bitmap-copy": 2, "black-span": 2, "operator-bit": 2,
-    "default-decoder-2": 2, "default-limits-5": 2,
-    "integer-state": 3, "page-public": 3, "page-finish": 3,
-    "arithmetic-initialization": 3, "default-decoder-1": 3,
-    "symbol-cardinality": 4, "halftone-header": 4, "bitmap-compose": 4,
-    "arithmetic-refill": 4, "retention": 4,
-    "text-batch": 5, "reader-error": 5, "error-wrappers-symbol": 5,
-    "mmr-run": 5, "default-limits-3": 5,
-    "segment-data": 6, "error-conversion": 6, "error-wrappers-basic": 6,
-    "huffman-assignment": 6, "default-decoder-4": 6, "default-limits-4": 6,
-    "segment-header": 7, "arithmetic-integer": 7, "mmr-horizontal": 7,
-    "mmr-prefix": 7, "default-decoder-3": 7, "default-limits-1": 7,
+    "mmr-reference": 0, "default-limits-1": 0, "mmr-run": 0,
+    "document-count": 1, "default-decoder-2": 1, "iaid-state": 1,
+    "default-limits-2": 2, "error-wrappers-symbol": 2, "symbol-cardinality": 2,
+    "retention": 3, "arithmetic-refill": 3, "page-state": 3,
+    "default-decoder-4": 4, "text-batch": 4, "arithmetic-integer": 4,
+    "error-wrappers-regions": 5, "document-layout": 5, "default-decoder-3": 5,
+    "mmr-horizontal": 6, "black-span": 6, "segment-data": 6,
+    "error-wrappers-basic": 7, "arithmetic-initialization": 7, "bitmap-copy": 7,
+    "bitmap-compose": 8, "mmr-prefix": 8, "bitmap-chunk": 8, "default-limits-3": 8,
+    "reader-error": 9, "huffman-assignment": 9, "halftone-header": 9,
+    "segment-header": 10, "region-dispatch": 10, "integer-state": 10,
+    "error-conversion": 11, "collector-sink": 11, "operator-bit": 11, "value-bridge": 11,
+    "page-public": 12, "default-decoder-1": 12, "default-decoder-5": 12,
+    "arithmetic-normalization": 12,
+    "mmr-span": 13, "default-limits-4": 13, "page-finish": 13, "default-limits-5": 13,
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
