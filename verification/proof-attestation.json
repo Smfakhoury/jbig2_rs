@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "12d8ce68f461e1b4639280c8527e54648144b3af",
-  "scope": "Fresh unfiltered verification and compilation of the actual production export-run function with a strictly increasing, duplicate-free result postcondition and matching loop invariants. Existing bounds, count, resource frames, native runtime statements, standard-interface facts and proof-strength categories are retained. Accounting remains 662native declarations:642direct20reviewed0forwarders0divergences0incomplete0native assumptions, with the separate unconstrained standard getter still disclosed. This ordering result does not prove exact encoded run membership or normative fidelity.",
+  "source_revision": "765bd5203bdcdc2844a982c94564d2e2b708e302",
+  "scope": "Fresh unfiltered verification and compilation of exact Huffman literal-bit values, typed errors and cursor transitions through the concrete raw reader, fixed integer/untabled ID adapters and both enum dispatch callers. Raw-reader codec metadata is framed; a successful payload's exact natural value/range is carried to the integer projection. All native runtime bodies, original validity preconditions, trust facts and proof-strength categories remain unchanged. Table-backed values, prepared ID tables and independent normative field interpretation remain separate.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/workspace/jbig2-export-order-proof-20261030/target/export-order/whole-target cargo verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/workspace/jbig2-huffman-fields-proof-20261030/target/huffman-fields/final-proof-target cargo verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1276,
     "verified_production_functions": 642,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "d9d9edaabd3c49491cf6cd290e9b696aff6392d9d8d8ec13f178a0da021c8bbb",
+  "production_proof_coverage_sha256": "c09a1a4ff15c5bf2157036e92b7e32c10405d00fe0f87a5f236dd23fa0c64c91",
   "proof_dispositions_sha256": "3173c7216fe2080f85ed15c7b490d2b07f5d81e32545f20311a92faf0487201a",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Actual unfiltered1276/0 plus nonempty production library. A compiling duplicate-index mutant fails the strong order contract and passes when only its new order postcondition/invariants are removed; original count, bounds and resource frames remain. The native raw oracle checks all2047 selections over0..10candidates with leading zero-run pairs, exact work and an unread sentinel. No new encoded family or normative approval. Actual approved10stream re-observation remains2pass7pending1unsupported0rejectioncredit; complete exact-head hosted profile acceptance remains separate.",
+  "current_evidence_note": "Actual unfiltered1276/0 plus nonempty production library. Six real compiling wrong-value/error/width/dispatch controls distinguish the exact contracts from their original validity boundaries. Independent raw literal oracles cover128000 input cases across all u8 widths and valid cursors, direct/enum parity, error frames and the next field. No native runtime statement, held encoded family or normative approval changes. Actual approved10stream re-observation remains2pass7pending1unsupported0rejectioncredit; full exact-head hosted profile acceptance remains separate.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",

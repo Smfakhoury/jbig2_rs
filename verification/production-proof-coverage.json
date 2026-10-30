@@ -6182,7 +6182,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "cffb79c1c750de9e84b948d3ad857b53abb4f4e454ac92c43e32ac03dcebaa0d",
+      "file_sha256": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::SymbolCodec::decode_integer"
       ]
@@ -6193,7 +6193,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "cffb79c1c750de9e84b948d3ad857b53abb4f4e454ac92c43e32ac03dcebaa0d",
+      "file_sha256": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::SymbolCodec::decode_symbol_id"
       ]
@@ -6204,7 +6204,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "cffb79c1c750de9e84b948d3ad857b53abb4f4e454ac92c43e32ac03dcebaa0d",
+      "file_sha256": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::SymbolCodec::decode_refinement"
       ]
@@ -6215,7 +6215,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "cffb79c1c750de9e84b948d3ad857b53abb4f4e454ac92c43e32ac03dcebaa0d",
+      "file_sha256": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::SymbolCodec::huffman_mut"
       ]
@@ -6347,7 +6347,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "49f4405b6cb5f7b0748b23fd8a1b72ff69a3c2b2ca2967793d49af9221c3a5c2",
+      "file_sha256": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::codec::huffman::byte_align"
       ]
@@ -6358,7 +6358,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "49f4405b6cb5f7b0748b23fd8a1b72ff69a3c2b2ca2967793d49af9221c3a5c2",
+      "file_sha256": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::codec::huffman::new_huffman_codec"
       ]
@@ -6369,7 +6369,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "49f4405b6cb5f7b0748b23fd8a1b72ff69a3c2b2ca2967793d49af9221c3a5c2",
+      "file_sha256": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::HuffmanCodec::read_raw_bits"
       ]
@@ -6380,7 +6380,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "49f4405b6cb5f7b0748b23fd8a1b72ff69a3c2b2ca2967793d49af9221c3a5c2",
+      "file_sha256": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::HuffmanCodec::decode_integer"
       ]
@@ -6391,7 +6391,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "49f4405b6cb5f7b0748b23fd8a1b72ff69a3c2b2ca2967793d49af9221c3a5c2",
+      "file_sha256": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::HuffmanCodec::decode_symbol_id"
       ]
@@ -6402,7 +6402,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "49f4405b6cb5f7b0748b23fd8a1b72ff69a3c2b2ca2967793d49af9221c3a5c2",
+      "file_sha256": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::HuffmanCodec::decode_refinement"
       ]

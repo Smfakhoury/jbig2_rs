@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "36ccaead6405944f69441ffa537f87a799e17a5e1e27af64b5dd243ef7255348",
+    "project_source_sha256": "862b533947dcbba9400252f0cc03730a43ab00a45e4d3ca81cf6922507676df9",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1848,7 +1848,9 @@
     "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e",
     "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
     "src/symbol_text/codebook.rs": "3ad3dd4131dbb7343a3267f32718d4c5278f029c1b90937f45d06363b8defbcc",
+    "src/symbol_text/codec.rs": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
     "src/symbol_text/codec/arithmetic.rs": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+    "src/symbol_text/codec/huffman.rs": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
     "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
     "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
     "src/symbol_text/dictionary/arithmetic.rs": "5d82d904114766a9e486a1b40b7fbd1e9cfac43ab705b0ae87ce2ef8e70ad86a",
@@ -1858,6 +1860,7 @@
     "src/symbol_text/tests/codec_and_exports.rs": "3d6a65ecebfdc20876243ed67356e61e296b39d65d4ba44e75ab7781c0bd9fd5",
     "src/symbol_text/tests/dictionary_dispatch.rs": "e7e1f462adae411123ac93888bd87db1573b9b519bbb3c8c8e045b4697854181",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
+    "src/symbol_text/tests/huffman_fields.rs": "0606c1abcdeb019dc0906db95343df0f896378b14cc05f3d4aadac1da0eb0df2",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
