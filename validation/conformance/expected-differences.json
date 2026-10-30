@@ -21,7 +21,7 @@
         "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
         "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
-      "rationale": "Historical accepted-typed-structural-segment-metadata bf3d525 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. The live Huffman source digest is rebound after proof annotations, raw numeric tests and the verified behavior-equivalent literal-zero initializer; the execution revision, observed error and classification are not refreshed. Standards interpretation is unchanged; no official rerun, normative approval or conformance credit.",
+      "rationale": "Historical accepted-typed-structural-segment-metadata bf3d525 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. The live Huffman source digest is rebound after proof annotations, raw numeric tests and the verified behavior-equivalent literal-zero initializer; the execution revision, observed error and classification are not refreshed. Standards interpretation is unchanged; no official rerun, normative approval or conformance credit. Private integration re-observation at7752b9a re-executed the approved existing stream and matched this exact diagnostic. Current source bindings are refreshed; the case remains pending and unresolved with zero normative approval or restored rejection credit.",
       "jbig2dec_stderr_sha256": "c056a2ecb44d8d5d7a26b05fd7cd4343be8d7e5f68212b298e3d7a2ca7aacc1a"
     },
     {
@@ -30,8 +30,8 @@
       "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
       "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
       "source_files_sha256": {
-        "src/mmr.rs": "bbc2fe89da27c9855708a41406665e0096d749a309093c52cba463cf5640c959",
-        "src/mmr/tests.rs": "c58cff417d07b40f19235130e3b879d3008d8f55e4f13785c593b49c3bf85498",
+        "src/mmr.rs": "9ef1f69c8c60fe22996de8e6e4f5cef6aca930c1b6a537661dd38a0c76cd2d9e",
+        "src/mmr/tests.rs": "79118514b98b34d3cdb666929befa658922386b5105c640b0d083e4cf2648250",
         "src/reader.rs": "9c64e44f1def255f1f7f285ada7608146d55dfb8d65bf31fca6464c2998f634f",
         "src/reader/tests.rs": "ff4f56ae43d4aea472a4d3ab04862edc802bf2d4413bb8de7646a1adf9cf9f47",
         "src/symbol_text.rs": "b7fbb9c15c264d29d2b20447cd3f484c549f81c4e13d0551f0c8a61cb90466f3",
@@ -44,7 +44,7 @@
         "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
         "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
-      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: BMSIZE decodes as 1 for the 5x8 collective bitmap; the first row exhausts its bound at file byte 69. Upstream field alignment and official-positive validity remain unresolved; recovered native output does not match the expected bitmap. Standards interpretation is unchanged; no normative approval or conformance credit. Private integration re-observation at7752b9a re-executed the approved existing stream and matched this exact diagnostic. Current source bindings are refreshed; the case remains pending and unresolved with zero normative approval or restored rejection credit.",
       "jbig2dec_stderr_sha256": "11b6da0755cc91265923d7e67fe7772259e9af2d3e17ef5d68ca8a034452fa4a"
     },
     {
@@ -65,7 +65,7 @@
         "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
         "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
-      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit. Private integration re-observation at7752b9a re-executed the approved existing stream and matched this exact diagnostic. Current source bindings are refreshed; the case remains pending and unresolved with zero normative approval or restored rejection credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
@@ -86,7 +86,7 @@
         "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
         "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
-      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit. Private integration re-observation at7752b9a re-executed the approved existing stream and matched this exact diagnostic. Current source bindings are refreshed; the case remains pending and unresolved with zero normative approval or restored rejection credit.",
       "jbig2dec_stderr_sha256": "2f0cd24342d1ed1b406e70a3caf1f7900957ab88a45bf150511266b335581514"
     },
     {
@@ -107,7 +107,7 @@
         "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
         "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
-      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -76 after 7 zero runs at body byte 14/file byte 86; existing terminal-marker normalization extends 15 to 16 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit. Private integration re-observation at7752b9a re-executed the approved existing stream and matched this exact diagnostic. Current source bindings are refreshed; the case remains pending and unresolved with zero normative approval or restored rejection credit.",
       "jbig2dec_stderr_sha256": "83fb4c32a7c0adcbf69c6dc92489749783b4d57df6692e42cae5133e196ea418"
     },
     {
@@ -128,7 +128,7 @@
         "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
         "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
-      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 19/file byte 91; existing terminal-marker normalization extends 20 to 21 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit. Private integration re-observation at7752b9a re-executed the approved existing stream and matched this exact diagnostic. Current source bindings are refreshed; the case remains pending and unresolved with zero normative approval or restored rejection credit.",
       "jbig2dec_stderr_sha256": "52f8bcbd6d8f2a55bdf1112eda6c1a36f38cd9c6fd784119a88154ce8c943a74"
     },
     {
@@ -149,7 +149,7 @@
         "src/symbol_text/tests.rs": "13b5cc94797c23f15df5b8b18e404b09ffae893540848a07ba08db44eb5ed2a9",
         "src/symbol_text/text.rs": "0f855c45847747a8a5c4e2c7768bd806b9352bd1537fc9301722c715138afe27"
       },
-      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit.",
+      "rationale": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: IAEX rejects -5 after 11 zero runs at body byte 13/file byte 85; existing terminal-marker normalization extends 14 to 15 bytes. Native recovery caps a different wrapped value. Correct pre-IAEX entropy state and marker handling remain unresolved. Standards interpretation is unchanged; no normative approval or conformance credit. Private integration re-observation at7752b9a re-executed the approved existing stream and matched this exact diagnostic. Current source bindings are refreshed; the case remains pending and unresolved with zero normative approval or restored rejection credit.",
       "jbig2dec_stderr_sha256": "48f47424233ba140b26527ca45651147c7a6e80d3e796ccfbad54416d0b1da73"
     },
     {

@@ -6,7 +6,41 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
-## Verified publication-layout revision
+## Current private capacity-integration evidence
+
+The fresh compilation snapshot is `7752b9aab6e2308ba718264989f6f6866cfdb8dc`.
+Its standard-interface layout and trust audit are described in the
+[standard-interface status](../verification/stdlib/STATUS.txt) and exact
+[review manifest](../verification/stdlib/review.json). The coordinator's
+delegated engineering review is not a named-human normative adjudication or
+authority to publish the crate or change repository visibility.
+
+| Local evidence at that snapshot | Actual result |
+| --- | --- |
+| Complete proof and compilation | Strict Cargo stream: 2,060 vstd, 1 checked interface-boundary and 1,276 application obligations, all zero errors; nonempty production library |
+| Exact native accounting | 662 declarations: 642 direct, 20 reviewed standard/callback limitations; 0 audited forwarders, divergences, incomplete functions or native assumptions |
+| Additional standard trust | One explicitly reviewed unconstrained getter signature; no capacity/length/reservation facts. It is separate from the zero-native-assumption count |
+| Native behavior through the library move | All 662 native bodies/scopes unchanged from the fully case-tested `f0b6c5f` proposal |
+| Ordinary validation | 491 library/integration tests, 2 driver tests and 1 doctest pass; 14 existing ignored microbenchmarks; formatting and strict Clippy pass |
+| Tooling and policy | 572 tests pass; 5 workflows and 41 pinned action uses; exact-source coverage is now mandatory in the whole-proof policy |
+| Native sensitivity | All 141 actual native mutants compile and fail their exact tests |
+| Coverage | 48 executing files; 11,497/12,744 lines, 11,008/12,982 regions, 2,246/2,640 branch outcomes; all unchanged floors/goals pass |
+| Actual distribution | 72-file archive, extracted tests/doctest, fresh offline Rust 1.88.0 consumer, exact output, hidden-hook rejection and unsafe strong/weaker controls pass; no normal dependencies |
+| Resource observations | Real slowdown, changed-output, work-quota and RSS inflation/restoration controls pass; exact base/head outputs and deterministic quota gates pass. Timing/RSS remain informational, not allocator or release-memory proofs |
+| Existing official assets | Actual approved ten-stream re-observation: 2 exact positives, 7 pending/unresolved positives, 1 unsupported; 0 reviewed rejection credit |
+| Normative navigation | All 266 selected requirement records remain provisional; 418 declaration purposes/180 registered references remain author navigation, not independent normative approval |
+
+The measured scheduling snapshot `bb852c14e711ff740dd9809d352f0409d28b29eb`
+separately reran all 49 groups/329 compiling strong/weaker contrasts through
+14 serial shards and all 16 producers. It passed the unchanged 1,050-second
+guard; its largest actual shard was 908.769 seconds and total local time was
+3,447.870 seconds, with max-four concurrency and unchanged 20/30-minute caps.
+The earlier eight-shard profile remains rejected, not relabeled acceptance.
+The reviewed library relocation and final integration metadata still require
+complete exact-head hosted validation. Its topology is 29 workflow jobs plus
+CLA; a prior source's local profile is not a substitute for those checks.
+
+## Historical verified publication-layout revision
 
 Reference: owner-merged [PR #107](https://github.com/microsoft/jbig2_rs/pull/107),
 main commit `e145a4532bc0ee4ae0abf237b13e4d755bfd2eee`, source head
@@ -75,11 +109,11 @@ assuming one compiler serves every lane.
 
 ## Remaining blockers
 
-1. **Exact source and resource semantics.** One MMR capacity-accounting
-   runtime/proof divergence remains. The pinned `Vec::capacity`/getter
-   standard-trust decision is held; the separate borrowed-capacity repair
-   remains unintegrated. The observed one-byte/eight-byte reservation and
-   4,112/4,128-byte managed-total defects are not closed by safety proofs.
+1. **Current-head integration acceptance.** Local exact-source verification
+   now includes the actual observed-capacity checks, allocated counters and
+   reviewed proof-only getter; the former MMR divergence is closed by its
+   actual proof, not a disposition relabel. Complete hosted acceptance of the
+   final source remains required, with no bypass of the timing/source guards.
    See [verifier limitations](verifier-limitations.md).
 2. **Normative/model review.** Independent standard-table, coordinate, caller
    and model review plus complete requirement decomposition remain required.
@@ -105,6 +139,7 @@ their bounded progress. Later P07–P12 gates are not inferred complete from
 operational workflows or this documentation cleanup. The complete obligations
 and dependencies are in [P01–P12](open-source-readiness-plan.md).
 
-No new external outreach, local standard/equality specifications, assumptions,
-termination waivers, pin changes, release enablement or weakened gates are
-authorized by this snapshot.
+This snapshot authorizes no new external outreach, standard/equality facts,
+algorithm assumptions, termination waivers, pin changes, release enablement,
+visibility changes or weakened gates. The one signature-only getter is
+separately reviewed and source-bound; no further standard expansion follows.

@@ -391,6 +391,19 @@ class ConformanceGateTests(unittest.TestCase):
         self.assertEqual(report["passed"], 0)
         self.assertEqual(report["unresolved_failures"], 1)
 
+    def test_pending_review_accepts_exact_nested_source_bindings_without_granting_credit(self):
+        relative = "src/bitmap/storage.rs"
+        path = self.pending_file(source_files_sha256={
+            relative: hashlib.sha256((ROOT / relative).read_bytes()).hexdigest(),
+        })
+        def decode(command, **kwargs):
+            return subprocess.CompletedProcess(command, 1, "", "reviewed error")
+        self.assertEqual(self.invoke("--expected-differences", str(path), decoder=decode), 1)
+        report = json.loads(self.output.read_text())
+        self.assertEqual(report["pending_normative_reviews"], 1)
+        self.assertEqual(report["reviewed_strict_rejections"], 0)
+        self.assertEqual(report["unresolved_failures"], 1)
+
     def test_pending_diagnosis_does_not_match_substrings_crashes_or_changed_success(self):
         path = self.pending_file()
         for code, error in ((1, "prefix reviewed error"), (1, "reviewed error suffix"),
@@ -408,6 +421,8 @@ class ConformanceGateTests(unittest.TestCase):
             {"stream_sha256": "0" * 64}, {"stream_sha256": 1},
             {"expected_error_exact": ""}, {"source_files_sha256": {}},
             {"source_files_sha256": {"../src/lib.rs": "0" * 64}},
+            {"source_files_sha256": {"src/../lib.rs": "0" * 64}},
+            {"source_files_sha256": {"/src/lib.rs": "0" * 64}},
             {"source_files_sha256": {"src/lib.rs": "0" * 64}},
             {"source_files_sha256": {"src/absent.rs": "0" * 64}},
             {"source_files_sha256": {"src/lib.rs": True}}, {"unexpected": True},

@@ -56,7 +56,7 @@
       "pages": [],
       "stderr": "Error: Malformed(UnexpectedEof { offset: 192, needed: 1, remaining: 0 })",
       "status": "pending_normative_review",
-      "review": "Fresh accepted-typed-structural-segment-metadata bf3d525 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. Standards interpretation is unchanged; no normative approval or conformance credit."
+      "review": "Historical accepted-typed-structural-segment-metadata bf3d525 execution: both initial dictionaries complete; text segment 3 exhausts SubsequentS at body bit 192/file byte 179 after 4/5 placements. Earlier text entropy alignment versus official asset consistency remains unadjudicated, not an MMR-truncation determination. The live Huffman source digest is rebound after proof annotations, raw numeric tests and the verified behavior-equivalent literal-zero initializer; the execution revision, observed error and classification are not refreshed. Standards interpretation is unchanged; no official rerun, normative approval or conformance credit."
     },
     {
       "id": "codeStreamTest1_TT2",

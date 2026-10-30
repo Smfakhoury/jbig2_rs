@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
-  "scope": "Historical official diagnostics on accepted-typed-structural-segment-metadata bf3d525; seven pending/unresolved cases, no standards-interpretation change or conformance credit. Live source identity bindings are separately updated for PageState annotations and the verified equivalent WideCode zero initialization, without rerunning official inputs or changing execution revisions, decoder/asset hashes or outcomes.",
+  "source_revision": "7752b9aab6e2308ba718264989f6f6866cfdb8dc",
+  "scope": "Actual current normal-decoder observations on the existing approved10officialstreams; 2pass7pending1unsupported, no new standard interpretation or rejection credit. Differential oracle counts below remain historical at their recorded identities, not new integration runs.",
   "implementation_tests": {
-    "total": 487,
-    "passed": 473,
+    "total": 505,
+    "passed": 491,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
-    "scope": "Actual complete immutable pinned runtime collection:473unit/integration tests pass;14existing microbenchmarks ignored. Not normative approval or official conformance."
+    "source_revision": "7752b9aab6e2308ba718264989f6f6866cfdb8dc",
+    "scope": "Actual complete library/integration tests; two driver tests and one doctest pass separately."
   },
   "normative_vectors": {
     "approved": true,
@@ -19,8 +19,8 @@
     "pending_normative_reviews": 7,
     "unsupported_profile": 1,
     "unresolved_failures": 7,
-    "results_sha256": "63bd747e331697d80be486a28ee95f7dcf603c71332130ee8cd29866773800a0",
-    "review_sha256": "1bb9e210c0d0259c02639c5c48895ee487466dfb46fb2bf03f14c245b61c9306"
+    "results_sha256": "80dc6bb93d379b971956e9a72c925c4e488a5258a85753318b4180b35d417fd3",
+    "review_sha256": "b8e40b6f4b6084420277b8fe4e4d692e83286785f79f7ae5b4c1b5657e40e114"
   },
   "community_regressions": {
     "total": 0,

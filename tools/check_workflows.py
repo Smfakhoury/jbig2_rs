@@ -249,7 +249,7 @@ def check_verus_sharding(document):
             "python", "tools/audit_production_coverage.py",
             "--verus-json", "target/verification/verus-production.json",
             "--output", "target/verification/production-proof-coverage-ci.json",
-            "--require-complete",
+            "--require-complete", "--require-exact",
         ],
         "tools/check_traceability.py": [
             "python", "tools/check_traceability.py",
@@ -266,7 +266,7 @@ def check_verus_sharding(document):
     ]]:
         raise ValueError("whole proof reports must stay under target with exact extraction/audit/comparison")
     for text in (
-        "--require-complete",
+        "--require-complete", "--require-exact",
         "diff -u verification/production-proof-coverage.json", "tools/check_traceability.py",
         "--seal-whole target/semantic-ci/whole", "tools/run_semantic_proofs.py --matrix",
         "--whole-groups", "--whole-baseline target/semantic-ci/whole",
