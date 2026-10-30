@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "862b533947dcbba9400252f0cc03730a43ab00a45e4d3ca81cf6922507676df9",
+    "project_source_sha256": "c4f41b7779d06a2addc05a22d1907158841d702a1c269814f06a65d2980437b3",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1771,7 +1771,7 @@
     "specs/huffman.rs": "46b351eb5f9a709ab45da0d5a83b8f9127e570a067c4f41083b29772c43ca9d9",
     "specs/mmr.rs": "6333d8553b47d1bd6bcc996c0d0f3d0216d3f4d3eeff9c07e34a4dfeea5bb49c",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
-    "specs/readers.rs": "7678c7167ed4ccba27b2e8f8a66481a606a2207f33600cef7e967d9c2df74776",
+    "specs/readers.rs": "ee10b54a7ee8dce323488bf8ef5229fbbf1d5811888a3364cda8f2cc187ba251",
     "specs/segments.rs": "a4a19a65babe5a29532273f3374434762cf0fd63d3336b0f49e4914e3e390bc0",
     "specs/symbol_text.rs": "48823c89848c74e46e2ca7b794b3793872a1d568676012d1ffb7248b939c6c2c",
     "src/arithmetic.rs": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
@@ -1822,8 +1822,8 @@
     "src/halftone/tests/headers_and_patterns.rs": "ef5f90a9b1eaf32619dc22c6f49b5d6d6ccbf32f9bdacfc6507f29c15efa9f70",
     "src/huffman.rs": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
     "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
-    "src/huffman/decoding.rs": "126547624cf5e3fdc514ec2eba18b85677e3c5b8750a231b3e290f591d109412",
-    "src/huffman/tests/canonical_decoding.rs": "cae4a3395ad275cc20f6db069a382647bca28e7d4ff206dae6896ef812490022",
+    "src/huffman/decoding.rs": "c6a15e5af276ded827fc2a6afa5d5925d209479c6e5f0987d04c13ea9495ba98",
+    "src/huffman/tests/canonical_decoding.rs": "706d5bc47c7837818fa2971bab7e9c68ee9523e69a6e9086ec9ff8c7251ae7e1",
     "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
     "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
     "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",

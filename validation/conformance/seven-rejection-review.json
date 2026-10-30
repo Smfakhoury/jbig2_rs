@@ -3,9 +3,9 @@
   "status": "blocked_pending_normative_review",
   "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation. No protected standard text, new encoded fixture family, sample-software oracle, new native/Hayro oracle or instrumented entropy experiment was used for this accepted evidence. All seven normative approval flags and the release block remain unchanged.",
   "recorded_at": "2026-10-30T01:46:50.577253+00:00",
-  "source_revision": "765bd5203bdcdc2844a982c94564d2e2b708e302",
+  "source_revision": "9d1e739abb4ecc0e77e2f70a13e3ad26dcdc8e36",
   "checkout_policy_sha256": "d03e7c2e8df08a9bc503b971dcacf1487847dd473a5d34a21b315e48febea132",
-  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after exact Huffman literal-field contracts:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
+  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after total selected Huffman line contracts:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
@@ -91,10 +91,10 @@
     "src/halftone/tests.rs": "2aa4ef38c5b84598231f1c8035db827fbd9121203e70b12786ae7a80bc254871",
     "src/halftone.rs": "006e5a831d3f09a8b3be41782424261a52bf375544befd7e45c522d0ab00ba36",
     "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
-    "src/huffman/decoding.rs": "126547624cf5e3fdc514ec2eba18b85677e3c5b8750a231b3e290f591d109412",
+    "src/huffman/decoding.rs": "c6a15e5af276ded827fc2a6afa5d5925d209479c6e5f0987d04c13ea9495ba98",
     "src/huffman/tables.rs": "d64eafa6a985558abd3869bf599e095baaa4a57d3d826358f4642208a1561f5f",
     "src/huffman/tests/benchmarks.rs": "0f2deb471091907f7461394025bb531a8eb61c06cf62beb3fdf0bd5c34550f27",
-    "src/huffman/tests/canonical_decoding.rs": "cae4a3395ad275cc20f6db069a382647bca28e7d4ff206dae6896ef812490022",
+    "src/huffman/tests/canonical_decoding.rs": "706d5bc47c7837818fa2971bab7e9c68ee9523e69a6e9086ec9ff8c7251ae7e1",
     "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
     "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
     "src/huffman/tests.rs": "b653a0a17746c891b02f5b4ae474be26e9a233941d45eee003ba1e354c5c93f1",
@@ -196,7 +196,7 @@
     "tools/evidence.py": "1286345e1679a72362fc4cc60f3ef1d6294b19df4edcea7c6d0f74970d117571",
     "tools/verify_provenance.py": "703d1e11f2eaf7a19270173d53d94e7a841ea35f72a417aa9e4d308d6563d9e1",
     "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
-    "validation/conformance/expected-differences.json": "1b9a23d2ac8d9c23c71159837e1a546ea16c87d21a9b3dc4dbc2a40689dc6f9b"
+    "validation/conformance/expected-differences.json": "76f576c528098d95ffdf0e823dcb4260e4e2b3a4018c88bbb5829a0b28e37fa5"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -1078,8 +1078,8 @@
   },
   "historical_diagnosis_source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "current_normal_decoder_observation": {
-    "source_revision": "765bd5203bdcdc2844a982c94564d2e2b708e302",
-    "runtime_sha256": "3970e64f82ee0dc3c4cd882de3a6de4d599d9e2b38a0c69b28d22135f5560aee",
+    "source_revision": "9d1e739abb4ecc0e77e2f70a13e3ad26dcdc8e36",
+    "runtime_sha256": "c717e36343dffa510817cc2bd0c34171e05246bf40c4ba8fe9822090c10ea4e3",
     "decoder_sha256": "9f3f21c82d990a474829750af3beccad1584e35ab1b48b93718847d2a14b56ae",
     "runner_exit_code": 1,
     "counts": {
