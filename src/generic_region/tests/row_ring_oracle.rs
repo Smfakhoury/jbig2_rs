@@ -551,20 +551,6 @@ pub(super) fn decode_nominal_template0_row_ring(
 }
 
 #[cfg(test)]
-#[allow(clippy::ptr_arg)]
-#[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    requires
-        rows <= old(raster).height,
-        crate::arithmetic::arithmetic_spec::decoder_valid(old(decoder)),
-        generic_region_spec::contexts_valid(old(contexts)@),
-    ensures
-        out.is_ok() ==> final(raster).width == old(raster).width,
-        out.is_ok() ==> final(raster).height == old(raster).height,
-        out.is_ok() ==> final(raster).stride_words == old(raster).stride_words,
-        generic_region_spec::contexts_valid(final(contexts)@),
-        out.is_ok() ==> crate::arithmetic::arithmetic_spec::decoder_valid(final(decoder)),
-))]
-#[cfg(test)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(super) fn row_ring_storage_bytes(width: u32, rows: u32) -> Option<u64> {
     let stride_words = u64::from(width).checked_add(31)? / 32;
