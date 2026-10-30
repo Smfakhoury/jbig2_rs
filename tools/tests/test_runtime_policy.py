@@ -17,7 +17,7 @@ class RuntimeProofPolicyTests(unittest.TestCase):
         for directory in ("src", "specs", "proofs", "tools"):
             (self.root / directory).mkdir()
         (self.root / "src/lib.rs").write_text("fn example() {}\n")
-        for name in ("audit_runtime.py", "rust_source.py"):
+        for name in ("audit_runtime.py", "rust_source.py", "evidence.py", "evidence.schema.json"):
             shutil.copyfile(TOOLS / name, self.root / "tools" / name)
 
     def run_audit(self):
@@ -96,6 +96,104 @@ class RuntimeProofPolicyTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("missing production crate root", result.stderr)
 
+    def reviewed_interface(self):
+        dependency = self.root / "verification/stdlib/vec-capacity-interface"
+        dependency.mkdir(parents=True)
+        source = dependency / "lib.rs"
+        source.write_text(
+            "verus! {\n"
+            "pub assume_specification<T, A: Allocator>[ Vec::<T, A>::capacity ]"
+            "(value: &Vec<T, A>) -> usize;\n}\n"
+        )
+        manifest = dependency / "Cargo.toml"
+        manifest.write_text(
+            '[package]\nname="jbig2_capacity_interface"\npublish=false\nbuild=false\n'
+            '[package.metadata.verus]\nverify=true\n[lib]\npath="lib.rs"\n'
+        )
+        (self.root / "verification/Cargo.toml").write_text(
+            '[dependencies]\njbig2_capacity_interface={path="stdlib/vec-capacity-interface"}\n'
+        )
+        review = {
+            "schema_version": 1, "review_kind": "delegated_engineering_review",
+            "package": "jbig2_capacity_interface",
+            "manifest": "verification/stdlib/vec-capacity-interface/Cargo.toml",
+            "source": "verification/stdlib/vec-capacity-interface/lib.rs",
+            "manifest_sha256": hashlib.sha256(manifest.read_bytes()).hexdigest(),
+            "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "target": "std::vec::Vec<T, A>::capacity", "requires": [], "ensures": [],
+            "native_runtime_dependency": False, "normative_approval": False,
+            "decision_reference": "https://github.com/microsoft/jbig2_rs/issues/116#issuecomment-1",
+            "review": "The signature-only getter is a separately reviewed proof interface. "
+                      "No capacity, length, reservation, allocation or normative facts are asserted.",
+        }
+        path = self.root / "verification/stdlib/review.json"
+        path.write_text(json.dumps(review))
+        return source, path, review
+
+    def test_exact_reviewed_getter_is_separate_from_native_and_normative_trust(self):
+        self.reviewed_interface()
+        result = self.run_audit()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("reviewed proof-only standard interfaces: 1", result.stdout)
+        self.assertIn("normative approval: false", result.stdout)
+
+    def test_unreviewed_or_stale_standard_interface_cannot_pass(self):
+        source, path, review = self.reviewed_interface()
+        original = source.read_text()
+        for mutation in (
+            original.replace("-> usize;", "-> usize ensures true;"),
+            original + "\nverus! { proof fn example() { assume(false); } }\n",
+            original + "\nverus! { pub assume_specification [other]() -> usize; }\n",
+            original + "\nunsafe fn example() {}\n",
+        ):
+            source.write_text(mutation)
+            result = self.run_audit()
+            self.assertEqual(result.returncode, 1, result.stdout)
+            self.assertIn("stale standard-interface review", result.stderr)
+            review["source_sha256"] = hashlib.sha256(source.read_bytes()).hexdigest()
+            path.write_text(json.dumps(review))
+            result = self.run_audit()
+            self.assertEqual(result.returncode, 1, result.stdout)
+            self.assertRegex(
+                result.stderr,
+                "exact unconstrained capacity|Verus assumption|unreviewed Verus specification|unsafe Rust",
+            )
+        source.write_text(original)
+        path.unlink()
+        result = self.run_audit()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("unreviewed Verus specification", result.stderr)
+
+    def test_reviewed_getter_does_not_allow_another_standard_file_or_changed_graph(self):
+        _, _, _ = self.reviewed_interface()
+        other = self.root / "verification/stdlib/other.rs"
+        other.write_text("verus! { pub assume_specification [other]() -> usize; }\n")
+        result = self.run_audit()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn(str(other.relative_to(self.root)) + ":", result.stderr)
+        other.unlink()
+        (self.root / "verification/Cargo.toml").write_text("[dependencies]\n")
+        result = self.run_audit()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("exact proof-only dependency", result.stderr)
+
+    def test_review_cannot_grant_value_facts_native_dependency_or_normative_approval(self):
+        _, path, review = self.reviewed_interface()
+        for field, value in (
+            ("requires", ["value.len() <= value.capacity()"]),
+            ("ensures", ["out == value.len()"]),
+            ("native_runtime_dependency", True),
+            ("normative_approval", True),
+            ("review_kind", "named_human_approval"),
+        ):
+            with self.subTest(field=field):
+                path.write_text(json.dumps({**review, field: value}))
+                result = self.run_audit()
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertIn("verification/stdlib/review.json:", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
+import hashlib
+import json

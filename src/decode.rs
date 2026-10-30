@@ -245,6 +245,7 @@ where
 struct PageCollector {
     pages: Vec<Page>,
     bitmap_bytes: u64,
+    allocated_bitmap_bytes: u64,
     memory_limit: u64,
     decoded_limit: u64,
 }
@@ -264,6 +265,7 @@ impl PageCollector {
         let out = Self {
             pages: Vec::new(),
             bitmap_bytes: 0,
+            allocated_bitmap_bytes: 0,
             memory_limit: limits.max_decoder_managed_memory_bytes,
             decoded_limit: limits.max_cumulative_decoded_bitmap_bytes,
         };
@@ -303,6 +305,18 @@ impl PageCollector {
             }
             .into());
         }
+        let next_allocated_bytes = self
+            .allocated_bitmap_bytes
+            .checked_add(page.bitmap.allocated_bytes())
+            .ok_or(MalformedError::IntegerOverflow)?;
+        if next_allocated_bytes > self.memory_limit {
+            return Err(crate::LimitExceeded {
+                kind: crate::LimitKind::Memory,
+                limit: self.memory_limit,
+                actual: next_allocated_bytes,
+            }
+            .into());
+        }
         let new_length = self
             .pages
             .len()
@@ -313,6 +327,7 @@ impl PageCollector {
             .try_reserve(1)
             .map_err(|_error| DecodeError::Allocation { requested_bytes })?;
         self.bitmap_bytes = next_bytes;
+        self.allocated_bitmap_bytes = next_allocated_bytes;
         self.pages.push(page);
         #[cfg(verus_keep_ghost)]
         production_collector_fields!(self);

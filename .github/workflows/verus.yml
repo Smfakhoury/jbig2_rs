@@ -56,7 +56,7 @@ jobs:
           python tools/audit_production_coverage.py \
             --verus-json target/verification/verus-production.json \
             --output target/verification/production-proof-coverage-ci.json \
-            --require-complete
+            --require-complete --require-exact
           diff -u verification/production-proof-coverage.json \
             target/verification/production-proof-coverage-ci.json
           python tools/check_traceability.py \

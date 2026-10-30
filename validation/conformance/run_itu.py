@@ -61,7 +61,7 @@ def validate_difference(entry: dict, streams: dict[str, Path]) -> None:
             raise ValueError(f"missing pending review source identities: {entry['id']}")
         for path, expected_hash in sources.items():
             if (
-                not re.fullmatch(r"src/[a-z_]+\.rs", path)
+                not re.fullmatch(r"src/(?:[a-z_]+/)*[a-z_]+\.rs", path)
                 or not isinstance(expected_hash, str)
                 or not re.fullmatch(r"[0-9a-f]{64}", expected_hash)
                 or hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected_hash

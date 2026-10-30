@@ -283,19 +283,12 @@ pub(super) fn collect_referred_symbols<'a>(
         }
         return Ok(CollectedSymbols::Contiguous(direct));
     }
-    let (requested_bytes, peak) = borrowed_symbol_memory(count, active_retained_bytes)?;
-    if peak > limits.max_decoder_managed_memory_bytes {
-        return Err(crate::LimitExceeded {
-            kind: crate::LimitKind::Memory,
-            limit: limits.max_decoder_managed_memory_bytes,
-            actual: peak,
-        }
-        .into());
-    }
+    let requested_bytes = check_borrowed_symbol_memory(count, active_retained_bytes, limits)?;
     let mut imported: Vec<&Bitmap> = Vec::new();
     if imported.try_reserve(count).is_err() {
         return Err(DecodeError::Allocation { requested_bytes });
     }
+    check_borrowed_symbol_memory(imported.capacity(), active_retained_bytes, limits)?;
     reference_index = 0;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
@@ -337,7 +330,14 @@ pub(super) fn collect_referred_symbols<'a>(
     Ok(CollectedSymbols::Borrowed(imported))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok((bytes, peak)) =>
+            bytes as nat == decode_spec::allocation_bytes::<&Bitmap>(count)
+            && peak as nat == active_retained_bytes as nat + bytes as nat,
+        Err(_) => true,
+    },
+))]
 pub(super) fn borrowed_symbol_memory(
     count: usize,
     active_retained_bytes: u64,
@@ -347,6 +347,32 @@ pub(super) fn borrowed_symbol_memory(
         .checked_add(requested_bytes)
         .ok_or(MalformedError::IntegerOverflow)?;
     Ok((requested_bytes, peak))
+}
+
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(bytes) =>
+            bytes as nat == decode_spec::allocation_bytes::<&Bitmap>(count)
+            && active_retained_bytes as nat + bytes as nat
+                <= limits.max_decoder_managed_memory_bytes,
+        Err(_) => true,
+    },
+))]
+fn check_borrowed_symbol_memory(
+    count: usize,
+    active_retained_bytes: u64,
+    limits: &Limits,
+) -> Result<u64, DecodeError> {
+    let (requested_bytes, peak) = borrowed_symbol_memory(count, active_retained_bytes)?;
+    if peak > limits.max_decoder_managed_memory_bytes {
+        return Err(crate::LimitExceeded {
+            kind: crate::LimitKind::Memory,
+            limit: limits.max_decoder_managed_memory_bytes,
+            actual: peak,
+        }
+        .into());
+    }
+    Ok(requested_bytes)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_verify)]

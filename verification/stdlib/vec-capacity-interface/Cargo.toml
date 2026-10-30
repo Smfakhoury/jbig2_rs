@@ -1,0 +1,19 @@
+[package]
+name = "jbig2_capacity_interface"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.98.1"
+publish = false
+build = false
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+vstd = "=0.0.0-2026-10-04-0306"
+
+[package.metadata.verus]
+verify = true
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(verus_keep_ghost)"] }

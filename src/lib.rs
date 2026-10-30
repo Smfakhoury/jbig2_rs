@@ -151,3 +151,6 @@ mod invariants;
 #[rustfmt::skip]
 #[path = "../proofs/spec_properties/readers.rs"]
 mod reader_properties;
+
+#[cfg(verus_keep_ghost)]
+extern crate jbig2_capacity_interface;

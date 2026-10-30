@@ -263,6 +263,7 @@ class WorkflowPolicyTests(unittest.TestCase):
             ("target/verification/verus-production.json", "verus-production.json"),
             ("target/verification/production-proof-coverage-ci.json", "coverage.json"),
             ("--compiled-library", "--unused-library"),
+            ("--require-exact", ""),
         ):
             document = copy.deepcopy(actual)
             for step in document["jobs"]["whole"]["steps"]:
@@ -384,7 +385,7 @@ class WorkflowPolicyTests(unittest.TestCase):
                 with self.subTest(name=name, change=change), self.assertRaisesRegex(ValueError, "validation runs"):
                     check_workflow(document, f"{name}.yml")
 
-    def test_complete_pr_profile_uses_twenty_three_jobs_without_more_peak_concurrency(self):
+    def test_complete_pr_profile_uses_twenty_nine_jobs_without_more_peak_concurrency(self):
         from run_semantic_proofs import configured_shards
 
         count = 0
@@ -407,7 +408,8 @@ class WorkflowPolicyTests(unittest.TestCase):
                 })
             if name == "verus":
                 self.assertEqual(document["jobs"]["semantic"]["strategy"]["max-parallel"], "4")
-        self.assertEqual(count, 23)
+        self.assertEqual(count, 29)
+        self.assertEqual(count - len(configured_shards()) + 8, 23)
 
     def test_verus_download_retries_remain_bounded_and_hash_checked(self):
         actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())

@@ -1,34 +1,46 @@
 {
   "schema_version": 1,
-  "status": "blocked_by_runtime_proof_divergences",
-  "source_revision": "bcb73fe82e7194ce761ff08118f76c0e004d0b7d",
-  "scope": "The final owned collector PageSink forwarding body directly proves the old append/error-state contract through an unchanged executing helper. A closed project-result predicate factors the token-equivalent old contract, with a separately verified definition bridge and stronger helper interface. All 659 native bodies remain identical. No arbitrary callback, observed-capacity, standard-trust or normative approval is asserted.",
+  "status": "verified_exact_project_scope_with_reviewed_limits",
+  "source_revision": "7752b9aab6e2308ba718264989f6f6866cfdb8dc",
+  "scope": "Fresh unfiltered verification and compilation of the exact native implementation, including actual retained/reserved-capacity observation, checks and allocated-byte ledgers. Every native declaration is accounted for: 642 directly proved and 20 explicitly reviewed standard/callback limitations. The one separately reviewed unconstrained standard getter is an additional trusted boundary, not a native algorithm assumption, allocator/RSS guarantee or normative/public-release approval.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_TARGET_DIR=target/coordinator-combined-verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/integration-fresh-whole-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1273,
-    "verified_production_functions": 638,
+    "verified_obligations": 1276,
+    "verified_production_functions": 642,
     "errors": 0,
     "proof_build_compiles": true,
-    "exact_production_source_compiles": false,
+    "exact_production_source_compiles": true,
     "algorithm_bodies_verified": false,
     "production_coverage_complete": true,
     "native_assumptions": [],
     "reviewed_verifier_limitations": 20,
     "audited_forwarders": 0,
-    "runtime_proof_divergences": 1,
+    "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "7398eec74e7bd90e76c24ef2570c4e48c0e549e318a473c9f18af04a22f9c78c",
-  "proof_dispositions_sha256": "87c8d2b3362e8baaa809e0ae07ada0d851b68f041d2b0e2a1e961e45808a337e",
-  "current_evidence_note": "Fresh unfiltered pinned whole proof and nonempty compiled production library at the revision above: 1273/0, including the actual definition-bridge proof. The last audited forwarder is directly proved, not simply relabeled. Two compiling dropped-success/error-after-append mutants fail the exact owned sink implementation; weakening only its corresponding outcome requirement restores proof, retaining both helper contracts. The complete profile has 49 groups/329 cases across eight serial semantic shards and the existing whole/collector roles, with unchanged max-four concurrency and per-role guards. Zero audited forwarders remain, but twenty reviewed standard/callback limitations and one capacity divergence persist. The new helper purpose classification is author navigation only; no normative approval, new local standard specification, assumption, waiver or pin change. Later notes are historical.",
-  "note_scope": "Historical component evidence, not combined-source or hosted acceptance: Huffman e9f8f59 ran whole 1244/0 with a nonempty library, four compiling controls, 112 detected native mutants and 475 native tests; PageState 1e0ade5 independently ran whole 1232/0 with a nonempty library and 477 native tests, 14 existing ignored. The merged candidate must receive fresh combined verification, inventory/source binding, all 269 individual contrasts and 141 native mutants before acceptance. All 266 selected records remain provisional. The old note below remains historical bf3d525 evidence only. No official vectors were rerun or credited; capacity, fixture, pin and independent-review holds remain.",
-  "duplicate_executable_proof_source": true,
-  "note": "Actual immutablebf3d525 unfiltered whole Cargo proof and nonempty production rlib pass1232/0. Accepted page information retains exact raw width, known/sentinel height, both resolutions and every existing flag. Profile parsing/appending preserves oldvectorprefix, exact count/ordered wire values, readerbytes/bounds/progress and original consumed extent. Each forall is separately parenthesized; successful appended-value correspondence is not conditional on a nonempty original prefix. Typed structural dispatch preserves Page/Stripe/Profiles variants and values, empty EOP/EOF and existing extension flag shape. Both complete container result models include typed metadata for every segment and propagate through unchanged public standalone/embedded calls. Other entropy/table payloads remain opaque, not claimed valid. Observable models remain separate from ordinary proved append/completion support. Actual normal compiler expansion exactly equals accepted89source3bb226b; all658prior preconditions and48reviewed boundary bodies/attributes/reasons/classifications are unchanged. No native operation, equality/standard specification, assumption, termination waiver, pin, capacity policy or encoded-family fixture changes. Actual10new compiling strong-rejected/weaker-accepted metadata cases pass(269s), and every prior25document contrast freshly passes(627s). Weaker controls preserve old page flags/dimensions, readerbounds/extent/count and independent profile prefix/newvalue frames; only the selected content/result guarantee is removed. All108actualnative mutants compile/detected, including10shared regressions. Four raw oracles check4608literal page metadata combinations, profileprefix/cursor/suffix and typed leaf/sequential/random/embedded results. Actual complete pinned collection473nativepasses/14existingignored microbenchmarks. Coverage11383/12639lines10971/12950regions2245/2640outcomes retains unchanged90/85numerical goals with no denominator/floor/exclusion/threshold reduction. Existing approved official normal/logging/native/Hayro observations freshly execute onbf3d525:2passed7unresolved1unsupported,zero restored rejection credit;same diagnosticpatch. Nine existing selected records gain structural correspondence; three page rows now functional:all266remain provisional133functional117state16safety,257normative9policy. Profile values are auxiliary project correspondence, not invented selected normative credit. Profile now29groups236contrasts229bindings/expected66canonical/sixoneworker/max4/22checks and unchanged20minproof15mincoveragecaps requires actualcurrenthead hosted acceptance. Actual first evidence-bound90run40231097187 passedwhole1232/0 andfivecomplete shards, butshard1timedout; collectorcorrectlyrejected, nohostedacceptancecredit. Threecheckerconfigurations sharepristinepositivebaselines19to5, removing14redundantstartups. All31affectedcompilingcontrasts/62individualstrong-weakerqueriesfreshlypass; unchanged5casevaluebridgealsofreshlypasses. Positivemoduleprobesactuallyverify111decode/164symboltextfunctions withpartialscopeandeveryexacttarget. Wholegroupsrebalanced. Historicalaccepted89costsplusnewmetadata+10% now997/999/987/1000/990/995 underunchanged1000guard; all29completecheckerreceiptsof40235511935withtwoconservativelyretainedpreoptimizationcosts replay966/983/795/996/985/988 underunchanged1050guard. Nocases,individualstrong-weakerqueries,jobs,workers,solverlimits,timecaps,sourcecontracts,nativeoperationsoracceptanceguardsremoved/relaxed.  Full valid-input acceptance, typed partial errors/resources, complete page/stripe/codec/raster/caller/graph/deferred lifecycle, independent normative/model review and globalP04/P05/P06 remain open. No fixture/capacity/review approval, issue/outreach, selfapproval/merge or release enablement. Repairrun40235511935 completedall29checkerreports/236contrasts,butshard4producerwascanceledatcompletion;collectorcorrectlyrejected,nocreditforfailedproducer/run. All29completecheckercosts informreplayonly;twomoreMMRspan/halftonepositivegroupssavetwostartups,withall17contrasts/34individualqueriesfreshlypassing. Aggregatefiveconfigurations24pristinequeriesbecome8,16startupsremoved;everynegativequeryretained.Replayconservativelyretainstwoolderslowerhostedcosts.Bothoriginalguardsandalllimitsunchanged.Native/spec/proofsourceexactlyfrozenbf3d525. Publication-layout-only update: policy/baseline files were relocated and their consumers/documentation rewired. Native runtime, model, proof and runtime-test bytes and all toolchain values remain identical to accepted91. Original immutable proof observations, conditional scope and blocked release flags remain; no new execution or normative approval is implied by moving metadata.",
-  "release_gate": "blocked"
+  "production_proof_coverage_sha256": "69b5e1f4c1cb91c0ee4489aced067ed595f714934ded6f3e75db9d0666127c52",
+  "proof_dispositions_sha256": "61cbead97997a54f66d775b96ecc39f32c071dbeff2714a5f03c6cc10a3a99c0",
+  "standard_library_boundary": {
+    "manifest": "verification/stdlib/review.json",
+    "manifest_sha256": "5f007f853c6caad16d6d318bde996373c6a6f886e8949cd0df62612e5408a92c",
+    "interfaces": 1,
+    "review_kind": "delegated_engineering_review",
+    "normative_approval": false
+  },
+  "current_evidence_note": "Actual strict Cargo stream: vstd2060, reviewed interface-boundary1, application1276, all zero errors. No dependency report is discarded and no positive count fabricated. The MMR divergence is closed only because its actual native body is now directly verified. The current fourteen-shard proposal retains all49groups329contrasts, max-four concurrency, one solver worker,16mandatory producer receipts and unchanged1050-second/20-minute/30-minute guards. Fresh exact-head hosted acceptance remains separate from these local immutable-source observations.",
+  "duplicate_executable_proof_source": false,
+  "normative_approval": false,
+  "release_gate": "blocked",
+  "release_blockers": [
+    "Independent normative/model review and complete requirement decomposition remain open.",
+    "Seven official positives remain unresolved; unsupported colour is not conformance credit.",
+    "Public repository/crates.io release and protected-asset redistribution require their own decisions."
+  ],
+  "historical_evidence": "Earlier accepted-main inventories, disposition reasons and detailed component notes remain in Git history at6b7e08a659975d7a7547242a91765ebb9b8f052d. They are not relabeled current evidence. All266 selected requirement records remain provisional; no official rejection credit or new protected fixture consent is granted by this integration."
 }

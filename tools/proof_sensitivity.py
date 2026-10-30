@@ -37,11 +37,25 @@ def proof_workspace(root: Path, executable: Path, prefix: str):
             shutil.copytree(root / name, directory / name)
         for name in ("Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE"):
             shutil.copyfile(root / name, directory / name)
+        (directory / "verification").mkdir()
+        for name in ("Cargo.toml", "Cargo.lock"):
+            shutil.copyfile(root / "verification" / name, directory / "verification" / name)
+        for name in ("stdlib", "proposals"):
+            dependency_root = root / "verification" / name
+            if dependency_root.is_dir():
+                shutil.copytree(dependency_root, directory / "verification" / name)
         environment = isolated_environment(directory)
         environment["RUSTUP_TOOLCHAIN"] = rust
+        environment["VERUS_PATH"] = str(executable.resolve())
+        environment["JBIG2_SELECTED_CARGO_MANIFEST"] = str(directory / "verification/Cargo.toml")
         version = run([str(executable), "--version"], directory, environment, capture=True)
         if f"Version: {expected}" not in version:
             raise ValueError("proof sensitivity requires the pinned Verus version")
+        run(
+            ["cargo", f"+{rust}", "fetch", "--locked", "--manifest-path",
+             environment["JBIG2_SELECTED_CARGO_MANIFEST"]],
+            directory, {**environment, "CARGO_NET_OFFLINE": "false"}, capture=True,
+        )
         yield directory, environment, expected, rust
 
 
@@ -59,17 +73,36 @@ def selected_proof(
     ):
         raise ValueError("selected proof needs unique targets; failures must select one function")
     # Verus cannot strip a lexical scope from a method reported under its parent type.
-    selector = (
-        ("*::" if verification_module and verification_module != module else "") + function
-        if isinstance(function, str) else commonprefix(functions) + "*"
-    )
-    command = [
-        str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
-        "--crate-type", "rlib", "--cfg", "verus_keep_ghost",
+    selector = function if isinstance(function, str) else commonprefix(functions) + "*"
+    if verification_module and verification_module != module:
+        selector = "*::" + selector
+    arguments = [
         "--verify-only-module", verification_module or module, "--verify-function",
         selector,
         "--num-threads", "1", "--rlimit", "30", "--triggers-mode", "silent", "--output-json",
     ]
+    manifest = environment.get("JBIG2_SELECTED_CARGO_MANIFEST")
+    if manifest is not None:
+        if Path(manifest).resolve() != (directory / "verification/Cargo.toml").resolve():
+            raise ValueError("selected Cargo manifest must belong to the isolated proof workspace")
+        # The pinned focus mode appends verus-partial to its requested target.
+        run(
+            ["cargo", "clean", "--package", "jbig2_rs_verification",
+             "--manifest-path", manifest,
+             "--target-dir", str(directory / "proof-target/verus-partial"),
+             "--offline", "--locked"],
+            directory, environment, capture=True,
+        )
+        command = [
+            str(executable.resolve().parent / "cargo-verus"), "focus",
+            "--manifest-path", manifest, "--offline", "--locked",
+            "--target-dir", str(directory / "proof-target"), "--", *arguments,
+        ]
+    else:
+        command = [
+            str(executable), "src/lib.rs", "--crate-name", "jbig2_rs_production",
+            "--crate-type", "rlib", "--cfg", "verus_keep_ghost", *arguments,
+        ]
     if expect_failure:
         # Zero skips additional error searches, not the first semantic failure.
         command.extend(["--multiple-errors", "0"])
@@ -187,9 +220,14 @@ def check_semantic_cases(
         directory, environment, expected, rust,
     ):
         if whole is not None:
-            copied_names = {"Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE"}
+            copied_names = {
+                "Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE",
+                "verification/Cargo.toml", "verification/Cargo.lock",
+            }
             for name, expected_hash in whole["manifest"]["source_bindings"].items():
-                if name in files or name in copied_names or name.startswith(("src/", "specs/", "proofs/")):
+                if name in files or name in copied_names or name.startswith((
+                    "src/", "specs/", "proofs/", "verification/stdlib/", "verification/proposals/",
+                )):
                     if hashlib.sha256((directory / name).read_bytes()).hexdigest() != expected_hash:
                         raise ValueError("isolated source differs from the whole-positive snapshot")
         baselines = {}

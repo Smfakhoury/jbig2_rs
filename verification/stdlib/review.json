@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "review_kind": "delegated_engineering_review",
+  "package": "jbig2_capacity_interface",
+  "manifest": "verification/stdlib/vec-capacity-interface/Cargo.toml",
+  "source": "verification/stdlib/vec-capacity-interface/lib.rs",
+  "manifest_sha256": "44ffc6f07c525df496e7cd250a3360f70d6b4afaca21afc979a452409815ab10",
+  "source_sha256": "4aecc96fcf6596cf0c963c310ec80ed7cec6809349636119d44cbe65956f59bd",
+  "target": "std::vec::Vec<T, A>::capacity",
+  "requires": [],
+  "ensures": [],
+  "native_runtime_dependency": false,
+  "normative_approval": false,
+  "decision_reference": "https://github.com/microsoft/jbig2_rs/issues/116#issuecomment-6512270486",
+  "review": "The delegated coordinator reviewed only the exact allocator-generic immutable getter signature for private integration. The declaration is an explicit proof-only standard trust boundary but asserts no facts about capacity, length, reservation, usable allocation size or equality between observations. Its possible return values overapproximate actual getter results; executable callers check the observed value. Compiler checks bind the actual Rust signature, while the separate numeric boundary body and compiling strong/weaker controls are verified rather than trusted. Generated verifier glue remains outside the unsafe-forbidden decoder. No other trusted declaration, datatype model, algorithm assumption, termination waiver, named-human normative approval or public-release authority is granted."
+}

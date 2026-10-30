@@ -1,6 +1,8 @@
 """Strict JSON loading and schemas for the evidence consumed by audit gates."""
 
+import hashlib
 import json
+import tomllib
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
@@ -72,3 +74,25 @@ def read_evidence(path: Path, kind: str):
     document = load_json(path)
     validate(document, kind)
     return document
+
+
+def reviewed_standard_interface(root: Path):
+    path = root / "verification/stdlib/review.json"
+    if not path.is_file():
+        return None
+    review = read_evidence(path, "standard_interface_review")
+    for field in ("source", "manifest"):
+        if hashlib.sha256((root / review[field]).read_bytes()).hexdigest() != review[field + "_sha256"]:
+            raise ValueError(f"stale standard-interface review: {review[field]}")
+    package = tomllib.loads((root / review["manifest"]).read_text())
+    proof = tomllib.loads((root / "verification/Cargo.toml").read_text())
+    if (
+        package["package"]["name"] != review["package"]
+        or package["package"].get("publish") is not False
+        or package["package"].get("build") is not False
+        or package.get("lib", {}).get("path") != "lib.rs"
+        or package["package"].get("metadata", {}).get("verus", {}).get("verify") is not True
+        or proof["dependencies"].get(review["package"]) != {"path": "stdlib/vec-capacity-interface"}
+    ):
+        raise ValueError("reviewed standard interface must remain the exact proof-only dependency")
+    return review

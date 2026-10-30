@@ -1117,7 +1117,8 @@ fn enforce_work(actual: u64, limits: &Limits) -> Result<(), MmrError> {
     ensures match out {
         Ok(()) =>
             final(scratch).transitions@.len() == 0
-            && final(scratch).row_transitions@.len() == 0,
+            && final(scratch).row_transitions@.len() == 0
+            && final(scratch).retained_bytes <= limits.max_decoder_managed_memory_bytes,
         Err(_) => true,
     },
 ))]
@@ -1136,9 +1137,7 @@ fn prepare_transition_storage(
     let all_transition_bytes = transition_bytes
         .checked_mul(2)
         .ok_or(MmrError::IntegerOverflow)?;
-    let Ok(bitmap_bytes) = u64::try_from(bitmap.bytes().len()) else {
-        return Err(MmrError::IntegerOverflow);
-    };
+    let bitmap_bytes = bitmap.allocated_bytes();
     let total = bitmap_bytes
         .checked_add(all_transition_bytes)
         .ok_or(MmrError::IntegerOverflow)?;
@@ -1151,7 +1150,6 @@ fn prepare_transition_storage(
             },
         )));
     }
-    #[cfg(not(verus_keep_ghost))]
     {
         let retained_total = bitmap_bytes
             .checked_add(scratch.retained_bytes())
@@ -1182,25 +1180,13 @@ fn prepare_transition_storage(
         });
     }
     if scratch.row_transitions.try_reserve(capacity).is_err() {
-        #[cfg(not(verus_keep_ghost))]
-        {
-            scratch.retained_bytes = u64::try_from(scratch.transitions.capacity())
-                .unwrap_or(u64::MAX)
-                .saturating_add(
-                    u64::try_from(scratch.row_transitions.capacity()).unwrap_or(u64::MAX),
-                )
-                .saturating_mul(core::mem::size_of::<u32>() as u64);
-        }
+        scratch.retained_bytes = observed_transition_bytes(scratch);
         return Err(MmrError::Allocation {
             requested_bytes: transition_bytes,
         });
     }
-    #[cfg(not(verus_keep_ghost))]
     {
-        scratch.retained_bytes = u64::try_from(scratch.transitions.capacity())
-            .unwrap_or(u64::MAX)
-            .saturating_add(u64::try_from(scratch.row_transitions.capacity()).unwrap_or(u64::MAX))
-            .saturating_mul(core::mem::size_of::<u32>() as u64);
+        scratch.retained_bytes = observed_transition_bytes(scratch);
         let actual_total = bitmap_bytes
             .checked_add(scratch.retained_bytes())
             .ok_or(MmrError::IntegerOverflow)?;
@@ -1216,6 +1202,13 @@ fn prepare_transition_storage(
         }
     }
     Ok(())
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+fn observed_transition_bytes(scratch: &MmrScratch) -> u64 {
+    let first = scratch.transitions.capacity() as u64;
+    let second = scratch.row_transitions.capacity() as u64;
+    first.saturating_add(second).saturating_mul(4)
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
