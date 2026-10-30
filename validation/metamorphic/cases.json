@@ -2,6 +2,14 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-RAW-SINGLE-REFINEMENT-COUNT-DISPATCH",
+      "transformation": "the existing scripted refinement callback under arithmetic and Huffman dispatch, with only the latter's raw declared-size parameter",
+      "invariant": "the required single-instance count reaches the callback, produces the requested blank test bitmap, consumes exactly the supplied raw parameters and preserves the work counter",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::dictionary_dispatch::single_instance_refinement_reaches_the_existing_raw_callback"}
+      ]
+    },
+    {
       "id": "META-RAW-PAGE-INFORMATION-FIELDS",
       "transformation": "literal wide dimensions, known/unknown height encodings, every binary page flag and stripe metadata",
       "invariant": "all returned page fields match original metadata and unknown height retains the existing striping rejection",

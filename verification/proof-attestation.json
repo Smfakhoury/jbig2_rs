@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "8b0192c9e4d57fd7b9d7b0db45576187b4eab916",
-  "scope": "Responsibility-based layout of the sole executable decoder, models, proofs and tests. All662 native signatures, body tokens including string contents, attached contracts and proof markings and all74 constant/macro items are preserved. Fresh whole verification and compilation yields1276/0, with642directly verified and20unchanged reviewed limitations; zero native assumptions, forwarders, divergences or incomplete functions. One separately disclosed unconstrained standard getter remains trusted. The800-line file budget does not weaken contracts or grant normative/public approval.",
+  "source_revision": "bc1ed61f012e4186c682a15a09eeb5c99f4ae9bf",
+  "scope": "Fresh unfiltered verification and compilation of the actual one-instance dictionary refinement dispatch correction. The required Some(1) count now reaches the existing refinement helper; the invalid direct-coded aggregation-count guard is in its intended branch. No function/loop contract, model, standard-library fact or proof-strength category is weakened. All662native declarations remain accounted:642direct20reviewed0forwarders0divergences0incomplete0native assumptions, with the separately disclosed unconstrained standard getter still trusted.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/file-reduction/review-fixed-proof-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --offline --locked --target-dir target/single-refinement/fresh-proof-build -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1276,
     "verified_production_functions": 642,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "ed637d9aba386882219ac3695bbf3bc4eeb5c6f9b888a19414503b3eb8cf6ccb",
+  "production_proof_coverage_sha256": "6bc4bb18bf8739e55345abca8bc9751022056de2dc593cd196537076014ae951",
   "proof_dispositions_sha256": "3173c7216fe2080f85ed15c7b490d2b07f5d81e32545f20311a92faf0487201a",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Fresh unfiltered compilation of the relocated code and unchanged native-body/data audit. Independent exact-head hosted semantic/mutation/coverage/package acceptance is separate. All266 selected requirements remain provisional; no new conformance credit is claimed.",
+  "current_evidence_note": "The actual corrected branch is freshly proved and compiled. Raw scripted regressions and two additional native mutation controls cover routing, typed rejection, resource effects and parameter consumption only; no new encoded fixture or normative refinement-bitmap claim is supplied. Actual approved10stream re-observation remains2pass7pending1unsupported0rejectioncredit. Full exact-head hosted semantic/native/coverage/platform acceptance remains separate.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",

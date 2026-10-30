@@ -3,6 +3,7 @@
 
 mod benchmarks;
 mod codec_and_exports;
+mod dictionary_dispatch;
 mod flags_and_tables;
 mod placement_render;
 mod placement_state;

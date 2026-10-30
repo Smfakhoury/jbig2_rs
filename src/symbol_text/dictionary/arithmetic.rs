@@ -219,11 +219,6 @@ pub(in crate::symbol_text) fn decode_one_new_symbol(
             }
             Ok(bitmap)
         } else {
-            if aggregation_instances.is_some() {
-                return Err(SymbolTextError::InvalidState(
-                    "aggregation count on direct-coded symbol",
-                ));
-            }
             decode_dictionary_single_instance_refinement(
                 codec,
                 imported,
@@ -239,6 +234,11 @@ pub(in crate::symbol_text) fn decode_one_new_symbol(
             )
         }
     } else {
+        if aggregation_instances.is_some() {
+            return Err(SymbolTextError::InvalidState(
+                "aggregation count on direct-coded symbol",
+            ));
+        }
         resources.charge_bitmap(width, height, limits)?;
         let contexts = generic_contexts.ok_or(SymbolTextError::InvalidState(
             "missing generic contexts for a direct-coded dictionary",
