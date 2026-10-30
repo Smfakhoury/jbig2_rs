@@ -329,6 +329,7 @@ impl Fixture {
                     bits.put(1, 2); // Table H OOB starts another strip.
                 }
             }
+            bits.put(1, 2); // Table H OOB terminates the final strip.
             data.extend_from_slice(&bits.bytes);
         }
         if fault == Some(3) {

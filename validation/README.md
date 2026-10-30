@@ -119,6 +119,15 @@ unexpected count, and refinement rejects missing/zero counts. These tests check
 routing, typed failures, resource effects and raw parameter consumption, not
 encoded bitmap semantics or resolution of the official disagreements.
 
+Text strips must consume their final out-of-band S terminator even after the
+declared instance count is reached; that count is not an entropy-stream
+delimiter. Raw scripted regressions preserve the next enclosing dictionary
+field, exact pixels and resource effects. A non-terminating S value after the
+final instance rejects before further T/ID/refinement fields. The existing
+standard-Huffman text fixture includes its terminator and separately rejects
+its former unterminated zero-padding form. No encoded refinement/aggregation
+fixture or official conformance exception is introduced.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered

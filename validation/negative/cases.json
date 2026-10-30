@@ -2,6 +2,14 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "NEG-RAW-TEXT-STRIP-TERMINATION",
+      "surface": "raw scripted text strip field consumption with explicit declared instance counts, not encoded refinement/aggregation fixtures",
+      "expected": "a missing final strip terminator fails and a non-terminating S value after the final instance rejects before another T/ID/refinement read",
+      "tests": [
+        {"target": "lib", "name": "symbol_text::tests::text_termination::declared_instance_count_does_not_hide_a_missing_or_overfull_strip_end"}
+      ]
+    },
+    {
       "id": "NEG-RAW-DICTIONARY-INSTANCE-COUNT-DISPATCH",
       "surface": "raw scripted dictionary dispatch parameters; no encoded refinement or aggregation fixture",
       "expected": "an aggregation count on a direct-coded path is rejected before entropy/resource changes, while refinement still rejects missing and zero counts",
