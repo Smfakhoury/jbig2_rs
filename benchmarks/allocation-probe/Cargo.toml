@@ -1,0 +1,16 @@
+[package]
+name = "jbig2-allocation-probe"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.88.0"
+license = "MIT"
+publish = false
+build = false
+
+[[bin]]
+name = "jbig2-allocation-probe"
+path = "main.rs"
+
+[dependencies]
+allocation-counter = "=0.8.1"
+jbig2-decoder = { path = "../.." }

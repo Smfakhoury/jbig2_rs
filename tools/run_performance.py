@@ -26,7 +26,8 @@ CASES = (
     "many-pages-32", "work-boundary", "late-truncation",
 )
 HARNESS_FILES = (
-    "examples/performance_ci.rs", "benchmarks/generated.rs", "benchmarks/timing.rs",
+    "examples/performance_ci.rs", "benchmarks/cases.rs", "benchmarks/generated.rs",
+    "benchmarks/timing.rs",
     "benchmarks/hayro-comparison/metrics.py", "tools/run_performance.py",
     "tools/audit_package.py",
     "validation/performance/scenarios.json",
@@ -264,6 +265,20 @@ def environment():
     return result
 
 
+def build_library(source, build, rust, root, env, log):
+    execute(
+        ["cargo", "+" + rust, "build", "--offline", "--locked", "--release",
+         "--lib", "--manifest-path", str(source / "Cargo.toml"),
+         "--target-dir", str(build),
+         "--config", "profile.release.opt-level=3",
+         "--config", "profile.release.codegen-units=1",
+         "--config", "profile.release.lto=false",
+         "--config", "profile.release.debug=false"],
+        root, env, log, 600,
+    )
+    return build / "release" / ("lib" + library_name(source) + ".rlib")
+
+
 def markdown_report(report):
     lines = [
         "# Generated correctness and informational performance",
@@ -375,16 +390,7 @@ def comparison(arguments, root=ROOT):
                 crate = library_name(source)
                 result[name + "_library_name"] = crate
                 build = output / (name + "-build")
-                execute(
-                    ["cargo", "+" + rust, "build", "--offline", "--locked", "--release",
-                     "--lib", "--manifest-path", str(source / "Cargo.toml"),
-                     "--target-dir", str(build),
-                     "--config", "profile.release.opt-level=3",
-                     "--config", "profile.release.codegen-units=1",
-                     "--config", "profile.release.lto=false",
-                     "--config", "profile.release.debug=false"],
-                    root, env, output / (name + "-build.log"), 600,
-                )
+                build_library(source, build, rust, root, env, output / (name + "-build.log"))
                 binary = output / ("driver-" + name)
                 execute(
                     ["rustc", "+" + rust, "--edition=2021", "-O",

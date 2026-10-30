@@ -275,8 +275,31 @@ startup, fixture and measurement overhead are included. A real 64 MiB inflation
 and restored-library control check observation, not a release-memory threshold.
 These are not allocator peak bytes, internal work counters or proofs of
 capacity/accounting monotonicity. This lane and its isolated controls are
-bounded progress, not complete P09 evidence; broader corpus, allocation/peak-byte
-telemetry, dedicated-host latency/RSS enforcement and ratification remain open.
+bounded progress, not complete P09 evidence.
+
+The separate Linux allocator probe now observes tracked allocations, peak live
+allocations, total requested payload bytes and peak simultaneously live
+requested payload bytes for the same eight approved generated cases. Fixture
+preparation happens before measurement; decoding, exact result validation and
+drop happen within it. Three paired fresh-process runs per case and real
+64 KiB live-allocation inflation/restoration controls are retained as raw JSON.
+The timing/RSS and allocator drivers share their exact-output validator.
+
+```sh
+python3 -B tools/run_allocation.py --base-ref origin/main \
+  --output-dir target/allocation-comparison
+```
+
+The isolated, non-publishable tool pins `allocation-counter` 0.8.1 and its
+registry checksum in its own Cargo lockfile. The crate declares dual MIT/Apache
+licensing. Its thread-local wrapper delegates to the system allocator; it is
+an additional measurement-tool trust boundary, not a decoder dependency or
+standard-library proof axiom. First-party probe code forbids unsafe code.
+Requested `Layout` payloads do not include allocator metadata/usable-size slack,
+other threads or process RSS. All measurements remain informational; no
+release-memory threshold is ratified here. Broader corpus, phase-level and
+usable-size/overhead analysis, dedicated-host latency/RSS enforcement and
+ratification remain open.
 
 ## P10 — Integrate a documented CI quality contract
 

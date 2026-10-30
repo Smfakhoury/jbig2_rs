@@ -28,6 +28,8 @@ jobs:
           toolchain: 1.89.0
       - name: Test single-case RSS driver and Linux peak parser
         run: cargo test --locked --example performance_ci
+      - name: Test isolated allocator-requested payload controls
+        run: cargo test --locked --manifest-path benchmarks/allocation-probe/Cargo.toml
       - name: Validate real slowdown, work-quota, RSS and exact-output controls
         run: python -B tools/check_performance_controls.py --measure-rss --output-dir target/performance-controls
       - name: Compare exact outputs, work quotas and informational timings
@@ -38,6 +40,13 @@ jobs:
           --base-ref "$BASE_REF"
           --measure-rss
           --output-dir target/performance-comparison
+      - name: Observe paired allocator-requested payloads and exact live controls
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: >-
+          python -B tools/run_allocation.py
+          --base-ref "$BASE_REF"
+          --output-dir target/allocation-comparison
       - name: Summarize deterministic quota gate and informational timings
         if: always()
         shell: bash
@@ -58,3 +67,5 @@ jobs:
             target/performance-controls/*/*.json
             target/performance-controls/*/*.log
             target/performance-controls/*/*.md
+            target/allocation-comparison/*.json
+            target/allocation-comparison/*.log
