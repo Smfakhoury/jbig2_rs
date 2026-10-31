@@ -278,12 +278,27 @@ pub(super) fn build_prefix_lookup(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires huffman_spec::reader_valid(reader),
-    ensures match out {
-        Some(_) =>
-            reader.bit_position + PREFIX_LOOKUP_BITS as usize
-                <= reader.bytes@.len() * 8,
-        None => true,
-    },
+    ensures
+        match out {
+            Some(_) =>
+                reader.bit_position + PREFIX_LOOKUP_BITS as usize
+                    <= reader.bytes@.len() * 8,
+            None => true,
+        },
+        out == if reader.bit_position + PREFIX_LOOKUP_BITS as nat
+            > reader.bytes@.len() * 8 {
+            None
+        } else {
+            let index = reader.bit_position / 8;
+            let offset = reader.bit_position % 8;
+            if offset == 0 {
+                Some(reader.bytes@[index as int])
+            } else {
+                let first = reader.bytes@[index as int] as u16;
+                let second = reader.bytes@[(index + 1) as int] as u16;
+                Some(((((first << 8) | second) >> ((8 - offset) as usize)) & 0xff) as u8)
+            }
+        },
 ))]
 #[allow(clippy::cast_possible_truncation)]
 pub(super) fn peek_prefix(reader: &BitReader<'_>) -> Option<u8> {

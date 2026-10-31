@@ -19,6 +19,19 @@ from rust_tests import test_inventory as inventory_tests
 
 
 class ContractMutationTests(unittest.TestCase):
+    def test_prefix_controls_keep_the_original_success_extent_and_precondition(self):
+        cases = [case for case in HUFFMAN_CASES if case["function"] == "peek_prefix"]
+        self.assertEqual(len(cases), 3)
+        for case in cases:
+            with self.subTest(case=case["id"]):
+                source = source_text(TOOLS.parent, case["file"])
+                changed = replace_once(source, case["site"], case["replacement"])
+                weaker = weakened_contract(changed, case)
+                self.assertIn("requires huffman_spec::reader_valid(reader)", weaker)
+                self.assertIn("reader.bit_position + PREFIX_LOOKUP_BITS as usize", weaker)
+                self.assertIn("None => true,", weaker)
+                self.assertNotIn("out == if reader.bit_position + PREFIX_LOOKUP_BITS as nat", weaker)
+
     def test_total_line_controls_keep_original_success_bounds_and_error_extent(self):
         cases = [case for case in HUFFMAN_CASES if case["function"] == "decode_line"]
         self.assertEqual(len(cases), 4)
@@ -172,7 +185,7 @@ class ContractMutationTests(unittest.TestCase):
 
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
-        self.assertEqual(len(identifiers), 157)
+        self.assertEqual(len(identifiers), 160)
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):
@@ -226,7 +239,7 @@ class ContractMutationTests(unittest.TestCase):
                     identity = (reference["target"], reference["name"])
                     self.assertIn(identity, tests, case["id"])
                     self.assertFalse(tests[identity]["ignored"], case["id"])
-        self.assertEqual(structured, 88)
+        self.assertEqual(structured, 89)
 
 
 if __name__ == "__main__":

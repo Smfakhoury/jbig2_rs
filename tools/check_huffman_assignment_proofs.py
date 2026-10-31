@@ -14,6 +14,22 @@ from source_group import runtime_function
 ROOT = Path(__file__).resolve().parents[1]
 LINE = runtime_function(ROOT, "huffman", "decode_line")
 LINE_BODY = LINE["body_text"]
+PEEK = runtime_function(ROOT, "huffman", "peek_prefix")
+PEEK_BODY = PEEK["body_text"]
+PEEK_POST = """out == if reader.bit_position + PREFIX_LOOKUP_BITS as nat
+    > reader.bytes@.len() * 8 {
+    None
+} else {
+    let index = reader.bit_position / 8;
+    let offset = reader.bit_position % 8;
+    if offset == 0 {
+        Some(reader.bytes@[index as int])
+    } else {
+        let first = reader.bytes@[index as int] as u16;
+        let second = reader.bytes@[(index + 1) as int] as u16;
+        Some(((((first << 8) | second) >> ((8 - offset) as usize)) & 0xff) as u8)
+    }
+},"""
 TOTAL_LINE_POST = """match line.kind {
     LineKind::OutOfBand =>
         out == Ok(HuffmanValue::OutOfBand)
@@ -78,6 +94,16 @@ def line_case(identity, site, replacement):
     }
 
 
+def peek_case(identity, site, replacement):
+    return {
+        "id": identity, "file": PEEK["file"], "module": "huffman",
+        "function": "peek_prefix", "site": PEEK_BODY,
+        "replacement": replace_once(PEEK_BODY, site, replacement),
+        "controls": ((PEEK_POST, ""),),
+        "native_test": "huffman::tests::canonical_decoding::prefix_peek_matches_every_byte_window_with_exact_availability_and_no_consumption",
+    }
+
+
 CASES = (
     {
         "id": "zero_constructor_sets_low_bit", "file": "src/huffman.rs",
@@ -135,6 +161,21 @@ CASES = (
         """if value < i32::MIN as i64 || value > i32::MAX as i64 {
             reader.bit_position = reader.bit_position.saturating_sub(usize::from(line.range_len));""",
     ),
+    peek_case(
+        "prefix_aligned_value_discarded",
+        "return Some(first as u8);",
+        "return Some(0_u8);",
+    ),
+    peek_case(
+        "prefix_unaligned_next_byte_discarded",
+        "let combined = (first << 8) | second;",
+        "let combined = (first << 8) | 0_u16;",
+    ),
+    peek_case(
+        "prefix_exact_eight_bits_falsely_unavailable",
+        "if remaining < usize::from(PREFIX_LOOKUP_BITS) {",
+        "if remaining <= usize::from(PREFIX_LOOKUP_BITS) {",
+    ),
 )
 
 
@@ -150,7 +191,7 @@ def main():
              "proofs/shared/huffman.rs", "proofs/spec_properties/huffman.rs",
              "proofs/production_impl/huffman.rs"),
             "jbig2-huffman-assignment-",
-            "Literal zero, exact raw-line canonical code/start/order results and total already-selected line result/error/acceptance/consumption. Assignment controls retain other assignment guarantees; line controls retain original success-value/OOB/buffer/error-extent contracts. No prefix-to-line selection, full table decoding or normative approval.",
+            "Literal zero, exact raw-line assignment results, total already-selected line outcomes, and complete aligned/unaligned eight-bit prefix byte-window availability/value. Controls retain original assignment, line and peek extent guarantees. Exact window equations do not supply canonical prefix-to-line selection, full table/stream decoding or independent normative approval.",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"Huffman assignment proof sensitivity failed: {error}", file=sys.stderr)
