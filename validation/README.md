@@ -149,6 +149,18 @@ from their original validity-only boundaries. No new encoded family is built;
 table-backed Huffman decoding, prepared symbol-ID tables and independent
 normative field interpretation remain separate.
 
+Selected Huffman lines now have total project outcomes, not only implications
+for successful values. OOB returns without a suffix read; width/EOF errors retain
+the exact diagnostic and cursor; successful suffix reads produce the checked
+signed result or overflow while retaining the consumed extent. An independent
+i128 oracle covers all 1,664,000 raw metadata cases across widths, cursors,
+line kinds and signed/output boundaries, with six nonempty outcome classes.
+Four compiling faults expose false integer/OOB rejection, wrong read-error
+classification and overflow-cursor rollback. The weaker controls retain every
+original success-value, buffer, validity and weak error-extent guarantee.
+Prefix-to-line selection and full table/stream/normative semantics remain open;
+no encoded table or new fixture family is constructed by these tests.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered

@@ -367,6 +367,38 @@ pub(super) fn canonical_range_fits(first: WideCode, count: u32, length: usize) -
                         == old(reader).bit_position + line.range_len as usize
                 ),
         },
+        match line.kind {
+            LineKind::OutOfBand =>
+                out == Ok(HuffmanValue::OutOfBand)
+                    && final(reader).bit_position == old(reader).bit_position,
+            _ => match crate::spec::readers::bit_read_error(
+                old(reader).bytes@, old(reader).bit_position, line.range_len,
+            ) {
+                Some(error) =>
+                    out == Err(HuffmanError::Decode(DecodeError::Malformed(error)))
+                        && final(reader).bit_position == old(reader).bit_position,
+                None => {
+                    let offset = crate::spec::readers::bits_value(
+                        old(reader).bytes@, old(reader).bit_position as nat,
+                        line.range_len as nat,
+                    ) as int;
+                    let candidate = if line.kind == LineKind::Lower {
+                        line.range_low as int - offset
+                    } else {
+                        line.range_low as int + offset
+                    };
+                    &&& final(reader).bit_position
+                        == old(reader).bit_position + line.range_len as nat
+                    &&& out == if i32::MIN as int <= candidate <= i32::MAX as int {
+                        Ok(HuffmanValue::Integer(candidate as i32))
+                    } else {
+                        Err(HuffmanError::Decode(DecodeError::Malformed(
+                            MalformedError::IntegerOverflow,
+                        )))
+                    }
+                },
+            },
+        },
 ))]
 #[allow(
     clippy::cast_lossless,

@@ -37,7 +37,7 @@ pub open spec fn bits_value(bytes: Seq<u8>, start: nat, count: nat) -> nat
 // Model navigation: spec::eof_error [project-policy]
 // Purpose: Project UnexpectedEof diagnostic payload.
 // Audit: reader-eof-error
-// REQUIREMENT CONTEXT: T88-BITS-MSB-FIRST | ITU-T T.88 (08/2018) | 5.4.1
+// REQUIREMENT CONTEXT: T88-HUFFMAN-NORMAL-VALUE | ITU-T T.88 (08/2018) | B.4 steps 2 and 5
 // Fidelity: unresolved; no independent normative approval.
 pub open spec fn eof_error(offset: usize, needed: usize, remaining: usize) -> crate::MalformedError {
     crate::MalformedError::UnexpectedEof {
@@ -48,7 +48,7 @@ pub open spec fn eof_error(offset: usize, needed: usize, remaining: usize) -> cr
 // Model navigation: spec::bit_read_error [project-policy]
 // Purpose: Project UnexpectedEof diagnostic payload.
 // Audit: reader-bit-error
-// REQUIREMENT CONTEXT: T88-BITS-MSB-FIRST | ITU-T T.88 (08/2018) | 5.4.1
+// REQUIREMENT CONTEXT: T88-HUFFMAN-NORMAL-VALUE | ITU-T T.88 (08/2018) | B.4 steps 2 and 5
 // Fidelity: unresolved; no independent normative approval.
 pub open spec fn bit_read_error(
     bytes: Seq<u8>, position: usize, count: u8,

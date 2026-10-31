@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check raw Huffman assignment contracts with compiling individual controls."""
+"""Check raw Huffman assignments and total selected-line outcome contracts."""
 
 import argparse
 import json
@@ -7,10 +7,45 @@ from pathlib import Path
 import subprocess
 import sys
 
-from proof_sensitivity import check_semantic_cases
+from proof_sensitivity import check_semantic_cases, replace_once
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
+LINE = runtime_function(ROOT, "huffman", "decode_line")
+LINE_BODY = LINE["body_text"]
+TOTAL_LINE_POST = """match line.kind {
+    LineKind::OutOfBand =>
+        out == Ok(HuffmanValue::OutOfBand)
+            && final(reader).bit_position == old(reader).bit_position,
+    _ => match crate::spec::readers::bit_read_error(
+        old(reader).bytes@, old(reader).bit_position, line.range_len,
+    ) {
+        Some(error) =>
+            out == Err(HuffmanError::Decode(DecodeError::Malformed(error)))
+                && final(reader).bit_position == old(reader).bit_position,
+        None => {
+            let offset = crate::spec::readers::bits_value(
+                old(reader).bytes@, old(reader).bit_position as nat,
+                line.range_len as nat,
+            ) as int;
+            let candidate = if line.kind == LineKind::Lower {
+                line.range_low as int - offset
+            } else {
+                line.range_low as int + offset
+            };
+            &&& final(reader).bit_position
+                == old(reader).bit_position + line.range_len as nat
+            &&& out == if i32::MIN as int <= candidate <= i32::MAX as int {
+                Ok(HuffmanValue::Integer(candidate as i32))
+            } else {
+                Err(HuffmanError::Decode(DecodeError::Malformed(
+                    MalformedError::IntegerOverflow,
+                )))
+            }
+        },
+    },
+},"""
 RETURN = """Ok(Self {
     lines: owned_lines,
     ordered_lines,
@@ -30,6 +65,16 @@ def output_case(identity, field, replacement, predicate):
         "site": RETURN,
         "replacement": RETURN.replace(f"\n    {field},", f"\n    {field}: {replacement},"),
         "controls": ((f"&& huffman_spec::{predicate}(huffman_spec::raw_lines(lines), &table)", ""),),
+    }
+
+
+def line_case(identity, site, replacement):
+    return {
+        "id": identity, "file": LINE["file"], "module": "huffman",
+        "function": "decode_line", "site": LINE_BODY,
+        "replacement": replace_once(LINE_BODY, site, replacement),
+        "controls": ((TOTAL_LINE_POST, ""),),
+        "native_test": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance",
     }
 
 
@@ -59,6 +104,37 @@ CASES = (
         "{ if !ordered_lines.is_empty() { ordered_lines[0] = 0; } ordered_lines }",
         "assignment_order",
     ),
+    line_case(
+        "line_falsely_rejects_valid_integer",
+        "Ok(HuffmanValue::Integer(value as i32))",
+        """{
+            let _valid_but_rejected = value;
+            Err(HuffmanError::Decode(DecodeError::Malformed(
+                MalformedError::IntegerOverflow,
+            )))
+        }""",
+    ),
+    line_case(
+        "line_falsely_rejects_oob",
+        "LineKind::OutOfBand => return Ok(HuffmanValue::OutOfBand),",
+        """LineKind::OutOfBand => return Err(HuffmanError::InvalidTable(
+            HuffmanTableError::InvalidCode,
+        )),""",
+    ),
+    line_case(
+        "line_reclassifies_bit_reader_error",
+        "let offset = reader.read_bits(line.range_len)? as i64;",
+        """let offset = match reader.read_bits(line.range_len) {
+            Ok(value) => value as i64,
+            Err(_) => return Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode)),
+        };""",
+    ),
+    line_case(
+        "line_rolls_back_consumed_overflow_suffix",
+        "if value < i32::MIN as i64 || value > i32::MAX as i64 {",
+        """if value < i32::MIN as i64 || value > i32::MAX as i64 {
+            reader.bit_position = reader.bit_position.saturating_sub(usize::from(line.range_len));""",
+    ),
 )
 
 
@@ -74,7 +150,7 @@ def main():
              "proofs/shared/huffman.rs", "proofs/spec_properties/huffman.rs",
              "proofs/production_impl/huffman.rs"),
             "jbig2-huffman-assignment-",
-            "Literal zero and exact raw-line canonical code/start/order results; each output control retains content, histogram, extent and the other assignment guarantees. No encoded parser, entropy decoding or normative approval.",
+            "Literal zero, exact raw-line canonical code/start/order results and total already-selected line result/error/acceptance/consumption. Assignment controls retain other assignment guarantees; line controls retain original success-value/OOB/buffer/error-extent contracts. No prefix-to-line selection, full table decoding or normative approval.",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"Huffman assignment proof sensitivity failed: {error}", file=sys.stderr)
