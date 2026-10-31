@@ -161,6 +161,16 @@ original success-value, buffer, validity and weak error-extent guarantee.
 Prefix-to-line selection and full table/stream/normative semantics remain open;
 no encoded table or new fixture family is constructed by these tests.
 
+The prefix lookahead helper now proves complete availability and the exact
+aligned/unaligned eight-bit window of the original bytes, rather than only a
+successful result's extent. An independent scalar bit oracle checks all
+3,407,872 byte-window/cursor cases, including exact eight-bit availability,
+repeated non-consuming peeks and the following reader operation. Three real
+compiling faults discard aligned/next-byte values or reject a complete final
+prefix; weaker controls retain the original reader precondition and extent.
+This window result does not prove canonical prefix-to-line lookup selection or
+full table/stream fidelity.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered

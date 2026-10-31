@@ -3,6 +3,45 @@
 
 use super::*;
 
+#[test]
+fn prefix_peek_matches_every_byte_window_with_exact_availability_and_no_consumption() {
+    let mut checked = 0;
+    let mut outcomes = [0_usize; 3];
+    for word in 0..=u16::MAX {
+        let [high, low] = word.to_be_bytes();
+        let buffer = [high, low, 0x5a];
+        for byte_count in 0..=buffer.len() {
+            let bytes = &buffer[..byte_count];
+            for start in 0..=bytes.len() * 8 {
+                let expected = if bytes.len() * 8 - start >= 8 {
+                    let value = (start..start + 8).fold(0_u8, |value, bit| {
+                        (value << 1) | ((bytes[bit / 8] >> (7 - bit % 8)) & 1)
+                    });
+                    outcomes[usize::from(start % 8 != 0)] += 1;
+                    Some(value)
+                } else {
+                    outcomes[2] += 1;
+                    None
+                };
+                let mut reader = bit_reader(bytes);
+                reader.bit_position = start;
+                let actual = crate::huffman::decoding::peek_prefix(&reader);
+                assert_eq!(actual, expected, "{bytes:02x?} at {start}");
+                assert_eq!(reader.bytes, bytes);
+                assert_eq!(reader.bit_position, start);
+                assert_eq!(crate::huffman::decoding::peek_prefix(&reader), expected);
+                if let Some(value) = expected {
+                    assert_eq!(reader.read_bits(8).unwrap(), u32::from(value));
+                    assert_eq!(reader.bit_position, start + 8);
+                }
+                checked += 1;
+            }
+        }
+    }
+    assert_eq!(checked, 3_407_872);
+    assert!(outcomes.into_iter().all(|count| count > 0));
+}
+
 fn raw_line_oracle(
     line: HuffmanLine,
     bytes: &[u8],

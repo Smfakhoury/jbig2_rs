@@ -2,6 +2,14 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-HUFFMAN-PREFIX-WINDOW",
+      "transformation": "all 65536 two-byte words, zero through three input bytes and every valid bit cursor, with a literal third-byte sentinel",
+      "invariant": "3407872 cases yield the exact eight-bit MSB-first window iff available, repeated peeks do not consume input and a following read sees that same prefix; aligned, unaligned and unavailable classes are nonempty",
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::canonical_decoding::prefix_peek_matches_every_byte_window_with_exact_availability_and_no_consumption"}
+      ]
+    },
+    {
       "id": "META-RAW-HUFFMAN-TOTAL-LINE-OUTCOMES",
       "transformation": "all u8 suffix widths and valid cursors over five literal patterns, four line kinds and thirteen signed/output boundary bases",
       "invariant": "1664000 raw metadata cases match an i128 result/error oracle, exact acceptance and consumed extent, unchanged buffers and the next field; OOB, integers, invalid widths, EOF and both overflow classes are nonempty",

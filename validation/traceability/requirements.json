@@ -8146,7 +8146,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The decoder preserves bit-reader validity; the contract does not identify the matched line, exact prefix consumption or resulting value.",
+      "scope_of_formal_result": "The table decoder preserves bit-reader validity; its contract still does not identify the matched line, exact prefix consumption or resulting value. Separately, the lookahead helper's complete availability and exact aligned/unaligned input-byte window are proved and linked under T88-BITS-MSB-FIRST. That prerequisite is not a proof of canonical prefix-to-line selection.",
       "assumptions": [
         "The same decode path is used for standard and custom tables; differential fast/fallback agreement alone is not an independent normative oracle."
       ],
@@ -8879,6 +8879,7 @@
       "feature": "decoder",
       "runtime": [
         "reader::BitReader::read_bits",
+        "huffman::decoding::peek_prefix",
         "symbol_text::codec::huffman::HuffmanCodec::read_raw_bits",
         "symbol_text::codec::huffman::HuffmanCodec::decode_integer",
         "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
@@ -8910,6 +8911,10 @@
         },
         {
           "target": "lib",
+          "name": "huffman::tests::canonical_decoding::prefix_peek_matches_every_byte_window_with_exact_availability_and_no_consumption"
+        },
+        {
+          "target": "lib",
           "name": "symbol_text::tests::huffman_fields::raw_huffman_bits_preserve_exact_value_cursor_error_frame_and_next_field"
         },
         {
@@ -8923,12 +8928,21 @@
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful bounded reads equal the recursive bit-value model and advance by the requested count; errors preserve the cursor. The API error relation preserves invalid-count payload/priority, gives exact EOF fields and excludes false overflow or false valid-width rejection under unchanged cursor/length preconditions. These exact values, typed errors and consumed extents now propagate through the Huffman raw reader, its WithinStripT/RefinementIndicator fixed integer fields, untabled literal symbol IDs and both enum dispatch callers. Raw-reader codec metadata is framed. Conditional literal-field guarantees do not prove table-backed Huffman values, prepared ID tables, normative field selection or full stream semantics.",
+      "scope_of_formal_result": "Successful bounded reads equal the recursive bit-value model and advance by the requested count; errors preserve the cursor. The API error relation preserves invalid-count payload/priority, gives exact EOF fields and excludes false overflow or false valid-width rejection under unchanged cursor/length preconditions. These exact values, typed errors and consumed extents propagate through the Huffman raw reader, fixed integer fields, untabled literal symbol IDs and both enum callers. Separately, the immutable prefix lookahead helper returns the exact aligned/unaligned eight-bit window of the original bytes iff available; its formal equation uses the byte window, while an exhaustive scalar oracle independently checks MSB-first extraction. Raw-reader codec metadata is framed. These conditional guarantees do not prove canonical prefix-to-line lookup, table-backed values, prepared ID tables, normative field selection or full stream semantics.",
       "assumptions": [
         "Reader cursor and bit-length representability are unchanged caller preconditions; the extraction model's independent normative review remains provisional."
       ],
       "gaps": [],
       "functional_evidence": [
+        {
+          "runtime": "huffman::decoding::peek_prefix",
+          "section": "ensures",
+          "tokens": [
+            "out == if reader.bit_position + PREFIX_LOOKUP_BITS as nat > reader.bytes@.len() * 8",
+            "Some(reader.bytes@[index as int])",
+            "Some(((((first << 8) | second) >> ((8 - offset) as usize)) & 0xff) as u8)"
+          ]
+        },
         {
           "runtime": "reader::BitReader::read_bits",
           "section": "ensures",
