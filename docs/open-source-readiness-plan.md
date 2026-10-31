@@ -6,6 +6,54 @@ revision-qualified snapshot and remaining holds. P01–P03 are complete;
 P04–P06 remain incomplete. Operational later lanes and this cleanup do not
 automatically complete P07–P12.
 
+## Publication identity and closeout checklist
+
+The requested public Cargo package is **`jbig2-decoder`** and its Rust import is
+**`jbig2_decoder`**. The rename is complete in merged
+[PR #113](https://github.com/microsoft/jbig2_rs/pull/113), not an outstanding
+implementation task. The repository remains `microsoft/jbig2_rs`; internal
+proof identities remain `jbig2_rs_verification` and `jbig2_rs_production`.
+Those names and historical evidence must not be renamed merely to match the
+public package.
+
+This status is qualified to accepted main
+`f79c380fd65fe7e6c8c8d0ffcd3b12ab5a8dd14e` after
+[PR #127](https://github.com/microsoft/jbig2_rs/pull/127).
+An older checkout or saved editor snapshot can still show `jbig2_rs`; it is
+not the release candidate. Start the final rehearsal from current accepted
+source rather than overwriting an older working branch.
+
+- [x] Rename the public package/import across manifests, lockfiles, examples,
+  downstream consumers, tooling and live documentation; preserve repository,
+  internal proof identities and historical execution records. Covered by P03.
+- [x] Establish the proof-free package, Rust 1.88.0 consumer/platform checks,
+  zero normal dependencies and enforced 800-line handwritten Rust file budget.
+- [x] Operate all 30 app-pinned required checks with strict current-base
+  protection and independent source/artifact acceptance.
+- [ ] Complete independent normative decomposition and model/contract fidelity
+  review; the 266 selected provisional records are not an exhaustive denominator.
+  Close required prefix-selection and table/dictionary/stream proof gaps. P04/P05.
+- [ ] Resolve the seven official positive disagreements with exact expected
+  output or independently reviewed dispositions. Current complete official
+  results remain 2 passing, 7 unresolved and 1 unsupported. P05/P07.
+- [ ] Close required test-adequacy and coverage-policy gaps, and decide held
+  fixture/oracle permissions separately without inferring approval. P06–P08.
+- [ ] Ratify representative performance/resource policy and required
+  trusted-host evidence; observational allocator/RSS results are not a formal
+  release-memory bound. P09.
+- [ ] Complete final quality-contract, cleanup and release-claim review.
+  Operating CI and smaller files alone do not close these gates. P10/P11.
+- [ ] Confirm release-owner/legal scope, select the release version, finalize
+  notices and claims, and rehearse the immutable actual archive. P12.
+- [ ] Recheck `jbig2-decoder` registry availability/ownership and the final
+  package/import identity, then enable publishing and public visibility only
+  through their separately approved changes. P12.
+
+The remaining decisions and adjudications are tracked in
+[issue #125](https://github.com/microsoft/jbig2_rs/issues/125). Completed package
+renaming is not registry reservation, publication permission or completion of
+the remaining correctness/release gates.
+
 ## Scope and execution rules
 
 Deliver a lean, reproducibly testable broad bi-level decoder with exact-source
@@ -94,9 +142,16 @@ functions are accounted for; expected runtime outputs remain unchanged.
 7. In the extracted crate require a real unsafe probe to fail and the
    guard-only weaker control to compile; unconditionally restore original
    source before consumer execution.
+8. Require Cargo metadata and the extracted archive to identify package
+   `jbig2-decoder` and library `jbig2_decoder`. Build the isolated consumer using
+   that dependency/import and check live lockfiles, examples, documentation and
+   validation tooling. Keep repository/proof identities unchanged; do not
+   relabel historical results. This migration was completed in PR #113.
 
 **Acceptance:** actual archive tests and isolated downstream execution pass
 without proof files/dependencies; contents are audited and allowlisted.
+The actual package/import names match `jbig2-decoder` / `jbig2_decoder`;
+successful compilation under only the old name is not acceptance.
 An empty-stdin audit is not evidence. Safety controls concern crate-authored
 source, not generated/library internals or binary-wide unsafe absence.
 
@@ -390,6 +445,11 @@ Documentation cleanup alone is not full P11 acceptance.
 4. Record CELA approval only to its actual scope and leave separate decisions
    visible. Enable crates.io only through a separately approved change,
    with restricted trusted publishing if selected.
+5. Recheck registry availability/ownership for `jbig2-decoder`, choose the
+   release version and inspect final Cargo metadata/archive names. Test a fresh
+   downstream dependency on `jbig2-decoder` using `jbig2_decoder`, without a
+   compatibility alias hiding an old package/import name. A name-availability
+   check is not a reservation or publishing permission.
 
 **Acceptance:** reproducible rehearsal, zero unresolved required gates and no
 unsupported full-conformance/complete-functional-proof claim.
