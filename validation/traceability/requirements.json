@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "7dccf9fce80a9c705ba14943b40c6a96f58491a5c1eca7efc8a0e07d3145a227",
-    "project_source_sha256": "c4f41b7779d06a2addc05a22d1907158841d702a1c269814f06a65d2980437b3",
+    "project_source_sha256": "4e789468afd0fe23507e456ec09031ee38da6e7c98a427b30b3729593b123e56",
     "families": [
       {
         "file": "specs/readers.rs",
@@ -1822,8 +1822,8 @@
     "src/halftone/tests/headers_and_patterns.rs": "ef5f90a9b1eaf32619dc22c6f49b5d6d6ccbf32f9bdacfc6507f29c15efa9f70",
     "src/huffman.rs": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
     "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
-    "src/huffman/decoding.rs": "c6a15e5af276ded827fc2a6afa5d5925d209479c6e5f0987d04c13ea9495ba98",
-    "src/huffman/tests/canonical_decoding.rs": "706d5bc47c7837818fa2971bab7e9c68ee9523e69a6e9086ec9ff8c7251ae7e1",
+    "src/huffman/decoding.rs": "dc9feccc95946b0a13f40486726947f5f5f3b616eb60185db45144bc1eddded8",
+    "src/huffman/tests/canonical_decoding.rs": "996806d0cf90ae43ef1b57760c0159dab7c866ed00c870f5f253b25901311628",
     "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
     "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
     "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",
