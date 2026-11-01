@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "status": "blocked_pending_normative_review",
-  "source_revision": "32374408e2ce130e5bee3d50b273024df2ca1ca5",
-  "scope": "Current normal-decoder re-observation of the same approved10officialstreams after proof-only exact prefix byte-window availability/value contracts;2pass7pending1unsupported. All native runtime bodies, standard interpretation and rejection credit are unchanged. Differential oracle observations remain historical; no private instrumentation is relabeled fresh.",
+  "source_revision": "d5a1a1d81b3f7cc6fde704a655986f19ea9550b5",
+  "scope": "Current normal-decoder re-observation of the same approved10officialstreams after cached Huffman input-indexed line result composition;2pass7pending1unsupported. Native runtime token streams and standard interpretation/rejection credit remain unchanged. The additional closed project model is provisional, not a canonical cache/fallback/full-stream normative claim. Historical oracle observations are not relabeled current.",
   "implementation_tests": {
-    "total": 516,
-    "passed": 502,
+    "total": 518,
+    "passed": 504,
     "ignored": 14,
     "failed": 0,
-    "source_revision": "32374408e2ce130e5bee3d50b273024df2ca1ca5",
+    "source_revision": "d5a1a1d81b3f7cc6fde704a655986f19ea9550b5",
     "scope": "Actual complete library/integration tests; two driver tests and one doctest pass separately."
   },
   "normative_vectors": {
@@ -20,7 +20,7 @@
     "unsupported_profile": 1,
     "unresolved_failures": 7,
     "results_sha256": "da94a11bc11f7c3dbe247472bb5971a98ad53997b361316d7e84ed506c28ef1a",
-    "review_sha256": "18bc03e42b0c1592eec87e63da345826e42cb509db9af227b7765841ae028ee2"
+    "review_sha256": "186c271166858ae0eb1a9728c6fb9d404b34d15868380d63430391567a7739bf"
   },
   "community_regressions": {
     "total": 0,
