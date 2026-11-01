@@ -23,6 +23,12 @@ CURRENT_TOPOLOGY = {
     "COLLECTOR_GROUPS": runner.COLLECTOR_GROUPS,
     "DEFAULT_SHARD_REBALANCE": runner.DEFAULT_SHARD_REBALANCE,
 }
+CAPACITY_TOPOLOGY = {
+    **CURRENT_TOPOLOGY,
+    "DEFAULT_SHARD_REBALANCE": {
+        **runner.DEFAULT_SHARD_REBALANCE, "reader-error": 9, "halftone-header": 9,
+    },
+}
 EIGHT_SHARD_TOPOLOGY = {
     "CI_SHARDS": 8,
     "WHOLE_GROUPS": ("arithmetic-codec", "value-bridge", "collector-sink"),
@@ -190,6 +196,49 @@ def evidence():
 
 
 class SemanticOrchestrationTests(unittest.TestCase):
+    @patch.multiple(runner, **CURRENT_TOPOLOGY)
+    def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):
+        # Actual same-run49-group costs at2991b46, run41334856554/attempt1.
+        costs = {
+            "arithmetic-decision": 394.815, "reset": 84.221,
+            "mmr-run": 99.392, "mmr-reference": 235.157, "default-limits-1": 82.920,
+            "document-count": 345.749, "default-decoder-2": 110.154, "iaid-state": 180.819,
+            "segment-header": 239.867, "region-dispatch": 96.666, "integer-state": 240.870,
+            "operator-bit": 122.386, "error-conversion": 254.990,
+            "collector-sink": 77.621, "value-bridge": 137.876,
+            "page-public": 185.349, "default-decoder-1": 75.200,
+            "default-decoder-5": 77.560, "arithmetic-normalization": 133.717,
+            "mmr-span": 192.593, "default-limits-4": 90.477,
+            "page-finish": 172.937, "default-limits-5": 93.529,
+            "default-limits-2": 111.434, "error-wrappers-symbol": 223.348,
+            "symbol-cardinality": 333.642, "retention": 115.752,
+            "arithmetic-refill": 180.679, "page-state": 350.707,
+            "default-decoder-4": 117.599, "text-batch": 306.242, "arithmetic-integer": 252.224,
+            "error-wrappers-regions": 172.976, "document-layout": 226.767,
+            "default-decoder-3": 73.509, "mmr-horizontal": 218.060,
+            "black-span": 205.376, "segment-data": 300.192,
+            "error-wrappers-basic": 195.987, "arithmetic-initialization": 164.186,
+            "bitmap-copy": 203.517, "mmr-prefix": 146.140, "bitmap-chunk": 141.179,
+            "bitmap-compose": 217.234, "default-limits-3": 116.558,
+            "huffman-assignment": 557.924, "reader-error": 255.934,
+            "halftone-header": 252.475, "arithmetic-codec": 534.684,
+        }
+        rows = [{"id": name, "status": "passed", "seconds": seconds} for name, seconds in costs.items()]
+        original = {**runner.DEFAULT_SHARD_REBALANCE, "reader-error": 9, "halftone-header": 9}
+        with patch.object(runner, "DEFAULT_SHARD_REBALANCE", original):
+            original_groups = runner.configured_shards()
+            self.assertAlmostEqual(sum(costs[row[0]] for row in original_groups[9]), 1066.333)
+            with self.assertRaisesRegex(ValueError, "1050-second guard"):
+                runner.measured_shard_seconds(rows)
+        current = runner.configured_shards()
+        self.assertEqual(len(current), 14)
+        assigned = [row for shard in current for row in shard]
+        self.assertEqual(len(assigned) + len(runner.configured_whole_checks()) +
+                         len(runner.configured_collector_checks()), 49)
+        self.assertEqual({row[0] for row in current[9]}, {"huffman-assignment"})
+        self.assertAlmostEqual(max(runner.measured_shard_seconds(rows)), 725.727)
+        self.assertLessEqual(max(runner.measured_shard_seconds(rows)), 1050)
+
     def setUp(self):
         legacy = patch.multiple(
             runner, CI_SHARDS=6, WHOLE_GROUPS=SIX_SHARD_WHOLE_GROUPS,
@@ -269,7 +318,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertLessEqual(measured[0] + 208, 1200)
 
     def test_capacity_profile_preserves_all_queries_and_measured_headroom(self):
-        with patch.multiple(runner, **CURRENT_TOPOLOGY):
+        with patch.multiple(runner, **CAPACITY_TOPOLOGY):
             shards = runner.configured_shards()
             whole = runner.configured_whole_checks()
             collector = runner.configured_collector_checks()

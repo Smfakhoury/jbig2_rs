@@ -261,6 +261,15 @@ the host CI disables it. Every modified source still goes through Cargo and
 the compiler-selected test executable; this does not reuse a mutant result or
 change mutation counts, failure requirements, or CI time limits.
 
+The complete 49-group profile at head `2991b46` (run 41334856554, attempt 1)
+was rejected because shard 9's actual combined cost was 1,066.333 seconds,
+above the unchanged 1,050-second guard. All sixteen complete producer receipts
+are retained; passing individual jobs is not profile acceptance. Reader-error
+and halftone-header groups move to existing shards 0 and 5, leaving the growing
+Huffman group alone on shard 9. No group, contrast, producer or guard is removed.
+Replaying those recorded costs projects a 725.727-second maximum; that
+projection is not a new run. Fresh complete current-head acceptance is required.
+
 Native mutation controls likewise require an exact passing original test,
 compiling mutant and failure of that selected test. Zero-test success,
 compilation failure, ambiguous sites and survivors are not detection.
