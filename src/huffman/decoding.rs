@@ -239,8 +239,25 @@ impl HuffmanTable {
     }
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
-#[allow(clippy::redundant_closure)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(lookup) =>
+            lookup@.len() == 256
+                && (huffman_lookup_spec::fast_shape(length_count@) ==>
+                    forall|prefix: int| 0 <= prefix < 256 ==>
+                        #[trigger] lookup@[prefix] == huffman_lookup_spec::fast_slot(
+                            first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+                            prefix as u8, if maximum_length >= 8 { length_count@[8] } else { 0u32 },
+                        )),
+        Err(_) => true,
+    },
+))]
+// Loop contracts and ghost proofs account for the additional source lines.
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::redundant_closure,
+    clippy::too_many_lines
+)]
 pub(super) fn build_prefix_lookup(
     length_count: &[u32; MAX_PREFIX_LEN + 1],
     first_code: &[WideCode; MAX_PREFIX_LEN + 1],
@@ -251,14 +268,28 @@ pub(super) fn build_prefix_lookup(
     let mut lookup = Vec::new();
     try_reserve::<u16>(&mut lookup, PREFIX_LOOKUP_SIZE)?;
     lookup.resize(PREFIX_LOOKUP_SIZE, 0);
+    #[cfg(verus_keep_ghost)]
+    proof! {
+        assert(PREFIX_LOOKUP_SIZE == 256) by (bit_vector);
+        assert(lookup@.len() == 256);
+        assert forall|prefix: int| 0 <= prefix < 256 implies lookup@[prefix] == 0 by {
+        }
+    }
     let lookup_length = maximum_length.min(usize::from(PREFIX_LOOKUP_BITS));
     let mut length = 1_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             lookup@.len() == PREFIX_LOOKUP_SIZE,
+            lookup@.len() == 256,
             lookup_length <= PREFIX_LOOKUP_BITS as usize,
             1 <= length,
             length <= lookup_length + 1,
+            huffman_lookup_spec::fast_shape(length_count@) ==>
+                forall|prefix: int| 0 <= prefix < 256 ==>
+                    #[trigger] lookup@[prefix] == huffman_lookup_spec::fast_slot(
+                        first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+                        prefix as u8, if length <= 8 { 0u32 } else { length_count@[8] },
+                    ),
         decreases lookup_length + 1 - length,
     ))]
     while length <= lookup_length {
@@ -267,10 +298,20 @@ pub(super) fn build_prefix_lookup(
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 lookup@.len() == PREFIX_LOOKUP_SIZE,
+                lookup@.len() == 256,
                 lookup_length <= PREFIX_LOOKUP_BITS as usize,
                 1 <= length,
                 length <= lookup_length,
                 distance <= count,
+                count == length_count@[length as int],
+                huffman_lookup_spec::fast_shape(length_count@) ==>
+                    (length == 8 || count == 0),
+                huffman_lookup_spec::fast_shape(length_count@) ==>
+                    forall|prefix: int| 0 <= prefix < 256 ==>
+                        #[trigger] lookup@[prefix] == huffman_lookup_spec::fast_slot(
+                            first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+                            prefix as u8, distance,
+                        ),
             decreases count - distance,
         ))]
         while distance < count {
@@ -288,6 +329,14 @@ pub(super) fn build_prefix_lookup(
                     HuffmanTableError::Oversubscribed,
                 ));
             }
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                if huffman_lookup_spec::fast_shape(length_count@) {
+                    huffman_lookup_spec::small_code_value(
+                        first_code@[8], distance, code,
+                    );
+                }
+            }
             let suffix_bits = usize::from(PREFIX_LOOKUP_BITS) - length;
             let repeats = 1_usize << suffix_bits;
             let code = usize::try_from(code.limbs[0])
@@ -299,13 +348,32 @@ pub(super) fn build_prefix_lookup(
             let line_index = *ordered_lines
                 .get(ordered_index as usize)
                 .ok_or(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))?;
-            let Some(encoded_line) = line_index
-                .checked_add(1)
-                .and_then(|encoded| u16::try_from(encoded).ok())
-            else {
+            if line_index >= u32::from(u16::MAX) {
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    if huffman_lookup_spec::fast_shape(length_count@) {
+                        assert(line_index as int + 1 > u16::MAX);
+                        huffman_lookup_spec::advance_slot(
+                            first_code@[8], count, first_line@[8], ordered_lines@,
+                            distance, code as u8, 0u16,
+                        );
+                    }
+                }
                 distance += 1;
                 continue;
-            };
+            }
+            let encoded_line = (line_index + 1) as u16;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                if huffman_lookup_spec::fast_shape(length_count@) {
+                    assert(length == 8);
+                    assert(suffix_bits == 0);
+                    assert((1usize << 0usize) == 1usize) by (bit_vector);
+                    assert((code << 0usize) == code) by (bit_vector);
+                    assert(repeats == 1);
+                    assert(first_prefix == code);
+                }
+            }
             let mut suffix = 0_usize;
             #[cfg_attr(verus_keep_ghost, verus_spec(
                 invariant
@@ -314,6 +382,29 @@ pub(super) fn build_prefix_lookup(
                     1 <= length,
                     length <= lookup_length,
                     suffix <= repeats,
+                    lookup@.len() == 256,
+                    distance < count,
+                    count == length_count@[length as int],
+                    code <= 255,
+                    ordered_index as int == first_line@[length as int] as int + distance as int,
+                    ordered_index < ordered_lines@.len(),
+                    line_index == ordered_lines@[ordered_index as int],
+                    encoded_line as int == line_index as int + 1,
+                    huffman_lookup_spec::fast_shape(length_count@) ==>
+                        (length == 8 && repeats == 1 && first_prefix == code),
+                    huffman_lookup_spec::fast_shape(length_count@) ==> (
+                        first_code@[8].limbs@[1] == 0
+                        && first_code@[8].limbs@[2] == 0
+                        && first_code@[8].limbs@[3] == 0
+                        && first_code@[8].limbs@[0] as int + distance as int == code as int
+                    ),
+                    huffman_lookup_spec::fast_shape(length_count@) ==>
+                        forall|prefix: int| 0 <= prefix < 256 ==>
+                            #[trigger] lookup@[prefix] == huffman_lookup_spec::fast_slot(
+                                first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+                                prefix as u8,
+                                if suffix == 0 { distance } else { (distance + 1) as u32 },
+                            ),
                 decreases repeats - suffix,
             ))]
             while suffix < repeats {
@@ -329,6 +420,15 @@ pub(super) fn build_prefix_lookup(
                     ));
                 }
                 *slot = encoded_line;
+                #[cfg(verus_keep_ghost)]
+                proof! {
+                    if huffman_lookup_spec::fast_shape(length_count@) {
+                        huffman_lookup_spec::advance_slot(
+                            first_code@[8], count, first_line@[8], ordered_lines@,
+                            distance, code as u8, encoded_line,
+                        );
+                    }
+                }
                 suffix += 1;
             }
             distance += 1;

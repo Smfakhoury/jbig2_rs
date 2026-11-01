@@ -92,9 +92,13 @@ SIX_SHARD_MOVES = {
     "segment-data": 4, "page-finish": 4,
     "segment-header": 5, "mmr-span": 5, "halftone-header": 5, "page-state": 5,
 }
+PRE_PRODUCTION_CACHE_CHECKS = tuple(
+    (name, script, 21 if name == "huffman-assignment" else count, strong, weaker)
+    for name, script, count, strong, weaker in runner.CHECKS
+)
 PRE_FALLBACK_STATE_CHECKS = tuple(
     (name, script, 15 if name == "huffman-assignment" else count, strong, weaker)
-    for name, script, count, strong, weaker in runner.CHECKS
+    for name, script, count, strong, weaker in PRE_PRODUCTION_CACHE_CHECKS
 )
 PRE_CACHE_DISPATCH_CHECKS = tuple(
     (name, script, 11 if name == "huffman-assignment" else count, strong, weaker)
@@ -328,7 +332,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 49)
             self.assertEqual(len({row[0] for row in assigned}), 49)
-            self.assertEqual(sum(row[2] for row in assigned), 353)
+            self.assertEqual(sum(row[2] for row in assigned), 357)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             rows = [
                 {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}

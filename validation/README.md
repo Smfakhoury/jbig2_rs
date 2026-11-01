@@ -62,6 +62,13 @@ Missing/ignored/duplicate/wrong-target tests and empty catalogs fail.
 Discovery compiles/lists tests but does not execute them; native CI runs them
 separately. Failed checking removes stale success output.
 
+The production Huffman cache-map catalog uses raw metadata and independent wide
+index/distance arithmetic, including compact-index boundaries and sparse slots.
+It distinguishes cache storage/retention from source-table or full-stream
+fidelity. The factory contracts prove the production minimum-length policy;
+forced short-prefix test caches and held encoded fixture families remain
+outside that new result.
+
 ## Official conformance: unresolved is not passed
 
 The [manifest](conformance/itu-t88-2018-manifest.json) pins archive/per-file
