@@ -40,10 +40,16 @@ impl HuffmanTable {
     /// Decodes one integer or OOB value according to T.88 B.4.
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires huffman_spec::reader_valid(old(reader)),
-        ensures huffman_spec::reader_valid(final(reader)),
+        ensures
+            huffman_spec::reader_valid(final(reader)),
+            huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out),
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn decode(&self, reader: &mut BitReader<'_>) -> Result<HuffmanValue, HuffmanError> {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            huffman_spec::cached_decode_outcome_definition();
+        }
         if self.prefer_prefix_lookup {
             if let Some(prefix) = peek_prefix(reader) {
                 let entry = match self.prefix_lookup.get(usize::from(prefix)) {

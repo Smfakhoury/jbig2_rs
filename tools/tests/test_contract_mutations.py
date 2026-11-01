@@ -19,6 +19,18 @@ from rust_tests import test_inventory as inventory_tests
 
 
 class ContractMutationTests(unittest.TestCase):
+    def test_cached_selection_controls_keep_original_reader_validity(self):
+        cases = [case for case in HUFFMAN_CASES if case["function"] == "HuffmanTable::decode"]
+        self.assertEqual(len(cases), 4)
+        for case in cases:
+            with self.subTest(case=case["id"]):
+                source = source_text(TOOLS.parent, case["file"])
+                changed = replace_once(source, case["site"], case["replacement"])
+                weaker = weakened_contract(changed, case)
+                self.assertIn("requires huffman_spec::reader_valid(old(reader))", weaker)
+                self.assertIn("huffman_spec::reader_valid(final(reader)),", weaker)
+                self.assertNotIn("cached_decode_outcome(self, old(reader), final(reader), out)", weaker)
+
     def test_prefix_controls_keep_the_original_success_extent_and_precondition(self):
         cases = [case for case in HUFFMAN_CASES if case["function"] == "peek_prefix"]
         self.assertEqual(len(cases), 3)
@@ -185,7 +197,7 @@ class ContractMutationTests(unittest.TestCase):
 
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
-        self.assertEqual(len(identifiers), 160)
+        self.assertEqual(len(identifiers), 164)
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):
@@ -239,7 +251,7 @@ class ContractMutationTests(unittest.TestCase):
                     identity = (reference["target"], reference["name"])
                     self.assertIn(identity, tests, case["id"])
                     self.assertFalse(tests[identity]["ignored"], case["id"])
-        self.assertEqual(structured, 89)
+        self.assertEqual(structured, 90)
 
 
 if __name__ == "__main__":

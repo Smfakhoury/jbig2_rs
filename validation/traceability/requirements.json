@@ -803,6 +803,16 @@
       {
         "file": "specs/huffman.rs",
         "members": [
+          "spec::cached_decode_outcome"
+        ],
+        "classification": "project-result-model",
+        "justification": "The closed predicate uses the original eight-bit input window to identify a populated cache slot, the slot's stored line index and exact prefix/suffix value/OOB/error/cursor outcomes. The implementation composes the existing peek and total-line contracts; an ownership-local proved definition preserves private table-field opacity.",
+        "ambiguity": "",
+        "caveats": "Conditional on a populated cache hit under valid reader inputs. It does not prove cache canonicality, empty-cache/fallback semantics, full stream correctness or independent normative approval."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": [
           "spec::assignment_prefix",
           "spec::bucket",
           "spec::first_prefix",
@@ -2320,6 +2330,16 @@
       ],
       "name": "assignment_order",
       "role": "Exact concatenation of original raw-line index selections by increasing nonzero length and original order."
+    },
+    "huffman-cached-decode-outcome": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "cached_decode_outcome",
+      "role": "Closed project result for populated cache hits: original-window cache/line selection and exact selected-line value/OOB/error/cursor composition; cache canonicality and fallback semantics are not assumed proved."
     },
     "huffman-decoded-value": {
       "kind": "spec",
@@ -8146,7 +8166,7 @@
       ],
       "strength": "state_preservation",
       "review": "provisional",
-      "scope_of_formal_result": "The table decoder preserves bit-reader validity; its contract still does not identify the matched line, exact prefix consumption or resulting value. Separately, the lookahead helper's complete availability and exact aligned/unaligned input-byte window are proved and linked under T88-BITS-MSB-FIRST. That prerequisite is not a proof of canonical prefix-to-line selection.",
+      "scope_of_formal_result": "The full canonical prefix-match claim remains state preservation: cache-entry canonicality and fallback matching/consumption are unproved. Separately, exact lookahead input windows are linked under T88-BITS-MSB-FIRST, and populated cache-hit operational line selection/value/error/cursor composition is linked under the selected normal/lower/OOB result records. Those conditional results are not a proof of correct canonical cache construction or complete prefix selection.",
       "assumptions": [
         "The same decode path is used for standard and custom tables; differential fast/fallback agreement alone is not an independent normative oracle."
       ],
@@ -8171,10 +8191,12 @@
       "title": "Interpret the suffix of an already selected normal or upper Huffman line",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decoding::decode_line"
+        "huffman::decoding::decode_line",
+        "huffman::decoding::HuffmanTable::decode"
       ],
       "models": [
         "huffman-decoded-value",
+        "huffman-cached-decode-outcome",
         "bit-value",
         "reader-bit-error",
         "reader-eof-error"
@@ -8188,11 +8210,19 @@
         {
           "target": "lib",
           "name": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::canonical_decoding::fixed_width_cached_table_selects_literal_values_with_exact_consumption"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::canonical_decoding::raw_cached_line_selection_composes_exact_values_errors_and_cursor_frames"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "For an already selected normal/upper line, the exact reader error is returned without consumption, or the successful suffix is consumed and the mathematical base-plus-offset result is accepted exactly when it fits i32. Signed arithmetic/output overflow returns the existing IntegerOverflow diagnostic after suffix consumption. Original successful value, buffer and validity guarantees remain. This is a total project selected-line result, not prefix selection, full table decoding or independent normative fidelity.",
+      "scope_of_formal_result": "For an already selected normal/upper line, the exact reader error is returned without consumption, or the successful suffix is consumed and the mathematical base-plus-offset result is accepted exactly when it fits i32. Overflow retains suffix consumption. This now composes through populated cache hits in the table decoder: the original eight-bit input indexes the stored cache entry/line and the defined prefix/suffix result/error extent. Missing lines or excessive cached prefix lengths reject without consumption. Original guarantees remain; cache canonicality, fallback selection, full table decoding and independent normative fidelity are unproved.",
       "assumptions": [
         "The input line has already been selected and the bit reader is valid; decoded_line_value distinguishes lower subtraction from normal/upper addition."
       ],
@@ -8200,6 +8230,13 @@
         "Independently review the model and prove correct prefix-to-line selection and full table/stream composition; this is not a whole-Huffman-decoder theorem."
       ],
       "functional_evidence": [
+        {
+          "runtime": "huffman::decoding::HuffmanTable::decode",
+          "section": "ensures",
+          "tokens": [
+            "huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out)"
+          ]
+        },
         {
           "runtime": "huffman::decoding::decode_line",
           "section": "ensures",
@@ -8227,10 +8264,12 @@
       "title": "Subtract the decoded suffix from an already selected lower-range line's base",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decoding::decode_line"
+        "huffman::decoding::decode_line",
+        "huffman::decoding::HuffmanTable::decode"
       ],
       "models": [
         "huffman-decoded-value",
+        "huffman-cached-decode-outcome",
         "bit-value",
         "reader-bit-error",
         "reader-eof-error"
@@ -8248,11 +8287,15 @@
         {
           "target": "lib",
           "name": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::canonical_decoding::raw_cached_line_selection_composes_exact_values_errors_and_cursor_frames"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "An already selected lower line returns the exact read error without consumption, or consumes its suffix and accepts exactly the i32-fitting mathematical range_low-minus-offset result. Signed arithmetic/output overflow returns the existing IntegerOverflow diagnostic after consumption. Original successful decoded_line_value and frame guarantees remain; normative fidelity, prefix selection and full table/stream semantics are separate.",
+      "scope_of_formal_result": "An already selected lower line returns the exact read error without consumption, or consumes its suffix and accepts exactly the i32-fitting mathematical range_low-minus-offset result. Overflow retains consumption. This result/error extent now composes through input-indexed populated cache/line selection in the table decoder. Original successful decoded_line_value and frame guarantees remain; cache canonicality, fallback selection and full table/stream normative semantics are separate.",
       "assumptions": [
         "The line is already selected and the input reader is valid; exact checked arithmetic/error behavior is a project result, not independent normative approval."
       ],
@@ -8260,6 +8303,13 @@
         "Review the signed lower-range model independently and prove prefix-to-line selection and complete table/stream composition."
       ],
       "functional_evidence": [
+        {
+          "runtime": "huffman::decoding::HuffmanTable::decode",
+          "section": "ensures",
+          "tokens": [
+            "huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out)"
+          ]
+        },
         {
           "runtime": "huffman::decoding::decode_line",
           "section": "ensures",
@@ -8287,9 +8337,12 @@
       "title": "Return an out-of-band result only for the selected out-of-band line without consuming a suffix",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decoding::decode_line"
+        "huffman::decoding::decode_line",
+        "huffman::decoding::HuffmanTable::decode"
       ],
-      "models": [],
+      "models": [
+        "huffman-cached-decode-outcome"
+      ],
       "proof_macros": [],
       "tests": [
         {
@@ -8303,11 +8356,15 @@
         {
           "target": "lib",
           "name": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::canonical_decoding::raw_cached_line_selection_composes_exact_values_errors_and_cursor_frames"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "A selected OOB line always returns OOB without consuming a suffix, including raw metadata with otherwise invalid suffix widths. Conversely, successful OOB output still requires an OOB line. The prefix has already been selected/consumed by another helper; this project helper result does not prove that selection or normative OOB use.",
+      "scope_of_formal_result": "A selected OOB line always returns OOB without consuming a suffix, including raw metadata with otherwise invalid suffix widths. Successful OOB output still requires an OOB line. For a populated cache hit, the table decoder now selects the original-input-indexed stored line and consumes exactly its valid prefix length before returning OOB; missing lines or excessive prefix lengths reject without consumption. Cache canonicality, fallback selection and normative OOB use remain unproved.",
       "assumptions": [
         "The caller selects the appropriate table line; HTOOB/table construction and caller use of OOB are separate obligations."
       ],
@@ -8315,6 +8372,13 @@
         "Prove table-level OOB presence/selection and caller termination semantics against independently reviewed normative models."
       ],
       "functional_evidence": [
+        {
+          "runtime": "huffman::decoding::HuffmanTable::decode",
+          "section": "ensures",
+          "tokens": [
+            "huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out)"
+          ]
+        },
         {
           "runtime": "huffman::decoding::decode_line",
           "section": "ensures",

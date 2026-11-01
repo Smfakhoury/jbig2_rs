@@ -171,6 +171,19 @@ prefix; weaker controls retain the original reader precondition and extent.
 This window result does not prove canonical prefix-to-line lookup selection or
 full table/stream fidelity.
 
+For a populated cache hit, the table decoder now composes the input-indexed
+cache entry with the stored line and its exact value/OOB/error/cursor result.
+Malformed cached indices or excessive prefix lengths reject without consuming
+input; read/overflow errors preserve the defined prefix/suffix extent. The
+closed project model keeps private table fields opaque, with its definition
+proved in the owning module. Four compiling wrong-slot/line/length/rejection
+controls retain the original reader-validity boundary in their weaker forms.
+The existing raw fixed-width table construction is checked in 524,288 scalar
+cases; 368,640 raw metadata cases cover cached line/result/error frames and
+cache-miss behavior. No encoded custom-table fixture is constructed.
+Canonicality of generated cache entries, fallback prefix selection and full
+table/stream normative fidelity remain separate, explicitly unproved claims.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered
