@@ -18,7 +18,35 @@ PEEK = runtime_function(ROOT, "huffman", "peek_prefix")
 PEEK_BODY = PEEK["body_text"]
 DECODE = runtime_function(ROOT, "huffman", "HuffmanTable::decode")
 DECODE_BODY = DECODE["body_text"]
+FALLBACK = runtime_function(ROOT, "huffman", "HuffmanTable::decode_fallback")
+FALLBACK_BODY = FALLBACK["body_text"]
 CACHED_POST = "huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out),"
+DECODE_VALUE = """out == huffman_spec::decode_state(
+    self, old(reader).bytes@, old(reader).bit_position,
+).0,"""
+DECODE_CURSOR = """final(reader).bit_position == huffman_spec::decode_state(
+    self, old(reader).bytes@, old(reader).bit_position,
+).1,"""
+FALLBACK_VALUE = """out == huffman_spec::fallback_run(
+    self, old(reader).bytes@, old(reader).bit_position,
+    1, WideCode { limbs: [0u64, 0, 0, 0] },
+).0,"""
+FALLBACK_CURSOR = """final(reader).bit_position == huffman_spec::fallback_run(
+    self, old(reader).bytes@, old(reader).bit_position,
+    1, WideCode { limbs: [0u64, 0, 0, 0] },
+).1,"""
+FALLBACK_INVARIANT = """huffman_spec::fallback_run(
+    self, old(reader).bytes@, old(reader).bit_position,
+    1, WideCode { limbs: [0u64, 0, 0, 0] },
+) == huffman_spec::fallback_run(
+    self, reader.bytes@, reader.bit_position, length, code,
+),"""
+LINE_VALUE = """out == huffman_spec::line_state(
+    line, old(reader).bytes@, old(reader).bit_position,
+).0,"""
+LINE_CURSOR = """final(reader).bit_position == huffman_spec::line_state(
+    line, old(reader).bytes@, old(reader).bit_position,
+).1,"""
 PEEK_POST = """out == if reader.bit_position + PREFIX_LOOKUP_BITS as nat
     > reader.bytes@.len() * 8 {
     None
@@ -92,7 +120,7 @@ def line_case(identity, site, replacement):
         "id": identity, "file": LINE["file"], "module": "huffman",
         "function": "decode_line", "site": LINE_BODY,
         "replacement": replace_once(LINE_BODY, site, replacement),
-        "controls": ((TOTAL_LINE_POST, ""),),
+        "controls": ((TOTAL_LINE_POST, ""), (LINE_VALUE, ""), (LINE_CURSOR, "")),
         "native_test": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance",
     }
 
@@ -112,8 +140,18 @@ def cached_case(identity, site, replacement):
         "id": identity, "file": DECODE["file"], "module": "huffman",
         "function": "HuffmanTable::decode", "site": DECODE_BODY,
         "replacement": replace_once(DECODE_BODY, site, replacement),
-        "controls": ((CACHED_POST, ""),),
+        "controls": ((CACHED_POST, ""), (DECODE_VALUE, ""), (DECODE_CURSOR, "")),
         "native_test": "huffman::tests::canonical_decoding::fixed_width_cached_table_selects_literal_values_with_exact_consumption",
+    }
+
+
+def fallback_case(identity, site, replacement, test):
+    return {
+        "id": identity, "file": FALLBACK["file"], "module": "huffman",
+        "function": "HuffmanTable::decode_fallback", "site": FALLBACK_BODY,
+        "replacement": replace_once(FALLBACK_BODY, site, replacement),
+        "controls": ((FALLBACK_VALUE, ""), (FALLBACK_CURSOR, ""), (FALLBACK_INVARIANT, "")),
+        "native_test": "huffman::tests::fallback_state::" + test,
     }
 
 
@@ -209,6 +247,49 @@ CASES = (
         "return decode_line(*line, reader);",
         """return Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode));""",
     ),
+    fallback_case(
+        "fallback_discards_prefix_bits",
+        ".append_bit(bit)", ".append_bit(0_u32)",
+        "standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    ),
+    fallback_case(
+        "fallback_uses_first_ordered_line",
+        ".get(ordered_index)", ".get(0_usize)",
+        "standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    ),
+    fallback_case(
+        "fallback_uses_first_length_bucket",
+        "let count = self.length_count[length];",
+        "let count = self.length_count[1];",
+        "standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    ),
+    fallback_case(
+        "fallback_reclassifies_prefix_eof",
+        "return Err(HuffmanError::Decode(DecodeError::Malformed(error)));",
+        """let _discarded_prefix_error = error;
+            return Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode));""",
+        "longest_literal_prefixes_keep_complete_success_truncation_and_miss_state",
+    ),
+    fallback_case(
+        "fallback_discards_high_prefix_limbs",
+        "let count = self.length_count[length];",
+        """code.limbs[1] = 0;
+        code.limbs[2] = 0;
+        code.limbs[3] = 0;
+        let count = self.length_count[length];""",
+        "nonzero_long_prefixes_select_the_given_wide_code_and_ordered_line",
+    ),
+    {
+        "id": "table_dispatch_falsely_rejects_fallback",
+        "file": DECODE["file"], "module": "huffman", "function": "HuffmanTable::decode",
+        "site": DECODE_BODY,
+        "replacement": replace_once(
+            DECODE_BODY, "self.decode_fallback(reader)",
+            "Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))",
+        ),
+        "controls": ((DECODE_VALUE, ""), (DECODE_CURSOR, "")),
+        "native_test": "huffman::tests::fallback_state::standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    },
 )
 
 
@@ -224,7 +305,7 @@ def main():
              "proofs/shared/huffman.rs", "proofs/spec_properties/huffman.rs",
              "proofs/production_impl/huffman.rs"),
             "jbig2-huffman-assignment-",
-            "Literal zero, raw assignment results, total selected-line outcomes, complete prefix windows and cached input-index/line/value/error/cursor composition. Controls retain every original boundary. Cache-hit operational selection does not prove cache canonicality, fallback selection, full table/stream decoding or independent normative approval.",
+            "Raw assignment, total selected-line/prefix/cache results and complete fallback/public input-table result/cursor state. Existing weaker controls remove equivalent newly coupled result clauses but retain original reader/success/frame boundaries. Operational matching does not establish canonical cache construction, table-parameter fidelity or independent normative/full-stream approval.",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"Huffman assignment proof sensitivity failed: {error}", file=sys.stderr)

@@ -184,6 +184,23 @@ cache-miss behavior. No encoded custom-table fixture is constructed.
 Canonicality of generated cache entries, fallback prefix selection and full
 table/stream normative fidelity remain separate, explicitly unproved claims.
 
+Fallback prefix decoding now has complete input/table result and cursor state:
+the actual bits advance the checked wide prefix, select the first matching
+length bucket and ordered line, and compose the exact suffix/error outcome.
+The public table decoder selects the cached or fallback state without narrowing
+its original reader precondition. Closed model definitions are proved in their
+owning module; no alternative executable decoder or trust assumption is added.
+Independent u128 assignment and 256-Boolean prefix/borrow oracles check 138,240
+standard-table input states through both dispatch modes and direct fallback,
+plus exact-count long-prefix/raw metadata cases through 255 bits. Six compiling
+faults target ignored bits, wrong order/bucket, EOF classification, lost wide
+limbs and false fallback rejection. Earlier controls remove equivalent new
+result clauses as well, retaining their original reader/success/frame bounds.
+These are operational prefix/table results; cache construction canonicality,
+independent table/parameter fidelity and full JBIG2 stream semantics remain
+separate. Tests use existing tables and raw numeric metadata, not new encoded
+custom-table or held codec-family fixtures.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered

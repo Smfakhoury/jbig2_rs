@@ -3,6 +3,7 @@
 
 mod benchmarks;
 mod canonical_decoding;
+mod fallback_state;
 mod table_validation;
 mod wide_arithmetic;
 

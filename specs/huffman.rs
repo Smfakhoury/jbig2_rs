@@ -459,6 +459,153 @@ pub(crate) open spec fn canonical_assignment(
         && assignment_starts(lines, table) && assignment_order(lines, table)
 }
 
+// Model navigation: spec::line_state [project-result-model]
+// Purpose: Exact selected-line result and cursor after value, OOB or typed failure.
+// Audit: huffman-line-state
+// REQUIREMENT CONTEXT: T88-HUFFMAN-NORMAL-VALUE | ITU-T T.88 (08/2018) | B.4 steps 2 and 5
+// Fidelity: unresolved; no independent normative approval.
+pub(super) open spec fn line_state(
+    line: super::HuffmanLine, bytes: Seq<u8>, position: usize,
+) -> (Result<super::HuffmanValue, super::HuffmanError>, usize)
+    recommends bytes.len() <= usize::MAX / 8, position <= bytes.len() * 8,
+{
+    if line.kind == super::LineKind::OutOfBand {
+        (Ok(super::HuffmanValue::OutOfBand), position)
+    } else {
+        match crate::spec::readers::bit_read_error(bytes, position, line.range_len) {
+            Some(error) => (
+                Err(super::HuffmanError::Decode(crate::DecodeError::Malformed(error))), position,
+            ),
+            None => {
+                let offset = crate::spec::readers::bits_value(
+                    bytes, position as nat, line.range_len as nat,
+                ) as int;
+                let value = if line.kind == super::LineKind::Lower {
+                    line.range_low as int - offset
+                } else { line.range_low as int + offset };
+                (
+                    if i32::MIN as int <= value <= i32::MAX as int {
+                        Ok(super::HuffmanValue::Integer(value as i32))
+                    } else {
+                        Err(super::HuffmanError::Decode(crate::DecodeError::Malformed(
+                            crate::MalformedError::IntegerOverflow,
+                        )))
+                    },
+                    (position + line.range_len as nat) as usize,
+                )
+            },
+        }
+    }
+}
+
+// Model navigation: spec::fallback_run [project-result-model]
+// Purpose: Input-bit, checked-wide-prefix, bucket and stored-line fallback state.
+// Audit: huffman-fallback-run
+// REQUIREMENT CONTEXT: T88-HUFFMAN-PREFIX-MATCH | ITU-T T.88 (08/2018) | B.4 step 1
+// Fidelity: unresolved; no independent normative approval.
+pub(super) closed spec fn fallback_run(
+    table: &super::HuffmanTable, bytes: Seq<u8>, position: usize,
+    length: usize, code: super::WideCode,
+) -> (Result<super::HuffmanValue, super::HuffmanError>, usize)
+    recommends
+        bytes.len() <= usize::MAX / 8, position <= bytes.len() * 8,
+        1 <= length <= 256,
+    decreases if length <= 256 {
+        (257 - length) as nat
+    } else { 0nat },
+{
+    if length > table.max_prefix_len as usize {
+        (Err(super::HuffmanError::InvalidTable(super::HuffmanTableError::InvalidCode)), position)
+    } else {
+        match crate::spec::readers::bit_read_error(bytes, position, 1) {
+            Some(error) => (
+                Err(super::HuffmanError::Decode(crate::DecodeError::Malformed(error))), position,
+            ),
+            None => {
+                let next = (position + 1) as usize;
+                let bit = crate::spec::readers::bits_value(bytes, position as nat, 1) as u32;
+                match append_bit(code, bit) {
+                    None => (
+                        Err(super::HuffmanError::Decode(crate::DecodeError::Malformed(
+                            crate::MalformedError::IntegerOverflow,
+                        ))), next,
+                    ),
+                    Some(prefix) => match small_distance_from(
+                        prefix, table.first_code@[length as int], table.length_count@[length as int],
+                    ) {
+                        None => fallback_run(table, bytes, next, (length + 1) as usize, prefix),
+                        Some(distance) => {
+                            let ordered = table.first_line@[length as int] as nat + distance as nat;
+                            if ordered > u32::MAX {
+                                (
+                                    Err(super::HuffmanError::Decode(crate::DecodeError::Malformed(
+                                        crate::MalformedError::IntegerOverflow,
+                                    ))), next,
+                                )
+                            } else if ordered >= table.ordered_lines@.len() {
+                                (
+                                    Err(super::HuffmanError::InvalidTable(
+                                        super::HuffmanTableError::InvalidCode,
+                                    )), next,
+                                )
+                            } else {
+                                let index = table.ordered_lines@[ordered as int] as nat;
+                                if index >= table.lines@.len() {
+                                    (
+                                        Err(super::HuffmanError::InvalidTable(
+                                            super::HuffmanTableError::InvalidCode,
+                                        )), next,
+                                    )
+                                } else { line_state(table.lines@[index as int], bytes, next) }
+                            }
+                        },
+                    },
+                }
+            },
+        }
+    }
+}
+
+// Model navigation: spec::decode_state [project-result-model]
+// Purpose: Complete cached-or-fallback input-table result and cursor dispatch.
+// Audit: huffman-decode-state
+// REQUIREMENT CONTEXT: T88-HUFFMAN-PREFIX-MATCH | ITU-T T.88 (08/2018) | B.4 step 1
+// Fidelity: unresolved; no independent normative approval.
+pub(crate) closed spec fn decode_state(
+    table: &super::HuffmanTable, bytes: Seq<u8>, position: usize,
+) -> (Result<super::HuffmanValue, super::HuffmanError>, usize)
+    recommends bytes.len() <= usize::MAX / 8, position <= bytes.len() * 8,
+{
+    if table.prefer_prefix_lookup && position + super::PREFIX_LOOKUP_BITS as nat
+        <= bytes.len() * 8 {
+        let index = position / 8;
+        let offset = position % 8;
+        let prefix = if offset == 0 { bytes[index as int] } else {
+            let first = bytes[index as int] as u16;
+            let second = bytes[(index + 1) as int] as u16;
+            ((((first << 8) | second) >> ((8 - offset) as usize)) & 0xff) as u8
+        };
+        let entry = if (prefix as nat) < table.prefix_lookup@.len() {
+            table.prefix_lookup@[prefix as int]
+        } else { 0u16 };
+        if entry == 0 {
+            fallback_run(table, bytes, position, 1, super::WideCode { limbs: [0u64, 0, 0, 0] })
+        } else {
+            let index = entry as int - 1;
+            if index >= table.lines@.len() {
+                (Err(super::HuffmanError::InvalidTable(super::HuffmanTableError::InvalidCode)), position)
+            } else {
+                let line = table.lines@[index];
+                if line.prefix_len > super::PREFIX_LOOKUP_BITS {
+                    (Err(super::HuffmanError::InvalidTable(super::HuffmanTableError::InvalidCode)), position)
+                } else { line_state(line, bytes, (position + line.prefix_len as nat) as usize) }
+            }
+        }
+    } else {
+        fallback_run(table, bytes, position, 1, super::WideCode { limbs: [0u64, 0, 0, 0] })
+    }
+}
+
 // Model navigation: spec::cached_decode_outcome [project-result-model]
 // Purpose: Input-indexed cached-line selection and exact value/error/cursor composition.
 // Audit: huffman-cached-decode-outcome

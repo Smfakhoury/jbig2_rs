@@ -80,7 +80,7 @@ CHECKS = (
     ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
     ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
     ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
-    ("huffman-assignment", "check_huffman_assignment_proofs.py", 15, "strong_contract", "weaker_control"),
+    ("huffman-assignment", "check_huffman_assignment_proofs.py", 21, "strong_contract", "weaker_control"),
     ("region-dispatch", "check_region_dispatch_proofs.py", 3, "strong_contract", "weaker_control"),
     ("operator-bit", "check_operator_bit_proofs.py", 4, "strong_contract", "weaker_control"),
     ("retention", "check_retention_proofs.py", 3, "strong_contract", "weaker_control"),

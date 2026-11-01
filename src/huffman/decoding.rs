@@ -43,12 +43,22 @@ impl HuffmanTable {
         ensures
             huffman_spec::reader_valid(final(reader)),
             huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out),
+            final(reader).bytes@ == old(reader).bytes@,
+            out == huffman_spec::decode_state(
+                self, old(reader).bytes@, old(reader).bit_position,
+            ).0,
+            final(reader).bit_position == huffman_spec::decode_state(
+                self, old(reader).bytes@, old(reader).bit_position,
+            ).1,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn decode(&self, reader: &mut BitReader<'_>) -> Result<HuffmanValue, HuffmanError> {
         #[cfg(verus_keep_ghost)]
         proof! {
             huffman_spec::cached_decode_outcome_definition();
+            huffman_spec::decode_state_definition(
+                self, reader.bytes@, reader.bit_position,
+            );
         }
         if self.prefer_prefix_lookup {
             if let Some(prefix) = peek_prefix(reader) {
@@ -81,7 +91,17 @@ impl HuffmanTable {
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         requires huffman_spec::reader_valid(old(reader)),
-        ensures huffman_spec::reader_valid(final(reader)),
+        ensures
+            huffman_spec::reader_valid(final(reader)),
+            final(reader).bytes@ == old(reader).bytes@,
+            out == huffman_spec::fallback_run(
+                self, old(reader).bytes@, old(reader).bit_position,
+                1, WideCode { limbs: [0u64, 0, 0, 0] },
+            ).0,
+            final(reader).bit_position == huffman_spec::fallback_run(
+                self, old(reader).bytes@, old(reader).bit_position,
+                1, WideCode { limbs: [0u64, 0, 0, 0] },
+            ).1,
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(super) fn decode_fallback(
@@ -90,16 +110,46 @@ impl HuffmanTable {
     ) -> Result<HuffmanValue, HuffmanError> {
         let mut code = WideCode { limbs: [0; 4] };
         let mut length = 1_usize;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(code.limbs@ == seq![0u64, 0, 0, 0]);
+            reveal(huffman_spec::reader_valid);
+            huffman_spec::fallback_run_definition(
+                self, reader.bytes@, reader.bit_position, length, code,
+            );
+            huffman_spec::fallback_run_definition(
+                self, reader.bytes@, reader.bit_position, length,
+                WideCode { limbs: [0u64, 0, 0, 0] },
+            );
+            reveal(huffman_spec::append_bit);
+            reveal(huffman_spec::checked_shift_left_one);
+            reveal(huffman_spec::checked_add_small);
+            reveal(huffman_spec::add_limb);
+        }
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 huffman_spec::reader_valid(reader),
+                huffman_spec::reader_valid(old(reader)),
                 1 <= length,
                 length <= self.max_prefix_len as usize + 1,
+                reader.bytes@ == old(reader).bytes@,
+                huffman_spec::fallback_run(
+                    self, old(reader).bytes@, old(reader).bit_position,
+                    1, WideCode { limbs: [0u64, 0, 0, 0] },
+                ) == huffman_spec::fallback_run(
+                    self, reader.bytes@, reader.bit_position, length, code,
+                ),
             decreases self.max_prefix_len as usize + 1 - length,
         ))]
         while length <= self.max_prefix_len as usize {
             #[cfg(verus_keep_ghost)]
             let start = reader.bit_position;
+            #[cfg(verus_keep_ghost)]
+            proof! {
+                huffman_spec::fallback_run_definition(
+                    self, reader.bytes@, reader.bit_position, length, code,
+                );
+            }
             let bit = match reader.read_bits(1) {
                 Ok(bit) => bit,
                 Err(error) => {
@@ -128,6 +178,12 @@ impl HuffmanTable {
                 return decode_line(*line, reader);
             }
             length = next_prefix_length(length, usize::from(self.max_prefix_len));
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            huffman_spec::fallback_run_definition(
+                self, reader.bytes@, reader.bit_position, length, code,
+            );
         }
         Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))
     }
@@ -362,6 +418,12 @@ pub(super) fn canonical_range_fits(first: WideCode, count: u32, length: usize) -
     ensures
         final(reader).bytes@ == old(reader).bytes@,
         huffman_spec::reader_valid(final(reader)),
+        out == huffman_spec::line_state(
+            line, old(reader).bytes@, old(reader).bit_position,
+        ).0,
+        final(reader).bit_position == huffman_spec::line_state(
+            line, old(reader).bytes@, old(reader).bit_position,
+        ).1,
         match out {
             Ok(HuffmanValue::OutOfBand) =>
                 line.kind == LineKind::OutOfBand

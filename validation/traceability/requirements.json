@@ -813,6 +813,18 @@
       {
         "file": "specs/huffman.rs",
         "members": [
+          "spec::line_state",
+          "spec::fallback_run",
+          "spec::decode_state"
+        ],
+        "classification": "project-result-model",
+        "justification": "The line-state model pairs exact suffix result/error with its cursor. The recursive fallback model reads original input bits, advances the checked wide prefix, searches length buckets and ordered line indices and composes that suffix state. The closed public state model chooses cached or fallback dispatch. Owning-module definitions are proved; implementation loop invariants preserve the complete future result state.",
+        "ambiguity": "",
+        "caveats": "Valid-reader project behavior over supplied table metadata. Canonical cache/constructor fidelity, independent standard-table/parameter review and full JBIG2 caller composition remain separate and unapproved."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": [
           "spec::assignment_prefix",
           "spec::bucket",
           "spec::first_prefix",
@@ -2330,6 +2342,36 @@
       ],
       "name": "assignment_order",
       "role": "Exact concatenation of original raw-line index selections by increasing nonzero length and original order."
+    },
+    "huffman-line-state": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "line_state",
+      "role": "Exact project suffix value/OOB/error and consumed cursor state for an already selected line, under unchanged valid-reader conditions."
+    },
+    "huffman-fallback-run": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "fallback_run",
+      "role": "Closed finite operational state over original bits, checked wide prefix, supplied length buckets/ordered indices and exact selected-line outcome; not independent metadata canonicality or normative approval."
+    },
+    "huffman-decode-state": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "decode_state",
+      "role": "Closed complete cached-or-fallback result/cursor dispatch over a supplied Huffman table and valid original reader, preserving the previous cached-hit relation."
     },
     "huffman-cached-decode-outcome": {
       "kind": "spec",
@@ -8144,10 +8186,13 @@
       "title": "Match a Huffman prefix before decoding its selected line",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decoding::HuffmanTable::decode"
+        "huffman::decoding::HuffmanTable::decode",
+        "huffman::decoding::HuffmanTable::decode_fallback"
       ],
       "models": [
-        "huffman-reader-valid"
+        "huffman-reader-valid",
+        "huffman-fallback-run",
+        "huffman-decode-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8162,18 +8207,52 @@
         {
           "target": "lib",
           "name": "huffman::tests::table_validation::invalid_prefix_and_eof_are_oob_safe"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::standard_prefix_selection_matches_independent_numeric_assignment_and_frames"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::longest_literal_prefixes_keep_complete_success_truncation_and_miss_state"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::fallback_metadata_errors_and_wide_bucket_selection_match_scalar_state"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::nonzero_long_prefixes_select_the_given_wide_code_and_ordered_line"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The full canonical prefix-match claim remains state preservation: cache-entry canonicality and fallback matching/consumption are unproved. Separately, exact lookahead input windows are linked under T88-BITS-MSB-FIRST, and populated cache-hit operational line selection/value/error/cursor composition is linked under the selected normal/lower/OOB result records. Those conditional results are not a proof of correct canonical cache construction or complete prefix selection.",
+      "scope_of_formal_result": "The actual public decoder now has complete operational result/error/cursor state over valid original readers and supplied table metadata. Fallback reads each original bit, advances the checked wide prefix, searches the first matching length bucket and ordered line and composes exact suffix outcomes; cached, missing-cache and insufficient-lookahead dispatch select the appropriate state. The previous cached-hit result and reader validity remain. This project functional contract does not establish independently approved canonical table/cache construction, standard parameter fidelity or complete JBIG2 stream correctness.",
       "assumptions": [
-        "The same decode path is used for standard and custom tables; differential fast/fallback agreement alone is not an independent normative oracle."
+        "The table metadata is supplied to the operational result model; constructor/cache/codebook fidelity and independent normative review remain separate. Independent numeric/Boolean oracles supplement, but do not replace, that review."
       ],
       "gaps": [
-        "Prove prefix selection and consumption for lookup/fallback paths and compose them with decode_line's value contract."
+        "Independently review table/codebook parameters and prove canonical cache/constructor fidelity for every supported line source, including standard and symbol-ID tables.",
+        "Compose the operational Huffman result with dictionary/text and full JBIG2 stream semantics against independently reviewed models; official positive disagreements remain unresolved."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "huffman::decoding::HuffmanTable::decode",
+          "section": "ensures",
+          "tokens": [
+            "out == huffman_spec::decode_state(self, old(reader).bytes@, old(reader).bit_position,).0",
+            "final(reader).bit_position == huffman_spec::decode_state(self, old(reader).bytes@, old(reader).bit_position,).1"
+          ]
+        },
+        {
+          "runtime": "huffman::decoding::HuffmanTable::decode_fallback",
+          "section": "ensures",
+          "tokens": [
+            "out == huffman_spec::fallback_run(self, old(reader).bytes@, old(reader).bit_position, 1, WideCode { limbs: [0u64, 0, 0, 0] },).0",
+            "final(reader).bit_position == huffman_spec::fallback_run(self, old(reader).bytes@, old(reader).bit_position, 1, WideCode { limbs: [0u64, 0, 0, 0] },).1"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "huffman::decoding::HuffmanTable::decode",
@@ -8197,6 +8276,7 @@
       "models": [
         "huffman-decoded-value",
         "huffman-cached-decode-outcome",
+        "huffman-line-state",
         "bit-value",
         "reader-bit-error",
         "reader-eof-error"
@@ -8270,6 +8350,7 @@
       "models": [
         "huffman-decoded-value",
         "huffman-cached-decode-outcome",
+        "huffman-line-state",
         "bit-value",
         "reader-bit-error",
         "reader-eof-error"
@@ -8341,7 +8422,8 @@
         "huffman::decoding::HuffmanTable::decode"
       ],
       "models": [
-        "huffman-cached-decode-outcome"
+        "huffman-cached-decode-outcome",
+        "huffman-line-state"
       ],
       "proof_macros": [],
       "tests": [

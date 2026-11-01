@@ -2,6 +2,17 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-HUFFMAN-COMPLETE-PREFIX-STATE",
+      "transformation": "all fifteen existing standard tables with 1024 literal words, varied reader origins/truncations and cached/fallback dispatch; raw wide/invalid metadata and literal prefixes through 255 bits",
+      "invariant": "138240 input states match independent u128 canonical assignment and a 256-Boolean prefix/borrow oracle through all three executions; 145 longest-prefix states, 8064 raw metadata states and 30 nonzero-wide matches preserve exact result/error/buffer/cursor outcomes",
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::fallback_state::standard_prefix_selection_matches_independent_numeric_assignment_and_frames"},
+        {"target": "lib", "name": "huffman::tests::fallback_state::longest_literal_prefixes_keep_complete_success_truncation_and_miss_state"},
+        {"target": "lib", "name": "huffman::tests::fallback_state::fallback_metadata_errors_and_wide_bucket_selection_match_scalar_state"},
+        {"target": "lib", "name": "huffman::tests::fallback_state::nonzero_long_prefixes_select_the_given_wide_code_and_ordered_line"}
+      ]
+    },
+    {
       "id": "META-HUFFMAN-CACHED-LINE-COMPOSITION",
       "transformation": "the existing fixed-width raw table construction over all 65536 words/eight bit offsets, plus raw cache entries and line metadata including malformed widths/indices",
       "invariant": "524288 scalar fixed-table selections and 368640 raw cache-line cases preserve exact value/OOB/error/consumption/buffer outcomes; cache misses, malformed metadata, EOF and both overflow classes are nonempty",

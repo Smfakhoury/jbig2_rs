@@ -202,7 +202,7 @@ fn prefix_peek_matches_every_byte_window_with_exact_availability_and_no_consumpt
     assert!(outcomes.into_iter().all(|count| count > 0));
 }
 
-fn raw_line_oracle(
+pub(super) fn raw_line_oracle(
     line: HuffmanLine,
     bytes: &[u8],
     start: usize,
