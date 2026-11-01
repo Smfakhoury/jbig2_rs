@@ -92,6 +92,24 @@ unresolved; these observations grant no normative rejection credit.
 Reference implementation inspection, derivation, restricted-asset
 redistribution and protected standards processing remain outside that consent.
 
+### What the investigation review needs to resolve
+
+This is an evidence review, not a decoder-fix proposal or a request for the
+repository owner to certify conformance. The following questions remain open:
+
+| Cases | Observed boundary | Required technical resolution |
+| --- | --- | --- |
+| `codeStreamTest1_TT1` | Literal code lengths plus one and Huffman-only final-instance stopping match all three pages, but reject an unchanged first-party input that both Rust and jbig2dec decode correctly. | Establish the symbol-ID length and text-termination rules without breaking existing valid inputs. The tested proposal is rejected. |
+| `codeStreamTest1_TT2` | Rust exhausts a one-byte collective-bitmap extent for a 5 by 8 bitmap; jbig2dec also fails that bitmap. | Establish the correct upstream field interpretation and bounded bitmap extent; extending the declared size is not a validated fix. |
+| `codeStreamTest1_TT3`, `TT4`, `TT5`, `TT7`, `codeStreamTest2_TT6` | Arithmetic export decoding produces negative runs. TT3's three glyphs already match, while changing its declared export count leaves the reference's final pixels unchanged. | Establish the entropy state, export procedure and dictionary-reference interpretation; matching glyphs or reference output alone does not settle them. |
+
+Review the observations and the rejection of the proposed shortcut separately
+from the still-missing wire-format resolution. The follow-up pins the production
+revision, reference executable, compiler and local evidence-summary hash.
+Restricted inputs, executable and raw bitmap outputs are not included in the
+repository. Their absence means the committed summary is not a substitute for
+an independent authorized reproduction.
+
 After building the repository's `decode_vector` validation adapter, an
 authorized local copy can be checked without copying it into the repository:
 

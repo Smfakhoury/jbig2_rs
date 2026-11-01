@@ -18,7 +18,7 @@
     "normative_approval": false,
     "official_rejection_credit": 0
   },
-  "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation. No protected standard text, new encoded fixture family, sample-software oracle, new native/Hayro oracle or instrumented entropy experiment was used for this accepted evidence. All seven normative approval flags and the release block remain unchanged.",
+  "metadata_only_update": "Historical source bindings and uninstrumented normal-decoder observation at source_revision below did not use protected standard text, a new encoded fixture family, sample software, a new native/Hayro oracle or an instrumented entropy experiment. The separately dated authorized_reference_followup above records the subsequent sample-program execution and rejected diagnostic experiments; it does not refresh the historical case traces or approve a decoder correction. All seven normative approval flags and the release block remain unchanged.",
   "recorded_at": "2026-10-30T01:46:50.577253+00:00",
   "source_revision": "b45340399417abd820de7b9c7ebc533d297d45fd",
   "checkout_policy_sha256": "d03e7c2e8df08a9bc503b971dcacf1487847dd473a5d34a21b315e48febea132",
