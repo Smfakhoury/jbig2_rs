@@ -936,6 +936,7 @@ def check_mutations(toolchain: str) -> dict:
         for name in ("Cargo.toml", "Cargo.lock", "README.md", "SECURITY.md", "LICENSE"):
             shutil.copyfile(ROOT / name, directory / name)
         environment = isolated_environment(directory)
+        environment["CARGO_INCREMENTAL"] = "1"
         baseline_directory = directory / "baseline-tests"
         baseline_directory.mkdir()
         baselines = {}

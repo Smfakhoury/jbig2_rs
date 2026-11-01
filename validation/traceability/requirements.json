@@ -2,9 +2,30 @@
   "schema_version": 1,
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "f72c11b6c9103fe631f4cdb90de49a0e1e0feb702b25f274aa61bd397e30e82d",
-    "project_source_sha256": "699bdab90397aac6ac8782e1958f07061e28f488f88ab1c9e19d2108b503c72f",
+    "registry_sha256": "f61e3d069622a035e3c20566bc95820311bbaa227218cd7f267b57f5e4981d70",
+    "project_source_sha256": "3726e0121a8011106b2db7c31e0b79714ca851dcf905651ea794ce5e54c095cc",
     "families": [
+      {
+        "file": "specs/huffman_lookup.rs",
+        "members": [
+          "spec::fast_shape"
+        ],
+        "classification": "representation-invariant",
+        "justification": "Production cache policy permits no nonzero prefixes shorter than eight bits; this structural condition alone specifies no cache entry.",
+        "ambiguity": "",
+        "caveats": "Not independently approved standard-table or source-parameter fidelity."
+      },
+      {
+        "file": "specs/huffman_lookup.rs",
+        "members": [
+          "spec::fast_slot",
+          "spec::table_lookup_valid"
+        ],
+        "classification": "project-result-model",
+        "justification": "fast_slot maps supplied eight-bit canonical metadata to exact original ordinal plus one or a zero sentinel. table_lookup_valid exposes the constructor-owned complete production-cache result while retaining private field opacity; its definition and map-step lemmas are proved, not assumed.",
+        "ambiguity": "",
+        "caveats": "A successful production-policy map is not independent approval of canonical source parameters, forced short-prefix test caches, or full JBIG2 streams."
+      },
       {
         "file": "specs/readers.rs",
         "members": [
@@ -809,6 +830,18 @@
         "justification": "The closed predicate uses the original eight-bit input window to identify a populated cache slot, the slot's stored line index and exact prefix/suffix value/OOB/error/cursor outcomes. The implementation composes the existing peek and total-line contracts; an ownership-local proved definition preserves private table-field opacity.",
         "ambiguity": "",
         "caveats": "Conditional on a populated cache hit under valid reader inputs. It does not prove cache canonicality, empty-cache/fallback semantics, full stream correctness or independent normative approval."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": [
+          "spec::line_state",
+          "spec::fallback_run",
+          "spec::decode_state"
+        ],
+        "classification": "project-result-model",
+        "justification": "The line-state model pairs exact suffix result/error with its cursor. The recursive fallback model reads original input bits, advances the checked wide prefix, searches length buckets and ordered line indices and composes that suffix state. The closed public state model chooses cached or fallback dispatch. Owning-module definitions are proved; implementation loop invariants preserve the complete future result state.",
+        "ambiguity": "",
+        "caveats": "Valid-reader project behavior over supplied table metadata. Canonical cache/constructor fidelity, independent standard-table/parameter review and full JBIG2 caller composition remain separate and unapproved."
       },
       {
         "file": "specs/huffman.rs",
@@ -1755,7 +1788,7 @@
     "proofs/model_support/decode.rs": "67e54d341dcb57f6b4ad8b2c8a489fa52928fd4f7e3c39406139c46dc3d5c2b4",
     "proofs/model_support/document.rs": "1d2bf0403b48ddffacb8fef836cbda83ca7a24c74a810521c09b285de3cf6c9c",
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
-    "proofs/model_support/huffman.rs": "6de570799bfbe4cd4e6e2685e555cd25eb08aa48d9ba745b25e8a97542605011",
+    "proofs/model_support/huffman.rs": "0eea371c344f65c8f9be5ba1022ee4dc5245acb5976ec1931e0aca5e4b26a788",
     "proofs/model_support/mmr.rs": "16bc3d8d0434cab9d062321962daf75341d8d6c286c60d801749c79c4bc6a04b",
     "proofs/production_impl/arithmetic.rs": "4c299e136e1291f66d09a8f3e25aeeb4b1d974ef83a4a3ffdedc458893eedb50",
     "proofs/production_impl/bitmap.rs": "7eabe6eecfd5f87785c542a34b8dc7ccfe6158af7543334754d5e417b981c479",
@@ -1778,7 +1811,8 @@
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
     "specs/generic_region.rs": "61f8a7afbfc236f462c592a0b3be830ad286f2838c01cde9cc24f275b82bd115",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
-    "specs/huffman.rs": "78aa12e93d242c676950fbd501f2bb669a8aa1329d8373b3a84778c833921cef",
+    "specs/huffman.rs": "a0957c92dcde7dc0bf8b7ad092d9053068b0e70bb62c73043db72188de34f45c",
+    "specs/huffman_lookup.rs": "bd6fe3ee36de79103836d6fc9fc411b03ca0b304ce4915d0f730c2301b483766",
     "specs/mmr.rs": "6333d8553b47d1bd6bcc996c0d0f3d0216d3f4d3eeff9c07e34a4dfeea5bb49c",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "ee10b54a7ee8dce323488bf8ef5229fbbf1d5811888a3364cda8f2cc187ba251",
@@ -1830,10 +1864,12 @@
     "src/halftone/tests/codec_state.rs": "51027604dd118a9109fb60505b855c467332d536dbf5e3d3088e2a365afd6d99",
     "src/halftone/tests/geometry_and_render.rs": "c2ded87b15b0342969b81b7e98f6a617098302ab6e56f28d6cabba8aafc850cd",
     "src/halftone/tests/headers_and_patterns.rs": "ef5f90a9b1eaf32619dc22c6f49b5d6d6ccbf32f9bdacfc6507f29c15efa9f70",
-    "src/huffman.rs": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
-    "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
-    "src/huffman/decoding.rs": "273c6331429d025022a725f2fc857b0d372aee600ba466da9ca9006e5477ea72",
-    "src/huffman/tests/canonical_decoding.rs": "1833c58d2aeeae7813deb3ea7e6a3d54f4e485efc4413a88c1a0871177a433cd",
+    "src/huffman.rs": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
+    "src/huffman/construction.rs": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
+    "src/huffman/decoding.rs": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
+    "src/huffman/tests/cache_map.rs": "fe783f19e825db4ed6383318912179f9a58a9026df14480d4ab350b83438239e",
+    "src/huffman/tests/canonical_decoding.rs": "1c445c3d01557bf09170fdb0ad9e6b8bd1c9af5de22750a3bc46eea942975868",
+    "src/huffman/tests/fallback_state.rs": "f2785678ac694d7c40760693b376d641872f90388b5933b6d8a3e1ac4e5a45e0",
     "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
     "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
     "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",
@@ -2330,6 +2366,66 @@
       ],
       "name": "assignment_order",
       "role": "Exact concatenation of original raw-line index selections by increasing nonzero length and original order."
+    },
+    "huffman-fast-shape": {
+      "kind": "spec",
+      "file": "specs/huffman_lookup.rs",
+      "module_path": [
+        "huffman",
+        "huffman_lookup_spec"
+      ],
+      "name": "fast_shape",
+      "role": "Production fast-cache policy excludes nonzero prefixes shorter than eight bits; not independent codebook fidelity."
+    },
+    "huffman-fast-slot": {
+      "kind": "spec",
+      "file": "specs/huffman_lookup.rs",
+      "module_path": [
+        "huffman",
+        "huffman_lookup_spec"
+      ],
+      "name": "fast_slot",
+      "role": "Exact eight-bit supplied canonical-metadata/ordered-index lookup with zero sentinel for missing or unrepresentable compact entries."
+    },
+    "huffman-table-lookup-valid": {
+      "kind": "spec",
+      "file": "specs/huffman_lookup.rs",
+      "module_path": [
+        "huffman",
+        "huffman_lookup_spec"
+      ],
+      "name": "table_lookup_valid",
+      "role": "Closed constructor-owned relation proving production cache contents and retention for all successful factories; not source-table or full-stream normative approval."
+    },
+    "huffman-line-state": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "line_state",
+      "role": "Exact project suffix value/OOB/error and consumed cursor state for an already selected line, under unchanged valid-reader conditions."
+    },
+    "huffman-fallback-run": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "fallback_run",
+      "role": "Closed finite operational state over original bits, checked wide prefix, supplied length buckets/ordered indices and exact selected-line outcome; not independent metadata canonicality or normative approval."
+    },
+    "huffman-decode-state": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "decode_state",
+      "role": "Closed complete cached-or-fallback result/cursor dispatch over a supplied Huffman table and valid original reader, preserving the previous cached-hit relation."
     },
     "huffman-cached-decode-outcome": {
       "kind": "spec",
@@ -8025,6 +8121,10 @@
       "runtime": [
         "huffman::construction::HuffmanTable::from_line_source",
         "huffman::construction::HuffmanTable::new",
+        "huffman::construction::HuffmanTable::new_symbol_ids",
+        "huffman::construction::HuffmanTable::standard",
+        "huffman::construction::HuffmanTable::from_encoded",
+        "huffman::decoding::build_prefix_lookup",
         "huffman::wide::WideCode::zero"
       ],
       "models": [
@@ -8032,7 +8132,10 @@
         "huffman-assignment-contents",
         "huffman-assignment-codes",
         "huffman-assignment-starts",
-        "huffman-assignment-order"
+        "huffman-assignment-order",
+        "huffman-fast-shape",
+        "huffman-fast-slot",
+        "huffman-table-lookup-valid"
       ],
       "proof_macros": [],
       "tests": [
@@ -8063,16 +8166,29 @@
         {
           "target": "lib",
           "name": "huffman::tests::table_validation::wide_zero_constructor_matches_default_and_array_initialization"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::cache_map::compact_cache_indices_match_wide_sentinel_math_at_every_boundary"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::cache_map::production_cache_maps_sparse_codes_and_rejects_invalid_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::cache_map::raw_symbol_id_and_standard_constructors_keep_their_production_cache_map"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "On success for an original Borrowed raw line source, construction and new export exact copied lines, zero-length-excluding histogram, maximum active width, checked-wide canonical first-prefix recurrence from the raw source, active bucket starts/range checks, and stable original-line index order. The same literal zero constructor executes in Rust and Verus; Default remains derived. The dedicated huffman-assignment semantic group has individual code/start/order controls retaining content/count/extent and the other assignment guarantees, plus a literal-zero control; all four are also registered native mutations. This is not an encoded parser, entropy decoder or normative conformance result.",
+      "scope_of_formal_result": "Successful Borrowed raw construction retains its exact copied lines, histogram, checked-wide canonical recurrence, active starts and stable original order. The production cache builder additionally returns exactly 256 slots and, when counts for lengths1..7 are zero, maps each eight-bit prefix to its supplied ordered original index plus one, with zero for unmapped or unrepresentable entries. All five successful factories retain this cache result under their existing minimum-length policy; inactive caches remain empty. Raw assignment and cache controls retain unrelated earlier guarantees. This is an operational metadata correspondence, not encoded-line-list/standard-parameter or normative conformance approval.",
       "assumptions": [
-        "The project supports wide prefixes through 255 bits and reuses its existing checked-wide arithmetic models. The raw-source recurrence is independent of returned storage, but independent normative/model approval remains open. Non-Borrowed sources retain their prior guarantees without an added assignment theorem."
+        "The project supports wide prefixes through255bits and reuses its existing checked-wide arithmetic models. Source assignment fidelity remains proved only for Borrowed raw lines. The production cache result is relative to supplied metadata and excludes forced shorter-prefix test caches; no allocator capacity/length fact or new reader precondition is trusted."
       ],
       "gaps": [
-        "Prove mathematical prefix-freedom and complete acceptance/typed rejection policy, connect encoded/symbol-length/standard sources and prefix lookup/entropy decoding, and independently review the model and invalid-table policy."
+        "Prove mathematical prefix-freedom and complete acceptance/typed rejection policy, connect encoded/symbol-length/standard source parameters to the metadata, and independently review the model and invalid-table policy.",
+        "Compose the production cache correspondence with full Huffman/JBIG2 caller semantics and independent normative dispositions; all selected requirements remain provisional."
       ],
       "functional_evidence": [
         {
@@ -8091,6 +8207,50 @@
           "section": "ensures",
           "tokens": [
             "huffman_spec::canonical_assignment(lines@, &table)"
+          ]
+        },
+        {
+          "runtime": "huffman::decoding::build_prefix_lookup",
+          "section": "ensures",
+          "tokens": [
+            "lookup@.len() == 256",
+            "huffman_lookup_spec::fast_shape(length_count@)",
+            "lookup@[prefix] == huffman_lookup_spec::fast_slot("
+          ]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::from_line_source",
+          "section": "ensures",
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::new",
+          "section": "ensures",
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::new_symbol_ids",
+          "section": "ensures",
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::standard",
+          "section": "ensures",
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::from_encoded",
+          "section": "ensures",
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
           ]
         },
         {
@@ -8144,10 +8304,13 @@
       "title": "Match a Huffman prefix before decoding its selected line",
       "feature": "standard_huffman_tables",
       "runtime": [
-        "huffman::decoding::HuffmanTable::decode"
+        "huffman::decoding::HuffmanTable::decode",
+        "huffman::decoding::HuffmanTable::decode_fallback"
       ],
       "models": [
-        "huffman-reader-valid"
+        "huffman-reader-valid",
+        "huffman-fallback-run",
+        "huffman-decode-state"
       ],
       "proof_macros": [],
       "tests": [
@@ -8162,18 +8325,52 @@
         {
           "target": "lib",
           "name": "huffman::tests::table_validation::invalid_prefix_and_eof_are_oob_safe"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::standard_prefix_selection_matches_independent_numeric_assignment_and_frames"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::longest_literal_prefixes_keep_complete_success_truncation_and_miss_state"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::fallback_metadata_errors_and_wide_bucket_selection_match_scalar_state"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::fallback_state::nonzero_long_prefixes_select_the_given_wide_code_and_ordered_line"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The full canonical prefix-match claim remains state preservation: cache-entry canonicality and fallback matching/consumption are unproved. Separately, exact lookahead input windows are linked under T88-BITS-MSB-FIRST, and populated cache-hit operational line selection/value/error/cursor composition is linked under the selected normal/lower/OOB result records. Those conditional results are not a proof of correct canonical cache construction or complete prefix selection.",
+      "scope_of_formal_result": "The actual public decoder now has complete operational result/error/cursor state over valid original readers and supplied table metadata. Fallback reads each original bit, advances the checked wide prefix, searches the first matching length bucket and ordered line and composes exact suffix outcomes; cached, missing-cache and insufficient-lookahead dispatch select the appropriate state. The previous cached-hit result and reader validity remain. This project functional contract does not establish independently approved canonical table/cache construction, standard parameter fidelity or complete JBIG2 stream correctness.",
       "assumptions": [
-        "The same decode path is used for standard and custom tables; differential fast/fallback agreement alone is not an independent normative oracle."
+        "The table metadata is supplied to the operational result model; constructor/cache/codebook fidelity and independent normative review remain separate. Independent numeric/Boolean oracles supplement, but do not replace, that review."
       ],
       "gaps": [
-        "Prove prefix selection and consumption for lookup/fallback paths and compose them with decode_line's value contract."
+        "Independently review table/codebook parameters and prove canonical cache/constructor fidelity for every supported line source, including standard and symbol-ID tables.",
+        "Compose the operational Huffman result with dictionary/text and full JBIG2 stream semantics against independently reviewed models; official positive disagreements remain unresolved."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "huffman::decoding::HuffmanTable::decode",
+          "section": "ensures",
+          "tokens": [
+            "out == huffman_spec::decode_state(self, old(reader).bytes@, old(reader).bit_position,).0",
+            "final(reader).bit_position == huffman_spec::decode_state(self, old(reader).bytes@, old(reader).bit_position,).1"
+          ]
+        },
+        {
+          "runtime": "huffman::decoding::HuffmanTable::decode_fallback",
+          "section": "ensures",
+          "tokens": [
+            "out == huffman_spec::fallback_run(self, old(reader).bytes@, old(reader).bit_position, 1, WideCode { limbs: [0u64, 0, 0, 0] },).0",
+            "final(reader).bit_position == huffman_spec::fallback_run(self, old(reader).bytes@, old(reader).bit_position, 1, WideCode { limbs: [0u64, 0, 0, 0] },).1"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "huffman::decoding::HuffmanTable::decode",
@@ -8197,6 +8394,7 @@
       "models": [
         "huffman-decoded-value",
         "huffman-cached-decode-outcome",
+        "huffman-line-state",
         "bit-value",
         "reader-bit-error",
         "reader-eof-error"
@@ -8270,6 +8468,7 @@
       "models": [
         "huffman-decoded-value",
         "huffman-cached-decode-outcome",
+        "huffman-line-state",
         "bit-value",
         "reader-bit-error",
         "reader-eof-error"
@@ -8341,7 +8540,8 @@
         "huffman::decoding::HuffmanTable::decode"
       ],
       "models": [
-        "huffman-cached-decode-outcome"
+        "huffman-cached-decode-outcome",
+        "huffman-line-state"
       ],
       "proof_macros": [],
       "tests": [

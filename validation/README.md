@@ -62,6 +62,13 @@ Missing/ignored/duplicate/wrong-target tests and empty catalogs fail.
 Discovery compiles/lists tests but does not execute them; native CI runs them
 separately. Failed checking removes stale success output.
 
+The production Huffman cache-map catalog uses raw metadata and independent wide
+index/distance arithmetic, including compact-index boundaries and sparse slots.
+It distinguishes cache storage/retention from source-table or full-stream
+fidelity. The factory contracts prove the production minimum-length policy;
+forced short-prefix test caches and held encoded fixture families remain
+outside that new result.
+
 ## Official conformance: unresolved is not passed
 
 The [manifest](conformance/itu-t88-2018-manifest.json) pins archive/per-file
@@ -184,6 +191,23 @@ cache-miss behavior. No encoded custom-table fixture is constructed.
 Canonicality of generated cache entries, fallback prefix selection and full
 table/stream normative fidelity remain separate, explicitly unproved claims.
 
+Fallback prefix decoding now has complete input/table result and cursor state:
+the actual bits advance the checked wide prefix, select the first matching
+length bucket and ordered line, and compose the exact suffix/error outcome.
+The public table decoder selects the cached or fallback state without narrowing
+its original reader precondition. Closed model definitions are proved in their
+owning module; no alternative executable decoder or trust assumption is added.
+Independent u128 assignment and 256-Boolean prefix/borrow oracles check 138,240
+standard-table input states through both dispatch modes and direct fallback,
+plus exact-count long-prefix/raw metadata cases through 255 bits. Six compiling
+faults target ignored bits, wrong order/bucket, EOF classification, lost wide
+limbs and false fallback rejection. Earlier controls remove equivalent new
+result clauses as well, retaining their original reader/success/frame bounds.
+These are operational prefix/table results; cache construction canonicality,
+independent table/parameter fidelity and full JBIG2 stream semantics remain
+separate. Tests use existing tables and raw numeric metadata, not new encoded
+custom-table or held codec-family fixtures.
+
 Independent first-party BMP fixtures cover both palette orders, top-down/
 bottom-up orientation, packed-bit and four-byte row padding, plus numeric
 pairing for multi-page output. No normalization bug was found in those covered
@@ -238,6 +262,20 @@ and baseline coverage. Its metadata/quota and byte-layout partitions run on
 different existing shards. Every original strong/weaker query is retained;
 logical group count is not CI check count, and a partial/canceled producer
 still cannot support complete acceptance.
+
+Native mutation workspaces enable isolated incremental compilation even when
+the host CI disables it. Every modified source still goes through Cargo and
+the compiler-selected test executable; this does not reuse a mutant result or
+change mutation counts, failure requirements, or CI time limits.
+
+The complete 49-group profile at head `2991b46` (run 41334856554, attempt 1)
+was rejected because shard 9's actual combined cost was 1,066.333 seconds,
+above the unchanged 1,050-second guard. All sixteen complete producer receipts
+are retained; passing individual jobs is not profile acceptance. Reader-error
+and halftone-header groups move to existing shards 0 and 5, leaving the growing
+Huffman group alone on shard 9. No group, contrast, producer or guard is removed.
+Replaying those recorded costs projects a 725.727-second maximum; that
+projection is not a new run. Fresh complete current-head acceptance is required.
 
 Native mutation controls likewise require an exact passing original test,
 compiling mutant and failure of that selected test. Zero-test success,

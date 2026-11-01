@@ -2,7 +2,9 @@
 #![allow(clippy::duplicated_attributes)]
 
 mod benchmarks;
+mod cache_map;
 mod canonical_decoding;
+mod fallback_state;
 mod table_validation;
 mod wide_arithmetic;
 

@@ -19,8 +19,51 @@ from rust_tests import test_inventory as inventory_tests
 
 
 class ContractMutationTests(unittest.TestCase):
+    def test_cache_map_controls_keep_shape_metadata_and_prior_assignment(self):
+        builders = [case for case in HUFFMAN_CASES if case["function"] == "build_prefix_lookup"]
+        self.assertEqual(len(builders), 3)
+        for case in builders:
+            with self.subTest(case=case["id"]):
+                source = source_text(TOOLS.parent, case["file"])
+                weaker = weakened_contract(replace_once(source, case["site"], case["replacement"]), case)
+                self.assertIn("Ok(lookup) => lookup@.len() == 256", weaker)
+                self.assertIn("code <= 255", weaker)
+                self.assertIn("distance < count", weaker)
+                self.assertNotIn("#[trigger] lookup@[prefix]", weaker)
+        constructor = next(case for case in HUFFMAN_CASES if case["id"] == "constructor_discards_its_production_cache")
+        source = source_text(TOOLS.parent, constructor["file"])
+        weaker = weakened_contract(replace_once(source, constructor["site"], constructor["replacement"]), constructor)
+        self.assertIn("huffman_spec::assignment_contents(", weaker)
+        self.assertIn("huffman_spec::assignment_codes(", weaker)
+        self.assertIn("huffman_spec::assignment_starts(", weaker)
+        self.assertIn("huffman_spec::assignment_order(", weaker)
+
+    def test_fallback_controls_keep_reader_buffer_and_old_loop_bounds(self):
+        cases = [case for case in HUFFMAN_CASES if case["function"] == "HuffmanTable::decode_fallback"]
+        self.assertEqual(len(cases), 5)
+        for case in cases:
+            with self.subTest(case=case["id"]):
+                source = source_text(TOOLS.parent, case["file"])
+                changed = replace_once(source, case["site"], case["replacement"])
+                weaker = weakened_contract(changed, case)
+                self.assertIn("requires huffman_spec::reader_valid(old(reader))", weaker)
+                self.assertIn("huffman_spec::reader_valid(final(reader))", weaker)
+                self.assertIn("final(reader).bytes@ == old(reader).bytes@", weaker)
+                self.assertIn("length <= self.max_prefix_len as usize + 1", weaker)
+                self.assertIn("reader.bytes@ == old(reader).bytes@", weaker)
+                self.assertNotIn("out == huffman_spec::fallback_run(", weaker)
+                self.assertNotIn(") == huffman_spec::fallback_run(", weaker)
+
+    def test_uncached_dispatch_control_keeps_prior_cached_result(self):
+        case = next(case for case in HUFFMAN_CASES if case["id"] == "table_dispatch_falsely_rejects_fallback")
+        source = source_text(TOOLS.parent, case["file"])
+        weaker = weakened_contract(replace_once(source, case["site"], case["replacement"]), case)
+        self.assertIn("huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out)", weaker)
+        self.assertIn("final(reader).bytes@ == old(reader).bytes@", weaker)
+        self.assertNotIn("out == huffman_spec::decode_state(", weaker)
+
     def test_cached_selection_controls_keep_original_reader_validity(self):
-        cases = [case for case in HUFFMAN_CASES if case["function"] == "HuffmanTable::decode"]
+        cases = [case for case in HUFFMAN_CASES if case["id"].startswith("cached_prefix_")]
         self.assertEqual(len(cases), 4)
         for case in cases:
             with self.subTest(case=case["id"]):
@@ -142,6 +185,7 @@ class ContractMutationTests(unittest.TestCase):
 
             def build(_cargo, directory, _environment, target):
                 self.assertEqual(target, "lib")
+                self.assertEqual(_environment["CARGO_INCREMENTAL"], "1")
                 source = (directory / "src/lib.rs").read_text()
                 builds.append(source)
                 executable = directory / "target" / "test-binary"
@@ -178,6 +222,7 @@ class ContractMutationTests(unittest.TestCase):
                     newline="\r\n" if newline is None else newline)
 
             with (
+                patch.dict("os.environ", {"CARGO_INCREMENTAL": "0"}),
                 patch.object(check_contract_mutations, "ROOT", root),
                 patch.object(check_contract_mutations, "MUTATIONS", cases),
                 patch.object(check_contract_mutations, "build_test_binary", side_effect=build),
@@ -197,7 +242,7 @@ class ContractMutationTests(unittest.TestCase):
 
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
-        self.assertEqual(len(identifiers), 164)
+        self.assertEqual(len(identifiers), 174)
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):
@@ -251,7 +296,7 @@ class ContractMutationTests(unittest.TestCase):
                     identity = (reference["target"], reference["name"])
                     self.assertIn(identity, tests, case["id"])
                     self.assertFalse(tests[identity]["ignored"], case["id"])
-        self.assertEqual(structured, 90)
+        self.assertEqual(structured, 92)
 
 
 if __name__ == "__main__":

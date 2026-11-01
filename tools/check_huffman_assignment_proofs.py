@@ -18,7 +18,75 @@ PEEK = runtime_function(ROOT, "huffman", "peek_prefix")
 PEEK_BODY = PEEK["body_text"]
 DECODE = runtime_function(ROOT, "huffman", "HuffmanTable::decode")
 DECODE_BODY = DECODE["body_text"]
+BUILDER = runtime_function(ROOT, "huffman", "build_prefix_lookup")
+BUILDER_BODY = BUILDER["body_text"]
+BUILDER_ATTRIBUTE = next(
+    value for value in BUILDER["attributes"] if "verus_spec(" in value
+)
+BUILDER_WEAKER = """#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(lookup) => lookup@.len() == 256,
+        Err(_) => true,
+    },
+))]"""
+OUTER_FAST_MAP = """huffman_lookup_spec::fast_shape(length_count@) ==>
+    forall|prefix: int| 0 <= prefix < 256 ==>
+        #[trigger] lookup@[prefix] == huffman_lookup_spec::fast_slot(
+            first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+            prefix as u8, if length <= 8 { 0u32 } else { length_count@[8] },
+        ),"""
+INNER_FAST_MAP = """huffman_lookup_spec::fast_shape(length_count@) ==>
+    forall|prefix: int| 0 <= prefix < 256 ==>
+        #[trigger] lookup@[prefix] == huffman_lookup_spec::fast_slot(
+            first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+            prefix as u8, distance,
+        ),"""
+SUFFIX_FAST_MAP = """huffman_lookup_spec::fast_shape(length_count@) ==>
+    forall|prefix: int| 0 <= prefix < 256 ==>
+        #[trigger] lookup@[prefix] == huffman_lookup_spec::fast_slot(
+            first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+            prefix as u8,
+            if suffix == 0 { distance } else { (distance + 1) as u32 },
+        ),"""
+SOURCE_ATTRIBUTE = next(
+    value for value in runtime_function(
+        ROOT, "huffman", "HuffmanTable::from_line_source",
+    )["attributes"] if "verus_spec(" in value
+)
+SOURCE_CACHE_MATCH = """match out {
+    Ok(table) => huffman_lookup_spec::table_lookup_valid(&table),
+    Err(_) => true,
+},"""
+SOURCE_WEAKER = replace_once(SOURCE_ATTRIBUTE, SOURCE_CACHE_MATCH, "")
+FALLBACK = runtime_function(ROOT, "huffman", "HuffmanTable::decode_fallback")
+FALLBACK_BODY = FALLBACK["body_text"]
 CACHED_POST = "huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out),"
+DECODE_VALUE = """out == huffman_spec::decode_state(
+    self, old(reader).bytes@, old(reader).bit_position,
+).0,"""
+DECODE_CURSOR = """final(reader).bit_position == huffman_spec::decode_state(
+    self, old(reader).bytes@, old(reader).bit_position,
+).1,"""
+FALLBACK_VALUE = """out == huffman_spec::fallback_run(
+    self, old(reader).bytes@, old(reader).bit_position,
+    1, WideCode { limbs: [0u64, 0, 0, 0] },
+).0,"""
+FALLBACK_CURSOR = """final(reader).bit_position == huffman_spec::fallback_run(
+    self, old(reader).bytes@, old(reader).bit_position,
+    1, WideCode { limbs: [0u64, 0, 0, 0] },
+).1,"""
+FALLBACK_INVARIANT = """huffman_spec::fallback_run(
+    self, old(reader).bytes@, old(reader).bit_position,
+    1, WideCode { limbs: [0u64, 0, 0, 0] },
+) == huffman_spec::fallback_run(
+    self, reader.bytes@, reader.bit_position, length, code,
+),"""
+LINE_VALUE = """out == huffman_spec::line_state(
+    line, old(reader).bytes@, old(reader).bit_position,
+).0,"""
+LINE_CURSOR = """final(reader).bit_position == huffman_spec::line_state(
+    line, old(reader).bytes@, old(reader).bit_position,
+).1,"""
 PEEK_POST = """out == if reader.bit_position + PREFIX_LOOKUP_BITS as nat
     > reader.bytes@.len() * 8 {
     None
@@ -83,7 +151,10 @@ def output_case(identity, field, replacement, predicate):
         "function": "HuffmanTable::from_line_source",
         "site": RETURN,
         "replacement": RETURN.replace(f"\n    {field},", f"\n    {field}: {replacement},"),
-        "controls": ((f"&& huffman_spec::{predicate}(huffman_spec::raw_lines(lines), &table)", ""),),
+        "controls": (
+            (SOURCE_ATTRIBUTE, SOURCE_WEAKER),
+            (f"&& huffman_spec::{predicate}(huffman_spec::raw_lines(lines), &table)", ""),
+        ),
     }
 
 
@@ -92,7 +163,7 @@ def line_case(identity, site, replacement):
         "id": identity, "file": LINE["file"], "module": "huffman",
         "function": "decode_line", "site": LINE_BODY,
         "replacement": replace_once(LINE_BODY, site, replacement),
-        "controls": ((TOTAL_LINE_POST, ""),),
+        "controls": ((TOTAL_LINE_POST, ""), (LINE_VALUE, ""), (LINE_CURSOR, "")),
         "native_test": "huffman::tests::canonical_decoding::raw_line_outcomes_match_wide_oracle_with_exact_errors_frames_and_acceptance",
     }
 
@@ -112,8 +183,31 @@ def cached_case(identity, site, replacement):
         "id": identity, "file": DECODE["file"], "module": "huffman",
         "function": "HuffmanTable::decode", "site": DECODE_BODY,
         "replacement": replace_once(DECODE_BODY, site, replacement),
-        "controls": ((CACHED_POST, ""),),
+        "controls": ((CACHED_POST, ""), (DECODE_VALUE, ""), (DECODE_CURSOR, "")),
         "native_test": "huffman::tests::canonical_decoding::fixed_width_cached_table_selects_literal_values_with_exact_consumption",
+    }
+
+
+def fallback_case(identity, site, replacement, test):
+    return {
+        "id": identity, "file": FALLBACK["file"], "module": "huffman",
+        "function": "HuffmanTable::decode_fallback", "site": FALLBACK_BODY,
+        "replacement": replace_once(FALLBACK_BODY, site, replacement),
+        "controls": ((FALLBACK_VALUE, ""), (FALLBACK_CURSOR, ""), (FALLBACK_INVARIANT, "")),
+        "native_test": "huffman::tests::fallback_state::" + test,
+    }
+
+
+def builder_case(identity, site, replacement):
+    return {
+        "id": identity, "file": BUILDER["file"], "module": "huffman",
+        "function": "build_prefix_lookup", "site": BUILDER_BODY,
+        "replacement": replace_once(BUILDER_BODY, site, replacement),
+        "controls": (
+            (BUILDER_ATTRIBUTE, BUILDER_WEAKER),
+            (OUTER_FAST_MAP, ""), (INNER_FAST_MAP, ""), (SUFFIX_FAST_MAP, ""),
+        ),
+        "native_test": "huffman::tests::cache_map::compact_cache_indices_match_wide_sentinel_math_at_every_boundary",
     }
 
 
@@ -209,6 +303,72 @@ CASES = (
         "return decode_line(*line, reader);",
         """return Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode));""",
     ),
+    fallback_case(
+        "fallback_discards_prefix_bits",
+        ".append_bit(bit)", ".append_bit(0_u32)",
+        "standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    ),
+    fallback_case(
+        "fallback_uses_first_ordered_line",
+        ".get(ordered_index)", ".get(0_usize)",
+        "standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    ),
+    fallback_case(
+        "fallback_uses_first_length_bucket",
+        "let count = self.length_count[length];",
+        "let count = self.length_count[1];",
+        "standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    ),
+    fallback_case(
+        "fallback_reclassifies_prefix_eof",
+        "return Err(HuffmanError::Decode(DecodeError::Malformed(error)));",
+        """let _discarded_prefix_error = error;
+            return Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode));""",
+        "longest_literal_prefixes_keep_complete_success_truncation_and_miss_state",
+    ),
+    fallback_case(
+        "fallback_discards_high_prefix_limbs",
+        "let count = self.length_count[length];",
+        """code.limbs[1] = 0;
+        code.limbs[2] = 0;
+        code.limbs[3] = 0;
+        let count = self.length_count[length];""",
+        "nonzero_long_prefixes_select_the_given_wide_code_and_ordered_line",
+    ),
+    {
+        "id": "table_dispatch_falsely_rejects_fallback",
+        "file": DECODE["file"], "module": "huffman", "function": "HuffmanTable::decode",
+        "site": DECODE_BODY,
+        "replacement": replace_once(
+            DECODE_BODY, "self.decode_fallback(reader)",
+            "Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode))",
+        ),
+        "controls": ((DECODE_VALUE, ""), (DECODE_CURSOR, "")),
+        "native_test": "huffman::tests::fallback_state::standard_prefix_selection_matches_independent_numeric_assignment_and_frames",
+    },
+    builder_case(
+        "production_cache_repeats_first_entry",
+        "*slot = encoded_line;", "*slot = 1_u16;",
+    ),
+    builder_case(
+        "production_cache_discards_representable_entry",
+        "*slot = encoded_line;", "let _discarded_entry = encoded_line;",
+    ),
+    builder_case(
+        "production_cache_corrupts_an_unmapped_slot",
+        "Ok(lookup)",
+        """if !lookup.is_empty() { lookup[0] = 1; }
+        Ok(lookup)""",
+    ),
+    {
+        "id": "constructor_discards_its_production_cache",
+        "file": "src/huffman.rs", "module": "huffman",
+        "function": "HuffmanTable::from_line_source",
+        "site": RETURN,
+        "replacement": RETURN.replace("\n    prefix_lookup,", "\n    prefix_lookup: Vec::new(),"),
+        "controls": ((SOURCE_ATTRIBUTE, SOURCE_WEAKER),),
+        "native_test": "huffman::tests::cache_map::raw_symbol_id_and_standard_constructors_keep_their_production_cache_map",
+    },
 )
 
 
@@ -220,11 +380,11 @@ def main():
     try:
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
-            ("src/huffman.rs", "specs/huffman.rs", "proofs/model_support/huffman.rs",
+            ("src/huffman.rs", "specs/huffman.rs", "specs/huffman_lookup.rs", "proofs/model_support/huffman.rs",
              "proofs/shared/huffman.rs", "proofs/spec_properties/huffman.rs",
              "proofs/production_impl/huffman.rs"),
             "jbig2-huffman-assignment-",
-            "Literal zero, raw assignment results, total selected-line outcomes, complete prefix windows and cached input-index/line/value/error/cursor composition. Controls retain every original boundary. Cache-hit operational selection does not prove cache canonicality, fallback selection, full table/stream decoding or independent normative approval.",
+            "Raw assignment, complete operational decoding and exact eight-bit production-cache mapping/constructor retention. Weaker controls retain prior reader/success/frame/assignment boundaries and remove newly coupled cache predicates when required. Production metadata correspondence is not independent source-table/parameter or full-JBIG2 normative approval.",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"Huffman assignment proof sensitivity failed: {error}", file=sys.stderr)

@@ -6,6 +6,44 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
+## Local production Huffman cache-map candidate
+
+The Rust/proof snapshot is `b45340399417abd820de7b9c7ebc533d297d45fd`.
+It extends the reviewed fallback source, not a merged-release
+attestation. Fresh unfiltered verification proves **1,287 obligations / zero
+errors** and builds a nonempty production library, including all three new
+helper lemma bodies. The registry extends the prior 184 definitions/422 author
+purposes to 187/425; all 266 selected normative records remain provisional.
+
+Under the existing production minimum-prefix policy, the builder proves all 256
+cache slots equal the supplied eight-bit code/ordered-index map. A representable
+ordinal is stored plus one; missing or unrepresentable entries remain zero.
+All five successful factories retain this result, and inactive caches remain
+empty. Raw assignment and reader boundaries are preserved. This is not source
+parameter, forced short-prefix cache or full-JBIG2 normative approval.
+
+The only native decoder-body change expresses the prior compact-index
+conversion through an equivalent explicit bound/guard. All other 661 native
+execution-token streams, including string literals, are unchanged. Independent
+wide arithmetic checks 65,538 index boundaries including u32::MAX, 1,285 sparse
+metadata cases and every cache slot; existing raw/symbol-ID and fifteen
+standard factories keep their cache policy. No held encoded fixture is added.
+
+All 25 Huffman compiling strong/weaker contrasts pass in 817.27 seconds under the
+unchanged 1,050-second guard, without whole-positive reuse. All 174 native mutants
+compile and fail their exact tests, including under the host CI incremental
+opt-out with the isolated-workspace override. No count, failure criterion,
+standard trust boundary, coverage floor or CI time limit is relaxed.
+
+Ordinary tests pass 511 library/integration cases, two driver tests and one
+doctest; fourteen ignored benchmarks remain. The actual 153-file Rust 1.88 archive
+passes extracted tests and a fresh offline consumer with hidden-hook/unsafe
+controls and zero normal dependencies. Coverage is 11,647/12,776 lines,
+11,107/12,984 regions and 2,265/2,640 outcomes; unchanged floors pass. The normal
+approved ten-stream re-observation remains 2 pass/7 pending/1 unsupported, exit 1,
+with zero reviewed rejection credit. Separate independent source review and
+complete current-head hosted acceptance remain mandatory before merging.
+
 ## Current responsibility-based file budget
 
 The immutable Rust-layout snapshot is

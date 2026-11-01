@@ -15,7 +15,8 @@ impl HuffmanTable {
     /// Validates table lines and assigns their canonical prefix codes.
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures match out {
-            Ok(table) => huffman_spec::canonical_assignment(lines@, &table),
+            Ok(table) => huffman_spec::canonical_assignment(lines@, &table)
+                && huffman_lookup_spec::table_lookup_valid(&table),
             Err(_) => true,
         },
     ))]
@@ -24,7 +25,13 @@ impl HuffmanTable {
         Self::from_line_source(HuffmanLines::Borrowed(lines), limits)
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(table) => huffman_lookup_spec::table_lookup_valid(&table),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn new_symbol_ids(lengths: &[u8], limits: &Limits) -> Result<Self, HuffmanError> {
         if let Some(maximum) = lengths.len().checked_sub(1) {
             i32::try_from(maximum).map_err(|_| MalformedError::IntegerOverflow)?;
@@ -39,6 +46,10 @@ impl HuffmanTable {
                 && huffman_spec::assignment_codes(huffman_spec::raw_lines(lines), &table)
                 && huffman_spec::assignment_starts(huffman_spec::raw_lines(lines), &table)
                 && huffman_spec::assignment_order(huffman_spec::raw_lines(lines), &table),
+            Err(_) => true,
+        },
+        match out {
+            Ok(table) => huffman_lookup_spec::table_lookup_valid(&table),
             Err(_) => true,
         },
     ))]
@@ -139,6 +150,8 @@ impl HuffmanTable {
                 1 <= min_length,
                 min_length <= max_length,
                 max_length <= MAX_PREFIX_LEN,
+                forall|length: int| 1 <= length < min_length ==>
+                    #[trigger] length_count@[length] == 0,
             decreases max_length - min_length,
         ))]
         while min_length < max_length && length_count[min_length] == 0 {
@@ -266,6 +279,21 @@ impl HuffmanTable {
 
         #[cfg(verus_keep_ghost)]
         proof! {
+            huffman_lookup_spec::table_lookup_definition();
+            if prefer_prefix_lookup {
+                assert(min_length >= 8);
+                assert(max_prefix_len >= 8);
+                assert(huffman_lookup_spec::fast_shape(length_count@));
+                assert(prefix_lookup@.len() == 256);
+                assert forall|prefix: int| 0 <= prefix < 256 implies
+                    prefix_lookup@[prefix] == huffman_lookup_spec::fast_slot(
+                        first_code@[8], length_count@[8], first_line@[8], ordered_lines@,
+                        prefix as u8, length_count@[8],
+                    ) by {
+                }
+            } else {
+                assert(prefix_lookup@.len() == 0);
+            }
             huffman_spec::canonical_assignment_definition();
             if huffman_spec::is_raw(lines) {
                 assert(owned_lines@ == huffman_spec::raw_lines(lines));
@@ -305,7 +333,13 @@ impl HuffmanTable {
     ///
     /// `bytes` is exactly one code table segment payload, including at most
     /// seven zero padding bits after the final table line.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(table) => huffman_lookup_spec::table_lookup_valid(&table),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::cast_possible_wrap, clippy::too_many_lines)]
     pub(crate) fn from_encoded(bytes: &[u8], limits: &Limits) -> Result<Self, HuffmanError> {
         let byte_count = u64::try_from(bytes.len()).map_err(|_| MalformedError::IntegerOverflow)?;
@@ -444,7 +478,13 @@ impl HuffmanTable {
     }
 
     /// Constructs one of the standard tables in T.88 B.5.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(table) => huffman_lookup_spec::table_lookup_valid(&table),
+            Err(_) => true,
+        },
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(crate) fn standard(
         table: StandardHuffmanTable,
         limits: &Limits,
