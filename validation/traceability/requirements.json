@@ -6,6 +6,22 @@
     "project_source_sha256": "1cc7501b69c838a87817e10401e193a8ba4c38e94a0e5db6091eb347e9758edd",
     "families": [
       {
+        "file": "specs/huffman_lookup.rs",
+        "members": ["spec::fast_shape"],
+        "classification": "representation-invariant",
+        "justification": "Production cache policy permits no nonzero prefixes shorter than eight bits; this structural condition alone specifies no cache entry.",
+        "ambiguity": "",
+        "caveats": "Not independently approved standard-table or source-parameter fidelity."
+      },
+      {
+        "file": "specs/huffman_lookup.rs",
+        "members": ["spec::fast_slot", "spec::table_lookup_valid"],
+        "classification": "project-result-model",
+        "justification": "fast_slot maps supplied eight-bit canonical metadata to exact original ordinal plus one or a zero sentinel. table_lookup_valid exposes the constructor-owned complete production-cache result while retaining private field opacity; its definition and map-step lemmas are proved, not assumed.",
+        "ambiguity": "",
+        "caveats": "A successful production-policy map is not independent approval of canonical source parameters, forced short-prefix test caches, or full JBIG2 streams."
+      },
+      {
         "file": "specs/readers.rs",
         "members": [
           "spec::bit_at",
@@ -2343,6 +2359,27 @@
       ],
       "name": "assignment_order",
       "role": "Exact concatenation of original raw-line index selections by increasing nonzero length and original order."
+    },
+    "huffman-fast-shape": {
+      "kind": "spec",
+      "file": "specs/huffman_lookup.rs",
+      "module_path": ["huffman", "huffman_lookup_spec"],
+      "name": "fast_shape",
+      "role": "Production fast-cache policy excludes nonzero prefixes shorter than eight bits; not independent codebook fidelity."
+    },
+    "huffman-fast-slot": {
+      "kind": "spec",
+      "file": "specs/huffman_lookup.rs",
+      "module_path": ["huffman", "huffman_lookup_spec"],
+      "name": "fast_slot",
+      "role": "Exact eight-bit supplied canonical-metadata/ordered-index lookup with zero sentinel for missing or unrepresentable compact entries."
+    },
+    "huffman-table-lookup-valid": {
+      "kind": "spec",
+      "file": "specs/huffman_lookup.rs",
+      "module_path": ["huffman", "huffman_lookup_spec"],
+      "name": "table_lookup_valid",
+      "role": "Closed constructor-owned relation proving production cache contents and retention for all successful factories; not source-table or full-stream normative approval."
     },
     "huffman-line-state": {
       "kind": "spec",
@@ -8068,6 +8105,10 @@
       "runtime": [
         "huffman::construction::HuffmanTable::from_line_source",
         "huffman::construction::HuffmanTable::new",
+        "huffman::construction::HuffmanTable::new_symbol_ids",
+        "huffman::construction::HuffmanTable::standard",
+        "huffman::construction::HuffmanTable::from_encoded",
+        "huffman::decoding::build_prefix_lookup",
         "huffman::wide::WideCode::zero"
       ],
       "models": [
@@ -8075,7 +8116,10 @@
         "huffman-assignment-contents",
         "huffman-assignment-codes",
         "huffman-assignment-starts",
-        "huffman-assignment-order"
+        "huffman-assignment-order",
+        "huffman-fast-shape",
+        "huffman-fast-slot",
+        "huffman-table-lookup-valid"
       ],
       "proof_macros": [],
       "tests": [
@@ -8106,16 +8150,29 @@
         {
           "target": "lib",
           "name": "huffman::tests::table_validation::wide_zero_constructor_matches_default_and_array_initialization"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::cache_map::compact_cache_indices_match_wide_sentinel_math_at_every_boundary"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::cache_map::production_cache_maps_sparse_codes_and_rejects_invalid_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "huffman::tests::cache_map::raw_symbol_id_and_standard_constructors_keep_their_production_cache_map"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "On success for an original Borrowed raw line source, construction and new export exact copied lines, zero-length-excluding histogram, maximum active width, checked-wide canonical first-prefix recurrence from the raw source, active bucket starts/range checks, and stable original-line index order. The same literal zero constructor executes in Rust and Verus; Default remains derived. The dedicated huffman-assignment semantic group has individual code/start/order controls retaining content/count/extent and the other assignment guarantees, plus a literal-zero control; all four are also registered native mutations. This is not an encoded parser, entropy decoder or normative conformance result.",
+      "scope_of_formal_result": "Successful Borrowed raw construction retains its exact copied lines, histogram, checked-wide canonical recurrence, active starts and stable original order. The production cache builder additionally returns exactly 256 slots and, when counts for lengths1..7 are zero, maps each eight-bit prefix to its supplied ordered original index plus one, with zero for unmapped or unrepresentable entries. All five successful factories retain this cache result under their existing minimum-length policy; inactive caches remain empty. Raw assignment and cache controls retain unrelated earlier guarantees. This is an operational metadata correspondence, not encoded-line-list/standard-parameter or normative conformance approval.",
       "assumptions": [
-        "The project supports wide prefixes through 255 bits and reuses its existing checked-wide arithmetic models. The raw-source recurrence is independent of returned storage, but independent normative/model approval remains open. Non-Borrowed sources retain their prior guarantees without an added assignment theorem."
+        "The project supports wide prefixes through255bits and reuses its existing checked-wide arithmetic models. Source assignment fidelity remains proved only for Borrowed raw lines. The production cache result is relative to supplied metadata and excludes forced shorter-prefix test caches; no allocator capacity/length fact or new reader precondition is trusted."
       ],
       "gaps": [
-        "Prove mathematical prefix-freedom and complete acceptance/typed rejection policy, connect encoded/symbol-length/standard sources and prefix lookup/entropy decoding, and independently review the model and invalid-table policy."
+        "Prove mathematical prefix-freedom and complete acceptance/typed rejection policy, connect encoded/symbol-length/standard source parameters to the metadata, and independently review the model and invalid-table policy.",
+        "Compose the production cache correspondence with full Huffman/JBIG2 caller semantics and independent normative dispositions; all selected requirements remain provisional."
       ],
       "functional_evidence": [
         {
@@ -8135,6 +8192,40 @@
           "tokens": [
             "huffman_spec::canonical_assignment(lines@, &table)"
           ]
+        },
+        {
+          "runtime": "huffman::decoding::build_prefix_lookup",
+          "section": "ensures",
+          "tokens": [
+            "lookup@.len() == 256",
+            "huffman_lookup_spec::fast_shape(length_count@)",
+            "lookup@[prefix] == huffman_lookup_spec::fast_slot("
+          ]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::from_line_source",
+          "section": "ensures",
+          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::new",
+          "section": "ensures",
+          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::new_symbol_ids",
+          "section": "ensures",
+          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::standard",
+          "section": "ensures",
+          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+        },
+        {
+          "runtime": "huffman::construction::HuffmanTable::from_encoded",
+          "section": "ensures",
+          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
         },
         {
           "runtime": "huffman::wide::WideCode::zero",

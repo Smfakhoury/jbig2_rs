@@ -19,6 +19,25 @@ from rust_tests import test_inventory as inventory_tests
 
 
 class ContractMutationTests(unittest.TestCase):
+    def test_cache_map_controls_keep_shape_metadata_and_prior_assignment(self):
+        builders = [case for case in HUFFMAN_CASES if case["function"] == "build_prefix_lookup"]
+        self.assertEqual(len(builders), 3)
+        for case in builders:
+            with self.subTest(case=case["id"]):
+                source = source_text(TOOLS.parent, case["file"])
+                weaker = weakened_contract(replace_once(source, case["site"], case["replacement"]), case)
+                self.assertIn("Ok(lookup) => lookup@.len() == 256", weaker)
+                self.assertIn("code <= 255", weaker)
+                self.assertIn("distance < count", weaker)
+                self.assertNotIn("#[trigger] lookup@[prefix]", weaker)
+        constructor = next(case for case in HUFFMAN_CASES if case["id"] == "constructor_discards_its_production_cache")
+        source = source_text(TOOLS.parent, constructor["file"])
+        weaker = weakened_contract(replace_once(source, constructor["site"], constructor["replacement"]), constructor)
+        self.assertIn("huffman_spec::assignment_contents(", weaker)
+        self.assertIn("huffman_spec::assignment_codes(", weaker)
+        self.assertIn("huffman_spec::assignment_starts(", weaker)
+        self.assertIn("huffman_spec::assignment_order(", weaker)
+
     def test_fallback_controls_keep_reader_buffer_and_old_loop_bounds(self):
         cases = [case for case in HUFFMAN_CASES if case["function"] == "HuffmanTable::decode_fallback"]
         self.assertEqual(len(cases), 5)
@@ -221,7 +240,7 @@ class ContractMutationTests(unittest.TestCase):
 
     def test_mutation_sites_are_unique_and_not_noops(self):
         identifiers = [mutation["id"] for mutation in MUTATIONS]
-        self.assertEqual(len(identifiers), 170)
+        self.assertEqual(len(identifiers), 174)
         self.assertEqual(len(identifiers), len(set(identifiers)))
         for mutation in MUTATIONS:
             with self.subTest(mutation=mutation["id"]):

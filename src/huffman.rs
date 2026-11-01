@@ -21,6 +21,11 @@ pub(crate) mod huffman_spec;
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
+#[path = "../specs/huffman_lookup.rs"]
+pub(crate) mod huffman_lookup_spec;
+
+#[cfg(verus_keep_ghost)]
+#[rustfmt::skip]
 #[path = "../proofs/shared/huffman.rs"]
 mod huffman_shared;
 
