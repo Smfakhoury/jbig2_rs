@@ -9,11 +9,11 @@
       "source_files_sha256": {
         "src/huffman.rs": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
         "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
-        "src/huffman/decoding.rs": "dc9feccc95946b0a13f40486726947f5f5f3b616eb60185db45144bc1eddded8",
+        "src/huffman/decoding.rs": "273c6331429d025022a725f2fc857b0d372aee600ba466da9ca9006e5477ea72",
         "src/huffman/tables.rs": "d64eafa6a985558abd3869bf599e095baaa4a57d3d826358f4642208a1561f5f",
         "src/huffman/tests.rs": "b653a0a17746c891b02f5b4ae474be26e9a233941d45eee003ba1e354c5c93f1",
         "src/huffman/tests/benchmarks.rs": "0f2deb471091907f7461394025bb531a8eb61c06cf62beb3fdf0bd5c34550f27",
-        "src/huffman/tests/canonical_decoding.rs": "996806d0cf90ae43ef1b57760c0159dab7c866ed00c870f5f253b25901311628",
+        "src/huffman/tests/canonical_decoding.rs": "1833c58d2aeeae7813deb3ea7e6a3d54f4e485efc4413a88c1a0871177a433cd",
         "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
         "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
         "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",

@@ -16,6 +16,9 @@ LINE = runtime_function(ROOT, "huffman", "decode_line")
 LINE_BODY = LINE["body_text"]
 PEEK = runtime_function(ROOT, "huffman", "peek_prefix")
 PEEK_BODY = PEEK["body_text"]
+DECODE = runtime_function(ROOT, "huffman", "HuffmanTable::decode")
+DECODE_BODY = DECODE["body_text"]
+CACHED_POST = "huffman_spec::cached_decode_outcome(self, old(reader), final(reader), out),"
 PEEK_POST = """out == if reader.bit_position + PREFIX_LOOKUP_BITS as nat
     > reader.bytes@.len() * 8 {
     None
@@ -104,6 +107,16 @@ def peek_case(identity, site, replacement):
     }
 
 
+def cached_case(identity, site, replacement):
+    return {
+        "id": identity, "file": DECODE["file"], "module": "huffman",
+        "function": "HuffmanTable::decode", "site": DECODE_BODY,
+        "replacement": replace_once(DECODE_BODY, site, replacement),
+        "controls": ((CACHED_POST, ""),),
+        "native_test": "huffman::tests::canonical_decoding::fixed_width_cached_table_selects_literal_values_with_exact_consumption",
+    }
+
+
 CASES = (
     {
         "id": "zero_constructor_sets_low_bit", "file": "src/huffman.rs",
@@ -176,6 +189,26 @@ CASES = (
         "if remaining < usize::from(PREFIX_LOOKUP_BITS) {",
         "if remaining <= usize::from(PREFIX_LOOKUP_BITS) {",
     ),
+    cached_case(
+        "cached_prefix_uses_first_lookup_slot",
+        "self.prefix_lookup.get(usize::from(prefix))",
+        "self.prefix_lookup.get(0_usize)",
+    ),
+    cached_case(
+        "cached_prefix_selects_first_line",
+        ".get(line_index as usize)",
+        ".get(0_usize)",
+    ),
+    cached_case(
+        "cached_prefix_discards_consumed_code_length",
+        ".checked_add(usize::from(length))",
+        ".checked_add(0_usize)",
+    ),
+    cached_case(
+        "cached_prefix_falsely_rejects_selected_line",
+        "return decode_line(*line, reader);",
+        """return Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode));""",
+    ),
 )
 
 
@@ -191,7 +224,7 @@ def main():
              "proofs/shared/huffman.rs", "proofs/spec_properties/huffman.rs",
              "proofs/production_impl/huffman.rs"),
             "jbig2-huffman-assignment-",
-            "Literal zero, exact raw-line assignment results, total already-selected line outcomes, and complete aligned/unaligned eight-bit prefix byte-window availability/value. Controls retain original assignment, line and peek extent guarantees. Exact window equations do not supply canonical prefix-to-line selection, full table/stream decoding or independent normative approval.",
+            "Literal zero, raw assignment results, total selected-line outcomes, complete prefix windows and cached input-index/line/value/error/cursor composition. Controls retain every original boundary. Cache-hit operational selection does not prove cache canonicality, fallback selection, full table/stream decoding or independent normative approval.",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"Huffman assignment proof sensitivity failed: {error}", file=sys.stderr)

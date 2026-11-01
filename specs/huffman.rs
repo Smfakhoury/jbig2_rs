@@ -459,6 +459,82 @@ pub(crate) open spec fn canonical_assignment(
         && assignment_starts(lines, table) && assignment_order(lines, table)
 }
 
+// Model navigation: spec::cached_decode_outcome [project-result-model]
+// Purpose: Input-indexed cached-line selection and exact value/error/cursor composition.
+// Audit: huffman-cached-decode-outcome
+// REQUIREMENT CONTEXT: T88-HUFFMAN-NORMAL-VALUE | ITU-T T.88 (08/2018) | B.4 steps 2 and 5
+// Fidelity: unresolved; no independent normative approval.
+pub(crate) closed spec fn cached_decode_outcome(
+    table: &super::HuffmanTable,
+    before: &crate::reader::BitReader,
+    after: &crate::reader::BitReader,
+    out: Result<super::HuffmanValue, super::HuffmanError>,
+) -> bool
+    recommends reader_valid(before),
+{
+    (table.prefer_prefix_lookup && before.bit_position + super::PREFIX_LOOKUP_BITS as nat
+        <= before.bytes@.len() * 8) ==> {
+        let index = before.bit_position / 8;
+        let offset = before.bit_position % 8;
+        let prefix = if offset == 0 {
+            before.bytes@[index as int]
+        } else {
+            let first = before.bytes@[index as int] as u16;
+            let second = before.bytes@[(index + 1) as int] as u16;
+            ((((first << 8) | second) >> ((8 - offset) as usize)) & 0xff) as u8
+        };
+        let entry = if (prefix as nat) < table.prefix_lookup@.len() {
+            table.prefix_lookup@[prefix as int]
+        } else { 0u16 };
+        entry != 0 ==> {
+            let line_index = entry as int - 1;
+            &&& after.bytes@ == before.bytes@
+            &&& if line_index >= table.lines@.len() {
+                out == Err(super::HuffmanError::InvalidTable(super::HuffmanTableError::InvalidCode))
+                    && after.bit_position == before.bit_position
+            } else {
+                let line = table.lines@[line_index];
+                if line.prefix_len > super::PREFIX_LOOKUP_BITS {
+                    out == Err(super::HuffmanError::InvalidTable(super::HuffmanTableError::InvalidCode))
+                        && after.bit_position == before.bit_position
+                } else {
+                    let suffix_start = (before.bit_position + line.prefix_len as nat) as nat;
+                    if line.kind == super::LineKind::OutOfBand {
+                        out == Ok(super::HuffmanValue::OutOfBand)
+                            && after.bit_position == suffix_start
+                    } else {
+                        match crate::spec::readers::bit_read_error(
+                            before.bytes@, suffix_start as usize, line.range_len,
+                        ) {
+                            Some(error) =>
+                                out == Err(super::HuffmanError::Decode(crate::DecodeError::Malformed(error)))
+                                    && after.bit_position == suffix_start,
+                            None => {
+                                let range = crate::spec::readers::bits_value(
+                                    before.bytes@, suffix_start, line.range_len as nat,
+                                ) as int;
+                                let value = if line.kind == super::LineKind::Lower {
+                                    line.range_low as int - range
+                                } else {
+                                    line.range_low as int + range
+                                };
+                                &&& after.bit_position == suffix_start + line.range_len as nat
+                                &&& out == if i32::MIN as int <= value <= i32::MAX as int {
+                                    Ok(super::HuffmanValue::Integer(value as i32))
+                                } else {
+                                    Err(super::HuffmanError::Decode(crate::DecodeError::Malformed(
+                                        crate::MalformedError::IntegerOverflow,
+                                    )))
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Model navigation: spec::table_has_oob [proof-support]
 // Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
 // Mapping: no registered requirement/locator mapping.

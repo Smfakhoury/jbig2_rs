@@ -2,6 +2,15 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-HUFFMAN-CACHED-LINE-COMPOSITION",
+      "transformation": "the existing fixed-width raw table construction over all 65536 words/eight bit offsets, plus raw cache entries and line metadata including malformed widths/indices",
+      "invariant": "524288 scalar fixed-table selections and 368640 raw cache-line cases preserve exact value/OOB/error/consumption/buffer outcomes; cache misses, malformed metadata, EOF and both overflow classes are nonempty",
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::canonical_decoding::fixed_width_cached_table_selects_literal_values_with_exact_consumption"},
+        {"target": "lib", "name": "huffman::tests::canonical_decoding::raw_cached_line_selection_composes_exact_values_errors_and_cursor_frames"}
+      ]
+    },
+    {
       "id": "META-HUFFMAN-PREFIX-WINDOW",
       "transformation": "all 65536 two-byte words, zero through three input bytes and every valid bit cursor, with a literal third-byte sentinel",
       "invariant": "3407872 cases yield the exact eight-bit MSB-first window iff available, repeated peeks do not consume input and a following read sees that same prefix; aligned, unaligned and unavailable classes are nonempty",

@@ -3,6 +3,166 @@
 
 use super::*;
 
+fn assert_cache_result(
+    actual: Result<HuffmanValue, HuffmanError>,
+    expected: Result<HuffmanValue, HuffmanError>,
+) {
+    match (actual, expected) {
+        (Ok(actual), Ok(expected)) => assert_eq!(actual, expected),
+        (
+            Err(HuffmanError::Decode(DecodeError::Malformed(actual))),
+            Err(HuffmanError::Decode(DecodeError::Malformed(expected))),
+        ) => assert_eq!(actual, expected),
+        (
+            Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode)),
+            Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode)),
+        ) => {}
+        (actual, expected) => panic!("cache result {actual:?}, expected {expected:?}"),
+    }
+}
+
+#[test]
+fn fixed_width_cached_table_selects_literal_values_with_exact_consumption() {
+    let lines = (0..=u8::MAX)
+        .map(|value| HuffmanLine::normal(i32::from(value), 8, 0))
+        .collect::<Vec<_>>();
+    let table = HuffmanTable::new(&lines, &Limits::default()).unwrap();
+    assert!(table.prefer_prefix_lookup);
+    let mut checked = 0;
+    for word in 0..=u16::MAX {
+        let [high, low] = word.to_be_bytes();
+        let bytes = [high, low, 0x5a, 0xa5];
+        for start in 0..8 {
+            let expected = (start..start + 8).fold(0_i32, |value, bit| {
+                (value << 1) | i32::from((bytes[bit / 8] >> (7 - bit % 8)) & 1)
+            });
+            let mut reader = bit_reader(&bytes);
+            reader.bit_position = start;
+            assert_cache_result(
+                table.decode(&mut reader),
+                Ok(HuffmanValue::Integer(expected)),
+            );
+            assert_eq!(reader.bytes, &bytes);
+            assert_eq!(reader.bit_position, start + 8);
+            let next = (start + 8..start + 16).fold(0_u32, |value, bit| {
+                (value << 1) | u32::from((bytes[bit / 8] >> (7 - bit % 8)) & 1)
+            });
+            assert_eq!(reader.read_bits(8).unwrap(), next);
+            let mut fallback = bit_reader(&bytes);
+            fallback.bit_position = start;
+            assert_cache_result(
+                table.decode_fallback(&mut fallback),
+                Ok(HuffmanValue::Integer(expected)),
+            );
+            assert_eq!(fallback.bit_position, start + 8);
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 524_288);
+}
+
+#[test]
+fn raw_cached_line_selection_composes_exact_values_errors_and_cursor_frames() {
+    let cases = [
+        (8, 0, 7, LineKind::Normal),
+        (8, 7, -3, LineKind::Normal),
+        (8, 8, 0, LineKind::Lower),
+        (8, 32, i64::from(i32::MIN), LineKind::Upper),
+        (8, 8, i64::from(i32::MAX), LineKind::Normal),
+        (8, 8, i64::MAX, LineKind::Upper),
+        (8, 8, i64::MIN, LineKind::Lower),
+        (8, 33, 0, LineKind::Normal),
+        (8, 255, 0, LineKind::OutOfBand),
+        (0, 0, 11, LineKind::Normal),
+        (3, 8, 17, LineKind::Lower),
+        (9, 0, 13, LineKind::Normal),
+    ];
+    let mut outcomes = [0_usize; 9];
+    let mut checked = 0;
+    let mut table = HuffmanTable {
+        lines: vec![HuffmanLine::normal(91, 8, 0); 2],
+        ordered_lines: Vec::new(),
+        length_count: [0; MAX_PREFIX_LEN + 1],
+        first_code: [WideCode::zero(); MAX_PREFIX_LEN + 1],
+        first_line: [0; MAX_PREFIX_LEN + 1],
+        prefix_lookup: vec![0; PREFIX_LOOKUP_SIZE],
+        prefer_prefix_lookup: true,
+        max_prefix_len: 0,
+    };
+    for prefix in 0..=u8::MAX {
+        for start in 0..8 {
+            let mut buffer = [0xa5_u8; 8];
+            for bit in 0..8 {
+                let position = start + bit;
+                let mask = 0x80 >> (position % 8);
+                if prefix & (0x80 >> bit) != 0 {
+                    buffer[position / 8] |= mask;
+                } else {
+                    buffer[position / 8] &= !mask;
+                }
+            }
+            for byte_count in [2, 4, 8] {
+                let bytes = &buffer[..byte_count];
+                for (prefix_len, range_len, range_low, kind) in cases {
+                    table.lines[1] = HuffmanLine {
+                        prefix_len,
+                        range_len,
+                        range_low,
+                        kind,
+                    };
+                    for entry in [0_u16, 1, 2, 3, u16::MAX] {
+                        table.prefix_lookup[usize::from(prefix)] = entry;
+                        let (expected, position, outcome) = if entry == 0 {
+                            (
+                                Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode)),
+                                start,
+                                8,
+                            )
+                        } else {
+                            match table.lines.get(usize::from(entry - 1)) {
+                                None => (
+                                    Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode)),
+                                    start,
+                                    6,
+                                ),
+                                Some(line) if line.prefix_len > 8 => (
+                                    Err(HuffmanError::InvalidTable(HuffmanTableError::InvalidCode)),
+                                    start,
+                                    7,
+                                ),
+                                Some(line) => {
+                                    let (out, position, outcome) = raw_line_oracle(
+                                        *line,
+                                        bytes,
+                                        start + usize::from(line.prefix_len),
+                                    );
+                                    (
+                                        out.map_err(|error| {
+                                            HuffmanError::Decode(DecodeError::Malformed(error))
+                                        }),
+                                        position,
+                                        outcome,
+                                    )
+                                }
+                            }
+                        };
+                        let mut reader = bit_reader(bytes);
+                        reader.bit_position = start;
+                        assert_cache_result(table.decode(&mut reader), expected);
+                        assert_eq!(reader.bytes, bytes);
+                        assert_eq!(reader.bit_position, position);
+                        outcomes[outcome] += 1;
+                        checked += 1;
+                    }
+                }
+            }
+            table.prefix_lookup[usize::from(prefix)] = 0;
+        }
+    }
+    assert_eq!(checked, 368_640);
+    assert!(outcomes.into_iter().all(|count| count > 0));
+}
+
 #[test]
 fn prefix_peek_matches_every_byte_window_with_exact_availability_and_no_consumption() {
     let mut checked = 0;
