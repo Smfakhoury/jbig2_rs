@@ -256,6 +256,11 @@ different existing shards. Every original strong/weaker query is retained;
 logical group count is not CI check count, and a partial/canceled producer
 still cannot support complete acceptance.
 
+Native mutation workspaces enable isolated incremental compilation even when
+the host CI disables it. Every modified source still goes through Cargo and
+the compiler-selected test executable; this does not reuse a mutant result or
+change mutation counts, failure requirements, or CI time limits.
+
 Native mutation controls likewise require an exact passing original test,
 compiling mutant and failure of that selected test. Zero-test success,
 compilation failure, ambiguous sites and survivors are not detection.

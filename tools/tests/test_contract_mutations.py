@@ -185,6 +185,7 @@ class ContractMutationTests(unittest.TestCase):
 
             def build(_cargo, directory, _environment, target):
                 self.assertEqual(target, "lib")
+                self.assertEqual(_environment["CARGO_INCREMENTAL"], "1")
                 source = (directory / "src/lib.rs").read_text()
                 builds.append(source)
                 executable = directory / "target" / "test-binary"
@@ -221,6 +222,7 @@ class ContractMutationTests(unittest.TestCase):
                     newline="\r\n" if newline is None else newline)
 
             with (
+                patch.dict("os.environ", {"CARGO_INCREMENTAL": "0"}),
                 patch.object(check_contract_mutations, "ROOT", root),
                 patch.object(check_contract_mutations, "MUTATIONS", cases),
                 patch.object(check_contract_mutations, "build_test_binary", side_effect=build),
