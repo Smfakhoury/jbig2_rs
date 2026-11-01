@@ -135,13 +135,22 @@
       "container": "JBIG2_SampleSoftware-A20180829.zip",
       "source_url": "https://www.itu.int/rec/T-REC-T.88-201808-I/en",
       "sha256": "c9e7fc74d4792653de258be4f77c05d639ced4518dd57cc5a6ddfda541e2d181",
-      "expected_use": "Potential black-box reference only if separately approved",
+      "expected_use": "Owner-authorized local build/run as an input-output black-box reference on 2026-11-01T21:37:03.245+00:00; no decoder implementation inspection or code derivation",
       "license_notice_sha256": "571ade3714056c78ad23dd8f4471fd49f15d019cdd50ab8c3771d47694980176",
       "license_summary": "Limited-purpose copyright license for conforming implementation, evaluation, and conformance determination; no patent license.",
       "redistribution": "blocked pending legal review",
       "derivation": "prohibited unless explicitly approved",
       "committed": false,
-      "used": false
+      "used": true,
+      "execution": {
+        "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+        "build": "Original source/Makefile jbig2 target, default compiler settings",
+        "binary_sha256": "0ba8cbeda6c1ad718a71da8d16c47d542207421a8fee32ee239bb4a42245edb7",
+        "implementation_source_inspected": false,
+        "scope": "The original seven approved encoded cases reproduce all nine expected pages. An unchanged first-party Huffman fixture accepted with exact pixels by Rust and jbig2dec crashes this reference; changing declared export counts 0 through 3 in the original TT3 case leaves its reference pixels unchanged. This program is not independent normative acceptance or a general decoder oracle.",
+        "restricted_assets_committed": false,
+        "normative_approval": false
+      }
     }
   ],
   "differential_oracles": [
@@ -194,7 +203,7 @@
     "standards_legal_owner": "approved for internal validation",
     "conformance_vector_use": "approved for internal/private-CI execution",
     "conformance_vector_redistribution": "prohibited pending public-repository review",
-    "sample_software_use": "pending",
+    "sample_software_use": "Owner authorized local black-box build/run on 2026-11-01T21:37:03.245+00:00; implementation inspection, copying, derivation and redistribution remain held; no protected standards processing or normative approval inferred",
     "cela_publication": "Owner-reported CELA approval for open-source project publication is recorded in README; separate crate-publication and restricted-asset redistribution approvals are not inferred."
   }
 }

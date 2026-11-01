@@ -80,6 +80,18 @@ The reference snapshot has two exact positives, seven unresolved official
 positives and one unsupported colour case, with **zero reviewed rejection
 credit**. Those outcomes block stronger supported-conformance claims.
 
+The owner authorized local black-box build/run of the pinned ITU sample program
+on 2026-11-01. It reproduces all seven cases and all nine expected pages, but is
+not a general correctness oracle: it crashes on an unchanged first-party
+Huffman case that Rust and jbig2dec decode with exact literal pixels, and its
+TT3 output ignores changes to the declared export count. A TT1-specific
+interpretation candidate also breaks that valid case and is rejected, not
+shipped. The [seven-case review](conformance/seven-rejection-review.json)
+records those input/output controls and their limits. The seven cases remain
+unresolved; these observations grant no normative rejection credit.
+Reference implementation inspection, derivation, restricted-asset
+redistribution and protected standards processing remain outside that consent.
+
 After building the repository's `decode_vector` validation adapter, an
 authorized local copy can be checked without copying it into the repository:
 
