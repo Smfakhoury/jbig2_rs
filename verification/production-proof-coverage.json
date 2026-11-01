@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "src/**/*.rs",
-  "verus_verified_obligations": 1280,
+  "verus_verified_obligations": 1287,
   "native_assumptions": [],
   "counts": {
     "verified": 642,
@@ -4598,7 +4598,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanError::from"
       ]
@@ -4609,7 +4609,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanError::from"
       ]
@@ -4620,7 +4620,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanError::from"
       ]
@@ -4631,7 +4631,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::error::DecodeError::from"
       ]
@@ -4642,7 +4642,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanLine::normal"
       ]
@@ -4653,7 +4653,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanLine::lower"
       ]
@@ -4664,7 +4664,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanLine::upper"
       ]
@@ -4675,7 +4675,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanLine::out_of_band"
       ]
@@ -4686,7 +4686,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanLines::len"
       ]
@@ -4697,7 +4697,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanLines::line"
       ]
@@ -4708,7 +4708,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::StandardLines::len"
       ]
@@ -4719,7 +4719,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::StandardLines::line"
       ]
@@ -4730,7 +4730,7 @@
       "visibility": "private",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
+      "file_sha256": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
       "verus_functions": [
         "jbig2_rs_production::huffman::standard_lines"
       ]
@@ -4741,7 +4741,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
+      "file_sha256": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::new"
       ]
@@ -4752,7 +4752,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
+      "file_sha256": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::new_symbol_ids"
       ]
@@ -4763,7 +4763,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
+      "file_sha256": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::from_line_source"
       ]
@@ -4774,7 +4774,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
+      "file_sha256": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::from_encoded"
       ]
@@ -4785,7 +4785,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
+      "file_sha256": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::standard"
       ]
@@ -4796,7 +4796,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::has_oob"
       ]
@@ -4807,7 +4807,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::decode"
       ]
@@ -4818,7 +4818,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::HuffmanTable::decode_fallback"
       ]
@@ -4829,7 +4829,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::decoding::build_prefix_lookup"
       ]
@@ -4840,7 +4840,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::decoding::peek_prefix"
       ]
@@ -4851,7 +4851,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::decoding::next_prefix_length"
       ]
@@ -4862,7 +4862,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::decoding::canonical_first_code"
       ]
@@ -4873,7 +4873,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::decoding::canonical_range_fits"
       ]
@@ -4884,7 +4884,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+      "file_sha256": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
       "verus_functions": [
         "jbig2_rs_production::huffman::decoding::decode_line"
       ]

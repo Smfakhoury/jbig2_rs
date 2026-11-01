@@ -2085,10 +2085,13 @@ class TraceabilityTests(unittest.TestCase):
         self.assertTrue({
             "huffman-assignment-contents", "huffman-assignment-codes",
             "huffman-assignment-starts", "huffman-assignment-order",
+            "huffman-fast-shape", "huffman-fast-slot", "huffman-table-lookup-valid",
         } <= set(assignment["models"]))
         self.assertEqual(
             {claim["runtime"] for claim in assignment["functional_evidence"]},
             {'huffman::construction::HuffmanTable::from_line_source', 'huffman::construction::HuffmanTable::new',
+             'huffman::construction::HuffmanTable::new_symbol_ids', 'huffman::construction::HuffmanTable::standard',
+             'huffman::construction::HuffmanTable::from_encoded', 'huffman::decoding::build_prefix_lookup',
              'huffman::wide::WideCode::zero'},
         )
         for name in (

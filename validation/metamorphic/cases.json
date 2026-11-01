@@ -2,6 +2,16 @@
   "schema_version": 1,
   "cases": [
     {
+      "id": "META-HUFFMAN-PRODUCTION-CACHE-MAP",
+      "transformation": "compact original indices across 65538 boundaries including u32::MAX, sparse eight-bit code bases/counts, raw/symbol-ID widths 8 through 255 and all fifteen existing standard factories",
+      "invariant": "every 256-slot cache matches independent wide sentinel/index-distance arithmetic; unrepresentable or unmapped ordinals stay zero, sparse invalid metadata preserves existing typed errors, and successful factories retain their production minimum-length cache policy",
+      "tests": [
+        {"target": "lib", "name": "huffman::tests::cache_map::compact_cache_indices_match_wide_sentinel_math_at_every_boundary"},
+        {"target": "lib", "name": "huffman::tests::cache_map::production_cache_maps_sparse_codes_and_rejects_invalid_metadata"},
+        {"target": "lib", "name": "huffman::tests::cache_map::raw_symbol_id_and_standard_constructors_keep_their_production_cache_map"}
+      ]
+    },
+    {
       "id": "META-HUFFMAN-COMPLETE-PREFIX-STATE",
       "transformation": "all fifteen existing standard tables with 1024 literal words, varied reader origins/truncations and cached/fallback dispatch; raw wide/invalid metadata and literal prefixes through 255 bits",
       "invariant": "138240 input states match independent u128 canonical assignment and a 256-Boolean prefix/borrow oracle through all three executions; 145 longest-prefix states, 8064 raw metadata states and 30 nonzero-wide matches preserve exact result/error/buffer/cursor outcomes",

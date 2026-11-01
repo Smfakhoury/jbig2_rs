@@ -296,7 +296,7 @@ class ContractMutationTests(unittest.TestCase):
                     identity = (reference["target"], reference["name"])
                     self.assertIn(identity, tests, case["id"])
                     self.assertFalse(tests[identity]["ignored"], case["id"])
-        self.assertEqual(structured, 91)
+        self.assertEqual(structured, 92)
 
 
 if __name__ == "__main__":

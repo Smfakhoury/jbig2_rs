@@ -2,12 +2,14 @@
   "schema_version": 1,
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "5197e4474565865403226bd96793643ae76496f92ccc0800ca2ba7dfc506e535",
-    "project_source_sha256": "1cc7501b69c838a87817e10401e193a8ba4c38e94a0e5db6091eb347e9758edd",
+    "registry_sha256": "f61e3d069622a035e3c20566bc95820311bbaa227218cd7f267b57f5e4981d70",
+    "project_source_sha256": "3726e0121a8011106b2db7c31e0b79714ca851dcf905651ea794ce5e54c095cc",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
-        "members": ["spec::fast_shape"],
+        "members": [
+          "spec::fast_shape"
+        ],
         "classification": "representation-invariant",
         "justification": "Production cache policy permits no nonzero prefixes shorter than eight bits; this structural condition alone specifies no cache entry.",
         "ambiguity": "",
@@ -15,7 +17,10 @@
       },
       {
         "file": "specs/huffman_lookup.rs",
-        "members": ["spec::fast_slot", "spec::table_lookup_valid"],
+        "members": [
+          "spec::fast_slot",
+          "spec::table_lookup_valid"
+        ],
         "classification": "project-result-model",
         "justification": "fast_slot maps supplied eight-bit canonical metadata to exact original ordinal plus one or a zero sentinel. table_lookup_valid exposes the constructor-owned complete production-cache result while retaining private field opacity; its definition and map-step lemmas are proved, not assumed.",
         "ambiguity": "",
@@ -1807,6 +1812,7 @@
     "specs/generic_region.rs": "61f8a7afbfc236f462c592a0b3be830ad286f2838c01cde9cc24f275b82bd115",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
     "specs/huffman.rs": "a0957c92dcde7dc0bf8b7ad092d9053068b0e70bb62c73043db72188de34f45c",
+    "specs/huffman_lookup.rs": "bd6fe3ee36de79103836d6fc9fc411b03ca0b304ce4915d0f730c2301b483766",
     "specs/mmr.rs": "6333d8553b47d1bd6bcc996c0d0f3d0216d3f4d3eeff9c07e34a4dfeea5bb49c",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "ee10b54a7ee8dce323488bf8ef5229fbbf1d5811888a3364cda8f2cc187ba251",
@@ -1858,9 +1864,10 @@
     "src/halftone/tests/codec_state.rs": "51027604dd118a9109fb60505b855c467332d536dbf5e3d3088e2a365afd6d99",
     "src/halftone/tests/geometry_and_render.rs": "c2ded87b15b0342969b81b7e98f6a617098302ab6e56f28d6cabba8aafc850cd",
     "src/halftone/tests/headers_and_patterns.rs": "ef5f90a9b1eaf32619dc22c6f49b5d6d6ccbf32f9bdacfc6507f29c15efa9f70",
-    "src/huffman.rs": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
-    "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
-    "src/huffman/decoding.rs": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
+    "src/huffman.rs": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
+    "src/huffman/construction.rs": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
+    "src/huffman/decoding.rs": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
+    "src/huffman/tests/cache_map.rs": "fe783f19e825db4ed6383318912179f9a58a9026df14480d4ab350b83438239e",
     "src/huffman/tests/canonical_decoding.rs": "1c445c3d01557bf09170fdb0ad9e6b8bd1c9af5de22750a3bc46eea942975868",
     "src/huffman/tests/fallback_state.rs": "f2785678ac694d7c40760693b376d641872f90388b5933b6d8a3e1ac4e5a45e0",
     "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
@@ -2363,21 +2370,30 @@
     "huffman-fast-shape": {
       "kind": "spec",
       "file": "specs/huffman_lookup.rs",
-      "module_path": ["huffman", "huffman_lookup_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_lookup_spec"
+      ],
       "name": "fast_shape",
       "role": "Production fast-cache policy excludes nonzero prefixes shorter than eight bits; not independent codebook fidelity."
     },
     "huffman-fast-slot": {
       "kind": "spec",
       "file": "specs/huffman_lookup.rs",
-      "module_path": ["huffman", "huffman_lookup_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_lookup_spec"
+      ],
       "name": "fast_slot",
       "role": "Exact eight-bit supplied canonical-metadata/ordered-index lookup with zero sentinel for missing or unrepresentable compact entries."
     },
     "huffman-table-lookup-valid": {
       "kind": "spec",
       "file": "specs/huffman_lookup.rs",
-      "module_path": ["huffman", "huffman_lookup_spec"],
+      "module_path": [
+        "huffman",
+        "huffman_lookup_spec"
+      ],
       "name": "table_lookup_valid",
       "role": "Closed constructor-owned relation proving production cache contents and retention for all successful factories; not source-table or full-stream normative approval."
     },
@@ -8205,27 +8221,37 @@
         {
           "runtime": "huffman::construction::HuffmanTable::from_line_source",
           "section": "ensures",
-          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
         },
         {
           "runtime": "huffman::construction::HuffmanTable::new",
           "section": "ensures",
-          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
         },
         {
           "runtime": "huffman::construction::HuffmanTable::new_symbol_ids",
           "section": "ensures",
-          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
         },
         {
           "runtime": "huffman::construction::HuffmanTable::standard",
           "section": "ensures",
-          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
         },
         {
           "runtime": "huffman::construction::HuffmanTable::from_encoded",
           "section": "ensures",
-          "tokens": ["huffman_lookup_spec::table_lookup_valid(&table)"]
+          "tokens": [
+            "huffman_lookup_spec::table_lookup_valid(&table)"
+          ]
         },
         {
           "runtime": "huffman::wide::WideCode::zero",
