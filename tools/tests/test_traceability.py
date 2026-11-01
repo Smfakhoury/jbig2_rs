@@ -2066,7 +2066,18 @@ class TraceabilityTests(unittest.TestCase):
             self.assertEqual(rows[name]["strength"], "safety_only")
             self.assertEqual(rows[name]["functional_evidence"], [])
             self.assertTrue(rows[name]["gaps"])
-        self.assertEqual(rows["T88-HUFFMAN-PREFIX-MATCH"]["strength"], "state_preservation")
+        prefix = rows["T88-HUFFMAN-PREFIX-MATCH"]
+        self.assertEqual(prefix["strength"], "functional_contract")
+        self.assertEqual(prefix["review"], "provisional")
+        self.assertTrue(prefix["gaps"])
+        self.assertIn("supplied table metadata", prefix["scope_of_formal_result"])
+        self.assertTrue({"huffman-fallback-run", "huffman-decode-state"} <= set(prefix["models"]))
+        self.assertEqual(
+            {claim["runtime"] for claim in prefix["functional_evidence"]},
+            {"huffman::decoding::HuffmanTable::decode",
+             "huffman::decoding::HuffmanTable::decode_fallback"},
+        )
+        self.assertIn("canonical", " ".join(prefix["gaps"]))
         assignment = rows["T88-HUFFMAN-CANONICAL-ASSIGNMENT"]
         self.assertEqual(assignment["strength"], "functional_contract")
         self.assertEqual(assignment["review"], "provisional")

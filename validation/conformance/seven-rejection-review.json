@@ -3,9 +3,9 @@
   "status": "blocked_pending_normative_review",
   "metadata_only_update": "Current source bindings plus an actual uninstrumented normal-decoder observation. No protected standard text, new encoded fixture family, sample-software oracle, new native/Hayro oracle or instrumented entropy experiment was used for this accepted evidence. All seven normative approval flags and the release block remain unchanged.",
   "recorded_at": "2026-10-30T01:46:50.577253+00:00",
-  "source_revision": "d5a1a1d81b3f7cc6fde704a655986f19ea9550b5",
+  "source_revision": "35f1362f0bd96365c02c376ddd8c01496401735b",
   "checkout_policy_sha256": "d03e7c2e8df08a9bc503b971dcacf1487847dd473a5d34a21b315e48febea132",
-  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after cached Huffman input-indexed line result composition:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
+  "scope": "Actual normal-decoder re-observation of only the same10approved existing official streams after complete operational Huffman fallback/public decoder state:2pass7pending1unsupported0rejectioncredit. Historical bf3d525 instrumentation, source-selection, oracle diagnoses and case hypotheses retain their original recorded execution revisions and are not relabeled fresh.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
   "source_files_sha256": {
@@ -91,13 +91,14 @@
     "src/halftone/tests.rs": "2aa4ef38c5b84598231f1c8035db827fbd9121203e70b12786ae7a80bc254871",
     "src/halftone.rs": "006e5a831d3f09a8b3be41782424261a52bf375544befd7e45c522d0ab00ba36",
     "src/huffman/construction.rs": "a97ccf558c6abd653ebf448dca4a82682b6b9d79a1a9ad4cb7a5d55eed360ebd",
-    "src/huffman/decoding.rs": "273c6331429d025022a725f2fc857b0d372aee600ba466da9ca9006e5477ea72",
+    "src/huffman/decoding.rs": "7a3061fe2f82f57f6f365726d15962f56692af7d2b149f7a366adf878c7157c4",
     "src/huffman/tables.rs": "d64eafa6a985558abd3869bf599e095baaa4a57d3d826358f4642208a1561f5f",
     "src/huffman/tests/benchmarks.rs": "0f2deb471091907f7461394025bb531a8eb61c06cf62beb3fdf0bd5c34550f27",
-    "src/huffman/tests/canonical_decoding.rs": "1833c58d2aeeae7813deb3ea7e6a3d54f4e485efc4413a88c1a0871177a433cd",
+    "src/huffman/tests/canonical_decoding.rs": "1c445c3d01557bf09170fdb0ad9e6b8bd1c9af5de22750a3bc46eea942975868",
+    "src/huffman/tests/fallback_state.rs": "f2785678ac694d7c40760693b376d641872f90388b5933b6d8a3e1ac4e5a45e0",
     "src/huffman/tests/table_validation.rs": "58242f457ee9d3388839a013a87cc5f311f0aebf276dde2c0d2dd75b1945bce1",
     "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
-    "src/huffman/tests.rs": "b653a0a17746c891b02f5b4ae474be26e9a233941d45eee003ba1e354c5c93f1",
+    "src/huffman/tests.rs": "c5dc898dfb46387f0e6467eec01addcee8e35ebb777b02883ae5c03b09f48136",
     "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",
     "src/huffman/wide.rs": "4f37abac40efc66f0c3eaa2637d211eaca5a5ea4fa7a14d7aadb07fbe2a8f0b0",
     "src/huffman.rs": "785595897f02c111223dd5f4c4625eaee8c43480c200f32f161ea6fb27e4c2d4",
@@ -155,7 +156,7 @@
     "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e"
   },
   "ordinary_runtime_source_sha256": "9522006a853643a5022479a2f2ee5e1855df1c883f42eeda02a431a5372b3778",
-  "normal_decoder_sha256": "85bcbd1a3a3206ef3ae08788dd74364857fb87339fc88677f60d6a4919520b74",
+  "normal_decoder_sha256": "05e78d50794a380faeeb5cb877ef91d96fac2d862679eacb27ada8c29bce7081",
   "assets": {
     "t88_package_sha256": "e2a3c458c4d28d5a835c0815fd9b23e197dbc1b83fe81d8e8d8b2ac413d8f22f",
     "t88_document_sha256": "dff16153d2b959d78e0018bfc0a054bd4ba136b0a156021b03e4743bfa6af2d6",
@@ -196,7 +197,7 @@
     "tools/evidence.py": "1286345e1679a72362fc4cc60f3ef1d6294b19df4edcea7c6d0f74970d117571",
     "tools/verify_provenance.py": "703d1e11f2eaf7a19270173d53d94e7a841ea35f72a417aa9e4d308d6563d9e1",
     "validation/source-provenance.json": "ad63179d271e9a8bb00ae0126572906ddcea8afcf4a3636fcad9cffb0ca020c4",
-    "validation/conformance/expected-differences.json": "7d06ba86bc91fce4ce0d1477c281b7ad5a2baf14935ee2fdd49e4af8838e753c"
+    "validation/conformance/expected-differences.json": "5ce89e9bf9b288cfaf67346ffaea6de61ab2931891eb3356fc9563de698cc12c"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
@@ -1078,9 +1079,9 @@
   },
   "historical_diagnosis_source_revision": "bf3d525cb00f8e979e1cad53dc61922d9f965128",
   "current_normal_decoder_observation": {
-    "source_revision": "d5a1a1d81b3f7cc6fde704a655986f19ea9550b5",
-    "runtime_sha256": "90c1fcabcb5ce5bacdb676f23e5eceb477ace14a08232d3b4a1d482d4eb168f3",
-    "decoder_sha256": "85bcbd1a3a3206ef3ae08788dd74364857fb87339fc88677f60d6a4919520b74",
+    "source_revision": "35f1362f0bd96365c02c376ddd8c01496401735b",
+    "runtime_sha256": "5c29e656bc715ccfcdde5907e8d99763efa69c05afd27678739359136e97ae4f",
+    "decoder_sha256": "05e78d50794a380faeeb5cb877ef91d96fac2d862679eacb27ada8c29bce7081",
     "runner_exit_code": 1,
     "counts": {
       "total": 10,
