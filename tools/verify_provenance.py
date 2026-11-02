@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import argparse
+from datetime import datetime
 import hashlib
+import re
 import sys
 from pathlib import Path
 
@@ -143,12 +145,12 @@ streams = {
 for entry in differences["cases"]:
     if entry["id"] not in streams:
         fail(f"unknown conformance expectation: {entry['id']}")
-    if entry["classification"] == "pending_normative_review":
+    if entry["classification"] != "unsupported_profile":
         if entry["stream_sha256"] != streams[entry["id"]]:
-            fail(f"pending review stream hash mismatch: {entry['id']}")
+            fail(f"review stream hash mismatch: {entry['id']}")
         for path, expected in entry["source_files_sha256"].items():
             if hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected:
-                fail(f"pending review source hash mismatch: {entry['id']}: {path}")
+                fail(f"review source hash mismatch: {entry['id']}: {path}")
 conformance = load_json(ROOT / "validation/conformance/attestation.json")
 normative = conformance["normative_vectors"]
 for relative, key in (
@@ -166,6 +168,11 @@ pending_ids = {
     entry["id"] for entry in differences["cases"]
     if entry["classification"] == "pending_normative_review"
 }
+reviewed_ids = {
+    entry["id"] for entry in differences["cases"]
+    if entry["classification"] == "reviewed_strict_rejection"
+}
+source_bound_ids = pending_ids | reviewed_ids
 if (
     {entry["id"] for entry in results["cases"]} != set(streams)
     or len(results["cases"]) != len(streams)
@@ -190,20 +197,60 @@ expectations = {entry["id"]: entry for entry in differences["cases"]}
 for entry in results["cases"]:
     if entry["stream_sha256"] != streams[entry["id"]]:
         fail(f"conformance result stream identity mismatch: {entry['id']}")
-    if entry["id"] in pending_ids and entry["stderr"] != expectations[entry["id"]]["expected_error_exact"]:
-        fail(f"pending review typed error changed: {entry['id']}")
+    if entry["id"] in source_bound_ids and (
+        entry["stderr"] != expectations[entry["id"]]["expected_error_exact"]
+        or entry["decoder_exit"] != 1
+        or entry["pages"]
+        or entry["status"] != expectations[entry["id"]]["classification"]
+    ):
+        fail(f"source-bound review typed rejection changed: {entry['id']}")
 review = load_json(ROOT / "validation/conformance/seven-rejection-review.json")
 if hashlib.sha256((ROOT / ".gitattributes").read_bytes()).hexdigest() != review["checkout_policy_sha256"]:
     fail("stale conformance checkout policy identity")
 if (
-    {entry["id"] for entry in review["cases"]} != pending_ids
-    or len(review["cases"]) != len(pending_ids)
+    {entry["id"] for entry in review["cases"]} != source_bound_ids
+    or len(review["cases"]) != len(source_bound_ids)
+    or any(entry["classification"] != expectations[entry["id"]]["classification"]
+           for entry in review["cases"])
     or any(entry["normative_approval"] is not False for entry in review["cases"])
     or review["release_gate"] != "blocked"
     or review["source_revision"] != conformance["source_revision"]
     or review["normal_conformance_results_sha256"] != normative["results_sha256"]
 ):
-    fail("pending review evidence must not imply normative approval")
+    fail("review evidence must not imply normative approval")
+if reviewed_ids:
+    decision = review.get("owner_disposition")
+    if not isinstance(decision, dict) or (
+        decision.get("authority") != "repository_owner_engineering_disposition"
+        or decision.get("status") != "accepted_strict_rejections"
+        or not isinstance(decision.get("case_ids"), list)
+        or set(decision["case_ids"]) != reviewed_ids
+        or len(decision["case_ids"]) != len(reviewed_ids)
+        or decision.get("normative_approval") is not False
+        or decision.get("full_spec_conformance") is not False
+        or decision.get("strict_runtime_unchanged") is not True
+        or decision.get("release_gate") != "blocked"
+        or not isinstance(decision.get("instruction"), str)
+        or not decision["instruction"].strip()
+        or not re.fullmatch(r"[0-9a-f]{40}", str(decision.get("evidence_revision", "")))
+        or not re.fullmatch(
+            r"https://github\.com/microsoft/jbig2_rs/issues/125#issuecomment-[0-9]+",
+            str(decision.get("decision_reference", "")),
+        )
+    ):
+        fail("reviewed rejections require an explicit bounded owner disposition")
+    try:
+        recorded_at = datetime.fromisoformat(decision.get("authorized_at", ""))
+    except (TypeError, ValueError):
+        fail("owner disposition requires a timestamp with timezone")
+    if recorded_at.tzinfo is None:
+        fail("owner disposition requires a timestamp with timezone")
+    if (
+        review["status"] != "owner_accepted_strict_rejections"
+        or conformance["status"] != "owner_accepted_strict_rejections"
+        or conformance["release_gate"] != "blocked"
+    ):
+        fail("owner rejection acceptance must preserve the separate release gate")
 if set(review["source_files_sha256"]) != {
     path.relative_to(ROOT).as_posix() for path in (ROOT / "src").rglob("*.rs")
 }:

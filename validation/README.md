@@ -69,16 +69,20 @@ fidelity. The factory contracts prove the production minimum-length policy;
 forced short-prefix test caches and held encoded fixture families remain
 outside that new result.
 
-## Official conformance: unresolved is not passed
+## Official conformance: dispositions are not bitmap passes
 
 The [manifest](conformance/itu-t88-2018-manifest.json) pins archive/per-file
 identities and exact case membership.
 [Expected differences](conformance/expected-differences.json),
 [seven-case review](conformance/seven-rejection-review.json) and
 [attestation](conformance/attestation.json) retain the source-qualified state.
-The reference snapshot has two exact positives, seven unresolved official
-positives and one unsupported colour case, with **zero reviewed rejection
-credit**. Those outcomes block stronger supported-conformance claims.
+The owner's 2026-11-02 engineering disposition accepts seven exact, source-bound
+strict rejections. Fresh execution of all ten unchanged original streams gives
+**two bitmap passes, seven reviewed rejections and one unsupported colour case**.
+There are no unresolved execution outcomes under that policy. The seven
+rejections are not bitmap passes, intentional-negative-test classifications,
+independent normative certification or a full-spec conformance guarantee.
+The separate release gate and all normative approval flags remain blocked/false.
 
 The owner authorized local black-box build/run of the pinned ITU sample program
 on 2026-11-01. It reproduces all seven cases and all nine expected pages, but is
@@ -87,8 +91,10 @@ Huffman case that Rust and jbig2dec decode with exact literal pixels, and its
 TT3 output ignores changes to the declared export count. A TT1-specific
 interpretation candidate also breaks that valid case and is rejected, not
 shipped. The [seven-case review](conformance/seven-rejection-review.json)
-records those input/output controls and their limits. The seven cases remain
-unresolved; these observations grant no normative rejection credit.
+records those input/output controls and their limits. The later
+`owner_disposition` records the decision, exact case set and authority separately
+from the historical pre-decision observations. The owner accepted the strict
+rejections on this engineering evidence; it does not grant normative approval.
 The owner's separate request on 2026-11-01 at 23:41 UTC authorized local
 implementation inspection. Code copying into the project, derivation,
 restricted-asset redistribution and protected standards processing remain
@@ -170,18 +176,52 @@ configurable with `--timeout-seconds`.
 
 Zero cases, changed/missing files or images, duplicate/unknown classifications,
 page/bitmap mismatches, timeouts and unresolved errors return nonzero.
-`pending_normative_review` entries pin complete typed errors, stream hashes
-and relevant runtime hashes; matching those observations **still fails**.
+Both `pending_normative_review` and `reviewed_strict_rejection` entries pin
+complete typed errors, stream hashes and relevant runtime hashes. Matching a
+pending observation **still fails**; matching an owner-accepted reviewed
+rejection counts only in the separate reviewed-rejection category.
 Changed errors, unexpected success/crash, stale source identity, unknown fields
 and invalid JSON also fail closed. Do not relax runtime acceptance/marker/
 retention/recovery policy to manufacture a pass.
 
 `tools/verify_provenance.py` can validate truthful blocked records without
 executing the corpus. Its success is not a conformance pass.
-`--require-exact-conformance` separately rejects recorded nonpassing cases;
-official execution remains nonzero for unresolved positives. LF checkout rules
+`--require-exact-conformance` separately rejects every nonpassing case, including
+accepted reviewed rejections. The provenance audit requires the exact owner
+decision case set, dated evidence reference, explicit non-normative scope and
+the still-blocked release gate. Removing or broadening that record fails.
+Official execution remains nonzero for unresolved positives. LF checkout rules
 preserve source-byte identities across native hosts. Integration refreshes
 diagnosis bindings only with reviewed evidence, never skips the gate.
+
+### Trusted official execution
+
+The [official workflow](../.github/workflows/conformance.yml) is manually
+dispatched on `main` only, in the private `microsoft/jbig2_rs` repository.
+It checks repository privacy before acquisition, uses read-only permissions and
+a ten-minute job cap, and never runs protected assets on pull-request code.
+It downloads the pinned official package but reads only the approved conformance
+ZIP member; reference sources and standards documents are not extracted.
+Package, inner archive, every file's size/hash and exact membership are checked,
+and extraction is bounded and staged without overwriting an existing directory.
+
+An authorized local equivalent can use the existing approved package:
+
+```sh
+python3 -B validation/conformance/fetch_itu.py \
+  --package /path/to/approved-official-package.zip \
+  --output target/official-vectors
+```
+
+`--download` explicitly selects official HTTPS acquisition instead. Outputs
+must be new directories under `target/`. Use `--vectors target/official-vectors`
+with the runner above. CI uploads only the result JSON and exact source revision,
+not encoded streams, bitmaps, the package or reference sources. Failures are not
+masked; unavailable or hash-changed assets fail, rather than becoming a pass.
+The workflow must actually execute successfully on accepted main before its
+availability is credited to release readiness; configuration alone is not
+execution evidence. Manual trusted execution does not expand public-repository
+asset rights or supply normative approval.
 
 ### Diagnosis and normalization limits
 
@@ -361,8 +401,9 @@ does not prove a variant is reachable; opaque dictionary/region payloads may
 test inspection metadata without being valid entropy streams.
 Fresh/reused agreement alone is not a pixel or diagnostic oracle.
 
-Complete standard/model/caller review and seven official positive diagnoses
-remain open. **Generated encoded refinement, aggregation and custom-Huffman
+Complete standard/model/caller review remains open. The seven execution
+dispositions are owner-accepted engineering decisions, not completion of that
+review. **Generated encoded refinement, aggregation and custom-Huffman
 fixture expansion remains held.** Do not retry/reconstruct flagged work.
 Existing approved raw numeric/metadata tests and fixtures are permitted within
 their scope, not implicit consent to new encoders, grammars or family expansion.

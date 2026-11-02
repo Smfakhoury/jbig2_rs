@@ -27,6 +27,10 @@ FUZZ_PRODUCER_GROUP = (
     " github.repository, github.run_id, github.run_attempt) }}"
 )
 VALIDATION_WORKFLOWS = {"ci", "coverage", "fuzz", "performance", "verus"}
+OFFICIAL_TRUST = (
+    "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"
+    " && github.repository == 'microsoft/jbig2_rs'"
+)
 COLLECTOR_READY = "needs.whole.result == 'success' && needs.semantic.result == 'success'"
 DISABLED_VERUS_CHECK = re.compile(
     r"(?<![\w-])--(?:no-verify|no-lifetime|no-erasure-check|no-trait-conflicts"
@@ -435,6 +439,45 @@ def check_workflow(document, name):
         check_verus_sharding(document)
     if name in {"ci.yml", "ci.yaml"}:
         check_native_mutation_lane(document)
+    if name in {"conformance.yml", "conformance.yaml"}:
+        if document["on"] != {"workflow_dispatch": ""} or set(jobs) != {"official"}:
+            raise ValueError("official conformance requires manual trusted-main execution only")
+        official = jobs["official"]
+        steps = official.get("steps", [])
+        private = [step for step in steps if step.get("name") == "Require private repository"]
+        fetches = [index for index, step in enumerate(steps)
+                   if step.get("name") == "Fetch exact approved conformance vectors"]
+        if (
+            official.get("if") != OFFICIAL_TRUST
+            or official.get("timeout-minutes") != "10"
+            or len(private) != 1 or len(fetches) != 1
+            or "if" in private[0]
+            or private[0].get("env") != {"GH_TOKEN": "${{ github.token }}"}
+            or private[0].get("run") != 'test "$(gh api repos/microsoft/jbig2_rs --jq .private)" = true'
+            or steps.index(private[0]) >= fetches[0]
+            or steps[fetches[0]].get("run") != (
+                "python -B validation/conformance/fetch_itu.py"
+                " --download --output target/official-vectors"
+            )
+        ):
+            raise ValueError("official conformance requires private identity before pinned acquisition")
+        uploads = [step for step in steps
+                   if step.get("uses", "").startswith("actions/upload-artifact@")]
+        if len(uploads) != 1 or uploads[0].get("with") != {
+            "name": "official-conformance-${{ github.run_id }}-${{ github.run_attempt }}",
+            "path": "target/official-results/results.json\n"
+                    "target/official-results/source-revision.txt\n",
+        }:
+            raise ValueError("official conformance may upload only metadata reports, never assets")
+        runs = [step for step in steps if step.get("name") == "Run all original official streams"]
+        if len(runs) != 1 or "if" in runs[0] or shlex.split(runs[0].get("run", "")) != [
+            "python", "-B", "validation/conformance/run_itu.py",
+            "--vectors", "target/official-vectors",
+            "--decoder", "target/release/examples/decode_vector",
+            "--expected-differences", "validation/conformance/expected-differences.json",
+            "--output", "target/official-results/results.json",
+        ]:
+            raise ValueError("official conformance must execute the complete fail-closed runner")
     actions = []
     for job_name, job in jobs.items():
         if not isinstance(job, dict):

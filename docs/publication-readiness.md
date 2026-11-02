@@ -6,7 +6,37 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
-## Local production Huffman cache-map candidate
+Accepted main after [PR #132](https://github.com/microsoft/jbig2_rs/pull/132) is
+`4d7e1e6bf5dce04c58544a8dec23b3bb12b7f278`. All 30 exact-head checks and
+independent raw-artifact reconstruction passed: 1,287 obligations / zero errors,
+49 semantic groups / 357 contrasts, 174 detected native mutations, six actual
+153-file distributions and the unchanged source/timing/resource/coverage guards.
+The owner disposition and trusted official execution below are follow-up work;
+they require their own current-head acceptance.
+
+## Owner conformance disposition, 2026-11-02
+
+The owner accepted the strict-rejection recommendation after the source-level
+reference investigation and independent technical review. Fresh execution with
+unchanged runtime and all ten original hash-pinned streams gives **2 bitmap
+passes / 7 reviewed strict rejections / 1 unsupported colour case**, with no
+unresolved execution outcomes under this engineering policy. No compatibility
+mode, diagnostic input substitution or decoder relaxation is introduced.
+
+The [decision record](../validation/conformance/seven-rejection-review.json)
+keeps the owner's dated instruction and exact case set separate from historical
+pre-decision diagnoses. Reviewed rejections retain complete error, stream and
+source identities. The runner rejects crashes, changed diagnostics and unexpected
+success. The audit rejects missing/expanded authority and any attempt to turn
+this engineering decision into normative or release approval.
+
+This closes the seven execution dispositions, not a full-spec conformance claim.
+The exact-bitmap gate still fails: seven rejections and unsupported colour are
+not passes. P04/P05 independent normative/model fidelity, exhaustive requirement
+coverage and the remaining release gates below stay open. Historical snapshots
+below retain their original counts and revisions.
+
+## Historical local production Huffman cache-map candidate
 
 The Rust/proof snapshot is `b45340399417abd820de7b9c7ebc533d297d45fd`.
 It extends the reviewed fallback source, not a merged-release
@@ -193,10 +223,12 @@ assuming one compiler serves every lane.
 2. **Normative/model review.** Independent standard-table, coordinate, caller
    and model review plus complete requirement decomposition remain required.
    Selected project functional contracts are not approved standard translations.
-3. **Official positives.** The seven official positive cases remain unresolved;
-   an observed typed rejection is not reviewed normative rejection evidence.
-   Retention-field/worked-example interpretation and other diagnosis gaps
-   remain open. See [validation](../validation/README.md).
+3. **Official conformance scope.** The seven execution rejections now have an
+   owner engineering disposition after source analysis and technical review.
+   They remain nonpassing cases for the stronger exact-bitmap/full-spec claim.
+   Independent normative acceptance, including retention-field/worked-example
+   interpretation, is not supplied by that decision. See
+   [validation](../validation/README.md).
 4. **Protected fixture expansion.** Generated encoded refinement, aggregation
    and custom-Huffman family expansion remains held. Do not retry or reconstruct
    flagged work. Existing approved raw numeric/metadata tests and approved

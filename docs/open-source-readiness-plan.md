@@ -17,8 +17,10 @@ Those names and historical evidence must not be renamed merely to match the
 public package.
 
 This status is qualified to accepted main
-`f79c380fd65fe7e6c8c8d0ffcd3b12ab5a8dd14e` after
-[PR #127](https://github.com/microsoft/jbig2_rs/pull/127).
+`4d7e1e6bf5dce04c58544a8dec23b3bb12b7f278` after
+[PR #132](https://github.com/microsoft/jbig2_rs/pull/132).
+The reference investigation and subsequent owner engineering disposition are
+follow-up work, not a transfer of those hosted execution results.
 An older checkout or saved editor snapshot can still show `jbig2_rs`; it is
 not the release candidate. Start the final rehearsal from current accepted
 source rather than overwriting an older working branch.
@@ -33,9 +35,12 @@ source rather than overwriting an older working branch.
 - [ ] Complete independent normative decomposition and model/contract fidelity
   review; the 266 selected provisional records are not an exhaustive denominator.
   Close required prefix-selection and table/dictionary/stream proof gaps. P04/P05.
-- [ ] Resolve the seven official positive disagreements with exact expected
-  output or independently reviewed dispositions. Current complete official
-  results remain 2 passing, 7 unresolved and 1 unsupported. P05/P07.
+- [x] Record the owner's engineering disposition of the seven official
+  disagreements after source-level analysis and independent technical review:
+  retain strict decoding, no compatibility mode, two bitmap passes, seven
+  exact source-bound reviewed rejections and one unsupported colour case.
+  Original vectors and runtime are unchanged. This closes execution disposition,
+  not independent normative adjudication or the stronger P05/P07 release claims.
 - [ ] Close required test-adequacy and coverage-policy gaps, and decide held
   fixture/oracle permissions separately without inferring approval. P06–P08.
 - [ ] Ratify representative performance/resource policy and required
@@ -208,7 +213,9 @@ denominator; see [traceability](spec-traceability.md).
    normative rules and independent oracle evidence. Decoder rejection or an
    oracle warning does not show an official positive is malformed.
 5. Fix discovered runtime/model/test errors with exact regression fixtures.
-   A normative rejection requires specific independent review. Keep unsupported
+   A normative rejection requires specific independent review. An owner
+   engineering disposition may accept a strict rejection for the bounded
+   execution policy, but cannot supply that normative approval. Keep unsupported
    colour separate from supported conformance.
 6. Do not close required functionality by relabeling evidence. Prove it or,
    with owner approval, narrow the release claim and leave the stronger claim
@@ -273,6 +280,12 @@ See [runtime coverage](runtime-coverage.md).
 
 **Acceptance:** failures reach CI; result categories/exceptions are visible;
 release does not rely solely on a stale local report.
+The 2026-11-02 owner disposition closes the seven execution-policy decisions.
+Exact original-input errors and source pins remain mandatory; the exact-bitmap
+gate still rejects these cases. The manual private-main-only official workflow
+provides a bounded acquisition/execution path with metadata-only artifacts.
+It must actually pass on accepted main before trusted execution is credited.
+Independent normative acceptance remains separate unfinished work.
 
 ## P08 — Harden fuzzing and crash regression
 

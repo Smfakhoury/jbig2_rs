@@ -42,12 +42,13 @@ def validate_difference(entry: dict, streams: dict[str, Path]) -> None:
         "reviewed_strict_rejection", "unsupported_profile", "pending_normative_review",
     }:
         raise ValueError(f"invalid expected classification: {entry['id']}")
-    field = "expected_error_exact" if classification == "pending_normative_review" else "expected_error_contains"
+    source_bound = classification != "unsupported_profile"
+    field = "expected_error_exact" if source_bound else "expected_error_contains"
     for key in (field, "rationale"):
         if not isinstance(entry.get(key), str) or not entry[key].strip():
             raise ValueError(f"empty expected difference: {entry['id']}")
     allowed = {"id", "classification", field, "rationale", "jbig2dec_stderr_sha256"}
-    if classification == "pending_normative_review":
+    if source_bound:
         allowed |= {"stream_sha256", "source_files_sha256"}
         stream_hash = entry.get("stream_sha256")
         if (
@@ -55,10 +56,10 @@ def validate_difference(entry: dict, streams: dict[str, Path]) -> None:
             or not re.fullmatch(r"[0-9a-f]{64}", stream_hash)
             or hashlib.sha256(streams[entry["id"]].read_bytes()).hexdigest() != stream_hash
         ):
-            raise ValueError(f"pending review stream hash mismatch: {entry['id']}")
+            raise ValueError(f"review stream hash mismatch: {entry['id']}")
         sources = entry.get("source_files_sha256")
         if not isinstance(sources, dict) or not sources:
-            raise ValueError(f"missing pending review source identities: {entry['id']}")
+            raise ValueError(f"missing review source identities: {entry['id']}")
         for path, expected_hash in sources.items():
             if (
                 not re.fullmatch(r"src/(?:[a-z_]+/)*[a-z_]+\.rs", path)
@@ -66,7 +67,7 @@ def validate_difference(entry: dict, streams: dict[str, Path]) -> None:
                 or not re.fullmatch(r"[0-9a-f]{64}", expected_hash)
                 or hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected_hash
             ):
-                raise ValueError(f"pending review source hash mismatch: {entry['id']}")
+                raise ValueError(f"review source hash mismatch: {entry['id']}")
     if set(entry) - allowed:
         raise ValueError(f"unknown expected difference fields: {entry['id']}")
     if "jbig2dec_stderr_sha256" in entry and (
@@ -209,10 +210,10 @@ def run_case(stream: Path, decoder: Path, output: Path, timeout: float, differen
     case["decoder_exit"] = process.returncode
     if process.returncode != 0:
         case["stderr"] = process.stderr.strip()
-        pending = difference and difference["classification"] == "pending_normative_review"
+        exact = difference and difference["classification"] != "unsupported_profile"
         error_matches = difference and (
             case["stderr"] == difference["expected_error_exact"]
-            if pending else difference["expected_error_contains"] in case["stderr"]
+            if exact else difference["expected_error_contains"] in case["stderr"]
         )
         # Pending diagnoses remain unresolved, even when their exact error matches.
         if (

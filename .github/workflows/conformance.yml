@@ -1,0 +1,45 @@
+name: Trusted official conformance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  official:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.repository == 'microsoft/jbig2_rs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Require private repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: test "$(gh api repos/microsoft/jbig2_rs --jq .private)" = true
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.88.0
+      - name: Fetch exact approved conformance vectors
+        run: python -B validation/conformance/fetch_itu.py --download --output target/official-vectors
+      - name: Build strict validation adapter
+        run: cargo build --locked --release --example decode_vector
+      - name: Run all original official streams
+        run: >-
+          python -B validation/conformance/run_itu.py
+          --vectors target/official-vectors
+          --decoder target/release/examples/decode_vector
+          --expected-differences validation/conformance/expected-differences.json
+          --output target/official-results/results.json
+      - name: Bind source identity
+        run: git rev-parse HEAD > target/official-results/source-revision.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: official-conformance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/official-results/results.json
+            target/official-results/source-revision.txt
