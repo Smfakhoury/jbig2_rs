@@ -173,9 +173,9 @@
       "version": "0.3.1",
       "registry_package_sha256": "000e025850f4592ddcaee85640db70704151f2bafd43b6f431aa5b6a2c6a35a9",
       "lockfile": "benchmarks/hayro-comparison/Cargo.lock",
-      "lockfile_sha256": "4ced43f95882a0cc8dc3feda3b27e802f97d173b0ee97b1c61f60bde6a0aaa77",
+      "lockfile_sha256": "d5d71299137d099630f56de19827868076dcce4c04bab64b535b9a1aa12d875f",
       "recorded_upstream_revision": "ea9c81dc70cde40c64205986fdcfcd481fe934d8",
-      "revision_note": "The lockfile is refreshed only for the local decoder package version0.1.0; third-party versions/checksums are unchanged. Historical oracle executions are not relabeled current. The upstream identity is the pinned registry archive, not a newly verified checkout of the recorded revision.",
+      "revision_note": "The lockfile is refreshed only for the local decoder package version0.1.1; third-party versions/checksums are unchanged. Historical oracle executions are not relabeled current. The upstream identity is the pinned registry archive, not a newly verified checkout of the recorded revision.",
       "compiler": "rustc 1.98.1",
       "features": ["std", "simd"],
       "scope": "Existing official assets only; single-image wrapper errors and FNV64 bitmap summaries are partial oracle evidence, not full normative or multi-page conformance.",
@@ -212,8 +212,8 @@
     }
   ],
   "approvals": {
-    "crate_publication": "Owner explicitly authorized the next actual jbig2-decoder0.1.0 publication steps after configuring the crates.io API key at2026-11-02T15:21:23.393+00:00; crates.io-only target, existing approved partial-Verus0.1scope and unchanged protected-asset restrictions.",
-    "crate_publication_decision": "https://github.com/microsoft/jbig2_rs/issues/125#issuecomment-6580927454",
+    "crate_publication": "Owner explicitly requested publication of the updated documentation as jbig2-decoder0.1.1 at2026-11-02T19:27:44.072+00:00; crates.io-only target, existing partial-Verus0.1scope and unchanged protected-asset restrictions. The0.1.0release remains available and immutable.",
+    "crate_publication_decision": "https://github.com/microsoft/jbig2_rs/issues/138#issuecomment-6586469521",
     "standards_legal_owner": "approved for internal validation",
     "conformance_vector_use": "approved for internal/private-CI execution",
     "conformance_vector_redistribution": "prohibited pending public-repository review",
