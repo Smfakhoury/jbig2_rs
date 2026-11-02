@@ -212,6 +212,8 @@
     }
   ],
   "approvals": {
+    "crate_publication": "Owner explicitly authorized the next actual jbig2-decoder0.1.0 publication steps after configuring the crates.io API key at2026-11-02T15:21:23.393+00:00; crates.io-only target, existing approved partial-Verus0.1scope and unchanged protected-asset restrictions.",
+    "crate_publication_decision": "https://github.com/microsoft/jbig2_rs/issues/125#issuecomment-6580927454",
     "standards_legal_owner": "approved for internal validation",
     "conformance_vector_use": "approved for internal/private-CI execution",
     "conformance_vector_redistribution": "prohibited pending public-repository review",

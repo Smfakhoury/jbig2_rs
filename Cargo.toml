@@ -7,7 +7,7 @@ license = "MIT"
 description = "Memory-safe JBIG2 decoder under development"
 repository = "https://github.com/microsoft/jbig2_rs"
 readme = "README.md"
-publish = false
+publish = ["crates-io"]
 include = [
   "/src/**/*.rs",
   "/README.md",

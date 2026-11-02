@@ -1,8 +1,8 @@
 # Ordinary Rust distribution without Verus
 
 The crate has no runtime dependencies, uses the MIT license, and declares Rust
-1.88.0 as its minimum supported Rust version (MSRV). The `0.1.0` candidate keeps
-publication disabled until the final upload step. Its
+1.88.0 as its minimum supported Rust version (MSRV). Version `0.1.0` permits
+publication only to crates.io under the recorded owner authorization. Its
 [release gates](../RELEASING.md) explicitly permit partial Verus coverage;
 remaining proof gaps are disclosed future work, not claimed complete.
 The accepted revision-qualified native reports
@@ -55,9 +55,10 @@ python -B tools/check_distribution.py --toolchain 1.88.0 \
   --publish-dry-run --output target/distribution/publish-msrv.json
 ```
 
-The repository manifest remains `publish = false`; running `cargo publish
---dry-run` directly in the checkout therefore correctly fails. The optional
-rehearsal instead changes only `package.publish` to `["crates-io"]` in the
+The checker accepts only `publish = false` or `publish = ["crates-io"]`.
+Unrestricted publication, other registries and mismatched extracted publication
+settings are errors. For disabled development manifests, the optional
+rehearsal changes only `package.publish` to `["crates-io"]` in the
 temporary extracted manifests (`Cargo.toml` and Cargo's `Cargo.toml.orig`),
 executes the selected Cargo's real
 `publish --dry-run --locked --registry crates-io`, and restores the manifest
@@ -65,7 +66,10 @@ even on failure. The publish phase uses a separate Cargo target directory so
 the ordinary distribution archive cannot be mistaken for its output.
 It never uses `--no-verify` or an actual upload command.
 Inherited registry tokens, registry overrides and credential providers are
-removed; the temporary Cargo home has no stored credentials.
+removed; the temporary Cargo home has no stored credentials. With a crates.io-only
+release manifest, the same actual dry run executes without changing that
+setting. Enabling the source manifest never turns a checker or CI invocation
+into an upload.
 
 Distribution tests and the consumer remain offline. Only the optional publish
 phase allows access to crates.io registry metadata, because a fresh Cargo home
@@ -101,7 +105,8 @@ The check:
 4. Extracts only validated files and compares runtime/document/license bytes to
    the checkout. The normalized Cargo manifest is checked through Cargo metadata.
 5. Confirms the extracted package has no dependencies or proof/validation
-   features, the expected license/MSRV, and publication remains disabled.
+   features, the expected license/MSRV, and exactly the source's disabled or
+   crates.io-only publication setting.
 6. Executes the extracted archive's unit tests and doc tests.
 7. Appends an isolated unsafe probe to the extracted crate and requires the
    compiler's `unsafe_code` rejection. The same probe must compile when only

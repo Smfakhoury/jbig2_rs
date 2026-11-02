@@ -2,8 +2,8 @@
 
 `jbig2-decoder` is a strict, dependency-free Rust JBIG2 decoder under active
 development. **It is not yet suitable for untrusted production documents.**
-The repository is public. The `0.1.0` candidate is unpublished, with
-`publish = false` until the final upload step.
+The repository is public. Version `0.1.0` is an early release, with publishing
+restricted to crates.io.
 
 Version 0.1 ships with **partial Verus coverage**, not a complete formal proof
 of JBIG2 conformance. Existing exact-source proofs and quality checks remain
@@ -42,17 +42,16 @@ I/O failure have distinct typed errors.
 ### Decode a document
 
 The Cargo package is `jbig2-decoder`; its Rust import is `jbig2_decoder`.
-The repository is still named `microsoft/jbig2_rs`. While unpublished, use a
-local checkout dependency:
+The repository is still named `microsoft/jbig2_rs`. Add the registry dependency:
 
 ```toml
 [dependencies]
-jbig2-decoder = { path = "/path/to/checkout" }
+jbig2-decoder = "0.1"
 ```
 
-The public API is ordinary Rust; consumers do not need Verus. This crate is
-still unpublished, so use a checkout or local path dependency while evaluating
-it. The example uses a reader so the decoder applies its input limit while
+The public API is ordinary Rust; consumers do not need Verus. For local
+development, a checkout path dependency can be used instead.
+The example uses a reader so the decoder applies its input limit while
 reading, rather than asking the caller to allocate an unbounded input first.
 
 ```rust,no_run
