@@ -1,5 +1,6 @@
 #![cfg(test)]
 
+use super::super::codec::decode_symbol_id_code_lengths;
 use super::*;
 
 const SAMPLES: [&[u8]; 5] = [
@@ -178,4 +179,54 @@ fn literal_huffman_symbol_ids_match_all_widths_through_both_adapters() {
         }
     }
     assert_eq!(checked, 32_000);
+}
+
+#[test]
+fn symbol_length_literals_do_not_include_the_run_code_prefix_length() {
+    let limits = Limits::default();
+    for prefix_len in [1, 2, 7, 8, 15] {
+        for literal in 0..=31 {
+            let table =
+                HuffmanTable::new(&[HuffmanLine::normal(literal, prefix_len, 0)], &limits).unwrap();
+            let mut reader = BitReader {
+                bytes: &[0; 8],
+                bit_position: 0,
+            };
+            let lengths = decode_symbol_id_code_lengths(&mut reader, &table, 4, &limits).unwrap();
+            assert_eq!(lengths, vec![u8::try_from(literal).unwrap(); 4]);
+            assert_eq!(reader.bit_position, usize::from(prefix_len) * 4);
+        }
+    }
+}
+
+#[test]
+fn zero_symbol_length_literal_excludes_the_symbol_from_the_codebook() {
+    let limits = Limits::default();
+    let run_codes = HuffmanTable::new(
+        &[HuffmanLine::normal(0, 1, 0), HuffmanLine::normal(1, 1, 0)],
+        &limits,
+    )
+    .unwrap();
+    let mut reader = BitReader {
+        bytes: &[0xc0],
+        bit_position: 0,
+    };
+    let lengths = decode_symbol_id_code_lengths(&mut reader, &run_codes, 3, &limits).unwrap();
+    assert_eq!(lengths, [1, 1, 0]);
+    assert_eq!(reader.bit_position, 3);
+
+    let symbols = HuffmanTable::new_symbol_ids(&lengths, &limits).unwrap();
+    let mut reader = BitReader {
+        bytes: &[0x40],
+        bit_position: 0,
+    };
+    assert_eq!(
+        symbols.decode(&mut reader).unwrap(),
+        HuffmanValue::Integer(0)
+    );
+    assert_eq!(
+        symbols.decode(&mut reader).unwrap(),
+        HuffmanValue::Integer(1)
+    );
+    assert_eq!(reader.bit_position, 2);
 }

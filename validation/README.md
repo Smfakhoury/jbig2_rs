@@ -80,6 +80,78 @@ The reference snapshot has two exact positives, seven unresolved official
 positives and one unsupported colour case, with **zero reviewed rejection
 credit**. Those outcomes block stronger supported-conformance claims.
 
+The owner authorized local black-box build/run of the pinned ITU sample program
+on 2026-11-01. It reproduces all seven cases and all nine expected pages, but is
+not a general correctness oracle: it crashes on an unchanged first-party
+Huffman case that Rust and jbig2dec decode with exact literal pixels, and its
+TT3 output ignores changes to the declared export count. A TT1-specific
+interpretation candidate also breaks that valid case and is rejected, not
+shipped. The [seven-case review](conformance/seven-rejection-review.json)
+records those input/output controls and their limits. The seven cases remain
+unresolved; these observations grant no normative rejection credit.
+The owner's separate request on 2026-11-01 at 23:41 UTC authorized local
+implementation inspection. Code copying into the project, derivation,
+restricted-asset redistribution and protected standards processing remain
+outside those consents.
+
+Source inspection and GDB traces now explain the candidate's regression.
+The reference builds symbol IDs using the run-code prefix as part of the ID,
+rather than treating a decoded literal as its length. The TT1 input therefore
+produces reference lengths `[2,2,1]` instead of production `[1,1,0]`; the
+unchanged first-party control produces reference `[3,3,3,3]` instead of
+production `[2,2,2,2]`. A plus-one change reproduces this difference for those
+inputs, but does not preserve the literal contract.
+
+The reference **does consume the final Huffman OOB**. An offset-only diagnostic
+matches all three TT1 pages without changing production termination, and still
+fails the unchanged first-party control. The earlier proposal's count-based
+stopping was unnecessary; it must not be inferred as a required fix.
+
+The other observations also have source-level explanations: the reference uses
+bitmap size as a switch and decodes individual MMR symbols without that byte
+bound; its encoder writes two zero export integers, which its decoder reads
+but ignores; text decoding uses accumulated symbols without selecting the
+referred dictionaries' exports. The debug build reproduces all nine original
+pages, so these are observations of the successful reference paths, not just
+untested source hypotheses. They do not independently adjudicate the vectors'
+normative status or justify weakening production acceptance.
+
+Two local diagnostic controls strengthen that explanation without changing
+the production decoder or claiming passes for the original streams:
+
+- TT1: changing just two run-code-table metadata bytes to declare literal
+  lengths `[2,2,1]` makes both unchanged Rust and jbig2dec reproduce all three
+  unchanged expected pages, with no stderr.
+- TT3: re-encoding with the reference and correcting the same explicit
+  reference, retention and page-override headers in both variants leaves the
+  normal encoder's `[0,0]` exports rejected. A GDB override of only the second
+  export argument to `3` instead yields the exact unchanged expected page in
+  Rust. This is a re-encoded diagnostic, not the archived official stream.
+
+The committed first-party regressions separately exercise literal lengths
+`0..31` at five prefix widths, zero-length exclusion, and nonblank pixels for
+all four two-bit IDs in both file organizations. All three tests detect the
+literal-plus-one mutant and pass after source restoration. No reference source,
+encoded diagnostic copies or restricted bitmap assets are committed.
+
+### What the investigation review needs to resolve
+
+This is an evidence review, not a decoder-fix proposal or a request for the
+repository owner to certify conformance. The following questions remain open:
+
+| Cases | Observed boundary | Required technical resolution |
+| --- | --- | --- |
+| `codeStreamTest1_TT1` | Reference symbol IDs incorporate the run-code prefix. Offset-only changes match TT1 but break unchanged literal-code inputs; final OOB is present. | Resolve the official input's normative interpretation without changing the existing literal contract or strip termination. |
+| `codeStreamTest1_TT2` | Reference size 1 permits eight bytes for the first MMR symbol, then separate six- and eight-byte symbols in the next class. | Resolve the official input's bitmap-size and collective-bitmap interpretation; extending the declared size is not a validated fix. |
+| `codeStreamTest1_TT3`, `TT4`, `TT5`, `TT7`, `codeStreamTest2_TT6` | Reference encoding writes two zero export integers, decoding ignores their meaning, and text uses accumulated symbols despite zero dictionary referrals. | Resolve the official inputs' export/reference interpretation without skipping runs or inventing references. |
+
+Review the observations and the rejection of the proposed shortcut separately
+from the still-missing wire-format resolution. The follow-up pins the production
+revision, reference executable, compiler and local evidence-summary hash.
+Restricted inputs, executable and raw bitmap outputs are not included in the
+repository. Their absence means the committed summary is not a substitute for
+an independent authorized reproduction.
+
 After building the repository's `decode_vector` validation adapter, an
 authorized local copy can be checked without copying it into the repository:
 

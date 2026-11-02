@@ -20,6 +20,19 @@ fn huffman_text_family_matches_literal_pixels_errors_limits_and_boundaries() {
     check_shapes_and_truncations(1);
 }
 
+#[test]
+fn literal_two_bit_symbol_lengths_preserve_all_four_ids_and_final_strip_oob() {
+    let fixture = Fixture::new(&[1, 11, 1, 2, 1, 3, 0, 0, 0, 0, 1, 0, 0, 0, 7, 0]);
+    assert_eq!(fixture.expected(), [0xe6, 0x00, 0x33, 0x80]);
+    for random_access in [false, true] {
+        fixture.check(
+            &Decoder::new(limits())
+                .decode(&fixture.document(random_access, None))
+                .expect("all four literal two-bit IDs and the final OOB"),
+        );
+    }
+}
+
 fn check_family(family: u8) {
     for width in [1, 7, 8, 9, 15, 16, 17, 32, 33] {
         for count in 1..=4 {

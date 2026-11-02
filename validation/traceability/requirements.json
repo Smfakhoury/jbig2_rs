@@ -3,7 +3,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "f61e3d069622a035e3c20566bc95820311bbaa227218cd7f267b57f5e4981d70",
-    "project_source_sha256": "3726e0121a8011106b2db7c31e0b79714ca851dcf905651ea794ce5e54c095cc",
+    "project_source_sha256": "97b0beb3d392425d16cab603f6d344c239f75f62e082042b4852cff08712b10f",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -1906,7 +1906,7 @@
     "src/symbol_text/tests/codec_and_exports.rs": "3d6a65ecebfdc20876243ed67356e61e296b39d65d4ba44e75ab7781c0bd9fd5",
     "src/symbol_text/tests/dictionary_dispatch.rs": "e7e1f462adae411123ac93888bd87db1573b9b519bbb3c8c8e045b4697854181",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
-    "src/symbol_text/tests/huffman_fields.rs": "0606c1abcdeb019dc0906db95343df0f896378b14cc05f3d4aadac1da0eb0df2",
+    "src/symbol_text/tests/huffman_fields.rs": "fb197e3cba4403c941d9c4cf6635a46debdbc9b2b17bcb603609c6aeda29d957",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
