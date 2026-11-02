@@ -24,8 +24,8 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "3826f25002a096e55adb8a3171a3f4a31763d3ae330a4d2663f5b5fb1498ef09",
-  "proof_dispositions_sha256": "3173c7216fe2080f85ed15c7b490d2b07f5d81e32545f20311a92faf0487201a",
+  "production_proof_coverage_sha256": "67253300d147cf7ff7d5f605771be3df8c4be1189f274b4a3d2a662a23813034",
+  "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
     "manifest_sha256": "5f007f853c6caad16d6d318bde996373c6a6f886e8949cd0df62612e5408a92c",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Actual1287/0 plus nonempty library includes all three new helper lemma bodies, not only selected callers. Raw independent wide sentinel arithmetic checks65538 compact-index boundaries includingu32MAX; sparse metadata checks1285 cases and all256slots; raw/symbol factories cover8/9/16/32/255bit widths and existing15standard factories retain their cache policy. No new serialized held family, standard-interface fact or normative approval. Actual approved10stream observations remain2pass7pending1unsupported0rejectioncredit; complete current-head hosted acceptance remains separate.",
+  "current_evidence_note": "Actual1287/0 plus nonempty library includes all three new helper lemma bodies, not only selected callers. Raw independent wide sentinel arithmetic checks65538 compact-index boundaries includingu32MAX; sparse metadata checks1285 cases and all256slots; raw/symbol factories cover8/9/16/32/255bit widths and existing15standard factories retain their cache policy. No new serialized held family, standard-interface fact or normative approval. Actual approved10stream observations remain2pass7pending1unsupported0rejectioncredit; complete current-head hosted acceptance remains separate. Documentation-only source rebinding at33c4b3e preserves all non-comment Rust tokens and fenced examples across207files againstace4fae; recorded solver execution revisions/results are not relabeled by this hash refresh.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",

@@ -3,7 +3,8 @@
 Coverage measures ordinary executing Rust, not ghost/proof code or normative
 requirements. The revision-qualified values and actual accepted run are in
 [publication readiness](publication-readiness.md). The unchanged 90% line /
-85% branch-outcome goals are met there; **P06 remains incomplete**.
+85% branch-outcome goals are met there. Numerical coverage does not establish
+complete test adequacy.
 
 The reviewed ratchet is
 [`validation/coverage/baseline.json`](../validation/coverage/baseline.json).
@@ -58,7 +59,7 @@ physical-file floors be locked to the fresh collection. Source identity,
 unchanged region/branch accounting and the 90%/85% goals remain checked; file
 splitting is not permission to discard uncovered code.
 
-Changed-line enforcement remains **informational pending policy review**.
+Changed-line coverage is currently **informational**.
 No changed runtime lines is `not_applicable`, not an invented 100%. CI must fetch
 the exact comparison commit if absent and fail if it cannot, rather than skip
 or substitute a convenient base. Initial pushes without a predecessor still
@@ -106,7 +107,7 @@ or secrets.
 ## Runtime sensitivity and executable catalogs
 
 ```sh
-python3 -B tools/check_contract_mutations.py --toolchain 1.89.0 \
+python3 -B tools/check_contract_mutations.py --toolchain nightly-2026-10-12 \
   --output target/traceability/mutations.json
 python3 -B tools/check_test_catalogs.py --discover-tests \
   --output target/traceability/test-catalogs.json
@@ -135,17 +136,16 @@ to prioritize symbol/text and high-level lifecycle/resource interactions.
 Preserve literal independent output/error oracles; fresh/reused agreement alone
 can reproduce the same bug.
 
-Existing approved coverage includes public envelopes/metadata, reader/sink
+Existing tests cover public envelopes/metadata, reader/sink
 errors and recovery, headers/retention boundaries, primitive arithmetic/MMR
-state and framing, packed storage/operators, numeric quotas and approved
+state and framing, packed storage/operators, numeric quotas and generated
 first-party codec fixtures. This does not imply every combination, generated
 family or limit has adequate evidence.
 
 Still open:
 
 - Broader valid coding/template/resource interactions and critical error paths,
-  within recorded fixture consent. Encoded refinement/aggregation/custom-Huffman
-  expansion remains held; do not retry/reconstruct it.
+  including additional refinement, aggregation and custom-Huffman cases.
 - Real allocator failures, unrepresentable slice sizes and overflow defenses.
   Direct error conversions are not evidence those states are reachable or
   covered in valid decoding.
@@ -154,11 +154,10 @@ Still open:
   instrumented, not silently marked covered or removed.
 - Byte-aligned input cannot end midway through EOFB alignment padding; adjacent
   framing/error tests do not manufacture coverage of that impossible input.
-- Broader mutation sensitivity, reviewed uncovered code, all-limit evidence and
-  changed-line threshold ratification/enforcement.
-- Observed capacity enforcement and allocator/RSS accounting. Independent
-  `Vec::capacity()` observations can expose defects but do not close the held
-  standard-trust/runtime-proof issue.
+- Broader mutation sensitivity, uncovered-code review, all-limit evidence and
+  changed-line threshold enforcement.
+- Allocator usable-size and total process-memory accounting. Existing
+  post-reservation `Vec::capacity()` checks do not prove allocator/RSS bounds.
 
-Coverage cannot approve models, resolve official positives, close the
-runtime/proof divergence or complete the remaining [readiness gates](open-source-readiness-plan.md).
+Coverage is separate from model correctness, conformance and formal
+resource bounds. See the [roadmap](open-source-readiness-plan.md).

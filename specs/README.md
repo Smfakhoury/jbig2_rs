@@ -13,11 +13,9 @@ system first.
 - **Looking for notation or proof commands?** Use the [auditor index](../docs/verus-auditor-index.md)
   or [Cargo-Verus instructions](../README.md#run-verus-through-cargo).
 
-**Review status:** a proof that Rust follows a model does not tell us whether
-the model follows the standard. Models and proofs were often developed together,
-not against an independently approved, frozen specification. Every recorded
-requirement still needs independent standards review, and the list is not
-exhaustive.
+**Scope:** a proof that Rust follows a model does not by itself establish
+complete standard-to-model correspondence. The models cover selected
+properties; the requirement list and functional-proof coverage are partial.
 
 ### Free official specification downloads
 
@@ -37,9 +35,9 @@ includes the specification PDF. The recommendation pages for
 Use these editions and check the document hashes in
 [source provenance](../validation/source-provenance.json).
 
-Free access does not permit committing, redistributing or uploading PDFs to
-agents under [current policy](../validation/source-provenance.json).
-Recorded clause/page references still need independent checking; printed page
+The standard documents are external references, not part of this repository
+or the published crate. Their use and reproduction terms are separate.
+Printed page
 numbers may differ from the PDF viewer's page index.
 
 ## Component overview
@@ -85,7 +83,7 @@ the next byte?**
    Caller timing remains a separate question, even if this branch is correct.
 
 A useful review note says **what you compared, what you found, and what you did
-not check**. One checked branch is not approval of the entire arithmetic coder.
+not check**. One checked branch is not verification of the entire arithmetic coder.
 
 ## What a model does, and does not, promise
 
@@ -108,4 +106,4 @@ arrays does not establish that the tables agree with the standard.
 - [Auditor index](../docs/verus-auditor-index.md): notation, entry points and component-specific questions.
 - [Traceability guide](../docs/spec-traceability.md): what each evidence label actually establishes.
 - [Verifier limitations](../docs/verifier-limitations.md): trusted boundaries and remaining proof gaps.
-- [Review procedure](../docs/specification-review.md): independent reviews, exact snapshots, approval gates and inventory maintenance.
+- [Review procedure](../docs/specification-review.md): property checks, exact snapshots and inventory maintenance.

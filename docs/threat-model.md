@@ -29,11 +29,11 @@ state is immutable after validation.
 The controls below describe required behavior, not a claim of complete
 normative, no-panic or resource-accounting proof. Compiler-generated derives
 and standard-library internals remain trusted; the crate's unsafe prohibition
-does not prove binary-wide unsafe absence. The known observed-capacity defects
-and MMR runtime/proof divergence remain open, as described in
-[verification limitations](verifier-limitations.md). Current revision-qualified
-evidence and remaining release blockers are in
-[publication readiness](publication-readiness.md).
+does not prove binary-wide unsafe absence. Post-reservation capacity checks do
+not establish allocator usable-size or total process-memory bounds; complete
+functional coverage is still partial. See
+[verification limitations](verifier-limitations.md) and
+[release validation](publication-readiness.md).
 
 ## Threats and controls
 
@@ -113,13 +113,14 @@ colour syntax return typed unsupported errors rather than being ignored.
 
 ## Validation evidence
 
-Release evidence must include:
+Validation combines:
 
 - Cargo, Clippy, test, documentation, and package audits on Linux, Windows, and
   macOS;
 - deterministic production proof coverage with zero incomplete functions and
   no unreviewed assumptions;
-- legally approved normative vectors with expected bitmap hashes;
+- external conformance vectors with pinned identities, bitmap hashes and
+  separately recorded strict rejections/unsupported outcomes;
 - two pinned independent differential oracles and reviewed disagreements;
 - truncation, malformed graph, coding-table, extreme-value, and corruption
   tests;

@@ -3,7 +3,7 @@ use vstd::prelude::*;
 
 /// Explicit resource limits for untrusted JBIG2 input.
 ///
-/// The defaults implement the approved Phase 1 resource envelope. Callers may
+/// The defaults define the initial resource limits. Callers may
 /// use stricter values. Every field is an inclusive maximum.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]

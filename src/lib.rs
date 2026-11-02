@@ -2,7 +2,7 @@
 #![cfg_attr(verus_keep_ghost, feature(proc_macro_hygiene))]
 //! A dependency-free Rust decoder for JBIG2 black-and-white pages.
 //!
-//! **Development status:** this crate is unpublished and is not yet suitable
+//! **Development status:** this is an early release and is not yet suitable
 //! for untrusted production documents. Implemented features are not a claim of
 //! complete JBIG2 or Annex F conformance.
 //!

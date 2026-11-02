@@ -591,7 +591,7 @@ impl fmt::Display for MalformedError {
     }
 }
 
-/// A feature that is valid JBIG2 syntax but outside the approved profile.
+/// A feature that is valid JBIG2 syntax but outside the supported profile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
@@ -693,7 +693,7 @@ impl fmt::Display for LimitExceeded {
 pub enum DecodeError {
     /// The input violates the JBIG2 syntax or semantics.
     Malformed(MalformedError),
-    /// The input uses valid syntax outside the approved support matrix.
+    /// The input uses valid syntax outside the supported profile.
     Unsupported(UnsupportedFeature),
     /// An explicit resource limit was exceeded.
     LimitExceeded(LimitExceeded),

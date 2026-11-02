@@ -15,13 +15,12 @@ please review the latest guidance for Microsoft repositories at
 
 ## Supported versions
 
-No released version is currently supported. The crate is unpublished and
-under active development.
+The 0.1 series is an early release under active development. Use the latest
+patch release and review the limitations below.
 
 ## Reporting a vulnerability
 
-Report suspected vulnerabilities privately through the repository owner's
-security reporting channel. Do not attach proprietary documents, purchased
+Use the Microsoft reporting guidance above. Do not attach proprietary documents, purchased
 standards, or non-redistributable test assets.
 
 ## Security posture
@@ -33,8 +32,7 @@ offsets, lengths, references, allocations, retained state and work.
 
 These are implementation requirements, not a binary-wide no-unsafe/no-panic or
 complete resource-accounting proof. Compiler-generated derives, standard-library
-internals and Rust/Verus/vstd toolchains remain trust boundaries. The known
-capacity-accounting gaps and runtime/proof divergence remain open; see
+internals and Rust/Verus/vstd toolchains remain trust boundaries. Formal coverage remains partial; see
 [verification limitations](docs/verifier-limitations.md) and
 [publication readiness](docs/publication-readiness.md). The decoder is not yet
 recommended for untrusted production documents.

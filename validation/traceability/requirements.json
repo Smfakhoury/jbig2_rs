@@ -19,19 +19,19 @@
     "confirmed_at": "2026-11-02T09:48:42.675+00:00",
     "instruction": "I already authorized you to proceed your work and validated normative/model review.",
     "decision_reference": "https://github.com/microsoft/jbig2_rs/issues/125#issuecomment-6574995552",
-    "source_revision": "9bd0ad34c70990c0439a25ff41095e5bebb03696",
-    "project_source_sha256": "97b0beb3d392425d16cab603f6d344c239f75f62e082042b4852cff08712b10f",
+    "source_revision": "33c4b3e267a3b6aa9bec0833ecca6bc468bc1c44",
+    "project_source_sha256": "75c35a9410d9311522a0380ac08e76e03acc98bb3cc2c667a092183b8a99aa74",
     "requirements_sha256": "c35996539ee4c103748b39467886111fb562170444514ba32c885804a1f5dc14",
     "normative_model_review_validated": true,
     "exhaustive_requirement_coverage": false,
     "complete_functional_proof": false,
     "independent_certificate": false,
-    "scope": "Owner confirmation of the reviewed source/model snapshot. The existing per-record provisional labels describe author technical evidence, not missing owner permission. Recorded gaps, strength categories and partial feature decompositions remain unchanged; this confirmation supplies no missing proof or exhaustive denominator."
+    "scope": "Effective source snapshot after documentation-only rebinding. All non-comment Rust tokens, literal contents, cfg branches, signatures, contracts, models, proofs and fenced examples match the exact base across207Rustfiles. The original confirmation is preserved in documentation_only_rebinding; its date is not a new semantic review of this documentation. Requirement rows, strengths and gaps are unchanged."
   },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "f61e3d069622a035e3c20566bc95820311bbaa227218cd7f267b57f5e4981d70",
-    "project_source_sha256": "97b0beb3d392425d16cab603f6d344c239f75f62e082042b4852cff08712b10f",
+    "project_source_sha256": "75c35a9410d9311522a0380ac08e76e03acc98bb3cc2c667a092183b8a99aa74",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -1902,7 +1902,7 @@
     "src/huffman/tests/wide_arithmetic.rs": "251462094b4817ff83394bb62072184b63796988e9606d75f29200eb1a1d8ca9",
     "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",
     "src/huffman/wide.rs": "4f37abac40efc66f0c3eaa2637d211eaca5a5ea4fa7a14d7aadb07fbe2a8f0b0",
-    "src/lib.rs": "f2dfb100e93774f893e47f2c02d7cf56c8083da41126dfbe3557c7eac43b9697",
+    "src/lib.rs": "c07d0d5e3327c136b08221c21b75c14c9b85a5eac265861942511d068ef2a8ff",
     "src/mmr.rs": "c82fd282e7fb194576ea34b8f501b9ed5ecb56075e44c70bd8131a4ab4929ca9",
     "src/mmr/codes.rs": "46cf39eb4756da06aeb34aa32dbe75e13dcbd911b3a5b9d9afa80065966a7857",
     "src/mmr/raster.rs": "bd03d34f4154e629fce76707fae6dc06c12d2077a3e56fafd0198b6ae8176e4b",
@@ -18270,5 +18270,44 @@
       ],
       "invariant_evidence": []
     }
-  ]
+  ],
+  "documentation_only_rebinding": {
+    "base_revision": "ace4fae35afc4e17830d339cc61484e64d2d5870",
+    "documentation_revision": "33c4b3e267a3b6aa9bec0833ecca6bc468bc1c44",
+    "rust_source_files_checked": 207,
+    "comment_only_changes": [
+      {
+        "file": "src/error.rs",
+        "before_sha256": "d0773bf4f303b8af8b6701f475abccbf9d3ee34eb3ed817228e40c04adf992ee",
+        "after_sha256": "35e87338ed815bdc4b77a519217d5b2a14cf547af689ab2d00d9e4d2222bf737"
+      },
+      {
+        "file": "src/lib.rs",
+        "before_sha256": "f2dfb100e93774f893e47f2c02d7cf56c8083da41126dfbe3557c7eac43b9697",
+        "after_sha256": "c07d0d5e3327c136b08221c21b75c14c9b85a5eac265861942511d068ef2a8ff"
+      },
+      {
+        "file": "src/limits.rs",
+        "before_sha256": "03eabbf530b19d84b3046a8b9c4d6f77a8442342946fa9ffc7c001c0a191d91e",
+        "after_sha256": "52bc0715452305dbf0c5b0455f717e74b5204c8ef840ec2c5dfe669241b09bf3"
+      }
+    ],
+    "all_noncomment_rust_tokens_and_fenced_examples_unchanged": true,
+    "original_review_confirmation": {
+      "authority": "repository_owner_confirmation",
+      "confirmed_at": "2026-11-02T09:48:42.675+00:00",
+      "instruction": "I already authorized you to proceed your work and validated normative/model review.",
+      "decision_reference": "https://github.com/microsoft/jbig2_rs/issues/125#issuecomment-6574995552",
+      "source_revision": "9bd0ad34c70990c0439a25ff41095e5bebb03696",
+      "project_source_sha256": "97b0beb3d392425d16cab603f6d344c239f75f62e082042b4852cff08712b10f",
+      "requirements_sha256": "c35996539ee4c103748b39467886111fb562170444514ba32c885804a1f5dc14",
+      "normative_model_review_validated": true,
+      "exhaustive_requirement_coverage": false,
+      "complete_functional_proof": false,
+      "independent_certificate": false,
+      "scope": "Owner confirmation of the reviewed source/model snapshot. The existing per-record provisional labels describe author technical evidence, not missing owner permission. Recorded gaps, strength categories and partial feature decompositions remain unchanged; this confirmation supplies no missing proof or exhaustive denominator."
+    },
+    "semantic_review_renewed": false,
+    "proof_strength_or_scope_changed": false
+  }
 }
