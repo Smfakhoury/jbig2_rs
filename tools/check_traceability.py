@@ -10,6 +10,7 @@ import json
 import re
 import subprocess
 import sys
+import tomllib
 from pathlib import Path, PurePosixPath
 from urllib.parse import parse_qs, quote, urlsplit
 
@@ -1080,6 +1081,35 @@ def enforce_completion(report, require_decomposition=False, require_complete=Fal
         raise ValueError("normative decomposition, semantic claims and approval remain incomplete")
 
 
+def check_v01_scope(root, ledger, report):
+    scope = ledger.get("release_scope")
+    if not isinstance(scope, dict) or scope.get("profile") != "0.1-partial-verus":
+        raise ValueError("0.1 scope requires the recorded owner partial-Verus release decision")
+    try:
+        approved_at = datetime.fromisoformat(scope["approved_at"])
+    except (TypeError, ValueError):
+        raise ValueError("0.1 release scope requires a timezone-qualified timestamp") from None
+    if approved_at.tzinfo is None:
+        raise ValueError("0.1 release scope requires a timezone-qualified timestamp")
+    version = tomllib.loads((root / "Cargo.toml").read_text())["package"]["version"]
+    if version != scope["crate_version"]:
+        raise ValueError("0.1 release scope does not match the candidate crate version")
+    if not (
+        report["verifier_report_checked"] and report["cargo_test_discovery_checked"]
+        and (report.get("owner_review_confirmation") or {}).get("normative_model_review_validated")
+    ):
+        raise ValueError("0.1 scope requires checked Verus, Cargo discovery and owner review evidence")
+    return {
+        "profile": scope["profile"], "crate_version": version,
+        "owner_decision": scope["decision_reference"], "deferred_work": scope["deferred_work"],
+        "requirement_coverage_policy_satisfied": True,
+        "exhaustive_requirement_coverage": report["decomposition_review_complete"],
+        "complete_functional_proof": report["semantic_claims_complete"],
+        "remaining_quality_and_release_checks_required": True,
+        "publication_performed": False,
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--ledger", type=Path, default=ROOT / "validation/traceability/requirements.json")
@@ -1091,6 +1121,10 @@ def main():
         help="Hash-check a named declared standard; repeat for multiple local documents.",
     )
     parser.add_argument("--require-complete", action="store_true")
+    parser.add_argument(
+        "--require-v01-scope", action="store_true",
+        help="Require owner-approved partial-Verus 0.1 scope, checked proof and test discovery; not full coverage.",
+    )
     parser.add_argument(
         "--require-reviewed-decomposition", action="store_true",
         help="Require reviewed requirement enumeration without treating recorded semantic gaps as closed.",
@@ -1134,7 +1168,8 @@ def main():
             or arguments.audit_packet.resolve() in output_paths
         ):
             parser.error("create audit packets separately from reports under target/")
-    if (arguments.require_complete or arguments.require_reviewed_decomposition) and (
+    if (arguments.require_complete or arguments.require_reviewed_decomposition
+        or arguments.require_v01_scope) and (
         not arguments.verus_json or not arguments.discover_tests
     ):
         parser.error("completion gates need Verus evidence and Cargo test discovery")
@@ -1149,6 +1184,8 @@ def main():
         discovered = discover_tests(ROOT, ledger) if arguments.discover_tests else None
         report = check(ledger, ROOT, set(verifier["func-details"]) if verifier else None, discovered)
         report["model_audit_inventory"] = audit_inventory(ROOT, ledger)
+        if arguments.require_v01_scope:
+            report["scoped_release"] = check_v01_scope(ROOT, ledger, report)
         if arguments.audit_packet or arguments.check_audit_packet:
             ledger_path = arguments.ledger.resolve().relative_to(ROOT.resolve()).as_posix()
             if arguments.check_audit_packet:
@@ -1277,6 +1314,8 @@ def main():
         )}
         if "source_review_disposition" in report:
             summary["source_review_disposition"] = report["source_review_disposition"]
+        if "scoped_release" in report:
+            summary["scoped_release"] = report["scoped_release"]
         print(json.dumps(summary, indent=2))
         enforce_completion(
             report, arguments.require_reviewed_decomposition, arguments.require_complete,

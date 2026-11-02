@@ -8,6 +8,19 @@ automatically complete P07–P12.
 
 ## Publication identity and closeout checklist
 
+### Owner-approved 0.1 release scope
+
+On 2026-11-02 the owner approved `0.1.0` publication with partial Verus
+requirement/functional coverage and deferred exhaustive coverage to
+[future main work](https://github.com/microsoft/jbig2_rs/issues/135).
+P04/P05's incomplete exhaustive-proof milestones below are therefore future
+targets, not blockers to this explicitly limited 0.1 release.
+No gaps or proof-strength labels are relabeled complete. Existing exact-source
+proofs, semantic/native controls, safety/resource guards, coverage floors,
+ordinary quality checks, package tests and actual publication dry runs remain
+mandatory. The source-bound `--require-v01-scope` gate records this bounded
+decision without making the stronger full-verification gate pass.
+
 The requested public Cargo package is **`jbig2-decoder`** and its Rust import is
 **`jbig2_decoder`**. The rename is complete in merged
 [PR #113](https://github.com/microsoft/jbig2_rs/pull/113), not an outstanding
@@ -17,11 +30,12 @@ Those names and historical evidence must not be renamed merely to match the
 public package.
 
 This status is qualified to accepted main
-`9bd0ad34c70990c0439a25ff41095e5bebb03696` after
-[PR #133](https://github.com/microsoft/jbig2_rs/pull/133).
-Its 30 exact-head checks and raw-artifact acceptance passed; trusted official
-execution subsequently passed on the actual merged source. New changes still
-require their own current-head acceptance.
+`98d55978b7f425ba83e79034887de7e9afc5f1a6` after
+[PR #134](https://github.com/microsoft/jbig2_rs/pull/134).
+Its 30 exact-head checks, raw-artifact acceptance and six actual publication
+dry runs passed. Earlier trusted official execution passed on the #133 source;
+its private-only guard remains intact after the repository became public.
+New changes still require their own current-head acceptance.
 An older checkout or saved editor snapshot can still show `jbig2_rs`; it is
 not the release candidate. Start the final rehearsal from current accepted
 source rather than overwriting an older working branch.
@@ -37,7 +51,7 @@ source rather than overwriting an older working branch.
   reviewed project-source and selected-requirement snapshot. This is not a
   request for another generic authorization or an independently signed
   certificate; author evidence labels and actual gaps remain separate.
-- [ ] Complete exhaustive requirement enumeration and the recorded missing
+- [ ] Future work after 0.1: complete exhaustive requirement enumeration and the recorded missing
   functional guarantees; the 266 selected records are not an exhaustive
   denominator. Close required table/dictionary/stream proof gaps. P04/P05.
 - [x] Record the owner's engineering disposition of the seven official
@@ -476,7 +490,7 @@ Documentation cleanup alone is not full P11 acceptance.
 **Acceptance:** reproducible rehearsal, zero unresolved required gates and no
 unsupported full-conformance/complete-functional-proof claim.
 
-## Completion rule
+## Full-verification completion rule
 
 P03, P04 and P06 can progress after their prerequisites; P05 depends on actual
 contract review, not verified-function totals. P07 follows normative review;
@@ -484,3 +498,5 @@ P08/P09 build on coverage, P10 integrates evidence, P11 finalizes consumers and
 P12 rehearses. License/asset scope, supported claims, coverage policy and stable
 performance thresholds remain owner decisions where not already recorded.
 No gate or document grants permission to publish.
+This full-verification completion rule remains the future target; the explicit
+owner-approved 0.1 scope above defers its exhaustive-coverage prerequisites.

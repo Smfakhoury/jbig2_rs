@@ -1,5 +1,19 @@
 {
   "schema_version": 1,
+  "release_scope": {
+    "profile": "0.1-partial-verus",
+    "crate_version": "0.1.0",
+    "authority": "repository_owner_release_scope",
+    "approved_at": "2026-11-02T13:30:06.275+00:00",
+    "instruction": "From verus requirement coverage, I think we do not need complete coverage to publish a 0.1 crate vbersion. We can publish and defere remaining coverage to future work in main",
+    "decision_reference": "https://github.com/microsoft/jbig2_rs/issues/125#issuecomment-6578451205",
+    "deferred_work": "https://github.com/microsoft/jbig2_rs/issues/135",
+    "exhaustive_requirement_coverage_required": false,
+    "complete_functional_proof_required": false,
+    "existing_proof_and_quality_gates_required": true,
+    "full_spec_conformance_claim": false,
+    "scope": "Initial 0.1 bi-level decoder release with explicitly partial Verus requirement and functional coverage. Deferred proof gaps remain recorded for future main work. Exact-source accounting, all existing proofs/contrasts/native controls, runtime/resource/safety checks, coverage floors, package tests and actual no-upload publication rehearsals remain mandatory. No protected-asset rights, actual upload credentials or full-verification certificate are inferred."
+  },
   "owner_review_confirmation": {
     "authority": "repository_owner_confirmation",
     "confirmed_at": "2026-11-02T09:48:42.675+00:00",

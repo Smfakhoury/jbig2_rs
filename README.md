@@ -2,8 +2,14 @@
 
 `jbig2-decoder` is a strict, dependency-free Rust JBIG2 decoder under active
 development. **It is not yet suitable for untrusted production documents.**
-The repository remains private; the crate is unpublished, version `0.0.1`,
-with `publish = false`.
+The repository is public. The `0.1.0` candidate is unpublished, with
+`publish = false` until the final upload step.
+
+Version 0.1 ships with **partial Verus coverage**, not a complete formal proof
+of JBIG2 conformance. Existing exact-source proofs and quality checks remain
+mandatory; exhaustive requirement and functional-proof coverage is tracked as
+[future work](https://github.com/microsoft/jbig2_rs/issues/135). Missing proofs
+are disclosed rather than marked complete.
 
 The approved first milestone is a broad **bi-level decoder**, not an encoder.
 Colour is unsupported and encoder work is deferred. Implemented features are

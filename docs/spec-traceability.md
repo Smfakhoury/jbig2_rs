@@ -7,6 +7,13 @@ selected denominator is not exhaustive and no feature has an approved complete
 normative decomposition. See [publication readiness](publication-readiness.md)
 for revision-qualified counts and accepted runs.
 
+For the owner-approved `0.1.0` release, exhaustive enumeration and complete
+functional proof coverage are deferred to
+[future work](https://github.com/microsoft/jbig2_rs/issues/135).
+Use `--require-v01-scope` with a real verifier report and Cargo discovery to
+check the scoped policy. This does not change any proof strength/gap label or
+make `--require-reviewed-decomposition --require-complete` pass.
+
 ## Authorities and scope
 
 - [`config/support-matrix.json`](../config/support-matrix.json) defines required,

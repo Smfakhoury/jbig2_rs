@@ -116,6 +116,35 @@
       "required": ["review_policy", "standards", "source_consultations", "features", "definitions", "bindings", "requirements"],
       "properties": {
         "review_policy": {"$ref": "#/$defs/nonempty"},
+        "release_scope": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "profile", "crate_version", "authority", "approved_at", "instruction",
+            "decision_reference", "deferred_work", "exhaustive_requirement_coverage_required",
+            "complete_functional_proof_required", "existing_proof_and_quality_gates_required",
+            "full_spec_conformance_claim", "scope"
+          ],
+          "properties": {
+            "profile": {"const": "0.1-partial-verus"},
+            "crate_version": {"const": "0.1.0"},
+            "authority": {"const": "repository_owner_release_scope"},
+            "approved_at": {"$ref": "#/$defs/nonempty"},
+            "instruction": {"$ref": "#/$defs/nonempty"},
+            "decision_reference": {
+              "type": "string",
+              "pattern": "^https://github\\.com/microsoft/jbig2_rs/issues/125#issuecomment-[0-9]+$"
+            },
+            "deferred_work": {
+              "type": "string",
+              "pattern": "^https://github\\.com/microsoft/jbig2_rs/issues/[0-9]+$"
+            },
+            "exhaustive_requirement_coverage_required": {"const": false},
+            "complete_functional_proof_required": {"const": false},
+            "existing_proof_and_quality_gates_required": {"const": true},
+            "full_spec_conformance_claim": {"const": false},
+            "scope": {"$ref": "#/$defs/nonempty"}
+          }
+        },
         "owner_review_confirmation": {
           "type": "object", "additionalProperties": false,
           "required": [

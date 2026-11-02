@@ -258,6 +258,7 @@ def check_verus_sharding(document):
         "tools/check_traceability.py": [
             "python", "tools/check_traceability.py",
             "--verus-json", "target/verification/verus-production.json",
+            "--discover-tests", "--require-v01-scope",
             "--output", "target/traceability/verifier-report.json",
         ],
     }

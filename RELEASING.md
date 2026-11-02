@@ -1,12 +1,19 @@
-# Release requirements
+# Release requirements for 0.1
 
-**Publication is disabled.** The repository remains private; Cargo is
-`publish = false`, version `0.0.1`. Owner-reported CELA project publication
+**The candidate is not yet uploaded.** The repository is public; Cargo is
+`publish = false`, version `0.1.0`. Owner-reported CELA project publication
 approval is recorded, but crate publication, official-asset/oracle redistribution
 and visibility changes are separate decisions. No green workflow or document
 authorizes them.
 
-A release requires:
+The owner approved an initial **0.1 release with partial Verus coverage** on
+2026-11-02. Exhaustive requirement enumeration and complete functional proofs
+are deferred to [future main work](https://github.com/microsoft/jbig2_rs/issues/135).
+The [source-bound release scope](validation/traceability/requirements.json)
+records the decision and deliberately leaves actual proof gaps unchanged.
+No full-spec, full Annex F profile 1 or complete-formal-verification claim is made.
+
+The 0.1 release still requires:
 
 1. Owner approval of the complete
    [support matrix](config/support-matrix.json), resource limits and actual
@@ -15,7 +22,9 @@ A release requires:
 2. Legal approval for crate publication and every redistributed asset, with
    correct license/notices and [provenance](validation/source-provenance.json).
 3. Zero incomplete production functions, source-bound reviewed dispositions
-   for every non-direct status, and closure of required runtime/proof gaps.
+   for every non-direct status. Existing exact-source proofs and quality gates
+   must continue to pass; missing end-to-end functional proofs are disclosed
+   deferred coverage, not newly proved results.
 4. Pinned Verus verification **and compilation** of the same `src/lib.rs` built
    by Cargo, complete production accounting and all semantic contrast groups.
 5. Passing Cargo, strict formatting/Clippy/rustdoc, tests/doc-tests, package,
@@ -67,7 +76,22 @@ Dry-run success establishes Cargo packaging/publish-command viability, not
 registry ownership, a name reservation, completeness of semantic proofs or
 completion of the remaining release gates.
 
-The release-level proof audit must use **both** completeness and exactness:
+For the scoped requirement-coverage decision, use the actual verifier report
+and Cargo test discovery:
+
+```sh
+python3 -B tools/check_traceability.py \
+  --verus-json target/verification/verus-production.json --discover-tests \
+  --require-v01-scope --output target/release/v01-scope.json
+```
+
+This gate accepts only the dated owner decision for version `0.1.0`, current
+owner-review evidence and checked proof/test identities. It does not declare
+the other release checks complete or enable upload. The stronger
+`--require-reviewed-decomposition --require-complete` gate remains unchanged
+for future exhaustive verification and is expected to remain nonzero for 0.1.
+
+The production-inventory proof audit must still use **both** completeness and exactness:
 
 ```sh
 python3 -B tools/audit_production_coverage.py \
@@ -84,6 +108,12 @@ allocator behavior or removal of the reviewed standard/callback limitations.
 The exact standard-interface review boundary and protected encoded-family
 fixture holds remain in force; no assumptions, strengthened std/equality
 specifications, termination waivers, pin changes or lower gates may bypass them.
+
+Existing deterministic work/allocation controls and coverage floors remain
+mandatory. Hosted latency/RSS observations remain informational, not a 0.1
+performance SLA or formal total-memory bound. No private-only official vector
+workflow may be dispatched on the public repository; approved local execution
+and its exact source/input identities must remain explicit.
 
 See [publication readiness](docs/publication-readiness.md) for the qualified
 snapshot, [P01–P12](docs/open-source-readiness-plan.md) for complete acceptance
