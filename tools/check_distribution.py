@@ -146,19 +146,31 @@ def check_publish_dry_run(cargo: list[str], extracted: Path, environment: dict) 
     manifest = extracted / "Cargo.toml"
     original = manifest.read_bytes()
     before = tomllib.loads(original.decode("utf-8"))
-    if before["package"].get("publish") is not False:
-        raise ValueError("publication rehearsal requires the disabled original manifest")
-    changed, count = re.subn(
-        rb"(?m)^publish = false\r?$", b'publish = ["crates-io"]', original,
-    )
-    expected = tomllib.loads(original.decode("utf-8"))
-    expected["package"]["publish"] = ["crates-io"]
-    if count != 1 or tomllib.loads(changed.decode("utf-8")) != expected:
-        raise ValueError("publication rehearsal must change only the package publish setting")
+    originals = {manifest: original}
+    original_manifest = extracted / "Cargo.toml.orig"
+    if original_manifest.is_file():
+        originals[original_manifest] = original_manifest.read_bytes()
+    changes = {}
+    for path, contents in originals.items():
+        intended = tomllib.loads(contents.decode("utf-8"))
+        if intended["package"].get("publish") is not False:
+            raise ValueError("publication rehearsal requires the disabled original manifests")
+        replacement, count = re.subn(
+            rb"(?m)^publish = false\r?$", b'publish = ["crates-io"]', contents,
+        )
+        intended["package"]["publish"] = ["crates-io"]
+        if count != 1 or tomllib.loads(replacement.decode("utf-8")) != intended:
+            raise ValueError("publication rehearsal must change only the package publish setting")
+        changes[path] = replacement
+    expected = tomllib.loads(changes[manifest].decode("utf-8"))
     command = cargo + ["publish", "--dry-run", "--locked", "--registry", "crates-io"]
-    publication_environment = {**environment, "CARGO_NET_OFFLINE": "false"}
+    publication_environment = {
+        **environment, "CARGO_NET_OFFLINE": "false",
+        "CARGO_TARGET_DIR": str(Path(environment["CARGO_TARGET_DIR"]) / "publish-dry-run"),
+    }
     try:
-        manifest.write_bytes(changed)
+        for path, replacement in changes.items():
+            path.write_bytes(replacement)
         process = subprocess.run(
             command, cwd=extracted, env=publication_environment,
             text=True, capture_output=True, check=False, timeout=300,
@@ -170,7 +182,20 @@ def check_publish_dry_run(cargo: list[str], extracted: Path, environment: dict) 
         if "aborting upload due to dry run" not in output:
             raise ValueError("Cargo did not confirm the dry-run upload was aborted")
         package_root = f"{before['package']['name']}-{before['package']['version']}"
-        archive = Path(environment["CARGO_TARGET_DIR"]) / "package" / f"{package_root}.crate"
+        package_directory = Path(publication_environment["CARGO_TARGET_DIR"]) / "package"
+        archives = [
+            path for path in (
+                package_directory / f"{package_root}.crate",
+                package_directory / "tmp-crate" / f"{package_root}.crate",
+                package_directory / "tmp-registry" / f"{package_root}.crate",
+            ) if path.is_file()
+        ]
+        if not archives:
+            raise ValueError(f"Cargo did not produce the dry-run archive: {output}")
+        hashes = {hashlib.sha256(path.read_bytes()).hexdigest() for path in archives}
+        if len(hashes) != 1:
+            raise ValueError("Cargo produced conflicting dry-run archives")
+        archive = archives[0]
         with tempfile.TemporaryDirectory(prefix="publish-verification-") as directory:
             target = Path(directory)
             entries = extract_archive(archive, target, package_root)
@@ -179,21 +204,32 @@ def check_publish_dry_run(cargo: list[str], extracted: Path, environment: dict) 
                     raise ValueError(f"dry-run archive source differs: {path}")
             staged = tomllib.loads((target / package_root / "Cargo.toml").read_text())
             if staged != expected:
-                raise ValueError("dry-run archive manifest differs from the intended publish-only change")
+                differences = {
+                    key: {"expected": expected.get(key), "actual": staged.get(key)}
+                    for key in expected.keys() | staged.keys() if expected.get(key) != staged.get(key)
+                }
+                raise ValueError(
+                    "dry-run archive manifest differs from the intended publish-only change: "
+                    + json.dumps(differences, sort_keys=True)
+                )
         return {
             "status": "passed", "command": command, "exit_code": process.returncode,
             "registry": "crates-io", "network": "registry_metadata", "uploaded": False,
             "manifest_change": 'package.publish: false -> ["crates-io"]; temporary extraction only',
+            "temporary_manifests": [path.name for path in originals],
             "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+            "archive_locations": [path.relative_to(package_directory).as_posix() for path in archives],
             "package_files": len(entries),
             "source_bytes_match_distribution": True,
+            "separate_publication_target": True,
             "manifest_restored": True,
             "source_manifest_sha256": hashlib.sha256(original).hexdigest(),
-            "rehearsal_manifest_sha256": hashlib.sha256(changed).hexdigest(),
+            "rehearsal_manifest_sha256": hashlib.sha256(changes[manifest]).hexdigest(),
             "cargo_output": output,
         }
     finally:
-        manifest.write_bytes(original)
+        for path, contents in originals.items():
+            path.write_bytes(contents)
 
 
 def check_distribution(toolchain: str, publish_dry_run: bool = False) -> dict:

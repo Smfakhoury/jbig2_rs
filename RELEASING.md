@@ -54,7 +54,9 @@ python3 -B tools/check_distribution.py --toolchain 1.88.0 \
 This tests the real archive and downstream consumer, then executes the selected
 Cargo's actual `publish --dry-run --locked --registry crates-io` in a temporary
 extraction outside the checkout. Only that extraction's publish setting is
-temporarily enabled; it is unconditionally restored. Cargo verifies/compiles
+temporarily enabled in both Cargo manifests; both are unconditionally restored.
+A separate Cargo target directory isolates the publication artifacts.
+Cargo verifies/compiles
 the repackaged crate and must confirm that no upload occurred. Registry metadata
 access is allowed only for this phase, with no inherited registry credentials.
 The source checkout remains `publish = false`; no visibility or version change

@@ -56,9 +56,12 @@ python -B tools/check_distribution.py --toolchain 1.88.0 \
 The repository manifest remains `publish = false`; running `cargo publish
 --dry-run` directly in the checkout therefore correctly fails. The optional
 rehearsal instead changes only `package.publish` to `["crates-io"]` in the
-temporary extracted manifest, executes the selected Cargo's real
+temporary extracted manifests (`Cargo.toml` and Cargo's `Cargo.toml.orig`),
+executes the selected Cargo's real
 `publish --dry-run --locked --registry crates-io`, and restores the manifest
-even on failure. It never uses `--no-verify` or an actual upload command.
+even on failure. The publish phase uses a separate Cargo target directory so
+the ordinary distribution archive cannot be mistaken for its output.
+It never uses `--no-verify` or an actual upload command.
 Inherited registry tokens, registry overrides and credential providers are
 removed; the temporary Cargo home has no stored credentials.
 
@@ -71,6 +74,10 @@ against the tested distribution and only the intended manifest setting changed.
 The report separates the original archive hash/file count from the dry-run
 archive hash/file count. Cargo can omit VCS metadata when repackaging the
 extraction outside Git, so the two archives need not be byte-identical.
+Both Cargo's classic archive path and its newer temporary-crate/registry paths
+are checked explicitly. If Cargo emits multiple archive copies, their bytes
+must agree; a missing or conflicting archive is an error, not a fallback to
+the earlier distribution archive.
 Source, library name, license, version, runtime dependencies and proof erasure
 remain unchanged. The temporary builds and archives are removed on exit.
 

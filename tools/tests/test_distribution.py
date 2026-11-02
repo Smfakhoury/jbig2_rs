@@ -131,6 +131,9 @@ class DistributionTests(unittest.TestCase):
             self.assertEqual(keywords["cwd"], self.directory)
             self.assertEqual(keywords["timeout"], 300)
             self.assertEqual(keywords["env"]["CARGO_NET_OFFLINE"], "false")
+            self.assertEqual(
+                Path(keywords["env"]["CARGO_TARGET_DIR"]), self.directory / "target/publish-dry-run",
+            )
             self.assertIn(b'publish = ["crates-io"]', manifest.read_bytes())
             with tarfile.open(archive, "w:gz") as packed:
                 for path in sorted(REQUIRED):
@@ -150,7 +153,7 @@ class DistributionTests(unittest.TestCase):
         manifest = self.publish_fixture()
         original = manifest.read_bytes()
         environment = isolated_environment(self.directory)
-        archive = Path(environment["CARGO_TARGET_DIR"]) / "package" / f"{self.package_root}.crate"
+        archive = Path(environment["CARGO_TARGET_DIR"]) / "publish-dry-run/package" / f"{self.package_root}.crate"
         archive.parent.mkdir(parents=True)
         with patch(
             "check_distribution.subprocess.run",
@@ -164,11 +167,72 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(manifest.read_bytes(), original)
         self.assertEqual(environment["CARGO_NET_OFFLINE"], "true")
 
+    def test_publication_rehearsal_updates_and_restores_both_cargo_manifests(self):
+        manifest = self.publish_fixture()
+        original = manifest.read_bytes()
+        original_manifest = self.directory / "Cargo.toml.orig"
+        original_manifest.write_bytes(original + b"\n# original manifest\n")
+        environment = isolated_environment(self.directory)
+        archive = Path(environment["CARGO_TARGET_DIR"]) / "publish-dry-run/package" / f"{self.package_root}.crate"
+        archive.parent.mkdir(parents=True)
+        publish = self.fake_publish(manifest, archive)
+
+        def repackage(command, **keywords):
+            self.assertIn(b'publish = ["crates-io"]', original_manifest.read_bytes())
+            return publish(command, **keywords)
+
+        with patch("check_distribution.subprocess.run", side_effect=repackage):
+            result = check_publish_dry_run(["cargo", "+1.88.0"], self.directory, environment)
+        self.assertEqual(result["temporary_manifests"], ["Cargo.toml", "Cargo.toml.orig"])
+        self.assertEqual(manifest.read_bytes(), original)
+        self.assertEqual(original_manifest.read_bytes(), original + b"\n# original manifest\n")
+        with (
+            patch("check_distribution.subprocess.run", side_effect=subprocess.TimeoutExpired([], 300)),
+            self.assertRaises(subprocess.TimeoutExpired),
+        ):
+            check_publish_dry_run(["cargo"], self.directory, environment)
+        self.assertEqual(manifest.read_bytes(), original)
+        self.assertEqual(original_manifest.read_bytes(), original + b"\n# original manifest\n")
+
+    def test_publication_rehearsal_checks_newer_cargo_registry_archive_layout(self):
+        manifest = self.publish_fixture()
+        environment = isolated_environment(self.directory)
+        package = Path(environment["CARGO_TARGET_DIR"]) / "publish-dry-run/package"
+        crate = package / "tmp-crate" / f"{self.package_root}.crate"
+        registry = package / "tmp-registry" / crate.name
+        crate.parent.mkdir(parents=True)
+        registry.parent.mkdir()
+        publish = self.fake_publish(manifest, crate)
+
+        def repackage(command, **keywords):
+            result = publish(command, **keywords)
+            registry.write_bytes(crate.read_bytes())
+            return result
+
+        with patch("check_distribution.subprocess.run", side_effect=repackage):
+            result = check_publish_dry_run(["cargo", "+1.88.0"], self.directory, environment)
+        self.assertEqual(result["archive_locations"], [
+            f"tmp-crate/{self.package_root}.crate", f"tmp-registry/{self.package_root}.crate",
+        ])
+
+        def conflicting(command, **keywords):
+            result = repackage(command, **keywords)
+            registry.write_bytes(b"not the verified archive")
+            return result
+
+        original = manifest.read_bytes()
+        with (
+            patch("check_distribution.subprocess.run", side_effect=conflicting),
+            self.assertRaisesRegex(ValueError, "conflicting"),
+        ):
+            check_publish_dry_run(["cargo", "+1.88.0"], self.directory, environment)
+        self.assertEqual(manifest.read_bytes(), original)
+
     def test_publication_rehearsal_rejects_repackaged_source_and_manifest_changes(self):
         manifest = self.publish_fixture()
         original = manifest.read_bytes()
         environment = isolated_environment(self.directory)
-        archive = Path(environment["CARGO_TARGET_DIR"]) / "package" / f"{self.package_root}.crate"
+        archive = Path(environment["CARGO_TARGET_DIR"]) / "publish-dry-run/package" / f"{self.package_root}.crate"
         archive.parent.mkdir(parents=True)
         for corruption in ("source", "manifest"):
             with (
