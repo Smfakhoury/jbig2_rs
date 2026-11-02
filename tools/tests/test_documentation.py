@@ -62,6 +62,11 @@ class DocumentationTests(unittest.TestCase):
         limits_docs = (ROOT / "src/limits.rs").read_text()
         self.assertNotIn("approved Phase 1", limits_docs)
 
+    def test_generated_traceability_prose_does_not_invent_pending_review(self):
+        source = (ROOT / "tools/check_traceability.py").read_text()
+        self.assertNotIn("owner review pending", source)
+        self.assertNotIn("or owner approval", source)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1267,7 +1267,7 @@ def main():
             else:
                 table.append("  Direct official PDF; no package identity is recorded.")
         table += [
-            "", "Acquisition identity and declared consultation scope are checked, not independent proof of translation or owner approval.",
+            "", "Reference identities and declared scope are checked, not independent proof of standard correspondence.",
             "Project-profile policy rows use their cited standard only as context; selected feature/API policy hashes are checked separately and do not increase the normative-rule count.",
         ]
         table += [
@@ -1298,7 +1298,7 @@ def main():
                 + (", ".join(link(item, item["name"]) for item in row["proof_macros"]) or "runtime declaration/contract only"),
                 "Tests: " + ", ".join(link(item, f"{item['target']}::{item['name']}") for item in row["tests"]),
                 "Assumptions: " + "; ".join(row["assumptions"]),
-                "Open gaps: " + ("; ".join(row["gaps"]) or "none within this recorded property scope; owner review pending"),
+                "Open gaps: " + ("; ".join(row["gaps"]) or "none within this recorded property scope"),
             ]
             if row["obligation_kind"] == "project_profile_policy":
                 table.append(
