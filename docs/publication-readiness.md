@@ -5,6 +5,11 @@
 Its Rust import is `jbig2_decoder`, its runtime MSRV is Rust 1.88.0, and it has
 no normal dependencies.
 
+Versioned archives and validation receipts are available in
+[GitHub releases](https://github.com/microsoft/jbig2_rs/releases).
+The table below records the initial 0.1.0 release; later patches have their own
+source revisions and archive checksums.
+
 This is an early bi-level decoder release with **partial Verus coverage**,
 not full JBIG2 or Annex F profile 1 conformance. It is not yet suitable for
 untrusted production documents. Colour is unsupported and encoding is deferred.
