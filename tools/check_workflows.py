@@ -439,6 +439,20 @@ def check_workflow(document, name):
         check_verus_sharding(document)
     if name in {"ci.yml", "ci.yaml"}:
         check_native_mutation_lane(document)
+        distribution = jobs.get("distribution", {})
+        rehearsals = [
+            step for step in distribution.get("steps", [])
+            if step.get("name") == "Test isolated proof-free distribution"
+        ]
+        if (
+            len(rehearsals) != 1
+            or "if" in rehearsals[0]
+            or shlex.split(rehearsals[0].get("run", "")) != shlex.split(
+                "python -B tools/check_distribution.py --toolchain ${{ matrix.toolchain }}"
+                " --publish-dry-run --output target/distribution/report.json"
+            )
+        ):
+            raise ValueError("distribution checks require the actual isolated publication dry run")
     if name in {"conformance.yml", "conformance.yaml"}:
         if document["on"] != {"workflow_dispatch": ""} or set(jobs) != {"official"}:
             raise ValueError("official conformance requires manual trusted-main execution only")

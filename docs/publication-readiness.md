@@ -11,8 +11,37 @@ Accepted main after [PR #132](https://github.com/microsoft/jbig2_rs/pull/132) is
 independent raw-artifact reconstruction passed: 1,287 obligations / zero errors,
 49 semantic groups / 357 contrasts, 174 detected native mutations, six actual
 153-file distributions and the unchanged source/timing/resource/coverage guards.
-The owner disposition and trusted official execution below are follow-up work;
-they require their own current-head acceptance.
+The owner disposition and trusted official execution below were subsequently
+normally integrated in [PR #133](https://github.com/microsoft/jbig2_rs/pull/133),
+accepted main `9bd0ad34c70990c0439a25ff41095e5bebb03696`. All 30 checks and fresh
+raw-artifact acceptance passed on its exact head. Actual merged-main trusted
+conformance [run 41420809748](https://github.com/microsoft/jbig2_rs/actions/runs/41420809748)
+passed with metadata-only output and an exact source receipt.
+
+## Owner review and remaining engineering
+
+On 2026-11-02 the owner explicitly confirmed that normative/model review was
+validated. The [ledger](../validation/traceability/requirements.json) records
+that confirmation with exact project-source and selected-requirement hashes.
+Its per-record provisional labels describe author technical evidence, not an
+absent owner authorization. Changing the reviewed source or requirements
+invalidates the confirmation's current-snapshot match; it is not an unlimited
+approval of future assertions.
+
+The remaining machine failures are concrete engineering scope, not a request
+to repeat that approval: 29 feature worklists remain partial, and 257 of the
+266 selected records contain explicit gaps. Of the selected contracts, 137 are
+functional, 116 state-preservation and 13 safety-only. These are not decoder
+bug counts or a complete standards denominator. Owner review cannot itself
+supply missing pixel/caller/lifecycle guarantees. The complete-readiness gate
+therefore remains nonzero, while the owner confirmation is reported separately.
+
+An actual Cargo publication rehearsal is available through
+`tools/check_distribution.py --publish-dry-run` and runs in all six existing
+distribution CI jobs. It uses a temporary extraction, confirms an aborted
+upload, compares runtime source bytes, and never enables repository publishing.
+See [distribution](distribution.md). A successful rehearsal does not close
+the separate semantic and final release gates.
 
 ## Owner conformance disposition, 2026-11-02
 

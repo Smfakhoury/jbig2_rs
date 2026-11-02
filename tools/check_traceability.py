@@ -81,6 +81,28 @@ def classification_evidence(root, ledger):
     }
 
 
+def check_owner_review_confirmation(root, ledger):
+    confirmation = ledger.get("owner_review_confirmation")
+    if confirmation is None:
+        return None
+    try:
+        confirmed_at = datetime.fromisoformat(confirmation["confirmed_at"])
+    except (TypeError, ValueError):
+        raise ValueError("owner review confirmation requires a timezone-qualified timestamp") from None
+    if confirmed_at.tzinfo is None:
+        raise ValueError("owner review confirmation requires a timezone-qualified timestamp")
+    sources = classification_evidence(root, ledger)
+    requirements_hash = hashlib.sha256(json.dumps(
+        ledger["requirements"], sort_keys=True, separators=(",", ":"),
+    ).encode("utf-8")).hexdigest()
+    if (
+        confirmation["project_source_sha256"] != sources["project_source_sha256"]
+        or confirmation["requirements_sha256"] != requirements_hash
+    ):
+        raise ValueError("owner review confirmation does not match the current source/requirement snapshot")
+    return copy.deepcopy(confirmation)
+
+
 def audit_declarations(root, ledger):
     """Reuse masked production source and module resolution for exact membership."""
     registered = {}
@@ -1006,6 +1028,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
         entry["review"] == "approved" and not entry["gaps"]
         and entry["strength"] == "functional_contract" for entry in ledger["requirements"]
     )
+    owner_confirmation = check_owner_review_confirmation(root, ledger)
     return {
         "schema_version": 1,
         "status": "references_valid_scope_complete" if semantic_complete else "references_valid_scope_incomplete",
@@ -1014,6 +1037,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
         "decomposition_review_complete": decomposition_complete,
         "semantic_claims_complete": semantic_complete,
         "scope_completeness_is_review_declared_not_proved": True,
+        "owner_review_confirmation": owner_confirmation,
         "requirements": rows, "requirement_count": len(rows),
         "feature_count": len(features),
         "feature_decomposition": feature_decomposition,

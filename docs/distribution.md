@@ -46,6 +46,47 @@ python -B tools/check_distribution.py --toolchain stable \
   --output target/distribution/stable.json
 ```
 
+For an actual Cargo publication rehearsal, add `--publish-dry-run`:
+
+```text
+python -B tools/check_distribution.py --toolchain 1.88.0 \
+  --publish-dry-run --output target/distribution/publish-msrv.json
+```
+
+The repository manifest remains `publish = false`; running `cargo publish
+--dry-run` directly in the checkout therefore correctly fails. The optional
+rehearsal instead changes only `package.publish` to `["crates-io"]` in the
+temporary extracted manifests (`Cargo.toml` and Cargo's `Cargo.toml.orig`),
+executes the selected Cargo's real
+`publish --dry-run --locked --registry crates-io`, and restores the manifest
+even on failure. The publish phase uses a separate Cargo target directory so
+the ordinary distribution archive cannot be mistaken for its output.
+It never uses `--no-verify` or an actual upload command.
+Inherited registry tokens, registry overrides and credential providers are
+removed; the temporary Cargo home has no stored credentials.
+
+Distribution tests and the consumer remain offline. Only the optional publish
+phase allows access to crates.io registry metadata, because a fresh Cargo home
+has no registry configuration. Cargo must exit successfully and explicitly
+confirm that the upload was aborted due to dry run. The resulting repackaged
+archive is audited again, with all runtime/document/license bytes checked
+against the tested distribution and only the intended manifest setting changed.
+The report separates the original archive hash/file count from the dry-run
+archive hash/file count. Cargo can omit VCS metadata when repackaging the
+extraction outside Git, so the two archives need not be byte-identical.
+Both Cargo's classic archive path and its newer temporary-crate/registry paths
+are checked explicitly. If Cargo emits multiple archive copies, their bytes
+must agree; a missing or conflicting archive is an error, not a fallback to
+the earlier distribution archive.
+Source, library name, license, version, runtime dependencies and proof erasure
+remain unchanged. The temporary builds and archives are removed on exit.
+
+All six existing platform/toolchain distribution CI jobs run the actual
+rehearsal. A network failure, Cargo failure, missing dry-run confirmation,
+changed source/manifest or invalid archive fails the job. A successful dry run
+does not reserve the crate name, establish registry ownership or grant release
+approval; repository visibility and actual publication remain unchanged.
+
 This script uses only Python's standard library. The broader proof-audit test
 suite separately requires `tools/requirements.txt`.
 
@@ -71,7 +112,7 @@ The check:
 9. Verifies that importing `runtime_access` from that normal consumer fails
    with the expected unresolved-import diagnostic.
 
-All package/consumer Cargo operations are offline and use locked dependencies.
+All ordinary package/consumer Cargo operations are offline and use locked dependencies.
 The consumer lockfile is first generated offline for its single local path
 dependency. Temporary builds and extracted assets are removed on completion.
 Failures exit nonzero and, when `--output` is supplied, produce a failure report
