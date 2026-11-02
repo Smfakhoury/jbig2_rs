@@ -71,6 +71,58 @@ class OwnerReviewConfirmationTests(unittest.TestCase):
         del document["owner_review_confirmation"]
         self.assertIsNone(checker.check_owner_review_confirmation(self.root, document))
 
+    def scoped_report(self):
+        return {
+            "verifier_report_checked": True, "cargo_test_discovery_checked": True,
+            "owner_review_confirmation": self.ledger["owner_review_confirmation"],
+            "decomposition_review_complete": False, "semantic_claims_complete": False,
+        }
+
+    def test_v01_scope_accepts_deferred_coverage_without_passing_stronger_gates(self):
+        report = self.scoped_report()
+        scoped = checker.check_v01_scope(self.root, self.ledger, report)
+        self.assertEqual(scoped["crate_version"], "0.1.0")
+        self.assertTrue(scoped["requirement_coverage_policy_satisfied"])
+        self.assertFalse(scoped["exhaustive_requirement_coverage"])
+        self.assertFalse(scoped["complete_functional_proof"])
+        self.assertFalse(scoped["publication_performed"])
+        self.assertTrue(scoped["remaining_quality_and_release_checks_required"])
+        for flags in ({"require_decomposition": True}, {"require_complete": True}):
+            with self.subTest(flags=flags), self.assertRaises(ValueError):
+                enforce_completion(report, **flags)
+
+    def test_v01_scope_still_requires_real_proof_discovery_owner_and_version(self):
+        for field in ("verifier_report_checked", "cargo_test_discovery_checked",
+                      "owner_review_confirmation"):
+            report = self.scoped_report()
+            report[field] = None
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, "evidence"):
+                checker.check_v01_scope(self.root, self.ledger, report)
+        document = copy.deepcopy(self.ledger)
+        del document["release_scope"]
+        with self.assertRaisesRegex(ValueError, "owner"):
+            checker.check_v01_scope(self.root, document, self.scoped_report())
+        with patch.object(checker.tomllib, "loads", return_value={"package": {"version": "0.2.0"}}):
+            with self.assertRaisesRegex(ValueError, "version"):
+                checker.check_v01_scope(self.root, self.ledger, self.scoped_report())
+
+    def test_v01_scope_cannot_disable_existing_gates_or_claim_full_conformance(self):
+        for field, value in (
+            ("existing_proof_and_quality_gates_required", False),
+            ("full_spec_conformance_claim", True),
+            ("complete_functional_proof_required", True),
+            ("exhaustive_requirement_coverage_required", True),
+            ("crate_version", "0.2.0"),
+        ):
+            document = copy.deepcopy(self.ledger)
+            document["release_scope"][field] = value
+            with self.subTest(field=field), self.assertRaises(ValidationError):
+                validate(document, "traceability")
+        document = copy.deepcopy(self.ledger)
+        document["release_scope"]["approved_at"] = "2026-11-02"
+        with self.assertRaisesRegex(ValueError, "timezone"):
+            checker.check_v01_scope(self.root, document, self.scoped_report())
+
 
 class SourceReviewDispositionTests(unittest.TestCase):
     def setUp(self):

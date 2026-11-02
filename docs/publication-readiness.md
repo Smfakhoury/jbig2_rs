@@ -6,6 +6,24 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
+## Scoped 0.1 candidate
+
+The owner approved releasing `0.1.0` with partial Verus coverage on
+2026-11-02, explicitly deferring exhaustive requirement enumeration and
+complete functional proofs to [future work](https://github.com/microsoft/jbig2_rs/issues/135).
+The [ledger release scope](../validation/traceability/requirements.json) records
+that decision; `--require-v01-scope` checks version, owner review, actual Verus
+evidence and Cargo test discovery. It does not claim exhaustive verification.
+All existing proof/semantic/native/runtime/safety/resource/coverage/package
+checks remain mandatory, including actual no-upload Cargo publication rehearsals.
+
+The later historical full-coverage gate failures are not missing owner
+permission and are no longer blockers to the limited 0.1 coverage policy.
+Their gaps remain visible for future work rather than being marked solved.
+The repository is public; the candidate remains `publish = false` until the
+separate final upload step. Private-only official-vector CI guards remain
+intact and must not be bypassed on this public repository.
+
 Accepted main after [PR #132](https://github.com/microsoft/jbig2_rs/pull/132) is
 `4d7e1e6bf5dce04c58544a8dec23b3bb12b7f278`. All 30 exact-head checks and
 independent raw-artifact reconstruction passed: 1,287 obligations / zero errors,

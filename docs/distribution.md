@@ -1,9 +1,11 @@
 # Ordinary Rust distribution without Verus
 
 The crate has no runtime dependencies, uses the MIT license, and declares Rust
-1.88.0 as its minimum supported Rust version (MSRV). Crates.io publication is
-still disabled while the [release gates](../RELEASING.md) and
-proof/conformance gaps are open. The accepted revision-qualified native reports
+1.88.0 as its minimum supported Rust version (MSRV). The `0.1.0` candidate keeps
+publication disabled until the final upload step. Its
+[release gates](../RELEASING.md) explicitly permit partial Verus coverage;
+remaining proof gaps are disclosed future work, not claimed complete.
+The accepted revision-qualified native reports
 are identified in [publication readiness](publication-readiness.md).
 
 ## What is packaged
