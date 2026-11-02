@@ -156,8 +156,12 @@ def validate_tag(root, tag, api=github):
     if not pr["merged"] or pr["merge_commit_sha"] != commit:
         raise ValueError("release PR integration identity changed")
     head = pr["head"]["sha"]
-    if not SHA.fullmatch(head) or git(root, "rev-parse", f"{head}^{{tree}}") != git(
-        root, "rev-parse", f"{commit}^{{tree}}",
+    if not SHA.fullmatch(head):
+        raise ValueError("invalid reviewed PR head identity")
+    head_commit = api(f"repos/{REPOSITORY}/git/commits/{head}")
+    if (
+        head_commit["sha"] != head
+        or head_commit["tree"]["sha"] != git(root, "rev-parse", f"{commit}^{{tree}}")
     ):
         raise ValueError("release tree differs from the reviewed PR head; update/retest the PR")
     return {

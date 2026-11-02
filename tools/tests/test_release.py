@@ -141,6 +141,8 @@ class ReleaseChecksTests(unittest.TestCase):
             "base": {"ref": "main", "repo": {"full_name": release.REPOSITORY}},
         }
         def api(endpoint):
+            if "/git/commits/" in endpoint:
+                return {"sha": HEAD, "tree": {"sha": "d" * 40}}
             return [pr] if "/pulls?" in endpoint else pr
         def git(root, *args):
             if args[0] == "show":
@@ -165,12 +167,54 @@ class ReleaseChecksTests(unittest.TestCase):
                     changed["merge_commit_sha"] = HEAD
                 with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                     release.validate_tag(Path("."), "v0.1.1", lambda endpoint: [changed])
-            with patch.object(release, "git", side_effect=[COMMIT, MANIFEST, HEAD, COMMIT]):
+            with patch.object(release, "git", side_effect=[COMMIT, MANIFEST, HEAD]):
                 with self.assertRaisesRegex(ValueError, "tree differs"):
                     release.validate_tag(Path("."), "v0.1.1", api)
             with patch.object(release.subprocess, "run", return_value=subprocess.CompletedProcess([], 1)):
                 with self.assertRaisesRegex(ValueError, "reachable"):
                     release.validate_tag(Path("."), "v0.1.1", api)
+
+    def test_squash_merge_works_without_the_original_head_in_a_fresh_clone(self):
+        with tempfile.TemporaryDirectory(prefix="jbig2-release-pr-") as temporary:
+            directory = Path(temporary)
+            source, clone = directory / "source", directory / "clone"
+            source.mkdir()
+            release.git(source, "init", "-b", "main")
+            release.git(source, "config", "user.name", "Release Test")
+            release.git(source, "config", "user.email", "release@example.invalid")
+            (source / "Cargo.toml").write_text(MANIFEST)
+            (source / "state.txt").write_text("base")
+            release.git(source, "add", ".")
+            trailer = "Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>"
+            release.git(source, "commit", "-m", "Base", "-m", trailer)
+            release.git(source, "checkout", "-b", "topic")
+            (source / "state.txt").write_text("reviewed")
+            release.git(source, "add", ".")
+            release.git(source, "commit", "-m", "Reviewed head", "-m", trailer)
+            head = release.git(source, "rev-parse", "HEAD")
+            tree = release.git(source, "rev-parse", "HEAD^{tree}")
+            release.git(source, "checkout", "main")
+            release.git(source, "merge", "--squash", "topic")
+            release.git(source, "commit", "-m", "Integrated release", "-m", trailer)
+            commit = release.git(source, "rev-parse", "HEAD")
+            release.git(source, "tag", "v0.1.1")
+            subprocess.run(
+                ["git", "clone", "--no-local", "--single-branch", "--branch", "main", str(source), str(clone)],
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+            absent = subprocess.run(
+                ["git", "-C", str(clone), "cat-file", "-e", head],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+            self.assertNotEqual(absent.returncode, 0)
+            pr = {"number": 1, "merged": True, "merged_at": "2026-11-02", "merge_commit_sha": commit,
+                  "head": {"sha": head}, "base": {"ref": "main", "repo": {"full_name": release.REPOSITORY}}}
+            def api(endpoint):
+                if "/git/commits/" in endpoint:
+                    return {"sha": head, "tree": {"sha": tree}}
+                return [pr] if "/pulls?" in endpoint else pr
+            with patch.object(release, "validate_checks", return_value={"checked": True}):
+                self.assertEqual(release.validate_tag(clone, "v0.1.1", api)["commit"], commit)
 
     def test_publication_target_version_and_msrv_are_not_relaxed(self):
         import tomllib
