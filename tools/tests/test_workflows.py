@@ -265,6 +265,24 @@ class WorkflowPolicyTests(unittest.TestCase):
         })
         check_updates(load_workflow((root / ".github/dependabot.yml").read_text()))
 
+    def test_distribution_lane_cannot_skip_the_actual_publication_dry_run(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/ci.yml").read_text())
+        check_workflow(actual, "ci.yml")
+        for mutation in ("omit", "skip", "replace"):
+            document = copy.deepcopy(actual)
+            step = next(
+                item for item in document["jobs"]["distribution"]["steps"]
+                if item.get("name") == "Test isolated proof-free distribution"
+            )
+            if mutation == "omit":
+                step["run"] = step["run"].replace("--publish-dry-run", "")
+            elif mutation == "skip":
+                step["if"] = "false"
+            else:
+                step["run"] = "true"
+            with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, "dry run"):
+                check_workflow(document, "ci.yml")
+
     def test_verus_stable_collector_and_bounded_dynamic_shards_are_policy_protected(self):
         actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
         self.assertTrue(check_workflow(actual, "verus.yml"))

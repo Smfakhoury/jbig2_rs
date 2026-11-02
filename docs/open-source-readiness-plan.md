@@ -17,10 +17,11 @@ Those names and historical evidence must not be renamed merely to match the
 public package.
 
 This status is qualified to accepted main
-`4d7e1e6bf5dce04c58544a8dec23b3bb12b7f278` after
-[PR #132](https://github.com/microsoft/jbig2_rs/pull/132).
-The reference investigation and subsequent owner engineering disposition are
-follow-up work, not a transfer of those hosted execution results.
+`9bd0ad34c70990c0439a25ff41095e5bebb03696` after
+[PR #133](https://github.com/microsoft/jbig2_rs/pull/133).
+Its 30 exact-head checks and raw-artifact acceptance passed; trusted official
+execution subsequently passed on the actual merged source. New changes still
+require their own current-head acceptance.
 An older checkout or saved editor snapshot can still show `jbig2_rs`; it is
 not the release candidate. Start the final rehearsal from current accepted
 source rather than overwriting an older working branch.
@@ -32,9 +33,13 @@ source rather than overwriting an older working branch.
   zero normal dependencies and enforced 800-line handwritten Rust file budget.
 - [x] Operate all 30 app-pinned required checks with strict current-base
   protection and independent source/artifact acceptance.
-- [ ] Complete independent normative decomposition and model/contract fidelity
-  review; the 266 selected provisional records are not an exhaustive denominator.
-  Close required prefix-selection and table/dictionary/stream proof gaps. P04/P05.
+- [x] Record the owner's confirmed normative/model review, bound to the exact
+  reviewed project-source and selected-requirement snapshot. This is not a
+  request for another generic authorization or an independently signed
+  certificate; author evidence labels and actual gaps remain separate.
+- [ ] Complete exhaustive requirement enumeration and the recorded missing
+  functional guarantees; the 266 selected records are not an exhaustive
+  denominator. Close required table/dictionary/stream proof gaps. P04/P05.
 - [x] Record the owner's engineering disposition of the seven official
   disagreements after source-level analysis and independent technical review:
   retain strict decoding, no compatibility mode, two bitmap passes, seven
@@ -50,6 +55,10 @@ source rather than overwriting an older working branch.
   Operating CI and smaller files alone do not close these gates. P10/P11.
 - [ ] Confirm release-owner/legal scope, select the release version, finalize
   notices and claims, and rehearse the immutable actual archive. P12.
+- [x] Implement and locally execute the actual `cargo publish --dry-run`
+  rehearsal without enabling the repository manifest or uploading. All six
+  distribution CI jobs require it; their new-head results remain mandatory
+  before integration. Dry-run viability is not completion of the semantic gates.
 - [ ] Recheck `jbig2-decoder` registry availability/ownership and the final
   package/import identity, then enable publishing and public visibility only
   through their separately approved changes. P12.

@@ -24,6 +24,54 @@ from rust_tests import test_inventory as inventory_tests
 import check_traceability as checker
 
 
+class OwnerReviewConfirmationTests(unittest.TestCase):
+    def setUp(self):
+        self.root = TOOLS.parent
+        self.ledger = load_json(self.root / "validation/traceability/requirements.json")
+
+    def test_owner_confirmation_is_bound_without_approving_missing_guarantees(self):
+        confirmation = checker.check_owner_review_confirmation(self.root, self.ledger)
+        self.assertTrue(confirmation["normative_model_review_validated"])
+        self.assertFalse(confirmation["exhaustive_requirement_coverage"])
+        self.assertFalse(confirmation["complete_functional_proof"])
+        self.assertFalse(confirmation["independent_certificate"])
+        self.assertEqual(len(self.ledger["requirements"]), 266)
+        self.assertEqual(sum(bool(row["gaps"]) for row in self.ledger["requirements"]), 257)
+        confirmation["instruction"] = "local copy mutation"
+        self.assertNotEqual(
+            confirmation["instruction"], self.ledger["owner_review_confirmation"]["instruction"],
+        )
+
+    def test_source_or_requirement_changes_invalidate_confirmation_match(self):
+        for mutation in ("source", "requirements", "gap_removed"):
+            document = copy.deepcopy(self.ledger)
+            if mutation == "source":
+                document["owner_review_confirmation"]["project_source_sha256"] = "0" * 64
+            elif mutation == "requirements":
+                document["requirements"][0]["review"] = "approved"
+            else:
+                row = next(row for row in document["requirements"] if row["gaps"])
+                row["gaps"] = []
+            with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, "snapshot"):
+                checker.check_owner_review_confirmation(self.root, document)
+
+    def test_confirmation_timestamp_and_scope_are_not_success_shaped_defaults(self):
+        for timestamp in ("", "not-a-date", "2026-11-02T09:48:42", True):
+            document = copy.deepcopy(self.ledger)
+            document["owner_review_confirmation"]["confirmed_at"] = timestamp
+            with self.subTest(timestamp=timestamp), self.assertRaisesRegex(ValueError, "timezone"):
+                checker.check_owner_review_confirmation(self.root, document)
+        for field in ("exhaustive_requirement_coverage", "complete_functional_proof",
+                      "independent_certificate"):
+            document = copy.deepcopy(self.ledger)
+            document["owner_review_confirmation"][field] = True
+            with self.subTest(field=field), self.assertRaises(ValidationError):
+                validate(document, "traceability")
+        document = copy.deepcopy(self.ledger)
+        del document["owner_review_confirmation"]
+        self.assertIsNone(checker.check_owner_review_confirmation(self.root, document))
+
+
 class SourceReviewDispositionTests(unittest.TestCase):
     def setUp(self):
         self.revision = "a" * 40

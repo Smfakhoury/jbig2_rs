@@ -23,6 +23,13 @@ A release requires:
    and performance gates with honest availability semantics.
 6. Independently reviewed normative/model claims and differential disagreements.
    Unresolved official positives are blockers, not reviewed rejection credit.
+   The owner explicitly confirmed validation of normative/model review on
+   2026-11-02. The source-bound confirmation is recorded separately in the
+   traceability ledger; no further generic review authorization is missing.
+   That confirmation does not supply the ledger's still-missing functional
+   guarantees or exhaustive requirement coverage. The seven official execution
+   disagreements have accepted strict-rejection dispositions after #133; they
+   are not bitmap passes or a full-spec conformance certificate.
 7. A real allowlisted archive excluding separate proof/model files, restricted
    standards/vectors, oracle binaries/adapters, benchmarks and build output.
    Inline proof attributes/ghost code may remain cfg-inactive source; this is
@@ -36,6 +43,27 @@ A release requires:
    toolchains, tests, normative asset hashes, proof strength, coverage, fuzz and
    performance under the retained
    [release schema](validation/schemas/release-attestation.schema.json).
+
+## Publication dry run without enabling uploads
+
+```sh
+python3 -B tools/check_distribution.py --toolchain 1.88.0 \
+  --publish-dry-run --output target/distribution/publication-dry-run.json
+```
+
+This tests the real archive and downstream consumer, then executes the selected
+Cargo's actual `publish --dry-run --locked --registry crates-io` in a temporary
+extraction outside the checkout. Only that extraction's publish setting is
+temporarily enabled; it is unconditionally restored. Cargo verifies/compiles
+the repackaged crate and must confirm that no upload occurred. Registry metadata
+access is allowed only for this phase, with no inherited registry credentials.
+The source checkout remains `publish = false`; no visibility or version change
+is made. See [distribution](docs/distribution.md) for hashes, command boundaries
+and failure controls.
+
+Dry-run success establishes Cargo packaging/publish-command viability, not
+registry ownership, a name reservation, completeness of semantic proofs or
+completion of the remaining release gates.
 
 The release-level proof audit must use **both** completeness and exactness:
 

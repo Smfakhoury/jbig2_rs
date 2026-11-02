@@ -16,7 +16,7 @@ sys.path.insert(0, str(TOOLS))
 
 from audit_package import REQUIRED, audit
 from check_distribution import (
-    check_package_metadata, check_unsafe_policy, extract_archive, isolated_environment,
+    check_package_metadata, check_publish_dry_run, check_unsafe_policy, extract_archive, isolated_environment,
     require_rejected_check,
 )
 
@@ -100,6 +100,10 @@ class DistributionTests(unittest.TestCase):
             "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "--cfg=fuzzing",
             "CARGO_BUILD_TARGET": "other-platform",
             "CARGO_HOME": "original-cargo-home",
+            "CARGO_REGISTRY_TOKEN": "fixture-token",
+            "CARGO_REGISTRIES_CRATES_IO_TOKEN": "fixture-token",
+            "CARGO_REGISTRIES_CRATES_IO_INDEX": "https://example.com/untrusted",
+            "CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS": "fixture-provider",
         }
         with patch.dict(os.environ, overrides):
             environment = isolated_environment(self.directory)
@@ -107,6 +111,108 @@ class DistributionTests(unittest.TestCase):
             self.assertNotIn(key, environment)
         self.assertEqual(environment["CARGO_HOME"], str(self.directory / "cargo-home"))
         self.assertEqual(environment["CARGO_NET_OFFLINE"], "true")
+
+    def publish_fixture(self):
+        manifest = self.directory / "Cargo.toml"
+        manifest.write_text(
+            '[package]\nname = "jbig2-decoder"\nversion = "0.0.1"\npublish = false\n'
+        )
+        for path in REQUIRED - {"Cargo.toml"}:
+            target = self.directory / path
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(b"first-party archive source fixture")
+        return manifest
+
+    def fake_publish(self, manifest, archive, *, corrupt=None):
+        def dry_run(command, **keywords):
+            self.assertEqual(command, [
+                "cargo", "+1.88.0", "publish", "--dry-run", "--locked", "--registry", "crates-io",
+            ])
+            self.assertEqual(keywords["cwd"], self.directory)
+            self.assertEqual(keywords["timeout"], 300)
+            self.assertEqual(keywords["env"]["CARGO_NET_OFFLINE"], "false")
+            self.assertIn(b'publish = ["crates-io"]', manifest.read_bytes())
+            with tarfile.open(archive, "w:gz") as packed:
+                for path in sorted(REQUIRED):
+                    source = self.directory / path
+                    info = tarfile.TarInfo(f"{self.package_root}/{path}")
+                    data = source.read_bytes()
+                    if corrupt == "source" and path == "src/lib.rs":
+                        data += b"\n// changed runtime\n"
+                    if corrupt == "manifest" and path == "Cargo.toml":
+                        data = data.replace(b'version = "0.0.1"', b'version = "9.0.0"')
+                    info.size = len(data)
+                    packed.addfile(info, io.BytesIO(data))
+            return subprocess.CompletedProcess(command, 0, "", "warning: aborting upload due to dry run\n")
+        return dry_run
+
+    def test_publication_rehearsal_is_dry_run_only_and_restores_manifest(self):
+        manifest = self.publish_fixture()
+        original = manifest.read_bytes()
+        environment = isolated_environment(self.directory)
+        archive = Path(environment["CARGO_TARGET_DIR"]) / "package" / f"{self.package_root}.crate"
+        archive.parent.mkdir(parents=True)
+        with patch(
+            "check_distribution.subprocess.run",
+            side_effect=self.fake_publish(manifest, archive),
+        ):
+            report = check_publish_dry_run(["cargo", "+1.88.0"], self.directory, environment)
+        self.assertEqual(report["status"], "passed")
+        self.assertFalse(report["uploaded"])
+        self.assertTrue(report["source_bytes_match_distribution"])
+        self.assertTrue(report["manifest_restored"])
+        self.assertEqual(manifest.read_bytes(), original)
+        self.assertEqual(environment["CARGO_NET_OFFLINE"], "true")
+
+    def test_publication_rehearsal_rejects_repackaged_source_and_manifest_changes(self):
+        manifest = self.publish_fixture()
+        original = manifest.read_bytes()
+        environment = isolated_environment(self.directory)
+        archive = Path(environment["CARGO_TARGET_DIR"]) / "package" / f"{self.package_root}.crate"
+        archive.parent.mkdir(parents=True)
+        for corruption in ("source", "manifest"):
+            with (
+                self.subTest(corruption=corruption),
+                patch("check_distribution.subprocess.run",
+                      side_effect=self.fake_publish(manifest, archive, corrupt=corruption)),
+                self.assertRaisesRegex(ValueError, "differs"),
+            ):
+                check_publish_dry_run(["cargo", "+1.88.0"], self.directory, environment)
+            self.assertEqual(manifest.read_bytes(), original)
+
+    def test_publication_rehearsal_restores_manifest_after_failed_commands_or_archive_checks(self):
+        manifest = self.publish_fixture()
+        original = manifest.read_bytes()
+        for failure in ("cargo", "timeout", "missing_confirmation", "missing_archive"):
+            result = subprocess.CompletedProcess([], 101 if failure == "cargo" else 0, "", "")
+            if failure == "missing_archive":
+                result.stderr = "warning: aborting upload due to dry run"
+            with (
+                self.subTest(failure=failure),
+                patch("check_distribution.subprocess.run",
+                      side_effect=subprocess.TimeoutExpired(["cargo"], 300)
+                      if failure == "timeout" else None, return_value=result),
+                self.assertRaises((ValueError, OSError, subprocess.SubprocessError)),
+            ):
+                check_publish_dry_run(["cargo"], self.directory, isolated_environment(self.directory))
+            self.assertEqual(manifest.read_bytes(), original)
+
+    def test_publication_rehearsal_rejects_checkout_or_enabled_or_ambiguous_manifest(self):
+        manifest = self.publish_fixture()
+        original = manifest.read_bytes()
+        with patch("check_distribution.ROOT", self.directory), self.assertRaisesRegex(
+            ValueError, "outside the source",
+        ):
+            check_publish_dry_run(["cargo"], self.directory, {})
+        for data in (
+            original.replace(b"publish = false", b"publish = true"),
+            original + b'\n[unrelated]\npublish = false\n',
+        ):
+            manifest.write_bytes(data)
+            with patch("check_distribution.subprocess.run") as command, self.assertRaises(ValueError):
+                check_publish_dry_run(["cargo"], self.directory, {})
+            command.assert_not_called()
+            self.assertEqual(manifest.read_bytes(), data)
 
     def test_metadata_rejects_proof_dependencies_or_features(self):
         extracted = self.directory / self.package_root
