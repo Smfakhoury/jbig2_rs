@@ -4,7 +4,7 @@ For a short reading path and standard-access instructions, start with the
 [model guide](../specs/README.md). Independent source review and frozen-model
 change control are described in the [review procedure](specification-review.md).
 
-This is a model/navigation aid, **not normative approval**. The
+This is a model/navigation aid, **not a conformance certificate**. The
 [ledger](../validation/traceability/requirements.json) owns exact requirement
 locators, assumptions, contracts and test identities. Its selected provisional
 records are not an exhaustive denominator. Read
@@ -17,7 +17,7 @@ runs. No standard text, tables, diagrams or vectors are reproduced here.
 
 | Layer | Entry points | Audit interpretation |
 | --- | --- | --- |
-| Candidate normative-facing models | [`specs/`](../specs) | Original project translations to compare independently with approved source identities/locators |
+| Candidate normative-facing models | [`specs/`](../specs) | Original project translations to compare independently with source identities/locators |
 | Observable project results | Arithmetic full-state relations; bitmap content/frame results; MMR finite raster histories; symbol content; container windows/metadata | Consequential output semantics under stated preconditions, not approval of the translation |
 | Representation invariants | Arithmetic context/decoder validity; bitmap storage; decode stores; halftone work; Huffman widths/readers; MMR transitions/reference lines | Bounds, reachable state and representation requirements, not complete decoding semantics |
 | Model-access and accumulator support | [`proofs/model_support/`](../proofs/model_support) | Same-owner proved reveals, field bridges and loop bookkeeping, not new normative rules or assumptions |
@@ -104,8 +104,7 @@ Mutable scratch references swap by row, so final physical buffer roles depend
 on height parity; no exported capacity/address/parity theorem is inferred.
 Complete valid-input acceptance/errors, independent table/coordinate fidelity,
 T.88 omission/fixed-block padding applicability and full caller/resources remain
-open. Renaming former `*_is_normative` helpers to implementation-membership
-names removes an overclaim; it does not add normative evidence.
+open. Implementation-table membership is not independent normative evidence.
 
 ## Readers, bitmaps and selection
 
@@ -172,8 +171,8 @@ Read [`specs/segments.rs`](../specs/segments.rs),
   frames. `page_finish_result` preserves duplicate-first error priority.
   `public_page_height` / `public_page_fields` bind known-height precedence,
   checked last-row-plus-one inference and successful public metadata fields.
-  No new preconditions or sequencing checks are introduced: adding a stripe does
-  not inspect `ended`, and conversion does not require it.
+  Adding a stripe does not inspect `ended`, and conversion does not require it;
+  these local contracts do not enforce a complete caller lifecycle.
 
 Opaque result predicates are unfolded by ordinary proved completion helpers;
 native bridges consume those results without replacing them with loop histories.
@@ -187,8 +186,9 @@ Full pinned verification **and compilation** are separate from selected-module
 debugging, source binding, runtime tests and mutation sensitivity. Every included
 support file must participate in source identity.
 
-Do not infer standard/model approval, conformance or observed-capacity enforcement
-from stronger project contracts. The reviewed getter remains an additional
-explicit standard boundary, not normative approval. Unresolved official
-positives, retention conflict and protected encoded-family fixtures remain
-blocked as recorded in [publication readiness](publication-readiness.md).
+Do not infer full standard correspondence or end-to-end conformance from local
+project contracts. The capacity getter remains an additional standard-library
+trust boundary. Expected official-case rejections are not bitmap passes;
+full caller/raster/lifecycle coverage remains partial. See
+[release validation](publication-readiness.md) and the
+[roadmap](open-source-readiness-plan.md).

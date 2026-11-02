@@ -1,226 +1,149 @@
-# Provisional T.88/T.6 statement traceability
+# T.88/T.6 statement traceability
 
-The [requirements ledger](../validation/traceability/requirements.json) maps
-selected requirements to exact runtime contracts, models, proof support and
-executable tests. **P04 is incomplete.** All records are provisional; the
-selected denominator is not exhaustive and no feature has an approved complete
-normative decomposition. See [publication readiness](publication-readiness.md)
-for revision-qualified counts and accepted runs.
+The [requirements ledger](../validation/traceability/requirements.json) connects
+selected standard requirements with runtime contracts, project models, proof
+support and exact executable tests. The selected denominator and functional
+coverage are partial; this is not a full-standard conformance map.
 
-For the owner-approved `0.1.0` release, exhaustive enumeration and complete
-functional proof coverage are deferred to
-[future work](https://github.com/microsoft/jbig2_rs/issues/135).
-Use `--require-v01-scope` with a real verifier report and Cargo discovery to
-check the scoped policy. This does not change any proof strength/gap label or
-make `--require-reviewed-decomposition --require-complete` pass.
+The 0.1 release uses a partial-Verus scope. Exhaustive requirement and functional
+proof work is tracked in [#135](https://github.com/microsoft/jbig2_rs/issues/135).
+See [release validation](publication-readiness.md) for measured results.
 
-## Authorities and scope
+## Records and scope
 
-- [`config/support-matrix.json`](../config/support-matrix.json) defines required,
-  unsupported and deferred profile behavior. A coarse feature worklist is not
-  an enumeration of every normative obligation.
-- [`validation/source-provenance.json`](../validation/source-provenance.json)
-  identifies approved sources and hashes: T.88 (08/2018), edition 2.0 /
-  ISO/IEC 14492:2019, and the distinct T.6 (1988) reference for MMR.
-  T.6 has no separately recorded edition: `null` is intentional, not a copied
-  T.88 edition. Document identities and permissions are not interchangeable.
-- [`verification/production-proof-coverage.json`](../verification/production-proof-coverage.json)
-  accounts for qualified runtime identities. It is not a normative percentage.
-- The ledger records stable IDs, exact clause/figure/table/step locators,
-  original paraphrases, applicability, assumptions, gaps, contracts,
-  models/proofs, exact tests, review state and source bindings.
-- Reports under `target/traceability/` are generated views, not another
-  independently maintained requirements database.
+- [`config/support-matrix.json`](../config/support-matrix.json) defines supported,
+  unsupported and deferred behavior, including resource policy.
+- [`source-provenance.json`](../validation/source-provenance.json) identifies
+  T.88 (08/2018), edition 2.0, and the distinct T.6 (1988) MMR reference.
+  Their document identities are not interchangeable.
+- [`production-proof-coverage.json`](../verification/production-proof-coverage.json)
+  accounts for qualified native declarations; it is not normative coverage.
+- Each requirement records a stable ID, locator, original paraphrase, runtime
+  symbols, models/proofs, actual contract evidence, exact tests, assumptions,
+  gaps and source identities.
 
-Project resource limits and typed Rust error policies are explicitly separate
-from normative rules; a policy row does not increase normative coverage.
-The first milestone is broad bi-level decoding, not colour or encoding, and
-does not claim full Annex F profile 1 conformance. Standards prose, diagrams,
-table contents, sample software and official vectors are not reproduced.
+Project resource limits and typed Rust error policy are separate from normative
+rules. A policy row does not increase the standard-requirement count.
+The crate decodes bi-level JBIG2 streams, not PDF containers or colour images.
 
 ## What an evidence label means
 
 | Evidence | Establishes | Does not establish |
-| --- | --- | --- |
-| Safety/bounds | Valid storage, ranges, checked arithmetic under stated preconditions | Intended decoded value or complete rejection behavior |
-| State preservation | Selected invariants/frames across an operation | The required transformation merely because state stays valid |
-| Termination | A local decreasing measure, conditional on callees terminating | Aggregate CPU/work bound or conformance |
-| Functional project contract | Exact relation between input/state and the specified result | Independent fidelity of that model to the standard |
-| Runtime test | Assertions on executed first-party/approved cases | Universal proof, exhaustive requirements or normative approval |
-| Strong/weaker contrast | A compiling counterexample is rejected by a selected strong proof but accepted with only the selected guarantee removed | Correctness of the standard translation or fresh whole-crate proof |
-| Reference/hash audit | Bound definitions, contracts, test names and source identities | Semantic truth, test adequacy or execution |
+|---|---|---|
+| Safety/bounds | Valid storage, ranges and checked arithmetic under stated preconditions | Intended decoded output or every rejection condition |
+| State preservation | Selected invariants and unchanged-state frames | A transformation merely because state stays valid |
+| Termination | A local decreasing measure, conditional on callees terminating | A global CPU/service-availability bound |
+| Functional project contract | The stated relation between inputs/state and results | Independent fidelity of the model to the standard |
+| Runtime test | Executed assertions on particular inputs | Universal proof or exhaustive coverage |
+| Strong/weaker contrast | A compiling fault is rejected by a selected guarantee and accepted when only that guarantee is removed | Full correctness of the model or decoder |
+| Reference/hash audit | Exact definitions, identities and declared links | Semantic correctness, test execution or adequate test assertions |
 
-Functional evidence must come from actual production `ensures` and proved
-support, not a model's name, a precondition, `true`, or an unrelated same-named
-function. A function may verify storage safety while a selected requirement
-still lacks output semantics. Never promote a record solely because all its
-functions appear in a successful Verus report.
+Functional evidence comes from actual production `ensures` clauses and proved
+support. A model's name, a precondition, `true`, or a same-named unrelated
+function is not a result guarantee.
 
-## Current model surface and its limits
-
-The [auditor index](verus-auditor-index.md) gives parameter/notation bridges and
-source entry points. The following summarizes consequential distinctions rather
-than a chronology of contract changes.
+## Models and their limits
 
 ### Source-only purpose inventory
 
-The ledger's `model_classifications` assigns exact declaration families one of
-`project-result-model`, `project-policy`, `representation-invariant`,
-`proof-support`, `candidate-standard-facing-model` or `classification-pending`.
-The bounded inventory covers registered definitions plus every spec function
-in `specs/` and `proofs/model_support/`; it does not claim every unregistered
-proof/view declaration. Original roles and requirement links remain separate.
-Body/dependency justifications describe primary project purpose, not proof
-strength, native caller coverage or normative fidelity.
+`model_classifications` identifies exact declaration families as project
+results, policies, representation invariants, proof support or candidate
+standard-facing models. These categories describe purpose, not proof strength.
+The bounded inventory includes registered definitions and spec functions in
+`specs/` and `proofs/model_support/`; other helpers are not silently counted.
 
-`ambiguity` is reserved for **unresolved source purpose**. Any nonblank ambiguity
-appears in `unresolved_declarations` and makes `classification_complete` false,
-even with a non-pending category. Pending entries must explain their ambiguity.
-The optional `caveats` field preserves partial-output, caller, trust and
-unreviewed normative limitations without turning those into purpose gaps.
-Neither field is inferred from declaration names or free-text keyword matching.
+Registry and project-source digests bind exact declaration/module identities
+and all Rust source under `src/`, `specs/` and `proofs/`. Missing, duplicate,
+renamed, ambiguous or stale declarations fail checks. Reports expose unresolved
+purpose ambiguity separately from known partial scope or fidelity caveats.
 
-All 417 declarations in this bounded source inventory have authored purposes:
-147 project results, 53 representation invariants, 142 proof-support declarations,
-29 project policies and 46 candidate standard-facing models. No source-purpose
-ambiguities remain. These counts are not normative coverage percentages or
-approval: all 266 requirement reviews remain provisional. For example,
-`decoded_pixels` merely truncates supplied decisions, and abstract `page_step`
-must not be equated to the narrower production stripe API. Their purposes can
-be established while their output/caller/normative gaps remain open.
-
-The inventory validates exact membership and conservatively binds all project
-Rust plus the unchanged definition registry. New, removed, duplicated,
-ambiguous or stale declarations/bindings fail explicitly; there is no automatic
-purpose inference or source-binding refresh. Reports always keep
-`normative_approval` false. Candidate status grants neither independent source
-approval, source-processing authorization, human assignment nor release
-readiness. Capacity/trust, retention and protected fixture holds are unchanged.
+`Model navigation`, `Audit` and `REQUIREMENT CONTEXT` comments are local reading
+aids. They do not prove the cited standard translation. Imported implementation
+tables/constants remain dependencies to check independently.
 
 ### Arithmetic, integer and IAID
 
-Project contracts cover initialization, BYTEIN, normalization and complete
-decision register/context state, including partial errors and unchanged input.
-`entry_*` models use the runtime Qe arrays: consistency with implementation data
-is **not** independent Table E.1 fidelity.
+Project contracts cover initialization, BYTEIN, normalization and selected
+decision/register/context results. Integer and IAID relations compose decision
+history, sign/length/value or OOB and context state. Codec adapters preserve
+selected/unselected banks and exact project errors.
 
-`integer_step_state`, `integer_selection_state`, `integer_bits_run` and
-`integer_state` compose sign/selection/payload/history/value or OOB.
-`iaid_run` and `iaid_state` compose the prefix/value fold, decoder and full
-context bank. Concrete codec callers preserve selected and unselected banks,
-refinement/work state and exact project error fields. Reset states every
-selected context index and MPS becomes zero; validity alone would be weaker.
-
-Independent register/pointer/table interpretation, procedure-bank placement,
-Table A.1 representations, caller field selection, SBSYMCODELEN/address-space
-sufficiency and complete stream composition remain open. The IAID 31-bit cap
-is project policy, not an invented Annex A limit.
+Runtime probability arrays are model dependencies, not independent evidence
+of standard-table fidelity. Procedure-bank placement, field selection, reset
+timing and full caller/stream interpretation require their own guarantees.
+The IAID 31-bit cap is project policy.
 
 ### Readers, bitmap and raster primitives
 
-Byte/bit reader contracts preserve exact input, cursor, value and project
-failure payload/priority. Bit accumulation lemmas do not remove native checked
-operations or establish normative rejection rules.
+Byte/bit readers have exact input/cursor/value/error frames. Packed copying,
+fill/padding, spans and Boolean operators describe contents and untouched
+frames, including partial bytes. A white-span no-op does not prove arbitrary
+old pixels were white.
 
-Packed row/prefix copying uses the same native safe slice path in runtime and
-proof builds. Contracts describe complete copied contents and untouched
-frames; blank/fill/padding results describe stored bytes, including partial-byte
-padding. Black spans have exact bit/pixel/frame results; white spans are no-ops,
-not claims that arbitrary old white pixels were already zero. Byte/word
-operators relate every result bit to the Boolean combination model.
-
-These are helper semantics. SLTP timing, first-row caller edges, clipping,
-placement, masks and full generic/refinement/page composition need their own
-proof and independent normative review. Standard slice-copy contracts and the
-compiler/library remain trusted boundaries.
+Helper results do not alone prove template/prediction timing, edge behavior,
+clipping, placement or complete generic/refinement/page composition.
+Standard slice operations and the compiler/library remain trust boundaries.
 
 ### MMR/T.6
 
-Mode/run lookup binds consumed old-input bits and length to the implementation
-tables. `complete_run` additionally states actual prefix, bit extent,
-make-up/terminating structure and sum; `horizontal_pair` composes opposite
-colour runs. Reference search models expose changing-element parity,
-initial-position equality and width-sentinel fallback.
+Mode/run lookup binds consumed input bits and lengths to implementation tables.
+`complete_run` additionally describes prefix extent, make-up/terminating
+structure and sums; `horizontal_pair` composes opposite-colour runs.
+Reference models describe changing-element parity, initial-position equality
+and width-sentinel fallback.
 
-`row_cache_matches` connects actual previous-row pixels to transitions.
-Finite `RasterState`/`RasterStep`/`RasterRow` result histories connect input,
-mode/run/reference/cache state and completed visible rows; they are observable
-result semantics, not just accumulator invariants. Required framing describes
-the immediate EOFB and zero alignment bits.
+Previous-row pixel/cache relations and finite raster histories connect input,
+mode/run/reference state and visible rows. Required framing describes immediate
+EOFB and zero alignment bits.
 
-Independent table/coordinate fidelity, complete valid-input acceptance and
-errors, T.88 omission/known-extent/fixed-block padding applicability and broader
-caller/resource composition remain open. Names such as
-`mode_code_in_implementation_table` deliberately avoid claiming normative
-table certification. Tests sharing implementation arrays are not independent
-normative oracles.
+Independent table/coordinate fidelity, complete acceptance/errors, applicable
+T.88 framing exceptions and full caller/resource composition remain separate.
+Tests sharing implementation arrays are not independent table oracles.
 
-### Organization, metadata and lifecycle
+### Containers, metadata and lifecycle
 
-Sequential relations connect adjacent original header/payload windows and
-complete body extent. Standalone results preserve file-header organization,
-body origin, increasing numbers and declared/page-information cardinality;
-embedded results preserve supplied order without importing standalone ordering.
-Random-access relations connect separate header and payload sections,
-deterministic offsets, increasing numbers and a final EOF header.
+Sequential and random-access models connect original header/payload windows,
+offsets, ordering and complete accepted body extents. Embedded relations preserve
+supplied order without importing standalone ordering rules.
 
-Typed metadata relates accepted page dimensions, height encoding, resolutions,
-flags and ordered profile IDs to original bytes and returned variants.
-Opaque table/entropy `Other` payloads are not codec-validity theorems.
-Unknown-length termination, complete acceptance/errors/resources, full
-page/stripe/profile interpretation and lifecycle/decoded output remain separate.
+Typed metadata relates accepted dimensions, height encoding, resolutions,
+flags and profile IDs to original bytes. Opaque entropy/table payload metadata
+is not a codec-validity theorem.
 
-Retention uses forward wire-byte order, least-significant bit first within each
-byte, and unused bits in the final long-form byte under the recorded 7.2.4
-interpretation. The conflicting 7.2.8 worked-example fixture remains an explicit
-strict rejection, not a dual-order heuristic or an approved normative exception.
-Owner adjudication and full retention/caller semantics remain open.
+Page-state and retention field results do not complete unknown-height/stripe
+lifecycle, reference resolution, lifetime/discard or decoded-document semantics.
+The retention model uses forward wire-byte order, least-significant bit first
+within a byte; the conflicting worked example is not an alternate-order
+recovery heuristic.
 
-### Huffman, symbol/text and halftone
+### Huffman, symbols/text and halftone
 
-Selected-line value/OOB and implementation-table membership do not prove
-complete canonical assignment, prefix selection, custom-table range partition
-or independent predefined-table translation.
+Canonical assignment and cached/fallback lookup have operational project result
+contracts. They do not independently establish predefined-table translation,
+encoded caller selection or whole-stream conformance.
 
-Symbol lookup/export content relations bind selected geometry, stride and
-packed bytes, including ordered/repeated supplied selections. They do not
-identify encoded export-run flags, physical capacity, complete dictionary
-refinement/aggregation or text placement. Pattern/halftone header models bind
-raw fields and exact parser extent, not full grid/raster/caller interpretation.
-Protected encoded-family fixture expansion remains held.
+Symbol selection/export relations bind geometry, stride, packed bytes and
+order. They do not alone identify encoded export flags or prove complete
+refinement/aggregation/text output. Pattern/halftone header contracts bind raw
+fields and parser extent, not the complete grid/raster/caller interpretation.
 
 ## Checker contract
 
-`tools/check_traceability.py` validates:
+`tools/check_traceability.py` checks schema/IDs, exact feature membership,
+standard identities, source/module hashes, runtime proof accounting,
+qualified model/proof symbols, proof-macro wiring, actual contract sections
+and exact non-ignored Cargo test references.
 
-1. Schema, unique IDs, exact support-feature membership, standards editions/
-   hashes, consultation identities and separate policy accounting.
-2. Bidirectional feature worklists and nonblank remaining scope for partial
-   features; excluded/deferred features cannot hide required behavior.
-3. Hashes of referenced source and module-declaration files. Changes invalidate
-   review; there is no automatic reapproval.
-4. Runtime IDs against syntax-level inventory and proof accounting.
-   Unverified/divergent bodies cannot support a direct functional claim.
-5. Actual module namespaces and qualified model/proof symbols; supplied
-   verifier reports must contain those exact identities.
-6. Proof-macro definitions and lexical calls from the recorded runtime body.
-7. Contract evidence in the declared `requires`/`ensures` section of actual
-   ghost-conditioned attributes. It rejects duplicate/aliased evidence,
-   whitespace-equivalent duplicates, commented-out clauses, vacuous replacements,
-   functional evidence mislabeled weaker and unused definitions.
-8. Exact non-ignored ordinary-test source identities and, with
-   `--discover-tests`, compiled Cargo target/name discovery.
+It rejects unsupported or ambiguous bindings, vacuous/commented-out evidence,
+unused definitions and claims stronger than their recorded evidence.
+`--discover-tests` compiles/lists the recorded Cargo targets; native CI separately
+executes tests.
 
-Unresolved/ambiguous module paths and unsupported bindings fail closed instead
-of being guessed. Reference checking does not infer complete call graphs, prove
-test adequacy, execute tests or approve standard translations.
-
-`decomposition_review_complete` / `--require-reviewed-decomposition` express
-the narrower P04 map-review gate: a reviewed exhaustive map may explicitly
-contain unproved transformations. `semantic_claims_complete`, `--require-complete`
-and the legacy `normative_decomposition_complete` retain the stronger meaning:
-functional evidence, approved review and no semantic gaps. Passing the former
-must not silently close P05 or the latter.
+`decomposition_review_complete` describes a reviewed exhaustive map that may
+still contain unproved transformations. `semantic_claims_complete` additionally
+requires functional evidence and no semantic gaps. The corresponding
+`--require-reviewed-decomposition` and `--require-complete` gates remain
+distinct from the limited 0.1 release scope.
 
 ## Reproduction
 
@@ -228,31 +151,22 @@ must not silently close P05 or the latter.
 python3 -m pip install -r tools/requirements.txt
 python3 -B tools/check_traceability.py --discover-tests \
   --output target/traceability/reference-report.json
-python3 -B tools/check_traceability.py --verus-json target/verification/verus-production.json \
-  --discover-tests --output target/traceability/combined-report.json
+python3 -B tools/check_traceability.py \
+  --verus-json target/verification/verus-production.json --discover-tests \
+  --require-v01-scope --output target/traceability/v01-scope.json
 ```
 
-A supplied report must come from the pinned whole verifier on the same source;
-loading a successful JSON file is not a fresh proof. CI separately records proof
-checking, test discovery and test execution.
-
-For an already approved local document, explicit identity can also be checked:
+The supplied verifier report must come from the pinned whole build of the same
+source. Loading a successful JSON file does not run the solver.
+For a local reference document, its identity can also be checked:
 
 ```sh
 python3 -B tools/check_traceability.py --discover-tests \
-  --standard-document 'ITU-T T.6 (1988)=/path/to/approved-t6.pdf' \
+  --standard-document 'ITU-T T.6 (1988)=/path/to/t6.pdf' \
   --output target/traceability/t6-report.json
 ```
 
-Repeat `--standard-document STANDARD_ID=PATH` for available documents.
-Legacy `--standard-pdf` means the first declared standard, not inferred identity.
-Unknown/duplicate selections and cross-standard substitutions fail. Per-standard
-hash checks are separate; the aggregate flag is true only when every declared
-document was checked in that invocation. CI absence is explicit; provenance
-checking does not claim to reacquire documents or grant redistribution.
-
-The required semantic groups execute in same-source shards with selected
-positive baselines and separately executed compiling strong/weaker controls.
-The collector rejects missing, stale, duplicate, misrouted or wrong-tool/run/
-attempt evidence; no partial report replaces whole proof and compilation.
-See [limitations](verifier-limitations.md) and the [snapshot](publication-readiness.md).
+Unknown/duplicate document selections and cross-standard substitutions fail.
+Identity checking does not imply reacquisition or reproduction rights.
+See [reviewing models](specification-review.md) and
+[verification limitations](verifier-limitations.md).

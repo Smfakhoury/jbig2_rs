@@ -1,52 +1,44 @@
 # Optional Hayro comparison
 
-This unpublished harness compares `jbig2-decoder` with `hayro-jbig2` 0.3.1.
-Superseded single-run measurements are recoverable in Git history and retained
-CI artifacts, not copied into a source archive or used as live release baselines.
-**No current-main performance or normative conformance claim follows from those
-measurements.** Current base/head policy and missing P09 evidence are documented
-in [validation](../README.md#basehead-performance).
+This development harness compares `jbig2-decoder` with `hayro-jbig2` 0.3.1.
+It is separate from the dependency-free runtime crate and is not published as
+part of the decoder. Results describe the tested source, workload, compiler and
+host, not a general performance or conformance ranking.
 
 ## Reproduction
 
-The unpublished harness is separate from the dependency-free runtime crate:
-
 ```sh
 cargo +1.98.1 run --release \
-  --manifest-path benchmarks/hayro-comparison/Cargo.toml -- \
-  generated 50
+  --manifest-path benchmarks/hayro-comparison/Cargo.toml -- generated 50
 benchmarks/hayro-comparison/run-comparison.sh 50
 benchmarks/hayro-comparison/run-stability.sh 50
 ```
 
-The comparison script runs default-SIMD and scalar-to-scalar tracks. Hayro uses
-its default SIMD feature; `jbig2-decoder` has no SIMD backend. Generated fixtures are
-shared with the runtime performance lane. New records include median and
-nearest-rank p95. Record actual source/tool/host identities for each run rather
-than reusing historical revision labels or measurements.
+The scripts run default-SIMD and scalar-to-scalar tracks. Hayro uses its default
+SIMD feature; `jbig2-decoder` has no SIMD backend. Generated fixtures are shared
+with the runtime performance lane. Reports include actual source/tool/host
+identities, median and nearest-rank p95.
 
-The stability gate rejects cross-run spread above 3% for any generated parse or
-end-to-end median. `MAX_RELATIVE_SPREAD` is an investigation override, not
-permission to weaken a release gate. CPU 0 is the default affinity;
-`BENCH_CPU` can select another isolated core. Stability is necessary for useful
-timing, not sufficient dedicated-host release evidence.
+The stability script rejects cross-run spread above 3% for generated parse or
+end-to-end medians. `MAX_RELATIVE_SPREAD` changes the investigation threshold;
+it does not change runtime CI gates. CPU 0 is the default affinity and
+`BENCH_CPU` selects another core. Stable measurements are necessary for useful
+timing, not proof that the workload represents real documents.
 
-For an authorized host with hardware-counter access:
+On Linux with hardware-counter access:
 
 ```sh
 benchmarks/hayro-comparison/capture-counters.sh jbig2-decoder
 benchmarks/hayro-comparison/capture-counters.sh hayro_jbig2
 ```
 
-Unavailable Linux `perf` access fails explicitly rather than producing empty
-success-shaped counters.
+Unavailable `perf` access fails explicitly rather than producing empty counters.
+The preferred engine argument is `jbig2-decoder`; `jbig2_rs` remains a legacy
+engine ID in compatible metrics, not the crate name.
 
-The preferred engine argument is `jbig2-decoder`; `jbig2_rs` remains an accepted
-legacy engine ID. Existing JSON metric keys keep that legacy ID for comparison
-compatibility. Those identifiers and historical results are not crate names or
-new measurements.
+## External-vector outcomes
 
-Only with already approved external assets:
+With a local copy whose terms permit the intended use:
 
 ```sh
 cargo +1.98.1 run --release \
@@ -54,27 +46,21 @@ cargo +1.98.1 run --release \
   vectors /path/to/JBIG2_ConformanceData-A20180829
 ```
 
-`JBIG2_VECTOR_DIR` optionally adds that vector outcome lane to the scripts.
-Neither command grants acquisition/redistribution permission or copies assets
-into the project.
+`JBIG2_VECTOR_DIR` adds this outcome lane to the scripts. External assets are
+not copied into the runtime package. See [conformance](../README.md#official-conformance).
 
 ## Interpretation
 
-Generated comparisons check packed bitmap equality before timing. This
-harness's timed scope includes parsing, decoding and output hashing, unlike the
-decode-call-only base/head lane. Simple generated MMR pages are not a diverse
-PDF corpus, and aggregate ratios must not conceal individual-case regressions.
-Historical TT9/TT10 latency and RSS observations do not establish improvements
-on today's decoder or close current allocator/RSS telemetry gaps.
+Generated cases compare packed pixels before timing. Timed work here includes
+parsing, decoding and output hashing, unlike the decode-call-only
+[base/head lane](../README.md#basehead-performance). Simple generated MMR pages
+are not a diverse PDF corpus, and an aggregate must not hide per-case regressions.
 
-The historical official-vector wrapper reports dimensions and FNV64 summaries
-through a single-image API. That is not full-byte multi-page equality.
-Shared errors/warnings do not show an official positive malformed or confirm
-an entropy offset the wrapper does not expose. See the
-[source-bound seven-case review](../conformance/seven-rejection-review.json).
-The unresolved official positives have no reviewed rejection credit.
+The vector wrapper uses a single-image API and FNV64 summaries; it cannot
+establish full-byte multi-page equality. Shared errors or warnings do not prove
+normative validity or an entropy offset that the wrapper does not expose.
+The [case records](../conformance/seven-rejection-review.json) distinguish
+expected rejections from bitmap passes.
 
-API differences and the existence of a Verus inventory are not a comparative
-correctness certificate. Full exact-source and normative functional claims
-remain blocked as described in
-[verification limitations](../../docs/verifier-limitations.md).
+API differences and proof-inventory counts are not comparative correctness
+certificates. See [verification scope](../../docs/verifier-limitations.md).

@@ -11,8 +11,7 @@ third-party vectors, copyrighted assets or private corpora.
 Use Linux, Python 3.11+, `nightly-2026-10-12` and `cargo-fuzz 0.13.2`, as pinned
 in [`config/toolchain.json`](../config/toolchain.json). Every output directory
 must be fresh. Standard temporary files used by libFuzzer or isolated controls
-must reside in an authorized local
-workspace location; set `TMPDIR` accordingly.
+must reside in a writable temporary directory; set `TMPDIR` accordingly.
 
 Validate the minimal existing generated corpus, including real minimization and
 exact replay of every input before and after minimization:

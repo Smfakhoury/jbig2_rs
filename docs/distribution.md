@@ -1,8 +1,8 @@
 # Ordinary Rust distribution without Verus
 
 The crate has no runtime dependencies, uses the MIT license, and declares Rust
-1.88.0 as its minimum supported Rust version (MSRV). Version `0.1.0` permits
-publication only to crates.io under the recorded owner authorization. Its
+1.88.0 as its minimum supported Rust version (MSRV). Version `0.1.0` is
+published on crates.io. Its
 [release gates](../RELEASING.md) explicitly permit partial Verus coverage;
 remaining proof gaps are disclosed future work, not claimed complete.
 The accepted revision-qualified native reports
@@ -141,7 +141,7 @@ Passing distribution checks establishes that the ordinary crate is independent
 of repository proof files and tools. It does not establish full JBIG2
 conformance or remove the reviewed standard-library/callback limitations tracked
 in [verifier-limitations.md](verifier-limitations.md). Exact native-body
-accounting does not remove that separate, release-blocking P05 scope.
+accounting is separate from complete functional coverage.
 
 The unsafe-code control checks crate-authored source. Compiler-generated
 derives can contain internal unsafe implementations/intrinsics, and the

@@ -1,63 +1,35 @@
-REVIEWED PROOF-ONLY STANDARD INTERFACE
+PROOF-ONLY STANDARD INTERFACE
 
-The private integration adds one allocator-generic Vec::capacity interface.
-It has no requires/ensures facts about capacity, length, reservation, usable
-allocation size or equality between observations. The standard declaration
-is nevertheless an explicit additional trusted boundary, not a native codec
-proof and not normative approval.
+The verification dependency graph contains one allocator-generic immutable
+Vec::capacity getter signature. It has no requires/ensures facts about capacity,
+length, reservation, usable allocation size or equality between observations.
+It is an explicit standard-library trust boundary, not a codec theorem.
 
-The delegated coordinator's technical review authorizes this exact interface
-for private integration under the user's existing engineering/review/merge
-authority. This is not a new named-human standards adjudication or owner
-public-release/visibility decision. The decision and limitations are tracked
-in issue 116. The reviewed source/manifest identities are recorded separately
-and checked by the runtime trust audit; unreviewed trusted declarations remain
-forbidden in the decoder, project models and proofs.
+The exact package, source, signature and hashes are recorded in review.json
+and checked by the runtime trust audit. Unknown trusted declarations, changed
+signatures and added return-value facts fail validation.
 
-The verification-only jbig2_capacity_interface dependency isolates the
-standard-interface macro's generated unsafe glue. The native decoder keeps
-forbid(unsafe_code), no runtime dependencies and the existing MSRV unchanged.
-No standard return-value axiom, allocator fact or toolchain upgrade is added.
+The verification-only jbig2_capacity_interface dependency isolates the standard
+interface macro's generated glue. The native decoder has no dependency on it
+and retains forbid(unsafe_code). No allocator fact or equality axiom is added.
 
-The checked observe_capacity_budget function calls the getter once and
-checks conversion, multiplication and the accepted limit. Its strong
-missing-limit mutant must fail and its corresponding weaker control must
-pass. It does not approve the trusted declaration or prove allocator behavior.
+observe_capacity_budget calls the getter once and checks conversion,
+multiplication and the configured limit. Removing the limit must fail the
+strong proof while its selected weaker control passes. This establishes the
+numeric guard, not allocator behavior or total process-memory bounds.
 
-From the repository root with the existing tooling environment:
+From the repository root:
   python3 verification/stdlib/validate_capacity_interface.py --verus /path/to/pinned/verus
   python3 verification/stdlib/validate_selected_cache.py --verus /path/to/pinned/verus
 
-Selected queries run in isolated copied source/dependency graphs. Cargo focus
-stores its root under verus-partial; each query invalidates only the
-production package in that exact target. This retains immutable dependency
-metadata but never reuses a solver query, lifetime or erasure check. The real
-cache/relocation regression requires unchanged source bytes/timestamps and
-actual fresh counts 1/2/1/4. Missing reports or failed invalidation are fatal.
+Queries run in isolated source/dependency copies. Each selected query invalidates
+the production package in its exact target while retaining immutable dependency
+metadata. Solver, lifetime and erasure checks are not reused.
 
-The f0b6c5f prototype completed 49 groups/329 compiling strong/weaker contrasts,
-141 native mutation controls and a strict complete 2060/1/1276 zero-error
-dependency/application stream with a nonempty production library. Its native
-accounting was 642 direct, 20 reviewed limitations and zero divergences,
-incomplete functions or native assumptions. The one standard interface is
-separate from that native-assumption count. These are historical source-bound
-results, not current-head acceptance.
+The cache/relocation regression requires unchanged source bytes/timestamps and
+actual fresh counts 1/2/1/4. Missing reports or failed invalidation are errors.
+Whole-crate verification and compilation remain separate requirements.
 
-That prototype's eight-shard profile failed the unchanged 1050-second guard.
-The fourteen-shard scheduling revision preserves all 49 groups/329 contrasts,
-one worker per producer, max-four concurrency, 20-minute whole/collector caps,
-30-minute semantic caps and sixteen mandatory producer receipts. Rounded-up
-complete measurements sized shards at 832-850 seconds; sizing is not fresh
-profile acceptance. Actual source-bound results live under
-target/capacity-proposal/full-semantics-*/full-local-evidence.json.
-
-This branch must receive fresh complete whole/compiled verification, exact
-inventories, current-source attestations and all required hosted jobs before
-normal merge. No canceled, partial or over-budget profile is accepted.
-Twenty reviewed standard/callback limitations and all 266 provisional
-normative records remain explicit. No arbitrary callback, allocator usable
-size, process RSS or normative conformance guarantee is claimed.
-
-Repository visibility, crates.io publication, protected standards processing,
-independent normative review and applicable public-release authority remain
-separate. No protected standards input is processed by this integration.
+Vector capacity, allocator requested payload, usable allocation size and
+process RSS are different quantities. This interface supplies no proof that
+they are equal and no independent JBIG2 conformance guarantee.

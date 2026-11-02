@@ -1,9 +1,8 @@
 # Repository layout and evidence roles
 
-Keep source, policy and reviewed expectations in Git. Generate routine reports
-under ignored `target/` directories and upload them as CI artifacts; do not
-commit a new chronological progress log or refresh historical reports to look
-current. Every source-bound record speaks only for its recorded revision.
+Source, policy and validation expectations are tracked in Git. Generated reports
+live under ignored `target/` directories or CI artifacts. Source-bound evidence
+describes its recorded revision, not every later checkout.
 
 ## Runtime and proof source
 
@@ -72,7 +71,7 @@ implementation. Ordinary function identities and physical verifier-selection
 scopes are checked separately when an impl lives below its owning type.
 
 Timing/RSS and allocator-requested payload drivers reuse
-[`benchmarks/cases.rs`](../benchmarks/cases.rs) for approved generated inputs,
+[`benchmarks/cases.rs`](../benchmarks/cases.rs) for generated inputs,
 typed outcomes and exact bitmap validation. Only the isolated allocator probe
 links the pinned thread-local counter; the decoder's dependency graph and
 ordinary distribution are unchanged. Allocator payloads and process RSS are
@@ -84,7 +83,7 @@ different measurements, not interchangeable memory guarantees.
 | --- | --- |
 | [`config/toolchain.json`](../config/toolchain.json) | Tool/compiler pins and execution policy; runtime, development, proof and nightly lanes remain distinct |
 | [`config/support-matrix.json`](../config/support-matrix.json) | Feature/profile, unsupported/deferred behavior and resource policy; not conformance certification |
-| [`validation/source-provenance.json`](../validation/source-provenance.json) | Source/license/hash/approved-use identities for standards, fixtures and tools; acquisition and redistribution permissions are distinct |
+| [`validation/source-provenance.json`](../validation/source-provenance.json) | Source, license, version, hash and use-scope records for external references and validation tools |
 | [`verification/proof-dispositions.json`](../verification/proof-dispositions.json) | Reviewed qualified production identities, boundary reasons and source hashes; generated proposals are not approval |
 | [`verification/production-proof-coverage.json`](../verification/production-proof-coverage.json) | Checked production inventory/accounting baseline; not a normative coverage percentage |
 | [`verification/proof-attestation.json`](../verification/proof-attestation.json) | Revision-bound proof result/limitations and release status; not a substitute for a fresh candidate run |
@@ -93,27 +92,21 @@ different measurements, not interchangeable memory guarantees.
 | [`validation/coverage/baseline.json`](../validation/coverage/baseline.json) | Reviewed aggregate/per-file runtime coverage ratchet; never updated automatically |
 | [`validation/conformance/attestation.json`](../validation/conformance/attestation.json) | Revision-qualified conformance summary with honest unresolved/unsupported outcomes |
 | [`validation/conformance/itu-t88-2018-manifest.json`](../validation/conformance/itu-t88-2018-manifest.json) | Approved official archive/file identities and exact expected case set; contains no permission to redistribute assets |
-| `validation/conformance/expected-differences.json`, `seven-rejection-review.json` | Pinned official disagreements, typed-error/source identities and unresolved diagnoses; not rejection credit |
+| `validation/conformance/expected-differences.json`, `seven-rejection-review.json` | Exact typed-error/input/source identities and observations for expected strict rejections; not bitmap passes |
 | `validation/differential/oracles.json`, `expected-differences.json` | Oracle versions/provenance and reviewed comparison expectations; external black-box tools stay outside the runtime |
 | `validation/negative/cases.json`, `validation/metamorphic/cases.json` | Exact executable Cargo test catalogs, not tests by themselves |
 | `validation/performance/scenarios.json` | Benchmark scenarios and policy expectations; timing availability must be explicit |
-| [`validation/schemas/release-attestation.schema.json`](../validation/schemas/release-attestation.schema.json) | Structure for candidate evidence; a valid document is not release-owner approval |
+| [`validation/schemas/release-attestation.schema.json`](../validation/schemas/release-attestation.schema.json) | Release identity and evidence structure; schema validation alone is not proof of correctness |
 
 The coverage baseline and performance scenarios remain live reviewed inputs.
 Conformance/differential observations, expectations and provenance records are
 retained for their validation roles. Consult each record's source and status;
 passing a provenance/schema audit does not make it latest-main execution.
 
-Superseded coverage tranches, implementation tracking and single-run
-performance/comparison measurements are recoverable in Git history and retained
-CI artifacts, not copied into a source archive. They are not live baselines,
-contracts or current-evidence dependencies. Keep the harnesses, fixtures, tests
-and actual policy inputs; generate fresh measurements under `target/`.
-
-Obsolete smoke snapshots, superseded limitation plans, withdrawn-credit
-candidates and old candidate-approval tracking are not current authorities.
-Use the records above, [publication readiness](publication-readiness.md) and
-[release gates](../RELEASING.md), not a copied archive of session notes.
+Use current source-bound reports with the tracked baselines and policy inputs.
+Measurement histories remain in Git and CI artifacts; they are not substitutes
+for fresh validation. See [release results](publication-readiness.md) and
+[release checks](../RELEASING.md).
 
 ## Generated evidence
 
