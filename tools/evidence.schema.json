@@ -48,7 +48,7 @@
                 "patternProperties": {"^src/(?:[a-z_]+/)*[a-z_]+\\.rs$": {"$ref": "#/$defs/sha256"}}
               }
             },
-            "if": {"properties": {"classification": {"const": "pending_normative_review"}}},
+            "if": {"properties": {"classification": {"enum": ["pending_normative_review", "reviewed_strict_rejection"]}}},
             "then": {
               "required": ["expected_error_exact", "stream_sha256", "source_files_sha256"],
               "properties": {"expected_error_contains": false}

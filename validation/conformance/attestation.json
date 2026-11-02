@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "status": "blocked_pending_normative_review",
-  "source_revision": "b45340399417abd820de7b9c7ebc533d297d45fd",
-  "scope": "Current normal-decoder re-observation of the same approved10officialstreams after the production Huffman cache map and successful factory retention correction;2pass7pending1unsupported, no new standard interpretation or rejection credit. Differential oracle observations remain historical.",
+  "status": "owner_accepted_strict_rejections",
+  "source_revision": "a1b3b0a50989892b7f2839e479a588790dd54188",
+  "scope": "Owner engineering acceptance of seven exact source-bound strict rejections after authorized reference source analysis. Fresh unchanged normal-decoder execution of all ten original inputs gives 2 bitmap passes, 7 reviewed rejections and 1 unsupported colour case. This is not exhaustive normative approval or full-spec conformance; release remains blocked. Differential observations and implementation-test counts below retain their original revisions.",
   "implementation_tests": {
     "total": 525,
     "passed": 511,
@@ -15,12 +15,12 @@
     "approved": true,
     "total": 10,
     "passed": 2,
-    "reviewed_strict_rejections": 0,
-    "pending_normative_reviews": 7,
+    "reviewed_strict_rejections": 7,
+    "pending_normative_reviews": 0,
     "unsupported_profile": 1,
-    "unresolved_failures": 7,
-    "results_sha256": "da94a11bc11f7c3dbe247472bb5971a98ad53997b361316d7e84ed506c28ef1a",
-    "review_sha256": "6864df87605c10a2074dc6cea895302bb981033b02227755d7b0e208d1b5a176"
+    "unresolved_failures": 0,
+    "results_sha256": "b6607a6ce27fe85c06441a8f276a192afe95dceb8e7db462c924d713b533260c",
+    "review_sha256": "46a3753831fae001f08c0ec984b152a8b924dddd3c7aa736eeed090960573de7"
   },
   "community_regressions": {
     "total": 0,

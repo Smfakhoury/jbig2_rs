@@ -357,9 +357,17 @@ class ConformanceGateTests(unittest.TestCase):
     def difference_file(self, **overrides):
         entry = {
             "id": "case", "classification": "reviewed_strict_rejection",
-            "expected_error_contains": "reviewed error", "rationale": "generated test expectation",
+            "expected_error_exact": "reviewed error", "rationale": "generated test expectation",
+            "stream_sha256": hashlib.sha256(self.stream.read_bytes()).hexdigest(),
+            "source_files_sha256": {
+                "src/lib.rs": hashlib.sha256((ROOT / "src/lib.rs").read_bytes()).hexdigest(),
+            },
         }
         entry.update(overrides)
+        if entry["classification"] == "unsupported_profile":
+            for key in ("expected_error_exact", "stream_sha256", "source_files_sha256"):
+                del entry[key]
+            entry["expected_error_contains"] = "reviewed error"
         path = self.root / "differences.json"
         path.write_text(json.dumps({"schema_version": 1, "cases": [entry]}), encoding="utf-8")
         return path
@@ -376,7 +384,7 @@ class ConformanceGateTests(unittest.TestCase):
         entry.update(overrides)
         path = self.difference_file(**entry)
         document = json.loads(path.read_text())
-        del document["cases"][0]["expected_error_contains"]
+        document["cases"][0].pop("expected_error_contains", None)
         path.write_text(json.dumps(document))
         return path
 
@@ -455,6 +463,28 @@ class ConformanceGateTests(unittest.TestCase):
         report = json.loads(self.output.read_text())
         self.assertEqual(report["passed"], 0)
         self.assertEqual(report["reviewed_strict_rejections"], 1)
+
+    def test_reviewed_rejections_keep_exact_error_exit_stream_and_source_guards(self):
+        path = self.difference_file()
+        for code, error in ((1, "prefix reviewed error"), (1, "reviewed error suffix"),
+                            (-11, "reviewed error"), (2, "reviewed error"), (0, "")):
+            with self.subTest(code=code, error=error):
+                def decode(command, **kwargs):
+                    return subprocess.CompletedProcess(command, code, "", error)
+                self.assertEqual(self.invoke("--expected-differences", str(path), decoder=decode), 1)
+                report = json.loads(self.output.read_text())
+                self.assertEqual(report["reviewed_strict_rejections"], 0)
+                self.assertEqual(report["unresolved_failures"], 1)
+        for overrides in (
+            {"stream_sha256": "0" * 64}, {"source_files_sha256": {}},
+            {"source_files_sha256": {"src/lib.rs": "0" * 64}},
+            {"expected_error_contains": "reviewed error"},
+        ):
+            with self.subTest(overrides=overrides):
+                path = self.difference_file(**overrides)
+                self.output.write_text('{"stale_success": true}')
+                self.assertEqual(self.invoke("--expected-differences", str(path)), 1)
+                self.assertFalse(self.output.exists())
 
     def test_unsupported_profile_does_not_require_bilevel_expected_bitmap(self):
         (self.vectors / "case_TT00.bmp").write_bytes(b"generated unsupported colour fixture")

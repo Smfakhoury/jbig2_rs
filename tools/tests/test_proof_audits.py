@@ -41,6 +41,19 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
         document["cases"][0]["source_files_sha256"] = {"src/bitmap/compose.rs": "2" * 64}
         validate(document, "conformance_differences")
 
+    def test_reviewed_rejections_keep_exact_errors_and_source_bindings(self):
+        document = self.expectation()
+        document["cases"][0]["classification"] = "reviewed_strict_rejection"
+        validate(document, "conformance_differences")
+        for field in ("expected_error_exact", "stream_sha256", "source_files_sha256"):
+            changed = copy.deepcopy(document)
+            del changed["cases"][0][field]
+            with self.subTest(field=field), self.assertRaises(ValidationError):
+                validate(changed, "conformance_differences")
+        document["cases"][0]["expected_error_contains"] = "original fixture"
+        with self.assertRaises(ValidationError):
+            validate(document, "conformance_differences")
+
     def test_pending_review_requires_exact_error_and_safe_hash_identities(self):
         for overrides in (
             {"expected_error_exact": ""}, {"expected_error_contains": "fixture"},
@@ -135,9 +148,21 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                 "source_inventory": "complete runtime source inventory",
                 "crlf": "stale conformance review identity: tools/evidence.py",
                 "policy": "stale conformance checkout policy identity",
-                "live_source": "pending review source hash mismatch: codeStreamTest1_TT1: src/reader.rs",
+                "live_source": "review source hash mismatch: codeStreamTest1_TT1: src/reader.rs",
                 "root_artifact": "repository-root JSON belongs in",
             }
+            if review.get("owner_disposition"):
+                failures.update({
+                    "decision_absent": "explicit bounded owner disposition",
+                    "decision_normative": "explicit bounded owner disposition",
+                    "decision_full_spec": "explicit bounded owner disposition",
+                    "decision_subset": "explicit bounded owner disposition",
+                    "decision_naive_time": "timestamp with timezone",
+                    "decision_evidence": "explicit bounded owner disposition",
+                    "decision_reference": "explicit bounded owner disposition",
+                    "decision_release": "explicit bounded owner disposition",
+                    "decision_status": "preserve the separate release gate",
+                })
             for mutation, expected_error in failures.items():
                 with self.subTest(mutation=mutation):
                     document = json.loads(original_attestation)
@@ -153,7 +178,7 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                     if mutation == "hash":
                         document["normative_vectors"]["review_sha256"] = "0" * 64
                     elif mutation == "count":
-                        document["normative_vectors"]["pending_normative_reviews"] = 0
+                        document["normative_vectors"]["pending_normative_reviews"] += 1
                     elif mutation == "crlf":
                         tool.write_bytes(tool.read_bytes().replace(b"\n", b"\r\n"))
                     elif mutation == "policy":
@@ -162,6 +187,31 @@ class ConformanceExpectationSchemaTests(unittest.TestCase):
                         reader.write_bytes(reader.read_bytes() + b"// fixture mutation\n")
                     elif mutation == "root_artifact":
                         tracking.write_text("{}")
+                    elif mutation.startswith("decision_"):
+                        changed = json.loads(original_review)
+                        decision = changed["owner_disposition"]
+                        if mutation == "decision_absent":
+                            del changed["owner_disposition"]
+                        elif mutation == "decision_normative":
+                            decision["normative_approval"] = True
+                        elif mutation == "decision_full_spec":
+                            decision["full_spec_conformance"] = True
+                        elif mutation == "decision_subset":
+                            decision["case_ids"].pop()
+                        elif mutation == "decision_naive_time":
+                            decision["authorized_at"] = "2026-11-02T00:13:38"
+                        elif mutation == "decision_evidence":
+                            decision["evidence_revision"] = ""
+                        elif mutation == "decision_reference":
+                            decision["decision_reference"] = "https://example.com/approval"
+                        elif mutation == "decision_release":
+                            decision["release_gate"] = "ready"
+                        elif mutation == "decision_status":
+                            document["release_gate"] = "ready"
+                        (root / review_path).write_text(json.dumps(changed))
+                        document["normative_vectors"]["review_sha256"] = hashlib.sha256(
+                            (root / review_path).read_bytes()
+                        ).hexdigest()
                     else:
                         changed = json.loads(original_review)
                         if mutation == "source_inventory":
