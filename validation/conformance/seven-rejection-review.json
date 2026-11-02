@@ -263,7 +263,7 @@
     "tools/evidence.schema.json": "ec7ac7064c35e962073e5b0abfe57e7f3ee03ed715987745af7e61bcc95869b9",
     "tools/evidence.py": "1286345e1679a72362fc4cc60f3ef1d6294b19df4edcea7c6d0f74970d117571",
     "tools/verify_provenance.py": "0d9be7e393273d59adf5d38adeb828cb8299d63365412dee3e61f565d7ee9aed",
-    "validation/source-provenance.json": "f71feae2c0c8e9950453cf2d76eb06b75b7996f16d6d60d3d960d783147aaab8",
+    "validation/source-provenance.json": "056dd2ea23d1bc3eade8f49ca874e2afb426a7b9ed9d05f4e897603dfaa95b1c",
     "validation/conformance/expected-differences.json": "f5b431e5e139355777c5f5bacf3be4ba307430376e2d132503d57b6a8c07108b",
     "validation/conformance/fetch_itu.py": "ef7d846d05440ff052581de0d04caaa76f6e9cc9582ee1b9fb8baff34b89e86b",
     "tools/tests/test_conformance_acquisition.py": "57535afa7a966244302b51554c3dd6dc1fc00dac11fec7f33f49906fe35258f7",

@@ -289,7 +289,7 @@ class RuntimeCoverageTests(unittest.TestCase):
         self.assertEqual(baseline["release_goals"], {"lines": 90, "branches": 85})
         self.assertNotEqual(baseline["status"], "release_approved")
         manifest = tomllib.loads((TOOLS.parent / "Cargo.toml").read_text())
-        self.assertIs(manifest["package"]["publish"], False)
+        self.assertIn(manifest["package"]["publish"], (False, ["crates-io"]))
         broken = copy.deepcopy(baseline)
         broken["totals"]["lines"]["covered"] += 1
         with self.assertRaisesRegex(ValueError, "totals do not match"):

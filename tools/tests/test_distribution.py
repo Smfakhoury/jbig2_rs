@@ -16,7 +16,8 @@ sys.path.insert(0, str(TOOLS))
 
 from audit_package import REQUIRED, audit
 from check_distribution import (
-    check_package_metadata, check_publish_dry_run, check_unsafe_policy, extract_archive, isolated_environment,
+    check_package_metadata, check_publish_dry_run, check_unsafe_policy, crates_io_publication_enabled,
+    extract_archive, isolated_environment,
     require_rejected_check,
 )
 
@@ -167,6 +168,44 @@ class DistributionTests(unittest.TestCase):
         self.assertEqual(manifest.read_bytes(), original)
         self.assertEqual(environment["CARGO_NET_OFFLINE"], "true")
 
+    def test_publication_target_requires_explicit_disabled_or_crates_io_only(self):
+        self.assertFalse(crates_io_publication_enabled({"publish": False}))
+        self.assertTrue(crates_io_publication_enabled({"publish": ["crates-io"]}))
+        for value in (None, True, [], ["other"], ["crates-io", "other"], "crates-io"):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "restricted"):
+                crates_io_publication_enabled({"publish": value})
+
+    def test_enabled_crates_io_rehearsal_never_removes_the_dry_run_flag(self):
+        manifest = self.publish_fixture()
+        original = manifest.read_bytes().replace(b"publish = false", b'publish = ["crates-io"]')
+        manifest.write_bytes(original)
+        original_manifest = self.directory / "Cargo.toml.orig"
+        original_manifest.write_bytes(original)
+        environment = isolated_environment(self.directory)
+        archive = Path(environment["CARGO_TARGET_DIR"]) / "publish-dry-run/package" / f"{self.package_root}.crate"
+        archive.parent.mkdir(parents=True)
+        with patch("check_distribution.subprocess.run",
+                   side_effect=self.fake_publish(manifest, archive)):
+            report = check_publish_dry_run(["cargo", "+1.88.0"], self.directory, environment)
+        self.assertEqual(report["manifest_change"], "none; source already restricted to crates-io")
+        self.assertEqual(report["source_manifest_sha256"], report["rehearsal_manifest_sha256"])
+        self.assertFalse(report["uploaded"])
+        self.assertEqual(manifest.read_bytes(), original)
+        self.assertEqual(original_manifest.read_bytes(), original)
+
+    def test_mixed_manifest_publish_settings_fail_before_cargo(self):
+        manifest = self.publish_fixture()
+        original = manifest.read_bytes()
+        (self.directory / "Cargo.toml.orig").write_bytes(
+            original.replace(b"publish = false", b'publish = ["crates-io"]')
+        )
+        with patch("check_distribution.subprocess.run") as command, self.assertRaisesRegex(
+            ValueError, "matching manifest",
+        ):
+            check_publish_dry_run(["cargo"], self.directory, {})
+        command.assert_not_called()
+        self.assertEqual(manifest.read_bytes(), original)
+
     def test_publication_rehearsal_updates_and_restores_both_cargo_manifests(self):
         manifest = self.publish_fixture()
         original = manifest.read_bytes()
@@ -261,7 +300,7 @@ class DistributionTests(unittest.TestCase):
                 check_publish_dry_run(["cargo"], self.directory, isolated_environment(self.directory))
             self.assertEqual(manifest.read_bytes(), original)
 
-    def test_publication_rehearsal_rejects_checkout_or_enabled_or_ambiguous_manifest(self):
+    def test_publication_rehearsal_rejects_checkout_or_unrestricted_or_ambiguous_manifest(self):
         manifest = self.publish_fixture()
         original = manifest.read_bytes()
         with patch("check_distribution.ROOT", self.directory), self.assertRaisesRegex(
@@ -299,6 +338,20 @@ class DistributionTests(unittest.TestCase):
             broken["packages"][0].update(change)
             with self.subTest(change=change), self.assertRaises(ValueError):
                 check_package_metadata(broken, extracted, "1.89.0")
+
+    def test_metadata_matches_the_source_crates_io_only_publication_target(self):
+        extracted = self.directory / self.package_root
+        metadata = {"packages": [{
+            "name": "jbig2-decoder", "license": "MIT", "rust_version": "1.88.0",
+            "dependencies": [], "features": {}, "publish": ["crates-io"],
+            "manifest_path": str(extracted / "Cargo.toml"),
+            "targets": [{"kind": ["lib"], "name": "jbig2_decoder"}],
+        }]}
+        check_package_metadata(metadata, extracted, "1.88.0", True)
+        for target in ([], None, ["other"], ["crates-io", "other"]):
+            metadata["packages"][0]["publish"] = target
+            with self.subTest(target=target), self.assertRaises(ValueError):
+                check_package_metadata(metadata, extracted, "1.88.0", True)
 
     def test_rejected_check_requires_failure_and_the_exact_compiler_diagnostic(self):
         diagnostic = {

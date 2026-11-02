@@ -77,7 +77,17 @@ def metadata(cargo: list[str], directory: Path, environment: dict) -> dict:
     ))
 
 
-def check_package_metadata(document: dict, extracted: Path, msrv: str) -> None:
+def crates_io_publication_enabled(package: dict) -> bool:
+    if package.get("publish") is False:
+        return False
+    if package.get("publish") == ["crates-io"]:
+        return True
+    raise ValueError("publication must be disabled or restricted to crates-io")
+
+
+def check_package_metadata(
+    document: dict, extracted: Path, msrv: str, publication_enabled: bool = False,
+) -> None:
     packages = document["packages"]
     if len(packages) != 1:
         raise ValueError("packaged decoder must have no runtime or development dependencies")
@@ -88,7 +98,7 @@ def check_package_metadata(document: dict, extracted: Path, msrv: str) -> None:
         or package["rust_version"] != msrv
         or package["dependencies"]
         or package["features"]
-        or package["publish"] != []
+        or package["publish"] != (["crates-io"] if publication_enabled else [])
         or Path(package["manifest_path"]).resolve() != (extracted / "Cargo.toml").resolve()
     ):
         raise ValueError("unexpected isolated package metadata or proof/validation features")
@@ -146,6 +156,7 @@ def check_publish_dry_run(cargo: list[str], extracted: Path, environment: dict) 
     manifest = extracted / "Cargo.toml"
     original = manifest.read_bytes()
     before = tomllib.loads(original.decode("utf-8"))
+    publication_enabled = crates_io_publication_enabled(before["package"])
     originals = {manifest: original}
     original_manifest = extracted / "Cargo.toml.orig"
     if original_manifest.is_file():
@@ -153,13 +164,18 @@ def check_publish_dry_run(cargo: list[str], extracted: Path, environment: dict) 
     changes = {}
     for path, contents in originals.items():
         intended = tomllib.loads(contents.decode("utf-8"))
-        if intended["package"].get("publish") is not False:
-            raise ValueError("publication rehearsal requires the disabled original manifests")
-        replacement, count = re.subn(
-            rb"(?m)^publish = false\r?$", b'publish = ["crates-io"]', contents,
-        )
+        if crates_io_publication_enabled(intended["package"]) != publication_enabled:
+            raise ValueError("publication rehearsal requires matching manifest publication settings")
+        if publication_enabled:
+            replacement = contents
+        else:
+            replacement, count = re.subn(
+                rb"(?m)^publish = false\r?$", b'publish = ["crates-io"]', contents,
+            )
+            if count != 1:
+                raise ValueError("publication rehearsal must change only the package publish setting")
         intended["package"]["publish"] = ["crates-io"]
-        if count != 1 or tomllib.loads(replacement.decode("utf-8")) != intended:
+        if tomllib.loads(replacement.decode("utf-8")) != intended:
             raise ValueError("publication rehearsal must change only the package publish setting")
         changes[path] = replacement
     expected = tomllib.loads(changes[manifest].decode("utf-8"))
@@ -215,7 +231,11 @@ def check_publish_dry_run(cargo: list[str], extracted: Path, environment: dict) 
         return {
             "status": "passed", "command": command, "exit_code": process.returncode,
             "registry": "crates-io", "network": "registry_metadata", "uploaded": False,
-            "manifest_change": 'package.publish: false -> ["crates-io"]; temporary extraction only',
+            "manifest_change": (
+                "none; source already restricted to crates-io"
+                if publication_enabled else
+                'package.publish: false -> ["crates-io"]; temporary extraction only'
+            ),
             "temporary_manifests": [path.name for path in originals],
             "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
             "archive_locations": [path.relative_to(package_directory).as_posix() for path in archives],
@@ -234,8 +254,7 @@ def check_publish_dry_run(cargo: list[str], extracted: Path, environment: dict) 
 
 def check_distribution(toolchain: str, publish_dry_run: bool = False) -> dict:
     manifest = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))["package"]
-    if manifest.get("publish") is not False:
-        raise ValueError("distribution readiness checks must not enable publication")
+    publication_enabled = crates_io_publication_enabled(manifest)
     package_root = f"{manifest['name']}-{manifest['version']}"
     cargo = ["cargo", f"+{toolchain}"]
     with tempfile.TemporaryDirectory(prefix="jbig2-distribution-") as temporary:
@@ -253,7 +272,7 @@ def check_distribution(toolchain: str, publish_dry_run: bool = False) -> dict:
             if (extracted / path).read_bytes() != (ROOT / path).read_bytes():
                 raise ValueError(f"archive source differs from checkout: {path}")
         check_package_metadata(metadata(cargo, extracted, environment), extracted,
-                               manifest["rust-version"])
+                               manifest["rust-version"], publication_enabled)
         if any((extracted / name).exists() for name in ("proofs", "specs", "validation", "fuzz")):
             raise ValueError("proof or validation assets leaked into the extracted package")
         run(cargo + ["test", "--offline", "--locked", "--all-targets"], extracted, environment)
@@ -292,7 +311,7 @@ def check_distribution(toolchain: str, publish_dry_run: bool = False) -> dict:
             "separate_proof_assets": "absent",
             "proof_annotations": "cfg_inactive_source",
             "unsafe_policy": "compiler_rejected_probe_and_accepted_weaker_control",
-            "publication_enabled": False,
+            "publication_enabled": publication_enabled,
         }
         if publication is not None:
             result["publish_dry_run"] = publication

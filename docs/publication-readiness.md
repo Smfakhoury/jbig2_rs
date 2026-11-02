@@ -20,8 +20,10 @@ checks remain mandatory, including actual no-upload Cargo publication rehearsals
 The later historical full-coverage gate failures are not missing owner
 permission and are no longer blockers to the limited 0.1 coverage policy.
 Their gaps remain visible for future work rather than being marked solved.
-The repository is public; the candidate remains `publish = false` until the
-separate final upload step. Private-only official-vector CI guards remain
+The repository is public. The owner subsequently authorized actual 0.1.0
+publication after configuring the API key; the release manifest restricts the
+target to crates.io. CI and the distribution checker still perform dry runs
+only, without registry credentials or uploads. Private-only official-vector CI guards remain
 intact and must not be bypassed on this public repository.
 
 Accepted main after [PR #132](https://github.com/microsoft/jbig2_rs/pull/132) is
@@ -251,9 +253,10 @@ assuming one compiler serves every lane.
 - The owner-reported CELA approval covers project publication to its recorded
   scope. The MIT license does not supply permission to redistribute normative
   documents, official assets or independent oracles.
-- The repository remains **private**. Cargo remains `publish = false`,
-  version `0.0.1`. Crate publication, visibility changes and release sign-off
-  are separate owner decisions, not consequences of passing checks.
+- The repository is public. Version `0.1.0` permits publication only to
+  crates.io under the owner's explicit final publication authorization.
+  Actual registry publication must be independently verified; enabling the
+  manifest and passing checks are not themselves an upload.
 - No handwritten unsafe is present and the crate root forbids unsafe code.
   Generated derives, library internals, Rust/LLVM and Verus/vstd are trusted
   boundaries. Proof annotations are cfg-inactive, not removed from source;
