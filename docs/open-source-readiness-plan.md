@@ -17,8 +17,8 @@ Those names and historical evidence must not be renamed merely to match the
 public package.
 
 This status is qualified to accepted main
-`28b7b411cf80ac75bf1bc6c137a7bd0133670b65` after
-[PR #131](https://github.com/microsoft/jbig2_rs/pull/131).
+`4d7e1e6bf5dce04c58544a8dec23b3bb12b7f278` after
+[PR #132](https://github.com/microsoft/jbig2_rs/pull/132).
 The reference investigation and subsequent owner engineering disposition are
 follow-up work, not a transfer of those hosted execution results.
 An older checkout or saved editor snapshot can still show `jbig2_rs`; it is

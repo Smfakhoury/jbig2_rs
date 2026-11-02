@@ -6,6 +6,14 @@ in [repository layout](repository-layout.md). Historical runs and implementation
 chronology remain in Git; do not treat an older result as a new solver run,
 conformance execution or publication permission.
 
+Accepted main after [PR #132](https://github.com/microsoft/jbig2_rs/pull/132) is
+`4d7e1e6bf5dce04c58544a8dec23b3bb12b7f278`. All 30 exact-head checks and
+independent raw-artifact reconstruction passed: 1,287 obligations / zero errors,
+49 semantic groups / 357 contrasts, 174 detected native mutations, six actual
+153-file distributions and the unchanged source/timing/resource/coverage guards.
+The owner disposition and trusted official execution below are follow-up work;
+they require their own current-head acceptance.
+
 ## Owner conformance disposition, 2026-11-02
 
 The owner accepted the strict-rejection recommendation after the source-level
