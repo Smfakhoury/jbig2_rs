@@ -74,6 +74,73 @@ class WorkflowPolicyTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 check_workflow(document, "conformance.yml")
 
+    def test_release_permissions_and_commands_are_narrowly_scoped(self):
+        actual = load_workflow((TOOLS.parent / ".github/workflows/release.yml").read_text())
+        self.assertEqual(len(check_workflow(actual, "release.yml")), 11)
+        for mutation in ("trigger", "dispatch", "default", "trust", "oidc_validation", "contents_write",
+                         "publish_condition", "environment", "cancel", "source_ref", "target_ref",
+                         "credentials", "source_command", "dry_run_command", "recheck", "auth_condition",
+                         "auth_pin", "auth_url", "auth_order", "publish_command", "static_secret",
+                         "post_verify", "artifact", "extra_step", "global_env", "extra_job"):
+            document = copy.deepcopy(actual)
+            validate, publish = document["jobs"]["validate"], document["jobs"]["publish"]
+            if mutation == "trigger":
+                document["on"]["pull_request"] = ""
+            elif mutation == "dispatch":
+                document["on"]["workflow_dispatch"] = ""
+            elif mutation == "default":
+                document["on"]["workflow_dispatch"]["inputs"]["dry_run"]["default"] = "false"
+            elif mutation == "trust":
+                validate["if"] = "always()"
+            elif mutation == "oidc_validation":
+                validate["permissions"]["id-token"] = "write"
+            elif mutation == "contents_write":
+                publish["permissions"]["contents"] = "write"
+            elif mutation == "publish_condition":
+                publish["if"] = "always()"
+            elif mutation == "environment":
+                publish["environment"] = "other"
+            elif mutation == "cancel":
+                publish["concurrency"]["cancel-in-progress"] = "true"
+            elif mutation == "source_ref":
+                validate["steps"][0]["with"]["ref"] = "${{ inputs.tag }}"
+            elif mutation == "target_ref":
+                publish["steps"][2]["with"]["ref"] = "${{ inputs.tag }}"
+            elif mutation == "credentials":
+                publish["steps"][2]["with"]["persist-credentials"] = "true"
+            elif mutation == "source_command":
+                validate["steps"][2]["run"] = "true"
+            elif mutation == "dry_run_command":
+                validate["steps"][5]["run"] = "cargo publish"
+            elif mutation == "recheck":
+                publish["steps"][6]["if"] = "false"
+            elif mutation == "auth_condition":
+                publish["steps"][7]["if"] = "always()"
+            elif mutation == "auth_pin":
+                publish["steps"][7]["uses"] = "rust-lang/crates-io-auth-action@" + "a" * 40
+            elif mutation == "auth_url":
+                publish["steps"][7]["with"] = {"url": "https://other.example"}
+            elif mutation == "auth_order":
+                publish["steps"][6], publish["steps"][7] = publish["steps"][7], publish["steps"][6]
+            elif mutation == "publish_command":
+                publish["steps"][8]["run"] = "cargo publish --registry other"
+            elif mutation == "static_secret":
+                publish["steps"][8]["env"]["CARGO_REGISTRY_TOKEN"] = "${{ secrets.CARGO_REGISTRY_TOKEN }}"
+            elif mutation == "post_verify":
+                publish["steps"][9]["run"] = "true"
+            elif mutation == "artifact":
+                publish["steps"][10]["with"]["path"] = "target/"
+            elif mutation == "extra_step":
+                publish["steps"].insert(7, {"run": "echo unexpected"})
+            elif mutation == "global_env":
+                document["env"] = {"CARGO_HOME": "/other"}
+            elif mutation == "extra_job":
+                document["jobs"]["extra"] = copy.deepcopy(publish)
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                check_workflow(document, "release.yml")
+        with self.assertRaises(ValueError):
+            check_workflow(actual, "unrelated.yml")
+
     def test_proof_agent_pins_model_and_cannot_silently_inherit_or_fallback(self):
         path = TOOLS.parent / ".github/agents/verus-proof-worker.agent.md"
         text = path.read_text()
@@ -259,6 +326,8 @@ class WorkflowPolicyTests(unittest.TestCase):
             ("fuzz.yml", "controls"): toolchains["fuzz_rust_toolchain"],
             ("fuzz.yml", "fuzz"): toolchains["fuzz_rust_toolchain"],
             ("performance.yml", "performance"): toolchains["cargo_rust_toolchain"],
+            ("release.yml", "validate"): "1.88.0",
+            ("release.yml", "publish"): "1.88.0",
             ("verus.yml", "whole"): toolchains["verus"]["rust_toolchain"],
             ("verus.yml", "semantic"): toolchains["verus"]["rust_toolchain"],
             ("verus.yml", "verify"): toolchains["verus"]["rust_toolchain"],

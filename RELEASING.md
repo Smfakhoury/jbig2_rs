@@ -80,6 +80,63 @@ provider; keep credentials out of source control, command arguments and logs.
 Before retrying an ambiguous upload, check whether the version already exists
 and compare its checksum. Registry versions cannot be overwritten.
 
+## Publish from GitHub
+
+The [publication workflow](.github/workflows/release.yml) runs when a GitHub
+Release is published. Manual runs default to **dry run** and do not request OIDC
+credentials, require publishing-environment approval or upload a crate.
+
+### One-time setup
+
+1. Create the GitHub environment `crates-io` in the repository settings.
+   Require a release maintainer's approval, disable administrator bypass, and
+   allow deployments only from branch `main` and tags matching `v*`.
+   Allow self-review if the same maintainer creates and approves releases.
+   Merely naming an environment in a workflow does not configure these rules.
+2. On crates.io, open **jbig2-decoder → Settings → Trusted Publishing → Add**,
+   select **GitHub**, and save these exact fields:
+
+   | Field | Value |
+   |---|---|
+   | Repository owner | `microsoft` |
+   | Repository name | `jbig2_rs` |
+   | Workflow filename | `release.yml` |
+   | Environment | `crates-io` |
+
+   This registration requires crate-management access on crates.io. See the
+   [official Trusted Publishing guide](https://crates.io/docs/trusted-publishing).
+   No crates.io API key or GitHub Actions secret is needed.
+
+### Each release
+
+1. Prepare and merge the final versioned release PR. Its integrated tree must
+   equal the PR head tree; update and retest the PR if integration changes it.
+2. Create `vVERSION` at that exact integration commit on `main`. Wait for all
+   required checks on the PR and integrated/tagged source to pass.
+3. In **Actions → Publish crate → Run workflow**, select branch `main`, enter
+   the tag and leave **dry_run** enabled for a credential-free rehearsal.
+4. Publish a GitHub Release using that existing tag, then approve the `crates-io`
+   environment deployment. Alternatively, run the workflow manually from `main`
+   with **dry_run** disabled and approve the same environment.
+
+The read-only validation job checks tag/version/registry policy, merged PR and
+tree identity, all 30 PR checks and 29 final-commit native checks. It verifies
+check issuers, source workflow paths, run revisions and successful completion.
+It then exercises the extracted archive and real Cargo dry run. Publication
+rebuilds the same checksum and rechecks the tag and registry before exchanging
+OIDC identity for a short-lived token. Only the publishing job has `id-token:
+write`; only `cargo publish` receives the temporary registry token. The official
+authentication action revokes it at job completion.
+
+An existing version is skipped only when its unyanked registry checksum matches
+the checked archive. Different bytes or a yanked version fail; nothing is
+overwritten or unyanked. Concurrent publication jobs are serialized. After upload,
+the workflow verifies registry metadata and the downloaded checksum and runs a
+fresh, exact-version, registry-backed MSRV consumer offline, including the hidden
+internal-hook rejection. Metadata-only reports are retained as Actions artifacts.
+An upload or verification failure remains a failed workflow; inspect the registry
+before retrying. Restricted conformance assets are not acquired by this workflow.
+
 ## Verify the published result
 
 - Check the registry version and archive checksum.
@@ -89,7 +146,8 @@ and compare its checksum. Registry versions cannot be overwritten.
 - Use a fresh Cargo home to fetch an exact registry dependency, with no local
   path override. Check the lockfile checksum and run the MSRV exact-output
   consumer offline.
-- Create the version tag and release notes for that same source.
+- Confirm the version tag and release notes identify that same source.
+  For direct Cargo publication, create them after registry verification.
 - Publish a checksum and source/tool/test-bound evidence index, using the
   [release-attestation schema](validation/schemas/release-attestation.schema.json).
 
