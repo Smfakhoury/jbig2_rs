@@ -194,6 +194,35 @@ Official execution remains nonzero for unresolved positives. LF checkout rules
 preserve source-byte identities across native hosts. Integration refreshes
 diagnosis bindings only with reviewed evidence, never skips the gate.
 
+### Trusted official execution
+
+The [official workflow](../.github/workflows/conformance.yml) is manually
+dispatched on `main` only, in the private `microsoft/jbig2_rs` repository.
+It checks repository privacy before acquisition, uses read-only permissions and
+a ten-minute job cap, and never runs protected assets on pull-request code.
+It downloads the pinned official package but reads only the approved conformance
+ZIP member; reference sources and standards documents are not extracted.
+Package, inner archive, every file's size/hash and exact membership are checked,
+and extraction is bounded and staged without overwriting an existing directory.
+
+An authorized local equivalent can use the existing approved package:
+
+```sh
+python3 -B validation/conformance/fetch_itu.py \
+  --package /path/to/approved-official-package.zip \
+  --output target/official-vectors
+```
+
+`--download` explicitly selects official HTTPS acquisition instead. Outputs
+must be new directories under `target/`. Use `--vectors target/official-vectors`
+with the runner above. CI uploads only the result JSON and exact source revision,
+not encoded streams, bitmaps, the package or reference sources. Failures are not
+masked; unavailable or hash-changed assets fail, rather than becoming a pass.
+The workflow must actually execute successfully on accepted main before its
+availability is credited to release readiness; configuration alone is not
+execution evidence. Manual trusted execution does not expand public-repository
+asset rights or supply normative approval.
+
 ### Diagnosis and normalization limits
 
 The prior TT1 MMR-truncation explanation was disproved: initial dictionaries

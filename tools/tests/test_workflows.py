@@ -39,6 +39,41 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertIn("on", self.document)
         self.assertNotIn(True, self.document)
 
+    def test_official_conformance_is_private_main_only_and_uploads_no_assets(self):
+        actual = load_workflow(
+            (TOOLS.parent / ".github/workflows/conformance.yml").read_text()
+        )
+        self.assertEqual(len(check_workflow(actual, "conformance.yml")), 4)
+        for mutation in ("pr", "trust", "private", "skip_private", "order", "fetch",
+                         "upload", "extra_job", "skip_run", "change_runner"):
+            document = copy.deepcopy(actual)
+            job = document["jobs"]["official"]
+            steps = job["steps"]
+            if mutation == "pr":
+                document["on"]["pull_request"] = ""
+            elif mutation == "trust":
+                job["if"] = "always()"
+            elif mutation == "private":
+                next(step for step in steps if step.get("name") == "Require private repository")["run"] = "true"
+            elif mutation == "skip_private":
+                next(step for step in steps if step.get("name") == "Require private repository")["if"] = "false"
+            elif mutation == "order":
+                private = next(step for step in steps if step.get("name") == "Require private repository")
+                steps.remove(private)
+                steps.append(private)
+            elif mutation == "fetch":
+                next(step for step in steps if step.get("name") == "Fetch exact approved conformance vectors")["run"] += " --unverified"
+            elif mutation == "upload":
+                steps[-1]["with"]["path"] = "target/"
+            elif mutation == "extra_job":
+                document["jobs"]["untrusted"] = copy.deepcopy(job)
+            elif mutation == "skip_run":
+                next(step for step in steps if step.get("name") == "Run all original official streams")["if"] = "false"
+            elif mutation == "change_runner":
+                next(step for step in steps if step.get("name") == "Run all original official streams")["run"] = "true"
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                check_workflow(document, "conformance.yml")
+
     def test_proof_agent_pins_model_and_cannot_silently_inherit_or_fallback(self):
         path = TOOLS.parent / ".github/agents/verus-proof-worker.agent.md"
         text = path.read_text()
@@ -219,6 +254,7 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertEqual(selections, {
             ("ci.yml", "cargo"): toolchains["cargo_rust_toolchain"],
             ("ci.yml", "distribution"): "${{ matrix.toolchain }}",
+            ("conformance.yml", "official"): "1.88.0",
             ("coverage.yml", "coverage"): toolchains["coverage"]["rust_toolchain"],
             ("fuzz.yml", "controls"): toolchains["fuzz_rust_toolchain"],
             ("fuzz.yml", "fuzz"): toolchains["fuzz_rust_toolchain"],

@@ -282,8 +282,10 @@ See [runtime coverage](runtime-coverage.md).
 release does not rely solely on a stale local report.
 The 2026-11-02 owner disposition closes the seven execution-policy decisions.
 Exact original-input errors and source pins remain mandatory; the exact-bitmap
-gate still rejects these cases. Trusted official CI availability and independent
-normative acceptance remain separate unfinished work.
+gate still rejects these cases. The manual private-main-only official workflow
+provides a bounded acquisition/execution path with metadata-only artifacts.
+It must actually pass on accepted main before trusted execution is credited.
+Independent normative acceptance remains separate unfinished work.
 
 ## P08 — Harden fuzzing and crash regression
 

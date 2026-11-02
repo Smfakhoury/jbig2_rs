@@ -70,7 +70,7 @@
   "metadata_only_update": "Current owner engineering disposition supersedes the former pending execution classification only. Historical traces, diagnoses, oracle outputs and recorded source revisions below remain historical; their prose is not a new unresolved execution result. No normative approval or full-spec guarantee is inferred.",
   "recorded_at": "2026-10-30T01:46:50.577253+00:00",
   "source_revision": "a1b3b0a50989892b7f2839e479a588790dd54188",
-  "checkout_policy_sha256": "d03e7c2e8df08a9bc503b971dcacf1487847dd473a5d34a21b315e48febea132",
+  "checkout_policy_sha256": "9da7e5824fe929a7eb0d1cbbf3cc906dbbfa63e601315e6cc37586d9a9b4315b",
   "scope": "Fresh normal-decoder execution of all ten unchanged approved official streams under the owner-accepted engineering disposition: 2 bitmap passes, 7 exact reviewed strict rejections, 1 unsupported colour case. Release, exhaustive normative decomposition and model fidelity remain unapproved. No lenient mode or decoder change; diagnostic copies are not original-stream passes.",
   "runtime_source_snapshot_refreshed": true,
   "bmp_normalizers_unchanged": true,
@@ -264,7 +264,12 @@
     "tools/evidence.py": "1286345e1679a72362fc4cc60f3ef1d6294b19df4edcea7c6d0f74970d117571",
     "tools/verify_provenance.py": "0d9be7e393273d59adf5d38adeb828cb8299d63365412dee3e61f565d7ee9aed",
     "validation/source-provenance.json": "0d0ac1f89d91a6858df421909e33f46ef137d8cb1592e6b4664ed61b905def73",
-    "validation/conformance/expected-differences.json": "f5b431e5e139355777c5f5bacf3be4ba307430376e2d132503d57b6a8c07108b"
+    "validation/conformance/expected-differences.json": "f5b431e5e139355777c5f5bacf3be4ba307430376e2d132503d57b6a8c07108b",
+    "validation/conformance/fetch_itu.py": "ef7d846d05440ff052581de0d04caaa76f6e9cc9582ee1b9fb8baff34b89e86b",
+    "tools/tests/test_conformance_acquisition.py": "57535afa7a966244302b51554c3dd6dc1fc00dac11fec7f33f49906fe35258f7",
+    "tools/check_workflows.py": "5ec7f7587f8bc36b243a333e3c4edccf1742b06e5033fc8bffeab5031edc68f0",
+    "tools/tests/test_workflows.py": "64de54aa9f6e459ab9eb472140041992a180c11875a32380d140b58aca44b930",
+    ".github/workflows/conformance.yml": "3da7b1553cd8c0661dab3538866712afe5c9b017b2d4e93db36e01a6dec98dc3"
   },
   "normalization_controls": {
     "fixture_origin": "Original first-party pixel grids, not official bytes.",
