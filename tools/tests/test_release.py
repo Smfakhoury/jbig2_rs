@@ -62,6 +62,12 @@ def api_fixture(checks, runs):
 
 
 class ReleaseChecksTests(unittest.TestCase):
+    def setUp(self):
+        self.published = release.PUBLISHED_MAIN_RELEASES
+        self.registry_history = patch.object(release, "PUBLISHED_MAIN_RELEASES", {})
+        self.registry_history.start()
+        self.addCleanup(self.registry_history.stop)
+
     def test_exact_required_checks_and_integration_checks_pass(self):
         for phase, count in (("pull_request", 30), ("integrated", 29)):
             checks, runs = check_metadata(phase=phase)
@@ -138,7 +144,7 @@ class ReleaseChecksTests(unittest.TestCase):
         pr = {
             "number": 1, "merged": True, "merged_at": "2026-11-02",
             "merge_commit_sha": COMMIT, "head": {"sha": HEAD},
-            "base": {"ref": "main", "repo": {"full_name": release.REPOSITORY}},
+            "base": {"ref": release.RELEASE_BRANCH, "repo": {"full_name": release.REPOSITORY}},
         }
         def api(endpoint):
             if "/git/commits/" in endpoint:
@@ -179,7 +185,7 @@ class ReleaseChecksTests(unittest.TestCase):
             directory = Path(temporary)
             source, clone = directory / "source", directory / "clone"
             source.mkdir()
-            release.git(source, "init", "-b", "main")
+            release.git(source, "init", "-b", release.RELEASE_BRANCH)
             release.git(source, "config", "user.name", "Release Test")
             release.git(source, "config", "user.email", "release@example.invalid")
             (source / "Cargo.toml").write_text(MANIFEST)
@@ -193,13 +199,13 @@ class ReleaseChecksTests(unittest.TestCase):
             release.git(source, "commit", "-m", "Reviewed head", "-m", trailer)
             head = release.git(source, "rev-parse", "HEAD")
             tree = release.git(source, "rev-parse", "HEAD^{tree}")
-            release.git(source, "checkout", "main")
+            release.git(source, "checkout", release.RELEASE_BRANCH)
             release.git(source, "merge", "--squash", "topic")
             release.git(source, "commit", "-m", "Integrated release", "-m", trailer)
             commit = release.git(source, "rev-parse", "HEAD")
             release.git(source, "tag", "v0.1.1")
             subprocess.run(
-                ["git", "clone", "--no-local", "--single-branch", "--branch", "main", str(source), str(clone)],
+                ["git", "clone", "--no-local", "--single-branch", "--branch", release.RELEASE_BRANCH, str(source), str(clone)],
                 check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             )
             absent = subprocess.run(
@@ -208,13 +214,62 @@ class ReleaseChecksTests(unittest.TestCase):
             )
             self.assertNotEqual(absent.returncode, 0)
             pr = {"number": 1, "merged": True, "merged_at": "2026-11-02", "merge_commit_sha": commit,
-                  "head": {"sha": head}, "base": {"ref": "main", "repo": {"full_name": release.REPOSITORY}}}
+                  "head": {"sha": head}, "base": {"ref": release.RELEASE_BRANCH,
+                                               "repo": {"full_name": release.REPOSITORY}}}
             def api(endpoint):
                 if "/git/commits/" in endpoint:
                     return {"sha": head, "tree": {"sha": tree}}
                 return [pr] if "/pulls?" in endpoint else pr
             with patch.object(release, "validate_checks", return_value={"checked": True}):
                 self.assertEqual(release.validate_tag(clone, "v0.1.1", api)["commit"], commit)
+
+    def test_new_patch_from_main_or_other_version_line_cannot_be_published(self):
+        pr = {"number": 1, "merged_at": "2026-11-03", "merge_commit_sha": COMMIT,
+              "base": {"ref": "main", "repo": {"full_name": release.REPOSITORY}}}
+        with (
+            patch.object(release, "git", side_effect=[COMMIT, MANIFEST.replace("0.1.1", "0.1.2")]),
+            patch.object(release.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run,
+            self.assertRaisesRegex(ValueError, "merged release/0.1 PR"),
+        ):
+            release.validate_tag(Path("."), "v0.1.2", lambda endpoint: [pr])
+        self.assertEqual(run.call_args.args[0][-1], "origin/release/0.1")
+        for tag in ("v0.2.0", "v1.0.0"):
+            with self.subTest(tag=tag), patch.object(release, "git") as git, self.assertRaises(ValueError):
+                release.validate_tag(Path("."), tag)
+            git.assert_not_called()
+
+    def test_only_the_two_immutable_published_main_releases_are_grandfathered(self):
+        for tag, identity in self.published.items():
+            pr = {"number": 1, "merged": True, "merged_at": "2026-11-02",
+                  "merge_commit_sha": identity["commit"], "head": {"sha": HEAD},
+                  "base": {"ref": "main", "repo": {"full_name": release.REPOSITORY}}}
+            def api(endpoint):
+                if "/git/commits/" in endpoint:
+                    return {"sha": HEAD, "tree": {"sha": "d" * 40}}
+                return [pr] if "/pulls?" in endpoint else pr
+            with (
+                self.subTest(tag=tag),
+                patch.object(release, "PUBLISHED_MAIN_RELEASES", self.published),
+                patch.object(release, "git", side_effect=[
+                    identity["commit"], MANIFEST.replace("0.1.1", tag[1:]), "d" * 40,
+                ]),
+                patch.object(release.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)),
+                patch.object(release, "registry_state", return_value={"publish_needed": False}) as registry,
+                patch.object(release, "validate_checks", return_value={"checked": True}),
+            ):
+                report = release.validate_tag(Path("."), tag, api)
+                self.assertEqual(report["pull_request_base"], "main")
+                self.assertEqual(report["release_branch"], release.RELEASE_BRANCH)
+                registry.assert_called_once_with(tag[1:], identity["checksum"], require=True)
+            with (
+                patch.object(release, "PUBLISHED_MAIN_RELEASES", self.published),
+                patch.object(release, "git", side_effect=[COMMIT, MANIFEST.replace("0.1.1", tag[1:])]),
+                patch.object(release.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)),
+                patch.object(release, "registry_state") as registry,
+                self.assertRaisesRegex(ValueError, "different immutable source"),
+            ):
+                release.validate_tag(Path("."), tag, api)
+            registry.assert_not_called()
 
     def test_publication_target_version_and_msrv_are_not_relaxed(self):
         import tomllib

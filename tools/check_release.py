@@ -18,6 +18,17 @@ from urllib.request import Request, urlopen
 
 REPOSITORY = "microsoft/jbig2_rs"
 PACKAGE = "jbig2-decoder"
+RELEASE_BRANCH = "release/0.1"
+PUBLISHED_MAIN_RELEASES = {
+    "v0.1.0": {
+        "commit": "ace4fae35afc4e17830d339cc61484e64d2d5870",
+        "checksum": "bd5b195921364f39d316fe9b91a9edbd44a836f6fbe9aa300a9b3269e28a444a",
+    },
+    "v0.1.1": {
+        "commit": "ac32bcfcd2d9c1c0d568b1aa4019065fe182b0ea",
+        "checksum": "b2340c54a43106117f0a10b2905287a7b0ac153406effcd5a3c889a0bb9b861f",
+    },
+}
 TAG = re.compile(
     r"v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
     r"(?:-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
@@ -134,24 +145,33 @@ def validate_checks(commit, phase, api=github):
 def validate_tag(root, tag, api=github):
     if not TAG.fullmatch(tag):
         raise ValueError("tag must be a vMAJOR.MINOR.PATCH Cargo version")
+    if not tag.startswith("v0.1."):
+        raise ValueError("only the 0.1.x maintenance line is configured for publication")
     commit = git(root, "rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}")
     if not SHA.fullmatch(commit):
         raise ValueError("tag did not resolve to a GitHub commit")
     ancestor = subprocess.run(
-        ["git", "-C", str(root), "merge-base", "--is-ancestor", commit, "origin/main"],
+        ["git", "-C", str(root), "merge-base", "--is-ancestor", commit, f"origin/{RELEASE_BRANCH}"],
         check=False,
     )
     if ancestor.returncode == 1:
-        raise ValueError("release source is not reachable from main")
+        raise ValueError(f"release source is not reachable from {RELEASE_BRANCH}")
     ancestor.check_returncode()
     check_manifest(tomllib.loads(git(root, "show", f"{commit}:Cargo.toml")), tag[1:])
+    base_branch = RELEASE_BRANCH
+    legacy = PUBLISHED_MAIN_RELEASES.get(tag)
+    if legacy is not None:
+        if commit != legacy["commit"]:
+            raise ValueError("previously published version tag has a different immutable source")
+        registry_state(tag[1:], legacy["checksum"], require=True)
+        base_branch = "main"
     associated = pages(f"repos/{REPOSITORY}/commits/{commit}/pulls", api=api)
     matching = [pr for pr in associated if (
         pr["merge_commit_sha"] == commit and pr["merged_at"]
-        and pr["base"]["ref"] == "main" and pr["base"]["repo"]["full_name"] == REPOSITORY
+        and pr["base"]["ref"] == base_branch and pr["base"]["repo"]["full_name"] == REPOSITORY
     )]
     if len(matching) != 1:
-        raise ValueError("release source must be the exact integration commit of one merged main PR")
+        raise ValueError(f"release source must be the exact integration commit of one merged {base_branch} PR")
     pr = api(f"repos/{REPOSITORY}/pulls/{matching[0]['number']}")
     if not pr["merged"] or pr["merge_commit_sha"] != commit:
         raise ValueError("release PR integration identity changed")
@@ -166,6 +186,7 @@ def validate_tag(root, tag, api=github):
         raise ValueError("release tree differs from the reviewed PR head; update/retest the PR")
     return {
         "tag": tag, "version": tag[1:], "commit": commit, "pull_request": pr["number"],
+        "release_branch": RELEASE_BRANCH, "pull_request_base": base_branch,
         "pull_request_checks": validate_checks(head, "pull_request", api),
         "integrated_source_checks": validate_checks(commit, "integrated", api),
     }

@@ -86,11 +86,35 @@ The [publication workflow](.github/workflows/release.yml) runs when a GitHub
 Release is published. Manual runs default to **dry run** and do not request OIDC
 credentials, require publishing-environment approval or upload a crate.
 
+### Branch policy
+
+`release/0.1` maintains the 0.1.x line; `main` carries ongoing development.
+The maintenance branch starts at the reviewed publication-policy baseline.
+Both branches require the same 30 checks, strict up-to-date status checks,
+and no bypass, force pushes or deletion. CI also runs on both branch heads.
+Publishing requires a tag reachable from `release/0.1` and the exact integration
+commit of a merged PR targeting that branch, with a matching reviewed tree.
+A new 0.1.x version merged only to `main` is not a release candidate.
+
+Make release fixes and version bumps in PRs against `release/0.1`. Backport only
+selected changes; do not routinely merge future development from `main` into
+the maintenance line. Port applicable maintenance fixes to `main` separately.
+Keep package metadata, all local decoder lockfile entries, versioned release
+scope/schema and their source-bound provenance consistent on each branch.
+The next version on `main` is a separate development decision, not a maintenance
+release prerequisite. Publication of other version lines requires an explicit
+workflow/policy update.
+
+The immutable, already-published `v0.1.0` and `v0.1.1` retain their original
+`main` PR provenance. Rehearsals accept those two tags only at their original
+commits with matching, unyanked registry checksums; they are never retagged or
+republished. New versions have no `main` exception.
+
 ### One-time setup
 
 1. Create the GitHub environment `crates-io` in the repository settings.
    Require a release maintainer's approval, disable administrator bypass, and
-   allow deployments only from branch `main` and tags matching `v*`.
+   allow deployments only from branch `release/0.1` and tags matching `v0.1.*`.
    Allow self-review if the same maintainer creates and approves releases.
    Merely naming an environment in a workflow does not configure these rules.
 2. On crates.io, open **jbig2-decoder → Settings → Trusted Publishing → Add**,
@@ -109,14 +133,14 @@ credentials, require publishing-environment approval or upload a crate.
 
 ### Each release
 
-1. Prepare and merge the final versioned release PR. Its integrated tree must
+1. Prepare and merge the final versioned release PR into `release/0.1`. Its integrated tree must
    equal the PR head tree; update and retest the PR if integration changes it.
-2. Create `vVERSION` at that exact integration commit on `main`. Wait for all
+2. Create `vVERSION` at that exact integration commit on `release/0.1`. Wait for all
    required checks on the PR and integrated/tagged source to pass.
-3. In **Actions → Publish crate → Run workflow**, select branch `main`, enter
+3. In **Actions → Publish crate → Run workflow**, select branch `release/0.1`, enter
    the tag and leave **dry_run** enabled for a credential-free rehearsal.
 4. Publish a GitHub Release using that existing tag, then approve the `crates-io`
-   environment deployment. Alternatively, run the workflow manually from `main`
+   environment deployment. Alternatively, run the workflow manually from `release/0.1`
    with **dry_run** disabled and approve the same environment.
 
 The read-only validation job checks tag/version/registry policy, merged PR and

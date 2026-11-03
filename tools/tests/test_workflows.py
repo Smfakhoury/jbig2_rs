@@ -334,6 +334,19 @@ class WorkflowPolicyTests(unittest.TestCase):
         })
         check_updates(load_workflow((root / ".github/dependabot.yml").read_text()))
 
+    def test_required_validation_runs_on_main_and_release_branch_without_trusting_fuzz_corpus(self):
+        for name in ("ci", "coverage", "fuzz", "performance", "verus"):
+            original = load_workflow((TOOLS.parent / f".github/workflows/{name}.yml").read_text())
+            self.assertTrue(check_workflow(original, f"{name}.yml"))
+            for branches in (["main"], ["release/0.1"], ["main", "release/**"], ["**"]):
+                document = copy.deepcopy(original)
+                document["on"]["push"]["branches"] = branches
+                with self.subTest(workflow=name, branches=branches), self.assertRaises(ValueError):
+                    check_workflow(document, f"{name}.yml")
+        fuzz = load_workflow((TOOLS.parent / ".github/workflows/fuzz.yml").read_text())
+        self.assertIn("github.ref == 'refs/heads/main'", fuzz["jobs"]["fuzz"]["env"]["TRUSTED_CORPUS"])
+        self.assertNotIn("release/0.1", fuzz["jobs"]["fuzz"]["env"]["TRUSTED_CORPUS"])
+
     def test_distribution_lane_cannot_skip_the_actual_publication_dry_run(self):
         actual = load_workflow((TOOLS.parent / ".github/workflows/ci.yml").read_text())
         check_workflow(actual, "ci.yml")
