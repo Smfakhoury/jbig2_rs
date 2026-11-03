@@ -3,7 +3,7 @@ name: Runtime coverage
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, release/0.1]
     tags: ["**"]
   workflow_dispatch:
 
