@@ -146,6 +146,13 @@ republished. New versions have no `main` exception.
 The read-only validation job checks tag/version/registry policy, merged PR and
 tree identity, all 30 PR checks and 29 final-commit native checks. It verifies
 check issuers, source workflow paths, run revisions and successful completion.
+If those workflows are still queued/running, source validation waits up to
+105 minutes, sharing one deadline across both revisions. This includes semantic
+shards and collector checks that appear only after earlier proof jobs complete.
+It polls once per minute without requesting OIDC credentials. Failed, cancelled,
+unattributed or genuinely missing checks fail immediately; reaching the deadline
+also fails. The read-only job has a 120-minute ceiling, including packaging;
+other job budgets are unchanged. Re-run a timed-out dry run after CI completes.
 It then exercises the extracted archive and real Cargo dry run. Publication
 rebuilds the same checksum and rechecks the tag and registry before exchanging
 OIDC identity for a short-lived token. Only the publishing job has `id-token:
