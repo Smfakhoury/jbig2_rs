@@ -22,7 +22,7 @@ jobs:
   validate:
     if: github.repository == 'microsoft/jbig2_rs' && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/release/0.1'))
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 120
     permissions:
       contents: read
       actions: read
@@ -50,7 +50,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp tools/check_release.py "$RUNNER_TEMP/check-release.py"
-          python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" \
+          python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --wait-for-checks \
             --output "$RUNNER_TEMP/release-source.json" --github-output "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
