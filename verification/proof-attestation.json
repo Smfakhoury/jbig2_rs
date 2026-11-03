@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "b45340399417abd820de7b9c7ebc533d297d45fd",
-  "scope": "Fresh unfiltered1287/0 verification and nonempty compilation of exact production Huffman cache mapping and all five successful factory results. Under the unchanged minimum-length policy, each of256slots maps supplied eight-bit metadata to the representable original ordinal plus one, or zero for unmapped/unrepresentable entries. Inactive caches are empty. Raw assignment and reader contracts, earlier184 definitions/422author purposes and standard trust boundaries remain; three new models extend the registry to187 definitions/425purposes without normative approval. The one native compact-index conversion is equivalently expressed through an explicit bound/guard; all other native execution bodies remain unchanged. No allocator length/capacity axiom, new reader precondition, codebook-source fidelity or full-stream approval is added.",
+  "source_revision": "c98a1c0ea692a709333934c9deb7a3d9a5be31ec",
+  "scope": "Fresh unfiltered 1297/0 verification and nonempty compilation of the exact 0.2 development source. IAID prefix-tree bounds imply returned values below 2^code_length; valid zero-length requests preserve decoder/context state, and root/outside-tree contexts are framed on success and errors. The result range composes through the actual arithmetic symbol-ID adapter. All existing operational models and source contracts remain; no native execution change, new trusted fact, full-stream theorem or independent normative approval.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 VERUS_PATH=/workspace/jbig2-pinned-verus/verus RUSTUP_TOOLCHAIN=1.98.1 CARGO_TARGET_DIR=/workspace/jbig2-huffman-cache-map-proof-20261101/target/huffman-cache-map/whole-target cargo verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-iaid-prefix-v02-20261103/target/iaid-prefix/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1287,
+    "verified_obligations": 1297,
     "verified_production_functions": 642,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "67253300d147cf7ff7d5f605771be3df8c4be1189f274b4a3d2a662a23813034",
+  "production_proof_coverage_sha256": "88fbf929430b353503842a2be527232467796d6b54b0beb38494de2b1b657dad",
   "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,14 +33,33 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Actual1287/0 plus nonempty library includes all three new helper lemma bodies, not only selected callers. Raw independent wide sentinel arithmetic checks65538 compact-index boundaries includingu32MAX; sparse metadata checks1285 cases and all256slots; raw/symbol factories cover8/9/16/32/255bit widths and existing15standard factories retain their cache policy. No new serialized held family, standard-interface fact or normative approval. Actual approved10stream observations remain2pass7pending1unsupported0rejectioncredit; complete current-head hosted acceptance remains separate. Documentation-only source rebinding at33c4b3e preserves all non-comment Rust tokens and fenced examples across207files againstace4fae; recorded solver execution revisions/results are not relabeled by this hash refresh.",
+  "current_evidence_note": "1297 actual whole-crate obligations, zero errors and a nonempty production library; 642 direct declarations/20 explicit limitations with zero assumptions, divergences, forwarders or incomplete declarations. Eight IAID native-compiling semantic mutants were rejected with accepted weaker controls; three additional native regressions cover endpoint values, zero-length identity and partial-error context frames. All 146 runtime-source projections retain identical executing tokens/literals against dd91e1a; only contracts, ghost proof support and tests change. One proof-support macro extends the author-navigation registry, not the standards denominator. Historical owner review is preserved at its original source identity, not silently renewed. All 266 selected rows/257 gap-bearing rows remain provisional; exhaustive decomposition and full functional composition remain #135 work.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
   "release_blockers": [
-    "Independent normative/model review and complete requirement decomposition remain open.",
-    "Seven official positives remain unresolved; unsupported colour is not conformance credit.",
-    "Public repository/crates.io release and protected-asset redistribution require their own decisions."
+    "Exhaustive supported-scope requirement enumeration and complete functional proofs remain unfinished.",
+    "Independent source/table/coordinate fidelity is not established by the new project algebra.",
+    "Entropy-to-region/page/document composition remains incomplete; the 0.2 development crate is unpublished."
   ],
-  "historical_evidence": "Earlier accepted-main inventories, disposition reasons and detailed component notes remain in Git history at6b7e08a659975d7a7547242a91765ebb9b8f052d. They are not relabeled current evidence. All266 selected requirement records remain provisional; no official rejection credit or new protected fixture consent is granted by this integration."
+  "historical_evidence": "Earlier accepted-main inventories, disposition reasons and detailed component notes remain in Git history at6b7e08a659975d7a7547242a91765ebb9b8f052d. They are not relabeled current evidence. All266 selected requirement records remain provisional; no official rejection credit or new protected fixture consent is granted by this integration.",
+  "historical_baseline": {
+    "source_revision": "b45340399417abd820de7b9c7ebc533d297d45fd",
+    "result": {
+      "verified_obligations": 1287,
+      "verified_production_functions": 642,
+      "errors": 0,
+      "proof_build_compiles": true,
+      "exact_production_source_compiles": true,
+      "algorithm_bodies_verified": false,
+      "production_coverage_complete": true,
+      "native_assumptions": [],
+      "reviewed_verifier_limitations": 20,
+      "audited_forwarders": 0,
+      "runtime_proof_divergences": 0,
+      "incomplete_functions": 0
+    },
+    "production_proof_coverage_sha256": "67253300d147cf7ff7d5f605771be3df8c4be1189f274b4a3d2a662a23813034",
+    "scope": "Previous attestation retained as historical data; not a new execution or approval."
+  }
 }

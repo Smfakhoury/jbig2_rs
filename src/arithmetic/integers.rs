@@ -103,6 +103,20 @@ impl ArithmeticDecoder<'_> {
             out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0,
             *final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1,
             final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2,
+            match out {
+                Ok(value) => code_length <= MAX_IAID_CODE_LENGTH
+                    && (value as u64) < (1u64 << code_length),
+                Err(_) => true,
+            },
+            code_length == 0 && old(contexts)@.len() >= 1 ==> {
+                &&& out == Ok(0)
+                &&& *final(self) == *old(self)
+                &&& final(contexts)@ == old(contexts)@
+            },
+            code_length <= MAX_IAID_CODE_LENGTH ==>
+                forall|index: int| 0 <= index < final(contexts)@.len()
+                    && (index == 0 || index >= (1usize << code_length)) ==>
+                        final(contexts)@[index] == old(contexts)@[index],
     ))]
     #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     #[allow(clippy::cast_possible_truncation)]
@@ -115,6 +129,11 @@ impl ArithmeticDecoder<'_> {
             return Err(ArithmeticError::InvalidIaidCodeLength(code_length));
         }
         let required = 1_usize << code_length;
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(code_length == 0 ==> required == 1) by(bit_vector)
+                requires required == 1usize << code_length;
+        }
         let context_count = contexts.len();
         if context_count < required {
             return Err(ArithmeticError::InsufficientContexts {
@@ -125,6 +144,8 @@ impl ArithmeticDecoder<'_> {
 
         let mut previous = 1_usize;
         let mut remaining = code_length;
+        #[cfg(verus_keep_ghost)]
+        production_iaid_prefix_bounds!(initial, previous, code_length, remaining);
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 arithmetic_spec::decoder_valid(self),
@@ -136,6 +157,10 @@ impl ArithmeticDecoder<'_> {
                     arithmetic_spec::context_valid(contexts@[index]),
                 remaining <= code_length,
                 required <= context_count,
+                (previous as u64) >> ((code_length - remaining) as u64) == 1,
+                forall|index: int| 0 <= index < contexts@.len()
+                    && (index == 0 || index >= required) ==>
+                        contexts@[index] == old(contexts)@[index],
                 arithmetic_spec::iaid_run(*old(self), old(contexts)@, 1, code_length, required)
                     == arithmetic_spec::iaid_run(*self, contexts@, previous, remaining, required),
             decreases remaining,
@@ -151,6 +176,12 @@ impl ArithmeticDecoder<'_> {
             #[cfg(verus_keep_ghost)]
             proof! {
                 reveal_with_fuel(arithmetic_spec::iaid_run, 1);
+                assert(0 < previous && previous < required) by(bit_vector)
+                    requires
+                        0 < remaining <= code_length,
+                        code_length <= 31,
+                        required == 1usize << code_length,
+                        (previous as u64) >> ((code_length - remaining) as u64) == 1;
             }
             if previous >= context_count {
                 return Err(ArithmeticError::InsufficientContexts {
@@ -167,6 +198,16 @@ impl ArithmeticDecoder<'_> {
                 .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
             remaining -= 1;
             #[cfg(verus_keep_ghost)]
+            production_iaid_prefix_bounds!(
+                advance,
+                previous,
+                before_previous,
+                decision,
+                code_length,
+                remaining,
+                before_remaining
+            );
+            #[cfg(verus_keep_ghost)]
             proof! {
                 assert(
                     arithmetic_spec::iaid_run(
@@ -178,6 +219,8 @@ impl ArithmeticDecoder<'_> {
         let value = previous
             .checked_sub(required)
             .ok_or(ArithmeticError::Malformed(MalformedError::IntegerOverflow))?;
+        #[cfg(verus_keep_ghost)]
+        production_iaid_prefix_bounds!(result, value, previous, required, code_length);
         if value > u32::MAX as usize {
             return Err(ArithmeticError::Malformed(MalformedError::IntegerOverflow));
         }

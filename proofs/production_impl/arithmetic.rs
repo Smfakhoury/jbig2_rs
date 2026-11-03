@@ -77,3 +77,42 @@ macro_rules! production_integer_magnitude {
         }
     };
 }
+
+// Model navigation: macro::production_iaid_prefix_bounds [proof-support]
+// Purpose: Preserve the leading-one prefix and derive the returned IAID range.
+// Audit: arithmetic-iaid-prefix-proof
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-IAID-RESULT | ITU-T T.88 (08/2018) | A.3, step 4 (p. 92)
+// Fidelity: unresolved; no independent normative approval.
+macro_rules! production_iaid_prefix_bounds {
+    (initial, $previous:expr, $length:expr, $remaining:expr) => {
+        proof! {
+            assert(($previous as u64) >> (($length - $remaining) as u64) == 1)
+                by(bit_vector)
+                requires $previous == 1, $remaining == $length;
+        }
+    };
+    (advance, $previous:expr, $before:expr, $decision:expr, $length:expr,
+        $remaining:expr, $old_remaining:expr) => {
+        proof! {
+            assert(($previous as u64) >> (($length - $remaining) as u64) == 1)
+                by(bit_vector)
+                requires
+                    $length <= 31,
+                    0 < $old_remaining <= $length,
+                    $remaining == $old_remaining - 1,
+                    ($before as u64) >> (($length - $old_remaining) as u64) == 1,
+                    $decision <= 1,
+                    $previous == $before * 2 + $decision as usize;
+        }
+    };
+    (result, $value:expr, $previous:expr, $required:expr, $length:expr) => {
+        proof! {
+            assert(($value as u64) < (1u64 << $length)) by(bit_vector)
+                requires
+                    $length <= 31,
+                    ($previous as u64) >> ($length as u64) == 1,
+                    $required == 1usize << $length,
+                    $value == $previous - $required;
+        }
+    };
+}

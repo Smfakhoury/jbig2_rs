@@ -136,6 +136,11 @@ impl ArithmeticCodec<'_> {
                 old(self).decoder, old(self).iaid@, request.code_length,
             ).2,
             match out {
+                Ok(value) => request.code_length <= crate::arithmetic::MAX_IAID_CODE_LENGTH
+                    && (value as u64) < (1u64 << request.code_length),
+                Err(_) => true,
+            },
+            match out {
                 Ok(_) => crate::arithmetic::arithmetic_spec::decoder_valid(
                     &final(self).decoder
                 ),

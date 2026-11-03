@@ -280,6 +280,64 @@ fn complete_integer_state_matches_numeric_leaf_oracle_and_prior_procedure() {
 }
 
 #[test]
+fn iaid_prefix_range_covers_both_endpoint_values_and_unvisited_contexts() {
+    let bytes = [0; 16];
+    for code_length in 0..=12 {
+        let required = 1_usize << code_length;
+        for decision in 0..=1 {
+            let mut contexts =
+                vec![ArithmeticContext::from_state(45, decision).unwrap(); required + 7];
+            contexts[0] = ArithmeticContext::from_state(23, 1).unwrap();
+            let before = contexts.clone();
+            let mut decoder = decision_fixture(&bytes, 0xffff, u32::MAX, 8);
+            let expected = if decision == 0 {
+                0
+            } else {
+                (1_u32 << code_length) - 1
+            };
+            let value = decoder.decode_iaid(code_length, &mut contexts).unwrap();
+            assert_eq!(value, expected, "length {code_length}, decision {decision}");
+            assert!(u64::from(value) < (1_u64 << code_length));
+            assert_eq!(contexts[0], before[0]);
+            assert_eq!(contexts[required..], before[required..]);
+        }
+    }
+}
+
+#[test]
+fn iaid_zero_length_consumes_no_decisions_and_changes_no_state() {
+    let bytes = [0];
+    let mut contexts = [ArithmeticContext::from_state(23, 1).unwrap(); 9];
+    let original = contexts;
+    let mut decoder = decision_fixture(&bytes, MIN_INTERVAL, u32::MAX, 0);
+    let before = decision_fixture(&bytes, MIN_INTERVAL, u32::MAX, 0);
+    assert_eq!(decoder.decode_iaid(0, &mut contexts), Ok(0));
+    assert_decoder_state_eq(&decoder, &before);
+    assert_eq!(decoder.bytes.as_ptr(), before.bytes.as_ptr());
+    assert_eq!(contexts, original);
+}
+
+#[test]
+fn iaid_partial_error_preserves_root_and_outside_tree_contexts() {
+    let bytes = [0];
+    let required = 1_usize << 8;
+    let mut contexts = vec![ArithmeticContext::from_state(46, 1).unwrap(); required + 7];
+    contexts[0] = ArithmeticContext::from_state(23, 1).unwrap();
+    let before = contexts.clone();
+    let mut decoder = decision_fixture(&bytes, MIN_INTERVAL, u32::MAX, 0);
+    assert_eq!(
+        decoder.decode_iaid(8, &mut contexts),
+        Err(ArithmeticError::Malformed(MalformedError::UnexpectedEof {
+            offset: 1,
+            needed: 1,
+            remaining: 0,
+        })),
+    );
+    assert_eq!(contexts[0], before[0]);
+    assert_eq!(contexts[required..], before[required..]);
+}
+
+#[test]
 fn integer_payload_fold_matches_numeric_weights_history_and_prior_checked_operations() {
     let contexts = std::array::from_fn(|index| {
         ArithmeticContext::from_state(

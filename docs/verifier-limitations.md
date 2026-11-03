@@ -47,6 +47,23 @@ Huffman results and symbol/container metadata. Their local guarantees do not
 automatically compose into complete stream, page or document semantics.
 See the [auditor index](verus-auditor-index.md) for specific models.
 
+### IAID range and context frames on the 0.2 development line
+
+The production IAID loop proves a leading-one prefix at every decoded depth
+for both 32-bit and 64-bit `usize`. Successful values are strictly below
+`2^code_length`; a valid zero-length request returns zero without changing
+decoder or contexts. Context zero and entries outside the requested tree remain
+unchanged, including on partial errors. The value bound propagates through the
+arithmetic symbol-ID adapter.
+
+These are explicit algebraic/frame consequences of the existing exact
+operational model, not an independently reviewed Annex A/Qe translation or
+complete caller/stream proof. Endpoint, empty-input and partial-error native
+tests accompany eight compiling IAID mutation contrasts. Historical review
+confirmations retain their original source identities; new proof/contract bytes
+do not silently renew those approvals. The unpublished development scope still
+requires actual proofs and test discovery without claiming completion.
+
 ## Observed-capacity integration
 
 Allocation accounting checks actual post-reservation `Vec::capacity()` rather
