@@ -36,6 +36,7 @@ TAG = re.compile(
 )
 SHA = re.compile(r"[0-9a-f]{40}")
 CHECKSUM = re.compile(r"[0-9a-f]{64}")
+CHECK_WAIT_SECONDS = 105 * 60
 REQUIRED_CHECKS = {
     **{f"cargo ({os})": "ci" for os in ("ubuntu-latest", "windows-latest", "macos-latest")},
     **{f"distribution ({os}, {toolchain})": "ci"
@@ -85,6 +86,10 @@ def check_manifest(document, version):
         raise ValueError("release tag/version, MSRV or crates.io-only target mismatch")
 
 
+class ChecksPending(ValueError):
+    """Verified source workflows have not finished producing their required checks."""
+
+
 def validate_checks(commit, phase, api=github):
     if phase not in ("pull_request", "integrated"):
         raise ValueError("unknown release validation phase")
@@ -97,16 +102,18 @@ def validate_checks(commit, phase, api=github):
                 latest[name] = entry
     expected = set(REQUIRED_CHECKS) - ({"license/cla"} if phase == "integrated" else set())
     missing = expected - set(latest)
-    if missing:
-        raise ValueError(f"{phase}: missing required checks: {sorted(missing)}")
     runs = {}
-    for name in sorted(expected):
+    pending = []
+    event = "pull_request" if phase == "pull_request" else "push"
+    for name in sorted(expected - missing):
         check = latest[name]
         if (
-            check["head_sha"] != commit or check["status"] != "completed"
-            or check["conclusion"] != "success"
+            check["head_sha"] != commit or check["status"] not in {"queued", "in_progress", "completed"}
+            or (check["status"] == "completed" and check["conclusion"] != "success")
         ):
             raise ValueError(f"{phase}: required check did not pass: {name}")
+        if check["status"] != "completed":
+            pending.append(name)
         workflow = REQUIRED_CHECKS[name]
         if workflow is None:
             if check["app"]["id"] != 95686 or check["app"]["slug"] != "microsoft-github-policy-service":
@@ -132,17 +139,47 @@ def validate_checks(commit, phase, api=github):
         ):
             raise ValueError(f"unexpected source workflow: {name}")
         if (
-            run["status"] != "completed" or run["conclusion"] != "success"
-            or run["check_suite_id"] != check["check_suite"]["id"]
-            or (phase == "pull_request" and run["event"] != "pull_request")
-            or (phase == "integrated" and run["event"] != "push")
+            run["check_suite_id"] != check["check_suite"]["id"] or run["event"] != event
+            or run["status"] not in {"queued", "in_progress", "completed"}
+            or (run["status"] == "completed" and run["conclusion"] != "success")
         ):
             raise ValueError(f"workflow run did not validate the required source: {name}")
+        if run["status"] != "completed":
+            pending.append(f"workflow {workflow}")
+    if missing:
+        workflows = api(f"repos/{REPOSITORY}/actions/runs?head_sha={commit}&event={event}&per_page=100")
+        for name in sorted(missing):
+            workflow = REQUIRED_CHECKS[name]
+            matching = [run for run in workflows["workflow_runs"] if (
+                run["repository"]["full_name"] == REPOSITORY and run["head_sha"] == commit
+                and run["event"] == event and run["path"] == f".github/workflows/{workflow}.yml"
+            )] if workflow is not None else []
+            if not matching:
+                raise ValueError(f"{phase}: missing required check and source workflow: {name}")
+            producer = max(matching, key=lambda run: run["id"])
+            if producer["status"] not in {"queued", "in_progress"}:
+                raise ValueError(f"{phase}: missing required check from terminal/invalid source workflow: {name}")
+            pending.append(f"not yet produced: {name}")
+    if pending:
+        raise ChecksPending(f"{phase}: waiting for required checks: {sorted(set(pending))}")
     return {"commit": commit, "check_ids": [latest[name]["id"] for name in sorted(expected)],
             "run_ids": sorted(runs)}
 
 
-def validate_tag(root, tag, api=github):
+def await_checks(commit, phase, deadline, api=github):
+    while True:
+        try:
+            return validate_checks(commit, phase, api)
+        except ChecksPending as error:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise ValueError(f"required-check wait deadline reached: {error}") from error
+            print(f"{error}; retrying within {remaining:.0f}s", file=sys.stderr, flush=True)
+            time.sleep(min(60, remaining))
+
+
+def validate_tag(root, tag, api=github, wait_for_checks=False):
+    deadline = time.monotonic() + (CHECK_WAIT_SECONDS if wait_for_checks else 0)
     if not TAG.fullmatch(tag):
         raise ValueError("tag must be a vMAJOR.MINOR.PATCH Cargo version")
     if not tag.startswith("v0.1."):
@@ -187,8 +224,8 @@ def validate_tag(root, tag, api=github):
     return {
         "tag": tag, "version": tag[1:], "commit": commit, "pull_request": pr["number"],
         "release_branch": RELEASE_BRANCH, "pull_request_base": base_branch,
-        "pull_request_checks": validate_checks(head, "pull_request", api),
-        "integrated_source_checks": validate_checks(commit, "integrated", api),
+        "pull_request_checks": await_checks(head, "pull_request", deadline, api),
+        "integrated_source_checks": await_checks(commit, "integrated", deadline, api),
     }
 
 
@@ -308,6 +345,7 @@ def main():
     parser.add_argument("--archive", type=Path)
     parser.add_argument("--expected-sha256")
     parser.add_argument("--verify-published", action="store_true")
+    parser.add_argument("--wait-for-checks", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--github-output", type=Path)
     arguments = parser.parse_args()
@@ -317,6 +355,8 @@ def main():
         if arguments.expected_sha256 is not None and not CHECKSUM.fullmatch(arguments.expected_sha256):
             raise ValueError("expected publication checksum must be a SHA-256 digest")
         if arguments.archive:
+            if arguments.wait_for_checks:
+                raise ValueError("--wait-for-checks is only supported for source validation")
             if not arguments.commit or not TAG.fullmatch(arguments.tag):
                 raise ValueError("archive verification requires a validated commit and version tag")
             version = arguments.tag[1:]
@@ -339,7 +379,7 @@ def main():
         else:
             if arguments.commit or arguments.expected_sha256 or arguments.verify_published:
                 raise ValueError("archive verification options require --archive")
-            report = validate_tag(arguments.root, arguments.tag)
+            report = validate_tag(arguments.root, arguments.tag, wait_for_checks=arguments.wait_for_checks)
         arguments.output.parent.mkdir(parents=True, exist_ok=True)
         arguments.output.write_text(json.dumps(report, indent=2) + "\n")
         if arguments.github_output:

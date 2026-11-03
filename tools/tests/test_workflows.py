@@ -81,7 +81,8 @@ class WorkflowPolicyTests(unittest.TestCase):
                          "publish_condition", "environment", "cancel", "source_ref", "target_ref",
                          "credentials", "source_command", "dry_run_command", "recheck", "auth_condition",
                          "auth_pin", "auth_url", "auth_order", "publish_command", "static_secret",
-                         "post_verify", "artifact", "extra_step", "global_env", "extra_job"):
+                         "post_verify", "artifact", "extra_step", "global_env", "extra_job",
+                         "wait_flag", "wait_timeout"):
             document = copy.deepcopy(actual)
             validate, publish = document["jobs"]["validate"], document["jobs"]["publish"]
             if mutation == "trigger":
@@ -136,6 +137,10 @@ class WorkflowPolicyTests(unittest.TestCase):
                 document["env"] = {"CARGO_HOME": "/other"}
             elif mutation == "extra_job":
                 document["jobs"]["extra"] = copy.deepcopy(publish)
+            elif mutation == "wait_flag":
+                validate["steps"][2]["run"] = validate["steps"][2]["run"].replace(" --wait-for-checks", "")
+            elif mutation == "wait_timeout":
+                validate["timeout-minutes"] = "121"
             with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                 check_workflow(document, "release.yml")
         with self.assertRaises(ValueError):

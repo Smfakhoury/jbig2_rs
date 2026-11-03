@@ -57,6 +57,8 @@ def api_fixture(checks, runs):
     def api(endpoint):
         if "/check-runs?" in endpoint:
             return {"check_runs": checks}
+        if "/actions/runs?" in endpoint:
+            return {"workflow_runs": [{"id": int(identity), **run} for identity, run in runs.items()]}
         return runs[endpoint.rsplit("/", 1)[1]]
     return api
 
@@ -118,6 +120,75 @@ class ReleaseChecksTests(unittest.TestCase):
         next(check for check in checks if check["name"] == "license/cla")["app"]["id"] = 15368
         with self.assertRaisesRegex(ValueError, "CLA"):
             release.validate_checks(HEAD, "pull_request", api_fixture(checks, runs))
+
+    def test_dynamic_checks_are_pending_only_while_their_attributed_producer_is_active(self):
+        checks, runs = check_metadata(phase="integrated")
+        delayed = {name for name in release.REQUIRED_CHECKS if name.startswith("semantic")} | {"verify"}
+        runs = {str(check["id"]): runs[str(check["id"])] for check in checks if check["name"] not in delayed}
+        checks = [check for check in checks if check["name"] not in delayed]
+        whole = next(check for check in checks if check["name"] == "whole")
+        producer = runs[str(whole["id"])]
+        for state in ("queued", "in_progress"):
+            producer.update(status=state, conclusion=None)
+            whole.update(status=state, conclusion=None)
+            with self.subTest(state=state), self.assertRaises(release.ChecksPending):
+                release.validate_checks(HEAD, "integrated", api_fixture(checks, runs))
+        whole.update(status="completed", conclusion="success")
+        for conclusion in ("success", "failure", "cancelled", "timed_out"):
+            producer.update(status="completed", conclusion=conclusion)
+            with self.subTest(conclusion=conclusion), self.assertRaises(ValueError) as error:
+                release.validate_checks(HEAD, "integrated", api_fixture(checks, runs))
+            self.assertNotIsInstance(error.exception, release.ChecksPending)
+        producer.update(status="in_progress", conclusion=None)
+        for key, value in (("head_sha", COMMIT), ("event", "workflow_dispatch"),
+                           ("path", ".github/workflows/impostor.yml")):
+            changed = copy.deepcopy(runs)
+            changed[str(whole["id"])][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError) as error:
+                release.validate_checks(HEAD, "integrated", api_fixture(checks, changed))
+            self.assertNotIsInstance(error.exception, release.ChecksPending)
+
+    def test_failed_latest_check_is_not_hidden_by_another_pending_check(self):
+        checks, runs = check_metadata(phase="integrated")
+        checks[0].update(status="in_progress", conclusion=None)
+        checks[-1].update(conclusion="failure")
+        with self.assertRaisesRegex(ValueError, "did not pass") as error:
+            release.validate_checks(HEAD, "integrated", api_fixture(checks, runs))
+        self.assertNotIsInstance(error.exception, release.ChecksPending)
+
+    def test_wait_retries_only_pending_checks_until_success(self):
+        accepted = {"commit": HEAD, "check_ids": [1], "run_ids": ["1"]}
+        with (
+            patch.object(release, "validate_checks", side_effect=[release.ChecksPending("proof running"), accepted]) as checks,
+            patch.object(release.time, "monotonic", return_value=100),
+            patch.object(release.time, "sleep") as sleep,
+            redirect_stderr(io.StringIO()) as log,
+        ):
+            self.assertEqual(release.await_checks(HEAD, "integrated", 200), accepted)
+        self.assertEqual(checks.call_count, 2)
+        sleep.assert_called_once_with(60)
+        self.assertIn("proof running", log.getvalue())
+
+    def test_wait_deadline_and_terminal_errors_are_not_success_fallbacks(self):
+        with (
+            patch.object(release, "validate_checks", side_effect=release.ChecksPending("queued")),
+            patch.object(release.time, "monotonic", side_effect=[100, 105]),
+            patch.object(release.time, "sleep") as sleep,
+            redirect_stderr(io.StringIO()),
+            self.assertRaisesRegex(ValueError, "deadline reached"),
+        ):
+            release.await_checks(HEAD, "integrated", 105)
+        sleep.assert_called_once_with(5)
+        for error in (ValueError("failed"), KeyError("invalid metadata"), subprocess.CalledProcessError(1, ["gh"])):
+            with (
+                self.subTest(error=error),
+                patch.object(release, "validate_checks", side_effect=error) as checks,
+                patch.object(release.time, "sleep") as sleep,
+                self.assertRaises(type(error)),
+            ):
+                release.await_checks(HEAD, "integrated", 200)
+            checks.assert_called_once()
+            sleep.assert_not_called()
 
     def test_unknown_phase_and_unbounded_pagination_fail(self):
         with self.assertRaises(ValueError):
@@ -448,6 +519,22 @@ class ReleaseCommandTests(unittest.TestCase):
                     self.assertEqual(self.invoke(output, *modified), 1)
                     self.assertFalse(output.exists())
                     registry.assert_not_called()
+
+    def test_wait_is_explicit_source_only_and_leaves_no_receipt_on_timeout(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "report.json"
+            for arguments in ([], ["--wait-for-checks"]):
+                with patch.object(release, "validate_tag", return_value={"commit": COMMIT}) as source:
+                    self.assertEqual(self.invoke(output, *arguments), 0)
+                    self.assertEqual(source.call_args.kwargs["wait_for_checks"], bool(arguments))
+            with (
+                patch.object(release, "validate_tag", side_effect=ValueError("deadline reached")),
+                patch.object(release, "verify_archive") as archive,
+            ):
+                self.assertEqual(self.invoke(output, "--wait-for-checks"), 1)
+                self.assertFalse(output.exists())
+                self.assertEqual(self.invoke(output, "--wait-for-checks", "--archive", "fixture"), 1)
+                archive.assert_not_called()
 
     def test_post_publication_download_is_checked_before_consumer(self):
         with tempfile.TemporaryDirectory() as temporary:

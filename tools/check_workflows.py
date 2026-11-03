@@ -162,7 +162,7 @@ def check_release_workflow(document):
     if (
         set(validate) != {"if", "runs-on", "timeout-minutes", "permissions", "outputs", "env", "steps"}
         or validate["if"] != RELEASE_VALIDATE or validate["permissions"] != RELEASE_READ
-        or validate["timeout-minutes"] != "20" or validate["runs-on"] != "ubuntu-latest"
+        or validate["timeout-minutes"] != "120" or validate["runs-on"] != "ubuntu-latest"
         or validate["env"] != {"TAG_NAME": RELEASE_TAG}
         or validate["outputs"] != {
             "commit": "${{ steps.source.outputs.commit }}", "version": "${{ steps.source.outputs.version }}",
@@ -189,7 +189,7 @@ def check_release_workflow(document):
         raise ValueError("release source validation, dry-run isolation or publisher-only OIDC changed")
     source_command = (
         'cp tools/check_release.py "$RUNNER_TEMP/check-release.py"\n'
-        'python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" \\\n'
+        'python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --wait-for-checks \\\n'
         '  --output "$RUNNER_TEMP/release-source.json" --github-output "$GITHUB_OUTPUT"'
     )
     registry_command = (
@@ -652,8 +652,12 @@ def check_workflow(document, name):
             if name not in {"release.yml", "release.yaml"}:
                 read_permissions(job["permissions"])
         timeout = job.get("timeout-minutes")
-        if not isinstance(timeout, str) or not timeout.isascii() or not timeout.isdecimal() or not 1 <= int(timeout) <= 60:
-            raise ValueError(f"{name}/{job_name}: explicit timeout must be within 1..60 minutes")
+        maximum = 120 if name in {"release.yml", "release.yaml"} and job_name == "validate" else 60
+        if (
+            not isinstance(timeout, str) or not timeout.isascii() or not timeout.isdecimal()
+            or not 1 <= int(timeout) <= maximum
+        ):
+            raise ValueError(f"{name}/{job_name}: explicit timeout must be within 1..{maximum} minutes")
         steps = job.get("steps")
         if "uses" in job or not isinstance(steps, list) or not steps:
             raise ValueError(f"{name}/{job_name}: explicit steps required; reusable jobs need policy review")
