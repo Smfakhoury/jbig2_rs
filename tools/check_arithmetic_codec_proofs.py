@@ -18,7 +18,9 @@ BASELINE_GROUPS = (
     ("generic_region", (
         "integer_overflow", "probability_signal_error", "unexpected_eof", "validate_probability_states",
     )),
-    ("symbol_text", ("ArithmeticCodec::decode_integer", "ArithmeticCodec::decode_symbol_id")),
+    ("symbol_text", (
+        "ArithmeticCodec::decode_integer", "ArithmeticCodec::decode_symbol_id", "new_arithmetic_codec",
+    )),
     ("symbol_text", (
         "HuffmanCodec::read_raw_bits", "HuffmanCodec::decode_integer",
         "HuffmanCodec::decode_symbol_id",
@@ -86,13 +88,51 @@ INVALID_STATE_VALUE = """DecodeError::Malformed(MalformedError::InvalidArithmeti
     state_index,
     mps,
 })"""
+ENUM_INTEGER_POST = "symbol_text_spec::arithmetic_integer_transition(old(self), final(self), field, out),"
+ENUM_ID_POST = "symbol_text_spec::arithmetic_symbol_id_transition(old(self), final(self), request, out),"
+BANK_INITIAL_POST = "&& symbol_text_spec::integer_contexts_initial(&codec.integers)"
+IAID_LENGTH_POST = "&& codec.iaid@.len() == (1usize << iaid_code_length)"
+IAID_INITIAL_POST = """&& (forall|index: int| 0 <= index < codec.iaid@.len() ==>
+    #[trigger] codec.iaid@[index]
+        == ArithmeticContext { state_index: 0, mps: 0 })"""
+INPUT_INITIAL_POST = """&& codec.decoder.bytes@ == bytes@
+&& codec.decoder.interval == crate::arithmetic::MIN_INTERVAL
+&& codec.decoder.byte_position
+    == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().0
+&& codec.decoder.current_byte
+    == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().1
+&& codec.decoder.code
+    == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().2
+&& codec.decoder.bit_count
+    == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().3
+&& codec.decoder.marker
+    == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().4"""
+CONSTRUCTOR_TAIL = """iaid,
+refinement: match refinement_template {
+    Some(template) => Some(RefinementContexts::new(template, limits)?),
+    None => None,
+},
+refinement_work: 0,"""
+CONSTRUCTOR_TEST = (
+    "symbol_text::tests::arithmetic_composition::"
+    "fresh_arithmetic_codec_has_zero_banks_exact_size_and_literal_initial_state"
+)
+ENUM_INTEGER_TEST = (
+    "symbol_text::tests::arithmetic_composition::"
+    "arithmetic_enum_integer_preserves_direct_result_state_and_other_banks"
+)
+ENUM_ID_TEST = (
+    "symbol_text::tests::arithmetic_composition::"
+    "arithmetic_enum_iaid_preserves_direct_result_range_and_full_frames"
+)
 
 
-def case(identity, module, function, site, replacement, control, weaker=""):
+def case(identity, module, function, site, replacement, control, weaker="", *, native_test=None):
     return {
         "id": identity, "file": f"src/{module}.rs", "module": module,
         "function": function, "site": site, "replacement": replacement,
         "controls": ((control, weaker),),
+        **({"native_test": native_test} if native_test is not None else {}),
     }
 
 
@@ -109,6 +149,8 @@ def literal_case(identity, function, site, replacement, test):
                 Err(_) => true,
             },
         ))]"""
+        post = ENUM_INTEGER_POST if function.endswith("decode_integer") else ENUM_ID_POST
+        weaker = weaker.replace("ensures match out {", f"ensures {post}\nmatch out {{")
     else:
         weaker = """#[cfg_attr(verus_keep_ghost, verus_spec(out =>
             requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
@@ -123,6 +165,58 @@ def literal_case(identity, function, site, replacement, test):
 
 
 CASES = (
+    case(
+        "fresh_codec_poisoned_integer_banks", "symbol_text", "new_arithmetic_codec",
+        "integers: IntegerContexts { slots: [[ArithmeticContext::new(); 512]; INTEGER_FIELD_COUNT], },",
+        "integers: IntegerContexts { slots: [[ArithmeticContext { state_index: 0, mps: 1 }; 512]; INTEGER_FIELD_COUNT], },",
+        BANK_INITIAL_POST, native_test=CONSTRUCTOR_TEST,
+    ),
+    case(
+        "fresh_codec_empty_iaid_bank", "symbol_text", "new_arithmetic_codec",
+        "iaid.resize(count, ArithmeticContext::new());",
+        "iaid.resize(0, ArithmeticContext::new());",
+        IAID_LENGTH_POST, native_test=CONSTRUCTOR_TEST,
+    ),
+    case(
+        "fresh_codec_poisoned_iaid_bank", "symbol_text", "new_arithmetic_codec",
+        "iaid.resize(count, ArithmeticContext::new());",
+        "iaid.resize(count, ArithmeticContext { state_index: 1, mps: 1 });",
+        IAID_INITIAL_POST, native_test=CONSTRUCTOR_TEST,
+    ),
+    case(
+        "fresh_codec_nonzero_refinement_work", "symbol_text", "new_arithmetic_codec",
+        CONSTRUCTOR_TAIL, CONSTRUCTOR_TAIL.replace("refinement_work: 0,", "refinement_work: 1,"),
+        "&& codec.refinement_work == 0", native_test=CONSTRUCTOR_TEST,
+    ),
+    case(
+        "fresh_codec_drops_first_input_byte", "symbol_text", "new_arithmetic_codec",
+        "decoder: ArithmeticDecoder::new(bytes)?,",
+        "decoder: ArithmeticDecoder::new(if bytes.is_empty() { bytes } else { &bytes[1..] })?,",
+        INPUT_INITIAL_POST, native_test=CONSTRUCTOR_TEST,
+    ),
+    case(
+        "arithmetic_enum_integer_discards_value", "symbol_text", "SymbolCodec::decode_integer",
+        "Self::Arithmetic(codec) => codec.decode_integer(field),",
+        """Self::Arithmetic(codec) => match codec.decode_integer(field) {
+            Ok(_) => Ok(EntropyInteger::OutOfBand), Err(error) => Err(error),
+        },""",
+        ENUM_INTEGER_POST, native_test=ENUM_INTEGER_TEST,
+    ),
+    case(
+        "arithmetic_enum_iaid_discards_value", "symbol_text", "SymbolCodec::decode_symbol_id",
+        "Self::Arithmetic(codec) => codec.decode_symbol_id(request),",
+        "Self::Arithmetic(codec) => codec.decode_symbol_id(request).map(|_value| 0),",
+        ENUM_ID_POST, native_test=ENUM_ID_TEST,
+    ),
+    case(
+        "arithmetic_enum_discards_refinement_work", "symbol_text", "SymbolCodec::decode_integer",
+        "Self::Arithmetic(codec) => codec.decode_integer(field),",
+        """Self::Arithmetic(codec) => {
+            codec.refinement_work = 0; codec.decode_integer(field)
+        },""",
+        ENUM_INTEGER_POST, native_test=ENUM_INTEGER_TEST,
+    ),
+) + (
     case(
         "arithmetic_error_forwarding_loses_iaid_length", "arithmetic", "ArithmeticError::into_decode",
         """Self::InvalidIaidCodeLength(length) => {
@@ -321,9 +415,10 @@ def main():
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/arithmetic.rs", "src/symbol_text.rs", "src/generic_region.rs",
-             "specs/arithmetic.rs", "specs/symbol_text.rs", "specs/generic_region.rs"),
+             "specs/arithmetic.rs", "specs/symbol_text.rs",
+             "specs/symbol_text/arithmetic_codec.rs", "specs/generic_region.rs"),
             "jbig2-arithmetic-codec-",
-            "Exact project arithmetic error/value projection, integer field/bank identity, integer/IAID frames and generic raw-context diagnostics, plus Huffman literal raw/fixed integer/untabled ID values, cursor/error projection and enum callers. Table-backed Huffman semantics, normative field selection, entropy/raster and full streams remain separate",
+            "Exact fresh arithmetic banks/input/registers and enum integer/IAID result/state composition, plus prior arithmetic projections, generic diagnostics and Huffman literal contracts. Normative field/reset timing, table selection and full entropy/raster streams remain separate",
             baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:

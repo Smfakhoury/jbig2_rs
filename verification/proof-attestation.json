@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "c98a1c0ea692a709333934c9deb7a3d9a5be31ec",
-  "scope": "Fresh unfiltered 1297/0 verification and nonempty compilation of the exact 0.2 development source. IAID prefix-tree bounds imply returned values below 2^code_length; valid zero-length requests preserve decoder/context state, and root/outside-tree contexts are framed on success and errors. The result range composes through the actual arithmetic symbol-ID adapter. All existing operational models and source contracts remain; no native execution change, new trusted fact, full-stream theorem or independent normative approval.",
+  "source_revision": "fd3f794b8ff491aee366802f671bb8db4dd810ee",
+  "scope": "Fresh exact-source whole verification/compilation with stronger fresh integer/IAID bank, size, work, refinement-presence and decoder-initialization guarantees. The actual SymbolCodec arithmetic branches now preserve complete project integer/IAID result, cursor and bank/refinement frames, including errors and the IAID numeric bound. Eleven stale exchange records are corrected to existing proved helper relations; that reconciliation is not newly authored exchange proof work. Native library execution is unchanged. Caller reset timing, normative field/source fidelity and complete streams remain separate unfinished work.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-iaid-prefix-v02-20261103/target/iaid-prefix/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-arithmetic-composition-v02-20261103/target/arithmetic-composition/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1297,
     "verified_production_functions": 642,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "88fbf929430b353503842a2be527232467796d6b54b0beb38494de2b1b657dad",
+  "production_proof_coverage_sha256": "afe211799eb6949752ce394afac3ece766790a1c96db82522bc8c557adcad9f4",
   "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1297 actual whole-crate obligations, zero errors and a nonempty production library; 642 direct declarations/20 explicit limitations with zero assumptions, divergences, forwarders or incomplete declarations. Eight IAID native-compiling semantic mutants were rejected with accepted weaker controls; three additional native regressions cover endpoint values, zero-length identity and partial-error context frames. All 146 runtime-source projections retain identical executing tokens/literals against dd91e1a; only contracts, ghost proof support and tests change. One proof-support macro extends the author-navigation registry, not the standards denominator. Historical owner review is preserved at its original source identity, not silently renewed. All 266 selected rows/257 gap-bearing rows remain provisional; exhaustive decomposition and full functional composition remain #135 work.",
+  "current_evidence_note": "Whole obligation count remains 1297: existing body obligations now discharge stronger constructor and enum guarantees; count growth is not used as a coverage proxy. Thirty-three codec semantic contrasts compile/reject/accept weaker controls, including eight added cases whose exact native regressions also detect compiled mutants. The mandatory corpus retains all previous controls (367 semantic contrasts across49groups,184native mutants). Registry195 includes three new project-result predicates and four newly registered existing exchange helpers; only the three predicates are new declarations. Functional/state/safety record labels are150/103/13 after11old-evidence corrections and two stronger caller records; all266selected requirements/257gap-bearing rows remain provisional. All146existing native library projections preserve tokens/literals against 8626788; one added test-only file has an empty non-test projection. Previous review identities and solver evidence remain historical. No new trusted fact, algorithm substitution, field/reset-timing certificate or full-stream correctness claim is introduced.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -61,5 +61,25 @@
     },
     "production_proof_coverage_sha256": "67253300d147cf7ff7d5f605771be3df8c4be1189f274b4a3d2a662a23813034",
     "scope": "Previous attestation retained as historical data; not a new execution or approval."
+  },
+  "previous_component_evidence": {
+    "source_revision": "c98a1c0ea692a709333934c9deb7a3d9a5be31ec",
+    "scope": "Fresh unfiltered 1297/0 verification and nonempty compilation of the exact 0.2 development source. IAID prefix-tree bounds imply returned values below 2^code_length; valid zero-length requests preserve decoder/context state, and root/outside-tree contexts are framed on success and errors. The result range composes through the actual arithmetic symbol-ID adapter. All existing operational models and source contracts remain; no native execution change, new trusted fact, full-stream theorem or independent normative approval.",
+    "result": {
+      "verified_obligations": 1297,
+      "verified_production_functions": 642,
+      "errors": 0,
+      "proof_build_compiles": true,
+      "exact_production_source_compiles": true,
+      "algorithm_bodies_verified": false,
+      "production_coverage_complete": true,
+      "native_assumptions": [],
+      "reviewed_verifier_limitations": 20,
+      "audited_forwarders": 0,
+      "runtime_proof_divergences": 0,
+      "incomplete_functions": 0
+    },
+    "production_proof_coverage_sha256": "88fbf929430b353503842a2be527232467796d6b54b0beb38494de2b1b657dad",
+    "scope_note": "Historical component evidence, not a new execution or approval."
   }
 }

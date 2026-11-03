@@ -1,6 +1,7 @@
 #![cfg(test)]
 #![allow(clippy::duplicated_attributes)]
 
+mod arithmetic_composition;
 mod benchmarks;
 mod codec_and_exports;
 mod dictionary_dispatch;

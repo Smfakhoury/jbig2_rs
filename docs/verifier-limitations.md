@@ -64,6 +64,21 @@ confirmations retain their original source identities; new proof/contract bytes
 do not silently renew those approvals. The unpublished development scope still
 requires actual proofs and test discovery without claiming completion.
 
+### Arithmetic construction and enum composition on the 0.2 line
+
+Fresh symbol/text arithmetic construction specifies zero integer and IAID
+probability banks, the requested IAID size, zero refinement work, requested
+refinement presence, and literal input/initialized decoder registers.
+This proves the result of fresh construction, not when every text/dictionary
+caller must construct, retain or reset statistics.
+
+The arithmetic branches of `SymbolCodec` preserve the concrete integer/IAID
+result, partial-error state and untouched-bank/refinement frames. IAID bounds
+propagate through this enum layer; the separate Huffman contracts are retained.
+Existing exchange records are linked to their already-proved conditional
+decision/index/MPS and normalization results. That is evidence correction,
+not newly authored exchange proofs or independent standards approval.
+
 ## Observed-capacity integration
 
 Allocation accounting checks actual post-reservation `Vec::capacity()` rather

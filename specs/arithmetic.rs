@@ -20,7 +20,8 @@ pub(crate) open spec fn context_valid(
 
 // Model navigation: spec::exchange_is_mps [project-result-model]
 // Purpose: Exact project exchange, refill, initialization and normalized register results.
-// Mapping: no registered requirement/locator mapping.
+// Audit: arithmetic-exchange-is-mps
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-EXCHANGE-MPS-COMPARE | ITU-T T.88 (08/2018) | E.3.2, Figure E.16, A less than Qe test (p. 120)
 // Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_is_mps(lower: bool, interval: u32, qe: u32) -> bool {
     (interval < qe) == lower
@@ -28,7 +29,8 @@ pub(crate) open spec fn exchange_is_mps(lower: bool, interval: u32, qe: u32) -> 
 
 // Model navigation: spec::exchange_decision [project-result-model]
 // Purpose: Exact project exchange, refill, initialization and normalized register results.
-// Mapping: no registered requirement/locator mapping.
+// Audit: arithmetic-exchange-decision
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-EXCHANGE-MPS-COMPARE | ITU-T T.88 (08/2018) | E.3.2, Figure E.16, A less than Qe test (p. 120)
 // Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_decision(
     lower: bool, interval: u32, qe: u32, old_mps: u8,
@@ -44,7 +46,8 @@ pub(crate) open spec fn exchange_decision(
 
 // Model navigation: spec::exchange_index [project-result-model]
 // Purpose: Exact project exchange, refill, initialization and normalized register results.
-// Mapping: no registered requirement/locator mapping.
+// Audit: arithmetic-exchange-index
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-EXCHANGE-MPS-COMPARE | ITU-T T.88 (08/2018) | E.3.2, Figure E.16, A less than Qe test (p. 120)
 // Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_index(
     lower: bool, interval: u32, qe: u32, next_mps: u8, next_lps: u8,
@@ -54,7 +57,8 @@ pub(crate) open spec fn exchange_index(
 
 // Model navigation: spec::exchange_mps [project-result-model]
 // Purpose: Exact project exchange, refill, initialization and normalized register results.
-// Mapping: no registered requirement/locator mapping.
+// Audit: arithmetic-exchange-mps
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-EXCHANGE-MPS-COMPARE | ITU-T T.88 (08/2018) | E.3.2, Figure E.16, A less than Qe test (p. 120)
 // Fidelity: unresolved; no independent normative approval.
 pub(crate) open spec fn exchange_mps(
     lower: bool, interval: u32, qe: u32, switch_mps: bool,

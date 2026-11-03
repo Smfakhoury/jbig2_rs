@@ -13,7 +13,10 @@ use super::{
 };
 
 impl IntegerContexts {
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures symbol_text_spec::integer_contexts_initial(&out),
+    ))]
+    #[cfg_attr(verus_keep_ghost, allow(unused, verus_impl_method_marker))]
     pub(in crate::symbol_text) fn new() -> Self {
         Self {
             slots: [[ArithmeticContext::new(); 512]; INTEGER_FIELD_COUNT],
@@ -23,7 +26,29 @@ impl IntegerContexts {
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(codec) => symbol_text_spec::arithmetic_codec_valid(&codec),
+        Ok(codec) =>
+            symbol_text_spec::arithmetic_codec_valid(&codec)
+            && bytes@.len() >= 2
+            && symbol_text_spec::integer_contexts_initial(&codec.integers)
+            && (iaid_code_length as u32) < usize::BITS
+            && codec.iaid@.len() == (1usize << iaid_code_length)
+            && (forall|index: int| 0 <= index < codec.iaid@.len() ==>
+                #[trigger] codec.iaid@[index]
+                    == ArithmeticContext { state_index: 0, mps: 0 })
+            && codec.refinement_work == 0
+            && codec.refinement.is_some() == refinement_template.is_some()
+            && codec.decoder.bytes@ == bytes@
+            && codec.decoder.interval == crate::arithmetic::MIN_INTERVAL
+            && codec.decoder.byte_position
+                == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().0
+            && codec.decoder.current_byte
+                == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().1
+            && codec.decoder.code
+                == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().2
+            && codec.decoder.bit_count
+                == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().3
+            && codec.decoder.marker
+                == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().4,
         Err(_) => true,
     },
 ))]
