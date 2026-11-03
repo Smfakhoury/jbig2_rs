@@ -1,5 +1,10 @@
 # Development roadmap
 
+`main` develops the unpublished 0.2 line. The protected `release/0.1` branch
+maintains 0.1.x; relevant decoder correctness fixes are assessed individually
+for cherry-picking with their tests. Proof-only progress stays on `main` unless
+it is needed to validate a selected functional maintenance fix.
+
 Version 0.1 provides a broad bi-level decoder with partial Verus coverage.
 The [support matrix](../config/support-matrix.json) defines supported,
 unsupported and deferred behavior. The [release validation](publication-readiness.md)

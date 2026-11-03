@@ -1,6 +1,13 @@
 {
   "schema_version": 1,
-  "release_scope": {
+  "development_scope": {
+    "profile": "0.2-development",
+    "crate_version": "0.2.0-dev",
+    "maintenance_branch": "release/0.1",
+    "proof_completion_issue": "https://github.com/microsoft/jbig2_rs/issues/135",
+    "publication_enabled": false
+  },
+  "maintenance_release_scope": {
     "profile": "0.1-partial-verus",
     "crate_version": "0.1.1",
     "authority": "repository_owner_release_scope",

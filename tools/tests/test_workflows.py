@@ -370,10 +370,10 @@ class WorkflowPolicyTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, "dry run"):
                 check_workflow(document, "ci.yml")
 
-    def test_v01_verus_scope_cannot_skip_checked_report_or_test_discovery(self):
+    def test_development_verus_scope_cannot_skip_checked_report_or_test_discovery(self):
         actual = load_workflow((TOOLS.parent / ".github/workflows/verus.yml").read_text())
         check_workflow(actual, "verus.yml")
-        for flag in ("--require-v01-scope", "--discover-tests"):
+        for flag in ("--require-development-scope", "--discover-tests"):
             document = copy.deepcopy(actual)
             step = next(
                 item for item in document["jobs"]["whole"]["steps"]
