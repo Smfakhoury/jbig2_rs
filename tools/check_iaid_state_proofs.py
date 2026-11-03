@@ -35,12 +35,13 @@ Ok(value as u32)"""
 CALL = "let decision = self.decode(&mut contexts[previous])?;"
 
 
-def case(identity, site, replacement, control, *overlapping):
+def case(identity, site, replacement, control, *overlapping, native_test=None):
     return {
         "id": identity, "file": "src/arithmetic.rs", "module": "arithmetic",
         "function": "ArithmeticDecoder::decode_iaid",
         "site": site, "replacement": replacement,
         "controls": tuple((clause, "") for clause in (control, *overlapping)),
+        **({"native_test": native_test} if native_test is not None else {}),
     }
 
 
@@ -88,6 +89,7 @@ CASES = (
 }
 Ok(value as u32)"""),
         RESULT, RANGE,
+        native_test="arithmetic::tests::integer_procedures::iaid_prefix_range_covers_both_endpoint_values_and_unvisited_contexts",
     ),
     case(
         "iaid_changes_outside_tree_context", RETURN,
@@ -96,6 +98,7 @@ Ok(value as u32)"""),
 }
 Ok(value as u32)"""),
         CONTEXTS, ZERO, FRAME,
+        native_test="arithmetic::tests::integer_procedures::iaid_prefix_range_covers_both_endpoint_values_and_unvisited_contexts",
     ),
 )
 
