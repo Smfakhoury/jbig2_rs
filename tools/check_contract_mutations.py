@@ -15,6 +15,7 @@ from check_arithmetic_codec_proofs import CASES as ENTROPY_CODEC_CASES
 from check_document_count_proof import CASES as DOCUMENT_CASES
 from check_huffman_assignment_proofs import CASES as HUFFMAN_ASSIGNMENT_CASES
 from check_iaid_state_proofs import CASES as IAID_STATE_CASES
+from check_value_bridge_proofs import CASES as VALUE_BRIDGE_CASES
 from check_page_state_proofs import CASES as PAGE_STATE_CASES
 from check_segment_data_proofs import CASES as SEGMENT_DATA_CASES
 from check_segment_header_proofs import CASES as HEADER_CASES
@@ -60,6 +61,13 @@ DOCUMENT_WINDOW_TESTS = {
     "embedded_discards_first_input_byte": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
 }
 MUTATIONS = tuple(
+    {
+        "id": "checked-id-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": case["native_test"], "whitespace_flexible": True,
+    }
+    for case in VALUE_BRIDGE_CASES if "native_test" in case
+) + tuple(
     {
         "id": "iaid-range-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],

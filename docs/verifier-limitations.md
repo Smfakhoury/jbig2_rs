@@ -79,6 +79,23 @@ Existing exchange records are linked to their already-proved conditional
 decision/index/MPS and normalization results. That is evidence correction,
 not newly authored exchange proofs or independent standards approval.
 
+### Checked symbol IDs on the 0.2 line
+
+The checked-ID helper specifies both the unchanged accepted ID and the exact
+out-of-range error payload. An empty codebook is rejected before entropy
+decoding, with the codec state unchanged.
+
+For arithmetic and untabled fixed-width Huffman IDs, the checked caller
+composes the encoded value/error and cursor/context effects with the supplied
+availability bound. Rejecting a successfully decoded unused ID does not rewind
+the consumed input or discard updated arithmetic contexts. Underlying entropy
+errors are preserved rather than relabeled as ID-range errors.
+
+This does not cover table-backed Huffman ID extraction or prove that every
+caller supplied the correct codebook extent, refinement selection or final
+rendered pixels. Existing generic accepted-ID bounds remain in force for other
+Huffman paths.
+
 ## Observed-capacity integration
 
 Allocation accounting checks actual post-reservation `Vec::capacity()` rather

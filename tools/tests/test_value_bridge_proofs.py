@@ -12,12 +12,13 @@ from proof_sensitivity import replace_once, weakened_contract
 
 
 class ValueBridgeProofFixtureTests(unittest.TestCase):
-    def test_all_five_output_mutations_have_unique_source_sites(self):
-        self.assertEqual(len({case["id"] for case in CASES}), 5)
+    def test_all_twelve_value_error_and_state_mutations_have_unique_source_sites(self):
+        self.assertEqual(len({case["id"] for case in CASES}), 12)
         self.assertEqual(
             {case["function"] for case in CASES},
             {"widen_u32_i64", "widen_u8_i64", "widen_u8_i32",
-             "widen_bool_i64", "same_combination_operator"},
+             "widen_bool_i64", "same_combination_operator",
+             "checked_symbol_id", "decode_checked_symbol_id"},
         )
         for case in CASES:
             with self.subTest(case=case["id"]):
@@ -36,6 +37,21 @@ class ValueBridgeProofFixtureTests(unittest.TestCase):
                         replace_once(invalid, case["site"], case["replacement"])
                 with self.assertRaises(ValueError):
                     weakened_contract(weakened_contract(source, case), case)
+
+    def test_checked_id_controls_retain_original_success_bounds_and_validity(self):
+        cases = [case for case in CASES if case["function"] == "decode_checked_symbol_id"]
+        self.assertEqual(len(cases), 5)
+        for case in cases:
+            source = source_text(TOOLS.parent, case["file"])
+            weaker = weakened_contract(source, case)
+            with self.subTest(case=case["id"]):
+                self.assertIn("requires symbol_text_spec::codec_valid(old(codec))", weaker)
+                self.assertIn("symbol_text_spec::codec_valid(final(codec))", weaker)
+                self.assertIn("id < request.available_symbols", weaker)
+                self.assertNotIn(
+                    "symbol_text_spec::checked_symbol_id_transition(old(codec), final(codec), request, out)",
+                    weaker,
+                )
 
 
 if __name__ == "__main__":
