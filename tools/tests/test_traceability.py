@@ -28,6 +28,15 @@ class OwnerReviewConfirmationTests(unittest.TestCase):
     def setUp(self):
         self.root = TOOLS.parent
         self.ledger = load_json(self.root / "validation/traceability/requirements.json")
+        self.ledger["owner_review_confirmation"] = copy.deepcopy(
+            self.ledger["historical_owner_review_confirmation"]
+        )
+        self.ledger["owner_review_confirmation"]["project_source_sha256"] = (
+            checker.classification_evidence(self.root, self.ledger)["project_source_sha256"]
+        )
+        self.ledger["owner_review_confirmation"]["requirements_sha256"] = hashlib.sha256(
+            json.dumps(self.ledger["requirements"], sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
         self.legacy = copy.deepcopy(self.ledger)
         self.legacy["release_scope"] = self.legacy.pop("maintenance_release_scope")
         temporary = tempfile.TemporaryDirectory()
@@ -47,6 +56,17 @@ class OwnerReviewConfirmationTests(unittest.TestCase):
         self.assertNotEqual(
             confirmation["instruction"], self.ledger["owner_review_confirmation"]["instruction"],
         )
+
+    def test_historical_review_is_preserved_but_not_renewed_for_new_proofs(self):
+        actual = load_json(self.root / "validation/traceability/requirements.json")
+        self.assertNotIn("owner_review_confirmation", actual)
+        self.assertIsNone(checker.check_owner_review_confirmation(self.root, actual))
+        historical = actual["historical_owner_review_confirmation"]
+        self.assertEqual(historical["source_revision"], "33c4b3e267a3b6aa9bec0833ecca6bc468bc1c44")
+        self.assertEqual(historical["confirmed_at"], "2026-11-02T09:48:42.675+00:00")
+        actual["owner_review_confirmation"] = copy.deepcopy(historical)
+        with self.assertRaisesRegex(ValueError, "snapshot"):
+            checker.check_owner_review_confirmation(self.root, actual)
 
     def test_source_or_requirement_changes_invalidate_confirmation_match(self):
         for mutation in ("source", "requirements", "gap_removed"):
@@ -2102,6 +2122,10 @@ class TraceabilityTests(unittest.TestCase):
                 } if name in {
                     "INTEGER-PROCEDURE-BANKS", "IAID-LENGTH", "IAID-STORAGE",
                 } else set()
+                if name == "IAID-RESULT":
+                    callers = {
+                        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id",
+                    }
                 if name == "DRIVER-CONTEXT-SEQUENCE":
                     callers = {
                         "generic_region::contexts::validate_probability_states",

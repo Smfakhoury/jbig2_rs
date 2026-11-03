@@ -77,7 +77,7 @@ CHECKS = (
     ("mmr-span", "check_mmr_span_proofs.py", 8, "strong_contract", "weaker_control"),
     ("arithmetic-refill", "check_arithmetic_refill_proofs.py", 6, "strong_contract", "weaker_control"),
     ("arithmetic-normalization", "check_arithmetic_normalization_proofs.py", 6, "strong_contract", "weaker_control"),
-    ("iaid-state", "check_iaid_state_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("iaid-state", "check_iaid_state_proofs.py", 8, "strong_contract", "weaker_control"),
     ("arithmetic-initialization", "check_arithmetic_initialization_proofs.py", 6, "strong_contract", "weaker_control"),
     ("mmr-run", "check_mmr_run_sequence_proofs.py", 4, "strong_contract", "weaker_control"),
     ("huffman-assignment", "check_huffman_assignment_proofs.py", 25, "strong_contract", "weaker_control"),

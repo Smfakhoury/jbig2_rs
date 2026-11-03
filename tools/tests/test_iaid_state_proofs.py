@@ -14,8 +14,8 @@ class IaidStateProofFixtureTests(unittest.TestCase):
     def setUp(self):
         self.source = source_text(TOOLS.parent, "src/arithmetic.rs")
 
-    def test_six_state_mutations_have_unique_sites(self):
-        self.assertEqual(len({case["id"] for case in CASES}), 6)
+    def test_eight_state_and_range_mutations_have_unique_sites(self):
+        self.assertEqual(len({case["id"] for case in CASES}), 8)
         for case in CASES:
             with self.subTest(case=case["id"]):
                 self.assertNotEqual(replace_once(self.source, case["site"], case["replacement"]), self.source)

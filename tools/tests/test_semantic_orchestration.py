@@ -294,7 +294,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 48)
             self.assertEqual(len({row[0] for row in assigned}), 48)
-            self.assertEqual(sum(row[2] for row in assigned), 327)
+            self.assertEqual(sum(row[2] for row in assigned), 329)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             costs = {
                 "arithmetic-decision": 355, "document-count": 298, "retention": 71,
@@ -332,7 +332,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 49)
             self.assertEqual(len({row[0] for row in assigned}), 49)
-            self.assertEqual(sum(row[2] for row in assigned), 357)
+            self.assertEqual(sum(row[2] for row in assigned), 359)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             rows = [
                 {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}
@@ -541,7 +541,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *shards]
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 38)
-        self.assertEqual(sum(row[2] for role in roles for row in role), 297)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 299)
 
     @patch.object(runner, "CHECKS", PRE_DEFAULT_CHECKS)
     @patch.object(runner, "WHOLE_GROUPS", PRE_DEFAULT_WHOLE_GROUPS)
@@ -618,7 +618,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         roles = [whole, collector, *shards]
         self.assertEqual(len(roles), 8)
         self.assertEqual(sum(len(role) for role in roles), 48)
-        self.assertEqual(sum(row[2] for role in roles for row in role), 327)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 329)
 
     @patch.multiple(runner, **EIGHT_SHARD_TOPOLOGY)
     @patch.object(runner, "CHECKS", PRE_EXPORT_ORDER_CHECKS)
@@ -631,7 +631,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         roles = [runner.configured_whole_checks(), runner.configured_collector_checks(), *actual]
         self.assertEqual(len(roles), 10)
         self.assertEqual(sum(len(role) for role in roles), 49)
-        self.assertEqual(sum(row[2] for role in roles for row in role), 329)
+        self.assertEqual(sum(row[2] for role in roles for row in role), 331)
 
     @patch.object(runner, "CHECKS", PRE_SINK_CHECKS)
     @patch.object(runner, "COLLECTOR_GROUPS", PRE_COLLECTOR_REBALANCE_GROUPS)
@@ -837,7 +837,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             ["arithmetic-codec", "value-bridge", "error-conversion"],
         )
         self.assertEqual(len(actual), 6)
-        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 277)
+        self.assertEqual(sum(row[2] for row in runner.configured_checks()), 279)
         self.assertEqual(len(runner.configured_checks()), 35)
 
     def test_manifest_binds_relocated_metadata_and_opaque_agent_profiles_not_generated_json(self):

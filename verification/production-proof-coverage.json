@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "source": "src/**/*.rs",
-  "verus_verified_obligations": 1287,
+  "verus_verified_obligations": 1297,
   "native_assumptions": [],
   "counts": {
     "verified": 642,
@@ -214,7 +214,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "06a449da712e7823486cc3d7ba3c30afb3a19f4aecb2db2bb4cd1b5756e2aa99",
+      "file_sha256": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer"
       ]
@@ -225,7 +225,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "06a449da712e7823486cc3d7ba3c30afb3a19f4aecb2db2bb4cd1b5756e2aa99",
+      "file_sha256": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_iaid"
       ]
@@ -236,7 +236,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "06a449da712e7823486cc3d7ba3c30afb3a19f4aecb2db2bb4cd1b5756e2aa99",
+      "file_sha256": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer_bit"
       ]
@@ -247,7 +247,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "06a449da712e7823486cc3d7ba3c30afb3a19f4aecb2db2bb4cd1b5756e2aa99",
+      "file_sha256": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
       "verus_functions": [
         "jbig2_rs_production::arithmetic::ArithmeticDecoder::decode_integer_bits"
       ]
@@ -6226,7 +6226,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::IntegerContexts::new"
       ]
@@ -6237,7 +6237,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::codec::arithmetic::new_arithmetic_codec"
       ]
@@ -6248,7 +6248,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::ArithmeticCodec::decode_integer"
       ]
@@ -6259,7 +6259,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::ArithmeticCodec::decode_symbol_id"
       ]
@@ -6270,7 +6270,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::ArithmeticCodec::decode_refinement"
       ]
@@ -6281,7 +6281,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::ArithmeticCodec::decode_generic"
       ]
@@ -6292,7 +6292,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::codec::arithmetic::validate_bounded_arithmetic_terminator"
       ]
@@ -6303,7 +6303,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::NormalizedArithmetic::bytes"
       ]
@@ -6314,7 +6314,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::NormalizedArithmetic::len"
       ]
@@ -6325,7 +6325,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::codec::arithmetic::normalized_bounded_arithmetic"
       ]
@@ -6336,7 +6336,7 @@
       "visibility": "pub(in crate::symbol_text)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+      "file_sha256": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::codec::arithmetic::validate_bounded_arithmetic_marker"
       ]

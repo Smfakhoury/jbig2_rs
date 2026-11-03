@@ -14,6 +14,20 @@ ROOT = Path(__file__).resolve().parents[1]
 RESULT = "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0,"
 DECODER = "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1,"
 CONTEXTS = "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2,"
+RANGE = """match out {
+    Ok(value) => code_length <= MAX_IAID_CODE_LENGTH
+        && (value as u64) < (1u64 << code_length),
+    Err(_) => true,
+},"""
+ZERO = """code_length == 0 && old(contexts)@.len() >= 1 ==> {
+    &&& out == Ok(0)
+    &&& *final(self) == *old(self)
+    &&& final(contexts)@ == old(contexts)@
+},"""
+FRAME = """code_length <= MAX_IAID_CODE_LENGTH ==>
+    forall|index: int| 0 <= index < final(contexts)@.len()
+        && (index == 0 || index >= (1usize << code_length)) ==>
+            final(contexts)@[index] == old(contexts)@[index],"""
 RETURN = """if value > u32::MAX as usize {
     return Err(ArithmeticError::Malformed(MalformedError::IntegerOverflow));
 }
@@ -21,11 +35,12 @@ Ok(value as u32)"""
 CALL = "let decision = self.decode(&mut contexts[previous])?;"
 
 
-def case(identity, site, replacement, control):
+def case(identity, site, replacement, control, *overlapping):
     return {
         "id": identity, "file": "src/arithmetic.rs", "module": "arithmetic",
         "function": "ArithmeticDecoder::decode_iaid",
-        "site": site, "replacement": replacement, "controls": ((control, ""),),
+        "site": site, "replacement": replacement,
+        "controls": tuple((clause, "") for clause in (control, *overlapping)),
     }
 
 
@@ -33,16 +48,17 @@ CASES = (
     case("iaid_discards_the_decoded_value", RETURN, RETURN.replace("Ok(value as u32)", "Ok(0)"), RESULT),
     case(
         "iaid_nonzero_empty_value", RETURN,
-        RETURN.replace("Ok(value as u32)", "if code_length == 0 { return Ok(1); }\nOk(value as u32)"), RESULT,
+        RETURN.replace("Ok(value as u32)", "if code_length == 0 { return Ok(1); }\nOk(value as u32)"),
+        RESULT, RANGE, ZERO,
     ),
     case(
         "iaid_discards_final_code_register", RETURN,
-        RETURN.replace("Ok(value as u32)", "self.code = 0;\nOk(value as u32)"), DECODER,
+        RETURN.replace("Ok(value as u32)", "self.code = 0;\nOk(value as u32)"), DECODER, ZERO,
     ),
     case(
         "iaid_changes_unvisited_root_context", RETURN,
         RETURN.replace("Ok(value as u32)", "if !contexts.is_empty() { contexts[0] = ArithmeticContext::new(); }\nOk(value as u32)"),
-        CONTEXTS,
+        CONTEXTS, ZERO, FRAME,
     ),
     case(
         "iaid_masks_decision_eof_as_overflow", CALL,
@@ -65,6 +81,22 @@ CASES = (
         };""",
         DECODER,
     ),
+    case(
+        "iaid_returns_the_excluded_upper_bound", RETURN,
+        RETURN.replace("Ok(value as u32)", """if code_length != 0 {
+    return Ok(1u32 << code_length);
+}
+Ok(value as u32)"""),
+        RESULT, RANGE,
+    ),
+    case(
+        "iaid_changes_outside_tree_context", RETURN,
+        RETURN.replace("Ok(value as u32)", """if contexts.len() > required {
+    contexts[required] = ArithmeticContext::new();
+}
+Ok(value as u32)"""),
+        CONTEXTS, ZERO, FRAME,
+    ),
 )
 
 
@@ -76,9 +108,10 @@ def main():
     try:
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
-            ("src/arithmetic.rs", "specs/arithmetic.rs", "proofs/model_support/arithmetic.rs"),
+            ("src/arithmetic.rs", "specs/arithmetic.rs", "proofs/model_support/arithmetic.rs",
+             "proofs/production_impl/arithmetic.rs"),
             "jbig2-iaid-state-",
-            "Exact project IAID result/decoder/context-bank relation including positive fold, zero length, and partial errors; normative caller length and standard interpretation remain separate",
+            "Exact project IAID result/state plus mathematical prefix/output range, zero-length identity and root/outside-tree frames; normative caller selection and standard interpretation remain separate",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"IAID state proof sensitivity failed: {error}", file=sys.stderr)

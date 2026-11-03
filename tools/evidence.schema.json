@@ -157,6 +157,7 @@
             "publication_enabled": {"const": false}
           }
         },
+        "historical_owner_review_confirmation": {"$ref": "#/$defs/traceability/properties/owner_review_confirmation"},
         "owner_review_confirmation": {
           "type": "object", "additionalProperties": false,
           "required": [

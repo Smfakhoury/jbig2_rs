@@ -21,24 +21,10 @@
     "full_spec_conformance_claim": false,
     "scope": "Initial 0.1 bi-level decoder release with explicitly partial Verus requirement and functional coverage. Deferred proof gaps remain recorded for future main work. Exact-source accounting, all existing proofs/contrasts/native controls, runtime/resource/safety checks, coverage floors, package tests and actual no-upload publication rehearsals remain mandatory. No protected-asset rights, actual upload credentials or full-verification certificate are inferred."
   },
-  "owner_review_confirmation": {
-    "authority": "repository_owner_confirmation",
-    "confirmed_at": "2026-11-02T09:48:42.675+00:00",
-    "instruction": "I already authorized you to proceed your work and validated normative/model review.",
-    "decision_reference": "https://github.com/microsoft/jbig2_rs/issues/125#issuecomment-6574995552",
-    "source_revision": "33c4b3e267a3b6aa9bec0833ecca6bc468bc1c44",
-    "project_source_sha256": "75c35a9410d9311522a0380ac08e76e03acc98bb3cc2c667a092183b8a99aa74",
-    "requirements_sha256": "c35996539ee4c103748b39467886111fb562170444514ba32c885804a1f5dc14",
-    "normative_model_review_validated": true,
-    "exhaustive_requirement_coverage": false,
-    "complete_functional_proof": false,
-    "independent_certificate": false,
-    "scope": "Effective source snapshot after documentation-only rebinding. All non-comment Rust tokens, literal contents, cfg branches, signatures, contracts, models, proofs and fenced examples match the exact base across207Rustfiles. The original confirmation is preserved in documentation_only_rebinding; its date is not a new semantic review of this documentation. Requirement rows, strengths and gaps are unchanged."
-  },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "f61e3d069622a035e3c20566bc95820311bbaa227218cd7f267b57f5e4981d70",
-    "project_source_sha256": "75c35a9410d9311522a0380ac08e76e03acc98bb3cc2c667a092183b8a99aa74",
+    "registry_sha256": "b0828b2b8fb8d1a7b0c0107beb76594a0fbd90ba2678e4f1e45d7b902e26161a",
+    "project_source_sha256": "473944b840f334420d72477d86d35ac8b10488648eb087a3589552aac1d3b6c6",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -228,10 +214,11 @@
           "macro::production_decode_interval_subtraction",
           "macro::production_integer_history_index",
           "macro::production_integer_magnitude",
-          "macro::production_qe_transition_valid"
+          "macro::production_qe_transition_valid",
+          "macro::production_iaid_prefix_bounds"
         ],
         "classification": "proof-support",
-        "justification": "Bodies call arithmetic_shared::qe_transition_valid for implementation QE entry bounds, assert interval subtraction safety, and invoke arithmetic_properties history-index/magnitude bounds. They connect src/arithmetic.rs machine operations to existing contracts, not independent QE table fidelity or new decoding equations.",
+        "justification": "Bodies call arithmetic_shared::qe_transition_valid for implementation QE entry bounds, assert interval subtraction safety, and invoke arithmetic_properties history-index/magnitude bounds. They connect src/arithmetic.rs machine operations to existing contracts, not independent QE table fidelity or new decoding equations. The IAID prefix bridge proves binary leading-one preservation and the returned numeric range on both usize architectures.",
         "ambiguity": ""
       },
       {
@@ -1825,7 +1812,7 @@
     "proofs/model_support/halftone.rs": "1966e1682a8068045c19e10d8c6db92caf6551f710d16ead37814fb9014e7ecf",
     "proofs/model_support/huffman.rs": "0eea371c344f65c8f9be5ba1022ee4dc5245acb5976ec1931e0aca5e4b26a788",
     "proofs/model_support/mmr.rs": "16bc3d8d0434cab9d062321962daf75341d8d6c286c60d801749c79c4bc6a04b",
-    "proofs/production_impl/arithmetic.rs": "4c299e136e1291f66d09a8f3e25aeeb4b1d974ef83a4a3ffdedc458893eedb50",
+    "proofs/production_impl/arithmetic.rs": "148363e9dafb0e525849b40bec56bd99da825284c613ceb2f34f23114fe76bd1",
     "proofs/production_impl/bitmap.rs": "7eabe6eecfd5f87785c542a34b8dc7ccfe6158af7543334754d5e417b981c479",
     "proofs/production_impl/document.rs": "f2fcc4c76ca83405ada89187e71897ca232e6f829c1aaae01709f2c2ca51b3fb",
     "proofs/production_impl/file_header.rs": "b33e70b621a9c4fdea50ef20b138fdbd685209ecb4b4aeaf2c0e24c624b10f1b",
@@ -1855,12 +1842,12 @@
     "specs/symbol_text.rs": "48823c89848c74e46e2ca7b794b3793872a1d568676012d1ffb7248b939c6c2c",
     "src/arithmetic.rs": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
     "src/arithmetic/decoding.rs": "537afa619108dc6ce7773688683d85eb5b4251dbb75a939c92223746b7a90fd5",
-    "src/arithmetic/integers.rs": "06a449da712e7823486cc3d7ba3c30afb3a19f4aecb2db2bb4cd1b5756e2aa99",
+    "src/arithmetic/integers.rs": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
     "src/arithmetic/refill.rs": "737ee41e1e4bfd62104fd48dcc612ff83ba9cc1b6b0ec1ca0e741909ce505769",
     "src/arithmetic/tests.rs": "24fa75f21b569d1518fdf5191d21b38aeb430c04695e9d103f3ff0ee8f495e8f",
     "src/arithmetic/tests/context_state.rs": "cf1908a60d5aa6cf91d8522644169a9eebe2521c0bd114f3950b29df5900566f",
     "src/arithmetic/tests/decoder_registers.rs": "eb973972578c2b74f0d2d5a390d2b169807f3ce970d7908d1b5453cf6156121d",
-    "src/arithmetic/tests/integer_procedures.rs": "e4ef8b7ba3c44b87cb05a1b04bc2739b738bd8b10b17b9d55cbee88f06b6aca2",
+    "src/arithmetic/tests/integer_procedures.rs": "0004c5bc599217400bd463c3c2efd859d8fb5d7689c6e957b096a7e42c062d26",
     "src/bitmap.rs": "7151eb22ac6ebf41ed4cb75d3698e43eab4277dbf6667dc8c7fd699a48988e94",
     "src/bitmap/access.rs": "ce458c26068422e717e32672c57eda03168d8118806d39ffaed278622e74fae3",
     "src/bitmap/operators.rs": "ca7c9f926f1c71d74bfc938798dfdf8ab22c53fee7e1843ca6def5d3bd86729d",
@@ -1930,7 +1917,7 @@
     "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
     "src/symbol_text/codebook.rs": "3ad3dd4131dbb7343a3267f32718d4c5278f029c1b90937f45d06363b8defbcc",
     "src/symbol_text/codec.rs": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
-    "src/symbol_text/codec/arithmetic.rs": "a9095d751fb6345725f3c0afef9ee0dc94cbcf10ba1ebcfe7d520737e0b1adb3",
+    "src/symbol_text/codec/arithmetic.rs": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
     "src/symbol_text/codec/huffman.rs": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
     "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
     "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
@@ -3805,6 +3792,16 @@
       ],
       "name": "production_known_segment_data_fields",
       "role": "unfold typed dispatch result at the native return"
+    },
+    "arithmetic-iaid-prefix-proof": {
+      "kind": "macro",
+      "file": "proofs/production_impl/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_proofs"
+      ],
+      "name": "production_iaid_prefix_bounds",
+      "role": "leading-one IAID prefix preservation and numeric result bound; not independent Annex A fidelity"
     }
   },
   "requirements": [
@@ -12208,11 +12205,23 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_prefix_range_covers_both_endpoint_values_and_unvisited_contexts"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_zero_length_consumes_no_decisions_and_changes_no_state"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_partial_error_preserves_root_and_outside_tree_contexts"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
+      "scope_of_formal_result": "Retains the exact project iaid_state result/decoder/context-bank theorem. The production loop additionally proves its leading-one prefix at every depth on both 32/64-bit usize architectures. Every successful result is below 2^code_length; a valid zero-length request returns zero without changing decoder or contexts. Context zero and entries outside the requested tree are unchanged on success and errors. The result bound also composes through ArithmeticCodec::decode_symbol_id. This adds explicit algebraic/frame consequences, not independently approved Annex A/Qe/caller-field fidelity, complete valid-stream acceptance or full signed-integer composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -12222,7 +12231,7 @@
       ],
       "gaps": [
         "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
-        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
+        "Caller SBSYMCODELEN/procedure-bank selection, reset timing and complete entropy-to-page streams remain open. Local signed-integer leaf/payload/sign results are separate existing theorems, not a missing IAID range theorem; the 31-bit cap remains project policy."
       ],
       "functional_evidence": [
         {
@@ -12231,7 +12240,10 @@
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
             "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
-            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2",
+            "Ok(value) => code_length <= MAX_IAID_CODE_LENGTH && (value as u64) < (1u64 << code_length)",
+            "code_length == 0 && old(contexts)@.len() >= 1 ==> { &&& out == Ok(0) &&& *final(self) == *old(self) &&& final(contexts)@ == old(contexts)@ }",
+            "code_length <= MAX_IAID_CODE_LENGTH ==> forall|index: int| 0 <= index < final(contexts)@.len() && (index == 0 || index >= (1usize << code_length)) ==> final(contexts)@[index] == old(contexts)@[index]"
           ]
         }
       ],
@@ -12344,11 +12356,23 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_prefix_range_covers_both_endpoint_values_and_unvisited_contexts"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_zero_length_consumes_no_decisions_and_changes_no_state"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_partial_error_preserves_root_and_outside_tree_contexts"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
+      "scope_of_formal_result": "Retains the exact project iaid_state result/decoder/context-bank theorem. The production loop additionally proves its leading-one prefix at every depth on both 32/64-bit usize architectures. Every successful result is below 2^code_length; a valid zero-length request returns zero without changing decoder or contexts. Context zero and entries outside the requested tree are unchanged on success and errors. The result bound also composes through ArithmeticCodec::decode_symbol_id. This adds explicit algebraic/frame consequences, not independently approved Annex A/Qe/caller-field fidelity, complete valid-stream acceptance or full signed-integer composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -12358,7 +12382,7 @@
       ],
       "gaps": [
         "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
-        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
+        "Caller SBSYMCODELEN/procedure-bank selection, reset timing and complete entropy-to-page streams remain open. Local signed-integer leaf/payload/sign results are separate existing theorems, not a missing IAID range theorem; the 31-bit cap remains project policy."
       ],
       "functional_evidence": [
         {
@@ -12367,7 +12391,10 @@
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
             "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
-            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2",
+            "Ok(value) => code_length <= MAX_IAID_CODE_LENGTH && (value as u64) < (1u64 << code_length)",
+            "code_length == 0 && old(contexts)@.len() >= 1 ==> { &&& out == Ok(0) &&& *final(self) == *old(self) &&& final(contexts)@ == old(contexts)@ }",
+            "code_length <= MAX_IAID_CODE_LENGTH ==> forall|index: int| 0 <= index < final(contexts)@.len() && (index == 0 || index >= (1usize << code_length)) ==> final(contexts)@[index] == old(contexts)@[index]"
           ]
         }
       ],
@@ -12412,11 +12439,23 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_prefix_range_covers_both_endpoint_values_and_unvisited_contexts"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_zero_length_consumes_no_decisions_and_changes_no_state"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_partial_error_preserves_root_and_outside_tree_contexts"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
+      "scope_of_formal_result": "Retains the exact project iaid_state result/decoder/context-bank theorem. The production loop additionally proves its leading-one prefix at every depth on both 32/64-bit usize architectures. Every successful result is below 2^code_length; a valid zero-length request returns zero without changing decoder or contexts. Context zero and entries outside the requested tree are unchanged on success and errors. The result bound also composes through ArithmeticCodec::decode_symbol_id. This adds explicit algebraic/frame consequences, not independently approved Annex A/Qe/caller-field fidelity, complete valid-stream acceptance or full signed-integer composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -12426,7 +12465,7 @@
       ],
       "gaps": [
         "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
-        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
+        "Caller SBSYMCODELEN/procedure-bank selection, reset timing and complete entropy-to-page streams remain open. Local signed-integer leaf/payload/sign results are separate existing theorems, not a missing IAID range theorem; the 31-bit cap remains project policy."
       ],
       "functional_evidence": [
         {
@@ -12435,7 +12474,10 @@
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
             "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
-            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2",
+            "Ok(value) => code_length <= MAX_IAID_CODE_LENGTH && (value as u64) < (1u64 << code_length)",
+            "code_length == 0 && old(contexts)@.len() >= 1 ==> { &&& out == Ok(0) &&& *final(self) == *old(self) &&& final(contexts)@ == old(contexts)@ }",
+            "code_length <= MAX_IAID_CODE_LENGTH ==> forall|index: int| 0 <= index < final(contexts)@.len() && (index == 0 || index >= (1usize << code_length)) ==> final(contexts)@[index] == old(contexts)@[index]"
           ]
         }
       ],
@@ -12456,7 +12498,8 @@
       "title": "Return the sentinel-free history as the decoded symbol identifier",
       "feature": "arithmetic_coding",
       "runtime": [
-        "arithmetic::integers::ArithmeticDecoder::decode_iaid"
+        "arithmetic::integers::ArithmeticDecoder::decode_iaid",
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -12467,7 +12510,9 @@
         "arithmetic-iaid-state",
         "arithmetic-decision-state"
       ],
-      "proof_macros": [],
+      "proof_macros": [
+        "arithmetic-iaid-prefix-proof"
+      ],
       "tests": [
         {
           "target": "lib",
@@ -12480,11 +12525,23 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_procedures::complete_iaid_state_matches_wide_prefix_oracle_and_prior_checked_procedure"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_prefix_range_covers_both_endpoint_values_and_unvisited_contexts"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_zero_length_consumes_no_decisions_and_changes_no_state"
+        },
+        {
+          "target": "lib",
+          "name": "arithmetic::tests::integer_procedures::iaid_partial_error_preserves_root_and_outside_tree_contexts"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The production IAID entry point equals iaid_state for its result, complete decoder and complete context bank. The finite project model starts its prefix at one, selects each context from that prefix, composes exact decision state, updates one context, advances prefix/count and clears the sentinel. All partial errors, zero length and project preflight policies are included. This does not independently approve Annex A caller-length/Qe/bitstream interpretation or complete signed integer procedures.",
+      "scope_of_formal_result": "Retains the exact project iaid_state result/decoder/context-bank theorem. The production loop additionally proves its leading-one prefix at every depth on both 32/64-bit usize architectures. Every successful result is below 2^code_length; a valid zero-length request returns zero without changing decoder or contexts. Context zero and entries outside the requested tree are unchanged on success and errors. The result bound also composes through ArithmeticCodec::decode_symbol_id. This adds explicit algebraic/frame consequences, not independently approved Annex A/Qe/caller-field fidelity, complete valid-stream acceptance or full signed-integer composition.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -12494,7 +12551,7 @@
       ],
       "gaps": [
         "Independent comparison of project IAID/context/register interpretation with Annex A and the Qe table remains unapproved.",
-        "Caller SBSYMCODELEN/procedure-bank selection, complete streams and signed integer leaf/payload/sign semantics remain open; the 31-bit cap remains project policy."
+        "Caller SBSYMCODELEN/procedure-bank selection, reset timing and complete entropy-to-page streams remain open. Local signed-integer leaf/payload/sign results are separate existing theorems, not a missing IAID range theorem; the 31-bit cap remains project policy."
       ],
       "functional_evidence": [
         {
@@ -12503,7 +12560,17 @@
           "tokens": [
             "out == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).0",
             "*final(self) == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).1",
-            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2"
+            "final(contexts)@ == arithmetic_spec::iaid_state(*old(self), old(contexts)@, code_length).2",
+            "Ok(value) => code_length <= MAX_IAID_CODE_LENGTH && (value as u64) < (1u64 << code_length)",
+            "code_length == 0 && old(contexts)@.len() >= 1 ==> { &&& out == Ok(0) &&& *final(self) == *old(self) &&& final(contexts)@ == old(contexts)@ }",
+            "code_length <= MAX_IAID_CODE_LENGTH ==> forall|index: int| 0 <= index < final(contexts)@.len() && (index == 0 || index >= (1usize << code_length)) ==> final(contexts)@[index] == old(contexts)@[index]"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "Ok(value) => request.code_length <= crate::arithmetic::MAX_IAID_CODE_LENGTH && (value as u64) < (1u64 << request.code_length)"
           ]
         }
       ],
@@ -18316,5 +18383,19 @@
     },
     "semantic_review_renewed": false,
     "proof_strength_or_scope_changed": false
+  },
+  "historical_owner_review_confirmation": {
+    "authority": "repository_owner_confirmation",
+    "confirmed_at": "2026-11-02T09:48:42.675+00:00",
+    "instruction": "I already authorized you to proceed your work and validated normative/model review.",
+    "decision_reference": "https://github.com/microsoft/jbig2_rs/issues/125#issuecomment-6574995552",
+    "source_revision": "33c4b3e267a3b6aa9bec0833ecca6bc468bc1c44",
+    "project_source_sha256": "75c35a9410d9311522a0380ac08e76e03acc98bb3cc2c667a092183b8a99aa74",
+    "requirements_sha256": "c35996539ee4c103748b39467886111fb562170444514ba32c885804a1f5dc14",
+    "normative_model_review_validated": true,
+    "exhaustive_requirement_coverage": false,
+    "complete_functional_proof": false,
+    "independent_certificate": false,
+    "scope": "Effective source snapshot after documentation-only rebinding. All non-comment Rust tokens, literal contents, cfg branches, signatures, contracts, models, proofs and fenced examples match the exact base across207Rustfiles. The original confirmation is preserved in documentation_only_rebinding; its date is not a new semantic review of this documentation. Requirement rows, strengths and gaps are unchanged."
   }
 }
