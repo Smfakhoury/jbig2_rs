@@ -2233,6 +2233,28 @@ class TraceabilityTests(unittest.TestCase):
         self.assertIn("specs/symbol_text/arithmetic_codec.rs", ledger["bindings"])
         self.assertIn("src/symbol_text/tests/arithmetic_composition.rs", ledger["bindings"])
 
+    def test_checked_id_caller_guarantees_are_bound_without_claiming_table_backed_extraction(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for identity in ("T88-PROFILE-SYMBOL-ID-PRESERVATION", "T88-TEXT-SYMBOL-ID"):
+            row = rows[identity]
+            with self.subTest(requirement=identity):
+                self.assertIn("symbol_text::codec::symbols::decode_checked_symbol_id", row["runtime"])
+                self.assertTrue({
+                    "symbol-checked-id-result", "symbol-checked-id-decode-result",
+                    "symbol-checked-id-transition",
+                } <= set(row["models"]))
+                self.assertTrue(any(
+                    claim["runtime"] == "symbol_text::codec::symbols::decode_checked_symbol_id"
+                    for claim in row["functional_evidence"]
+                ))
+                self.assertIn("Table-backed Huffman", row["scope_of_formal_result"])
+                self.assertEqual(row["review"], "provisional")
+                self.assertTrue(row["gaps"])
+                self.assertTrue(any("checked_literal_ids_" in test["name"] for test in row["tests"]))
+        self.assertEqual(len(ledger["requirements"]), 266)
+        self.assertEqual(sum(bool(row["gaps"]) for row in ledger["requirements"]), 257)
+
     def test_complete_header_results_are_linked_without_normative_approval(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}

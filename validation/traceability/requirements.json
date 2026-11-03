@@ -23,8 +23,8 @@
   },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "e6ff7f143c52cf208c047bdd49782b68ad9f1f779aad7e4bfbe216c8251d5103",
-    "project_source_sha256": "36392b5032af3b47318bc9d6bdd64bfd0260a5622db3adb6a558b777272d1624",
+    "registry_sha256": "84a5e6470521c7112dff5f0c35ae6151800f478231541e5cccaa9740f8336607",
+    "project_source_sha256": "1df9ef37f23f260798cd9bbcc2e2667948f8bd064d7bbf47ef17188778225a82",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -1125,10 +1125,13 @@
       {
         "file": "specs/symbol_text/symbol_ids.rs",
         "members": [
-          "spec::symbol_code_length_expected"
+          "spec::symbol_code_length_expected",
+          "spec::checked_symbol_id_result",
+          "spec::checked_symbol_decode_result",
+          "spec::checked_symbol_id_transition"
         ],
         "classification": "project-result-model",
-        "justification": "Bodies translate arithmetic integer/OOB/ID/errors to codec result enums, map encoded choices/templates to returned enums, and prescribe exact strip logs/ceil-log2 symbol length. src/symbol_text.rs helper/codec contracts bind actual returned values to these relations and arithmetic::decode_error.",
+        "justification": "Defines the existing minimal symbol-code-length result plus exact accepted ID/error payload filtering, error forwarding and checked arithmetic/literal-Huffman cursor effects. Empty-book preflight returns its project count error with the codec unchanged. Table-backed Huffman and normative whole-caller interpretation remain separate.",
         "ambiguity": "",
         "caveats": "Table-choice enums and field-slot selection do not prove normative table data, caller field selection or full entropy streams; default template branches are only the stated project mapping."
       },
@@ -1851,7 +1854,7 @@
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "ee10b54a7ee8dce323488bf8ef5229fbbf1d5811888a3364cda8f2cc187ba251",
     "specs/segments.rs": "a4a19a65babe5a29532273f3374434762cf0fd63d3336b0f49e4914e3e390bc0",
-    "specs/symbol_text.rs": "c4d0a05296baa95e2d92efc78d8b2ebdbdeb7e75d39d85ff8d79429ed84c1871",
+    "specs/symbol_text.rs": "8ebb4d644e3c76be425f1664eecd38c97b649c7efafd7e16f7cf7c0eca6cae20",
     "src/arithmetic.rs": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
     "src/arithmetic/decoding.rs": "537afa619108dc6ce7773688683d85eb5b4251dbb75a939c92223746b7a90fd5",
     "src/arithmetic/integers.rs": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
@@ -1932,7 +1935,7 @@
     "src/symbol_text/codec/arithmetic.rs": "448f9b67ecf868936070a11d1a2d794c4e1e0c85a3a699e194d90882f9c54f89",
     "src/symbol_text/codec/huffman.rs": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
     "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
-    "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
+    "src/symbol_text/codec/symbols.rs": "cfed710354f9e627870d81829c666c917ce8ade4b844a612df1411110fcae376",
     "src/symbol_text/dictionary/arithmetic.rs": "5d82d904114766a9e486a1b40b7fbd1e9cfac43ab705b0ae87ce2ef8e70ad86a",
     "src/symbol_text/dictionary/exports.rs": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
     "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
@@ -1940,7 +1943,7 @@
     "src/symbol_text/tests/codec_and_exports.rs": "3d6a65ecebfdc20876243ed67356e61e296b39d65d4ba44e75ab7781c0bd9fd5",
     "src/symbol_text/tests/dictionary_dispatch.rs": "e7e1f462adae411123ac93888bd87db1573b9b519bbb3c8c8e045b4697854181",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
-    "src/symbol_text/tests/huffman_fields.rs": "fb197e3cba4403c941d9c4cf6635a46debdbc9b2b17bcb603609c6aeda29d957",
+    "src/symbol_text/tests/huffman_fields.rs": "2fa807e44e5db1fe2615cc5c7077ec4bac8485f176936fd5d8a284dd4e7b9e8e",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
@@ -1950,7 +1953,8 @@
     "tests/traceability_organization.rs": "967cd92362829cc4258db0ab7300a8f28b53055dbd61489c3c3262ee6d539b5f",
     "tests/traceability_semantics.rs": "e7189d9cb70fa9b021b221f02942d90e64e9f96f9d38040edf4fa8599dfaa5f9",
     "specs/symbol_text/arithmetic_codec.rs": "d28755e3fe46f5aeb9772fdee3aa674fa510a0d91761a459c40bd3f673f96a4c",
-    "src/symbol_text/tests/arithmetic_composition.rs": "809e9b689c25297e1deb27e244802a58f759933b3a7eebd7ccc25de005e39156"
+    "src/symbol_text/tests/arithmetic_composition.rs": "8749f6561c7b3030deafa47358bd499514821726851cb296d4f00b2ff2110120",
+    "specs/symbol_text/symbol_ids.rs": "2ff1c6cd493da74049bc098d630aa32b089d47aefb98a1b1f99c11e70724b7bb"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -3889,6 +3893,39 @@
       ],
       "name": "arithmetic_symbol_id_transition",
       "role": "Exact project initial integer banks or enum arithmetic result/state transition; not global reset timing, normative field selection or full stream semantics."
+    },
+    "symbol-checked-id-result": {
+      "kind": "spec",
+      "file": "specs/symbol_text/symbol_ids.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "symbol_ids"
+      ],
+      "name": "checked_symbol_id_result",
+      "role": "Exact project ID-preserving range rejection or arithmetic/literal-Huffman checked result/state transition; not table-backed Huffman extraction or full rendered streams."
+    },
+    "symbol-checked-id-decode-result": {
+      "kind": "spec",
+      "file": "specs/symbol_text/symbol_ids.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "symbol_ids"
+      ],
+      "name": "checked_symbol_decode_result",
+      "role": "Exact project ID-preserving range rejection or arithmetic/literal-Huffman checked result/state transition; not table-backed Huffman extraction or full rendered streams."
+    },
+    "symbol-checked-id-transition": {
+      "kind": "spec",
+      "file": "specs/symbol_text/symbol_ids.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "symbol_ids"
+      ],
+      "name": "checked_symbol_id_transition",
+      "role": "Exact project ID-preserving range rejection or arithmetic/literal-Huffman checked result/state transition; not table-backed Huffman extraction or full rendered streams."
     }
   },
   "requirements": [
@@ -5771,28 +5808,48 @@
       "runtime": [
         "symbol_text::codec::symbols::checked_symbol_id",
         "symbol_text::codebook::SymbolCodebook::get",
-        "symbol_text::codebook::symbol_by_id"
+        "symbol_text::codebook::symbol_by_id",
+        "symbol_text::codec::symbols::decode_checked_symbol_id"
       ],
       "models": [
         "symbol-bitmap-contents-match",
         "symbol-codebook-selects",
-        "symbol-id-selects"
+        "symbol-id-selects",
+        "symbol-checked-id-result",
+        "symbol-checked-id-decode-result",
+        "symbol-checked-id-transition"
       ],
       "proof_macros": [],
       "tests": [
         {
           "target": "lib",
           "name": "symbol_text::tests::flags_and_tables::rejects_unused_fixed_length_symbol_ids"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::checked_symbol_ids_preserve_u32_values_and_exact_rejection_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::empty_codebook_rejects_before_arithmetic_or_literal_bit_decoding"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::checked_arithmetic_ids_preserve_raw_results_errors_and_consumed_state"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::checked_literal_ids_preserve_scalar_bits_errors_and_consumed_positions"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The checked ID remains exactly the supplied in-range ID. Successful contiguous/borrowed lookup now returns that position's exact bitmap geometry/packed bytes, and combined imported/new lookup preserves the project ID mapping; valid IDs succeed whenever the total is representable by both native counters. This still does not prove encoded-ID extraction and the complete decoded-text pipeline.",
+      "scope_of_formal_result": "Retains exact ID-preserving helper and existing codebook lookup guarantees. New checked helper exposes exact out-of-range variant/payload. The actual decode_checked_symbol_id caller rejects an empty extent before any entropy decoding with full codec identity. Arithmetic and untabled fixed-width Huffman IDs compose decoded value/error and cursor/context effects with the supplied availability filter; an unused decoded ID is rejected without substituting another ID or rewinding consumed state. Table-backed Huffman extraction, actual codebook extent choice and full refinement/placement rendering remain separate.",
       "assumptions": [
         "The no-lossy-substitution rule is the project prohibition; informative 0.2 is context, not an invented independent normative clause. The linked test exercises exact invalid-ID rejection only."
       ],
       "gaps": [
-        "Prove encoded-ID extraction, refinement/placement selection and final rendered pixels through complete callers; add independent positive no-substitution bitstream cases only within approved family scope."
+        "Complete table-backed Huffman bit-to-ID selection, correct codebook extent/code-length propagation at every caller, refinement/placement choice and final rendered pixels through complete streams; this project checked transition is not independent full normative conformance."
       ],
       "functional_evidence": [
         {
@@ -5800,6 +5857,20 @@
           "section": "ensures",
           "tokens": [
             "Ok(value) => value == id && value < available_symbols"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::symbols::checked_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "out == symbol_text_spec::checked_symbol_id_result(id, available_symbols)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::symbols::decode_checked_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::checked_symbol_id_transition(old(codec), final(codec), request, out)"
           ]
         }
       ],
@@ -6974,24 +7045,45 @@
       "title": "Preserve an accepted symbol index while rejecting indices outside the supplied codebook extent",
       "feature": "text_regions",
       "runtime": [
-        "symbol_text::codec::symbols::checked_symbol_id"
+        "symbol_text::codec::symbols::checked_symbol_id",
+        "symbol_text::codec::symbols::decode_checked_symbol_id"
       ],
-      "models": [],
+      "models": [
+        "symbol-checked-id-result",
+        "symbol-checked-id-decode-result",
+        "symbol-checked-id-transition"
+      ],
       "proof_macros": [],
       "tests": [
         {
           "target": "lib",
           "name": "symbol_text::tests::flags_and_tables::rejects_unused_fixed_length_symbol_ids"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::checked_symbol_ids_preserve_u32_values_and_exact_rejection_payloads"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::empty_codebook_rejects_before_arithmetic_or_literal_bit_decoding"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::checked_arithmetic_ids_preserve_raw_results_errors_and_consumed_state"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::checked_literal_ids_preserve_scalar_bits_errors_and_consumed_positions"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Successful output equals id and is below available_symbols; an error implies an out-of-range id. This is not the IAID/Huffman bit-to-index decoding theorem.",
+      "scope_of_formal_result": "Retains exact ID-preserving helper and existing codebook lookup guarantees. New checked helper exposes exact out-of-range variant/payload. The actual decode_checked_symbol_id caller rejects an empty extent before any entropy decoding with full codec identity. Arithmetic and untabled fixed-width Huffman IDs compose decoded value/error and cursor/context effects with the supplied availability filter; an unused decoded ID is rejected without substituting another ID or rewinding consumed state. Table-backed Huffman extraction, actual codebook extent choice and full refinement/placement rendering remain separate.",
       "assumptions": [
         "The supplied extent must describe the actual codebook; the linked unit regression checks one exact invalid index, not all valid indices."
       ],
       "gaps": [
-        "Prove entropy bit consumption, codebook-length propagation and bitmap lookup identity; add independent successful-index cases."
+        "Complete table-backed Huffman bit-to-ID selection, correct codebook extent/code-length propagation at every caller, refinement/placement choice and final rendered pixels through complete streams; this project checked transition is not independent full normative conformance."
       ],
       "functional_evidence": [
         {
@@ -7000,6 +7092,20 @@
           "tokens": [
             "Ok(value) => value == id && value < available_symbols",
             "Err(_) => id >= available_symbols"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::symbols::checked_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "out == symbol_text_spec::checked_symbol_id_result(id, available_symbols)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::symbols::decode_checked_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::checked_symbol_id_transition(old(codec), final(codec), request, out)"
           ]
         }
       ],

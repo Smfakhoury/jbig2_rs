@@ -140,7 +140,9 @@ pub(in crate::symbol_text) fn extend_lengths(
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-    ensures match out {
+    ensures
+        out == symbol_text_spec::checked_symbol_id_result(id, available_symbols),
+        match out {
         Ok(value) => value == id && value < available_symbols,
         Err(_) => id >= available_symbols,
     },
@@ -157,7 +159,9 @@ pub(crate) fn checked_symbol_id(id: u32, available_symbols: u32) -> Result<u32, 
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires symbol_text_spec::codec_valid(old(codec)),
-    ensures match out {
+    ensures
+        symbol_text_spec::checked_symbol_id_transition(old(codec), final(codec), request, out),
+        match out {
         Ok(id) =>
             symbol_text_spec::codec_valid(final(codec))
                 && id < request.available_symbols,

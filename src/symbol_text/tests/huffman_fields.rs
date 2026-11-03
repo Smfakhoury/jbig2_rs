@@ -11,7 +11,7 @@ const SAMPLES: [&[u8]; 5] = [
     &[0xff; 8],
 ];
 
-fn codec(bytes: &[u8], position: usize, log_strip_size: u8) -> HuffmanCodec<'_> {
+pub(super) fn codec(bytes: &[u8], position: usize, log_strip_size: u8) -> HuffmanCodec<'_> {
     HuffmanCodec {
         reader: BitReader {
             bytes,
@@ -40,7 +40,11 @@ fn codec(bytes: &[u8], position: usize, log_strip_size: u8) -> HuffmanCodec<'_> 
     }
 }
 
-fn scalar(bytes: &[u8], start: usize, count: u8) -> Result<(u32, usize), MalformedError> {
+pub(super) fn scalar(
+    bytes: &[u8],
+    start: usize,
+    count: u8,
+) -> Result<(u32, usize), MalformedError> {
     if count > 32 {
         return Err(MalformedError::InvalidBitCount(count));
     }
@@ -79,7 +83,7 @@ fn integer_value(result: Result<EntropyInteger, SymbolTextError>) -> Result<u32,
     })
 }
 
-fn frame_and_continuation(
+pub(super) fn frame_and_continuation(
     actual: &mut HuffmanCodec<'_>,
     bytes: &[u8],
     start: usize,

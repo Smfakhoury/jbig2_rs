@@ -65,5 +65,87 @@ pub(crate) open spec fn symbol_code_length_expected(count: u32) -> u8 {
     else { 32 }
 }
 
+// Model navigation: spec::checked_symbol_id_result [project-result-model]
+// Purpose: Preserve a valid ID or return its exact supplied out-of-range payload.
+// Audit: symbol-checked-id-result
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub(crate) open spec fn checked_symbol_id_result(
+    id: u32, available: u32,
+) -> Result<u32, crate::symbol_text::SymbolTextError> {
+    if id >= available {
+        Err(crate::symbol_text::SymbolTextError::SymbolIdOutOfRange { id, available })
+    } else {
+        Ok(id)
+    }
+}
+
+// Model navigation: spec::checked_symbol_decode_result [project-result-model]
+// Purpose: Filter a decoded ID without changing an underlying entropy error.
+// Audit: symbol-checked-id-decode-result
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub(crate) open spec fn checked_symbol_decode_result(
+    decoded: Result<u32, crate::symbol_text::SymbolTextError>, available: u32,
+) -> Result<u32, crate::symbol_text::SymbolTextError> {
+    match decoded {
+        Ok(id) => checked_symbol_id_result(id, available),
+        Err(error) => Err(error),
+    }
+}
+
+// Model navigation: spec::checked_symbol_id_transition [project-result-model]
+// Purpose: Exact empty-book preflight and arithmetic/literal-Huffman checked result and cursor effects.
+// Audit: symbol-checked-id-transition
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub(in crate::symbol_text) open spec fn checked_symbol_id_transition<'a>(
+    before: &crate::symbol_text::SymbolCodec<'a>,
+    after: &crate::symbol_text::SymbolCodec<'a>,
+    request: crate::symbol_text::SymbolIdRequest,
+    result: Result<u32, crate::symbol_text::SymbolTextError>,
+) -> bool
+    recommends codec_valid(before),
+{
+    if request.available_symbols == 0 {
+        result == Err(crate::symbol_text::SymbolTextError::InvalidCount(
+            "symbol ID with no available symbols",
+        )) && *after == *before
+    } else {
+        match *before {
+            crate::symbol_text::SymbolCodec::Arithmetic(prior) => {
+                let decoded = arithmetic_symbol_id_result(
+                    crate::arithmetic::arithmetic_spec::iaid_state(
+                        prior.decoder, prior.iaid@, request.code_length,
+                    ).0,
+                );
+                checked_symbol_decode_result(decoded, request.available_symbols) == result
+                    && arithmetic_symbol_id_transition(before, after, request, decoded)
+            },
+            crate::symbol_text::SymbolCodec::Huffman(prior) =>
+                prior.symbol_id_table.is_none() ==> match *after {
+                    crate::symbol_text::SymbolCodec::Huffman(next) => {
+                        let error = crate::spec::readers::bit_read_error(
+                            prior.reader.bytes@, prior.reader.bit_position, request.code_length,
+                        );
+                        let decoded = match error {
+                            Some(error) => Err(crate::symbol_text::SymbolTextError::Decode(
+                                crate::DecodeError::Malformed(error),
+                            )),
+                            None => Ok(crate::spec::readers::bits_value(
+                                prior.reader.bytes@, prior.reader.bit_position as nat,
+                                request.code_length as nat,
+                            ) as u32),
+                        };
+                        &&& result == checked_symbol_decode_result(decoded, request.available_symbols)
+                        &&& next.reader.bytes@ == prior.reader.bytes@
+                        &&& next.reader.bit_position == prior.reader.bit_position
+                            + if error.is_none() { request.code_length as nat } else { 0nat }
+                    },
+                    _ => false,
+                },
+        }
+    }
+}
 
 }

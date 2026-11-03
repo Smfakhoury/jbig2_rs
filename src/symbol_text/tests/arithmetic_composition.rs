@@ -5,6 +5,278 @@ use crate::arithmetic::ArithmeticMarker;
 
 type InitialRegisters = (usize, u8, u32, u8, Option<ArithmeticMarker>);
 
+fn assert_checked_result(
+    actual: Result<u32, SymbolTextError>,
+    expected: Result<u32, SymbolTextError>,
+) {
+    match (actual, expected) {
+        (Ok(actual), Ok(expected)) => assert_eq!(actual, expected),
+        (
+            Err(SymbolTextError::InvalidCount(actual)),
+            Err(SymbolTextError::InvalidCount(expected)),
+        ) => assert_eq!(actual, expected),
+        (
+            Err(SymbolTextError::SymbolIdOutOfRange { id, available }),
+            Err(SymbolTextError::SymbolIdOutOfRange {
+                id: expected_id,
+                available: expected_available,
+            }),
+        ) => assert_eq!((id, available), (expected_id, expected_available)),
+        (
+            Err(SymbolTextError::Decode(DecodeError::Malformed(actual))),
+            Err(SymbolTextError::Decode(DecodeError::Malformed(expected))),
+        ) => assert_eq!(actual, expected),
+        (actual, expected) => panic!("checked ID mismatch: {actual:?}, expected {expected:?}"),
+    }
+}
+
+#[test]
+fn checked_symbol_ids_preserve_u32_values_and_exact_rejection_payloads() {
+    for available in [0_u32, 1, 2, 3, 7, 31, u32::MAX] {
+        for id in [
+            0,
+            1,
+            available.saturating_sub(1),
+            available,
+            available.saturating_add(1),
+            u32::MAX,
+        ] {
+            let expected = if id < available {
+                Ok(id)
+            } else {
+                Err(SymbolTextError::SymbolIdOutOfRange { id, available })
+            };
+            assert_checked_result(checked_symbol_id(id, available), expected);
+        }
+    }
+}
+
+#[test]
+fn empty_codebook_rejects_before_arithmetic_or_literal_bit_decoding() {
+    let bytes = [0x13, 0x80];
+    for length in [0, 1, 8, 31, 32, 255] {
+        let before = arithmetic_codec_fixture(&bytes, 8, 23);
+        let mut actual = SymbolCodec::Arithmetic(arithmetic_codec_fixture(&bytes, 8, 23));
+        let request = SymbolIdRequest {
+            available_symbols: 0,
+            code_length: length,
+            huffman: false,
+        };
+        assert_checked_result(
+            crate::symbol_text::codec::decode_checked_symbol_id(&mut actual, request),
+            Err(SymbolTextError::InvalidCount(
+                "symbol ID with no available symbols",
+            )),
+        );
+        let SymbolCodec::Arithmetic(ref mut after) = actual else {
+            panic!("wrong variant");
+        };
+        assert_eq!(after.integers.slots, before.integers.slots);
+        assert_eq!(after.iaid, before.iaid);
+        assert_eq!(after.refinement_work, before.refinement_work);
+        assert_eq!(
+            (
+                after.decoder.byte_position,
+                after.decoder.current_byte,
+                after.decoder.code,
+                after.decoder.interval,
+                after.decoder.bit_count,
+                after.decoder.marker
+            ),
+            (
+                before.decoder.byte_position,
+                before.decoder.current_byte,
+                before.decoder.code,
+                before.decoder.interval,
+                before.decoder.bit_count,
+                before.decoder.marker
+            ),
+        );
+        let mut literal = SymbolCodec::Huffman(super::huffman_fields::codec(&bytes, 1, 2));
+        assert_checked_result(
+            crate::symbol_text::codec::decode_checked_symbol_id(
+                &mut literal,
+                SymbolIdRequest {
+                    huffman: true,
+                    ..request
+                },
+            ),
+            Err(SymbolTextError::InvalidCount(
+                "symbol ID with no available symbols",
+            )),
+        );
+        let SymbolCodec::Huffman(after) = literal else {
+            panic!("wrong variant");
+        };
+        assert_eq!(after.reader.bytes, &bytes);
+        assert_eq!(after.reader.bit_position, 1);
+        assert_eq!(after.log_strip_size, 2);
+        assert_eq!(after.refinement_work, 71);
+        assert!(after.symbol_id_table.is_none() && after.refinement.is_none());
+    }
+}
+
+#[test]
+fn checked_arithmetic_ids_preserve_raw_results_errors_and_consumed_state() {
+    let samples: [&[u8]; 6] = [
+        &[0, 0],
+        &[0xff, 0x90],
+        &[0; 64],
+        &[0x13; 64],
+        &[0xaa; 64],
+        &[0xff, 0x8f, 0, 0],
+    ];
+    let mut outcomes = [0; 4];
+    for available in [0, 1, 2, 3, 8] {
+        for length in [0, 1, 2, 3, 5, 8, 31, 32, 255] {
+            for count in [0, 1, 2, 3, 4, 16, 32, 35] {
+                for bytes in samples {
+                    let before = arithmetic_codec_fixture(bytes, count, usize::from(length) % 47);
+                    let banks = before.integers.slots;
+                    let mut expected_iaid = before.iaid;
+                    let mut expected_decoder = before.decoder;
+                    let (expected, decoded_ok) = if available == 0 {
+                        outcomes[0] += 1;
+                        (
+                            Err(SymbolTextError::InvalidCount(
+                                "symbol ID with no available symbols",
+                            )),
+                            false,
+                        )
+                    } else {
+                        match expected_decoder.decode_iaid(length, &mut expected_iaid) {
+                            Ok(id) if id < available => {
+                                outcomes[1] += 1;
+                                (Ok(id), true)
+                            }
+                            Ok(id) => {
+                                outcomes[2] += 1;
+                                (
+                                    Err(SymbolTextError::SymbolIdOutOfRange { id, available }),
+                                    true,
+                                )
+                            }
+                            Err(error) => {
+                                outcomes[3] += 1;
+                                (Err(error.into()), false)
+                            }
+                        }
+                    };
+                    let mut actual = SymbolCodec::Arithmetic(arithmetic_codec_fixture(
+                        bytes,
+                        count,
+                        usize::from(length) % 47,
+                    ));
+                    assert_checked_result(
+                        crate::symbol_text::codec::decode_checked_symbol_id(
+                            &mut actual,
+                            SymbolIdRequest {
+                                available_symbols: available,
+                                code_length: length,
+                                huffman: false,
+                            },
+                        ),
+                        expected,
+                    );
+                    let SymbolCodec::Arithmetic(ref mut after) = actual else {
+                        panic!("wrong variant");
+                    };
+                    assert_eq!(after.integers.slots, banks);
+                    assert_eq!(after.iaid, expected_iaid);
+                    assert_eq!(after.refinement_work, 73);
+                    assert!(after.refinement.is_none());
+                    assert_arithmetic_cursor_and_continuation(
+                        &mut after.decoder,
+                        &mut expected_decoder,
+                        decoded_ok,
+                    );
+                }
+            }
+        }
+    }
+    assert!(outcomes.into_iter().all(|count| count > 0));
+}
+
+#[test]
+fn checked_literal_ids_preserve_scalar_bits_errors_and_consumed_positions() {
+    let samples: [&[u8]; 5] = [
+        &[],
+        &[0],
+        &[0xff],
+        &[0xa5, 0x32, 0xdc, 0x4f, 0x80],
+        &[0xff; 8],
+    ];
+    let mut outcomes = [0; 4];
+    for bytes in samples {
+        for position in 0..=bytes.len() * 8 {
+            for length in (0..=33).chain([255]) {
+                for available in [0, 1, 3, 8, u32::MAX] {
+                    let raw_bits = super::huffman_fields::scalar(bytes, position, length);
+                    let mut actual =
+                        SymbolCodec::Huffman(super::huffman_fields::codec(bytes, position, 2));
+                    let decoded = crate::symbol_text::codec::decode_checked_symbol_id(
+                        &mut actual,
+                        SymbolIdRequest {
+                            available_symbols: available,
+                            code_length: length,
+                            huffman: true,
+                        },
+                    );
+                    if available == 0 {
+                        outcomes[0] += 1;
+                        assert_checked_result(
+                            decoded,
+                            Err(SymbolTextError::InvalidCount(
+                                "symbol ID with no available symbols",
+                            )),
+                        );
+                    } else {
+                        match &raw_bits {
+                            Ok((id, _)) if *id < available => {
+                                outcomes[1] += 1;
+                                assert_checked_result(decoded, Ok(*id));
+                            }
+                            Ok((id, _)) => {
+                                outcomes[2] += 1;
+                                assert_checked_result(
+                                    decoded,
+                                    Err(SymbolTextError::SymbolIdOutOfRange { id: *id, available }),
+                                );
+                            }
+                            Err(error) => {
+                                outcomes[3] += 1;
+                                let Err(SymbolTextError::Decode(DecodeError::Malformed(
+                                    actual_error,
+                                ))) = decoded
+                                else {
+                                    panic!("wrong literal decoding error");
+                                };
+                                assert_eq!(&actual_error, error);
+                            }
+                        }
+                    }
+                    let SymbolCodec::Huffman(ref mut after) = actual else {
+                        panic!("wrong variant");
+                    };
+                    let untouched = Ok((0, position));
+                    super::huffman_fields::frame_and_continuation(
+                        after,
+                        bytes,
+                        position,
+                        2,
+                        if available == 0 {
+                            &untouched
+                        } else {
+                            &raw_bits
+                        },
+                    );
+                }
+            }
+        }
+    }
+    assert!(outcomes.into_iter().all(|count| count > 0));
+}
+
 #[test]
 fn fresh_arithmetic_codec_has_zero_banks_exact_size_and_literal_initial_state() {
     let samples: [(&[u8], InitialRegisters); 4] = [
