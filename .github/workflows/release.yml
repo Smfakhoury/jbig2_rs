@@ -1,0 +1,150 @@
+name: Publish crate
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing reviewed version tag (for example v0.1.1)
+        required: true
+        type: string
+      dry_run:
+        description: Validate only; do not authenticate or upload
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.repository == 'microsoft/jbig2_rs' && (github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      checks: read
+      pull-requests: read
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
+      version: ${{ steps.source.outputs.version }}
+      archive_sha256: ${{ steps.registry.outputs.archive_sha256 }}
+      publish_needed: ${{ steps.registry.outputs.publish_needed }}
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name || inputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Validate exact merged source and required checks
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp tools/check_release.py "$RUNNER_TEMP/check-release.py"
+          python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" \
+            --output "$RUNNER_TEMP/release-source.json" --github-output "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.source.outputs.commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.88.0
+      - name: Rehearse isolated publication without credentials
+        run: >-
+          python -B tools/check_distribution.py --toolchain 1.88.0
+          --publish-dry-run --output target/release-validation/distribution.json
+      - name: Build final registry archive
+        run: cargo +1.88.0 package --locked
+      - name: Verify archive and existing registry version
+        id: registry
+        env:
+          COMMIT: ${{ steps.source.outputs.commit }}
+          VERSION: ${{ steps.source.outputs.version }}
+        run: |
+          cp "$RUNNER_TEMP/release-source.json" target/release-validation/source.json
+          python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --commit "$COMMIT" \
+            --archive "target/package/jbig2-decoder-${VERSION}.crate" \
+            --output target/release-validation/registry.json --github-output "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-validation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/release-validation/*.json
+          if-no-files-found: error
+
+  publish:
+    needs: validate
+    if: needs.validate.outputs.publish_needed == 'true' && (github.event_name == 'release' || inputs.dry_run == false)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: crates-io
+    concurrency:
+      group: crates-io-jbig2-decoder-${{ github.repository }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name || inputs.tag }}
+      COMMIT: ${{ needs.validate.outputs.commit }}
+      VERSION: ${{ needs.validate.outputs.version }}
+      ARCHIVE_SHA256: ${{ needs.validate.outputs.archive_sha256 }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Preserve trusted validation helper
+        run: cp tools/check_release.py "$RUNNER_TEMP/check-release.py"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.validate.outputs.commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: 1.88.0
+      - name: Rebuild immutable candidate
+        run: cargo +1.88.0 package --locked
+      - name: Recheck tag archive and registry before authentication
+        id: recheck
+        run: >-
+          python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --commit "$COMMIT"
+          --archive "target/package/jbig2-decoder-${VERSION}.crate" --expected-sha256 "$ARCHIVE_SHA256"
+          --output target/release-publication/candidate.json --github-output "$GITHUB_OUTPUT"
+      - name: Authenticate with crates.io Trusted Publishing
+        id: auth
+        if: steps.recheck.outputs.publish_needed == 'true'
+        uses: rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9 # v1.0.6
+      - name: Publish to crates.io
+        if: steps.recheck.outputs.publish_needed == 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: >-
+          cargo +1.88.0 --config 'registry.global-credential-providers=["cargo:token"]'
+          --config 'registries.crates-io.index="sparse+https://index.crates.io/"'
+          publish --locked --registry crates-io
+      - name: Verify published registry checksum and download
+        run: >-
+          python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --commit "$COMMIT"
+          --archive "target/package/jbig2-decoder-${VERSION}.crate" --expected-sha256 "$ARCHIVE_SHA256"
+          --verify-published --output target/release-publication/registry.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-publication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/release-publication/*.json
+          if-no-files-found: error

@@ -2,5 +2,6 @@
 *.json text eol=lf
 *.py text eol=lf
 /.github/workflows/conformance.yml text eol=lf
+/.github/workflows/release.yml text eol=lf
 /verification/stdlib/vec-capacity-interface/Cargo.toml text eol=lf
 /.gitattributes text eol=lf

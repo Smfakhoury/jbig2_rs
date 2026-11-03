@@ -31,6 +31,18 @@ OFFICIAL_TRUST = (
     "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'"
     " && github.repository == 'microsoft/jbig2_rs'"
 )
+RELEASE_VALIDATE = (
+    "github.repository == 'microsoft/jbig2_rs' && (github.event_name == 'release'"
+    " || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))"
+)
+RELEASE_PUBLISH = (
+    "needs.validate.outputs.publish_needed == 'true'"
+    " && (github.event_name == 'release' || inputs.dry_run == false)"
+)
+RELEASE_RECHECK = "steps.recheck.outputs.publish_needed == 'true'"
+RELEASE_READ = {"contents": "read", "actions": "read", "checks": "read", "pull-requests": "read"}
+RELEASE_OIDC = {"contents": "read", "id-token": "write"}
+RELEASE_TAG = "${{ github.event.release.tag_name || inputs.tag }}"
 COLLECTOR_READY = "needs.whole.result == 'success' && needs.semantic.result == 'success'"
 DISABLED_VERUS_CHECK = re.compile(
     r"(?<![\w-])--(?:no-verify|no-lifetime|no-erasure-check|no-trait-conflicts"
@@ -116,6 +128,143 @@ def read_permissions(permissions):
         raise ValueError("only contents read/none permissions are allowed by current CI policy")
     if any(not isinstance(value, str) or value not in {"read", "none"} for value in permissions.values()):
         raise ValueError("workflow permissions must not grant writes")
+
+
+def check_release_workflow(document):
+    jobs = document.get("jobs", {})
+    events = document.get("on", {})
+    if not isinstance(events, dict) or not isinstance(events.get("workflow_dispatch"), dict):
+        raise ValueError("release workflow requires explicit event and manual-input mappings")
+    inputs = events["workflow_dispatch"].get("inputs", {})
+    if not isinstance(inputs, dict):
+        raise ValueError("release workflow requires explicit manual inputs")
+    if (
+        set(document) != {"name", "on", "permissions", "jobs"}
+        or set(events) != {"release", "workflow_dispatch"}
+        or events["release"] != {"types": ["published"]}
+        or set(inputs) != {"tag", "dry_run"}
+        or set(jobs) != {"validate", "publish"}
+    ):
+        raise ValueError("release workflow requires published releases and bounded manual inputs only")
+    for name, required in (
+        ("tag", {"required": "true", "type": "string"}),
+        ("dry_run", {"required": "true", "default": "true", "type": "boolean"}),
+    ):
+        if (
+            not isinstance(inputs[name], dict) or set(inputs[name]) != {*required, "description"}
+            or any(inputs[name].get(key) != value for key, value in required.items())
+            or not isinstance(inputs[name]["description"], str) or not inputs[name]["description"].strip()
+        ):
+            raise ValueError("manual release runs must default to credential-free dry runs")
+    validate, publish = jobs["validate"], jobs["publish"]
+    if not isinstance(validate, dict) or not isinstance(publish, dict):
+        raise ValueError("release jobs must be mappings")
+    if (
+        set(validate) != {"if", "runs-on", "timeout-minutes", "permissions", "outputs", "env", "steps"}
+        or validate["if"] != RELEASE_VALIDATE or validate["permissions"] != RELEASE_READ
+        or validate["timeout-minutes"] != "20" or validate["runs-on"] != "ubuntu-latest"
+        or validate["env"] != {"TAG_NAME": RELEASE_TAG}
+        or validate["outputs"] != {
+            "commit": "${{ steps.source.outputs.commit }}", "version": "${{ steps.source.outputs.version }}",
+            "archive_sha256": "${{ steps.registry.outputs.archive_sha256 }}",
+            "publish_needed": "${{ steps.registry.outputs.publish_needed }}",
+        }
+        or set(publish) != {"needs", "if", "runs-on", "timeout-minutes", "environment",
+                           "concurrency", "permissions", "env", "steps"}
+        or publish["needs"] != "validate" or publish["if"] != RELEASE_PUBLISH
+        or publish["permissions"] != RELEASE_OIDC or publish["environment"] != "crates-io"
+        or publish["timeout-minutes"] != "15" or publish["runs-on"] != "ubuntu-latest"
+        or publish["concurrency"] != {
+            "group": "crates-io-jbig2-decoder-${{ github.repository }}", "cancel-in-progress": "false",
+        }
+        or publish["env"] != {
+            "TAG_NAME": RELEASE_TAG, "COMMIT": "${{ needs.validate.outputs.commit }}",
+            "VERSION": "${{ needs.validate.outputs.version }}",
+            "ARCHIVE_SHA256": "${{ needs.validate.outputs.archive_sha256 }}",
+        }
+        or not isinstance(validate["steps"], list) or not isinstance(publish["steps"], list)
+        or len(validate["steps"]) != 9 or len(publish["steps"]) != 11
+        or any(not isinstance(step, dict) for step in validate["steps"] + publish["steps"])
+    ):
+        raise ValueError("release source validation, dry-run isolation or publisher-only OIDC changed")
+    source_command = (
+        'cp tools/check_release.py "$RUNNER_TEMP/check-release.py"\n'
+        'python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" \\\n'
+        '  --output "$RUNNER_TEMP/release-source.json" --github-output "$GITHUB_OUTPUT"'
+    )
+    registry_command = (
+        'cp "$RUNNER_TEMP/release-source.json" target/release-validation/source.json\n'
+        'python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --commit "$COMMIT" \\\n'
+        '  --archive "target/package/jbig2-decoder-${VERSION}.crate" \\\n'
+        '  --output target/release-validation/registry.json --github-output "$GITHUB_OUTPUT"'
+    )
+    commands = (
+        (validate, 2, {"name": "Validate exact merged source and required checks", "id": "source",
+                       "env": {"GH_TOKEN": "${{ github.token }}"}, "run": source_command}),
+        (validate, 5, {"name": "Rehearse isolated publication without credentials",
+                       "run": "python -B tools/check_distribution.py --toolchain 1.88.0"
+                              " --publish-dry-run --output target/release-validation/distribution.json"}),
+        (validate, 6, {"name": "Build final registry archive", "run": "cargo +1.88.0 package --locked"}),
+        (validate, 7, {"name": "Verify archive and existing registry version", "id": "registry",
+                       "env": {"COMMIT": "${{ steps.source.outputs.commit }}",
+                               "VERSION": "${{ steps.source.outputs.version }}"}, "run": registry_command}),
+        (publish, 1, {"name": "Preserve trusted validation helper",
+                      "run": 'cp tools/check_release.py "$RUNNER_TEMP/check-release.py"'}),
+        (publish, 5, {"name": "Rebuild immutable candidate", "run": "cargo +1.88.0 package --locked"}),
+        (publish, 6, {"name": "Recheck tag archive and registry before authentication", "id": "recheck",
+                      "run": 'python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --commit "$COMMIT"'
+                             ' --archive "target/package/jbig2-decoder-${VERSION}.crate"'
+                             ' --expected-sha256 "$ARCHIVE_SHA256"'
+                             ' --output target/release-publication/candidate.json --github-output "$GITHUB_OUTPUT"'}),
+        (publish, 8, {"name": "Publish to crates.io", "if": RELEASE_RECHECK,
+                      "env": {"CARGO_REGISTRY_TOKEN": "${{ steps.auth.outputs.token }}"},
+                      "run": 'cargo +1.88.0 --config \'registry.global-credential-providers=["cargo:token"]\''
+                             ' --config \'registries.crates-io.index="sparse+https://index.crates.io/"\''
+                             " publish --locked --registry crates-io"}),
+        (publish, 9, {"name": "Verify published registry checksum and download",
+                      "run": 'python -B "$RUNNER_TEMP/check-release.py" --tag "$TAG_NAME" --commit "$COMMIT"'
+                             ' --archive "target/package/jbig2-decoder-${VERSION}.crate"'
+                             ' --expected-sha256 "$ARCHIVE_SHA256"'
+                             " --verify-published --output target/release-publication/registry.json"}),
+    )
+    for job, index, expected in commands:
+        actual = {**job["steps"][index]}
+        if isinstance(actual.get("run"), str):
+            actual["run"] = actual["run"].strip()
+        if actual != expected:
+            raise ValueError("release command, order, credentials or verification changed")
+    actions = (
+        (validate, 0, "actions/checkout", {"ref": "main", "fetch-depth": "0", "persist-credentials": "false"}),
+        (validate, 1, "actions/setup-python", {"python-version": "3.13"}),
+        (validate, 3, "actions/checkout", {"ref": "${{ steps.source.outputs.commit }}",
+                                        "fetch-depth": "0", "persist-credentials": "false"}),
+        (validate, 4, "dtolnay/rust-toolchain", {"toolchain": "1.88.0"}),
+        (validate, 8, "actions/upload-artifact", {
+            "name": "release-validation-${{ github.run_id }}-${{ github.run_attempt }}",
+            "path": "target/release-validation/*.json", "if-no-files-found": "error",
+        }),
+        (publish, 0, "actions/checkout", {"ref": "main", "fetch-depth": "0", "persist-credentials": "false"}),
+        (publish, 2, "actions/checkout", {"ref": "${{ needs.validate.outputs.commit }}",
+                                       "fetch-depth": "0", "persist-credentials": "false"}),
+        (publish, 3, "actions/setup-python", {"python-version": "3.13"}),
+        (publish, 4, "dtolnay/rust-toolchain", {"toolchain": "1.88.0"}),
+        (publish, 10, "actions/upload-artifact", {
+            "name": "release-publication-${{ github.run_id }}-${{ github.run_attempt }}",
+            "path": "target/release-publication/*.json", "if-no-files-found": "error",
+        }),
+    )
+    for job, index, action, settings in actions:
+        step = job["steps"][index]
+        if (
+            set(step) != {"uses", "with"} or not isinstance(step["uses"], str)
+            or step["uses"].split("@")[0] != action or step["with"] != settings
+        ):
+            raise ValueError("release action, trusted checkout or metadata-only artifact policy changed")
+    if publish["steps"][7] != {
+        "name": "Authenticate with crates.io Trusted Publishing", "id": "auth", "if": RELEASE_RECHECK,
+        "uses": "rust-lang/crates-io-auth-action@3268eb413133e2960fa4ae0e963ca76380c54cd9",
+    }:
+        raise ValueError("OIDC authentication must use the reviewed pin only after the registry recheck")
 
 
 def selected_toolchain(step, job):
@@ -454,6 +603,8 @@ def check_workflow(document, name):
             )
         ):
             raise ValueError("distribution checks require the actual isolated publication dry run")
+    if name in {"release.yml", "release.yaml"}:
+        check_release_workflow(document)
     if name in {"conformance.yml", "conformance.yaml"}:
         if document["on"] != {"workflow_dispatch": ""} or set(jobs) != {"official"}:
             raise ValueError("official conformance requires manual trusted-main execution only")
@@ -498,7 +649,8 @@ def check_workflow(document, name):
         if not isinstance(job, dict):
             raise ValueError(f"{name}/{job_name}: job must be a mapping")
         if "permissions" in job:
-            read_permissions(job["permissions"])
+            if name not in {"release.yml", "release.yaml"}:
+                read_permissions(job["permissions"])
         timeout = job.get("timeout-minutes")
         if not isinstance(timeout, str) or not timeout.isascii() or not timeout.isdecimal() or not 1 <= int(timeout) <= 60:
             raise ValueError(f"{name}/{job_name}: explicit timeout must be within 1..60 minutes")
