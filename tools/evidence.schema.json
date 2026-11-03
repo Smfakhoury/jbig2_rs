@@ -126,7 +126,7 @@
           ],
           "properties": {
             "profile": {"const": "0.1-partial-verus"},
-            "crate_version": {"const": "0.1.1"},
+            "crate_version": {"const": "0.1.2"},
             "authority": {"const": "repository_owner_release_scope"},
             "approved_at": {"$ref": "#/$defs/nonempty"},
             "instruction": {"$ref": "#/$defs/nonempty"},
