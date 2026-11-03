@@ -145,6 +145,18 @@
             "scope": {"$ref": "#/$defs/nonempty"}
           }
         },
+        "maintenance_release_scope": {"$ref": "#/$defs/traceability/properties/release_scope"},
+        "development_scope": {
+          "type": "object", "additionalProperties": false,
+          "required": ["profile", "crate_version", "maintenance_branch", "proof_completion_issue", "publication_enabled"],
+          "properties": {
+            "profile": {"const": "0.2-development"},
+            "crate_version": {"const": "0.2.0-dev"},
+            "maintenance_branch": {"const": "release/0.1"},
+            "proof_completion_issue": {"const": "https://github.com/microsoft/jbig2_rs/issues/135"},
+            "publication_enabled": {"const": false}
+          }
+        },
         "owner_review_confirmation": {
           "type": "object", "additionalProperties": false,
           "required": [

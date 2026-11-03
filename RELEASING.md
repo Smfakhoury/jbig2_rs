@@ -1,5 +1,16 @@
 # Releasing jbig2-decoder
 
+`main` is the unpublished `0.2.0-dev` development line with Cargo publication
+disabled. The 0.1.x maintenance line lives on `release/0.1`; its publication
+policy and version metadata are independent. Main CI checks actual proof/test
+evidence under `--require-development-scope` without declaring the deferred
+functional-proof target complete. The historical 0.1 scope is retained as
+`maintenance_release_scope`, not applied as a 0.2 release authorization.
+
+Assess runtime/API correctness fixes for a minimal maintenance backport with
+its own branch-specific tests and source-bound evidence. Proof-only, tooling
+and development-version changes are not automatic 0.1 backports.
+
 The package publishes only to crates.io. The 0.1 series has partial Verus
 coverage: existing proofs and quality checks are mandatory, while exhaustive
 requirement enumeration and complete functional proofs remain
@@ -33,9 +44,10 @@ python3 -B tools/audit_production_coverage.py \
   --require-complete --require-exact
 python3 -B tools/check_traceability.py \
   --verus-json target/verification/verus-production.json --discover-tests \
-  --require-v01-scope --output target/release/v01-scope.json
+  --require-development-scope --output target/release/development-scope.json
 ```
 
+On `release/0.1`, use `--require-v01-scope` instead of the development flag.
 Inventory completeness is not complete functional proof. The 0.1 scope check
 requires matching versioned scope, proof identities and test discovery; it does
 not make the stronger `--require-reviewed-decomposition --require-complete`
