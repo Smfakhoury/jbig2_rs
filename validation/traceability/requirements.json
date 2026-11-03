@@ -2,7 +2,7 @@
   "schema_version": 1,
   "release_scope": {
     "profile": "0.1-partial-verus",
-    "crate_version": "0.1.1",
+    "crate_version": "0.1.2",
     "authority": "repository_owner_release_scope",
     "approved_at": "2026-11-02T13:30:06.275+00:00",
     "instruction": "From verus requirement coverage, I think we do not need complete coverage to publish a 0.1 crate vbersion. We can publish and defere remaining coverage to future work in main",

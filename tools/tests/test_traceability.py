@@ -81,7 +81,7 @@ class OwnerReviewConfirmationTests(unittest.TestCase):
     def test_v01_scope_accepts_deferred_coverage_without_passing_stronger_gates(self):
         report = self.scoped_report()
         scoped = checker.check_v01_scope(self.root, self.ledger, report)
-        self.assertEqual(scoped["crate_version"], "0.1.1")
+        self.assertEqual(scoped["crate_version"], "0.1.2")
         self.assertTrue(scoped["requirement_coverage_policy_satisfied"])
         self.assertFalse(scoped["exhaustive_requirement_coverage"])
         self.assertFalse(scoped["complete_functional_proof"])
