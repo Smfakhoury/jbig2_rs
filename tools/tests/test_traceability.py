@@ -2092,6 +2092,9 @@ class TraceabilityTests(unittest.TestCase):
             "INTEGER-RESULT-NONNEGATIVE", "INTEGER-RESULT-NEGATIVE", "INTEGER-RESULT-OOB",
             "IAID-SEED", "IAID-CONTEXT", "IAID-HISTORY", "IAID-ITERATIONS",
             "IAID-CLEAR-SENTINEL", "IAID-RESULT",
+            "INTEGER-PROCEDURE-BANKS", "IAID-STORAGE",
+            *(f"EXCHANGE-MPS-{suffix}" for suffix in groups["EXCHANGE-MPS"]),
+            *(f"EXCHANGE-LPS-{suffix}" for suffix in groups["EXCHANGE-LPS"]),
         }
         for name in added:
             with self.subTest(requirement=name):
@@ -2108,6 +2111,7 @@ class TraceabilityTests(unittest.TestCase):
                             "arithmetic-normalized-state", "arithmetic-integer-bit-state",
                             "arithmetic-iaid-state", "arithmetic-integer-state",
                             "arithmetic-integer-bits-run",
+                            "arithmetic-exchange-normalization",
                         } & set(row["models"])
                     )
                 else:
@@ -2122,9 +2126,17 @@ class TraceabilityTests(unittest.TestCase):
                 } if name in {
                     "INTEGER-PROCEDURE-BANKS", "IAID-LENGTH", "IAID-STORAGE",
                 } else set()
+                if name in {"INTEGER-PROCEDURE-BANKS", "IAID-STORAGE"}:
+                    callers |= {
+                        "symbol_text::codec::arithmetic::new_arithmetic_codec",
+                        "symbol_text::codec::arithmetic::IntegerContexts::new",
+                        "symbol_text::codec::SymbolCodec::decode_integer",
+                        "symbol_text::codec::SymbolCodec::decode_symbol_id",
+                    }
                 if name == "IAID-RESULT":
                     callers = {
                         "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id",
+                        "symbol_text::codec::SymbolCodec::decode_symbol_id",
                     }
                 if name == "DRIVER-CONTEXT-SEQUENCE":
                     callers = {
@@ -2184,6 +2196,42 @@ class TraceabilityTests(unittest.TestCase):
             row = rows[f"T88-ARITHMETIC-IAID-{name}"]
             self.assertTrue({"arithmetic-binary-value", "arithmetic-pow2"} <= set(row["models"]))
             self.assertTrue(any("assumed decision sequence" in text for text in row["assumptions"]))
+
+    def test_exchange_evidence_is_reconciled_without_claiming_new_theorems_or_closing_gaps(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = [row for row in ledger["requirements"]
+                if row["id"].startswith("T88-ARITHMETIC-EXCHANGE-")]
+        self.assertEqual(len(rows), 11)
+        for row in rows:
+            with self.subTest(requirement=row["id"]):
+                self.assertEqual(row["strength"], "functional_contract")
+                self.assertTrue(row["functional_evidence"])
+                self.assertTrue(row["invariant_evidence"])
+                self.assertTrue(row["gaps"])
+                self.assertEqual(row["review"], "provisional")
+                self.assertIn("already-proved helper contracts", row["scope_of_formal_result"])
+                self.assertIn("not a newly authored", row["scope_of_formal_result"])
+                self.assertIn("supplied", row["scope_of_formal_result"])
+                self.assertIn("arithmetic-exchange-decision", row["models"])
+        self.assertEqual(len(ledger["requirements"]), 266)
+        self.assertEqual(sum(bool(row["gaps"]) for row in ledger["requirements"]), 257)
+
+    def test_fresh_banks_and_enum_composition_have_actual_caller_and_literal_test_bindings(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        rows = {row["id"]: row for row in ledger["requirements"]}
+        for identity in ("T88-ARITHMETIC-INTEGER-PROCEDURE-BANKS", "T88-ARITHMETIC-IAID-STORAGE"):
+            row = rows[identity]
+            with self.subTest(requirement=identity):
+                self.assertEqual(row["strength"], "functional_contract")
+                self.assertIn("symbol_text::codec::arithmetic::new_arithmetic_codec", row["runtime"])
+                self.assertIn("symbol_text::codec::SymbolCodec::decode_integer", row["runtime"])
+                self.assertIn("symbol_text::codec::SymbolCodec::decode_symbol_id", row["runtime"])
+                self.assertEqual(len(row["functional_evidence"]), 4)
+                self.assertTrue(any("arithmetic_composition::fresh_" in test["name"]
+                                    for test in row["tests"]))
+                self.assertIn("when a caller must construct versus reuse", row["gaps"][0])
+        self.assertIn("specs/symbol_text/arithmetic_codec.rs", ledger["bindings"])
+        self.assertIn("src/symbol_text/tests/arithmetic_composition.rs", ledger["bindings"])
 
     def test_complete_header_results_are_linked_without_normative_approval(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")

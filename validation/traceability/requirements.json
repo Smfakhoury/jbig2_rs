@@ -23,8 +23,8 @@
   },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "b0828b2b8fb8d1a7b0c0107beb76594a0fbd90ba2678e4f1e45d7b902e26161a",
-    "project_source_sha256": "473944b840f334420d72477d86d35ac8b10488648eb087a3589552aac1d3b6c6",
+    "registry_sha256": "e6ff7f143c52cf208c047bdd49782b68ad9f1f779aad7e4bfbe216c8251d5103",
+    "project_source_sha256": "36392b5032af3b47318bc9d6bdd64bfd0260a5622db3adb6a558b777272d1624",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -1169,6 +1169,18 @@
         "classification": "proof-support",
         "justification": "Bodies project tracker/codebook/field-bank values, supply signed/floor-half and clipped endpoint vocabulary, double powers and combine remaining work/index into an export decrease. src/symbol_text.rs contracts and shared/property proofs use these helpers to state content, placement and resource results; a measure/projection alone is not decoding.",
         "ambiguity": ""
+      },
+      {
+        "file": "specs/symbol_text/arithmetic_codec.rs",
+        "members": [
+          "spec::integer_contexts_initial",
+          "spec::arithmetic_integer_transition",
+          "spec::arithmetic_symbol_id_transition"
+        ],
+        "classification": "project-result-model",
+        "justification": "Defines exact zero integer-bank values and the actual enum arithmetic branch's concrete integer/IAID result, cursor and bank frames. Other enum branches are intentionally unconstrained here and retain their existing separate contracts.",
+        "ambiguity": "",
+        "caveats": "Not independent Annex A/E field selection, complete entropy streams or global retention/reset timing."
       }
     ]
   },
@@ -1826,7 +1838,7 @@
     "proofs/spec_properties/arithmetic.rs": "a43e10db2c92bd58127314f9307993264998373a6f71cb0dd66b8402020e68b0",
     "proofs/spec_properties/mmr.rs": "16035dc09a1720c7677dcf3f57fd5e92cec44efd3af3c672716a2614e6e7844c",
     "proofs/spec_properties/readers.rs": "01efdc55fd62e5bc34b97275a23d6b683af934d6739a7e284f08f991af883fd3",
-    "specs/arithmetic.rs": "6ca6ba7feba16d866d06e8704ff4ee609153e10e1097514a12b0947b4868eea5",
+    "specs/arithmetic.rs": "0d576d753574c2b2412ce8442aa3a3e50cd1b7b95be18347a8e62a6832b9b94a",
     "specs/bitmap.rs": "9d4da6608d7ee55fdf0ab7d8d47f6105e75e656c1f31589610d47a67a61218cf",
     "specs/decode.rs": "acc5afe72a14eb8e48e3a193608a2a89bec966b97757201d6ce3d9bc9a404e24",
     "specs/document.rs": "1eab675da2cb26fbd23fdf8ef6a8995476587cf0d58062f71fad58558d789af6",
@@ -1839,7 +1851,7 @@
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "ee10b54a7ee8dce323488bf8ef5229fbbf1d5811888a3364cda8f2cc187ba251",
     "specs/segments.rs": "a4a19a65babe5a29532273f3374434762cf0fd63d3336b0f49e4914e3e390bc0",
-    "specs/symbol_text.rs": "48823c89848c74e46e2ca7b794b3793872a1d568676012d1ffb7248b939c6c2c",
+    "specs/symbol_text.rs": "c4d0a05296baa95e2d92efc78d8b2ebdbdeb7e75d39d85ff8d79429ed84c1871",
     "src/arithmetic.rs": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
     "src/arithmetic/decoding.rs": "537afa619108dc6ce7773688683d85eb5b4251dbb75a939c92223746b7a90fd5",
     "src/arithmetic/integers.rs": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
@@ -1916,8 +1928,8 @@
     "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e",
     "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
     "src/symbol_text/codebook.rs": "3ad3dd4131dbb7343a3267f32718d4c5278f029c1b90937f45d06363b8defbcc",
-    "src/symbol_text/codec.rs": "39391d49cc29833abd67db0e9211d75c0e37bca7dfb9f96f8c984b909e311402",
-    "src/symbol_text/codec/arithmetic.rs": "642e52fc7a35954921dbec544b7f2703b3a61d3426423055aeae5f01789485f6",
+    "src/symbol_text/codec.rs": "414f2b196dd660b141ac9bebd9b32f92b5fb2c6789cd9142acd59986b246b535",
+    "src/symbol_text/codec/arithmetic.rs": "448f9b67ecf868936070a11d1a2d794c4e1e0c85a3a699e194d90882f9c54f89",
     "src/symbol_text/codec/huffman.rs": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
     "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
     "src/symbol_text/codec/symbols.rs": "756845e31b55451258883cde5dc1c9ce5b62eb08804fb416418e899a72623e38",
@@ -1936,7 +1948,9 @@
     "tests/catalog_contracts.rs": "d4eb4fd3d554494fcd99fa58def0eaa542fca7f97ff32c2083cfa0d3e1545da2",
     "tests/spec_header.rs": "6c8d30477d3be9080827bf0eab191739ab4fe844fe856c60020eb53a50cbcdda",
     "tests/traceability_organization.rs": "967cd92362829cc4258db0ab7300a8f28b53055dbd61489c3c3262ee6d539b5f",
-    "tests/traceability_semantics.rs": "e7189d9cb70fa9b021b221f02942d90e64e9f96f9d38040edf4fa8599dfaa5f9"
+    "tests/traceability_semantics.rs": "e7189d9cb70fa9b021b221f02942d90e64e9f96f9d38040edf4fa8599dfaa5f9",
+    "specs/symbol_text/arithmetic_codec.rs": "d28755e3fe46f5aeb9772fdee3aa674fa510a0d91761a459c40bd3f673f96a4c",
+    "src/symbol_text/tests/arithmetic_composition.rs": "809e9b689c25297e1deb27e244802a58f759933b3a7eebd7ccc25de005e39156"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -3802,6 +3816,79 @@
       ],
       "name": "production_iaid_prefix_bounds",
       "role": "leading-one IAID prefix preservation and numeric result bound; not independent Annex A fidelity"
+    },
+    "arithmetic-exchange-is-mps": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "exchange_is_mps",
+      "role": "Existing exact project exchange over supplied estimate/successor/MPS arguments; not independent table or caller-field fidelity."
+    },
+    "arithmetic-exchange-decision": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "exchange_decision",
+      "role": "Existing exact project exchange over supplied estimate/successor/MPS arguments; not independent table or caller-field fidelity."
+    },
+    "arithmetic-exchange-index": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "exchange_index",
+      "role": "Existing exact project exchange over supplied estimate/successor/MPS arguments; not independent table or caller-field fidelity."
+    },
+    "arithmetic-exchange-mps": {
+      "kind": "spec",
+      "file": "specs/arithmetic.rs",
+      "module_path": [
+        "arithmetic",
+        "arithmetic_spec"
+      ],
+      "name": "exchange_mps",
+      "role": "Existing exact project exchange over supplied estimate/successor/MPS arguments; not independent table or caller-field fidelity."
+    },
+    "symbol-integer-contexts-initial": {
+      "kind": "spec",
+      "file": "specs/symbol_text/arithmetic_codec.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "arithmetic_codec"
+      ],
+      "name": "integer_contexts_initial",
+      "role": "Exact project initial integer banks or enum arithmetic result/state transition; not global reset timing, normative field selection or full stream semantics."
+    },
+    "symbol-arithmetic-integer-transition": {
+      "kind": "spec",
+      "file": "specs/symbol_text/arithmetic_codec.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "arithmetic_codec"
+      ],
+      "name": "arithmetic_integer_transition",
+      "role": "Exact project initial integer banks or enum arithmetic result/state transition; not global reset timing, normative field selection or full stream semantics."
+    },
+    "symbol-arithmetic-symbol-id-transition": {
+      "kind": "spec",
+      "file": "specs/symbol_text/arithmetic_codec.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "arithmetic_codec"
+      ],
+      "name": "arithmetic_symbol_id_transition",
+      "role": "Exact project initial integer banks or enum arithmetic result/state transition; not global reset timing, normative field selection or full stream semantics."
     }
   },
   "requirements": [
@@ -10162,7 +10249,11 @@
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
         "symbol_text::codec::arithmetic::ArithmeticCodec::decode_integer",
-        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id",
+        "symbol_text::codec::arithmetic::new_arithmetic_codec",
+        "symbol_text::codec::arithmetic::IntegerContexts::new",
+        "symbol_text::codec::SymbolCodec::decode_integer",
+        "symbol_text::codec::SymbolCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -10173,7 +10264,10 @@
         "arithmetic-decode-error",
         "symbol-integer-field-slot",
         "symbol-arithmetic-integer-result",
-        "symbol-arithmetic-iaid-result"
+        "symbol-arithmetic-iaid-result",
+        "symbol-integer-contexts-initial",
+        "symbol-arithmetic-integer-transition",
+        "symbol-arithmetic-symbol-id-transition"
       ],
       "proof_macros": [],
       "tests": [
@@ -10188,11 +10282,23 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::codec_and_exports::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::fresh_arithmetic_codec_has_zero_banks_exact_size_and_literal_initial_state"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::arithmetic_enum_integer_preserves_direct_result_state_and_other_banks"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::arithmetic_enum_iaid_preserves_direct_result_range_and_full_frames"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The concrete ArithmeticCodec integer/IAID methods compose the full arithmetic result, decoder and selected bank, exact project typed error conversion and all unselected integer/IAID/refinement/work frames on every outcome. IntegerField::slot equals the project field ordinal. This does not prove that every dictionary/text caller supplies the normative procedure field, SBSYMCODELEN or sufficient address space; the row deliberately retains state-preservation strength and provisional review.",
+      "scope_of_formal_result": "New actual factory contracts establish zero integer and IAID probability banks, exact requested IAID size, zero refinement work, requested refinement presence and literal input/initialized decoder registers on success. New enum-dispatch contracts preserve exact concrete integer/IAID results, decoder/context-bank updates and all untouched-bank/refinement frames, including errors; IAID range propagates through that actual caller layer. Existing primitive and concrete-adapter theorems remain separate.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -10200,9 +10306,42 @@
         "The scripted integer tests exercise a test-only callback procedure, not production decode_integer on arbitrarily chosen decision sequences; the concrete comparison covers one existing arithmetic stream and shares the decision decoder."
       ],
       "gaps": [
-        "Independent normative procedure-bank/caller-field identity, SBSYMCODELEN/address-space sufficiency, reset timing and complete streams remain unapproved; exact project backend forwarding is not that independent caller theorem."
+        "Normative procedure-to-field choice and SBSYMCODELEN derivation at all text/dictionary callers, retained-state/reset timing and complete entropy-to-page streams remain open. Fresh construction does not prove when a caller must construct versus reuse statistics."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "symbol_text::codec::arithmetic::new_arithmetic_codec",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::integer_contexts_initial(&codec.integers)",
+            "codec.iaid@.len() == (1usize << iaid_code_length)",
+            "codec.refinement_work == 0",
+            "codec.decoder.bytes@ == bytes@",
+            "codec.decoder.code == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().2"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::arithmetic::IntegerContexts::new",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::integer_contexts_initial(&out)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::arithmetic_integer_transition(old(self), final(self), field, out)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::arithmetic_symbol_id_transition(old(self), final(self), request, out)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::integers::ArithmeticDecoder::decode_integer",
@@ -12499,7 +12638,8 @@
       "feature": "arithmetic_coding",
       "runtime": [
         "arithmetic::integers::ArithmeticDecoder::decode_iaid",
-        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id",
+        "symbol_text::codec::SymbolCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -12508,7 +12648,8 @@
         "arithmetic-pow2",
         "arithmetic-iaid-run",
         "arithmetic-iaid-state",
-        "arithmetic-decision-state"
+        "arithmetic-decision-state",
+        "symbol-arithmetic-symbol-id-transition"
       ],
       "proof_macros": [
         "arithmetic-iaid-prefix-proof"
@@ -12537,11 +12678,15 @@
         {
           "target": "lib",
           "name": "arithmetic::tests::integer_procedures::iaid_partial_error_preserves_root_and_outside_tree_contexts"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::arithmetic_enum_iaid_preserves_direct_result_range_and_full_frames"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Retains the exact project iaid_state result/decoder/context-bank theorem. The production loop additionally proves its leading-one prefix at every depth on both 32/64-bit usize architectures. Every successful result is below 2^code_length; a valid zero-length request returns zero without changing decoder or contexts. Context zero and entries outside the requested tree are unchanged on success and errors. The result bound also composes through ArithmeticCodec::decode_symbol_id. This adds explicit algebraic/frame consequences, not independently approved Annex A/Qe/caller-field fidelity, complete valid-stream acceptance or full signed-integer composition.",
+      "scope_of_formal_result": "Retains the exact project iaid_state result/decoder/context-bank theorem. The production loop additionally proves its leading-one prefix at every depth on both 32/64-bit usize architectures. Every successful result is below 2^code_length; a valid zero-length request returns zero without changing decoder or contexts. Context zero and entries outside the requested tree are unchanged on success and errors. The result bound also composes through ArithmeticCodec::decode_symbol_id. This adds explicit algebraic/frame consequences, not independently approved Annex A/Qe/caller-field fidelity, complete valid-stream acceptance or full signed-integer composition. The new enum-level arithmetic branch additionally lifts the exact result/range and full state frames to SymbolCodec.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -12572,6 +12717,13 @@
           "tokens": [
             "Ok(value) => request.code_length <= crate::arithmetic::MAX_IAID_CODE_LENGTH && (value as u64) < (1u64 << request.code_length)"
           ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::arithmetic_symbol_id_transition(old(self), final(self), request, out)"
+          ]
         }
       ],
       "invariant_evidence": [
@@ -12595,7 +12747,11 @@
         "arithmetic::ArithmeticError::into_decode",
         "symbol_text::IntegerField::slot",
         "symbol_text::codec::arithmetic::ArithmeticCodec::decode_integer",
-        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id"
+        "symbol_text::codec::arithmetic::ArithmeticCodec::decode_symbol_id",
+        "symbol_text::codec::arithmetic::new_arithmetic_codec",
+        "symbol_text::codec::arithmetic::IntegerContexts::new",
+        "symbol_text::codec::SymbolCodec::decode_integer",
+        "symbol_text::codec::SymbolCodec::decode_symbol_id"
       ],
       "models": [
         "decoder-state-valid",
@@ -12607,7 +12763,10 @@
         "arithmetic-decode-error",
         "symbol-integer-field-slot",
         "symbol-arithmetic-integer-result",
-        "symbol-arithmetic-iaid-result"
+        "symbol-arithmetic-iaid-result",
+        "symbol-integer-contexts-initial",
+        "symbol-arithmetic-integer-transition",
+        "symbol-arithmetic-symbol-id-transition"
       ],
       "proof_macros": [],
       "tests": [
@@ -12630,11 +12789,23 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::codec_and_exports::arithmetic_iaid_caller_forwards_every_length_and_preserves_integer_banks"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::fresh_arithmetic_codec_has_zero_banks_exact_size_and_literal_initial_state"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::arithmetic_enum_integer_preserves_direct_result_state_and_other_banks"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::arithmetic_composition::arithmetic_enum_iaid_preserves_direct_result_range_and_full_frames"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The concrete ArithmeticCodec integer/IAID methods compose the full arithmetic result, decoder and selected bank, exact project typed error conversion and all unselected integer/IAID/refinement/work frames on every outcome. IntegerField::slot equals the project field ordinal. This does not prove that every dictionary/text caller supplies the normative procedure field, SBSYMCODELEN or sufficient address space; the row deliberately retains state-preservation strength and provisional review.",
+      "scope_of_formal_result": "New actual factory contracts establish zero integer and IAID probability banks, exact requested IAID size, zero refinement work, requested refinement presence and literal input/initialized decoder registers on success. New enum-dispatch contracts preserve exact concrete integer/IAID results, decoder/context-bank updates and all untouched-bank/refinement frames, including errors; IAID range propagates through that actual caller layer. Existing primitive and concrete-adapter theorems remain separate.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -12643,9 +12814,42 @@
         "The existing pure binary_value/pow2 definitions and IAID recurrence/bound lemmas start from an assumed decision sequence. The production helper's contract does not identify such a sequence or connect its result/context updates to these models."
       ],
       "gaps": [
-        "Independent normative procedure-bank/caller-field identity, SBSYMCODELEN/address-space sufficiency, reset timing and complete streams remain unapproved; exact project backend forwarding is not that independent caller theorem."
+        "Normative procedure-to-field choice and SBSYMCODELEN derivation at all text/dictionary callers, retained-state/reset timing and complete entropy-to-page streams remain open. Fresh construction does not prove when a caller must construct versus reuse statistics."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "symbol_text::codec::arithmetic::new_arithmetic_codec",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::integer_contexts_initial(&codec.integers)",
+            "codec.iaid@.len() == (1usize << iaid_code_length)",
+            "codec.refinement_work == 0",
+            "codec.decoder.bytes@ == bytes@",
+            "codec.decoder.code == crate::arithmetic::arithmetic_spec::initialized_state(bytes).unwrap().2"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::arithmetic::IntegerContexts::new",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::integer_contexts_initial(&out)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_integer",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::arithmetic_integer_transition(old(self), final(self), field, out)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::arithmetic_symbol_id_transition(old(self), final(self), request, out)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::integers::ArithmeticDecoder::decode_iaid",
@@ -13501,7 +13705,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13514,9 +13723,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13524,9 +13733,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "No branch-sensitive ensures relation defines the strict comparison or its equality case."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(false, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(false, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
@@ -13547,7 +13765,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13560,9 +13783,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13570,9 +13793,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "The helper's validity postcondition does not prescribe the old-MPS decision or the exact NMPS successor."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(false, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(false, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
@@ -13593,7 +13825,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13606,9 +13843,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13616,9 +13853,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "A bounded decision does not prove it complements the old MPS before any sense switch."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(false, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(false, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
@@ -13639,7 +13885,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13652,9 +13903,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13662,9 +13913,17 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "Context validity does not specify either switch branch, the preserved sense when disabled, or use of the pre-update table entry."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(context).mps == arithmetic_spec::exchange_mps(false, old(self).interval, qe, state.switch_mps, old(context).mps, old_mps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
@@ -13685,7 +13944,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13698,9 +13962,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13708,9 +13972,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "No return contract binds the updated index to NLPS or preserves the decision selected before the MPS-sense update."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(false, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(false, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_upper_signal",
@@ -13731,7 +14004,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13744,9 +14022,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13754,9 +14032,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "No branch-sensitive ensures relation defines the strict comparison or its equality case."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(true, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(true, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
@@ -13777,7 +14064,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13790,9 +14082,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13800,9 +14092,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "The helper's validity postcondition does not prescribe the old-MPS decision or the exact NMPS successor."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(true, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(true, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
@@ -13823,7 +14124,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13836,9 +14142,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13846,9 +14152,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "A bounded decision does not prove it complements the old MPS before any sense switch."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(true, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(true, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
@@ -13869,7 +14184,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13882,9 +14202,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13892,9 +14212,17 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "Context validity does not specify either switch branch, the preserved sense when disabled, or use of the pre-update table entry."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(context).mps == arithmetic_spec::exchange_mps(true, old(self).interval, qe, state.switch_mps, old(context).mps, old_mps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
@@ -13915,7 +14243,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13928,9 +14261,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13938,9 +14271,18 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "No return contract binds the updated index to NLPS or preserves the decision selected before the MPS-sense update."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+          "section": "ensures",
+          "tokens": [
+            "out <= 1 ==> out == arithmetic_spec::exchange_decision(true, old(self).interval, qe, old_mps,)",
+            "final(context).state_index == arithmetic_spec::exchange_index(true, old(self).interval, qe, state.next_mps, state.next_lps,)"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
@@ -13961,7 +14303,12 @@
         "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal"
       ],
       "models": [
-        "decoder-state-valid"
+        "decoder-state-valid",
+        "arithmetic-exchange-is-mps",
+        "arithmetic-exchange-decision",
+        "arithmetic-exchange-index",
+        "arithmetic-exchange-mps",
+        "arithmetic-exchange-normalization"
       ],
       "proof_macros": [],
       "tests": [
@@ -13974,9 +14321,9 @@
           "name": "arithmetic::tests::integer_procedures::annex_h_decodes_all_256_decisions"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The linked production postcondition preserves decoder state validity and context validity; it does not express this row's normative input/output relation.",
+      "scope_of_formal_result": "Evidence correction for already-proved helper contracts, not a newly authored exchange theorem. Over supplied old-MPS, estimate and successor parameters, existing strict/equality-sensitive models fix successful decision, successor index, MPS-sense update and normalization/error register state as applicable. Error signals do not falsely promise a successful decision. This does not independently approve Table E.1/coordinate interpretation or whole-stream caller-field/reset policy.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem.",
@@ -13984,9 +14331,17 @@
         "The caller supplies the selected old table entry and old MPS; bounds preconditions do not establish their identity."
       ],
       "gaps": [
-        "The helper postcondition bounds the final interval but does not specify replacement by the pre-update estimate."
+        "Independent E.3.2/Table E.1 interpretation and full caller/stream composition remain separate from the existing project relation over supplied arguments."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",
+          "section": "ensures",
+          "tokens": [
+            "final(self).interval == arithmetic_spec::exchange_normalization(old(self), true, qe).1"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode_lower_signal",

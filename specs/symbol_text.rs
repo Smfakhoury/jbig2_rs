@@ -5,6 +5,12 @@
 
 use vstd::prelude::*;
 
+#[path = "symbol_text/arithmetic_codec.rs"]
+mod arithmetic_codec;
+pub(super) use arithmetic_codec::{
+    arithmetic_integer_transition, arithmetic_symbol_id_transition, integer_contexts_initial,
+};
+
 #[path = "symbol_text/symbol_ids.rs"]
 mod symbol_ids;
 pub(crate) use symbol_ids::{pow2, symbol_code_length_expected, symbol_code_length_valid};
