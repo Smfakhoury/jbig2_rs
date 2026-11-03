@@ -56,6 +56,11 @@ if code_length > MAX_IAID_CODE_LENGTH {
 }"""
 STORAGE_SITE = LENGTH_SITE + """
 let required = 1_usize << code_length;
+#[cfg(verus_keep_ghost)]
+proof! {
+    assert(code_length == 0 ==> required == 1) by(bit_vector)
+        requires required == 1usize << code_length;
+}
 let context_count = contexts.len();
 if context_count < required {
     return Err(ArithmeticError::InsufficientContexts {
