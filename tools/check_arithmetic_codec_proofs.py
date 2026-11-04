@@ -529,23 +529,42 @@ CASES = (
     ),
 )
 
+CASE_GROUPS = {
+    "arithmetic-codec": tuple(case for case in CASES if not case["id"].startswith("huffman_")),
+    "huffman-codec": tuple(case for case in CASES if case["id"].startswith("huffman_")),
+}
+CASE_BASELINE_GROUPS = {
+    identity: tuple(
+        (module, functions) for module, functions in BASELINE_GROUPS
+        if all(any(case["module"] == module and case["function"] == function
+                   for case in cases) for function in functions)
+    )
+    for identity, cases in CASE_GROUPS.items()
+}
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--verus-executable", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--case-group", choices=tuple(CASE_GROUPS))
     arguments = parser.parse_args()
     try:
         report = check_semantic_cases(
-            ROOT, arguments.verus_executable.resolve(), CASES,
+            ROOT, arguments.verus_executable.resolve(),
+            CASES if arguments.case_group is None else CASE_GROUPS[arguments.case_group],
             ("src/arithmetic.rs", "src/symbol_text.rs", "src/generic_region.rs",
              "specs/arithmetic.rs", "specs/symbol_text.rs",
              "specs/symbol_text/arithmetic_codec.rs", "specs/symbol_text/huffman_codec.rs",
              "specs/generic_region.rs"),
             "jbig2-arithmetic-codec-",
             "Exact fresh arithmetic banks/input/registers and enum integer/IAID composition; complete owned-table Huffman symbol-ID results, converted errors, reader effects and metadata frames through concrete/enum callers; prior generic diagnostics and literal contracts. Normative table selection, field/reset timing and full entropy/raster streams remain separate",
-            baseline_groups=BASELINE_GROUPS,
+            baseline_groups=(
+                BASELINE_GROUPS if arguments.case_group is None
+                else CASE_BASELINE_GROUPS[arguments.case_group]
+            ),
         )
+        report["case_group"] = arguments.case_group or "all"
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"arithmetic codec proof sensitivity failed: {error}", file=sys.stderr)
         report = {"schema_version": 2, "status": "failed", "error": str(error)}

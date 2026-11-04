@@ -283,6 +283,14 @@ Measured role workloads must not exceed 1,050 seconds; whole/collector jobs
 have 20-minute caps and semantic jobs 30-minute caps. Partial, canceled,
 misrouted, duplicate or stale receipts fail collection.
 
+On the 0.2 line, the existing forty entropy-adapter contrasts are partitioned
+into twenty-seven arithmetic/diagnostic cases in the whole role and thirteen
+Huffman-adapter cases on existing shard 3. Every mutation, selected positive,
+strong rejection and weaker-control obligation is retained. The live inventory
+has fifty groups and 405 contrasts; the separate 220 native mutations are
+unchanged. This is workload redistribution, not new functional proof coverage,
+additional CI capacity or an increased time budget.
+
 ## Remaining functional coverage
 
 Exhaustive requirement enumeration, independent table/coordinate fidelity and

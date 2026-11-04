@@ -37,7 +37,7 @@ DEFAULT_SHARD_REBALANCE = {
     "mmr-reference": 0, "default-limits-1": 0, "mmr-run": 0,
     "document-count": 1, "default-decoder-2": 1, "iaid-state": 1,
     "default-limits-2": 2, "error-wrappers-symbol": 2, "symbol-cardinality": 2,
-    "retention": 3, "arithmetic-refill": 3, "page-state": 3,
+    "retention": 3, "arithmetic-refill": 3, "page-state": 3, "huffman-codec": 3,
     "default-decoder-4": 4, "text-batch": 4, "arithmetic-integer": 4,
     "error-wrappers-regions": 5, "document-layout": 5, "default-decoder-3": 5,
     "mmr-horizontal": 6, "black-span": 6, "segment-data": 6,
@@ -52,7 +52,8 @@ DEFAULT_SHARD_REBALANCE = {
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
-    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 40, "strong_contract", "weaker_control"),
+    ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 27, "strong_contract", "weaker_control"),
+    ("huffman-codec", "check_arithmetic_codec_proofs.py", 13, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 18, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),
@@ -336,7 +337,11 @@ def check_bound_report(root, check, report, bindings, whole=None):
         from source_group import relocate_cases, whole_binds_unique_implementation
 
         document_cases = identity in {"document-count", "document-layout"}
-        configured_baseline_groups = getattr(module, "BASELINE_GROUPS", ())
+        configured_baseline_groups = (
+            module.CASE_BASELINE_GROUPS[identity]
+            if hasattr(module, "CASE_BASELINE_GROUPS")
+            else getattr(module, "BASELINE_GROUPS", ())
+        )
         cases, baseline_groups = relocate_cases(
             root,
             tuple({**case, "module": case.get("module", "document")} for case in cases),
@@ -477,6 +482,7 @@ def run_checks(
                 "check_document_count_proof.py", "check_page_state_proofs.py",
                 "check_error_wrapper_proofs.py",
                 "check_default_proofs.py",
+                "check_arithmetic_codec_proofs.py",
             } else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(
