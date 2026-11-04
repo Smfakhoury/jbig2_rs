@@ -23,8 +23,8 @@
   },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "30a830afaf2e27c317b8bf4a9118f2139f00da964aebf5410b76df1c1f7130ca",
-    "project_source_sha256": "8b3567d25e9240eadf2ff8c93f51feade8f6f42bd6a2becdffea2a91ecb13621",
+    "registry_sha256": "360513d5977b9a04e5a3973b7181e3548106a104524e718f68c8c1aa5fb7c453",
+    "project_source_sha256": "295a6fd5e1e63f7dc63a23bc47dd1a392e9758734130844ded368a0cd3954201",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -303,10 +303,11 @@
         "members": [
           "macro::production_symbol_current_placement_witness",
           "macro::production_symbol_id_request",
-          "macro::production_symbol_code_length_bounds"
+          "macro::production_symbol_code_length_bounds",
+          "macro::production_segment_symbol_width"
         ],
         "classification": "proof-support",
-        "justification": "The body constructs a ghost Placement from the native x/y and witnesses placement_for_current(old(state), ...) for src/symbol_text.rs. This proves an existential from the computed coordinates, not full text rendering or encoded aggregation. The request witness asserts exact construction at both real callers; existing loop, storage and resource guarantees remain. The algebraic width bridge proves the established finite projection's covering capacity and least-width consequences without altering execution.",
+        "justification": "The body constructs a ghost Placement from the native x/y and witnesses placement_for_current(old(state), ...) for src/symbol_text.rs. This proves an existential from the computed coordinates, not full text rendering or encoded aggregation. The request witness asserts exact construction at both real callers; existing loop, storage and resource guarantees remain. The algebraic width bridge proves the established finite projection's covering capacity and least-width consequences without altering execution. The segment witness proves reached actual input/header count and width derivation without new caller preconditions.",
         "ambiguity": ""
       },
       {
@@ -1132,10 +1133,11 @@
           "spec::checked_symbol_decode_result",
           "spec::checked_symbol_id_transition",
           "spec::symbol_id_request_matches",
-          "spec::symbol_code_length_bounds"
+          "spec::symbol_code_length_bounds",
+          "spec::segment_symbol_width_matches"
         ],
         "classification": "project-result-model",
-        "justification": "Defines the minimal symbol-code-length result and exact accepted ID/error filtering. Empty-book preflight preserves the entire codec. The checked caller composes arithmetic and complete table/literal Huffman value/error and state transitions with supplied availability; no substitution, masked entropy error or rewind. Normative codebook/table choice and full caller/stream interpretation remain separate. Actual caller requests also equate availability to the supplied codebook extent and preserve the enclosing-segment width and entropy flag; this does not derive all segment parameters. Algebraic supplied-count capacity, zero and strict predecessor bounds are explicit; proved power monotonicity excludes every smaller width.",
+        "justification": "Defines the minimal symbol-code-length result and exact accepted ID/error filtering. Empty-book preflight preserves the entire codec. The checked caller composes arithmetic and complete table/literal Huffman value/error and state transitions with supplied availability; no substitution, masked entropy error or rewind. Normative codebook/table choice and full caller/stream interpretation remain separate. Actual caller requests also equate availability to the supplied codebook extent and preserve the enclosing-segment width and entropy flag; this does not derive all segment parameters. Algebraic supplied-count capacity, zero and strict predecessor bounds are explicit; proved power monotonicity excludes every smaller width. Top-level text/dictionary setup witnesses also bind the narrowed actual book/header extent to the production minimal width.",
         "ambiguity": "",
         "caveats": "Table-choice enums and field-slot selection do not prove normative table data, caller field selection or full entropy streams; default template branches are only the stated project mapping."
       },
@@ -1863,7 +1865,7 @@
     "proofs/production_impl/readers.rs": "c1130367984b90db1e1c8adce5c34d6a05a9a833888651dc45070dd2fe037519",
     "proofs/production_impl/segment_data.rs": "23a12b1085c3b23ffbeefff83e5f1608fb73250465fcebccdb4e34e74000ab79",
     "proofs/production_impl/segment_header.rs": "8951757eb8f9baf48e1d9258992cc896481c6ad53a2fb9169742a686327dbcb0",
-    "proofs/production_impl/symbol_text.rs": "224fe3b285c4dee69b312f5d3401862b2492c7a9cb35bcdd3b436ebe9c5ce5b5",
+    "proofs/production_impl/symbol_text.rs": "ae40ddd138650e0a037776202103b05e315b7cf93b12dded6ecb04074570946c",
     "proofs/shared/bitmap.rs": "23b05abecff52de3ecd806a3dce30459ad3cf96dc150b11658c05731e768f4ec",
     "proofs/spec_properties/arithmetic.rs": "a43e10db2c92bd58127314f9307993264998373a6f71cb0dd66b8402020e68b0",
     "proofs/spec_properties/mmr.rs": "16035dc09a1720c7677dcf3f57fd5e92cec44efd3af3c672716a2614e6e7844c",
@@ -1881,7 +1883,7 @@
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "ee10b54a7ee8dce323488bf8ef5229fbbf1d5811888a3364cda8f2cc187ba251",
     "specs/segments.rs": "a4a19a65babe5a29532273f3374434762cf0fd63d3336b0f49e4914e3e390bc0",
-    "specs/symbol_text.rs": "0ca001e288f23a269b1357396ea7804ac55b19b477bb9e70de43f29acbb155d1",
+    "specs/symbol_text.rs": "9d7dcc74950e41457ae493e0d9b7fbdb2c144e04aa88caa9a9b7034eb8fc9e30",
     "src/arithmetic.rs": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
     "src/arithmetic/decoding.rs": "537afa619108dc6ce7773688683d85eb5b4251dbb75a939c92223746b7a90fd5",
     "src/arithmetic/integers.rs": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
@@ -1967,24 +1969,25 @@
     "src/symbol_text/dictionary/exports.rs": "89ce586e69519477f9c919e58ed9d400f32d833b6bfcd018fd31b7f6b5e9668e",
     "src/symbol_text/headers.rs": "25cefaa81ed375250782b118c3410fadd9531ee28c1dac87c5e8688a6f88f288",
     "src/symbol_text/placement.rs": "6fe7228afc13c0735fcfe0d9359e07e03dfdd5a6883ba8d79523dcfde8885e5d",
-    "src/symbol_text/tests/codec_and_exports.rs": "3d6a65ecebfdc20876243ed67356e61e296b39d65d4ba44e75ab7781c0bd9fd5",
+    "src/symbol_text/tests/codec_and_exports.rs": "0df482da2750590d9de90111ccac1583cde0c20b3d68c28ffe76b7eecd7a793d",
     "src/symbol_text/tests/dictionary_dispatch.rs": "a14f71e015d84a3bf1640956ab9c49b235880673962ca6564bf2bf84f6d53d8e",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
     "src/symbol_text/tests/huffman_fields.rs": "2fa807e44e5db1fe2615cc5c7077ec4bac8485f176936fd5d8a284dd4e7b9e8e",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "32b447d299ab722880bc27dec9108426c02e4fba932ca5660383c75ac5ea0ab9",
-    "src/symbol_text/text.rs": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+    "src/symbol_text/text.rs": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
     "tests/catalog_contracts.rs": "d4eb4fd3d554494fcd99fa58def0eaa542fca7f97ff32c2083cfa0d3e1545da2",
     "tests/spec_header.rs": "6c8d30477d3be9080827bf0eab191739ab4fe844fe856c60020eb53a50cbcdda",
     "tests/traceability_organization.rs": "967cd92362829cc4258db0ab7300a8f28b53055dbd61489c3c3262ee6d539b5f",
     "tests/traceability_semantics.rs": "e7189d9cb70fa9b021b221f02942d90e64e9f96f9d38040edf4fa8599dfaa5f9",
     "specs/symbol_text/arithmetic_codec.rs": "d28755e3fe46f5aeb9772fdee3aa674fa510a0d91761a459c40bd3f673f96a4c",
     "src/symbol_text/tests/arithmetic_composition.rs": "8749f6561c7b3030deafa47358bd499514821726851cb296d4f00b2ff2110120",
-    "specs/symbol_text/symbol_ids.rs": "49780c2f4e0550eaed659058d723f919b2d64371b1d4845d4bc44d67ca8ec9e6",
+    "specs/symbol_text/symbol_ids.rs": "a08f24685e8ef5f95e98b5bb953ad18a1b6dbbffd754ca48f09931f36a87aacc",
     "specs/symbol_text/huffman_codec.rs": "c015fd63a11a24d844f19613f0afe577df7b6d17cc07faaabb709888c6f47da1",
     "src/symbol_text/tests/huffman_symbol_ids.rs": "89dce150f0deb0e9eb16bb38cda5238c6546589d8022829680c412ff4f3becd0",
-    "src/symbol_text/tests/text_termination.rs": "3b629b51e16bdf7dfcedf2a6c46b99c95a2fe6042b8b0da4e74f069722789eeb"
+    "src/symbol_text/tests/text_termination.rs": "3b629b51e16bdf7dfcedf2a6c46b99c95a2fe6042b8b0da4e74f069722789eeb",
+    "src/symbol_text/dictionary.rs": "edf276aaf02772cda1a66d7b0a50f4a038086ddb41422225f902abc04faaabaa"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -4052,6 +4055,27 @@
       ],
       "name": "production_symbol_code_length_bounds",
       "role": "Discharged finite-projection bounds and recursive power monotonicity/least-width bridges for the same production width body; no new precondition or trusted fact."
+    },
+    "segment-symbol-width-matches": {
+      "kind": "spec",
+      "file": "specs/symbol_text/symbol_ids.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "symbol_ids"
+      ],
+      "name": "segment_symbol_width_matches",
+      "role": "Reached top-level segment count/least-width derivation from actual supplied book/header extent, not full collector/table/codec/lifecycle or returned-raster correctness."
+    },
+    "segment-symbol-width-witness": {
+      "kind": "macro",
+      "file": "proofs/production_impl/symbol_text.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_proofs"
+      ],
+      "name": "production_segment_symbol_width",
+      "role": "Actual parsed text/dictionary setup assertions, retaining original preconditions and output/storage/consumption guarantees."
     }
   },
   "requirements": [
@@ -5940,7 +5964,9 @@
         "symbol_text::codec::SymbolCodec::decode_symbol_id",
         "symbol_text::text::decode_text_region_body",
         "symbol_text::dictionary::arithmetic::decode_dictionary_single_instance_refinement",
-        "symbol_text::codec::symbols::symbol_id_code_length"
+        "symbol_text::codec::symbols::symbol_id_code_length",
+        "symbol_text::text::decode_text_region",
+        "symbol_text::dictionary::decode_symbol_dictionary"
       ],
       "models": [
         "symbol-bitmap-contents-match",
@@ -5955,11 +5981,13 @@
         "huffman-error-result",
         "symbol-huffman-error-result",
         "symbol-id-request-matches",
-        "symbol-code-length-bounds"
+        "symbol-code-length-bounds",
+        "segment-symbol-width-matches"
       ],
       "proof_macros": [
         "symbol-id-request-witness",
-        "symbol-code-length-bounds-witness"
+        "symbol-code-length-bounds-witness",
+        "segment-symbol-width-witness"
       ],
       "tests": [
         {
@@ -6013,16 +6041,24 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::resource_accounting::symbol_width_dense_and_stratified_counts_match_independent_capacity_oracle"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::codec_and_exports::actual_text_segment_width_uses_full_contiguous_or_borrowed_extent"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::codec_and_exports::actual_dictionary_segment_width_uses_imported_plus_parsed_new_count"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Retains exact helper/error filtering, codebook lookup and arithmetic/literal composition. Owned-table Huffman decoding now composes the primitive exact cached/fallback result/cursor with exact nonnegative i32 ID preservation, negative/OOB rejection and verified error conversion. All nonreader codec metadata and reader bytes remain unchanged through concrete/enum dispatch. Checked availability preserves accepted IDs and exact range errors without rewinding consumed input, including table-backed paths. Empty extents still reject before any decoding with full codec identity. Actual text and single-instance dictionary request construction now proves availability equals the supplied contiguous/borrowed codebook length or imported-plus-decoded-new length, while the supplied enclosing-segment width and entropy flag are forwarded unchanged. Text loop invariants retain the exact narrowed extent. This is a reached-call-site witness, not a full text/refinement output or upstream parameter-derivation theorem. The actual supplied-count width helper now explicitly proves length<=32, zero exactly for counts<=1, capacity>=count, strict predecessor capacity and exclusion of every smaller width, retaining its exact finite projection. This does not derive the correct supplied extent at every upstream caller.",
+      "scope_of_formal_result": "Retains exact helper/error filtering, codebook lookup and arithmetic/literal composition. Owned-table Huffman decoding now composes the primitive exact cached/fallback result/cursor with exact nonnegative i32 ID preservation, negative/OOB rejection and verified error conversion. All nonreader codec metadata and reader bytes remain unchanged through concrete/enum dispatch. Checked availability preserves accepted IDs and exact range errors without rewinding consumed input, including table-backed paths. Empty extents still reject before any decoding with full codec identity. Actual text and single-instance dictionary request construction now proves availability equals the supplied contiguous/borrowed codebook length or imported-plus-decoded-new length, while the supplied enclosing-segment width and entropy flag are forwarded unchanged. Text loop invariants retain the exact narrowed extent. This is a reached-call-site witness, not a full text/refinement output or upstream parameter-derivation theorem. The actual supplied-count width helper now explicitly proves length<=32, zero exactly for counts<=1, capacity>=count, strict predecessor capacity and exclusion of every smaller width, retaining its exact finite projection. This does not derive the correct supplied extent at every upstream caller. At reached top-level text/dictionary setup, the count is now proved equal to actual supplied codebook length or imported-plus-parsed-new extent, and the computed enclosing width has the exact/minimal algebraic relation to that extent. This is setup evidence, not complete collector/table/codec selection, statistics lifecycle or returned-bitmap semantics.",
       "assumptions": [
         "The no-lossy-substitution rule is the project prohibition; informative 0.2 is context, not an invented independent normative clause. The linked test exercises exact invalid-ID rejection only."
       ],
       "gaps": [
-        "Derive correct enclosing-segment extent/code length, complete codebook/table construction and actual codec-kind selection at every upstream caller; prove statistics lifecycle/reset/retention, refinement/placement selection and complete rendered streams. Request-flag forwarding alone does not select or validate a codec variant."
+        "Complete upstream resource/codebook extent content construction, every table/actual codec-kind choice, statistics lifecycle/reset/retention, refinement/placement identity and full rendered streams. Reached segment setup and request-flag forwarding alone do not prove complete codec variant or raster semantics."
       ],
       "functional_evidence": [
         {
@@ -7249,7 +7285,9 @@
         "symbol_text::codec::SymbolCodec::decode_symbol_id",
         "symbol_text::text::decode_text_region_body",
         "symbol_text::dictionary::arithmetic::decode_dictionary_single_instance_refinement",
-        "symbol_text::codec::symbols::symbol_id_code_length"
+        "symbol_text::codec::symbols::symbol_id_code_length",
+        "symbol_text::text::decode_text_region",
+        "symbol_text::dictionary::decode_symbol_dictionary"
       ],
       "models": [
         "symbol-checked-id-result",
@@ -7261,11 +7299,13 @@
         "huffman-error-result",
         "symbol-huffman-error-result",
         "symbol-id-request-matches",
-        "symbol-code-length-bounds"
+        "symbol-code-length-bounds",
+        "segment-symbol-width-matches"
       ],
       "proof_macros": [
         "symbol-id-request-witness",
-        "symbol-code-length-bounds-witness"
+        "symbol-code-length-bounds-witness",
+        "segment-symbol-width-witness"
       ],
       "tests": [
         {
@@ -7319,16 +7359,24 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::resource_accounting::symbol_width_dense_and_stratified_counts_match_independent_capacity_oracle"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::codec_and_exports::actual_text_segment_width_uses_full_contiguous_or_borrowed_extent"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::codec_and_exports::actual_dictionary_segment_width_uses_imported_plus_parsed_new_count"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Retains exact helper/error filtering, codebook lookup and arithmetic/literal composition. Owned-table Huffman decoding now composes the primitive exact cached/fallback result/cursor with exact nonnegative i32 ID preservation, negative/OOB rejection and verified error conversion. All nonreader codec metadata and reader bytes remain unchanged through concrete/enum dispatch. Checked availability preserves accepted IDs and exact range errors without rewinding consumed input, including table-backed paths. Empty extents still reject before any decoding with full codec identity. Actual text and single-instance dictionary request construction now proves availability equals the supplied contiguous/borrowed codebook length or imported-plus-decoded-new length, while the supplied enclosing-segment width and entropy flag are forwarded unchanged. Text loop invariants retain the exact narrowed extent. This is a reached-call-site witness, not a full text/refinement output or upstream parameter-derivation theorem. The actual supplied-count width helper now explicitly proves length<=32, zero exactly for counts<=1, capacity>=count, strict predecessor capacity and exclusion of every smaller width, retaining its exact finite projection. This does not derive the correct supplied extent at every upstream caller.",
+      "scope_of_formal_result": "Retains exact helper/error filtering, codebook lookup and arithmetic/literal composition. Owned-table Huffman decoding now composes the primitive exact cached/fallback result/cursor with exact nonnegative i32 ID preservation, negative/OOB rejection and verified error conversion. All nonreader codec metadata and reader bytes remain unchanged through concrete/enum dispatch. Checked availability preserves accepted IDs and exact range errors without rewinding consumed input, including table-backed paths. Empty extents still reject before any decoding with full codec identity. Actual text and single-instance dictionary request construction now proves availability equals the supplied contiguous/borrowed codebook length or imported-plus-decoded-new length, while the supplied enclosing-segment width and entropy flag are forwarded unchanged. Text loop invariants retain the exact narrowed extent. This is a reached-call-site witness, not a full text/refinement output or upstream parameter-derivation theorem. The actual supplied-count width helper now explicitly proves length<=32, zero exactly for counts<=1, capacity>=count, strict predecessor capacity and exclusion of every smaller width, retaining its exact finite projection. This does not derive the correct supplied extent at every upstream caller. At reached top-level text/dictionary setup, the count is now proved equal to actual supplied codebook length or imported-plus-parsed-new extent, and the computed enclosing width has the exact/minimal algebraic relation to that extent. This is setup evidence, not complete collector/table/codec selection, statistics lifecycle or returned-bitmap semantics.",
       "assumptions": [
         "The supplied extent must describe the actual codebook; the linked unit regression checks one exact invalid index, not all valid indices."
       ],
       "gaps": [
-        "Derive correct enclosing-segment extent/code length, complete codebook/table construction and actual codec-kind selection at every upstream caller; prove statistics lifecycle/reset/retention, refinement/placement selection and complete rendered streams. Request-flag forwarding alone does not select or validate a codec variant."
+        "Complete upstream resource/codebook extent content construction, every table/actual codec-kind choice, statistics lifecycle/reset/retention, refinement/placement identity and full rendered streams. Reached segment setup and request-flag forwarding alone do not prove complete codec variant or raster semantics."
       ],
       "functional_evidence": [
         {

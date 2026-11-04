@@ -579,3 +579,138 @@ fn concrete_empty_dictionary_and_arithmetic_text_segments_decode() {
     .expect("empty arithmetic text region decodes");
     assert_eq!(arithmetic_text_output.bitmap.bytes(), &[0]);
 }
+
+fn independent_iaid_bytes(count: u32) -> u64 {
+    let mut capacity = 1_u64;
+    while capacity < u64::from(count) {
+        capacity *= 2;
+    }
+    capacity * u64::try_from(core::mem::size_of::<ArithmeticContext>()).unwrap()
+}
+
+#[test]
+fn actual_dictionary_setup_preserves_retained_context_error_priority() {
+    let limits = Limits::default();
+    let custom: [&HuffmanTable; 0] = [];
+    let empty = DictionaryContexts {
+        generic: None,
+        refinement: None,
+    };
+    for (flags, used, expected) in [
+        (0x0100_u16, None, "missing retained contexts"),
+        (0x0100, Some(&empty), "missing retained generic contexts"),
+        (0x0102, Some(&empty), "missing retained refinement contexts"),
+        (
+            0,
+            Some(&empty),
+            "unexpected retained contexts without the context-used flag",
+        ),
+    ] {
+        let mut payload = flags.to_be_bytes().to_vec();
+        payload.extend_from_slice(&[3, 0xff, 0xfd, 0xff, 2, 0xfe, 0xfe, 0xfe]);
+        if flags & 2 != 0 {
+            payload.extend_from_slice(&[0; 4]);
+        }
+        payload.extend_from_slice(&0_u32.to_be_bytes());
+        payload.extend_from_slice(&0_u32.to_be_bytes());
+        payload.extend_from_slice(&[0xff, 0xac]);
+        let result = decode_symbol_dictionary(&SymbolDictionaryInput {
+            payload: &payload,
+            imported_symbols: SymbolCodebook::Contiguous(&[]),
+            custom_tables: &custom,
+            used_contexts: used,
+            limits: &limits,
+        });
+        match result {
+            Err(SymbolTextError::InvalidState(actual)) => {
+                assert_eq!(actual, expected, "flags={flags:#x}");
+            }
+            Err(actual) => panic!("flags={flags:#x}: expected {expected}, got {actual:?}"),
+            Ok(_) => panic!("flags={flags:#x}: expected {expected}, got success"),
+        }
+    }
+}
+
+fn assert_segment_iaid_limit<T>(result: &Result<T, SymbolTextError>, requested: u64) {
+    assert!(matches!(
+        result,
+        Err(SymbolTextError::Decode(DecodeError::LimitExceeded(
+            LimitExceeded { kind: LimitKind::Memory, limit, actual },
+        ))) if *limit == requested - 1 && *actual == requested
+    ));
+}
+
+#[test]
+fn actual_text_segment_width_uses_full_contiguous_or_borrowed_extent() {
+    let default = Limits::default();
+    let custom: [&HuffmanTable; 0] = [];
+    let mut payload = vec![0_u8; 17];
+    payload[3] = 1;
+    payload[7] = 1;
+    payload.extend_from_slice(&0_u16.to_be_bytes());
+    payload.extend_from_slice(&0_u32.to_be_bytes());
+    payload.extend_from_slice(&[0xff, 0xac]);
+    for count in [0_u32, 1, 2, 3, 4, 5, 7, 8, 9, 15, 16, 17, 31, 32, 33] {
+        let symbols: Vec<Bitmap> = (0..count)
+            .map(|_| Bitmap::blank(1, 1, &default).unwrap())
+            .collect();
+        let borrowed: Vec<&Bitmap> = symbols.iter().collect();
+        let requested = independent_iaid_bytes(count);
+        let limits = Limits {
+            max_decoder_managed_memory_bytes: requested - 1,
+            ..default
+        };
+        for book in [
+            SymbolCodebook::Contiguous(&symbols),
+            SymbolCodebook::Borrowed(&borrowed),
+        ] {
+            assert_segment_iaid_limit(
+                &decode_text_region(&TextRegionInput {
+                    payload: &payload,
+                    symbols: book,
+                    custom_tables: &custom,
+                    limits: &limits,
+                }),
+                requested,
+            );
+        }
+    }
+}
+
+#[test]
+fn actual_dictionary_segment_width_uses_imported_plus_parsed_new_count() {
+    let default = Limits::default();
+    let custom: [&HuffmanTable; 0] = [];
+    for imported in 0..=8 {
+        let symbols: Vec<Bitmap> = (0..imported)
+            .map(|_| Bitmap::blank(1, 1, &default).unwrap())
+            .collect();
+        let borrowed: Vec<&Bitmap> = symbols.iter().collect();
+        for new_symbols in 0_u32..=8 {
+            let mut payload = vec![0, 0, 3, 0xff, 0xfd, 0xff, 2, 0xfe, 0xfe, 0xfe];
+            payload.extend_from_slice(&0_u32.to_be_bytes());
+            payload.extend_from_slice(&new_symbols.to_be_bytes());
+            payload.extend_from_slice(&[0xff, 0xac]);
+            let requested = independent_iaid_bytes(imported + new_symbols);
+            let limits = Limits {
+                max_decoder_managed_memory_bytes: requested - 1,
+                ..default
+            };
+            for book in [
+                SymbolCodebook::Contiguous(&symbols),
+                SymbolCodebook::Borrowed(&borrowed),
+            ] {
+                assert_segment_iaid_limit(
+                    &decode_symbol_dictionary(&SymbolDictionaryInput {
+                        payload: &payload,
+                        imported_symbols: book,
+                        custom_tables: &custom,
+                        used_contexts: None,
+                        limits: &limits,
+                    }),
+                    requested,
+                );
+            }
+        }
+    }
+}

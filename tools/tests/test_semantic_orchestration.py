@@ -213,7 +213,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(counts["arithmetic-codec"], len(codec_cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 393)
+        self.assertEqual(sum(row[2] for row in checks), 397)
         self.assertEqual(len(checks), 49)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
@@ -348,7 +348,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 49)
             self.assertEqual(len({row[0] for row in assigned}), 49)
-            self.assertEqual(sum(row[2] for row in assigned), 393)
+            self.assertEqual(sum(row[2] for row in assigned), 397)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             rows = [
                 {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}

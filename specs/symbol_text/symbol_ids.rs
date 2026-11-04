@@ -92,6 +92,20 @@ pub(crate) open spec fn symbol_code_length_bounds(count: u32, length: u8) -> boo
     &&& length > 0 ==> pow2((length as nat - 1) as nat) < count as nat
 }
 
+// Model navigation: spec::segment_symbol_width_matches [project-result-model]
+// Purpose: Bind reached segment setup count and least width to actual supplied codebook/header extent.
+// Audit: segment-symbol-width-matches
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub(in crate::symbol_text) open spec fn segment_symbol_width_matches(
+    count: u32, width: u8, extent: nat,
+) -> bool {
+    &&& count as nat == extent
+    &&& width == symbol_code_length_expected(count)
+    &&& symbol_code_length_bounds(count, width)
+    &&& forall|smaller: nat| smaller < width ==> #[trigger] pow2(smaller) < extent
+}
+
 pub(in crate::symbol_text) proof fn symbol_code_length_expected_bounds(count: u32)
     ensures symbol_code_length_bounds(count, symbol_code_length_expected(count)),
 {

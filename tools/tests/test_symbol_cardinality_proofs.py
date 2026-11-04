@@ -17,6 +17,19 @@ from proof_sensitivity import replace_once, weakened_contract
 
 
 class SymbolCardinalityProofTests(unittest.TestCase):
+    def test_segment_controls_retain_original_output_consumption_and_input_contracts(self):
+        segments = [case for case in CASES if "_segment_" in case["id"]]
+        self.assertEqual(len(segments), 4)
+        self.assertTrue(all("native_test" in case for case in segments))
+        for case in segments:
+            source = source_text(TOOLS.parent, case["file"])
+            weaker = weakened_contract(source, case)
+            with self.subTest(case=case["id"]):
+                self.assertIn("symbol_text_spec::codebook_valid(input.", weaker)
+                self.assertIn("output.consumed_bytes <= input.payload@.len()", weaker)
+                self.assertNotIn("production_segment_symbol_width!(", weaker)
+                self.assertIn("let code_length = symbol_id_code_length(", weaker)
+
     def test_caller_controls_retain_count_invariants_and_resource_storage_contracts(self):
         callers = [case for case in CASES if "_id_request_changes_" in case["id"]]
         self.assertEqual(len(callers), 6)
@@ -51,8 +64,8 @@ class SymbolCardinalityProofTests(unittest.TestCase):
         self.assertIn("exported.push(index);", weaker)
 
     def test_unique_mutations_retain_existing_storage_and_lookup_bounds(self):
-        self.assertEqual(len(CASES), 18)
-        self.assertEqual(len({case["id"] for case in CASES}), 18)
+        self.assertEqual(len(CASES), 22)
+        self.assertEqual(len({case["id"] for case in CASES}), 22)
         for case in CASES:
             with self.subTest(case=case["id"]):
                 source = source_text(TOOLS.parent, case["file"])
@@ -60,7 +73,12 @@ class SymbolCardinalityProofTests(unittest.TestCase):
                 weaker = weakened_contract(changed, case)
                 self.assertNotEqual(source, changed)
                 self.assertNotEqual(changed, weaker)
-                if "_id_request_changes_" in case["id"]:
+                if "_segment_" in case["id"]:
+                    self.assertIn("storage_valid(&output.bitmap)" if case["function"] == "decode_text_region"
+                                  else "bitmaps_valid(output.exported_symbols@)", weaker)
+                    self.assertNotIn("production_segment_symbol_width!(", weaker)
+                    self.assertIn("output.consumed_bytes <= input.payload@.len()", weaker)
+                elif "_id_request_changes_" in case["id"]:
                     self.assertIn("symbol_text_spec::codec_valid(old(codec))", weaker)
                     self.assertIn("crate::spec::bitmap::storage_valid(&bitmap)", weaker)
                     self.assertNotIn("production_symbol_id_request!(", weaker)

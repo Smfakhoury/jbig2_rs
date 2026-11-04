@@ -56,9 +56,10 @@ pub(crate) fn decode_symbol_dictionary(
         limits,
     )?;
     let code_length = symbol_id_code_length(total_symbols)?;
+    #[cfg(verus_keep_ghost)]
+    production_segment_symbol_width!(total_symbols, code_length, input, header);
 
     let uses_generic_contexts = !config.huffman && !config.refinement_aggregation;
-    let uses_refinement_contexts = config.refinement_aggregation;
     if config.bitmap_context_used {
         let used = input
             .used_contexts
@@ -68,7 +69,7 @@ pub(crate) fn decode_symbol_dictionary(
                 "missing retained generic contexts",
             ));
         }
-        if uses_refinement_contexts && used.refinement.is_none() {
+        if config.refinement_aggregation && used.refinement.is_none() {
             return Err(SymbolTextError::InvalidState(
                 "missing retained refinement contexts",
             ));

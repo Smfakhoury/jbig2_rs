@@ -156,6 +156,24 @@ algebraic consequences.
 This characterizes the helper's supplied count, not the correctness of every
 upstream enclosing codebook/extent, entropy-table/codec choice or rendered stream.
 
+### Reached segment width derivation on the 0.2 line
+
+After actual top-level parsing, text setup proves its narrowed count equals the
+supplied contiguous/borrowed codebook length. Dictionary setup proves the total
+equals imported codebook length plus the parsed new-symbol count. Both computed
+widths have the exact finite result, covering capacity and every-smaller-width
+exclusion for that actual extent, without new caller preconditions.
+
+Independent actual-segment native tests use a doubling-capacity oracle and exact
+IAID memory-limit payloads to observe the derived width before entropy-body work.
+They cover full codebook views and imported/new splits. Four compiling
+count/width mutations must violate these setup witnesses and be detected natively.
+These tests do not substitute for full bitmap-output or total-memory proofs.
+
+Complete upstream resource/codebook content construction, every table/actual
+codec-kind choice, statistics lifecycle/reset/retention, refinement/placement
+identity and full rendered streams remain separate.
+
 ## Observed-capacity integration
 
 Allocation accounting checks actual post-reservation `Vec::capacity()` rather

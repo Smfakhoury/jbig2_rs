@@ -5,6 +5,28 @@
 
 use vstd::prelude::*;
 
+// Model navigation: macro::production_segment_symbol_width [proof-support]
+// Purpose: Prove actual top-level segment count/width derivation against codebook and parsed header extent.
+// Audit: segment-symbol-width-witness
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+macro_rules! production_segment_symbol_width {
+    ($count:expr, $width:expr, $input:ident, $header:ident) => {
+        production_segment_symbol_width!(
+            $count, $width,
+            crate::symbol_text::symbol_text_spec::codebook_len($input.imported_symbols)
+                + $header.new_symbols
+        );
+    };
+    ($count:expr, $width:expr, $extent:expr) => {
+        proof! {
+            assert(crate::symbol_text::symbol_text_spec::segment_symbol_width_matches(
+                $count, $width, ($extent) as nat,
+            ));
+        }
+    };
+}
+
 // Model navigation: macro::production_symbol_code_length_bounds [proof-support]
 // Purpose: Prove the existing finite production projection has algebraic capacity and least-width bounds.
 // Audit: symbol-code-length-bounds-witness

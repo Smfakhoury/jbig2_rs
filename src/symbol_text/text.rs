@@ -637,6 +637,12 @@ pub(crate) fn decode_text_region(
     let symbol_count =
         u32::try_from(input.symbols.len()).map_err(|_| MalformedError::IntegerOverflow)?;
     let code_length = symbol_id_code_length(symbol_count)?;
+    #[cfg(verus_keep_ghost)]
+    production_segment_symbol_width!(
+        symbol_count,
+        code_length,
+        symbol_text_spec::codebook_len(input.symbols)
+    );
 
     let refinement_adaptive: [(i8, i8); 2] = [
         (

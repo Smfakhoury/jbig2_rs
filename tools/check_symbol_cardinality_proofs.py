@@ -240,6 +240,54 @@ CASES += tuple(
     )
 )
 
+def segment_width_case(identity, function, site, replacement):
+    text = function == "decode_text_region"
+    count = "symbol_count" if text else "total_symbols"
+    extent = (
+        "symbol_text_spec::codebook_len(input.symbols)" if text else
+        "symbol_text_spec::codebook_len(input.imported_symbols) + header.new_symbols"
+    )
+    witness = f"""#[cfg(verus_keep_ghost)]
+        production_segment_symbol_width!(
+            {count},
+            code_length,
+            {extent}
+        );""" if text else """#[cfg(verus_keep_ghost)]
+        production_segment_symbol_width!(total_symbols, code_length, input, header);"""
+    row = case(
+        identity, function, site, replacement, ((witness, ""),),
+        file=runtime_function(ROOT, "symbol_text", function)["file"], module="symbol_text",
+    )
+    row["native_test"] = (
+        "symbol_text::tests::codec_and_exports::actual_text_segment_width_uses_full_contiguous_or_borrowed_extent"
+        if text else
+        "symbol_text::tests::codec_and_exports::actual_dictionary_segment_width_uses_imported_plus_parsed_new_count"
+    )
+    return row
+
+
+CASES += (
+    segment_width_case(
+        "text_segment_loses_input_count", "decode_text_region",
+        "u32::try_from(input.symbols.len())", "u32::try_from(0_usize)",
+    ),
+    segment_width_case(
+        "text_segment_uses_zero_width", "decode_text_region",
+        "let code_length = symbol_id_code_length(symbol_count)?;",
+        "let code_length = symbol_id_code_length(0)?;",
+    ),
+    segment_width_case(
+        "dictionary_segment_uses_zero_width", "decode_symbol_dictionary",
+        "let code_length = symbol_id_code_length(total_symbols)?;",
+        "let code_length = symbol_id_code_length(0)?;",
+    ),
+    segment_width_case(
+        "dictionary_segment_ignores_new_width_extent", "decode_symbol_dictionary",
+        "let code_length = symbol_id_code_length(total_symbols)?;",
+        "let code_length = symbol_id_code_length(imported_count)?;",
+    ),
+)
+
 
 def main():
     parser = argparse.ArgumentParser()
