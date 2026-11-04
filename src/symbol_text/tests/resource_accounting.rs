@@ -246,6 +246,60 @@ fn checks_cumulative_dictionary_dimensions_and_counts() {
     ));
 }
 
+fn independent_symbol_width(count: u32) -> u8 {
+    let mut capacity = 1_u64;
+    let mut width = 0_u8;
+    while capacity < u64::from(count) {
+        capacity *= 2;
+        width += 1;
+    }
+    width
+}
+
+fn assert_minimal_symbol_width(count: u32) {
+    let width = symbol_id_code_length(count).expect("all u32 counts have a symbol width");
+    assert_eq!(width, independent_symbol_width(count), "count={count}");
+    assert!(width <= 32);
+    assert_eq!(width == 0, count <= 1);
+    assert!(u64::from(count) <= 1_u64 << width);
+    for smaller in 0..width {
+        assert!(
+            1_u64 << smaller < u64::from(count),
+            "count={count}, smaller={smaller}"
+        );
+    }
+}
+
+#[test]
+fn symbol_width_thresholds_zero_max_and_every_class_are_exact() {
+    assert_eq!(symbol_id_code_length(0).unwrap(), 0);
+    assert_eq!(symbol_id_code_length(1).unwrap(), 0);
+    assert_eq!(symbol_id_code_length(u32::MAX).unwrap(), 32);
+    let mut reached = [false; 33];
+    for exponent in 0..=32 {
+        let boundary = 1_i64 << exponent;
+        for delta in -8..=8 {
+            if let Ok(count) = u32::try_from(boundary + delta) {
+                assert_minimal_symbol_width(count);
+                reached[usize::from(symbol_id_code_length(count).unwrap())] = true;
+            }
+        }
+    }
+    assert!(reached.into_iter().all(|value| value));
+}
+
+#[test]
+fn symbol_width_dense_and_stratified_counts_match_independent_capacity_oracle() {
+    for count in 0..=65_536 {
+        assert_minimal_symbol_width(count);
+    }
+    let mut state = 0x9e37_79b9_u32;
+    for _ in 0..65_536 {
+        state = state.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
+        assert_minimal_symbol_width(state);
+    }
+}
+
 #[test]
 fn decodes_export_runs_including_zero_length_toggles() {
     let limits = Limits::default();

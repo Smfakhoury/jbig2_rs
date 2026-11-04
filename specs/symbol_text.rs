@@ -22,8 +22,9 @@ pub(super) use huffman_codec::{
 mod symbol_ids;
 pub(crate) use symbol_ids::{
     checked_symbol_decode_result, checked_symbol_id_result, pow2,
-    symbol_code_length_expected, symbol_code_length_valid,
+    symbol_code_length_expected, symbol_code_length_valid, symbol_code_length_bounds,
 };
+pub(super) use symbol_ids::{symbol_code_length_expected_bounds, symbol_code_length_least};
 pub(super) use symbol_ids::{checked_symbol_id_transition, symbol_id_request_matches};
 
 verus! {
