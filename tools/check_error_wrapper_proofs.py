@@ -22,14 +22,26 @@ def wrapper_case(scope, target, source, body, replacement):
         f"impl {model_trait}<{source}> for {target} {{ "
         "open spec fn obeys_from_spec() -> bool { true }"
     )
-    site = f"impl From<{source}> for {target} {{ fn from(error: {source}) -> Self {{ {body} }} }}"
+    prolog = ""
+    if (scope, target, source) == ("symbol_text", "SymbolTextError", "HuffmanError"):
+        prolog = """#[cfg(verus_keep_ghost)]
+            ensures(|out: Self| equal(out, symbol_text_spec::huffman_error_result(&error)));
+            #[cfg(verus_keep_ghost)]
+            proof! { symbol_text_spec::huffman_error_result_definition(&error); }
+        """
+    site = f"impl From<{source}> for {target} {{ fn from(error: {source}) -> Self {{ {prolog}{body} }} }}"
     return {
         "id": f"{scope}-{target}-{source}", "file": f"src/{scope}.rs",
         "module": "error" if target == "DecodeError" else scope,
         "verification_module": scope, "function": f"{target}::from",
         "impl_trait": f"From<{source}>", "site": site,
         "replacement": site.replace(body, replacement),
-        "controls": ((contract, contract.replace("true", "false")),),
+        "controls": (
+            ((contract, contract.replace("true", "false")), (
+                "ensures(|out: Self| equal(out, symbol_text_spec::huffman_error_result(&error)));",
+                "ensures(|out: Self| true);",
+            )) if prolog else ((contract, contract.replace("true", "false")),)
+        ),
     }
 
 
@@ -77,6 +89,7 @@ CASES = tuple(case for cases in CASE_GROUPS.values() for case in cases)
 FILES = (
     "src/arithmetic.rs", "src/error.rs", "src/generic_region.rs", "src/halftone.rs",
     "src/huffman.rs", "src/mmr.rs", "src/symbol_text.rs",
+    "specs/huffman.rs", "specs/symbol_text/huffman_codec.rs",
 )
 
 
