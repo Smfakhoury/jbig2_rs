@@ -213,6 +213,7 @@
     "src/symbol_text/tests/dictionary_dispatch.rs": "e7e1f462adae411123ac93888bd87db1573b9b519bbb3c8c8e045b4697854181",
     "src/symbol_text/tests/flags_and_tables.rs": "baf5d5b4ad7794a248d292b733abb4f56185aae639fceba33472d609a13fd651",
     "src/symbol_text/tests/huffman_fields.rs": "2fa807e44e5db1fe2615cc5c7077ec4bac8485f176936fd5d8a284dd4e7b9e8e",
+    "src/symbol_text/tests/huffman_symbol_ids.rs": "89dce150f0deb0e9eb16bb38cda5238c6546589d8022829680c412ff4f3becd0",
     "src/symbol_text/tests/placement_render.rs": "5d07c12827335abdba47df041992ea76e1b12d1a2ae1fb598ba3d4ecba1350b1",
     "src/symbol_text/tests/placement_state.rs": "4842dd4690593cf25b854787030a1e99f93c5611801899a22fce35f9625c75e3",
     "src/symbol_text/tests/resource_accounting.rs": "20f3e342826f521144da8666619e6124e22927aae9dcf6a754a65a3d9cd32112",
@@ -1174,6 +1175,6 @@
     "normative_approval": false,
     "conformance_pass": false
   },
-  "validation_binding_note": "Current trust/workflow/provenance fixture hashes are refreshed after their stricter source gates. This metadata-only validation binding update does not rerun or relabel official/native/oracle observations, change any pending diagnosis or grant normative/public-release approval.",
+  "validation_binding_note": "Current trust/workflow/provenance fixture hashes are refreshed after their stricter source gates. This metadata-only validation binding update does not rerun or relabel official/native/oracle observations, change any pending diagnosis or grant normative/public-release approval. The complete source inventory additionally includes src/symbol_text/tests/huffman_symbol_ids.rs, whose non-test projection is empty. This test-only inventory addition preserves the original execution identities and outcomes.",
   "previous_source_revision": "b45340399417abd820de7b9c7ebc533d297d45fd"
 }
