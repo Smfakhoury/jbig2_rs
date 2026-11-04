@@ -119,6 +119,26 @@ metadata frames and subsequent-field continuation. These project operational
 models are not independent Annex B approval or complete text/dictionary stream
 and rendering proofs.
 
+### Fresh Huffman construction and reached setup on the 0.2 line
+
+Successful Huffman construction preserves all supplied field-table bindings,
+the exact input bytes, a zero reader cursor, the requested strip width, an absent
+symbol-ID table and zero refinement work. Refinement state is absent exactly when
+not requested; otherwise its template matches the request and its layout is valid.
+No new constructor or caller precondition is imposed.
+
+Reached actual text-region and Huffman dictionary setup composes the literal
+body, strip configuration and refinement flag/template before ID-table preparation
+or entropy-body decoding. A ghost-only template closure result preserves the
+unchanged native computation. Independent native constructor/continuation checks
+and parsed-segment refinement allocation errors accompany eight compiling
+construction/setup contrasts, in addition to the prior Huffman controls.
+
+These are fresh-state and reached-setup results. They do not prove that every
+upstream table choice or codec-kind dispatch is correct, that refinement bank
+contents have complete lifecycle/reset/retention semantics, or that complete
+bitstreams produce the required raster.
+
 ### Actual symbol-ID request construction on the 0.2 line
 
 Reached text-region and single-instance dictionary call sites prove that request

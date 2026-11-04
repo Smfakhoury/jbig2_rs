@@ -14,7 +14,7 @@ pub(super) use arithmetic_codec::{
 #[path = "symbol_text/huffman_codec.rs"]
 mod huffman_codec;
 pub(super) use huffman_codec::{
-    huffman_error_result, huffman_error_result_definition,
+    huffman_codec_initial, huffman_error_result, huffman_error_result_definition,
     huffman_symbol_id_state, huffman_symbol_id_transition,
 };
 

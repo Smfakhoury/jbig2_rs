@@ -681,6 +681,14 @@ pub(crate) fn decode_text_region(
             },
             limits,
         )?);
+        #[cfg(verus_keep_ghost)]
+        production_huffman_segment_setup!(
+            codec,
+            body,
+            log_strip_size,
+            config.refinement,
+            config.refinement_template
+        );
         let SymbolCodec::Huffman(huffman) = &mut codec else {
             return Err(SymbolTextError::InvalidState(
                 "Huffman text region has non-Huffman state",

@@ -5,6 +5,32 @@
 
 use vstd::prelude::*;
 
+// Model navigation: macro::production_huffman_segment_setup [proof-support]
+// Purpose: Compose actual Huffman branch construction with supplied body/strip/refinement configuration.
+// Audit: huffman-segment-setup-witness
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+macro_rules! production_huffman_segment_setup {
+    ($codec:expr, $bytes:expr, $log:expr, $refine:expr, $template:expr) => {
+        proof! {
+            assert(match &$codec {
+                crate::symbol_text::SymbolCodec::Huffman(state) =>
+                    crate::symbol_text::symbol_text_spec::huffman_codec_initial(
+                        state, $bytes@, $log,
+                        if $refine {
+                            Some(if $template == 0 {
+                                crate::generic_region::RefinementTemplate::Template0
+                            } else {
+                                crate::generic_region::RefinementTemplate::Template1
+                            })
+                        } else { None },
+                    ),
+                _ => false,
+            });
+        }
+    };
+}
+
 // Model navigation: macro::production_segment_symbol_width [proof-support]
 // Purpose: Prove actual top-level segment count/width derivation against codebook and parsed header extent.
 // Audit: segment-symbol-width-witness
