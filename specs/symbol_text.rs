@@ -24,7 +24,7 @@ pub(crate) use symbol_ids::{
     checked_symbol_decode_result, checked_symbol_id_result, pow2,
     symbol_code_length_expected, symbol_code_length_valid,
 };
-pub(super) use symbol_ids::checked_symbol_id_transition;
+pub(super) use symbol_ids::{checked_symbol_id_transition, symbol_id_request_matches};
 
 verus! {
 

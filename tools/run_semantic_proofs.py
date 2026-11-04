@@ -61,7 +61,7 @@ CHECKS = (
     ("document-layout", "check_document_count_proof.py", 12, "strong_count_contract", "weaker_control"),
     ("page-state", "check_page_state_proofs.py", 13, "strong_contract", "weaker_control"),
     ("text-batch", "check_text_batch_proofs.py", 11, "strong_contract", "weaker_control"),
-    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 12, "strong_contract", "weaker_control"),
+    ("symbol-cardinality", "check_symbol_cardinality_proofs.py", 18, "strong_contract", "weaker_control"),
     ("segment-data", "check_segment_data_proofs.py", 10, "strong_contract", "weaker_control"),
     ("reader-error", "check_reader_error_proofs.py", 9, "strong_contract", "weaker_control"),
     ("page-public", "check_page_state_proofs.py", 9, "strong_contract", "weaker_control"),

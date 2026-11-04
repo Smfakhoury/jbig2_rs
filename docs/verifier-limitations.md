@@ -119,6 +119,25 @@ metadata frames and subsequent-field continuation. These project operational
 models are not independent Annex B approval or complete text/dictionary stream
 and rendering proofs.
 
+### Actual symbol-ID request construction on the 0.2 line
+
+Reached text-region and single-instance dictionary call sites prove that request
+availability equals the supplied contiguous/borrowed codebook extent or the
+imported-plus-decoded-new extent. Text loop invariants retain the exact narrowed
+count. Both sites forward the supplied enclosing-segment width and entropy flag
+unchanged, without new caller preconditions.
+
+Independent native callers exercise enclosing widths larger than the available
+subset needs, imported/new splits, exact range-error payloads, selected symbol
+pixels and following-field consumption. Six compiling proof contrasts cover the
+two sites' extent/width/flag witnesses. Only the four observable extent/width
+changes are credited as native mutants; forwarding the currently unused request
+flag is not represented as native behavioral sensitivity.
+
+These are intermediate request witnesses, not complete returned-bitmap contracts.
+Correct upstream segment-width derivation, codec-kind/table selection, statistics
+lifecycle/reset/retention and full refinement/rendered streams remain separate.
+
 ## Observed-capacity integration
 
 Allocation accounting checks actual post-reservation `Vec::capacity()` rather

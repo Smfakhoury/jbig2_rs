@@ -5,6 +5,22 @@ use super::*;
 
 verus! {
 
+// Model navigation: spec::symbol_id_request_matches [project-result-model]
+// Purpose: Exact caller-supplied codebook extent, enclosing-segment width and entropy-mode forwarding.
+// Audit: symbol-id-request-matches
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub(in crate::symbol_text) open spec fn symbol_id_request_matches(
+    request: crate::symbol_text::SymbolIdRequest,
+    available: nat,
+    code_length: u8,
+    huffman: bool,
+) -> bool {
+    &&& request.available_symbols as nat == available
+    &&& request.code_length == code_length
+    &&& request.huffman == huffman
+}
+
 // Model navigation: spec::pow2 [proof-support]
 // Purpose: Private codec/bank projections, signed/clipped vocabulary and export measures.
 // Mapping: no registered requirement/locator mapping.

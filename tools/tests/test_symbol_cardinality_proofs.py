@@ -17,6 +17,25 @@ from proof_sensitivity import replace_once, weakened_contract
 
 
 class SymbolCardinalityProofTests(unittest.TestCase):
+    def test_caller_controls_retain_count_invariants_and_resource_storage_contracts(self):
+        callers = [case for case in CASES if "_id_request_changes_" in case["id"]]
+        self.assertEqual(len(callers), 6)
+        self.assertEqual(sum("native_test" in case for case in callers), 4)
+        for case in callers:
+            source = source_text(TOOLS.parent, case["file"])
+            weaker = weakened_contract(source, case)
+            with self.subTest(case=case["id"]):
+                self.assertIn("symbol_text_spec::codec_valid(old(codec))", weaker)
+                self.assertIn("crate::spec::bitmap::storage_valid(&bitmap)", weaker)
+                self.assertIn("symbol_text_spec::work_units", weaker)
+                if case["function"] == "decode_text_region_body":
+                    self.assertIn(
+                        "available_count as nat == symbol_text_spec::codebook_len(available_symbols)",
+                        weaker,
+                    )
+                else:
+                    self.assertIn("equal(value as u128, count as u128)", weaker)
+
     def test_export_order_control_keeps_count_bounds_and_resource_frame(self):
         case = next(case for case in CASES if case["function"] == "decode_export_runs")
         source = source_text(TOOLS.parent, case["file"])
@@ -32,8 +51,8 @@ class SymbolCardinalityProofTests(unittest.TestCase):
         self.assertIn("exported.push(index);", weaker)
 
     def test_unique_mutations_retain_existing_storage_and_lookup_bounds(self):
-        self.assertEqual(len(CASES), 12)
-        self.assertEqual(len({case["id"] for case in CASES}), 12)
+        self.assertEqual(len(CASES), 18)
+        self.assertEqual(len({case["id"] for case in CASES}), 18)
         for case in CASES:
             with self.subTest(case=case["id"]):
                 source = source_text(TOOLS.parent, case["file"])
@@ -41,7 +60,12 @@ class SymbolCardinalityProofTests(unittest.TestCase):
                 weaker = weakened_contract(changed, case)
                 self.assertNotEqual(source, changed)
                 self.assertNotEqual(changed, weaker)
-                if case["module"] == "decode":
+                if "_id_request_changes_" in case["id"]:
+                    self.assertIn("symbol_text_spec::codec_valid(old(codec))", weaker)
+                    self.assertIn("crate::spec::bitmap::storage_valid(&bitmap)", weaker)
+                    self.assertNotIn("production_symbol_id_request!(", weaker)
+                    self.assertIn("let id_request = SymbolIdRequest", weaker)
+                elif case["module"] == "decode":
                     self.assertIn("decode_spec::collected_symbols_valid(&bitmaps)", weaker)
                     self.assertIn("decode_spec::symbol_store_valid(symbols)", weaker)
                     self.assertIn("index < symbols@.len()", weaker)

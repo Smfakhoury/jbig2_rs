@@ -2269,6 +2269,23 @@ class TraceabilityTests(unittest.TestCase):
         self.assertEqual(len(ledger["requirements"]), 266)
         self.assertEqual(sum(bool(row["gaps"]) for row in ledger["requirements"]), 257)
 
+    def test_actual_caller_request_witnesses_preserve_explicit_upstream_gaps(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        for row in ledger["requirements"]:
+            if row["id"] not in {"T88-PROFILE-SYMBOL-ID-PRESERVATION", "T88-TEXT-SYMBOL-ID"}:
+                continue
+            with self.subTest(requirement=row["id"]):
+                self.assertIn("symbol-id-request-matches", row["models"])
+                self.assertIn("symbol-id-request-witness", row["proof_macros"])
+                self.assertIn("symbol_text::text::decode_text_region_body", row["runtime"])
+                self.assertIn(
+                    "symbol_text::dictionary::arithmetic::decode_dictionary_single_instance_refinement",
+                    row["runtime"],
+                )
+                self.assertIn("codec-kind", row["gaps"][0])
+                self.assertIn("flag forwarding alone", row["gaps"][0].lower())
+                self.assertEqual(row["review"], "provisional")
+
     def test_complete_header_results_are_linked_without_normative_approval(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}

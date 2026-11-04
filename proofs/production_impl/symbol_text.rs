@@ -5,6 +5,21 @@
 
 use vstd::prelude::*;
 
+// Model navigation: macro::production_symbol_id_request [proof-support]
+// Purpose: Check actual text/dictionary request construction against the supplied codebook and segment parameters.
+// Audit: symbol-id-request-witness
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+macro_rules! production_symbol_id_request {
+    ($request:expr, $available:expr, $length:expr, $huffman:expr) => {
+        proof! {
+            assert(crate::symbol_text::symbol_text_spec::symbol_id_request_matches(
+                $request, ($available) as nat, $length, $huffman,
+            ));
+        }
+    };
+}
+
 verus! {
 
 pub(super) proof fn packed_row_end_in_bounds(

@@ -186,6 +186,60 @@ CASES = (
     ),
 )
 
+def caller_request_case(function, field, replacement, native_test=None):
+    text = function == "decode_text_region_body"
+    count = "available_count" if text else "available"
+    mode = "config.huffman" if text else "huffman"
+    extent = (
+        "symbol_text_spec::codebook_len(available_symbols)"
+        if text else "symbol_text_spec::codebook_len(imported) + new_symbols.len()"
+    )
+    request = f"""let id_request = SymbolIdRequest {{
+        available_symbols: {count},
+        code_length,
+        huffman: {mode},
+    }};""" if text else f"""let id_request = SymbolIdRequest {{
+        available_symbols: {count},
+        code_length,
+        huffman,
+    }};"""
+    witness = f"""#[cfg(verus_keep_ghost)]
+        production_symbol_id_request!(
+            id_request,
+            {extent},
+            code_length,
+            {mode}
+        );"""
+    row = case(
+        f"{'text' if text else 'dictionary'}_id_request_changes_{field}",
+        function, request, replace_once(request, {
+            "extent": f"available_symbols: {count}",
+            "width": "code_length,",
+            "mode": f"huffman: {mode}" if text else "huffman,",
+        }[field], replacement),
+        ((witness, ""),),
+        file=runtime_function(ROOT, "symbol_text", function)["file"], module="symbol_text",
+    )
+    if native_test is not None:
+        row["native_test"] = native_test
+    return row
+
+
+CASES += tuple(
+    caller_request_case(function, field, replacement, native_test)
+    for function, test_module, test_name in (
+        ("decode_text_region_body", "text_termination",
+         "actual_text_id_request_preserves_book_extent_segment_width_and_continuation"),
+        ("decode_dictionary_single_instance_refinement", "dictionary_dispatch",
+         "actual_dictionary_id_request_counts_imported_and_new_with_enclosing_width"),
+    )
+    for field, replacement, native_test in (
+        ("extent", "available_symbols: 0", f"symbol_text::tests::{test_module}::{test_name}"),
+        ("width", "code_length: 0,", f"symbol_text::tests::{test_module}::{test_name}"),
+        ("mode", "huffman: false" if test_module == "text_termination" else "huffman: !huffman,", None),
+    )
+)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -196,9 +250,10 @@ def main():
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/decode.rs", "specs/decode.rs", "src/symbol_text.rs",
-             "specs/symbol_text.rs", "src/bitmap.rs", "specs/bitmap.rs"),
+             "specs/symbol_text.rs", "specs/symbol_text/symbol_ids.rs",
+             "proofs/production_impl/symbol_text.rs", "src/bitmap.rs", "specs/bitmap.rs"),
             "jbig2-symbol-cardinality-",
-            "Exact project group/cardinality plus contiguous/borrowed bitmap content selection, imported/new ID mapping, all ordered/repeated owned export bytes/dimensions and strict duplicate-free decoded export indices. Original bounds/count controls remain; no encoded export-run selection, observed-capacity, independent normative or caller-stream claim",
+            "Exact project cardinality/content/export order plus actual text and single-instance dictionary request witnesses: availability equals supplied codebook extent, while enclosing-segment width and entropy mode are forwarded unchanged. Original caller/lookup/storage/resource/loop guarantees remain in weaker controls. No derivation of every enclosing-segment parameter, lifecycle/reset timing, independent normative approval or full-stream/raster claim",
             baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:

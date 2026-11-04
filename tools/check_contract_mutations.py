@@ -62,6 +62,13 @@ DOCUMENT_WINDOW_TESTS = {
 }
 MUTATIONS = tuple(
     {
+        "id": "caller-request-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": case["native_test"], "whitespace_flexible": True,
+    }
+    for case in SYMBOL_CARDINALITY_CASES if "native_test" in case
+) + tuple(
+    {
         "id": "checked-id-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],
         "target": "lib", "test": case["native_test"], "whitespace_flexible": True,

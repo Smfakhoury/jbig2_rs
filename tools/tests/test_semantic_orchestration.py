@@ -95,6 +95,7 @@ SIX_SHARD_MOVES = {
 PRE_PRODUCTION_CACHE_CHECKS = tuple(
     (name, script, {
         "huffman-assignment": 21, "arithmetic-codec": 33, "value-bridge": 12,
+        "symbol-cardinality": 12,
     }.get(name, count), strong, weaker)
     for name, script, count, strong, weaker in runner.CHECKS
 )
@@ -205,12 +206,14 @@ class SemanticOrchestrationTests(unittest.TestCase):
     def test_live_huffman_id_counts_match_the_executed_case_sets(self):
         from check_arithmetic_codec_proofs import CASES as codec_cases
         from check_value_bridge_proofs import CASES as value_cases
+        from check_symbol_cardinality_proofs import CASES as cardinality_cases
 
         checks = runner.configured_checks()
         counts = {row[0]: row[2] for row in checks}
         self.assertEqual(counts["arithmetic-codec"], len(codec_cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
-        self.assertEqual(sum(row[2] for row in checks), 383)
+        self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
+        self.assertEqual(sum(row[2] for row in checks), 389)
         self.assertEqual(len(checks), 49)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
@@ -345,7 +348,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 49)
             self.assertEqual(len({row[0] for row in assigned}), 49)
-            self.assertEqual(sum(row[2] for row in assigned), 383)
+            self.assertEqual(sum(row[2] for row in assigned), 389)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             rows = [
                 {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}
