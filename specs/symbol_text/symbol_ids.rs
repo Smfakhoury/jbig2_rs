@@ -123,26 +123,10 @@ pub(in crate::symbol_text) open spec fn checked_symbol_id_transition<'a>(
                     && arithmetic_symbol_id_transition(before, after, request, decoded)
             },
             crate::symbol_text::SymbolCodec::Huffman(prior) =>
-                prior.symbol_id_table.is_none() ==> match *after {
-                    crate::symbol_text::SymbolCodec::Huffman(next) => {
-                        let error = crate::spec::readers::bit_read_error(
-                            prior.reader.bytes@, prior.reader.bit_position, request.code_length,
-                        );
-                        let decoded = match error {
-                            Some(error) => Err(crate::symbol_text::SymbolTextError::Decode(
-                                crate::DecodeError::Malformed(error),
-                            )),
-                            None => Ok(crate::spec::readers::bits_value(
-                                prior.reader.bytes@, prior.reader.bit_position as nat,
-                                request.code_length as nat,
-                            ) as u32),
-                        };
-                        &&& result == checked_symbol_decode_result(decoded, request.available_symbols)
-                        &&& next.reader.bytes@ == prior.reader.bytes@
-                        &&& next.reader.bit_position == prior.reader.bit_position
-                            + if error.is_none() { request.code_length as nat } else { 0nat }
-                    },
-                    _ => false,
+                {
+                    let decoded = huffman_symbol_id_state(&prior, request).0;
+                    checked_symbol_decode_result(decoded, request.available_symbols) == result
+                        && huffman_symbol_id_transition(before, after, request, decoded)
                 },
         }
     }

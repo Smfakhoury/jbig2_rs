@@ -11,6 +11,13 @@ pub(super) use arithmetic_codec::{
     arithmetic_integer_transition, arithmetic_symbol_id_transition, integer_contexts_initial,
 };
 
+#[path = "symbol_text/huffman_codec.rs"]
+mod huffman_codec;
+pub(super) use huffman_codec::{
+    huffman_error_result, huffman_error_result_definition,
+    huffman_symbol_id_state, huffman_symbol_id_transition,
+};
+
 #[path = "symbol_text/symbol_ids.rs"]
 mod symbol_ids;
 pub(crate) use symbol_ids::{

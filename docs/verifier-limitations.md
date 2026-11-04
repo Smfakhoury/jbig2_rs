@@ -85,16 +85,39 @@ The checked-ID helper specifies both the unchanged accepted ID and the exact
 out-of-range error payload. An empty codebook is rejected before entropy
 decoding, with the codec state unchanged.
 
-For arithmetic and untabled fixed-width Huffman IDs, the checked caller
+For arithmetic, table-backed Huffman and literal fixed-width Huffman IDs, the checked caller
 composes the encoded value/error and cursor/context effects with the supplied
 availability bound. Rejecting a successfully decoded unused ID does not rewind
 the consumed input or discard updated arithmetic contexts. Underlying entropy
 errors are preserved rather than relabeled as ID-range errors.
 
-This does not cover table-backed Huffman ID extraction or prove that every
-caller supplied the correct codebook extent, refinement selection or final
-rendered pixels. Existing generic accepted-ID bounds remain in force for other
-Huffman paths.
+This does not prove that every caller supplied the correct codebook extent,
+code length, table selection, refinement selection or final rendered pixels.
+
+### Table-backed Huffman symbol IDs on the 0.2 line
+
+The concrete Huffman adapter composes the existing primitive table decoder's
+exact result and cursor model with symbol-ID conversion. Nonnegative `i32`
+values are preserved exactly; negative values and out-of-band values produce
+their distinct symbol-ID errors. Huffman decoding errors retain their verified
+error conversion. With an ID table present, literal request width does not
+replace table decoding.
+
+The existing error equations are shared by `FromSpecImpl` and the verified
+public `From` result contracts. Proved defining-module bridges preserve private
+datatype opacity; no new trusted library specification is introduced.
+
+Input bytes, table bindings, the owned ID table, strip configuration and
+refinement state/work remain unchanged. Consumed prefix/range bits, including
+partial-error effects, propagate through enum dispatch and checked availability
+filtering without rewinding. The existing literal and arithmetic guarantees
+remain in force.
+
+Independent numeric prefix/range oracles exercise cached and fallback codes,
+zero and `i32::MAX`, negative/OOB values, invalid codes, prefix/range truncation,
+metadata frames and subsequent-field continuation. These project operational
+models are not independent Annex B approval or complete text/dictionary stream
+and rendering proofs.
 
 ## Observed-capacity integration
 

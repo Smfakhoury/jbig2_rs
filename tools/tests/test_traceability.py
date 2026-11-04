@@ -2233,7 +2233,7 @@ class TraceabilityTests(unittest.TestCase):
         self.assertIn("specs/symbol_text/arithmetic_codec.rs", ledger["bindings"])
         self.assertIn("src/symbol_text/tests/arithmetic_composition.rs", ledger["bindings"])
 
-    def test_checked_id_caller_guarantees_are_bound_without_claiming_table_backed_extraction(self):
+    def test_checked_id_caller_guarantees_bind_table_extraction_and_remaining_caller_scope(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
         for identity in ("T88-PROFILE-SYMBOL-ID-PRESERVATION", "T88-TEXT-SYMBOL-ID"):
@@ -2243,15 +2243,29 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertTrue({
                     "symbol-checked-id-result", "symbol-checked-id-decode-result",
                     "symbol-checked-id-transition",
+                    "symbol-huffman-id-result", "symbol-huffman-id-state",
+                    "symbol-huffman-id-transition", "huffman-error-result",
+                    "symbol-huffman-error-result",
                 } <= set(row["models"]))
                 self.assertTrue(any(
                     claim["runtime"] == "symbol_text::codec::symbols::decode_checked_symbol_id"
                     for claim in row["functional_evidence"]
                 ))
-                self.assertIn("Table-backed Huffman", row["scope_of_formal_result"])
+                self.assertIn(
+                    "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
+                    row["runtime"],
+                )
+                self.assertIn("symbol_text::codec::SymbolCodec::decode_symbol_id", row["runtime"])
+                self.assertTrue(any(
+                    "huffman_symbol_id_transition" in " ".join(claim["tokens"])
+                    for claim in row["functional_evidence"]
+                ))
                 self.assertEqual(row["review"], "provisional")
                 self.assertTrue(row["gaps"])
+                self.assertIn("extent", row["gaps"][0])
+                self.assertIn("rendered", row["gaps"][0])
                 self.assertTrue(any("checked_literal_ids_" in test["name"] for test in row["tests"]))
+                self.assertTrue(any("huffman_symbol_ids::" in test["name"] for test in row["tests"]))
         self.assertEqual(len(ledger["requirements"]), 266)
         self.assertEqual(sum(bool(row["gaps"]) for row in ledger["requirements"]), 257)
 

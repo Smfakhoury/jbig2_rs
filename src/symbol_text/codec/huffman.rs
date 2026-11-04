@@ -181,6 +181,14 @@ impl HuffmanCodec<'_> {
         requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
         ensures
             crate::huffman::huffman_spec::reader_valid(&final(self).reader),
+            out == symbol_text_spec::huffman_symbol_id_state(old(self), request).0,
+            final(self).reader.bit_position == symbol_text_spec::huffman_symbol_id_state(old(self), request).1,
+            final(self).reader.bytes@ == old(self).reader.bytes@,
+            final(self).tables == old(self).tables,
+            final(self).log_strip_size == old(self).log_strip_size,
+            final(self).symbol_id_table == old(self).symbol_id_table,
+            final(self).refinement == old(self).refinement,
+            final(self).refinement_work == old(self).refinement_work,
             old(self).symbol_id_table.is_none() ==> {
                 &&& final(self).reader.bytes@ == old(self).reader.bytes@
                 &&& out == match crate::spec::readers::bit_read_error(
@@ -209,8 +217,13 @@ impl HuffmanCodec<'_> {
         // field of `code_length` bits, not a Huffman code.
         if let Some(table) = self.symbol_id_table.as_ref() {
             match table.decode(&mut self.reader)? {
-                HuffmanValue::Integer(value) => u32::try_from(value)
-                    .map_err(|_| SymbolTextError::InvalidEntropyValue("symbol ID")),
+                HuffmanValue::Integer(value) => u32::try_from(value).map_err(|_| {
+                    #[cfg(verus_keep_ghost)]
+                    ensures(|out: SymbolTextError| {
+                        equal(out, SymbolTextError::InvalidEntropyValue("symbol ID"))
+                    });
+                    SymbolTextError::InvalidEntropyValue("symbol ID")
+                }),
                 HuffmanValue::OutOfBand => Err(SymbolTextError::UnexpectedOutOfBand("symbol ID")),
             }
         } else {

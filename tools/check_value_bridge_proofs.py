@@ -7,7 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from proof_sensitivity import check_semantic_cases
+from proof_sensitivity import check_semantic_cases, replace_once
+from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,14 +25,34 @@ ZERO_COUNT = """if request.available_symbols == 0 {
 DECODE_ID = "let id = codec.decode_symbol_id(request)?;"
 CHECK_ID = "checked_symbol_id(id, request.available_symbols)"
 NATIVE_PREFIX = "symbol_text::tests::arithmetic_composition::"
+TABLE_NATIVE_PREFIX = "symbol_text::tests::huffman_symbol_ids::"
 
 
-def checked_case(identity, function, site, replacement, control, test):
+def checked_case(identity, function, site, replacement, control, test, *, native_prefix=NATIVE_PREFIX):
     return {
         "id": identity, "file": "src/symbol_text.rs", "module": "symbol_text",
         "function": function, "site": site, "replacement": replacement,
-        "controls": ((control, ""),), "native_test": NATIVE_PREFIX + test,
+        "controls": ((control, ""),), "native_test": native_prefix + test,
     }
+
+
+def checked_table_case(identity, site, replacement):
+    row = checked_case(
+        identity, "decode_checked_symbol_id", site, replacement, ID_TRANSITION_POST,
+        "checked_table_ids_preserve_values_rejections_errors_and_consumption",
+        native_prefix=TABLE_NATIVE_PREFIX,
+    )
+    guarded = """(request.available_symbols == 0
+        || match *old(codec) {
+            SymbolCodec::Huffman(state) => state.symbol_id_table.is_none(),
+            _ => true,
+        }) ==> symbol_text_spec::checked_symbol_id_transition(old(codec), final(codec), request, out),"""
+    declaration = runtime_function(ROOT, "symbol_text", "decode_checked_symbol_id")
+    attributes = [attribute for attribute in declaration["attributes"] if "verus_spec(" in attribute]
+    if len(attributes) != 1:
+        raise ValueError("checked table caller needs one exact attached contract")
+    row["controls"] = ((attributes[0], replace_once(attributes[0], ID_TRANSITION_POST, guarded)),)
+    return row
 
 
 def numeric_case(name, argument, result):
@@ -49,6 +70,30 @@ def numeric_case(name, argument, result):
 
 
 CASES = (
+    checked_table_case(
+            "checked_table_id_filters_substituted_zero",
+            CHECK_ID, """let table_backed = match &*codec {
+                SymbolCodec::Huffman(state) => state.symbol_id_table.is_some(),
+                _ => false,
+            };
+            if table_backed {
+                checked_symbol_id(0, request.available_symbols)
+            } else {
+                checked_symbol_id(id, request.available_symbols)
+            }""",
+    ),
+    checked_table_case(
+            "checked_table_id_rewinds_rejected_code",
+            CHECK_ID, """{
+                let result = checked_symbol_id(id, request.available_symbols);
+                if result.is_err() {
+                    if let SymbolCodec::Huffman(state) = codec {
+                        if state.symbol_id_table.is_some() { state.reader.bit_position = 0; }
+                    }
+                }
+                result
+            }""",
+    ),
     checked_case(
         "checked_id_error_discards_id", "checked_symbol_id",
         """return Err(SymbolTextError::SymbolIdOutOfRange {
@@ -153,8 +198,8 @@ def main():
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/symbol_text.rs", "src/decode.rs", "specs/symbol_text.rs",
              "specs/symbol_text/symbol_ids.rs", "specs/symbol_text/arithmetic_codec.rs",
-             "specs/arithmetic.rs"), "jbig2-value-bridges-",
-            "Exact widening/operator bridges plus checked-ID error payloads, zero-book preflight and arithmetic/literal-Huffman result/state composition; table-backed Huffman and full normative streams remain separate",
+             "specs/symbol_text/huffman_codec.rs", "specs/arithmetic.rs"), "jbig2-value-bridges-",
+            "Exact widening/operator bridges, checked-ID error payloads, zero-book preflight and arithmetic/table/literal-Huffman result/state composition. Table-only controls retain arithmetic, literal and empty-book guarantees; normative table/extent choice and full rendered streams remain separate",
             baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:

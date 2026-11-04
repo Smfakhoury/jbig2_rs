@@ -90,6 +90,32 @@ INVALID_STATE_VALUE = """DecodeError::Malformed(MalformedError::InvalidArithmeti
 })"""
 ENUM_INTEGER_POST = "symbol_text_spec::arithmetic_integer_transition(old(self), final(self), field, out),"
 ENUM_ID_POST = "symbol_text_spec::arithmetic_symbol_id_transition(old(self), final(self), request, out),"
+HUFFMAN_ID_POST = "symbol_text_spec::huffman_symbol_id_transition(old(self), final(self), request, out),"
+HUFFMAN_ID_RESULT = "out == symbol_text_spec::huffman_symbol_id_state(old(self), request).0,"
+HUFFMAN_ID_POSITION = "final(self).reader.bit_position == symbol_text_spec::huffman_symbol_id_state(old(self), request).1,"
+TABLE_DECODE_HEAD = """if let Some(table) = self.symbol_id_table.as_ref() {
+    match table.decode(&mut self.reader)?"""
+HUFFMAN_FRAME = """final(self).reader.bytes@ == old(self).reader.bytes@,
+final(self).tables == old(self).tables,
+final(self).log_strip_size == old(self).log_strip_size,
+final(self).symbol_id_table == old(self).symbol_id_table,
+final(self).refinement == old(self).refinement,
+final(self).refinement_work == old(self).refinement_work,"""
+HUFFMAN_CONVERSION = """u32::try_from(value).map_err(|_| {
+    #[cfg(verus_keep_ghost)]
+    ensures(|out: SymbolTextError| {
+        equal(out, SymbolTextError::InvalidEntropyValue("symbol ID"))
+    });
+    SymbolTextError::InvalidEntropyValue("symbol ID")
+})"""
+TABLE_TEST = (
+    "symbol_text::tests::huffman_symbol_ids::"
+    "table_ids_preserve_scalar_prefix_range_errors_cursor_and_metadata"
+)
+TABLE_ENUM_TEST = (
+    "symbol_text::tests::huffman_symbol_ids::"
+    "table_ids_enum_uses_table_not_literal_width_and_preserves_frames"
+)
 BANK_INITIAL_POST = "&& symbol_text_spec::integer_contexts_initial(&codec.integers)"
 IAID_LENGTH_POST = "&& codec.iaid@.len() == (1usize << iaid_code_length)"
 IAID_INITIAL_POST = """&& (forall|index: int| 0 <= index < codec.iaid@.len() ==>
@@ -151,11 +177,41 @@ def literal_case(identity, function, site, replacement, test):
         ))]"""
         post = ENUM_INTEGER_POST if function.endswith("decode_integer") else ENUM_ID_POST
         weaker = weaker.replace("ensures match out {", f"ensures {post}\nmatch out {{")
+        if function.endswith("decode_symbol_id"):
+            preserved = """match *old(self) {
+                Self::Huffman(prior) => {
+                    &&& prior.symbol_id_table.is_some() ==>
+                        symbol_text_spec::huffman_symbol_id_transition(old(self), final(self), request, out)
+                    &&& match *final(self) {
+                        Self::Huffman(next) => {
+                            &&& next.reader.bytes@ == prior.reader.bytes@
+                            &&& next.tables == prior.tables
+                            &&& next.log_strip_size == prior.log_strip_size
+                            &&& next.symbol_id_table == prior.symbol_id_table
+                            &&& next.refinement == prior.refinement
+                            &&& next.refinement_work == prior.refinement_work
+                        },
+                        _ => false,
+                    }
+                },
+                _ => true,
+            },"""
+            weaker = weaker.replace(f"ensures {post}", f"ensures {post}\n{preserved}")
     else:
         weaker = """#[cfg_attr(verus_keep_ghost, verus_spec(out =>
             requires crate::huffman::huffman_spec::reader_valid(&old(self).reader),
             ensures crate::huffman::huffman_spec::reader_valid(&final(self).reader),
         ))]"""
+        if function in ("HuffmanCodec::read_raw_bits", "HuffmanCodec::decode_symbol_id"):
+            preserved = HUFFMAN_FRAME
+            if function.endswith("decode_symbol_id"):
+                preserved += """
+                old(self).symbol_id_table.is_some() ==> {
+                    &&& out == symbol_text_spec::huffman_symbol_id_state(old(self), request).0
+                    &&& final(self).reader.bit_position
+                        == symbol_text_spec::huffman_symbol_id_state(old(self), request).1
+                },"""
+            weaker = weaker.replace("ensures crate", f"ensures {preserved}\ncrate")
     return {
         "id": identity, "file": row["file"], "module": "symbol_text",
         "function": function, "site": site, "replacement": replacement,
@@ -164,7 +220,75 @@ def literal_case(identity, function, site, replacement, test):
     }
 
 
+def table_case(identity, module, function, site, replacement, control, *, native_test):
+    row = case(identity, module, function, site, replacement, control, native_test=native_test)
+    declaration = runtime_function(ROOT, module, function)
+    attributes = [attribute for attribute in declaration["attributes"] if "verus_spec(" in attribute]
+    if len(attributes) != 1:
+        raise ValueError("table adapter needs one exact attached contract")
+    row["controls"] = ((attributes[0], replace_once(attributes[0], control, "")),)
+    return row
+
+
 CASES = (
+    table_case(
+        "huffman_table_id_substitutes_zero", "symbol_text", "HuffmanCodec::decode_symbol_id",
+        "HuffmanValue::Integer(value) => u32::try_from(value)",
+        "HuffmanValue::Integer(value) => u32::try_from(0_i32)",
+        HUFFMAN_ID_RESULT, native_test=TABLE_TEST,
+    ),
+    table_case(
+        "huffman_table_id_accepts_negative_as_zero", "symbol_text", "HuffmanCodec::decode_symbol_id",
+        HUFFMAN_CONVERSION, """match u32::try_from(value) {
+            Ok(value) => Ok(value),
+            Err(_error) => Ok(0),
+        }""",
+        HUFFMAN_ID_RESULT, native_test=TABLE_TEST,
+    ),
+    table_case(
+        "huffman_table_id_accepts_oob_as_zero", "symbol_text", "HuffmanCodec::decode_symbol_id",
+        'HuffmanValue::OutOfBand => Err(SymbolTextError::UnexpectedOutOfBand("symbol ID")),',
+        "HuffmanValue::OutOfBand => Ok(0),",
+        HUFFMAN_ID_RESULT, native_test=TABLE_TEST,
+    ),
+    table_case(
+        "huffman_table_id_masks_decoder_error", "symbol_text", "HuffmanCodec::decode_symbol_id",
+        TABLE_DECODE_HEAD,
+        """if let Some(table) = self.symbol_id_table.as_ref() {
+            match table.decode(&mut self.reader).map_err(|_error|
+                SymbolTextError::InvalidEntropyValue("masked Huffman error"))?""",
+        HUFFMAN_ID_RESULT, native_test=TABLE_TEST,
+    ),
+    table_case(
+        "huffman_table_id_rewinds_consumed_prefix", "symbol_text", "HuffmanCodec::decode_symbol_id",
+        TABLE_DECODE_HEAD,
+        """if let Some(table) = self.symbol_id_table.as_ref() {
+        let decoded = table.decode(&mut self.reader)?;
+        self.reader.bit_position = 0;
+        match decoded""",
+        HUFFMAN_ID_POSITION, native_test=TABLE_TEST,
+    ),
+    table_case(
+        "huffman_table_id_discards_owned_table", "symbol_text", "HuffmanCodec::decode_symbol_id",
+        TABLE_DECODE_HEAD,
+        """if let Some(table) = self.symbol_id_table.as_ref() {
+        let decoded = table.decode(&mut self.reader)?;
+        self.symbol_id_table = None;
+        match decoded""",
+        "final(self).symbol_id_table == old(self).symbol_id_table,", native_test=TABLE_TEST,
+    ),
+    table_case(
+        "huffman_table_enum_substitutes_zero", "symbol_text", "SymbolCodec::decode_symbol_id",
+        "Self::Huffman(codec) => codec.decode_symbol_id(request),",
+        """Self::Huffman(codec) => {
+            let table_backed = codec.symbol_id_table.is_some();
+            match codec.decode_symbol_id(request) {
+                Ok(value) => Ok(if table_backed { 0 } else { value }),
+                Err(error) => Err(error),
+            }
+        },""",
+        HUFFMAN_ID_POST, native_test=TABLE_ENUM_TEST,
+    ),
     case(
         "fresh_codec_poisoned_integer_banks", "symbol_text", "new_arithmetic_codec",
         "integers: IntegerContexts { slots: [[ArithmeticContext::new(); 512]; INTEGER_FIELD_COUNT], },",
@@ -416,9 +540,10 @@ def main():
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/arithmetic.rs", "src/symbol_text.rs", "src/generic_region.rs",
              "specs/arithmetic.rs", "specs/symbol_text.rs",
-             "specs/symbol_text/arithmetic_codec.rs", "specs/generic_region.rs"),
+             "specs/symbol_text/arithmetic_codec.rs", "specs/symbol_text/huffman_codec.rs",
+             "specs/generic_region.rs"),
             "jbig2-arithmetic-codec-",
-            "Exact fresh arithmetic banks/input/registers and enum integer/IAID result/state composition, plus prior arithmetic projections, generic diagnostics and Huffman literal contracts. Normative field/reset timing, table selection and full entropy/raster streams remain separate",
+            "Exact fresh arithmetic banks/input/registers and enum integer/IAID composition; complete owned-table Huffman symbol-ID results, converted errors, reader effects and metadata frames through concrete/enum callers; prior generic diagnostics and literal contracts. Normative table selection, field/reset timing and full entropy/raster streams remain separate",
             baseline_groups=BASELINE_GROUPS,
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:

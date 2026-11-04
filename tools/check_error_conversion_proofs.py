@@ -44,8 +44,8 @@ CASES = tuple(
         ),
         (
             "huffman-wrapped-error", "huffman",
-            "fn from(error: HuffmanError) -> Self { match error { HuffmanError::Decode(error) => error,",
-            "fn from(error: HuffmanError) -> Self { match error { HuffmanError::Decode(error) => DecodeError::Malformed(MalformedError::IntegerOverflow),",
+            "HuffmanError::Decode(error) => error,",
+            "HuffmanError::Decode(error) => DecodeError::Malformed(MalformedError::IntegerOverflow),",
         ),
         (
             "mmr-allocation-bytes", "mmr",
@@ -69,9 +69,19 @@ CASES = tuple(
         ),
     )
 )
+CASES = tuple(
+    {
+        **case,
+        "controls": (*case["controls"], (
+            "ensures(|out: Self| equal(out, huffman_spec::huffman_error_result(&error)));",
+            "ensures(|out: Self| true);",
+        )),
+    } if case["verification_module"] == "huffman" else case
+    for case in CASES
+)
 FILES = (
     "src/error.rs", "src/generic_region.rs", "src/huffman.rs", "src/mmr.rs",
-    "src/symbol_text.rs",
+    "src/symbol_text.rs", "specs/huffman.rs", "specs/symbol_text/huffman_codec.rs",
 )
 
 

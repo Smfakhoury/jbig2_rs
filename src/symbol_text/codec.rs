@@ -71,6 +71,7 @@ impl<'a> SymbolCodec<'a> {
         requires symbol_text_spec::codec_valid(old(self)),
         ensures
             symbol_text_spec::arithmetic_symbol_id_transition(old(self), final(self), request, out),
+            symbol_text_spec::huffman_symbol_id_transition(old(self), final(self), request, out),
             match out {
                 Ok(_) => symbol_text_spec::codec_valid(final(self)),
                 Err(_) => true,

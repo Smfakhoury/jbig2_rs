@@ -93,7 +93,9 @@ SIX_SHARD_MOVES = {
     "segment-header": 5, "mmr-span": 5, "halftone-header": 5, "page-state": 5,
 }
 PRE_PRODUCTION_CACHE_CHECKS = tuple(
-    (name, script, 21 if name == "huffman-assignment" else count, strong, weaker)
+    (name, script, {
+        "huffman-assignment": 21, "arithmetic-codec": 33, "value-bridge": 12,
+    }.get(name, count), strong, weaker)
     for name, script, count, strong, weaker in runner.CHECKS
 )
 PRE_FALLBACK_STATE_CHECKS = tuple(
@@ -200,6 +202,17 @@ def evidence():
 
 
 class SemanticOrchestrationTests(unittest.TestCase):
+    def test_live_huffman_id_counts_match_the_executed_case_sets(self):
+        from check_arithmetic_codec_proofs import CASES as codec_cases
+        from check_value_bridge_proofs import CASES as value_cases
+
+        checks = runner.configured_checks()
+        counts = {row[0]: row[2] for row in checks}
+        self.assertEqual(counts["arithmetic-codec"], len(codec_cases))
+        self.assertEqual(counts["value-bridge"], len(value_cases))
+        self.assertEqual(sum(row[2] for row in checks), 383)
+        self.assertEqual(len(checks), 49)
+
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):
         # Actual same-run49-group costs at2991b46, run41334856554/attempt1.
@@ -332,7 +345,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             assigned = [row for role in (whole, collector, *shards) for row in role]
             self.assertEqual(len(assigned), 49)
             self.assertEqual(len({row[0] for row in assigned}), 49)
-            self.assertEqual(sum(row[2] for row in assigned), 374)
+            self.assertEqual(sum(row[2] for row in assigned), 383)
             self.assertEqual(set(assigned), set(runner.configured_checks()))
             rows = [
                 {"id": row[0], "status": "passed", "seconds": CAPACITY_GROUP_SECONDS[row[0]]}

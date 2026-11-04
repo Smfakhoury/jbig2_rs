@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "9758d1de7d9fee7ea3a4a9be15fe7641dfadcf56",
-  "scope": "Fresh exact-source whole verification/compilation with exact checked-ID error variants/payloads and codec transition composition. Empty extents are rejected before decoding with codec identity. Arithmetic and untabled fixed-width Huffman decoded IDs/errors and cursor/context effects are filtered against the supplied availability extent without substitution, error masking or state rewind on range rejection. Existing bounds remain for other paths; table-backed Huffman bit-to-ID extraction, caller extent derivation and full rendering remain separate. Native library execution and all existing trust boundaries are unchanged.",
+  "source_revision": "034a3bac7a48d3f68676c15131bd896028ae9678",
+  "scope": "Fresh exact-source whole verification/compilation with complete owned-table and literal Huffman symbol-ID result/error/cursor/metadata composition through concrete, enum and checked callers. The existing Huffman error policy is factored into closed pure results reused by FromSpecImpl and verified public From contracts; proved defining-module bridges retain private datatype opacity without a self-trait model dependency. Nonnegative i32 IDs are preserved; negative/OOB values reject distinctly. Reader bytes and all nonreader metadata remain unchanged; consumed prefix/range effects survive error/range rejection. Existing arithmetic, literal and empty-book identity guarantees remain. Correct actual caller extent/code-length/table choice, statistics reset/retention and complete refinement/rendered streams remain separate. Native execution and existing trusted boundaries are unchanged.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-checked-symbol-id-v02-20261103/target/checked-symbol-id/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-huffman-symbol-id-v02-20261103/target/huffman-symbol-id/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1297,
+    "verified_obligations": 1299,
     "verified_production_functions": 642,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "ef2cc84321f968fd21523c319e2df654403fd931b28025f9a68beea3ac85dd3f",
+  "production_proof_coverage_sha256": "f6f1c99178878ff9e9362f23392eb0b57014d24732a3211eb8627ce4e54bece9",
   "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1297 actual whole obligations, zero errors and a nonempty production library; stronger contracts are discharged by existing body obligations, not a count-growth or completeness proxy. Twelve value/error/state bridge contrasts include seven new checked-ID cases, with compiling strong rejection and accepted controls that retain prior success bounds and codec validity. All191mandatory native mutants actually compile and are detected. The complete corpus is374contrasts across49 groups, retaining14shards/16roles/fouractive/1050s guards. Four new native tests cover exact payloads, empty-book priority, arithmetic state and independent scalar literal-Huffman/cursor results. All147native-library source projections retain executing tokens/literals against9817f61. Three new project predicates bring registry198; all266selected records/257gap-bearing records remain provisional. Historical approvals and prior component evidence are retained, not renewed. No new trusted fact, source rights, field/extent derivation theorem or full-stream proof is inferred.",
+  "current_evidence_note": "1299 actual whole obligations, zero errors and a nonempty production library. Forty codec, fourteen value/checked, eight error-conversion and seven implementation-specific symbol-wrapper contrasts were executed locally on this immutable source: positive proof, native-compiling mutant, exact strong rejection and accepted weaker control. Table-only controls preserve arithmetic/literal/empty-book guarantees; literal controls preserve table-backed results/cursors and nonreader metadata. All200mandatory native mutants actually compile and are detected. The registered complete corpus is383contrasts across49groups, retaining14shards/16roles/fouractive/1050s guards; this local component evidence does not substitute for all hosted producers. Four independent native tests cover cached/fallback prefix/range values, literal zero/i32-max endpoints, signed/OOB/invalid-prefix/truncation errors, request-width independence, exact metadata and checked consumption/continuation. All147prior native-library token/literal projections are unchanged against82d04b5 after ghost/comment removal and transparent single-tail closure-block normalization; executable/literal/side-effect negative controls pass. The new test file has an empty non-test projection. Five project result models bring registry203;266selected/257gap-bearing records remain provisional. A real155-file MSRV extraction/consumer/no-upload Cargo rehearsal passes. All672tooling tests, strict Clippy, full native/integration/doctests and raw aggregate/per-file/changed-line coverage floors pass. Historical approvals and component evidence are retained, not renewed. No new trusted fact, field/extent derivation theorem or full-stream proof is inferred.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -101,6 +101,26 @@
         "incomplete_functions": 0
       },
       "production_proof_coverage_sha256": "afe211799eb6949752ce394afac3ece766790a1c96db82522bc8c557adcad9f4",
+      "scope_note": "Historical component evidence, not a new execution or approval."
+    },
+    {
+      "source_revision": "9758d1de7d9fee7ea3a4a9be15fe7641dfadcf56",
+      "scope": "Fresh exact-source whole verification/compilation with exact checked-ID error variants/payloads and codec transition composition. Empty extents are rejected before decoding with codec identity. Arithmetic and untabled fixed-width Huffman decoded IDs/errors and cursor/context effects are filtered against the supplied availability extent without substitution, error masking or state rewind on range rejection. Existing bounds remain for other paths; table-backed Huffman bit-to-ID extraction, caller extent derivation and full rendering remain separate. Native library execution and all existing trust boundaries are unchanged.",
+      "result": {
+        "verified_obligations": 1297,
+        "verified_production_functions": 642,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "ef2cc84321f968fd21523c319e2df654403fd931b28025f9a68beea3ac85dd3f",
       "scope_note": "Historical component evidence, not a new execution or approval."
     }
   ]
