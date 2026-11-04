@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "3a1bad2afb633340a37f6fead5c8f4f5fce755ef",
-  "scope": "Fresh exact-source whole verification/compilation with reached actual top-level text/dictionary setup count and enclosing-width derivation. Text count equals actual supplied contiguous/borrowed book length; dictionary total equals imported book length plus parsed new-symbol count. Both widths have the exact finite result, covering capacity and exclusion of every smaller width for that extent. Original caller preconditions and output/storage/consumption guarantees remain. A compact proof bridge and equivalent readonly refinement-alias inlining preserve the original function-size limit without exemptions. Complete upstream resource/book contents, every table/actual codec-kind choice, statistics lifecycle/reset/ retention, refinement/placement identity and full rendered streams remain separate. Setup witnesses are not complete returned-bitmap contracts or independent normative conformance.",
+  "source_revision": "757986d495f5039cc6fb9e83a64729c8b6e3434a",
+  "scope": "Fresh exact-source whole verification/compilation strengthens successful actual Huffman codec construction to preserve complete supplied field-table bindings and exact input bytes/zero cursor/requested strip width/absent ID table/requested valid refinement template/zero refinement work. Reached actual text/dictionary Huffman setup composes literal body, strip configuration and requested refinement flag/template without new caller preconditions. A ghost-only single-tail template closure result preserves native behavior. This is fresh metadata and reached setup, not complete upstream resource/codebook/table/codec-kind selection, retained-bank contents/lifecycle/reset/retention, refinement/placement identity, full rendered streams or independent normative conformance.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-segment-symbol-width-v02-20261104/target/segment-width/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-segment-codec-selection-v02-20261104/target/huffman-construction/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1302,
     "verified_production_functions": 642,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "a674de1027277e45dbadf4bda1aa075f23bad9958e56981e8985831c988627fd",
+  "production_proof_coverage_sha256": "b87acf6d15eb719c943d8440c5d6ea2a2c7b9c444fd319481bb65dda007f8e4e",
   "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1302actual whole obligations/zeroerrors/nonemptylibrary;642direct/20explicit limitations and unchanged trust boundaries. Twenty-two actual compiling cardinality/content/caller/segment contrasts include four new actual setup count/width mutations; selective controls remove only the reached setup witness while retaining original input/output/storage/consumption contracts. All212native mutants compile and are actually detected. Independent parsed segment tests use a doubling-capacity oracle and exact IAID memory-limit payloads over codebook views/imported-new splits. Retained-context error priority regressions restore the reviewed numerical coverage without lowering any floor. This is not a full memory/bitmap-output proof. The registered corpus is397contrasts/49groups, retaining14shards/16roles/max4/1050s; these local component results do not replace fresh hosted evidence. All148native file projections are equivalent after only ghost/comments and one exact immutable refinement-flag alias with one conditional read; field/literal negatives pass. A real155-file MSRV extraction/offline consumer/ no-upload rehearsal and strict/native/docs/numericalcoverage gates pass. Registry209;266selected/257gap-bearing records remain provisional. Original conformance executions/outcomes and historical confirmations are preserved, not renewed. No runtime/API fix, new trusted interface, complete collector/table/codec-choice theorem or full stream/raster proof is inferred.",
+  "current_evidence_note": "1302actual whole obligations/zeroerrors/nonemptylibrary;642direct/20explicit limitations and unchanged trust boundaries. Thirty-three actual compiling Huffman contrasts include eight new construction/setup cases: discarded input, skipped first bit, strip-width loss, field-binding loss, missing refinement, nonzero work, and actual text/dictionary missing refinement. Selective weaker controls retain the original reader boundary and all unrelated contracts. All220native mutants compile and are actually detected. Independent fresh constructor/scalar continuation checks span every u8 strip width, empty/nonempty bodies and both refinement templates; actual parsed text/dictionary setup checks exact refinement allocation error payloads before entropy-body work. Registered corpus405contrasts/49groups,389globalbindings, retaining14shards/16roles/max4/1050s. Added cases remain on existing Huffman lane9, with670.564s previously measured base cost; local component results do not replace fresh hosted acceptance. All148native file projections are equal after ghost/comments and only a transparent single-tail closure normalization; literal/executable/side-effect negative controls pass. A real155-file MSRV extraction/offline consumer/no-upload rehearsal and strict/native/docs/ numericalcoverage gates pass without lower floors. Registry211;266selected/257gap-bearing requirements remain provisional. Historical conformance executions/outcomes and confirmations retain original identities. No runtime/API fix requires a0.1backport; no new trusted interface, full upstream selection/lifecycle/raster theorem or renewed normative approval is inferred.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -181,6 +181,26 @@
         "incomplete_functions": 0
       },
       "production_proof_coverage_sha256": "15d55003641650772fa2eeb07a3228f742530c2f7f2e423dd33e1e9de25c8d1d",
+      "scope_note": "Historical component evidence; not a new execution or approval."
+    },
+    {
+      "source_revision": "3a1bad2afb633340a37f6fead5c8f4f5fce755ef",
+      "scope": "Fresh exact-source whole verification/compilation with reached actual top-level text/dictionary setup count and enclosing-width derivation. Text count equals actual supplied contiguous/borrowed book length; dictionary total equals imported book length plus parsed new-symbol count. Both widths have the exact finite result, covering capacity and exclusion of every smaller width for that extent. Original caller preconditions and output/storage/consumption guarantees remain. A compact proof bridge and equivalent readonly refinement-alias inlining preserve the original function-size limit without exemptions. Complete upstream resource/book contents, every table/actual codec-kind choice, statistics lifecycle/reset/ retention, refinement/placement identity and full rendered streams remain separate. Setup witnesses are not complete returned-bitmap contracts or independent normative conformance.",
+      "result": {
+        "verified_obligations": 1302,
+        "verified_production_functions": 642,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "a674de1027277e45dbadf4bda1aa075f23bad9958e56981e8985831c988627fd",
       "scope_note": "Historical component evidence; not a new execution or approval."
     }
   ]
