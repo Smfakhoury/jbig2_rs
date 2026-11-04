@@ -26,6 +26,7 @@ pub(crate) use symbol_ids::{
 };
 pub(super) use symbol_ids::{symbol_code_length_expected_bounds, symbol_code_length_least};
 pub(super) use symbol_ids::{checked_symbol_id_transition, symbol_id_request_matches};
+pub(super) use symbol_ids::segment_symbol_width_matches;
 
 verus! {
 

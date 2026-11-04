@@ -6523,7 +6523,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "b5d49186bdcfae55eade410897bd2e9e9d63cd19261e0f310d47daee513bdfbc",
+      "file_sha256": "edf276aaf02772cda1a66d7b0a50f4a038086ddb41422225f902abc04faaabaa",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::dictionary::decode_symbol_dictionary"
       ]
@@ -7106,7 +7106,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::new"
       ]
@@ -7117,7 +7117,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::begin_strip"
       ]
@@ -7128,7 +7128,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::place_first"
       ]
@@ -7139,7 +7139,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::place_subsequent"
       ]
@@ -7150,7 +7150,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::place_current"
       ]
@@ -7161,7 +7161,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::end_strip"
       ]
@@ -7172,7 +7172,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::TextRegionState::finish"
       ]
@@ -7183,7 +7183,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::text::log2_strip_size"
       ]
@@ -7194,7 +7194,7 @@
       "visibility": "pub(super)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::text::decode_text_region_body"
       ]
@@ -7205,7 +7205,7 @@
       "visibility": "pub(crate)",
       "status": "verified",
       "disposition_reason": null,
-      "file_sha256": "e11ce8467df053c81e2171a8431525f1a37cb5e050e0896144bea255cf7ba590",
+      "file_sha256": "504cffe2d53175ccc3c58414ccd0b6669107f63c6f016b7fe9a09c7425a8442a",
       "verus_functions": [
         "jbig2_rs_production::symbol_text::text::decode_text_region"
       ]

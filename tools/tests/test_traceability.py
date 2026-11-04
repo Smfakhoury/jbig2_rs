@@ -2286,6 +2286,21 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertIn("flag forwarding alone", row["gaps"][0].lower())
                 self.assertEqual(row["review"], "provisional")
 
+    def test_reached_segment_count_width_models_are_bound_without_full_stream_claim(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        for row in ledger["requirements"]:
+            if row["id"] not in {"T88-PROFILE-SYMBOL-ID-PRESERVATION", "T88-TEXT-SYMBOL-ID"}:
+                continue
+            with self.subTest(requirement=row["id"]):
+                self.assertIn("segment-symbol-width-matches", row["models"])
+                self.assertIn("segment-symbol-width-witness", row["proof_macros"])
+                self.assertIn("symbol_text::text::decode_text_region", row["runtime"])
+                self.assertIn("symbol_text::dictionary::decode_symbol_dictionary", row["runtime"])
+                self.assertIn("extent", row["gaps"][0])
+                self.assertIn("codec-kind", row["gaps"][0])
+                self.assertIn("rendered", row["gaps"][0])
+                self.assertEqual(row["review"], "provisional")
+
     def test_complete_header_results_are_linked_without_normative_approval(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
