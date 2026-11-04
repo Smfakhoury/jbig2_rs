@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use super::super::codec::decode_symbol_id_code_lengths;
+use super::super::codec::new_huffman_codec;
 use super::*;
 
 const SAMPLES: [&[u8]; 5] = [
@@ -233,4 +234,107 @@ fn zero_symbol_length_literal_excludes_the_symbol_from_the_codebook() {
         HuffmanValue::Integer(1)
     );
     assert_eq!(reader.bit_position, 2);
+}
+
+#[test]
+fn fresh_huffman_codec_preserves_input_strip_tables_and_requested_refinement() {
+    let limits = Limits::default();
+    let first = HuffmanTable::new(&[HuffmanLine::normal(17, 1, 0)], &limits).unwrap();
+    let second = HuffmanTable::new(&[HuffmanLine::normal(29, 1, 0)], &limits).unwrap();
+    for bytes in SAMPLES {
+        for log in 0..=u8::MAX {
+            for template in [
+                None,
+                Some(RefinementTemplate::Template0),
+                Some(RefinementTemplate::Template1),
+            ] {
+                let mut tables = codec(&[], 0, 0).tables;
+                tables.first_s = Some(MaterializedHuffmanTable::Custom(&first));
+                tables.height_delta = Some(MaterializedHuffmanTable::Custom(&second));
+                let mut fresh = new_huffman_codec(bytes, tables, log, template, &limits).unwrap();
+                assert_eq!(fresh.reader.bytes, bytes);
+                assert_eq!(fresh.reader.bit_position, 0);
+                assert_eq!(fresh.log_strip_size, log);
+                assert!(fresh.symbol_id_table.is_none());
+                assert_eq!(fresh.refinement_work, 0);
+                for (field, expected) in [
+                    (IntegerField::FirstS, &first),
+                    (IntegerField::HeightDelta, &second),
+                ] {
+                    assert!(core::ptr::eq(
+                        fresh.tables.table_for(field).unwrap(),
+                        expected
+                    ));
+                }
+                match (template, fresh.refinement.as_ref()) {
+                    (None, None) => {}
+                    (Some(expected), Some(actual)) => {
+                        assert_eq!(actual.template, expected);
+                        let count = match expected {
+                            RefinementTemplate::Template0 => 8192,
+                            RefinementTemplate::Template1 => 1024,
+                        };
+                        assert_eq!(actual.contexts.len(), count);
+                        assert!(actual
+                            .contexts
+                            .iter()
+                            .all(|context| { context.state_index == 0 && context.mps == 0 }));
+                    }
+                    _ => panic!("constructor changed requested refinement presence"),
+                }
+                let count = u8::try_from((bytes.len() * 8).min(8)).unwrap();
+                result_matches(fresh.read_raw_bits(count), &scalar(bytes, 0, count));
+            }
+        }
+    }
+}
+
+#[test]
+fn actual_huffman_segment_setup_preserves_requested_refinement_allocation() {
+    let requested = 8192 * u64::try_from(core::mem::size_of::<ArithmeticContext>()).unwrap();
+    let limits = Limits {
+        max_decoder_managed_memory_bytes: requested - 1,
+        ..Limits::default()
+    };
+    let mut text = vec![0_u8; 17];
+    text[3] = 1;
+    text[7] = 1;
+    text.extend_from_slice(&3_u16.to_be_bytes());
+    text.extend_from_slice(&0_u16.to_be_bytes());
+    text.extend_from_slice(&[0xff; 4]);
+    text.extend_from_slice(&0_u32.to_be_bytes());
+    text.push(0);
+    let mut dictionary = 3_u16.to_be_bytes().to_vec();
+    dictionary.extend_from_slice(&[0xff; 4]);
+    dictionary.extend_from_slice(&[0; 8]);
+    dictionary.push(0);
+    let text_result = decode_text_region(&TextRegionInput {
+        payload: &text,
+        symbols: SymbolCodebook::Contiguous(&[]),
+        custom_tables: &[],
+        limits: &limits,
+    });
+    let dictionary_result = decode_symbol_dictionary(&SymbolDictionaryInput {
+        payload: &dictionary,
+        imported_symbols: SymbolCodebook::Contiguous(&[]),
+        custom_tables: &[],
+        used_contexts: None,
+        limits: &limits,
+    });
+    for result in [
+        text_result.map(|output| output.consumed_bytes),
+        dictionary_result.map(|output| output.consumed_bytes),
+    ] {
+        assert!(
+            matches!(
+                result,
+                Err(SymbolTextError::Decode(DecodeError::LimitExceeded(LimitExceeded {
+                    kind: LimitKind::Memory,
+                    limit,
+                    actual,
+                }))) if limit == requested - 1 && actual == requested
+            ),
+            "{result:?}"
+        );
+    }
 }

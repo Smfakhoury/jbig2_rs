@@ -100,9 +100,20 @@ pub(in crate::symbol_text) fn decode_symbol_dictionary_huffman(
     let bindings = associate_dictionary_tables(&config, &custom_wrapped)?;
     let choices = select_dictionary_tables(&config, &bindings)?;
     let tables = materialize_huffman_tables!(HuffmanChoiceSet::Dictionary(choices), limits)?;
-    let refinement_template = config
-        .refinement_aggregation
-        .then(|| refinement_template_from_u8(config.refinement_template));
+    let refinement_template = config.refinement_aggregation.then(|| {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: crate::generic_region::RefinementTemplate| {
+            equal(
+                out,
+                if config.refinement_template == 0 {
+                    crate::generic_region::RefinementTemplate::Template0
+                } else {
+                    crate::generic_region::RefinementTemplate::Template1
+                },
+            )
+        });
+        refinement_template_from_u8(config.refinement_template)
+    });
     let mut codec = SymbolCodec::Huffman(new_huffman_codec(
         body,
         tables,
@@ -110,6 +121,14 @@ pub(in crate::symbol_text) fn decode_symbol_dictionary_huffman(
         refinement_template,
         limits,
     )?);
+    #[cfg(verus_keep_ghost)]
+    production_huffman_segment_setup!(
+        codec,
+        body,
+        0,
+        config.refinement_aggregation,
+        config.refinement_template
+    );
     let mut resources = ResourceTracker {
         work_units: 0,
         decoded_bitmap_bytes: 0,

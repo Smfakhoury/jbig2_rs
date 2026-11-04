@@ -210,6 +210,69 @@ def builder_case(identity, site, replacement):
         "native_test": "huffman::tests::cache_map::compact_cache_indices_match_wide_sentinel_math_at_every_boundary",
     }
 
+CODEC_INITIAL = """&& symbol_text_spec::huffman_codec_initial(
+    &codec, bytes@, log_strip_size, refinement_template,
+)"""
+CODEC_TEST = (
+    "symbol_text::tests::huffman_fields::"
+    "fresh_huffman_codec_preserves_input_strip_tables_and_requested_refinement"
+)
+SEGMENT_SETUP_TEST = (
+    "symbol_text::tests::huffman_fields::"
+    "actual_huffman_segment_setup_preserves_requested_refinement_allocation"
+)
+
+
+def codec_constructor_case(identity, site, replacement, *, tables=False):
+    row = runtime_function(ROOT, "symbol_text", "new_huffman_codec")
+    return {
+        "id": identity, "file": row["file"], "module": "symbol_text",
+        "function": "new_huffman_codec",
+        "site": row["body_text"],
+        "replacement": replace_once(row["body_text"], site, replacement),
+        "controls": (("&& codec.tables == tables" if tables else CODEC_INITIAL, ""),),
+        "native_test": CODEC_TEST,
+    }
+
+
+def segment_setup_case(dictionary):
+    function = (
+        "decode_symbol_dictionary_huffman" if dictionary else "decode_text_region"
+    )
+    module = "symbol_text::dictionary" if dictionary else "symbol_text"
+    row = runtime_function(ROOT, module, function)
+    if dictionary:
+        site = "let refinement_template = config.refinement_aggregation.then(|| {"
+        replacement = "let refinement_template = false.then(|| {"
+        arguments = "codec, body, 0, config.refinement_aggregation, config.refinement_template"
+    else:
+        site = """let mut codec = SymbolCodec::Huffman(new_huffman_codec(
+            body,
+            tables,
+            log_strip_size,
+            if config.refinement {
+                Some(refinement_template)
+            } else {
+                None
+            },
+            limits,
+        )?);"""
+        replacement = """let mut codec = SymbolCodec::Huffman(new_huffman_codec(
+            body, tables, log_strip_size, None, limits,
+        )?);"""
+        arguments = "codec, body, log_strip_size, config.refinement, config.refinement_template"
+    witness = f"""#[cfg(verus_keep_ghost)]
+        production_huffman_segment_setup!(
+            {arguments}
+        );"""
+    return {
+        "id": ("dictionary" if dictionary else "text") + "_huffman_setup_drops_refinement",
+        "file": row["file"], "module": module, "function": function,
+        "site": row["body_text"],
+        "replacement": replace_once(row["body_text"], site, replacement),
+        "controls": ((witness, ""),), "native_test": SEGMENT_SETUP_TEST,
+    }
+
 
 CASES = (
     {
@@ -369,6 +432,40 @@ CASES = (
         "controls": ((SOURCE_ATTRIBUTE, SOURCE_WEAKER),),
         "native_test": "huffman::tests::cache_map::raw_symbol_id_and_standard_constructors_keep_their_production_cache_map",
     },
+    codec_constructor_case(
+        "codec_constructor_discards_input",
+        "reader: bit_reader(bytes),", "reader: bit_reader(&[]),",
+    ),
+    codec_constructor_case(
+        "codec_constructor_skips_first_bit",
+        "reader: bit_reader(bytes),",
+        """reader: BitReader {
+            bytes, bit_position: if bytes.is_empty() { 0 } else { 1 },
+        },""",
+    ),
+    codec_constructor_case(
+        "codec_constructor_discards_strip_width",
+        "log_strip_size,", "log_strip_size: 0,",
+    ),
+    codec_constructor_case(
+        "codec_constructor_drops_field_binding",
+        "tables,", "tables: HuffmanFieldTables { first_s: None, ..tables },",
+        tables=True,
+    ),
+    codec_constructor_case(
+        "codec_constructor_drops_refinement",
+        """refinement: match refinement_template {
+            Some(template) => Some(RefinementContexts::new(template, limits)?),
+            None => None,
+        },""",
+        "refinement: None,",
+    ),
+    codec_constructor_case(
+        "codec_constructor_starts_with_nonzero_work",
+        "refinement_work: 0,", "refinement_work: 1,",
+    ),
+    segment_setup_case(False),
+    segment_setup_case(True),
 )
 
 
@@ -382,9 +479,12 @@ def main():
             ROOT, arguments.verus_executable.resolve(), CASES,
             ("src/huffman.rs", "specs/huffman.rs", "specs/huffman_lookup.rs", "proofs/model_support/huffman.rs",
              "proofs/shared/huffman.rs", "proofs/spec_properties/huffman.rs",
-             "proofs/production_impl/huffman.rs"),
+             "proofs/production_impl/huffman.rs", "src/symbol_text/codec/huffman.rs",
+             "src/symbol_text/text.rs", "src/symbol_text/dictionary/huffman.rs",
+             "specs/symbol_text.rs", "specs/symbol_text/huffman_codec.rs",
+             "proofs/production_impl/symbol_text.rs"),
             "jbig2-huffman-assignment-",
-            "Raw assignment, complete operational decoding and exact eight-bit production-cache mapping/constructor retention. Weaker controls retain prior reader/success/frame/assignment boundaries and remove newly coupled cache predicates when required. Production metadata correspondence is not independent source-table/parameter or full-JBIG2 normative approval.",
+            "Raw assignment, complete operational decoding, exact production-cache retention and fresh Huffman codec input/cursor/bindings/strip/refinement metadata. Reached actual text/dictionary Huffman setup composes the requested refinement configuration. Controls retain prior reader/success/frame/assignment boundaries. This does not prove complete upstream table/codec selection, retained-bank lifecycle, raster semantics or normative approval.",
         )
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
         print(f"Huffman assignment proof sensitivity failed: {error}", file=sys.stderr)

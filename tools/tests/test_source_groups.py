@@ -14,6 +14,27 @@ from source_group import SourceGroup, bound_source_groups, relocate_cases, reloc
 
 
 class SourceGroupTests(unittest.TestCase):
+    def test_huffman_construction_controls_preserve_original_reader_boundary(self):
+        from check_huffman_assignment_proofs import CASES
+        from check_contract_mutations import MUTATIONS
+
+        group = SourceGroup(TOOLS.parent, "src/symbol_text.rs")
+        cases = CASES[-8:]
+        self.assertEqual(len(cases), 8)
+        for case in cases:
+            with self.subTest(case=case["id"]):
+                mutant = replace_once(group.text, case["site"], case["replacement"])
+                weaker = weakened_contract(mutant, case)
+                self.assertNotEqual(mutant, weaker)
+                self.assertIn("reader_valid(&codec.reader)", weaker)
+                self.assertEqual(
+                    sum(row["id"] == "huffman-assignment-" + case["id"] for row in MUTATIONS), 1,
+                )
+                self.assertIn("native_test", case)
+                if case["function"] != "new_huffman_codec":
+                    self.assertIn("symbol_text_spec::huffman_codec_initial(", weaker)
+                    self.assertEqual(weaker.count("production_huffman_segment_setup!("), 1)
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)

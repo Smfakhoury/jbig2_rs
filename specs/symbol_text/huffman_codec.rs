@@ -5,6 +5,32 @@ use super::*;
 
 verus! {
 
+// Model navigation: spec::huffman_codec_initial [project-result-model]
+// Purpose: Fresh Huffman cursor, literal input/strip setup and requested refinement metadata.
+// Audit: symbol-huffman-codec-initial
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub(in crate::symbol_text) open spec fn huffman_codec_initial(
+    codec: &crate::symbol_text::HuffmanCodec,
+    bytes: Seq<u8>,
+    log_strip_size: u8,
+    refinement_template: Option<crate::generic_region::RefinementTemplate>,
+) -> bool {
+    &&& codec.reader.bytes@ == bytes
+    &&& codec.reader.bit_position == 0
+    &&& codec.log_strip_size == log_strip_size
+    &&& codec.symbol_id_table.is_none()
+    &&& codec.refinement_work == 0
+    &&& match refinement_template {
+        Some(template) => match &codec.refinement {
+            Some(contexts) => contexts.template == template
+                && crate::generic_region::generic_region_spec::refinement_contexts_valid(contexts),
+            None => false,
+        },
+        None => codec.refinement.is_none(),
+    }
+}
+
 // Model navigation: spec::huffman_error_result [project-result-model]
 // Purpose: Reuse the existing symbol/text wrapper around the exact Huffman conversion.
 // Audit: symbol-huffman-error-result

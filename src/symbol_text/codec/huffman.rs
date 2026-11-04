@@ -62,7 +62,11 @@ pub(in crate::symbol_text) fn byte_align(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(codec) => crate::huffman::huffman_spec::reader_valid(&codec.reader),
+        Ok(codec) => crate::huffman::huffman_spec::reader_valid(&codec.reader)
+            && codec.tables == tables
+            && symbol_text_spec::huffman_codec_initial(
+                &codec, bytes@, log_strip_size, refinement_template,
+            ),
         Err(_) => true,
     },
 ))]

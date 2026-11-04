@@ -2301,6 +2301,24 @@ class TraceabilityTests(unittest.TestCase):
                 self.assertIn("rendered", row["gaps"][0])
                 self.assertEqual(row["review"], "provisional")
 
+    def test_fresh_huffman_setup_is_bound_without_claiming_upstream_selection(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        for row in ledger["requirements"]:
+            if row["id"] not in {"T88-PROFILE-SYMBOL-ID-PRESERVATION", "T88-TEXT-SYMBOL-ID"}:
+                continue
+            with self.subTest(requirement=row["id"]):
+                self.assertIn("symbol-huffman-codec-initial", row["models"])
+                self.assertIn("huffman-segment-setup-witness", row["proof_macros"])
+                self.assertIn("symbol_text::codec::huffman::new_huffman_codec", row["runtime"])
+                self.assertIn(
+                    "symbol_text::dictionary::huffman::decode_symbol_dictionary_huffman",
+                    row["runtime"],
+                )
+                self.assertIn("field-table bindings", row["scope_of_formal_result"])
+                self.assertIn("table/codec-kind selection", row["gaps"][0])
+                self.assertIn("lifecycle", row["gaps"][0])
+                self.assertEqual(row["review"], "provisional")
+
     def test_complete_header_results_are_linked_without_normative_approval(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
         rows = {row["id"]: row for row in ledger["requirements"]}
