@@ -7,6 +7,29 @@ use vstd::prelude::*;
 
 verus! {
 
+// Model navigation: spec::huffman_error_result [project-result-model]
+// Purpose: Reuse the exact existing wrapped-error or invalid-table conversion policy.
+// Audit: huffman-error-result
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub closed spec fn huffman_error_result(error: &super::HuffmanError) -> crate::DecodeError {
+    match *error {
+        super::HuffmanError::Decode(error) => error,
+        super::HuffmanError::InvalidTable(kind) =>
+            crate::DecodeError::Malformed(crate::MalformedError::InvalidHuffman(kind)),
+    }
+}
+
+pub(crate) proof fn huffman_error_result_definition(error: &super::HuffmanError)
+    ensures huffman_error_result(error) == match *error {
+        super::HuffmanError::Decode(error) => error,
+        super::HuffmanError::InvalidTable(kind) =>
+            crate::DecodeError::Malformed(crate::MalformedError::InvalidHuffman(kind)),
+    },
+{
+    reveal(huffman_error_result);
+}
+
 // Model navigation: spec::pow2 [proof-support]
 // Purpose: Borrowed-source projections, powers, bucket indices and assignment accumulators.
 // Mapping: no registered requirement/locator mapping.

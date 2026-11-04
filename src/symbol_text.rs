@@ -96,6 +96,12 @@ impl From<LimitExceeded> for SymbolTextError {
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<HuffmanError> for SymbolTextError {
     fn from(error: HuffmanError) -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| equal(out, symbol_text_spec::huffman_error_result(&error)));
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            symbol_text_spec::huffman_error_result_definition(&error);
+        }
         Self::Decode(error.into())
     }
 }
@@ -178,7 +184,7 @@ impl FromSpecImpl<HuffmanError> for SymbolTextError {
     open spec fn obeys_from_spec() -> bool { true }
 
     closed spec fn from_spec(error: HuffmanError) -> SymbolTextError {
-        SymbolTextError::Decode(<DecodeError as FromSpec<HuffmanError>>::from_spec(error))
+        symbol_text_spec::huffman_error_result(&error)
     }
 }
 

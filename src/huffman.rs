@@ -81,6 +81,12 @@ impl From<LimitExceeded> for HuffmanError {
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 impl From<HuffmanError> for DecodeError {
     fn from(error: HuffmanError) -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| equal(out, huffman_spec::huffman_error_result(&error)));
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            huffman_spec::huffman_error_result_definition(&error);
+        }
         match error {
             HuffmanError::Decode(error) => error,
             HuffmanError::InvalidTable(kind) => {
@@ -124,11 +130,7 @@ impl FromSpecImpl<HuffmanError> for DecodeError {
     }
 
     closed spec fn from_spec(error: HuffmanError) -> DecodeError {
-        match error {
-            HuffmanError::Decode(error) => error,
-            HuffmanError::InvalidTable(kind) =>
-                DecodeError::Malformed(MalformedError::InvalidHuffman(kind)),
-        }
+        huffman_spec::huffman_error_result(&error)
     }
 }
 

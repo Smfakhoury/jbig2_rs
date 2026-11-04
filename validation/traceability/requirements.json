@@ -23,8 +23,8 @@
   },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "84a5e6470521c7112dff5f0c35ae6151800f478231541e5cccaa9740f8336607",
-    "project_source_sha256": "1df9ef37f23f260798cd9bbcc2e2667948f8bd064d7bbf47ef17188778225a82",
+    "registry_sha256": "cc0b3bb603602bf9e151e62835c5a2897490a604d9b48a6db57c16d5bbddd666",
+    "project_source_sha256": "2362f90971bc3e68795e9025a8ab77f4563268383fc7f49438f9b15f02225676",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -880,7 +880,7 @@
           "spec::wide_value"
         ],
         "classification": "proof-support",
-        "justification": "Bodies project Borrowed input/OOB membership, give limb-value/power vocabulary, select stable original indices by length, recursively derive prefix codes, and track scanned histogram/assignment prefixes. src/huffman.rs constructor loops and model_support/huffman.rs step/completion lemmas use them to prove the final assignment relation, not replace it.",
+        "justification": "Bodies project Borrowed input/OOB membership, give limb-value/power vocabulary, select stable original indices by length, recursively derive prefix codes, and track scanned histogram/assignment prefixes. src/huffman.rs constructor loops and model_support/huffman.rs step/completion lemmas use them to prove the final assignment relation, not replace it. The error-result definition bridge exposes the unchanged private policy to the public executing From guarantee without a new trusted interface.",
         "ambiguity": "",
         "caveats": "Some vocabulary is reused in observable result clauses; proof-support denotes its primary compositional role, not weaker proof or independent table approval."
       },
@@ -1131,7 +1131,7 @@
           "spec::checked_symbol_id_transition"
         ],
         "classification": "project-result-model",
-        "justification": "Defines the existing minimal symbol-code-length result plus exact accepted ID/error payload filtering, error forwarding and checked arithmetic/literal-Huffman cursor effects. Empty-book preflight returns its project count error with the codec unchanged. Table-backed Huffman and normative whole-caller interpretation remain separate.",
+        "justification": "Defines the minimal symbol-code-length result and exact accepted ID/error filtering. Empty-book preflight preserves the entire codec. The checked caller composes arithmetic and complete table/literal Huffman value/error and state transitions with supplied availability; no substitution, masked entropy error or rewind. Normative codebook/table choice and full caller/stream interpretation remain separate.",
         "ambiguity": "",
         "caveats": "Table-choice enums and field-slot selection do not prove normative table data, caller field selection or full entropy streams; default template branches are only the stated project mapping."
       },
@@ -1184,6 +1184,29 @@
         "justification": "Defines exact zero integer-bank values and the actual enum arithmetic branch's concrete integer/IAID result, cursor and bank frames. Other enum branches are intentionally unconstrained here and retain their existing separate contracts.",
         "ambiguity": "",
         "caveats": "Not independent Annex A/E field selection, complete entropy streams or global retention/reset timing."
+      },
+      {
+        "file": "specs/symbol_text/huffman_codec.rs",
+        "members": [
+          "spec::huffman_error_result",
+          "spec::huffman_symbol_id_result",
+          "spec::huffman_symbol_id_state",
+          "spec::huffman_symbol_id_transition"
+        ],
+        "classification": "project-result-model",
+        "justification": "Composes the existing primitive Huffman decode_state with nonnegative i32 ID preservation, exact negative/OOB rejection and the existing error policy factored into pure closed results reused by FromSpecImpl and exact executing From contracts. Proved definition bridges preserve private datatype opacity without a self-trait model dependency. Includes literal fallback and exact reader/metadata frames through the actual enum branch. No new table precondition or trusted fact.",
+        "ambiguity": "",
+        "caveats": "Not independently reviewed Annex B translation, caller table/extent selection or full refinement/rendered streams."
+      },
+      {
+        "file": "specs/huffman.rs",
+        "members": [
+          "spec::huffman_error_result"
+        ],
+        "classification": "project-result-model",
+        "ambiguity": "",
+        "justification": "The existing wrapped DecodeError or InvalidHuffman(kind) policy is factored into a closed pure result reused by FromSpecImpl and the exact executing From contract; a defining-module proof exposes its unchanged equation.",
+        "caveats": "Typed project diagnostics, not an independent normative table/error classification."
       }
     ]
   },
@@ -1848,13 +1871,13 @@
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
     "specs/generic_region.rs": "61f8a7afbfc236f462c592a0b3be830ad286f2838c01cde9cc24f275b82bd115",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
-    "specs/huffman.rs": "a0957c92dcde7dc0bf8b7ad092d9053068b0e70bb62c73043db72188de34f45c",
+    "specs/huffman.rs": "2d58cd9b77ebfaad2b432f0a2366b409582a4701b9dea067d69881545d446b3e",
     "specs/huffman_lookup.rs": "bd6fe3ee36de79103836d6fc9fc411b03ca0b304ce4915d0f730c2301b483766",
     "specs/mmr.rs": "6333d8553b47d1bd6bcc996c0d0f3d0216d3f4d3eeff9c07e34a4dfeea5bb49c",
     "specs/mod.rs": "34f81994f8b77e618a7d48d4552175d09cf3be633307166227c13ce94a06ba21",
     "specs/readers.rs": "ee10b54a7ee8dce323488bf8ef5229fbbf1d5811888a3364cda8f2cc187ba251",
     "specs/segments.rs": "a4a19a65babe5a29532273f3374434762cf0fd63d3336b0f49e4914e3e390bc0",
-    "specs/symbol_text.rs": "8ebb4d644e3c76be425f1664eecd38c97b649c7efafd7e16f7cf7c0eca6cae20",
+    "specs/symbol_text.rs": "1f89d9d0dcc3db45cb2b9ff5f3e3904d9398e6df90c8d6296fdeb78fdab9a15f",
     "src/arithmetic.rs": "3322814a9a7feedbd1d53c2b9aa6b5d9c1559b691a819cfbf5dcb2eb62d98d33",
     "src/arithmetic/decoding.rs": "537afa619108dc6ce7773688683d85eb5b4251dbb75a939c92223746b7a90fd5",
     "src/arithmetic/integers.rs": "53a11c2a47bed9cbfd683503319f7bd861a0df4cd4566a8a43dcb5b0cbcb0d0e",
@@ -1901,7 +1924,7 @@
     "src/halftone/tests/codec_state.rs": "51027604dd118a9109fb60505b855c467332d536dbf5e3d3088e2a365afd6d99",
     "src/halftone/tests/geometry_and_render.rs": "c2ded87b15b0342969b81b7e98f6a617098302ab6e56f28d6cabba8aafc850cd",
     "src/halftone/tests/headers_and_patterns.rs": "ef5f90a9b1eaf32619dc22c6f49b5d6d6ccbf32f9bdacfc6507f29c15efa9f70",
-    "src/huffman.rs": "02d1652b9272623c2035b9c2fa3c9a7322846619f50ab4b4d29ba61dfdc57088",
+    "src/huffman.rs": "a4bde5b0db72e4bdbecadbd9d78211f5a8057c800abc7e37e93904b5b7e69dd0",
     "src/huffman/construction.rs": "5f92c66f9723f43d068a97ff40cd240a6717a55f3e164d484f8835ed09c6fc41",
     "src/huffman/decoding.rs": "d270f70dc14a05881bd3b30ee62bb00bd91a5d578f413054221d3a41c84e4229",
     "src/huffman/tests/cache_map.rs": "fe783f19e825db4ed6383318912179f9a58a9026df14480d4ab350b83438239e",
@@ -1928,12 +1951,12 @@
     "src/segment_data/tests.rs": "7b082bcee501bd86382474823db6af59afb56842b7d053c3de8b77d2e5edfc15",
     "src/segment_header.rs": "8e69bfe6071c90755cd91d35b295d326c897ab58ba00a1f19537630a8c0e2745",
     "src/segment_header/tests.rs": "06a6e803fa33e41df721b64bd4e94c744bf57f8001fcbbf4e4dfc73334b949b8",
-    "src/symbol_text.rs": "8944bebff90d271fbc69338833cd5f9c24ecb0bd40b75fee5bd7bc4d391b227e",
+    "src/symbol_text.rs": "ebe0fc8d8a9a5f5b68b50c7f0b9d808a48be510f70f06cc2f3e35b82401e31d6",
     "src/symbol_text/bitmap.rs": "d872783ab5e9768ba4064ca309700f089e31b3ca799425edc6a5d7471efc40b2",
     "src/symbol_text/codebook.rs": "3ad3dd4131dbb7343a3267f32718d4c5278f029c1b90937f45d06363b8defbcc",
-    "src/symbol_text/codec.rs": "414f2b196dd660b141ac9bebd9b32f92b5fb2c6789cd9142acd59986b246b535",
+    "src/symbol_text/codec.rs": "433dd49f3cb5f88b50038993b8bbc276346900966ea41c721c02555e6d44b5a7",
     "src/symbol_text/codec/arithmetic.rs": "448f9b67ecf868936070a11d1a2d794c4e1e0c85a3a699e194d90882f9c54f89",
-    "src/symbol_text/codec/huffman.rs": "c33e681a57cc60297ea721229e91e497df2138ce3824d94b074dc74665d735cd",
+    "src/symbol_text/codec/huffman.rs": "6b2943e9fc4ee36909a8859fd0a1a8e5d6c88376b2301c3f18d7457536a0dda5",
     "src/symbol_text/codec/refinement.rs": "71d5bb90d828932191eba96f52982c1f7adc24433cb5e4d21dc721b3f6997d83",
     "src/symbol_text/codec/symbols.rs": "cfed710354f9e627870d81829c666c917ce8ade4b844a612df1411110fcae376",
     "src/symbol_text/dictionary/arithmetic.rs": "5d82d904114766a9e486a1b40b7fbd1e9cfac43ab705b0ae87ce2ef8e70ad86a",
@@ -1954,7 +1977,9 @@
     "tests/traceability_semantics.rs": "e7189d9cb70fa9b021b221f02942d90e64e9f96f9d38040edf4fa8599dfaa5f9",
     "specs/symbol_text/arithmetic_codec.rs": "d28755e3fe46f5aeb9772fdee3aa674fa510a0d91761a459c40bd3f673f96a4c",
     "src/symbol_text/tests/arithmetic_composition.rs": "8749f6561c7b3030deafa47358bd499514821726851cb296d4f00b2ff2110120",
-    "specs/symbol_text/symbol_ids.rs": "2ff1c6cd493da74049bc098d630aa32b089d47aefb98a1b1f99c11e70724b7bb"
+    "specs/symbol_text/symbol_ids.rs": "eeeace5947bd2bbcf6425096ef12d6b7b11a757ba14d76d1707d84abb2ae27bf",
+    "specs/symbol_text/huffman_codec.rs": "c015fd63a11a24d844f19613f0afe577df7b6d17cc07faaabb709888c6f47da1",
+    "src/symbol_text/tests/huffman_symbol_ids.rs": "89dce150f0deb0e9eb16bb38cda5238c6546589d8022829680c412ff4f3becd0"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -3903,7 +3928,7 @@
         "symbol_ids"
       ],
       "name": "checked_symbol_id_result",
-      "role": "Exact project ID-preserving range rejection or arithmetic/literal-Huffman checked result/state transition; not table-backed Huffman extraction or full rendered streams."
+      "role": "Exact project ID-preserving range rejection or checked arithmetic/table/literal Huffman result/state composition; not extent derivation or full rendered streams."
     },
     "symbol-checked-id-decode-result": {
       "kind": "spec",
@@ -3914,7 +3939,7 @@
         "symbol_ids"
       ],
       "name": "checked_symbol_decode_result",
-      "role": "Exact project ID-preserving range rejection or arithmetic/literal-Huffman checked result/state transition; not table-backed Huffman extraction or full rendered streams."
+      "role": "Exact project ID-preserving range rejection or checked arithmetic/table/literal Huffman result/state composition; not extent derivation or full rendered streams."
     },
     "symbol-checked-id-transition": {
       "kind": "spec",
@@ -3925,7 +3950,61 @@
         "symbol_ids"
       ],
       "name": "checked_symbol_id_transition",
-      "role": "Exact project ID-preserving range rejection or arithmetic/literal-Huffman checked result/state transition; not table-backed Huffman extraction or full rendered streams."
+      "role": "Exact project ID-preserving range rejection or checked arithmetic/table/literal Huffman result/state composition; not extent derivation or full rendered streams."
+    },
+    "symbol-huffman-id-result": {
+      "kind": "spec",
+      "file": "specs/symbol_text/huffman_codec.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "huffman_codec"
+      ],
+      "name": "huffman_symbol_id_result",
+      "role": "Exact project table/literal Huffman ID result, verified conversion, reader effects or enum metadata frame; not normative table choice or complete rendered streams."
+    },
+    "symbol-huffman-id-state": {
+      "kind": "spec",
+      "file": "specs/symbol_text/huffman_codec.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "huffman_codec"
+      ],
+      "name": "huffman_symbol_id_state",
+      "role": "Exact project table/literal Huffman ID result, verified conversion, reader effects or enum metadata frame; not normative table choice or complete rendered streams."
+    },
+    "symbol-huffman-id-transition": {
+      "kind": "spec",
+      "file": "specs/symbol_text/huffman_codec.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "huffman_codec"
+      ],
+      "name": "huffman_symbol_id_transition",
+      "role": "Exact project table/literal Huffman ID result, verified conversion, reader effects or enum metadata frame; not normative table choice or complete rendered streams."
+    },
+    "huffman-error-result": {
+      "kind": "spec",
+      "file": "specs/huffman.rs",
+      "module_path": [
+        "huffman",
+        "huffman_spec"
+      ],
+      "name": "huffman_error_result",
+      "role": "Existing exact Huffman error policy factored into closed result functions reused by FromSpecImpl and executing From contracts, with proved defining-module bridges; no new trust or runtime behavior."
+    },
+    "symbol-huffman-error-result": {
+      "kind": "spec",
+      "file": "specs/symbol_text/huffman_codec.rs",
+      "module_path": [
+        "symbol_text",
+        "symbol_text_spec",
+        "huffman_codec"
+      ],
+      "name": "huffman_error_result",
+      "role": "Existing exact Huffman error policy factored into closed result functions reused by FromSpecImpl and executing From contracts, with proved defining-module bridges; no new trust or runtime behavior."
     }
   },
   "requirements": [
@@ -5809,7 +5888,9 @@
         "symbol_text::codec::symbols::checked_symbol_id",
         "symbol_text::codebook::SymbolCodebook::get",
         "symbol_text::codebook::symbol_by_id",
-        "symbol_text::codec::symbols::decode_checked_symbol_id"
+        "symbol_text::codec::symbols::decode_checked_symbol_id",
+        "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
+        "symbol_text::codec::SymbolCodec::decode_symbol_id"
       ],
       "models": [
         "symbol-bitmap-contents-match",
@@ -5817,7 +5898,12 @@
         "symbol-id-selects",
         "symbol-checked-id-result",
         "symbol-checked-id-decode-result",
-        "symbol-checked-id-transition"
+        "symbol-checked-id-transition",
+        "symbol-huffman-id-result",
+        "symbol-huffman-id-state",
+        "symbol-huffman-id-transition",
+        "huffman-error-result",
+        "symbol-huffman-error-result"
       ],
       "proof_macros": [],
       "tests": [
@@ -5840,16 +5926,32 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::arithmetic_composition::checked_literal_ids_preserve_scalar_bits_errors_and_consumed_positions"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::table_ids_preserve_scalar_prefix_range_errors_cursor_and_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::table_ids_enum_uses_table_not_literal_width_and_preserves_frames"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::checked_table_ids_preserve_values_rejections_errors_and_consumption"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::table_id_range_endpoints_zero_and_i32_max_are_exact"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Retains exact ID-preserving helper and existing codebook lookup guarantees. New checked helper exposes exact out-of-range variant/payload. The actual decode_checked_symbol_id caller rejects an empty extent before any entropy decoding with full codec identity. Arithmetic and untabled fixed-width Huffman IDs compose decoded value/error and cursor/context effects with the supplied availability filter; an unused decoded ID is rejected without substituting another ID or rewinding consumed state. Table-backed Huffman extraction, actual codebook extent choice and full refinement/placement rendering remain separate.",
+      "scope_of_formal_result": "Retains exact helper/error filtering, codebook lookup and arithmetic/literal composition. Owned-table Huffman decoding now composes the primitive exact cached/fallback result/cursor with exact nonnegative i32 ID preservation, negative/OOB rejection and verified error conversion. All nonreader codec metadata and reader bytes remain unchanged through concrete/enum dispatch. Checked availability preserves accepted IDs and exact range errors without rewinding consumed input, including table-backed paths. Empty extents still reject before any decoding with full codec identity.",
       "assumptions": [
         "The no-lossy-substitution rule is the project prohibition; informative 0.2 is context, not an invented independent normative clause. The linked test exercises exact invalid-ID rejection only."
       ],
       "gaps": [
-        "Complete table-backed Huffman bit-to-ID selection, correct codebook extent/code-length propagation at every caller, refinement/placement choice and final rendered pixels through complete streams; this project checked transition is not independent full normative conformance."
+        "Correct codebook extent/code-length/table choice propagation at every actual caller, statistics reset/retention, refinement/placement selection and final rendered pixels through complete streams; the exact project transition is not independent full normative conformance."
       ],
       "functional_evidence": [
         {
@@ -5871,6 +5973,22 @@
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::checked_symbol_id_transition(old(codec), final(codec), request, out)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "out == symbol_text_spec::huffman_symbol_id_state(old(self), request).0",
+            "final(self).reader.bit_position == symbol_text_spec::huffman_symbol_id_state(old(self), request).1",
+            "final(self).symbol_id_table == old(self).symbol_id_table"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::huffman_symbol_id_transition(old(self), final(self), request, out)"
           ]
         }
       ],
@@ -7046,12 +7164,19 @@
       "feature": "text_regions",
       "runtime": [
         "symbol_text::codec::symbols::checked_symbol_id",
-        "symbol_text::codec::symbols::decode_checked_symbol_id"
+        "symbol_text::codec::symbols::decode_checked_symbol_id",
+        "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
+        "symbol_text::codec::SymbolCodec::decode_symbol_id"
       ],
       "models": [
         "symbol-checked-id-result",
         "symbol-checked-id-decode-result",
-        "symbol-checked-id-transition"
+        "symbol-checked-id-transition",
+        "symbol-huffman-id-result",
+        "symbol-huffman-id-state",
+        "symbol-huffman-id-transition",
+        "huffman-error-result",
+        "symbol-huffman-error-result"
       ],
       "proof_macros": [],
       "tests": [
@@ -7074,16 +7199,32 @@
         {
           "target": "lib",
           "name": "symbol_text::tests::arithmetic_composition::checked_literal_ids_preserve_scalar_bits_errors_and_consumed_positions"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::table_ids_preserve_scalar_prefix_range_errors_cursor_and_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::table_ids_enum_uses_table_not_literal_width_and_preserves_frames"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::checked_table_ids_preserve_values_rejections_errors_and_consumption"
+        },
+        {
+          "target": "lib",
+          "name": "symbol_text::tests::huffman_symbol_ids::table_id_range_endpoints_zero_and_i32_max_are_exact"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "Retains exact ID-preserving helper and existing codebook lookup guarantees. New checked helper exposes exact out-of-range variant/payload. The actual decode_checked_symbol_id caller rejects an empty extent before any entropy decoding with full codec identity. Arithmetic and untabled fixed-width Huffman IDs compose decoded value/error and cursor/context effects with the supplied availability filter; an unused decoded ID is rejected without substituting another ID or rewinding consumed state. Table-backed Huffman extraction, actual codebook extent choice and full refinement/placement rendering remain separate.",
+      "scope_of_formal_result": "Retains exact helper/error filtering, codebook lookup and arithmetic/literal composition. Owned-table Huffman decoding now composes the primitive exact cached/fallback result/cursor with exact nonnegative i32 ID preservation, negative/OOB rejection and verified error conversion. All nonreader codec metadata and reader bytes remain unchanged through concrete/enum dispatch. Checked availability preserves accepted IDs and exact range errors without rewinding consumed input, including table-backed paths. Empty extents still reject before any decoding with full codec identity.",
       "assumptions": [
         "The supplied extent must describe the actual codebook; the linked unit regression checks one exact invalid index, not all valid indices."
       ],
       "gaps": [
-        "Complete table-backed Huffman bit-to-ID selection, correct codebook extent/code-length propagation at every caller, refinement/placement choice and final rendered pixels through complete streams; this project checked transition is not independent full normative conformance."
+        "Correct codebook extent/code-length/table choice propagation at every actual caller, statistics reset/retention, refinement/placement selection and final rendered pixels through complete streams; the exact project transition is not independent full normative conformance."
       ],
       "functional_evidence": [
         {
@@ -7106,6 +7247,22 @@
           "section": "ensures",
           "tokens": [
             "symbol_text_spec::checked_symbol_id_transition(old(codec), final(codec), request, out)"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::huffman::HuffmanCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "out == symbol_text_spec::huffman_symbol_id_state(old(self), request).0",
+            "final(self).reader.bit_position == symbol_text_spec::huffman_symbol_id_state(old(self), request).1",
+            "final(self).symbol_id_table == old(self).symbol_id_table"
+          ]
+        },
+        {
+          "runtime": "symbol_text::codec::SymbolCodec::decode_symbol_id",
+          "section": "ensures",
+          "tokens": [
+            "symbol_text_spec::huffman_symbol_id_transition(old(self), final(self), request, out)"
           ]
         }
       ],

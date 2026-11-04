@@ -40,14 +40,46 @@ class ArithmeticCodecProofTests(unittest.TestCase):
                     self.assertIn("reader_valid(&final(self).reader)", weaker)
 
     def test_unique_sites_and_relation_specific_controls(self):
-        self.assertEqual(len(CASES), 33)
-        self.assertEqual(len({case["id"] for case in CASES}), 33)
+        self.assertEqual(len(CASES), 40)
+        self.assertEqual(len({case["id"] for case in CASES}), 40)
         for case in CASES:
             source = source_text(TOOLS.parent, case["file"])
             with self.subTest(case=case["id"]):
                 changed = replace_once(source, case["site"], case["replacement"])
                 self.assertNotEqual(changed, source)
                 self.assertNotEqual(weakened_contract(changed, case), changed)
+
+    def test_literal_id_controls_retain_table_result_cursor_and_all_metadata(self):
+        cases = [case for case in CASES
+                 if case.get("native_test", "").startswith("symbol_text::tests::huffman_fields::")
+                 and case["function"].endswith("decode_symbol_id")]
+        self.assertEqual(len(cases), 2)
+        for case in cases:
+            weaker = case["controls"][0][1]
+            with self.subTest(case=case["id"]):
+                self.assertIn("symbol_id_table.is_some()", weaker)
+                for field in ("tables", "log_strip_size", "symbol_id_table", "refinement", "refinement_work"):
+                    self.assertIn(f".{field} ==", weaker)
+                self.assertIn(
+                    "huffman_symbol_id_transition" if case["function"].startswith("SymbolCodec::")
+                    else "huffman_symbol_id_state",
+                    weaker,
+                )
+
+    def test_table_controls_preserve_literal_contract_and_untouched_guarantees(self):
+        cases = [case for case in CASES if case["id"].startswith("huffman_table_")]
+        self.assertEqual(len(cases), 7)
+        for case in cases:
+            strong, weaker = case["controls"][0]
+            with self.subTest(case=case["id"]):
+                self.assertIn("bit_read_error", weaker)
+                if case["function"].startswith("SymbolCodec::"):
+                    self.assertIn("arithmetic_symbol_id_transition", weaker)
+                else:
+                    self.assertIn("reader_valid(&old(self).reader)", weaker)
+                    self.assertIn("reader_valid(&final(self).reader)", weaker)
+                    self.assertIn("final(self).reader.bytes@ == old(self).reader.bytes@", weaker)
+                self.assertTrue(strong.startswith("#[cfg_attr"))
 
     def test_context_validation_controls_preserve_original_success_guarantee(self):
         for case in CASES:
