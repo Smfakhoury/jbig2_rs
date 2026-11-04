@@ -188,7 +188,11 @@ pub(in crate::symbol_text) fn decode_checked_symbol_id(
 /// The smallest `k` with `2^k >= symbol_count.max(1)` (T.88 "SBSYMCODELEN").
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(length) => length == symbol_text_spec::symbol_code_length_expected(symbol_count),
+        Ok(length) =>
+            length == symbol_text_spec::symbol_code_length_expected(symbol_count)
+                && symbol_text_spec::symbol_code_length_bounds(symbol_count, length)
+                && (forall|smaller: nat| smaller < length ==>
+                    #[trigger] symbol_text_spec::pow2(smaller) < symbol_count as nat),
         Err(_) => false,
     },
 ))]
@@ -261,6 +265,8 @@ pub(crate) fn symbol_id_code_length(symbol_count: u32) -> Result<u8, SymbolTextE
     } else {
         32
     };
+    #[cfg(verus_keep_ghost)]
+    production_symbol_code_length_bounds!(symbol_count);
     Ok(length)
 }
 

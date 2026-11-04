@@ -138,6 +138,24 @@ These are intermediate request witnesses, not complete returned-bitmap contracts
 Correct upstream segment-width derivation, codec-kind/table selection, statistics
 lifecycle/reset/retention and full refinement/rendered streams remain separate.
 
+### Algebraic symbol-ID widths on the 0.2 line
+
+The production width helper retains its exact finite-case result and now exposes
+the mathematical characterization: the result is at most 32, is zero exactly for
+counts zero or one, has capacity at least the supplied count, and every smaller
+width has insufficient capacity. The predecessor capacity is strictly below a
+nonzero-width count. Recursive power monotonicity and the finite projection's
+bounds are proved without new caller preconditions or trusted facts.
+
+Independent doubling-capacity oracles cover every width class, all power-of-two
+neighborhoods, zero and `u32::MAX`, plus 131,073 dense/stratified counts.
+Compiling controls distinguish insufficient capacity, unnecessary extra width,
+high-class truncation and spurious rejection while preserving unrelated
+algebraic consequences.
+
+This characterizes the helper's supplied count, not the correctness of every
+upstream enclosing codebook/extent, entropy-table/codec choice or rendered stream.
+
 ## Observed-capacity integration
 
 Allocation accounting checks actual post-reservation `Vec::capacity()` rather

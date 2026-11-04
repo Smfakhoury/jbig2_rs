@@ -5,6 +5,23 @@
 
 use vstd::prelude::*;
 
+// Model navigation: macro::production_symbol_code_length_bounds [proof-support]
+// Purpose: Prove the existing finite production projection has algebraic capacity and least-width bounds.
+// Audit: symbol-code-length-bounds-witness
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+macro_rules! production_symbol_code_length_bounds {
+    ($count:expr) => {
+        proof! {
+            crate::symbol_text::symbol_text_spec::symbol_code_length_expected_bounds($count);
+            crate::symbol_text::symbol_text_spec::symbol_code_length_least(
+                $count,
+                crate::symbol_text::symbol_text_spec::symbol_code_length_expected($count),
+            );
+        }
+    };
+}
+
 // Model navigation: macro::production_symbol_id_request [proof-support]
 // Purpose: Check actual text/dictionary request construction against the supplied codebook and segment parameters.
 // Audit: symbol-id-request-witness

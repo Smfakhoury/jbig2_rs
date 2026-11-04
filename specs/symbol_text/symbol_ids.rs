@@ -81,6 +81,43 @@ pub(crate) open spec fn symbol_code_length_expected(count: u32) -> u8 {
     else { 32 }
 }
 
+// Model navigation: spec::symbol_code_length_bounds [project-result-model]
+// Purpose: Algebraic covering capacity and strict predecessor bound for the smallest symbol-ID width.
+// Audit: symbol-code-length-bounds
+// REQUIREMENT CONTEXT: T88-PROFILE-SYMBOL-ID-PRESERVATION | ITU-T T.88 (08/2018) | 0.2 (informative context); 6.4.10 (index decoding context)
+// Fidelity: unresolved; no independent normative approval.
+pub(crate) open spec fn symbol_code_length_bounds(count: u32, length: u8) -> bool {
+    &&& symbol_code_length_valid(count, length)
+    &&& count as nat <= pow2(length as nat)
+    &&& length > 0 ==> pow2((length as nat - 1) as nat) < count as nat
+}
+
+pub(in crate::symbol_text) proof fn symbol_code_length_expected_bounds(count: u32)
+    ensures symbol_code_length_bounds(count, symbol_code_length_expected(count)),
+{
+    reveal_with_fuel(pow2, 33);
+}
+
+proof fn pow2_monotone(left: nat, right: nat)
+    requires left <= right,
+    ensures pow2(left) <= pow2(right),
+    decreases right,
+{
+    if left < right {
+        pow2_monotone(left, (right - 1) as nat);
+    }
+}
+
+pub(in crate::symbol_text) proof fn symbol_code_length_least(count: u32, length: u8)
+    requires symbol_code_length_bounds(count, length),
+    ensures forall|smaller: nat| smaller < length ==> #[trigger] pow2(smaller) < count as nat,
+{
+    assert forall|smaller: nat| smaller < length
+        implies #[trigger] pow2(smaller) < count as nat by {
+        pow2_monotone(smaller, (length as nat - 1) as nat);
+    }
+}
+
 // Model navigation: spec::checked_symbol_id_result [project-result-model]
 // Purpose: Preserve a valid ID or return its exact supplied out-of-range payload.
 // Audit: symbol-checked-id-result

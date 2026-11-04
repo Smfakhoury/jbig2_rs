@@ -12,13 +12,32 @@ from proof_sensitivity import replace_once, weakened_contract
 
 
 class ValueBridgeProofFixtureTests(unittest.TestCase):
-    def test_all_fourteen_value_error_and_state_mutations_have_unique_source_sites(self):
-        self.assertEqual(len({case["id"] for case in CASES}), 14)
+    def test_width_controls_retain_unrelated_algebraic_consequences(self):
+        widths = {case["id"]: case for case in CASES if case["function"] == "symbol_id_code_length"}
+        self.assertEqual(len(widths), 4)
+        for identity, case in widths.items():
+            weaker = case["controls"][0][1]
+            with self.subTest(case=identity):
+                if identity == "symbol_width_spuriously_rejects_count":
+                    self.assertIn("symbol_code_length_expected(symbol_count)", weaker)
+                    self.assertIn("symbol_code_length_bounds(symbol_count, length)", weaker)
+                    self.assertIn("Err(_) => true", weaker)
+                else:
+                    self.assertIn("symbol_code_length_valid(symbol_count, length)", weaker)
+                    self.assertIn("Err(_) => false", weaker)
+                    if identity == "symbol_width_is_not_least":
+                        self.assertIn("symbol_count as nat <= symbol_text_spec::pow2(length as nat)", weaker)
+                    else:
+                        self.assertIn("forall|smaller: nat|", weaker)
+                        self.assertIn("length > 0", weaker)
+
+    def test_all_eighteen_value_error_and_state_mutations_have_unique_source_sites(self):
+        self.assertEqual(len({case["id"] for case in CASES}), 18)
         self.assertEqual(
             {case["function"] for case in CASES},
             {"widen_u32_i64", "widen_u8_i64", "widen_u8_i32",
              "widen_bool_i64", "same_combination_operator",
-             "checked_symbol_id", "decode_checked_symbol_id"},
+             "checked_symbol_id", "decode_checked_symbol_id", "symbol_id_code_length"},
         )
         for case in CASES:
             with self.subTest(case=case["id"]):

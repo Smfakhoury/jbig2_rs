@@ -68,8 +68,62 @@ def numeric_case(name, argument, result):
         "controls": ((contract, contract.replace("out as int == value as int", "true")),),
     }
 
+def width_case(identity, site, replacement, retained):
+    row = runtime_function(ROOT, "symbol_text", "symbol_id_code_length")
+    contracts = [attribute for attribute in row["attributes"] if "verus_spec(" in attribute]
+    if len(contracts) != 1:
+        raise ValueError("symbol width needs one exact production contract")
+    weaker = f"""#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {{
+            Ok(length) => {retained},
+            Err(_) => false,
+        }},
+    ))]"""
+    return {
+        "id": identity, "file": row["file"], "module": "symbol_text",
+        "function": "symbol_id_code_length", "site": site, "replacement": replacement,
+        "controls": ((contracts[0], weaker),),
+        "native_test": "symbol_text::tests::resource_accounting::symbol_width_thresholds_zero_max_and_every_class_are_exact",
+    }
+
+
+WIDTH_VALID = "symbol_text_spec::symbol_code_length_valid(symbol_count, length)"
+WIDTH_CAPACITY = "symbol_count as nat <= symbol_text_spec::pow2(length as nat)"
+WIDTH_PREVIOUS = """(length > 0 ==> symbol_text_spec::pow2(
+    (length as nat - 1) as nat,
+) < symbol_count as nat)"""
+WIDTH_LEAST = """(forall|smaller: nat| smaller < length ==>
+    #[trigger] symbol_text_spec::pow2(smaller) < symbol_count as nat)"""
+
 
 CASES = (
+    width_case(
+        "symbol_width_drops_covering_capacity", "} else if symbol_count <= 4 { 2 }",
+        "} else if symbol_count <= 4 { 1 }",
+        f"{WIDTH_VALID} && {WIDTH_PREVIOUS} && {WIDTH_LEAST}",
+    ),
+    width_case(
+        "symbol_width_is_not_least", "} else if symbol_count <= 4 { 2 }",
+        "} else if symbol_count <= 4 { 3 }",
+        f"{WIDTH_VALID} && {WIDTH_CAPACITY}",
+    ),
+    width_case(
+        "symbol_width_truncates_high_class", """} else if symbol_count <= 2_147_483_648 { 31 } else { 32 };""",
+        """} else if symbol_count <= 2_147_483_648 { 31 } else { 31 };""",
+        f"{WIDTH_VALID} && {WIDTH_PREVIOUS} && {WIDTH_LEAST}",
+    ),
+    width_case(
+        "symbol_width_spuriously_rejects_count",
+        """production_symbol_code_length_bounds!(symbol_count); Ok(length)""",
+        """production_symbol_code_length_bounds!(symbol_count);
+        if symbol_count == 3 {
+            return Err(SymbolTextError::InvalidCount("mutant symbol width"));
+        }
+        Ok(length)""",
+        "length == symbol_text_spec::symbol_code_length_expected(symbol_count)"
+        " && symbol_text_spec::symbol_code_length_bounds(symbol_count, length)"
+        f" && {WIDTH_LEAST}",
+    ),
     checked_table_case(
             "checked_table_id_filters_substituted_zero",
             CHECK_ID, """let table_backed = match &*codec {
@@ -185,6 +239,12 @@ CASES = (
         }""",
         "controls": (("out == (left == right)", "true"),),
     },
+)
+CASES = tuple(
+    {**case, "controls": tuple((strong, weak.replace("Err(_) => false", "Err(_) => true"))
+                              for strong, weak in case["controls"])}
+    if case["id"] == "symbol_width_spuriously_rejects_count" else case
+    for case in CASES
 )
 
 
