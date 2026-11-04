@@ -572,6 +572,17 @@ class SelectedProofEvidenceTests(unittest.TestCase):
             self.verify(report, 1, "loop invariant not satisfied", True)["errors"], 1,
         )
 
+    def test_explicit_caller_assertions_require_failed_obligations_and_exact_target(self):
+        report = self.report()
+        report["verification-results"]["errors"] = 1
+        self.assertEqual(self.verify(report, 1, "assertion failed", True)["errors"], 1)
+        for invalid, code in ((self.report(), 1), (report, 0)):
+            with self.subTest(report=invalid, code=code), self.assertRaises(ValueError):
+                self.verify(invalid, code, "assertion failed", True)
+        report["func-details"] = {"other::finalize_pages": {}}
+        with self.assertRaisesRegex(ValueError, "did not target"):
+            self.verify(report, 1, "assertion failed", True)
+
     def test_shared_positive_module_baseline_requires_every_exact_target_and_partial_proofs(self):
         functions = ("finalize_pages", "build_document_info")
         report = self.report()

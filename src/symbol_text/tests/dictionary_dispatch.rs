@@ -16,6 +16,61 @@ fn header(huffman: bool, refinement: bool) -> SymbolDictionaryHeader {
 }
 
 #[test]
+fn actual_dictionary_id_request_counts_imported_and_new_with_enclosing_width() {
+    let limits = Limits::default();
+    let bytes = [0xff; 2];
+    for width in 1_u8..=4 {
+        let count = (1_u32 << width) - 1;
+        let symbols: Vec<Bitmap> = (0..count)
+            .map(|_| Bitmap::blank(1, 1, &limits).unwrap())
+            .collect();
+        for imported_count in 0..=symbols.len() {
+            let (imported, new_symbols) = symbols.split_at(imported_count);
+            let borrowed: Vec<&Bitmap> = imported.iter().collect();
+            for book in [
+                SymbolCodebook::Contiguous(imported),
+                SymbolCodebook::Borrowed(&borrowed),
+            ] {
+                for position in 0..=8 {
+                    for huffman in [false, true] {
+                        let concrete = super::huffman_fields::codec(&bytes, position, 0);
+                        let mut codec = SymbolCodec::Huffman(concrete);
+                        let mut resources = ResourceTracker::default();
+                        let result =
+                            super::super::dictionary::decode_dictionary_single_instance_refinement(
+                                &mut codec,
+                                book,
+                                new_symbols,
+                                width,
+                                1,
+                                1,
+                                0,
+                                [(0, 0); 2],
+                                huffman,
+                                &limits,
+                                &mut resources,
+                            );
+                        assert!(matches!(
+                            result,
+                            Err(SymbolTextError::SymbolIdOutOfRange { id, available })
+                                if id == count && available == count
+                        ));
+                        assert_eq!(resources, ResourceTracker::default());
+                        let SymbolCodec::Huffman(after) = codec else {
+                            panic!("changed codec variant");
+                        };
+                        assert_eq!(after.reader.bit_position, position + usize::from(width));
+                        assert_eq!(after.reader.bytes, bytes);
+                        assert!(after.symbol_id_table.is_none());
+                        assert_eq!(after.refinement_work, 71);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
 fn single_instance_refinement_reaches_the_existing_raw_callback() {
     let limits = Limits::default();
     let reference = Bitmap::blank(1, 1, &limits).unwrap();

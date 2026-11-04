@@ -446,6 +446,7 @@ pub(super) fn decode_text_region_body(
             symbol_text_spec::text_state_valid(&state),
             symbol_text_spec::codec_valid(codec),
             symbol_text_spec::codebook_valid(available_symbols),
+            available_count as nat == symbol_text_spec::codebook_len(available_symbols),
             crate::spec::bitmap::storage_valid(&bitmap),
             crate::views::bitmap_width(&bitmap) == width,
             crate::views::bitmap_height(&bitmap) == height,
@@ -471,6 +472,7 @@ pub(super) fn decode_text_region_body(
                 symbol_text_spec::text_state_valid(&state),
                 symbol_text_spec::codec_valid(codec),
                 symbol_text_spec::codebook_valid(available_symbols),
+                available_count as nat == symbol_text_spec::codebook_len(available_symbols),
                 crate::spec::bitmap::storage_valid(&bitmap),
                 crate::views::bitmap_width(&bitmap) == width,
                 crate::views::bitmap_height(&bitmap) == height,
@@ -510,14 +512,19 @@ pub(super) fn decode_text_region_body(
             } else {
                 0
             };
-            let symbol_id = decode_checked_symbol_id(
-                codec,
-                SymbolIdRequest {
-                    available_symbols: available_count,
-                    code_length,
-                    huffman: config.huffman,
-                },
-            )?;
+            let id_request = SymbolIdRequest {
+                available_symbols: available_count,
+                code_length,
+                huffman: config.huffman,
+            };
+            #[cfg(verus_keep_ghost)]
+            production_symbol_id_request!(
+                id_request,
+                symbol_text_spec::codebook_len(available_symbols),
+                code_length,
+                config.huffman
+            );
+            let symbol_id = decode_checked_symbol_id(codec, id_request)?;
             let base_symbol = available_symbols
                 .get(usize::try_from(symbol_id).map_err(|_| MalformedError::IntegerOverflow)?)
                 .ok_or(SymbolTextError::SymbolIdOutOfRange {

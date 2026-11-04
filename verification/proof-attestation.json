@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "034a3bac7a48d3f68676c15131bd896028ae9678",
-  "scope": "Fresh exact-source whole verification/compilation with complete owned-table and literal Huffman symbol-ID result/error/cursor/metadata composition through concrete, enum and checked callers. The existing Huffman error policy is factored into closed pure results reused by FromSpecImpl and verified public From contracts; proved defining-module bridges retain private datatype opacity without a self-trait model dependency. Nonnegative i32 IDs are preserved; negative/OOB values reject distinctly. Reader bytes and all nonreader metadata remain unchanged; consumed prefix/range effects survive error/range rejection. Existing arithmetic, literal and empty-book identity guarantees remain. Correct actual caller extent/code-length/table choice, statistics reset/retention and complete refinement/rendered streams remain separate. Native execution and existing trusted boundaries are unchanged.",
+  "source_revision": "8051ff52863f3f1b5dfb0813df8b1f3b792f3745",
+  "scope": "Fresh exact-source whole verification/compilation with reached actual text and single-instance dictionary request witnesses. Request availability equals supplied codebook length or imported-plus-decoded-new length; the supplied enclosing-segment width and entropy flag are unchanged. Text loop invariants retain the narrowed extent; the successful dictionary narrowing closure has an explicit ghost equality. Original caller preconditions, storage/resource and all existing arithmetic/table/literal/checked transition guarantees remain. Upstream enclosing extent/width derivation, codec-kind/table selection, statistics lifecycle/reset/retention and full refinement/rendered streams remain separate. Witnesses are intermediate obligations, not complete returned-bitmap contracts or independent normative interpretation.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-huffman-symbol-id-v02-20261103/target/huffman-symbol-id/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-symbol-id-caller-extent-v02-20261104/target/caller-request/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1299,
     "verified_production_functions": 642,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "f6f1c99178878ff9e9362f23392eb0b57014d24732a3211eb8627ce4e54bece9",
+  "production_proof_coverage_sha256": "01d22cff20e4ca5e9c1ce29c9affd1897d5df8bcf82536007311cb8a0b66f097",
   "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1299 actual whole obligations, zero errors and a nonempty production library. Forty codec, fourteen value/checked, eight error-conversion and seven implementation-specific symbol-wrapper contrasts were executed locally on this immutable source: positive proof, native-compiling mutant, exact strong rejection and accepted weaker control. Table-only controls preserve arithmetic/literal/empty-book guarantees; literal controls preserve table-backed results/cursors and nonreader metadata. All200mandatory native mutants actually compile and are detected. The registered complete corpus is383contrasts across49groups, retaining14shards/16roles/fouractive/1050s guards; this local component evidence does not substitute for all hosted producers. Four independent native tests cover cached/fallback prefix/range values, literal zero/i32-max endpoints, signed/OOB/invalid-prefix/truncation errors, request-width independence, exact metadata and checked consumption/continuation. All147prior native-library token/literal projections are unchanged against82d04b5 after ghost/comment removal and transparent single-tail closure-block normalization; executable/literal/side-effect negative controls pass. The new test file has an empty non-test projection. Five project result models bring registry203;266selected/257gap-bearing records remain provisional. A real155-file MSRV extraction/consumer/no-upload Cargo rehearsal passes. All672tooling tests, strict Clippy, full native/integration/doctests and raw aggregate/per-file/changed-line coverage floors pass. Historical approvals and component evidence are retained, not renewed. No new trusted fact, field/extent derivation theorem or full-stream proof is inferred.",
+  "current_evidence_note": "1299actual whole obligations/zeroerrors/nonemptylibrary, not a proof-count growth or completeness proxy. Eighteen actual compiling cardinality/content/ caller contrasts pass positive, strong-reject and selective weaker-control checks. Six new witnesses include two unobserved request-flag changes: these are not credited as native mutants. All204mandatory native mutants actually compile and are detected, including four observable caller extent/ width changes. Two independent caller tests cover contiguous/borrowed books, imported/new splits, enclosing widths larger than subsets require, exact error payloads, selected pixels and following-field consumption. The registered corpus is389contrasts/49groups, retaining14shards/16roles/max4/1050s; these local component results do not replace fresh hosted evidence. Assertion failures count only with failed obligations, a native-compiling mutant and exact partial target; compiler/timeout/empty or mismatched targets still fail closed. All148runtime-file projections preserve native tokens/ literals after only ghost/comments, transparent closure blocks, optional checked-call trailing commas and immediate pure single-call request bindings; field/literal/side-effect negatives pass. A real155-file MSRV extraction/ fresh offline consumer/no-upload Cargo rehearsal and numerical coverage floors pass. Registry205;266selected/257gap-bearing records remain provisional. No runtime/API fix or new trusted interface, annotation-only precondition, normative approval or full-stream/raster proof is inferred.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -122,6 +122,26 @@
       },
       "production_proof_coverage_sha256": "ef2cc84321f968fd21523c319e2df654403fd931b28025f9a68beea3ac85dd3f",
       "scope_note": "Historical component evidence, not a new execution or approval."
+    },
+    {
+      "source_revision": "034a3bac7a48d3f68676c15131bd896028ae9678",
+      "scope": "Fresh exact-source whole verification/compilation with complete owned-table and literal Huffman symbol-ID result/error/cursor/metadata composition through concrete, enum and checked callers. The existing Huffman error policy is factored into closed pure results reused by FromSpecImpl and verified public From contracts; proved defining-module bridges retain private datatype opacity without a self-trait model dependency. Nonnegative i32 IDs are preserved; negative/OOB values reject distinctly. Reader bytes and all nonreader metadata remain unchanged; consumed prefix/range effects survive error/range rejection. Existing arithmetic, literal and empty-book identity guarantees remain. Correct actual caller extent/code-length/table choice, statistics reset/retention and complete refinement/rendered streams remain separate. Native execution and existing trusted boundaries are unchanged.",
+      "result": {
+        "verified_obligations": 1299,
+        "verified_production_functions": 642,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "f6f1c99178878ff9e9362f23392eb0b57014d24732a3211eb8627ce4e54bece9",
+      "scope_note": "Historical component evidence; not a new execution or approval."
     }
   ]
 }

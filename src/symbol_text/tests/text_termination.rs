@@ -13,6 +13,68 @@ fn config(huffman: bool, log_strips: u16) -> TextRegionConfig {
 }
 
 #[test]
+fn actual_text_id_request_preserves_book_extent_segment_width_and_continuation() {
+    let limits = Limits::default();
+    let symbols = [
+        Bitmap::filled(1, 1, false, &limits).unwrap(),
+        Bitmap::filled(1, 1, true, &limits).unwrap(),
+    ];
+    let borrowed = [&symbols[0], &symbols[1]];
+    let zero = HuffmanTable::new(&[HuffmanLine::normal(0, 1, 0)], &limits).unwrap();
+    let end = HuffmanTable::new(
+        &[HuffmanLine::normal(0, 1, 0), HuffmanLine::out_of_band(1)],
+        &limits,
+    )
+    .unwrap();
+    for book in [
+        SymbolCodebook::Contiguous(&symbols),
+        SymbolCodebook::Borrowed(&borrowed),
+    ] {
+        for width in [0_u8, 1, 2, 3, 4, 8, 16, 32] {
+            let id = u32::from(width != 0);
+            let mut bits = vec![false; 3];
+            bits.extend((0..width).rev().map(|shift| (id >> shift) & 1 != 0));
+            bits.push(true);
+            bits.extend((0..8).rev().map(|shift| (0xa5_u8 >> shift) & 1 != 0));
+            let mut bytes = vec![0_u8; bits.len().div_ceil(8)];
+            for (position, bit) in bits.into_iter().enumerate() {
+                if bit {
+                    bytes[position / 8] |= 0x80 >> (position % 8);
+                }
+            }
+            let mut concrete = super::huffman_fields::codec(&bytes, 0, 0);
+            concrete.tables.strip_delta = Some(MaterializedHuffmanTable::Custom(&zero));
+            concrete.tables.first_s = Some(MaterializedHuffmanTable::Custom(&zero));
+            concrete.tables.subsequent_s = Some(MaterializedHuffmanTable::Custom(&end));
+            let mut codec = SymbolCodec::Huffman(concrete);
+            let mut resources = ResourceTracker::default();
+            let bitmap = decode_text_region_body(
+                &mut codec,
+                book,
+                width,
+                1,
+                1,
+                1,
+                &config(true, 0),
+                [(0, 0); 2],
+                &limits,
+                &mut resources,
+            )
+            .unwrap();
+            assert_eq!(bitmap.bytes(), if id == 0 { &[0][..] } else { &[0x80][..] });
+            let SymbolCodec::Huffman(ref mut after) = codec else {
+                panic!("changed codec variant");
+            };
+            assert_eq!(after.reader.bit_position, 4 + usize::from(width));
+            assert_eq!(after.reader.bytes, bytes);
+            assert!(after.symbol_id_table.is_none());
+            assert_eq!(after.refinement_work, 71);
+            assert_eq!(after.read_raw_bits(8).unwrap(), 0xa5);
+        }
+    }
+}
+
+#[test]
 fn final_strip_terminator_precedes_following_dictionary_fields() {
     let limits = Limits::default();
     let symbol = Bitmap::filled(1, 1, true, &limits).unwrap();

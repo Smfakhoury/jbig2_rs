@@ -55,16 +55,28 @@ pub(in crate::symbol_text) fn decode_dictionary_single_instance_refinement(
     let available = imported
         .len()
         .checked_add(new_symbols.len())
-        .and_then(|count| u32::try_from(count).ok())
+        .and_then(|count| {
+            #[cfg(verus_keep_ghost)]
+            ensures(|out: Option<u32>| match out {
+                Some(value) => equal(value as u128, count as u128),
+                None => true,
+            });
+            u32::try_from(count).ok()
+        })
         .ok_or(MalformedError::IntegerOverflow)?;
-    let id = decode_checked_symbol_id(
-        codec,
-        SymbolIdRequest {
-            available_symbols: available,
-            code_length,
-            huffman,
-        },
-    )?;
+    let id_request = SymbolIdRequest {
+        available_symbols: available,
+        code_length,
+        huffman,
+    };
+    #[cfg(verus_keep_ghost)]
+    production_symbol_id_request!(
+        id_request,
+        symbol_text_spec::codebook_len(imported) + new_symbols.len(),
+        code_length,
+        huffman
+    );
+    let id = decode_checked_symbol_id(codec, id_request)?;
     let reference_x = required_integer(codec, IntegerField::RefinementX)?;
     let reference_y = required_integer(codec, IntegerField::RefinementY)?;
     let declared_size = if huffman {

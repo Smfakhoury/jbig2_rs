@@ -131,6 +131,7 @@ def selected_proof(
             or not any(text in process.stderr for text in (
                 "loop invariant not preserved", "postcondition not satisfied",
                 "invariant not satisfied at end of loop body", "loop invariant not satisfied",
+                "assertion failed",
             ))
         ):
             raise ValueError("mutant was not rejected by semantic obligations:\n" + process.stderr)
