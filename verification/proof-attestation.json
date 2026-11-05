@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "757986d495f5039cc6fb9e83a64729c8b6e3434a",
-  "scope": "Fresh exact-source whole verification/compilation strengthens successful actual Huffman codec construction to preserve complete supplied field-table bindings and exact input bytes/zero cursor/requested strip width/absent ID table/requested valid refinement template/zero refinement work. Reached actual text/dictionary Huffman setup composes literal body, strip configuration and requested refinement flag/template without new caller preconditions. A ghost-only single-tail template closure result preserves native behavior. This is fresh metadata and reached setup, not complete upstream resource/codebook/table/codec-kind selection, retained-bank contents/lifecycle/reset/retention, refinement/placement identity, full rendered streams or independent normative conformance.",
+  "source_revision": "fbe1e45c912b383f65fc77a0af7beb617e6c0c19",
+  "scope": "Fresh exact-source whole verification/compilation proves the actual generic/refinement context API baseline: fresh zero banks and canonical stored-byte metadata; reset zeroing with configuration/storage/length frames; exact snapshot contents/metadata; complete restore-to-snapshot results/validity and rejected-destination identity. No new preconditions or executing behavior. Closed logical views and verified defining-module bridges preserve private snapshot fields. This is local API result/state support, not all E.3.8/caller reset-retention timing, actual allocator-capacity/process-memory bounds, full raster/stream semantics or independent normative conformance.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-segment-codec-selection-v02-20261104/target/huffman-construction/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-context-lifecycle-baseline-v02-20261105/target/context-baseline/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1302,
+    "verified_obligations": 1304,
     "verified_production_functions": 642,
     "errors": 0,
     "proof_build_compiles": true,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "b87acf6d15eb719c943d8440c5d6ea2a2c7b9c444fd319481bb65dda007f8e4e",
+  "production_proof_coverage_sha256": "6691c9e5a8b329015ce6862a5f1410994dd8fc42dbaa3d49cf646ad58dba7d1b",
   "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1302actual whole obligations/zeroerrors/nonemptylibrary;642direct/20explicit limitations and unchanged trust boundaries. Thirty-three actual compiling Huffman contrasts include eight new construction/setup cases: discarded input, skipped first bit, strip-width loss, field-binding loss, missing refinement, nonzero work, and actual text/dictionary missing refinement. Selective weaker controls retain the original reader boundary and all unrelated contracts. All220native mutants compile and are actually detected. Independent fresh constructor/scalar continuation checks span every u8 strip width, empty/nonempty bodies and both refinement templates; actual parsed text/dictionary setup checks exact refinement allocation error payloads before entropy-body work. Registered corpus405contrasts/49groups,389globalbindings, retaining14shards/16roles/max4/1050s. Added cases remain on existing Huffman lane9, with670.564s previously measured base cost; local component results do not replace fresh hosted acceptance. All148native file projections are equal after ghost/comments and only a transparent single-tail closure normalization; literal/executable/side-effect negative controls pass. A real155-file MSRV extraction/offline consumer/no-upload rehearsal and strict/native/docs/ numericalcoverage gates pass without lower floors. Registry211;266selected/257gap-bearing requirements remain provisional. Historical conformance executions/outcomes and confirmations retain original identities. No runtime/API fix requires a0.1backport; no new trusted interface, full upstream selection/lifecycle/raster theorem or renewed normative approval is inferred.",
+  "current_evidence_note": "1304actual whole obligations/zeroerrors/nonemptylibrary;642direct/20explicit limitations and unchanged trust boundaries. Twelve actual compiling positive/strong/weak lifecycle contrasts preserve unrelated metadata/error guarantees and remove only the selected bank/configuration/frame obligations. All232native mutants compile and are actually detected. Independent constructor/whole-bank/error/state oracles include API-allowed configurations, exact retained/memory guard payloads, malformed layouts and invalid probability states; internal bad-state tests are not public compressed-image witnesses. All148native file projections are equivalent after only ghost/comments; executable/literal/side-effect negatives pass. Private runtime fields remain private; no allocator axioms, visibility widening or precondition strengthening. Live419contrasts/51groups/397sourcebindings retain14shards/16roles/max4/1050s; new cases use existing low-cost lane8, not tight lane11 or additional resources. A real155-file MSRV extraction/offline consumer/no-upload rehearsal and strict/fullnative/integration/doctests/numericalcoverage gates pass with unchanged floors. Registry213;266selected/257gap-bearing requirements remain provisional. One driver-support record gains actual partial functional API evidence (151functional/102state/13safety), not complete driver semantics or standards fidelity. Six previously body-only API methods gain real local postconditions; existing inherited From ownership stays distinct. These local component results do not replace fresh hosted acceptance. Original conformance executions/outcomes and historical confirmations retain original identities. No runtime/API fix requires a0.1backport; full statement/code/reachability/generated/semanticquality/external-readiness qualification is not inferred.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -201,6 +201,26 @@
         "incomplete_functions": 0
       },
       "production_proof_coverage_sha256": "a674de1027277e45dbadf4bda1aa075f23bad9958e56981e8985831c988627fd",
+      "scope_note": "Historical component evidence; not a new execution or approval."
+    },
+    {
+      "source_revision": "757986d495f5039cc6fb9e83a64729c8b6e3434a",
+      "scope": "Fresh exact-source whole verification/compilation strengthens successful actual Huffman codec construction to preserve complete supplied field-table bindings and exact input bytes/zero cursor/requested strip width/absent ID table/requested valid refinement template/zero refinement work. Reached actual text/dictionary Huffman setup composes literal body, strip configuration and requested refinement flag/template without new caller preconditions. A ghost-only single-tail template closure result preserves native behavior. This is fresh metadata and reached setup, not complete upstream resource/codebook/table/codec-kind selection, retained-bank contents/lifecycle/reset/retention, refinement/placement identity, full rendered streams or independent normative conformance.",
+      "result": {
+        "verified_obligations": 1302,
+        "verified_production_functions": 642,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "b87acf6d15eb719c943d8440c5d6ea2a2c7b9c444fd319481bb65dda007f8e4e",
       "scope_note": "Historical component evidence; not a new execution or approval."
     }
   ]
