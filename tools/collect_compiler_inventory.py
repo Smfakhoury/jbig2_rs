@@ -51,6 +51,7 @@ def execute(command, directory, environment, output, label):
 
 
 def native_library(messages, directory):
+    directory = directory.resolve()
     libraries = []
     for line in messages.splitlines():
         message = json.loads(line)

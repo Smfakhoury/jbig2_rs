@@ -37,7 +37,7 @@ class CompilerInventoryTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
+        self.root = Path(self.temporary.name).resolve()
         (self.root / "src").mkdir()
         (self.root / "src/lib.rs").write_text(
             "#[derive(Clone)]\nstruct Token(u8);\n"
@@ -207,6 +207,7 @@ class CompilerInventoryTests(unittest.TestCase):
             "profile": {"test": False}, "filenames": [str(library)],
         }
         self.assertEqual(native_library(json.dumps(message), self.root), library)
+        self.assertEqual(native_library(json.dumps(message), self.root / "src/.."), library)
         library.write_bytes(b"")
         with self.assertRaisesRegex(ValueError, "empty"):
             native_library(json.dumps(message), self.root)
