@@ -12,6 +12,10 @@ from source_group import runtime_function
 
 
 ROOT = Path(__file__).resolve().parents[1]
+FILES = (
+    "src/generic_region.rs", "src/arithmetic.rs", "specs/generic_region.rs",
+    "specs/generic_region/framing.rs", "specs/arithmetic.rs", "proofs/shared/generic_region.rs",
+)
 BASELINE_GROUPS = (("generic_region", (
     "GenericArithmeticSession::new", "GenericArithmeticSession::consumed_byte_offset",
     "GenericArithmeticSession::observed_marker_offset",
@@ -104,8 +108,7 @@ def main():
     try:
         report = check_semantic_cases(
             ROOT, arguments.verus_executable.resolve(), CASES,
-            ("src/generic_region.rs", "src/arithmetic.rs", "specs/generic_region.rs",
-             "specs/arithmetic.rs", "proofs/shared/generic_region.rs"),
+            FILES,
             "jbig2-session-framing-",
             "Exact session stored offsets, supplied constructor metadata and existing strict "
             "tail/first-marker/error-priority policy. Internal arbitrary metadata is not a public "

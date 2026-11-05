@@ -6,13 +6,19 @@ import unittest
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from check_session_framing_proofs import BASELINE_GROUPS, CASES, ROOT
+from check_session_framing_proofs import BASELINE_GROUPS, CASES, FILES, ROOT
 from check_contract_mutations import MUTATIONS
 from proof_sensitivity import replace_once, weakened_contract
-from source_group import SourceGroup, relocate_cases
+from source_group import SourceGroup, bound_source_groups, relocate_cases
 
 
 class SessionFramingProofTests(unittest.TestCase):
+    def test_sensitivity_explicitly_binds_the_new_framing_models(self):
+        _, sources, _ = bound_source_groups(ROOT, FILES)
+        path = "specs/generic_region/framing.rs"
+        self.assertIn(path, sources)
+        self.assertEqual(sources[path], (ROOT / path).read_bytes())
+
     def test_twelve_actual_mutations_keep_compiling_control_and_native_oracle_recipes(self):
         source = SourceGroup(ROOT, "src/generic_region.rs")
         self.assertEqual(len(CASES), 12)
