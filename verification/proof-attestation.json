@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "fbe1e45c912b383f65fc77a0af7beb617e6c0c19",
-  "scope": "Fresh exact-source whole verification/compilation proves the actual generic/refinement context API baseline: fresh zero banks and canonical stored-byte metadata; reset zeroing with configuration/storage/length frames; exact snapshot contents/metadata; complete restore-to-snapshot results/validity and rejected-destination identity. No new preconditions or executing behavior. Closed logical views and verified defining-module bridges preserve private snapshot fields. This is local API result/state support, not all E.3.8/caller reset-retention timing, actual allocator-capacity/process-memory bounds, full raster/stream semantics or independent normative conformance.",
+  "source_revision": "360331b0cfab30204ff863fd9a1c1acc45dbfcf4",
+  "scope": "Fresh exact-source whole verification/compilation proves five formerly body-only session/framing result surfaces and stronger existing session-constructor metadata. Query offsets equal stored decoder state. Strict terminator validation preserves bad-tail-before-scan priority and exact earliest interior marker offset/code. Observed-marker and final-offset/error results compose exactly, including None/short-length distinctions. Constructor success preserves supplied input, template/extended flag, limits and zero work. Five source-bound project-result models describe existing policy, not independently approved normative framing exceptions or full driver/raster semantics. No new preconditions or executing behavior; the unknown-length splitter is unchanged.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-context-lifecycle-baseline-v02-20261105/target/context-baseline/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-session-framing-baseline-v02-20261105/target/session-framing/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1304,
     "verified_production_functions": 642,
@@ -24,7 +24,7 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "6691c9e5a8b329015ce6862a5f1410994dd8fc42dbaa3d49cf646ad58dba7d1b",
+  "production_proof_coverage_sha256": "3fa923b5b5c63551d4a750e8398528617fd6c86ed2ed24178ae709bf8dfe2e06",
   "proof_dispositions_sha256": "f1b043d0389c0998a8161cfe9b20cfc93b8c63fe4c6fe6e6f5a2a6f7ca4bfd42",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1304actual whole obligations/zeroerrors/nonemptylibrary;642direct/20explicit limitations and unchanged trust boundaries. Twelve actual compiling positive/strong/weak lifecycle contrasts preserve unrelated metadata/error guarantees and remove only the selected bank/configuration/frame obligations. All232native mutants compile and are actually detected. Independent constructor/whole-bank/error/state oracles include API-allowed configurations, exact retained/memory guard payloads, malformed layouts and invalid probability states; internal bad-state tests are not public compressed-image witnesses. All148native file projections are equivalent after only ghost/comments; executable/literal/side-effect negatives pass. Private runtime fields remain private; no allocator axioms, visibility widening or precondition strengthening. Live419contrasts/51groups/397sourcebindings retain14shards/16roles/max4/1050s; new cases use existing low-cost lane8, not tight lane11 or additional resources. A real155-file MSRV extraction/offline consumer/no-upload rehearsal and strict/fullnative/integration/doctests/numericalcoverage gates pass with unchanged floors. Registry213;266selected/257gap-bearing requirements remain provisional. One driver-support record gains actual partial functional API evidence (151functional/102state/13safety), not complete driver semantics or standards fidelity. Six previously body-only API methods gain real local postconditions; existing inherited From ownership stays distinct. These local component results do not replace fresh hosted acceptance. Original conformance executions/outcomes and historical confirmations retain original identities. No runtime/API fix requires a0.1backport; full statement/code/reachability/generated/semanticquality/external-readiness qualification is not inferred.",
+  "current_evidence_note": "1304 actual whole obligations/zero errors/nonempty library;642 direct/20 reviewed limitations and unchanged trust boundaries. Twelve actual selected compiling positive/strong/weak contrasts explicitly bind the new framing-model file. Controls remove selected result clauses and only dependent prefix invariants, preserving constructor metadata and existing safety/decreases guarantees; terminator weak controls retain successful-tail validity. All244 native faults compile and are actually detected by their exact passing baseline tests. Independent scalar project-policy oracles exercise all65536 byte pairs both alone and before a valid tail, earliest/error-priority/code boundaries, fresh session configurations and arbitrary internal stored metadata including usize::MAX. Internal bad states are not public compressed-image witnesses. All148 native token/literal projections preserve execution after ghost/comment removal and transparent single-tail closure normalization; executable/literal/ side-effect negatives pass. A real155-file MSRV extraction/offline consumer/ no-upload rehearsal and unchanged numerical coverage floors pass. Live431 contrasts/52 groups/400 source bindings retain14 shards/16 roles/ max4/1050s; the new group uses existing low-cost lane12. Registry218. Five local postconditions reduce verified no-local ownership review135->130; Subtracting24 previously qualified inherited owners projects106 remaining candidates, not automatically missing proofs; fresh same-run ownership resolution remains required. All266 selected/257 gap-bearing requirements remain provisional; no exhaustive statement denominator or semantic-quality/reachability/generated qualification follows. These local component results do not replace fresh hosted acceptance. Original conformance executions/outcomes/approvals retain their identities. No runtime/API fix requires a0.1 backport. The external validator milestone requires consistent code coverage and complete supported statement representation, not maximally detailed full caller/raster proofs.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -221,6 +221,26 @@
         "incomplete_functions": 0
       },
       "production_proof_coverage_sha256": "b87acf6d15eb719c943d8440c5d6ea2a2c7b9c444fd319481bb65dda007f8e4e",
+      "scope_note": "Historical component evidence; not a new execution or approval."
+    },
+    {
+      "source_revision": "fbe1e45c912b383f65fc77a0af7beb617e6c0c19",
+      "scope": "Fresh exact-source whole verification/compilation proves the actual generic/refinement context API baseline: fresh zero banks and canonical stored-byte metadata; reset zeroing with configuration/storage/length frames; exact snapshot contents/metadata; complete restore-to-snapshot results/validity and rejected-destination identity. No new preconditions or executing behavior. Closed logical views and verified defining-module bridges preserve private snapshot fields. This is local API result/state support, not all E.3.8/caller reset-retention timing, actual allocator-capacity/process-memory bounds, full raster/stream semantics or independent normative conformance.",
+      "result": {
+        "verified_obligations": 1304,
+        "verified_production_functions": 642,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "6691c9e5a8b329015ce6862a5f1410994dd8fc42dbaa3d49cf646ad58dba7d1b",
       "scope_note": "Historical component evidence; not a new execution or approval."
     }
   ]
