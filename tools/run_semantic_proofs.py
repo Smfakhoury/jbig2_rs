@@ -303,6 +303,7 @@ def check_report(report, expected, strong, weak, version):
 
 
 def check_bound_report(root, check, report, bindings, whole=None):
+    validated_cases = ()
     identity, script, expected, strong, weak = check
     check_report(report, expected, strong, weak, read_json(root / "config/toolchain.json")["verus"]["version"])
     if report.get("schema_version") != (1 if identity in {"reset", "document-count", "document-layout"} else 2):
@@ -348,6 +349,7 @@ def check_bound_report(root, check, report, bindings, whole=None):
             configured_baseline_groups,
             sources,
         )
+        validated_cases = cases
         if len(cases) != expected or [row.get("id") for row in report["counterexamples"]] != [
             case["id"] for case in cases
         ] or any(
@@ -434,6 +436,7 @@ def check_bound_report(root, check, report, bindings, whole=None):
                     raise ValueError("shared positive baseline omits a selected function")
         if any(case["file"] not in sources for case in cases if "file" in case):
             raise ValueError("semantic case edits an unbound production source")
+    return validated_cases
 
 
 def run_checks(
@@ -706,6 +709,7 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
     rows_by_id = {}
     directories = {}
     semantic_reports = {}
+    semantic_recipes = {}
     producers = [
         (index, shard, inputs / (prefix + f"shard-{index}"))
         for index, shard in enumerate(shards)
@@ -747,7 +751,10 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
             ):
                 raise ValueError(f"failed, duplicate or stale semantic group: {identity}")
             expected_files.update((report.name, log.name))
-            check_bound_report(root, check, read_json(report), current["source_bindings"], positive)
+            validated_cases = check_bound_report(
+                root, check, read_json(report), current["source_bindings"], positive,
+            )
+            semantic_recipes[identity] = {case["id"]: case for case in validated_cases}
             semantic_reports[identity] = read_json(report)
             rows_by_id[identity] = row
             directories[identity] = directory
@@ -792,10 +799,15 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
     }
     from check_traceability import runtime_inventory
     from implementation_identity import qualify
+    from trait_ownership import qualify as qualify_ownership
 
     assessment = read_json(whole / TRACE / "verifier-report.json")["validation_readiness"]
+    runtime = runtime_inventory(root)
     result["implementation_identities"] = qualify(
-        runtime_inventory(root), assessment, semantic_reports,
+        runtime, assessment, semantic_reports,
+    )
+    result["trait_contract_ownership"] = qualify_ownership(
+        root, runtime, assessment, semantic_reports, semantic_recipes, positive,
     )
     write_json(output / TRACE / SUMMARY, result)
     return result
