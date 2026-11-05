@@ -4,6 +4,25 @@
 use super::*;
 
 #[test]
+fn decoder_clone_preserves_all_supplied_limits_and_independent_configuration() {
+    let limits = Limits {
+        max_width: 17,
+        max_height: 19,
+        max_work_units: 59,
+        max_stream_bytes: 61,
+        max_pages: 67,
+        max_retained_state_bytes: 71,
+        ..Limits::default()
+    };
+    let decoder = Decoder::new(limits);
+    let mut copied = decoder.clone();
+    assert_eq!(format!("{:?}", copied.limits()), format!("{limits:?}"));
+    copied.limits.max_width = 23;
+    assert_eq!(decoder.limits().max_width, 17);
+    assert_eq!(copied.limits().max_width, 23);
+}
+
+#[test]
 fn page_stripe_boundaries_match_wide_policy_and_preserve_rejected_state() {
     for height in [None, Some(1), Some(4)] {
         for striped in [false, true] {

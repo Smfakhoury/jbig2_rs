@@ -5,27 +5,11 @@ from pathlib import PurePosixPath
 import re
 
 from audit_production_coverage import verified_matches
-from rust_source import contract_sections, items, parse
+from rust_source import contract_sections, direct_contract_sections
 
 
 def direct_postconditions(record):
-    declarations = [
-        node for node, _ in items(parse(record["body_text"].encode()))
-        if node.type in {"function_item", "function_signature_item"}
-    ]
-    if len(declarations) != 1:
-        raise ValueError(f"missing or ambiguous function body: {record['id']}")
-    body = declarations[0].child_by_field_name("body")
-    if body is None:
-        return 0
-    count = 0
-    for node, _ in items(body, exclude_proofs=False):
-        if node.type == "expression_statement" and node.named_children:
-            node = node.named_children[0]
-        if node.type == "call_expression":
-            function = node.child_by_field_name("function")
-            count += function is not None and function.text == b"ensures"
-    return count
+    return len(direct_contract_sections(record, "ensures"))
 
 
 def assess(ledger, runtime, verifier_names, accounting=None):

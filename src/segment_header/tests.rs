@@ -4,6 +4,85 @@
 use super::*;
 
 #[test]
+fn retention_clone_keeps_arbitrary_bytes_and_independent_owned_storage() {
+    for length in [0, 1, 2, 17, 256] {
+        let expected: Vec<u8> = (0..length)
+            .map(|index| {
+                u8::try_from(index)
+                    .unwrap()
+                    .wrapping_mul(37)
+                    .wrapping_add(11)
+            })
+            .collect();
+        let flags = RetentionFlags {
+            values: expected.clone(),
+        };
+        let mut copied = flags.clone();
+        assert_eq!(copied.values, expected);
+        if length > 0 {
+            assert_ne!(copied.values.as_ptr(), flags.values.as_ptr());
+            copied.values[0] = copied.values[0].wrapping_add(1);
+            assert_eq!(flags.values, expected);
+        }
+    }
+}
+
+#[test]
+fn segment_header_clone_keeps_all_scalars_vectors_and_nested_retention() {
+    for (_, segment_type) in DEFINED_TYPES {
+        for data_length in [None, Some(0), Some(u32::MAX)] {
+            for deferred_non_retain in [false, true] {
+                let expected_references = [7, 29, u32::MAX];
+                let expected_retention = [2, 0, 255, 1];
+                let header = SegmentHeader {
+                    number: 53,
+                    segment_type,
+                    deferred_non_retain,
+                    referred_segments: expected_references.to_vec(),
+                    retention_flags: RetentionFlags {
+                        values: expected_retention.to_vec(),
+                    },
+                    page_association: 61,
+                    data_length,
+                    byte_length: usize::MAX,
+                };
+                let mut copied = header.clone();
+                assert_eq!(
+                    (
+                        copied.number,
+                        copied.segment_type,
+                        copied.deferred_non_retain
+                    ),
+                    (53, segment_type, deferred_non_retain),
+                );
+                assert_eq!(
+                    (
+                        copied.page_association,
+                        copied.data_length,
+                        copied.byte_length
+                    ),
+                    (61, data_length, usize::MAX),
+                );
+                assert_eq!(copied.referred_segments, expected_references);
+                assert_eq!(copied.retention_flags.values, expected_retention);
+                assert_ne!(
+                    copied.referred_segments.as_ptr(),
+                    header.referred_segments.as_ptr()
+                );
+                assert_ne!(
+                    copied.retention_flags.values.as_ptr(),
+                    header.retention_flags.values.as_ptr()
+                );
+                copied.referred_segments[0] = 67;
+                copied.retention_flags.values[0] = 71;
+                assert_eq!(header.referred_segments, expected_references);
+                assert_eq!(header.retention_flags.values, expected_retention);
+            }
+        }
+    }
+}
+
+#[test]
 fn recognized_segment_type_equality_matches_all_literal_codes_and_eof() {
     let codes = [
         0, 4, 6, 7, 16, 20, 22, 23, 36, 38, 39, 40, 42, 43, 48, 49, 50, 51, 52, 53, 54, 62,

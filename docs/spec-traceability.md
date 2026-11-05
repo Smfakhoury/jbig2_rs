@@ -71,6 +71,18 @@ semantic contract quality, a public call graph or an admissible stage domain.
 Those qualifications remain explicit open obligations. No readiness or coverage
 percentage follows from this compiler-profile reconciliation.
 
+Five previously derived non-`Copy` clones now have explicit, checked result
+contracts: decoder configuration, generic/refinement headers, retention bytes
+and complete segment-header metadata. Closed associated logical views preserve
+private runtime fields. These contracts retain the original value/Vec-cloning
+behavior and make no new capacity, allocation-limit or normative claims.
+The [clone controls](../tools/check_clone_result_proofs.py) exercise actual
+compiling faults against the owning guarantees and their weaker controls.
+Header tests also cover internal metadata states, not public compressed-image
+witnesses. New explicit source declarations are kept distinct from formerly
+compiler-derived methods; moving a clone into source is not an increase in the
+number of native callable bodies.
+
 ### Source-only purpose inventory
 
 `model_classifications` identifies exact declaration families as project

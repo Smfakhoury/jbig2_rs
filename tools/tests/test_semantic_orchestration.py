@@ -18,8 +18,11 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_CLONE_RESULT_CHECKS = tuple(
+    row for row in LIVE_CHECKS if row[0] != "clone-results"
+)
 PRE_SESSION_FRAMING_CHECKS = tuple(
-    row for row in LIVE_CHECKS if row[0] != "session-framing"
+    row for row in PRE_CLONE_RESULT_CHECKS if row[0] != "session-framing"
 )
 PRE_CONTEXT_BASELINE_CHECKS = tuple(
     row for row in PRE_SESSION_FRAMING_CHECKS if row[0] != "context-lifecycle"
@@ -32,11 +35,15 @@ PRE_ENTROPY_PARTITION_CHECKS = tuple(
     (name, script, 40 if name == "arithmetic-codec" else count, strong, weaker)
     for name, script, count, strong, weaker in PRE_IMPL_IDENTITY_CHECKS if name != "huffman-codec"
 )
-CURRENT_TOPOLOGY = {
+LIVE_TOPOLOGY = {
     "CI_SHARDS": runner.CI_SHARDS,
     "WHOLE_GROUPS": runner.WHOLE_GROUPS,
     "COLLECTOR_GROUPS": runner.COLLECTOR_GROUPS,
     "DEFAULT_SHARD_REBALANCE": runner.DEFAULT_SHARD_REBALANCE,
+}
+CURRENT_TOPOLOGY = {
+    **LIVE_TOPOLOGY,
+    "COLLECTOR_GROUPS": tuple(name for name in runner.COLLECTOR_GROUPS if name != "clone-results"),
 }
 CAPACITY_TOPOLOGY = {
     **CURRENT_TOPOLOGY,
@@ -248,16 +255,17 @@ class SemanticOrchestrationTests(unittest.TestCase):
         })
 
     @patch.object(runner, "CHECKS", LIVE_CHECKS)
-    @patch.multiple(runner, **CURRENT_TOPOLOGY)
+    @patch.multiple(runner, **LIVE_TOPOLOGY)
     def test_entropy_partition_keeps_all_queries_on_the_existing_sixteen_roles(self):
         shards = runner.configured_shards()
         whole = runner.configured_whole_checks()
         collector = runner.configured_collector_checks()
         assigned = [row for role in (whole, collector, *shards) for row in role]
         self.assertEqual(len(shards), 14)
-        self.assertEqual(len(assigned), 52)
-        self.assertEqual(len({row[0] for row in assigned}), 52)
-        self.assertEqual(sum(row[2] for row in assigned), 431)
+        self.assertEqual(len(assigned), 53)
+        self.assertEqual(len({row[0] for row in assigned}), 53)
+        self.assertEqual(sum(row[2] for row in assigned), 441)
+        self.assertIn("clone-results", {row[0] for row in collector})
         self.assertEqual({row[0]: row[2] for row in whole}, {"arithmetic-codec": 27})
         self.assertIn("huffman-codec", {row[0] for row in shards[3]})
         self.assertEqual(set(assigned), set(LIVE_CHECKS))
@@ -274,8 +282,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 431)
-        self.assertEqual(len(checks), 52)
+        self.assertEqual(sum(row[2] for row in checks), 441)
+        self.assertEqual(len(checks), 53)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):

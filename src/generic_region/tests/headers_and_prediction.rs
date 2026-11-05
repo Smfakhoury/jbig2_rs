@@ -4,6 +4,107 @@
 use super::*;
 
 #[test]
+fn generic_header_clone_copies_every_flag_region_and_adaptive_slot() {
+    let adaptive = std::array::from_fn(|index| {
+        let values = [i32::MIN, 0, i32::MAX];
+        TemplateOffset::new(values[index % 3], values[(index + 1) % 3])
+    });
+    for template in [
+        GenericTemplate::Template0,
+        GenericTemplate::Template1,
+        GenericTemplate::Template2,
+        GenericTemplate::Template3,
+    ] {
+        for extended in [false, true] {
+            for mmr in [false, true] {
+                for typical in [false, true] {
+                    let header = GenericRegionHeader {
+                        region: crate::segment_data::RegionInfo {
+                            width: 17,
+                            height: u32::MAX,
+                            x: 5,
+                            y: 7,
+                            operator: CombinationOperator::Xnor,
+                        },
+                        mmr,
+                        template,
+                        typical_prediction: typical,
+                        extended_template: extended,
+                        adaptive,
+                    };
+                    let mut copied = header.clone();
+                    assert_eq!(
+                        (
+                            copied.region.width,
+                            copied.region.height,
+                            copied.region.x,
+                            copied.region.y,
+                            copied.region.operator
+                        ),
+                        (17, u32::MAX, 5, 7, CombinationOperator::Xnor),
+                    );
+                    assert_eq!((copied.mmr, copied.template), (mmr, template));
+                    assert_eq!(
+                        (copied.typical_prediction, copied.extended_template),
+                        (typical, extended)
+                    );
+                    assert_eq!(copied.adaptive, adaptive);
+                    copied.adaptive[0].x = 31;
+                    assert_eq!(header.adaptive[0].x, i32::MIN);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn refinement_header_clone_copies_every_field_and_both_adaptive_slots() {
+    for template in [RefinementTemplate::Template0, RefinementTemplate::Template1] {
+        for typical in [false, true] {
+            let header = RefinementRegionHeader {
+                region: crate::segment_data::RegionInfo {
+                    width: 29,
+                    height: 31,
+                    x: u32::MAX,
+                    y: 7,
+                    operator: CombinationOperator::Replace,
+                },
+                template,
+                typical_prediction: typical,
+                adaptive: [
+                    TemplateOffset::new(i32::MIN, i32::MAX),
+                    TemplateOffset::new(37, -41),
+                ],
+            };
+            let mut copied = header.clone();
+            assert_eq!(
+                (
+                    copied.region.width,
+                    copied.region.height,
+                    copied.region.x,
+                    copied.region.y,
+                    copied.region.operator
+                ),
+                (29, 31, u32::MAX, 7, CombinationOperator::Replace),
+            );
+            assert_eq!(
+                (copied.template, copied.typical_prediction),
+                (template, typical)
+            );
+            assert_eq!(
+                copied.adaptive,
+                [
+                    TemplateOffset::new(i32::MIN, i32::MAX),
+                    TemplateOffset::new(37, -41),
+                ]
+            );
+            copied.adaptive[1].y = 43;
+            assert_eq!(header.adaptive[1].y, -41);
+        }
+    }
+}
+
+#[test]
 fn parses_all_generic_header_shapes() {
     let limits = Limits::default();
 

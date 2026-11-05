@@ -94,10 +94,26 @@ impl SegmentType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RetentionFlags {
     pub(crate) values: Vec<u8>,
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+impl Clone for RetentionFlags {
+    fn clone(&self) -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| equal(out.view(), self.view()));
+        let out = Self {
+            values: self.values.clone(),
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(<RetentionFlags as View>::view);
+        }
+        out
+    }
 }
 
 impl RetentionFlags {
@@ -156,7 +172,7 @@ impl RetentionFlags {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct SegmentHeader {
     pub(crate) number: u32,
@@ -167,6 +183,53 @@ pub(crate) struct SegmentHeader {
     pub(crate) page_association: u32,
     pub(crate) data_length: Option<u32>,
     pub(crate) byte_length: usize,
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+impl Clone for SegmentHeader {
+    fn clone(&self) -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| equal(out.view(), self.view()));
+        let out = Self {
+            number: self.number,
+            segment_type: self.segment_type,
+            deferred_non_retain: self.deferred_non_retain,
+            referred_segments: self.referred_segments.clone(),
+            retention_flags: self.retention_flags.clone(),
+            page_association: self.page_association,
+            data_length: self.data_length,
+            byte_length: self.byte_length,
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(<RetentionFlags as View>::view);
+            reveal(<SegmentHeader as View>::view);
+        }
+        out
+    }
+}
+
+#[cfg(verus_keep_ghost)]
+verus! {
+    impl View for RetentionFlags {
+        type V = Seq<u8>;
+
+        closed spec fn view(&self) -> Self::V {
+            self.values@
+        }
+    }
+
+    impl View for SegmentHeader {
+        type V = (u32, SegmentType, bool, Seq<u32>, Seq<u8>, u32, Option<u32>, usize);
+
+        closed spec fn view(&self) -> Self::V {
+            (
+                self.number, self.segment_type, self.deferred_non_retain,
+                self.referred_segments@, self.retention_flags.values@,
+                self.page_association, self.data_length, self.byte_length,
+            )
+        }
+    }
 }
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
