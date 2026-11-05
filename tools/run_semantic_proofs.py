@@ -43,6 +43,7 @@ DEFAULT_SHARD_REBALANCE = {
     "mmr-horizontal": 6, "black-span": 6, "segment-data": 6,
     "error-wrappers-basic": 7, "arithmetic-initialization": 7, "bitmap-copy": 7,
     "bitmap-compose": 8, "mmr-prefix": 8, "bitmap-chunk": 8, "default-limits-3": 8,
+    "context-lifecycle": 8,
     "reader-error": 0, "huffman-assignment": 9, "halftone-header": 5,
     "segment-header": 10, "region-dispatch": 10, "integer-state": 10,
     "error-conversion": 11, "collector-sink": 11, "operator-bit": 11, "value-bridge": 11,
@@ -54,6 +55,7 @@ RECEIPT_SCHEMA = 3
 CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 27, "strong_contract", "weaker_control"),
     ("huffman-codec", "check_arithmetic_codec_proofs.py", 13, "strong_contract", "weaker_control"),
+    ("context-lifecycle", "check_context_lifecycle_proofs.py", 12, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 18, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),

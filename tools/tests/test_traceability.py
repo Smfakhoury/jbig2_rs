@@ -2093,6 +2093,7 @@ class TraceabilityTests(unittest.TestCase):
             "IAID-SEED", "IAID-CONTEXT", "IAID-HISTORY", "IAID-ITERATIONS",
             "IAID-CLEAR-SENTINEL", "IAID-RESULT",
             "INTEGER-PROCEDURE-BANKS", "IAID-STORAGE",
+            "DRIVER-CONTEXT-SEQUENCE",
             *(f"EXCHANGE-MPS-{suffix}" for suffix in groups["EXCHANGE-MPS"]),
             *(f"EXCHANGE-LPS-{suffix}" for suffix in groups["EXCHANGE-LPS"]),
         }
@@ -2112,6 +2113,7 @@ class TraceabilityTests(unittest.TestCase):
                             "arithmetic-iaid-state", "arithmetic-integer-state",
                             "arithmetic-integer-bits-run",
                             "arithmetic-exchange-normalization",
+                            "generic-snapshot-view", "refinement-snapshot-view",
                         } & set(row["models"])
                     )
                 else:
@@ -2145,6 +2147,11 @@ class TraceabilityTests(unittest.TestCase):
                         "generic_region::support::unexpected_eof",
                         "generic_region::support::integer_overflow",
                     }
+                    callers |= {
+                        "generic_region::contexts::" + owner + "::" + method
+                        for owner in ("GenericContexts", "RefinementContexts")
+                        for method in ("new", "reset", "try_snapshot", "restore")
+                    }
                     self.assertTrue({
                         "generic-probability-validation-result",
                         "generic-probability-signal-error",
@@ -2161,6 +2168,24 @@ class TraceabilityTests(unittest.TestCase):
         self.assertEqual(rows["RESET-ONE"]["strength"], "functional_contract")
         self.assertEqual(rows["RESET-SET"]["strength"], "functional_contract")
         self.assertEqual(rows["DECISION"]["strength"], "state_preservation")
+
+    def test_context_api_baseline_is_functional_support_not_complete_driver_timing(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        row = next(row for row in ledger["requirements"]
+                   if row["id"] == "T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE")
+        expected = {
+            "generic_region::contexts::" + owner + "::" + method
+            for owner in ("GenericContexts", "RefinementContexts")
+            for method in ("new", "reset", "try_snapshot", "restore")
+        }
+        self.assertTrue(expected <= {claim["runtime"] for claim in row["functional_evidence"]})
+        self.assertEqual(row["strength"], "functional_contract")
+        self.assertEqual(row["review"], "provisional")
+        self.assertTrue(row["gaps"])
+        self.assertIn("not complete E.3.8/caller", row["scope_of_formal_result"])
+        for identity in ("generic-snapshot-view", "refinement-snapshot-view"):
+            self.assertIn(identity, row["models"])
+            self.assertEqual(ledger["definitions"][identity]["file"], "specs/generic_region.rs")
 
     def test_selected_arithmetic_table_locators_and_checked_links_are_not_shifted(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")

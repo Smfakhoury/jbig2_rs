@@ -3,6 +3,168 @@
 
 use super::*;
 
+fn seed_probability_bank(contexts: &mut [ArithmeticContext]) {
+    for (index, context) in contexts.iter_mut().enumerate() {
+        *context = ArithmeticContext::from_state(
+            u8::try_from((index * 11 + 7) % 47).unwrap(),
+            u8::try_from(index % 2).unwrap(),
+        )
+        .unwrap();
+    }
+}
+
+fn assert_invalid_probability(result: &Result<(), GenericRegionError>) {
+    assert!(matches!(
+        result,
+        Err(GenericRegionError::Decode(DecodeError::Malformed(
+            MalformedError::InvalidArithmeticContextState {
+                state_index: 47,
+                mps: 0
+            }
+        )))
+    ));
+}
+
+#[test]
+fn fresh_context_banks_have_exact_metadata_and_zero_probability_states() {
+    let limits = Limits::default();
+    assert_eq!(core::mem::size_of::<ArithmeticContext>(), 2);
+    for (template, count) in [
+        (GenericTemplate::Template0, 65_536),
+        (GenericTemplate::Template1, 8_192),
+        (GenericTemplate::Template2, 1_024),
+        (GenericTemplate::Template3, 1_024),
+    ] {
+        for extended in [false, true] {
+            let bank = GenericContexts::new(template, extended, &limits).unwrap();
+            assert_eq!(bank.template, template);
+            assert_eq!(bank.extended_template, extended);
+            assert_eq!(bank.contexts.len(), count);
+            assert_eq!(bank.storage_bytes, u64::try_from(count).unwrap() * 2);
+            assert!(bank
+                .contexts
+                .iter()
+                .all(|c| c.state_index() == 0 && c.mps() == 0));
+        }
+    }
+    for (template, count) in [
+        (RefinementTemplate::Template0, 8_192),
+        (RefinementTemplate::Template1, 1_024),
+    ] {
+        let bank = RefinementContexts::new(template, &limits).unwrap();
+        assert_eq!(bank.template, template);
+        assert_eq!(bank.contexts.len(), count);
+        assert_eq!(bank.storage_bytes, u64::try_from(count).unwrap() * 2);
+        assert!(bank
+            .contexts
+            .iter()
+            .all(|c| c.state_index() == 0 && c.mps() == 0));
+    }
+}
+
+#[test]
+fn generic_context_rejections_preserve_full_bank_and_metadata() {
+    let limits = Limits::default();
+    for extended in [false, true] {
+        let mut bank = GenericContexts::new(GenericTemplate::Template3, extended, &limits).unwrap();
+        seed_probability_bank(&mut bank.contexts);
+        let mut snapshot = bank.try_snapshot(&limits).unwrap();
+        assert_eq!(snapshot.template, bank.template);
+        assert_eq!(snapshot.extended_template, extended);
+        assert_eq!(snapshot.storage_bytes, bank.storage_bytes);
+        assert_eq!(snapshot.contexts, bank.contexts);
+        snapshot.contexts[7] = ArithmeticContext {
+            state_index: 47,
+            mps: 0,
+        };
+        snapshot.contexts[9] = ArithmeticContext {
+            state_index: 0,
+            mps: 2,
+        };
+        bank.storage_bytes = 73;
+        let before = bank.contexts.clone();
+        assert_invalid_probability(&bank.restore(&snapshot, &limits));
+        assert_eq!(bank.contexts, before);
+        assert_eq!(bank.template, GenericTemplate::Template3);
+        assert_eq!(bank.extended_template, extended);
+        assert_eq!(bank.storage_bytes, 73);
+        bank.contexts[7] = ArithmeticContext {
+            state_index: 47,
+            mps: 0,
+        };
+        assert_invalid_probability(&bank.try_snapshot(&limits).map(|_| ()));
+        assert_eq!(bank.contexts[7].state_index, 47);
+        bank.reset().unwrap();
+        assert!(bank
+            .contexts
+            .iter()
+            .all(|c| c.state_index() == 0 && c.mps() == 0));
+        assert_eq!(bank.storage_bytes, 73);
+        bank.contexts.pop();
+        let before = bank.contexts.clone();
+        assert!(matches!(
+            bank.reset(),
+            Err(GenericRegionError::ContextIndex {
+                index: 1024,
+                count: 1023
+            })
+        ));
+        assert_eq!(bank.contexts, before);
+        assert_eq!(bank.template, GenericTemplate::Template3);
+        assert_eq!(bank.extended_template, extended);
+        assert_eq!(bank.storage_bytes, 73);
+    }
+}
+
+#[test]
+fn refinement_context_rejections_preserve_full_bank_and_metadata() {
+    let limits = Limits::default();
+    let mut bank = RefinementContexts::new(RefinementTemplate::Template1, &limits).unwrap();
+    seed_probability_bank(&mut bank.contexts);
+    let mut snapshot = bank.try_snapshot(&limits).unwrap();
+    assert_eq!(snapshot.template, bank.template);
+    assert_eq!(snapshot.storage_bytes, bank.storage_bytes);
+    assert_eq!(snapshot.contexts, bank.contexts);
+    snapshot.contexts[7] = ArithmeticContext {
+        state_index: 47,
+        mps: 0,
+    };
+    snapshot.contexts[9] = ArithmeticContext {
+        state_index: 0,
+        mps: 2,
+    };
+    bank.storage_bytes = 73;
+    let before = bank.contexts.clone();
+    assert_invalid_probability(&bank.restore(&snapshot, &limits));
+    assert_eq!(bank.contexts, before);
+    assert_eq!(bank.template, RefinementTemplate::Template1);
+    assert_eq!(bank.storage_bytes, 73);
+    bank.contexts[7] = ArithmeticContext {
+        state_index: 47,
+        mps: 0,
+    };
+    assert_invalid_probability(&bank.try_snapshot(&limits).map(|_| ()));
+    assert_eq!(bank.contexts[7].state_index, 47);
+    bank.reset().unwrap();
+    assert!(bank
+        .contexts
+        .iter()
+        .all(|c| c.state_index() == 0 && c.mps() == 0));
+    assert_eq!(bank.storage_bytes, 73);
+    bank.contexts.pop();
+    let before = bank.contexts.clone();
+    assert!(matches!(
+        bank.reset(),
+        Err(GenericRegionError::ContextIndex {
+            index: 1024,
+            count: 1023
+        })
+    ));
+    assert_eq!(bank.contexts, before);
+    assert_eq!(bank.template, RefinementTemplate::Template1);
+    assert_eq!(bank.storage_bytes, 73);
+}
+
 #[test]
 fn generic_arithmetic_session_preserves_contexts_and_stream() {
     const ANNEX_H_ENCODED: [u8; 30] = [

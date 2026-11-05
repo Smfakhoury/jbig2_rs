@@ -18,9 +18,12 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_CONTEXT_BASELINE_CHECKS = tuple(
+    row for row in LIVE_CHECKS if row[0] != "context-lifecycle"
+)
 PRE_IMPL_IDENTITY_CHECKS = tuple(
     (name, script, 6 if name == "error-wrappers-basic" else count, strong, weaker)
-    for name, script, count, strong, weaker in LIVE_CHECKS
+    for name, script, count, strong, weaker in PRE_CONTEXT_BASELINE_CHECKS
 )
 PRE_ENTROPY_PARTITION_CHECKS = tuple(
     (name, script, 40 if name == "arithmetic-codec" else count, strong, weaker)
@@ -249,9 +252,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
         collector = runner.configured_collector_checks()
         assigned = [row for role in (whole, collector, *shards) for row in role]
         self.assertEqual(len(shards), 14)
-        self.assertEqual(len(assigned), 50)
-        self.assertEqual(len({row[0] for row in assigned}), 50)
-        self.assertEqual(sum(row[2] for row in assigned), 407)
+        self.assertEqual(len(assigned), 51)
+        self.assertEqual(len({row[0] for row in assigned}), 51)
+        self.assertEqual(sum(row[2] for row in assigned), 419)
         self.assertEqual({row[0]: row[2] for row in whole}, {"arithmetic-codec": 27})
         self.assertIn("huffman-codec", {row[0] for row in shards[3]})
         self.assertEqual(set(assigned), set(LIVE_CHECKS))
@@ -268,8 +271,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 407)
-        self.assertEqual(len(checks), 50)
+        self.assertEqual(sum(row[2] for row in checks), 419)
+        self.assertEqual(len(checks), 51)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):
@@ -864,7 +867,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 self.assertEqual(result["status"], "passed")
 
     def test_manifest_covers_every_semantic_checker_without_fixed_group_or_case_totals(self):
-        checks = runner.configured_checks()
+        with patch.object(runner, "CHECKS", LIVE_CHECKS):
+            checks = runner.configured_checks()
         self.assertEqual(len({row[0] for row in checks}), len(checks))
         self.assertEqual(
             {row[1] for row in checks},

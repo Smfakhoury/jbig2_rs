@@ -291,6 +291,26 @@ has fifty groups and 405 contrasts; the separate 220 native mutations are
 unchanged. This is workload redistribution, not new functional proof coverage,
 additional CI capacity or an increased time budget.
 
+## Context-bank API baseline
+
+Generic/refinement bank construction exposes zero probability states and
+canonical stored-byte metadata. Reset preserves configuration, stored metadata
+and length, zeroes every entry on success, and leaves the bank unchanged on
+rejection. Snapshot results preserve exact bank contents and metadata; restore
+copies the complete validated snapshot bank on success and leaves the destination
+unchanged on rejection. No new API preconditions are imposed.
+
+Closed logical snapshot views and verified defining-module bridges preserve
+private runtime fields. The guarantees concern these actual API operations,
+not the correctness of every caller's flag/bank/reset-retention timing or full
+decoded raster. Stored-byte metadata is not observed vector capacity, allocator
+overhead or a total process-memory bound.
+
+Independent native bank patterns, API-allowed configurations, exact limit/error
+payloads, malformed layouts and invalid probability states accompany compiling
+strong/weaker contrasts. Internal malformed-state cases exercise the helpers'
+stated entry domain; they are not public compressed-image witnesses.
+
 ## Remaining functional coverage
 
 Exhaustive requirement enumeration, independent table/coordinate fidelity and
