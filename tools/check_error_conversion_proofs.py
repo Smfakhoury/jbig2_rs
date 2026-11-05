@@ -20,6 +20,7 @@ CASES = tuple(
     {
         "id": identity, "file": f"src/{scope}.rs", "module": "error",
         "verification_module": scope, "function": "DecodeError::from",
+        "impl_trait": f"From<{ERROR_TYPES[scope]}>",
         "site": site, "replacement": replacement,
         "controls": ((
             f"impl FromSpecImpl<{ERROR_TYPES[scope]}> for DecodeError {{ " + OBEYS,

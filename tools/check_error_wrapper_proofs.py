@@ -59,6 +59,14 @@ def wrapping_cases(scope, target, sources):
 CASE_GROUPS = {
     "error-wrappers-basic": (
         wrapper_case(
+            "error", "DecodeError", "MalformedError", "Self::from_malformed(error)",
+            "Self::Malformed(MalformedError::IntegerOverflow)",
+        ),
+        wrapper_case(
+            "error", "DecodeError", "LimitExceeded", "Self::from_limit_exceeded(error)",
+            "Self::Malformed(MalformedError::IntegerOverflow)",
+        ),
+        wrapper_case(
             "arithmetic", "ArithmeticError", "MalformedError", "Self::Malformed(error)",
             "Self::Malformed(MalformedError::IntegerOverflow)",
         ),
