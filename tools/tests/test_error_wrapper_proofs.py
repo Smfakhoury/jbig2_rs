@@ -11,10 +11,10 @@ from source_group import bound_source_groups, relocate_cases
 
 
 class ErrorWrapperProofTests(unittest.TestCase):
-    def test_all_twenty_sites_and_selective_contracts_bind_exact_source_traits(self):
+    def test_all_twenty_two_sites_and_selective_contracts_bind_exact_source_traits(self):
         groups, sources, _ = bound_source_groups(ROOT, FILES)
-        self.assertEqual(len(CASES), 20)
-        self.assertEqual([len(cases) for cases in CASE_GROUPS.values()], [6, 7, 7])
+        self.assertEqual(len(CASES), 22)
+        self.assertEqual([len(cases) for cases in CASE_GROUPS.values()], [8, 7, 7])
         for configured in CASE_GROUPS.values():
             cases, baselines = relocate_cases(ROOT, configured, (), sources)
             self.assertEqual(baselines, ())

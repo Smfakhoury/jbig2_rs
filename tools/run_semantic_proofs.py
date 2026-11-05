@@ -88,7 +88,7 @@ CHECKS = (
     ("bitmap-chunk", "check_bitmap_chunk_proofs.py", 4, "strong_contract", "weaker_control"),
     ("mmr-prefix", "check_mmr_prefix_proofs.py", 4, "strong_contract", "weaker_control"),
     ("error-conversion", "check_error_conversion_proofs.py", 8, "strong_contract", "weaker_control"),
-    ("error-wrappers-basic", "check_error_wrapper_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("error-wrappers-basic", "check_error_wrapper_proofs.py", 8, "strong_contract", "weaker_control"),
     ("error-wrappers-regions", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
     ("error-wrappers-symbol", "check_error_wrapper_proofs.py", 7, "strong_contract", "weaker_control"),
     ("default-limits-1", "check_default_proofs.py", 3, "strong_contract", "weaker_control"),
@@ -705,6 +705,7 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
     positive = load_whole_baseline(root, whole)
     rows_by_id = {}
     directories = {}
+    semantic_reports = {}
     producers = [
         (index, shard, inputs / (prefix + f"shard-{index}"))
         for index, shard in enumerate(shards)
@@ -747,6 +748,7 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
                 raise ValueError(f"failed, duplicate or stale semantic group: {identity}")
             expected_files.update((report.name, log.name))
             check_bound_report(root, check, read_json(report), current["source_bindings"], positive)
+            semantic_reports[identity] = read_json(report)
             rows_by_id[identity] = row
             directories[identity] = directory
         if {path.name for path in directory.iterdir()} != expected_files:
@@ -788,6 +790,13 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
         ),
         "scope": "Complete same-run whole-crate and all configured isolated semantic evidence.",
     }
+    from check_traceability import runtime_inventory
+    from implementation_identity import qualify
+
+    assessment = read_json(whole / TRACE / "verifier-report.json")["validation_readiness"]
+    result["implementation_identities"] = qualify(
+        runtime_inventory(root), assessment, semantic_reports,
+    )
     write_json(output / TRACE / SUMMARY, result)
     return result
 

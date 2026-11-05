@@ -18,9 +18,13 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_IMPL_IDENTITY_CHECKS = tuple(
+    (name, script, 6 if name == "error-wrappers-basic" else count, strong, weaker)
+    for name, script, count, strong, weaker in LIVE_CHECKS
+)
 PRE_ENTROPY_PARTITION_CHECKS = tuple(
     (name, script, 40 if name == "arithmetic-codec" else count, strong, weaker)
-    for name, script, count, strong, weaker in LIVE_CHECKS if name != "huffman-codec"
+    for name, script, count, strong, weaker in PRE_IMPL_IDENTITY_CHECKS if name != "huffman-codec"
 )
 CURRENT_TOPOLOGY = {
     "CI_SHARDS": runner.CI_SHARDS,
@@ -247,7 +251,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(len(shards), 14)
         self.assertEqual(len(assigned), 50)
         self.assertEqual(len({row[0] for row in assigned}), 50)
-        self.assertEqual(sum(row[2] for row in assigned), 405)
+        self.assertEqual(sum(row[2] for row in assigned), 407)
         self.assertEqual({row[0]: row[2] for row in whole}, {"arithmetic-codec": 27})
         self.assertIn("huffman-codec", {row[0] for row in shards[3]})
         self.assertEqual(set(assigned), set(LIVE_CHECKS))
@@ -264,7 +268,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 405)
+        self.assertEqual(sum(row[2] for row in checks), 407)
         self.assertEqual(len(checks), 50)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)

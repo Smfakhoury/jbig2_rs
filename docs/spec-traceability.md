@@ -175,6 +175,27 @@ assessment from current source, verifier names, accounting and ledger data.
 Missing/truncated inventories, altered readiness/percentage claims and invented
 statement denominators are rejected even if artifact hashes are refreshed.
 
+### Post-semantic implementation identity qualification
+
+The final `semantic-proof-summary.json` includes `implementation_identities`.
+After every same-run semantic report has passed its existing source/tool/receipt
+checks, this section binds shared verifier names to exact file, lexical proof
+scope, owning type, method and implementation-trait identities.
+
+Each shared implementation needs a fresh selected pristine proof covering every
+selected peer, a compiling strong mutant that fails only that implementation,
+and an accepted weaker control preserving the peers. An aggregate whole-proof
+name cannot substitute for that selected evidence. Source hashes, exact peer
+sets and proof/error cardinalities are checked; missing evidence fails collection.
+Existing conversion controls are reused, with two additional root error-wrapper
+controls where evidence was absent. The native source and its contracts are
+unchanged.
+
+The immutable whole-stage readiness report still exposes the raw shared-name
+queue. The final semantic section supplies its evidence-backed resolution;
+it does not rewrite the earlier artifact or qualify contract quality,
+reachability, generated code, complete statements or external-validation readiness.
+
 ## Reproduction
 
 ```sh
