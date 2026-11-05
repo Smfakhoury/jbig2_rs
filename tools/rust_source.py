@@ -19,6 +19,42 @@ def parse(source: bytes):
     return tree.root_node
 
 
+def contract_sections(record, section):
+    if section not in {"requires", "ensures", "recommends", "decreases", "returns"}:
+        raise ValueError(f"unknown contract section: {section}")
+    sections = []
+    for attribute in record["attributes"]:
+        source = attribute.encode("utf-8")
+        if not re.match(
+            rb"^\s*#\[\s*cfg_attr\s*\(\s*verus_keep_ghost\s*,\s*verus_spec\s*\(",
+            source,
+        ):
+            continue
+        clean, keywords = bytearray(source), bytearray(source)
+        pending = [parse(source + b"\nfn contract_attribute_probe() {}")]
+        while pending:
+            node = pending.pop()
+            comment = node.type in {"line_comment", "block_comment"}
+            literal = node.type in {"string_literal", "raw_string_literal", "char_literal"}
+            if comment or literal:
+                for index in range(node.start_byte, min(node.end_byte, len(source))):
+                    if keywords[index] not in (10, 13):
+                        keywords[index] = 32
+                    if comment and clean[index] not in (10, 13):
+                        clean[index] = 32
+            else:
+                pending.extend(node.named_children)
+        start = re.search(rb"\b" + section.encode() + rb"\b", keywords)
+        if start:
+            end = re.search(
+                rb"\b(?:requires|ensures|recommends|decreases|returns)\b",
+                keywords[start.end():],
+            )
+            stop = start.end() + end.start() if end else len(source)
+            sections.append(bytes(clean[start.end():stop]).decode("utf-8"))
+    return sections
+
+
 def split_arguments(text: str) -> list[str]:
     parts = []
     start = depth = 0
