@@ -47,6 +47,30 @@ function is not a result guarantee.
 
 ## Models and their limits
 
+### Actual compiled native inventory
+
+The [compiler collector](../tools/collect_compiler_inventory.py) uses the already
+pinned coverage/fuzz nightly in an isolated offline native-library build. It
+exports private/hidden compiler items, source-spanned MIR and a nonempty compiled
+library. The [reconciler](../tools/compiler_inventory.py) checks every explicit
+source declaration, source derive, executable body, closure and ADT constructor.
+Copy/equality/internal derive marker implementations and duplicate CTFE bodies
+remain visible but are not counted as additional executable functions.
+
+The Linux CI artifact contains the original exports, toolchain/command identities,
+source/tool hashes and a replayable report. Recheck it without rebuilding:
+
+```sh
+python -B tools/collect_compiler_inventory.py \
+  --output-dir target/traceability/compiler-inventory --check-existing
+```
+
+This complements the conservative explicit-source inventory; it does not replace
+it with an obligation count. Native compiler ownership is not proof-mode identity,
+semantic contract quality, a public call graph or an admissible stage domain.
+Those qualifications remain explicit open obligations. No readiness or coverage
+percentage follows from this compiler-profile reconciliation.
+
 ### Source-only purpose inventory
 
 `model_classifications` identifies exact declaration families as project
