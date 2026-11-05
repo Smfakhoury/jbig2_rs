@@ -196,6 +196,37 @@ queue. The final semantic section supplies its evidence-backed resolution;
 it does not rewrite the earlier artifact or qualify contract quality,
 reachability, generated code, complete statements or external-validation readiness.
 
+### Existing inherited result-contract ownership
+
+The final semantic summary also contains `trait_contract_ownership`. Its bounded
+rule recognizes existing `From<T>` result contracts only when the exact native
+implementation has a concrete, enabled `FromSpecImpl<T>` model in the same file
+and lexical scope, and the configured weaker control disables that exact model's
+enabling condition. Actual source-bound positive/strong/weak evidence must still
+preserve every selected peer.
+
+The standard contract is the existing pinned vstd `ExFrom::from` conditional
+result equality. Its package version/checksum and source-file digest identify
+the inspected rule; manifest/lock equality is checked on each assessment. This
+is fixed source-rule provenance, not a fresh dependency download, a new standard
+specification/assumption or independent normative approval. Changing the pin
+requires reviewing the ownership rule rather than silently carrying credit.
+
+Model parsing distinguishes real Verus implementation/function tokens from
+comments and literals. It requires the concrete typed input/result methods,
+literal `obeys_from_spec = true`, a result definition referencing its input,
+and no direct arbitrary/assume/admit/external/opaque markers in the model.
+These are bounded ownership/syntax checks, not a transitive dependency-closure
+audit or independent semantic-quality/source-fidelity judgments.
+
+The immutable whole-stage no-local-postcondition queue is retained. The final
+section records which members already own an inherited result guarantee and
+the remaining review count, without adding contracts solely to improve syntax
+figures. Unique native implementations may use the existing exact source-bound
+whole positive; shared names continue to require fresh selected positives.
+Readiness, public/stage reachability, generated code and exhaustive statement
+coverage remain unqualified.
+
 ## Reproduction
 
 ```sh

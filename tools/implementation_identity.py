@@ -21,6 +21,61 @@ def exact_count(value, expected):
     return type(value) is int and value == expected
 
 
+def validate_case(runtime, record, case, document, whole=None, allow_unique_whole=False):
+    identity = record["id"]
+    peers = sorted(
+        peer["impl_trait"] for peer in runtime.values()
+        if peer["file"] == record["file"]
+        and peer["verification_scope"] == record["verification_scope"]
+        and function_name(peer) == function_name(record)
+        and peer["verification_requested"] and not peer["runtime_proof_divergence"]
+    )
+    if (
+        document["status"] != "passed" or document["production_sources_modified"] is not False
+        or not peers or any(not isinstance(trait, str) or not trait for trait in peers)
+        or len(set(peers)) != len(peers)
+        or case.get("selected_impl_traits") != peers
+        or document["source_bindings"].get(record["file"]) != record["file_sha256"]
+        or case.get("normal_rust_compiles") is not True
+        or case.get("strong_contract") != "rejected" or case.get("weaker_control") != "accepted"
+        or not exact_count(case.get("strong_verifier_errors"), 1)
+        or not exact_count(case.get("control_verifier_errors"), 0)
+        or not exact_count(case.get("strong_verified_functions"), len(peers) - 1)
+        or not exact_count(case.get("control_verified_functions"), len(peers))
+        or case.get("baseline_selected_functions") != [
+            "::".join(part for part in (record["owner"], record["name"]) if part)
+        ]
+    ):
+        raise ValueError(f"incomplete implementation-specific semantic control: {identity}")
+    baseline = case["baseline_selected_verification"]
+    if "whole_positive" in baseline and allow_unique_whole:
+        from run_semantic_proofs import baseline_passed
+        from source_group import whole_binds_unique_implementation
+
+        selected = {
+            "file": record["file"], "module": record["verifier_module"],
+            "verification_module": record["verification_scope"],
+            "function": "::".join(part for part in (record["owner"], record["name"]) if part),
+            "impl_trait": record["impl_trait"], "selected_impl_traits": peers,
+        }
+        name = "jbig2_rs_production::" + function_name(record)
+        if not whole_binds_unique_implementation(selected, list(runtime.values())) or not baseline_passed(
+            baseline, whole, (name,),
+        ):
+            raise ValueError(f"whole positive does not bind one exact implementation: {identity}")
+    elif (
+        "whole_positive" in baseline
+        or baseline.get("success", True) is not True
+        or not exact_count(baseline.get("verified"), len(peers))
+        or not exact_count(baseline.get("errors"), 0)
+        or any(baseline.get(flag) is not False for flag in (
+            "encountered-error", "encountered-vir-error", "is-verifying-entire-crate",
+        ))
+    ):
+        raise ValueError(f"shared name needs a fresh exact selected positive: {identity}")
+    return peers
+
+
 def qualify(runtime, assessment, reports):
     declarations = assessment["code"]["declarations"]
     if {row["id"] for row in declarations} != set(runtime) or len(declarations) != len(runtime):
@@ -55,40 +110,7 @@ def qualify(runtime, assessment, reports):
             if document["status"] != "passed" or document["production_sources_modified"] is not False:
                 raise ValueError("identity evidence must come from passed unmodified semantic reports")
             identity, record = matches[0]
-            peers = sorted(
-                peer["impl_trait"] for peer in runtime.values()
-                if peer["file"] == record["file"]
-                and peer["verification_scope"] == record["verification_scope"]
-                and function_name(peer) == function_name(record)
-                and peer["verification_requested"] and not peer["runtime_proof_divergence"]
-            )
-            if (
-                not peers or any(not isinstance(trait, str) or not trait for trait in peers)
-                or len(set(peers)) != len(peers)
-                or case.get("selected_impl_traits") != peers
-                or document["source_bindings"].get(record["file"]) != record["file_sha256"]
-                or case.get("normal_rust_compiles") is not True
-                or case.get("strong_contract") != "rejected"
-                or case.get("weaker_control") != "accepted"
-                or not exact_count(case.get("strong_verifier_errors"), 1)
-                or not exact_count(case.get("control_verifier_errors"), 0)
-                or not exact_count(case.get("strong_verified_functions"), len(peers) - 1)
-                or not exact_count(case.get("control_verified_functions"), len(peers))
-                or case.get("baseline_selected_functions") != [
-                    "::".join(part for part in (record["owner"], record["name"]) if part)
-                ]
-            ):
-                raise ValueError(f"incomplete implementation-specific semantic control: {identity}")
-            baseline = case["baseline_selected_verification"]
-            if (
-                "whole_positive" in baseline
-                or not exact_count(baseline.get("verified"), len(peers))
-                or not exact_count(baseline.get("errors"), 0)
-                or any(baseline.get(flag) is not False for flag in (
-                    "encountered-error", "encountered-vir-error", "is-verifying-entire-crate",
-                ))
-            ):
-                raise ValueError(f"shared name needs a fresh exact selected positive: {identity}")
+            peers = validate_case(runtime, record, case, document)
             evidence[identity].append({
                 "group": group, "case_id": case["id"],
                 "case_sha256": hashlib.sha256(json.dumps(
