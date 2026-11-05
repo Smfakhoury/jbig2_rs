@@ -17,7 +17,8 @@ from urllib.parse import parse_qs, quote, urlsplit
 from jsonschema import ValidationError, validate as validate_json
 
 from evidence import invalid_constant, load_json, read_evidence, unique_object
-from rust_source import items, parse, production_code, source_functions
+from rust_source import contract_sections, items, parse, production_code, source_functions
+from readiness_assessment import assess
 from rust_tests import discover_tests as discover_cargo_tests, test_inventory
 
 
@@ -774,30 +775,7 @@ def check_contract(record, section, tokens):
         raise ValueError(f"tautological contract evidence on {record['id']}")
     if len({compact(token) for token in tokens}) != len(tokens):
         raise ValueError(f"duplicate contract token on {record['id']}")
-    sections = []
-    for attribute in record["attributes"]:
-        source = attribute.encode("utf-8")
-        masked = bytearray(source)
-        pending = [parse(source + b"\nfn traceability_attribute_probe() {}")]
-        while pending:
-            node = pending.pop()
-            if node.type in {"line_comment", "block_comment"}:
-                for index in range(node.start_byte, min(node.end_byte, len(masked))):
-                    if masked[index] not in (10, 13):
-                        masked[index] = 32
-            else:
-                pending.extend(node.named_children)
-        attribute = masked.decode("utf-8")
-        if not re.match(
-            r"^\s*#\[\s*cfg_attr\s*\(\s*verus_keep_ghost\s*,\s*verus_spec\s*\(",
-            attribute,
-        ):
-            continue
-        start = re.search(rf"\b{section}\b", attribute)
-        if start:
-            text = attribute[start.end():]
-            end = re.search(r"\b(?:requires|ensures|recommends|decreases|returns)\b", text)
-            sections.append(compact(text[:end.start()] if end else text))
+    sections = [compact(text) for text in contract_sections(record, section)]
     if not sections or not all(any(compact(token) in text for text in sections) for token in tokens):
         raise ValueError(f"claimed {section} evidence is not present on {record['id']}")
 
@@ -1065,6 +1043,7 @@ def check(ledger, root, verifier_names=None, discovered=None):
             else "owner_release_review_required"
         ),
         "note": "Links and declared evidence strength are checked, not semantic truth. Report symbols do not establish report freshness: the caller must run pinned Verus on the same source, as CI does. Standard-to-model translation remains a review obligation.",
+        "validation_readiness": assess(ledger, runtime, verifier_names, coverage),
     }
 
 
@@ -1255,6 +1234,34 @@ def main():
             "# Provisional normative traceability", "",
             f"Status: **{report['status']}**. No full-conformance or complete-proof claim.", "",
         ]
+        readiness = report["validation_readiness"]
+        table += [
+            "## External-validation readiness gap assessment", "",
+            "**Gap assessment only; readiness, semantic contract quality and complete production/reachability "
+            "inventory are not qualified. No completion percentage is claimed.**", "",
+            f"Selected explicit production declarations: **{readiness['code']['explicit_declarations']}**.",
+            f"Local contract surfaces: `{json.dumps(readiness['code']['contract_surfaces'], sort_keys=True)}`.",
+            f"Declarations with direct functional-evidence links: **{readiness['code']['with_direct_functional_evidence_links']}**.",
+            f"No-local-postcondition accounting: `{json.dumps(readiness['code']['no_local_postcondition_by_accounting_status'], sort_keys=True)}`.",
+            "A syntactic postcondition or direct link is not a functional-coverage judgment. "
+            "Trait-owned contracts, generated code and call domains still need qualification.", "",
+            f"Selected statement records: **{readiness['statements']['selected_records']}**; "
+            "**exhaustive source-statement denominator: not established**.",
+            "Per-declaration identities, shared verifier names, module distributions, explicit limitations "
+            "and remaining feature worklists are in `validation_readiness` in the JSON report.", "",
+            "| Module | Explicit declarations | Local postcondition | No local postcondition | Trait without local postcondition | Direct functional links |",
+            "|---|---:|---:|---:|---:|---:|",
+        ]
+        for module in readiness["code"]["modules"]:
+            surfaces = module["contract_surfaces"]
+            table.append("| " + " | ".join(str(value) for value in (
+                module["module"], module["explicit_declarations"],
+                surfaces.get("local_postcondition_surface", 0),
+                surfaces.get("no_local_postcondition_surface", 0),
+                surfaces.get("trait_implementation_without_local_postcondition", 0),
+                module["with_direct_functional_evidence_links"],
+            )) + " |")
+        table.append("")
         if "source_review_disposition" in report:
             disposition = report["source_review_disposition"]
             table += [

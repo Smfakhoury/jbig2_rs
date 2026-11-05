@@ -1546,10 +1546,10 @@
       ],
       "remaining_scope": [
         "The selected A.1-A.3, E.3-E.3.5, E.3.7 and decoder-shared E.2.5/Table E.1 accounting is provisional; owner review may identify further obligations. No exhaustive-denominator or approved-decomposition claim is made.",
-        "Selected decision/context, refill, initialization and normalization helpers expose their recorded exact project relations. Integer/IAID output semantics, complete caller composition and normative register/stream interpretation remain open; helper-level functional contracts do not establish full arithmetic decoding.",
+        "Selected decision/context, refill, initialization, normalization and integer/IAID helpers expose exact project value/error/state/frame relations. IAID prefix/range/zero-width properties, fresh arithmetic banks/registers and checked/enum symbol-ID composition are proved locally. Procedure/caller selection and complete encoded-stream composition remain open; these results do not independently establish normative register/stream fidelity.",
         "Procedure-specific bank selection, context-sequence agreement, initialization/reset timing and complete caller composition are not established by local arithmetic helper contracts.",
         "E.3.6 error-recovery discussion, E.3.8 GB/GR statistics save/restore and cross-clause segment/caller rules are outside this selected tranche and remain undecomposed here; encoder-only E.1/E.2 algorithms and non-normative Annex G are not newly enumerated.",
-        "Native numeric tests cover selected decision/refill/initialization/normalization boundaries, while callback integer/IAID tests remain bounded support only. Independent standard-to-model review and universal caller/decoded-output relations remain missing."
+        "Independent native numeric, bank/state, integer/IAID and actual symbol-ID caller tests support the selected operational contracts. They remain bounded observations, not independent standard-to-model approval or universal caller/decoded-output relations."
       ]
     },
     {
@@ -1564,7 +1564,7 @@
         "T88-HUFFMAN-OOB-VALUE"
       ],
       "remaining_scope": [
-        "Independent per-table normative review and complete table/caller selection enumeration remain open; prefix selection and whole-decoder value equivalence are unproved."
+        "Operational canonical/cache/fallback prefix selection and exact project result/reader-frame composition are proved for supplied production tables. Independent per-table normative fidelity, complete encoded table/caller selection enumeration and whole-decoder output composition remain open."
       ]
     },
     {
@@ -1654,7 +1654,7 @@
         "T88-DICTIONARY-EXPORT-ORDER"
       ],
       "remaining_scope": [
-        "Remaining flags/table selection, imports, height/width recurrences, collective/direct/refined bitmap semantics, export-run interpretation and context save/restore still need complete decomposition and output proofs."
+        "Existing header fields, checked symbol-ID composition, actual segment count/width derivation and fresh Huffman setup do not complete encoded flag/table/codec selection, imported contents, height/width recurrences, collective/direct/refined bitmaps, export-run interpretation or context save/restore. These still need statement decomposition and consistent caller/output coverage; deeper full-output proofs follow validation unless needed for the readiness baseline."
       ]
     },
     {
@@ -1668,7 +1668,7 @@
         "T88-TEXT-CLIPPED-COMPOSITION"
       ],
       "remaining_scope": [
-        "Full flag fields, strip-delta recurrences, entropy/ID consumption, instance order, refinement selection and composed visible pixels remain open; a current-state placement theorem is not a whole text-region theorem."
+        "Existing header fields, actual ID request extent/width forwarding, enclosing segment width and fresh Huffman setup do not complete encoded flag/table/codec choice, strip-delta recurrences, instance order, refinement selection or visible-output composition. A current-state placement theorem is not a whole text-region theorem; deeper full-output proofs follow validation unless needed for the readiness baseline."
       ]
     },
     {

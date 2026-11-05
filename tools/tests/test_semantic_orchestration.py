@@ -1461,6 +1461,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 self.assertFalse(runner.baseline_passed(changed))
 
     def whole_fixture(self, whole):
+        from check_traceability import runtime_inventory
+        from readiness_assessment import assess
+
         details = {"module::function": {"failed_proof_notes": []}}
         coverage = {
             "schema_version": 1, "source": "fixture", "verus_verified_obligations": 1,
@@ -1481,15 +1484,53 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "func-details": details, "verus": {"version": "pinned"},
         })
         ledger = self.root / "validation/traceability/requirements.json"
-        runner.write_json(ledger, {"requirements": [{"id": "fixture"}], "features": [{}]})
+        ledger_data = {
+            "requirements": [{
+                "id": "fixture", "runtime": [], "functional_evidence": [],
+                "invariant_evidence": [], "strength": "safety_only", "gaps": [],
+            }],
+            "features": [{
+                "feature": "fixture", "decomposition": "partial",
+                "requirement_ids": ["fixture"], "remaining_scope": ["Other statements."],
+            }],
+        }
+        runner.write_json(ledger, ledger_data)
         runner.write_json(whole / runner.TRACE / "verifier-report.json", {
             "status": "references_valid_scope_incomplete", "verifier_report_checked": True,
-            "requirements": [{"id": "fixture"}], "requirement_count": 1, "feature_count": 1,
+            "requirements": ledger_data["requirements"], "requirement_count": 1, "feature_count": 1,
             "ledger_sha256": runner.digest(ledger),
+            "validation_readiness": assess(
+                ledger_data, runtime_inventory(self.root), set(details),
+                {record["id"]: record for record in coverage["functions"]},
+            ),
         })
         native = whole / "target/verus-production/libfixture.rlib"
         native.parent.mkdir(parents=True)
         native.write_bytes(b"native compilation fixture")
+
+    def test_whole_recomputes_readiness_instead_of_accepting_claims_or_partial_inventory(self):
+        whole = self.root / "whole"
+        self.whole_fixture(whole)
+        path = whole / runner.TRACE / "verifier-report.json"
+        original = runner.read_json(path)
+        for mutation in ("ready", "percentage", "declarations", "statements", "missing"):
+            changed = copy.deepcopy(original)
+            assessment = changed["validation_readiness"]
+            if mutation == "ready":
+                assessment["ready_for_external_validation"] = True
+            elif mutation == "percentage":
+                assessment["readiness_percentage"] = 100
+            elif mutation == "declarations":
+                assessment["code"]["declarations"].pop()
+            elif mutation == "statements":
+                assessment["statements"]["exhaustive_statement_count"] = 1
+            else:
+                del changed["validation_readiness"]
+            runner.write_json(path, changed)
+            with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, "readiness gap"):
+                runner.validate_whole(self.root, whole)
+        runner.write_json(path, original)
+        runner.validate_whole(self.root, whole)
 
     def collection_fixture(self):
         inputs = self.root / "inputs"

@@ -542,8 +542,10 @@ def whole_files(directory):
 
 
 def validate_whole(root, directory):
+    from check_traceability import runtime_inventory
     from evidence import validate
     from jsonschema import ValidationError
+    from readiness_assessment import assess
 
     report = read_json(directory / "verus-production.json")
     inventory = directory / "production-proof-coverage-ci.json"
@@ -594,6 +596,12 @@ def validate_whole(root, directory):
         )
     ):
         raise ValueError("whole-crate traceability was not checked")
+    expected_readiness = assess(
+        ledger, runtime_inventory(root), set(report["func-details"]),
+        {record["id"]: record for record in coverage["functions"]},
+    )
+    if trace.get("validation_readiness") != expected_readiness:
+        raise ValueError("whole-crate readiness gap assessment differs from actual source/evidence")
     return whole_files(directory)
 
 

@@ -10,13 +10,37 @@ The [support matrix](../config/support-matrix.json) defines supported,
 unsupported and deferred behavior. The [release validation](publication-readiness.md)
 page describes measured results and their limits.
 
-## Requirement and functional-proof coverage
+## Current milestone: readiness for external validation
+
+The current finish line is complete representation and traceability of applicable
+specification statements plus consistent, meaningful contract/proof coverage
+across production code, sufficient for a reproducible external-validator handoff.
+It is not maximally detailed end-to-end proof completion before validation.
+
+The first assessment measures explicit source declarations, local contract
+surfaces, direct requirement/evidence links and declared feature worklists.
+It does not qualify generated-code coverage, trait-contract ownership,
+public/stage reachability, semantic contract quality or an exhaustive statement
+denominator. Those gaps must remain visible; a syntactic postcondition, verified
+function count or broad feature row cannot make readiness complete.
+
+The next work is to qualify the source/contract baseline, complete the
+source-located statement inventory and freeze the validator inputs, domains,
+assumptions and limitations. Existing CI, supported behavior and branch
+protections are unchanged. Independent validation and adjudicated findings
+then prioritize deeper proof/model/runtime corrections. Known supported-feature
+defects are not deferred as optional proof detail.
+
+See [statement traceability](spec-traceability.md) and
+[#135](https://github.com/microsoft/jbig2_rs/issues/135).
+
+## Longer-term requirement and functional-proof coverage
 
 The [ledger](../validation/traceability/requirements.json) connects selected
 T.88/T.6 requirements to source, contracts, models, proofs and exact tests.
 It is not an exhaustive standards denominator.
 
-Further work includes:
+Longer-term work includes:
 
 - Complete arithmetic integer/IAID and Huffman/MMR caller/output composition.
 - Generic/refinement template, prediction, reference alignment and raster

@@ -5,8 +5,11 @@ selected standard requirements with runtime contracts, project models, proof
 support and exact executable tests. The selected denominator and functional
 coverage are partial; this is not a full-standard conformance map.
 
-The 0.1 release uses a partial-Verus scope. Exhaustive requirement and functional
-proof work is tracked in [#135](https://github.com/microsoft/jbig2_rs/issues/135).
+The 0.1 release uses a partial-Verus scope. The current 0.2 milestone is
+consistent code-contract coverage and complete statement representation for
+external validation, tracked in [#135](https://github.com/microsoft/jbig2_rs/issues/135).
+Deeper full functional proofs remain longer-term work, not a blanket
+prerequisite for that handoff.
 See [release validation](publication-readiness.md) for measured results.
 
 ## Records and scope
@@ -144,6 +147,33 @@ still contain unproved transformations. `semantic_claims_complete` additionally
 requires functional evidence and no semantic gaps. The corresponding
 `--require-reviewed-decomposition` and `--require-complete` gates remain
 distinct from the limited 0.1 release scope.
+
+### Readiness gap assessment
+
+The JSON report's `validation_readiness` section joins the existing cfg/module
+source inventory to local attached and direct legacy postcondition syntax,
+verifier-name matches and actual ledger/evidence owners. It reports per-module
+and per-declaration identities, source hashes and gaps. Nested closure contracts
+are not credited to the enclosing function; comments and result-string contents
+cannot manufacture contract-section markers. Shared verifier names remain an
+explicit disambiguation queue rather than separate qualified proof matches.
+
+This first assessment counts selected explicit production declarations, not
+every generated/derived item, macro expansion or closure. Local syntax does not
+establish contract meaning, trait ownership, caller reachability or admissible
+input domains. Direct ledger links do not measure transitive caller coverage.
+These are review queues, not automatically missing proofs or decoder defects.
+
+Selected ledger records and partial feature worklists are not an exhaustive
+statement inventory. The report therefore leaves statement/code qualification
+and readiness false, and percentage/unknown statement denominator fields null.
+Even a declared reviewed feature decomposition does not qualify the new
+source-statement inventory. The stronger existing completion gates and all
+quality/source-bound evidence requirements retain their meanings.
+Whole-artifact sealing/loading and final semantic collection recompute this
+assessment from current source, verifier names, accounting and ledger data.
+Missing/truncated inventories, altered readiness/percentage claims and invented
+statement denominators are rejected even if artifact hashes are refreshed.
 
 ## Reproduction
 
