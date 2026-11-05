@@ -49,6 +49,7 @@ DEFAULT_SHARD_REBALANCE = {
     "error-conversion": 11, "collector-sink": 11, "operator-bit": 11, "value-bridge": 11,
     "page-public": 12, "default-decoder-1": 12, "default-decoder-5": 12,
     "arithmetic-normalization": 12,
+    "session-framing": 12,
     "mmr-span": 13, "default-limits-4": 13, "page-finish": 13, "default-limits-5": 13,
 }
 RECEIPT_SCHEMA = 3
@@ -56,6 +57,7 @@ CHECKS = (
     ("arithmetic-codec", "check_arithmetic_codec_proofs.py", 27, "strong_contract", "weaker_control"),
     ("huffman-codec", "check_arithmetic_codec_proofs.py", 13, "strong_contract", "weaker_control"),
     ("context-lifecycle", "check_context_lifecycle_proofs.py", 12, "strong_contract", "weaker_control"),
+    ("session-framing", "check_session_framing_proofs.py", 12, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 18, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),

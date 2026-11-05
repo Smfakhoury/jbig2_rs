@@ -1,4 +1,6 @@
 use super::generic::{decode_arithmetic_generic, decode_arithmetic_generic_into};
+#[cfg(verus_keep_ghost)]
+use super::generic_region_spec;
 use super::headers::parse_generic_region_header;
 use super::support::{enforce_input_limit, unexpected_eof};
 use super::{
@@ -332,7 +334,9 @@ pub(super) fn split_unknown_length_data<'a>(
     })
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures generic_region_spec::arithmetic_terminator_validation(data@, out),
+))]
 pub(super) fn validate_arithmetic_terminator(data: &[u8]) -> Result<(), GenericRegionError> {
     if data.len() < 2
         || data[data.len() - 2] != ARITHMETIC_TERMINATOR[0]
@@ -350,6 +354,9 @@ pub(super) fn validate_arithmetic_terminator(data: &[u8]) -> Result<(), GenericR
             data@.len() >= 2,
             final_offset == data@.len() - 2,
             offset <= data@.len() - 1,
+            generic_region_spec::bounded_arithmetic_tail(data@),
+            forall|before: int| 0 <= before < offset ==>
+                !generic_region_spec::early_arithmetic_marker(data@, before),
         decreases data@.len() - 1 - offset,
     ))]
     while offset < data.len() - 1 {
@@ -364,7 +371,9 @@ pub(super) fn validate_arithmetic_terminator(data: &[u8]) -> Result<(), GenericR
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == generic_region_spec::observed_marker_result(decoder.marker, coded_length),
+))]
 pub(super) fn validate_observed_marker(
     decoder: &ArithmeticDecoder<'_>,
     coded_length: usize,

@@ -23,7 +23,14 @@ impl<'a> GenericArithmeticSession<'a> {
     /// stream.
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures match out {
-            Ok(session) => generic_region_spec::generic_session_valid(&session),
+            Ok(session) => generic_region_spec::generic_session_valid(&session)
+                && session.decoder.bytes@ == coded@
+                && session.coded_length == coded@.len()
+                && session.work_used == 0
+                && session.contexts.template == template
+                && session.contexts.extended_template == extended_template
+                && session.limits == *limits
+                && generic_region_spec::bounded_arithmetic_tail(coded@),
             Err(_) => true,
         },
     ))]
@@ -133,15 +140,26 @@ impl<'a> GenericArithmeticSession<'a> {
 
     /// Current compressed-byte position. A recognized marker is not consumed,
     /// so this equals the marker prefix offset after marker recognition.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == self.decoder.byte_position,
+    ))]
     pub(crate) const fn consumed_byte_offset(&self) -> usize {
         self.decoder.byte_position()
     }
 
     /// Offset of a marker already observed by the arithmetic decoder.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == match self.decoder.marker {
+            Some(marker) => Some(marker.offset),
+            None => None,
+        },
+    ))]
     pub(crate) fn observed_marker_offset(&self) -> Option<usize> {
-        self.decoder.marker().map(|marker| marker.offset)
+        self.decoder.marker().map(|marker| {
+            #[cfg(verus_keep_ghost)]
+            ensures(|out: usize| equal(out, marker.offset));
+            marker.offset
+        })
     }
 
     /// Validate that any observed marker is the bounded final `FF AC` marker
@@ -151,7 +169,11 @@ impl<'a> GenericArithmeticSession<'a> {
     /// requested decisions. The complete input block was already checked by
     /// [`Self::new`], so the returned offset is still authoritative when
     /// [`Self::observed_marker_offset`] is `None`.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == generic_region_spec::final_marker_result(
+            self.decoder.marker, self.coded_length,
+        ),
+    ))]
     pub(crate) fn validate_final_marker(&self) -> Result<usize, GenericRegionError> {
         validate_observed_marker(&self.decoder, self.coded_length)?;
         self.coded_length
