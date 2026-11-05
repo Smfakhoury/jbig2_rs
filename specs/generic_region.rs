@@ -85,6 +85,44 @@ pub(crate) open spec fn refinement_contexts_valid(
     contexts_valid(contexts.contexts@)
 }
 
+// Model navigation: spec::generic_snapshot_view [project-result-model]
+// Purpose: Logical snapshot metadata and exact probability bank without widening runtime fields.
+// Audit: generic-snapshot-view
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE | ITU-T T.88 (08/2018) | E.3, Figure E.14, read CX / DECODE / Finished loop (p. 118)
+// Fidelity: unresolved; no independent normative approval.
+pub(crate) closed spec fn generic_snapshot_view(
+    snapshot: &super::GenericContextSnapshot,
+) -> (super::GenericTemplate, bool, Seq<crate::arithmetic::ArithmeticContext>, u64) {
+    (snapshot.template, snapshot.extended_template, snapshot.contexts@, snapshot.storage_bytes)
+}
+
+pub(super) proof fn generic_snapshot_view_definition()
+    ensures forall|snapshot: &super::GenericContextSnapshot|
+        #[trigger] generic_snapshot_view(snapshot)
+            == (snapshot.template, snapshot.extended_template, snapshot.contexts@, snapshot.storage_bytes),
+{
+    reveal(generic_snapshot_view);
+}
+
+// Model navigation: spec::refinement_snapshot_view [project-result-model]
+// Purpose: Logical snapshot metadata and exact probability bank without widening runtime fields.
+// Audit: refinement-snapshot-view
+// REQUIREMENT CONTEXT: T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE | ITU-T T.88 (08/2018) | E.3, Figure E.14, read CX / DECODE / Finished loop (p. 118)
+// Fidelity: unresolved; no independent normative approval.
+pub(crate) closed spec fn refinement_snapshot_view(
+    snapshot: &super::RefinementContextSnapshot,
+) -> (super::RefinementTemplate, Seq<crate::arithmetic::ArithmeticContext>, u64) {
+    (snapshot.template, snapshot.contexts@, snapshot.storage_bytes)
+}
+
+pub(super) proof fn refinement_snapshot_view_definition()
+    ensures forall|snapshot: &super::RefinementContextSnapshot|
+        #[trigger] refinement_snapshot_view(snapshot)
+            == (snapshot.template, snapshot.contexts@, snapshot.storage_bytes),
+{
+    reveal(refinement_snapshot_view);
+}
+
 // Model navigation: spec::generic_session_valid [representation-invariant]
 // Purpose: Context banks, decoder sessions, snapshots and preceding adaptive-pixel invariants.
 // Mapping: no registered requirement/locator mapping.

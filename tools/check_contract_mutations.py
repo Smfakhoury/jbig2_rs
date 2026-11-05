@@ -12,6 +12,7 @@ from pathlib import Path
 
 from check_distribution import isolated_environment, run
 from check_arithmetic_codec_proofs import CASES as ENTROPY_CODEC_CASES
+from check_context_lifecycle_proofs import CASES as CONTEXT_LIFECYCLE_CASES
 from check_document_count_proof import CASES as DOCUMENT_CASES
 from check_huffman_assignment_proofs import CASES as HUFFMAN_ASSIGNMENT_CASES
 from check_iaid_state_proofs import CASES as IAID_STATE_CASES
@@ -61,6 +62,13 @@ DOCUMENT_WINDOW_TESTS = {
     "embedded_discards_first_input_byte": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
 }
 MUTATIONS = tuple(
+    {
+        "id": "context-lifecycle-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": case["native_test"], "whitespace_flexible": True,
+    }
+    for case in CONTEXT_LIFECYCLE_CASES
+) + tuple(
     {
         "id": "caller-request-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],

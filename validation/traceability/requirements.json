@@ -23,8 +23,8 @@
   },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "a9241adf665d7e14a46d15ba6e78a18522a4aca9aee16c61772f331d24a00562",
-    "project_source_sha256": "c4316a4a7299b17b07f7b1b96b333b21e9eb07369c263c24deb4e19e9770e765",
+    "registry_sha256": "02e44b42f6034cdee0ceb24148cbe4009be74f587302326374f2da94e2c0f902",
+    "project_source_sha256": "de781c862c17a93eec1b454dadc5f9da5c8156900f37a624034266996845674e",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -701,10 +701,12 @@
           "spec::sample_or_zero",
           "spec::tpgd_next",
           "spec::tpgr_uses_prediction",
-          "spec::unknown_length_accounting"
+          "spec::unknown_length_accounting",
+          "spec::generic_snapshot_view",
+          "spec::refinement_snapshot_view"
         ],
         "classification": "project-result-model",
-        "justification": "Bodies fold Boolean context bits, sample out-of-bounds as white, compute prediction toggles/decision counts, select restored or reset state sequences, and give arithmetic/MMR marker slice extents. src/generic_region.rs contracts and proofs/spec_properties/generic_region.rs use these helper/abstract transformations, each stronger in content than a validity predicate.",
+        "justification": "Bodies fold Boolean context bits, sample out-of-bounds as white, compute prediction toggles/decision counts, select restored or reset state sequences, and give arithmetic/MMR marker slice extents. src/generic_region.rs contracts and proofs/spec_properties/generic_region.rs use these helper/abstract transformations, each stronger in content than a validity predicate. Closed snapshot views expose exact bank/metadata results through verified defining-module bridges without widening runtime fields.",
         "ambiguity": "",
         "caveats": "Some are abstract model-property results rather than complete native decoding contracts. They do not prove full input-to-pixel refinement/generic composition or independently approve marker/prediction interpretation."
       },
@@ -1877,7 +1879,7 @@
     "specs/decode.rs": "acc5afe72a14eb8e48e3a193608a2a89bec966b97757201d6ce3d9bc9a404e24",
     "specs/document.rs": "1eab675da2cb26fbd23fdf8ef6a8995476587cf0d58062f71fad58558d789af6",
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
-    "specs/generic_region.rs": "61f8a7afbfc236f462c592a0b3be830ad286f2838c01cde9cc24f275b82bd115",
+    "specs/generic_region.rs": "4b979bce039717a9604e82fbf56e60740b5ae6c86476a39933f6ff057fa7f414",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
     "specs/huffman.rs": "2d58cd9b77ebfaad2b432f0a2366b409582a4701b9dea067d69881545d446b3e",
     "specs/huffman_lookup.rs": "bd6fe3ee36de79103836d6fc9fc411b03ca0b304ce4915d0f730c2301b483766",
@@ -1916,7 +1918,7 @@
     "src/document/tests/payload_windows.rs": "a5ea365a525b36f3ca92894ab3157d8b03382419e3ca434e154b7cdc3000f02e",
     "src/file_header.rs": "9011f761698f3772c953980e2d2d56ed5ece4f792c8e318ca89a0e0f8d326e11",
     "src/generic_region.rs": "4c753c336c16bb615977a1074edbb71ccb158b3fd4d8120876d9c24f21f4f0ef",
-    "src/generic_region/contexts.rs": "d8e8a6bf536faf6327f60f6204b69f6443e8702d8d767614d53496c271652ae5",
+    "src/generic_region/contexts.rs": "3e86887633490b1d135db2f9b1f8aa9f92e097e43f22f8b29dd1ed3521ed66cb",
     "src/generic_region/generic.rs": "7df85ea015071478a1f691f39d0ccdeb6581d110e650fdc172767c9fcd914076",
     "src/generic_region/headers.rs": "d116c691bcc2c0f94f4a39a0984b7576a492f9b4411159aaf00a901cce2d3ac8",
     "src/generic_region/refinement.rs": "defb4386d60cf2b85b7de320ce5c8a53e83d4483ee30668e0cc3ab5a54e7b35c",
@@ -1990,7 +1992,8 @@
     "src/symbol_text/tests/huffman_symbol_ids.rs": "89dce150f0deb0e9eb16bb38cda5238c6546589d8022829680c412ff4f3becd0",
     "src/symbol_text/tests/text_termination.rs": "3b629b51e16bdf7dfcedf2a6c46b99c95a2fe6042b8b0da4e74f069722789eeb",
     "src/symbol_text/dictionary.rs": "edf276aaf02772cda1a66d7b0a50f4a038086ddb41422225f902abc04faaabaa",
-    "src/symbol_text/dictionary/huffman.rs": "d741f90a472575929b06b5b3b8bfa0c3078f05369519ba7810f846eb8e5c6984"
+    "src/symbol_text/dictionary/huffman.rs": "d741f90a472575929b06b5b3b8bfa0c3078f05369519ba7810f846eb8e5c6984",
+    "src/generic_region/tests/sessions_and_snapshots.rs": "bd8218eef90ffc10ec9731e44669fe819bd87f194264dcb16ac077bddf371b12"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -4100,6 +4103,26 @@
       ],
       "name": "production_huffman_segment_setup",
       "role": "Reached actual text/dictionary Huffman setup composes literal body, strip configuration and refinement flag/template; not complete upstream table/codec selection or retained-bank lifecycle."
+    },
+    "generic-snapshot-view": {
+      "kind": "spec",
+      "file": "specs/generic_region.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec"
+      ],
+      "name": "generic_snapshot_view",
+      "role": "Closed logical metadata/bank projection preserving private runtime snapshot fields; API result/frame support, not normative caller reset/retention timing."
+    },
+    "refinement-snapshot-view": {
+      "kind": "spec",
+      "file": "specs/generic_region.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec"
+      ],
+      "name": "refinement_snapshot_view",
+      "role": "Closed logical metadata/bank projection preserving private runtime snapshot fields; API result/frame support, not normative caller reset/retention timing."
     }
   },
   "requirements": [
@@ -13433,7 +13456,15 @@
         "generic_region::contexts::validate_probability_states",
         "generic_region::generic::probability_signal_error",
         "generic_region::support::unexpected_eof",
-        "generic_region::support::integer_overflow"
+        "generic_region::support::integer_overflow",
+        "generic_region::contexts::GenericContexts::new",
+        "generic_region::contexts::GenericContexts::reset",
+        "generic_region::contexts::GenericContexts::try_snapshot",
+        "generic_region::contexts::GenericContexts::restore",
+        "generic_region::contexts::RefinementContexts::new",
+        "generic_region::contexts::RefinementContexts::reset",
+        "generic_region::contexts::RefinementContexts::try_snapshot",
+        "generic_region::contexts::RefinementContexts::restore"
       ],
       "models": [
         "decoder-state-valid",
@@ -13442,7 +13473,9 @@
         "generic-probability-signal-error",
         "arithmetic-eof-error",
         "arithmetic-signal-error",
-        "arithmetic-decode-error"
+        "arithmetic-decode-error",
+        "generic-snapshot-view",
+        "refinement-snapshot-view"
       ],
       "proof_macros": [],
       "tests": [
@@ -13465,11 +13498,31 @@
         {
           "target": "lib",
           "name": "generic_region::tests::diagnostics::generic_error_trait_projection_and_eof_factory_preserve_fields"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::sessions_and_snapshots::fresh_context_banks_have_exact_metadata_and_zero_probability_states"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::sessions_and_snapshots::generic_context_rejections_preserve_full_bank_and_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::sessions_and_snapshots::refinement_context_rejections_preserve_full_bank_and_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::sessions_and_snapshots::generic_snapshots_copy_all_states_and_preserve_rejected_targets"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::sessions_and_snapshots::raw_refinement_snapshots_preserve_all_states_and_failure_frames"
         }
       ],
-      "strength": "state_preservation",
+      "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The decoder postcondition preserves decoder/context validity, not this row's normative context sequence or stopping relation. Auxiliary project contracts prove valid raw-bank acceptance, the first invalid state/MPS payload and exact context/signal/EOF/overflow diagnostic projection; those are not whole-stream selection, decoding or normative rejection theorems.",
+      "scope_of_formal_result": "The decoder postcondition preserves decoder/context validity, not this row's normative context sequence or stopping relation. Auxiliary project contracts prove valid raw-bank acceptance, the first invalid state/MPS payload and exact context/signal/EOF/overflow diagnostic projection; those are not whole-stream selection, decoding or normative rejection theorems. Generic/refinement API support now proves fresh zero banks/canonical storage metadata, reset zeroing with length/configuration frames, exact independent snapshot contents/metadata and restore-to-snapshot results with rejection identity. Closed logical views and defining-module bridges preserve runtime privacy. These are local API guarantees without new preconditions, not complete E.3.8/caller reset-retention timing, allocator-capacity bounds or bitstream/raster semantics.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem."
@@ -13477,7 +13530,78 @@
       "gaps": [
         "The one-decision API has no whole-stream context-sequence or finished-condition contract; caller-model agreement remains open."
       ],
-      "functional_evidence": [],
+      "functional_evidence": [
+        {
+          "runtime": "generic_region::contexts::GenericContexts::new",
+          "section": "ensures",
+          "tokens": [
+            "contexts.storage_bytes as nat == contexts.contexts@.len() * 2",
+            "contexts.contexts@[index].state_index == 0",
+            "contexts.contexts@[index].mps == 0"
+          ]
+        },
+        {
+          "runtime": "generic_region::contexts::GenericContexts::reset",
+          "section": "ensures",
+          "tokens": [
+            "final(self).contexts@[index].state_index == 0",
+            "final(self).contexts@[index].mps == 0",
+            "Err(_) => final(self).contexts@ == old(self).contexts@"
+          ]
+        },
+        {
+          "runtime": "generic_region::contexts::GenericContexts::try_snapshot",
+          "section": "ensures",
+          "tokens": [
+            "generic_region_spec::generic_snapshot_view(&snapshot).2 == self.contexts@",
+            "generic_region_spec::generic_snapshot_view(&snapshot).0 == self.template"
+          ]
+        },
+        {
+          "runtime": "generic_region::contexts::GenericContexts::restore",
+          "section": "ensures",
+          "tokens": [
+            "final(self).contexts@ == generic_region_spec::generic_snapshot_view(snapshot).2",
+            "generic_region_spec::contexts_valid(final(self).contexts@)",
+            "Err(_) => final(self).contexts@ == old(self).contexts@"
+          ]
+        },
+        {
+          "runtime": "generic_region::contexts::RefinementContexts::new",
+          "section": "ensures",
+          "tokens": [
+            "contexts.storage_bytes as nat == contexts.contexts@.len() * 2",
+            "contexts.contexts@[index].state_index == 0",
+            "contexts.contexts@[index].mps == 0"
+          ]
+        },
+        {
+          "runtime": "generic_region::contexts::RefinementContexts::reset",
+          "section": "ensures",
+          "tokens": [
+            "final(self).contexts@[index].state_index == 0",
+            "final(self).contexts@[index].mps == 0",
+            "Err(_) => final(self).contexts@ == old(self).contexts@"
+          ]
+        },
+        {
+          "runtime": "generic_region::contexts::RefinementContexts::try_snapshot",
+          "section": "ensures",
+          "tokens": [
+            "generic_region_spec::refinement_snapshot_view(&snapshot).1 == self.contexts@",
+            "generic_region_spec::refinement_snapshot_view(&snapshot).0 == self.template"
+          ]
+        },
+        {
+          "runtime": "generic_region::contexts::RefinementContexts::restore",
+          "section": "ensures",
+          "tokens": [
+            "final(self).contexts@ == generic_region_spec::refinement_snapshot_view(snapshot).1",
+            "generic_region_spec::contexts_valid(final(self).contexts@)",
+            "Err(_) => final(self).contexts@ == old(self).contexts@"
+          ]
+        }
+      ],
       "invariant_evidence": [
         {
           "runtime": "arithmetic::decoding::ArithmeticDecoder::decode",

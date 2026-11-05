@@ -74,7 +74,11 @@ impl GenericContexts {
             Ok(contexts) =>
                 contexts.template == template
                 && contexts.extended_template == extended_template
-                && generic_region_spec::generic_contexts_valid(&contexts),
+                && generic_region_spec::generic_contexts_valid(&contexts)
+                && contexts.storage_bytes as nat == contexts.contexts@.len() * 2
+                && (forall|index: int| 0 <= index < contexts.contexts@.len() ==>
+                    contexts.contexts@[index].state_index == 0
+                        && contexts.contexts@[index].mps == 0),
             Err(_) => true,
         },
     ))]
@@ -96,7 +100,19 @@ impl GenericContexts {
     }
 
     /// Reset all contexts to `I = 0, MPS = 0`.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).template == old(self).template,
+            final(self).extended_template == old(self).extended_template,
+            final(self).storage_bytes == old(self).storage_bytes,
+            final(self).contexts@.len() == old(self).contexts@.len(),
+            match out {
+                Ok(()) => forall|index: int| 0 <= index < final(self).contexts@.len() ==>
+                    final(self).contexts@[index].state_index == 0
+                        && final(self).contexts@[index].mps == 0,
+                Err(_) => final(self).contexts@ == old(self).contexts@,
+            },
+    ))]
     pub(crate) fn reset(&mut self) -> Result<(), GenericRegionError> {
         validate_generic_context_layout(self.template, self.extended_template, &self.contexts)?;
         reset_contexts(&mut self.contexts);
@@ -104,11 +120,25 @@ impl GenericContexts {
     }
 
     /// Fallibly retain the current statistics for later dictionary use.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(snapshot) =>
+                generic_region_spec::generic_snapshot_view(&snapshot).0 == self.template
+                && generic_region_spec::generic_snapshot_view(&snapshot).1 == self.extended_template
+                && generic_region_spec::generic_snapshot_view(&snapshot).3 == self.storage_bytes
+                && generic_region_spec::generic_snapshot_view(&snapshot).2 == self.contexts@
+                && generic_region_spec::contexts_valid(
+                    generic_region_spec::generic_snapshot_view(&snapshot).2,
+                ),
+            Err(_) => true,
+        },
+    ))]
     pub(crate) fn try_snapshot(
         &self,
         limits: &Limits,
     ) -> Result<GenericContextSnapshot, GenericRegionError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { generic_region_spec::generic_snapshot_view_definition(); }
         validate_generic_context_layout(self.template, self.extended_template, &self.contexts)?;
         let contexts = try_copy_contexts(&self.contexts, self.storage_bytes, limits)?;
         Ok(GenericContextSnapshot {
@@ -120,12 +150,25 @@ impl GenericContexts {
     }
 
     /// Restore retained statistics, rejecting a snapshot for another template.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).template == old(self).template,
+            final(self).extended_template == old(self).extended_template,
+            final(self).storage_bytes == old(self).storage_bytes,
+            final(self).contexts@.len() == old(self).contexts@.len(),
+            match out {
+                Ok(()) => final(self).contexts@ == generic_region_spec::generic_snapshot_view(snapshot).2
+                    && generic_region_spec::contexts_valid(final(self).contexts@),
+                Err(_) => final(self).contexts@ == old(self).contexts@,
+            },
+    ))]
     pub(crate) fn restore(
         &mut self,
         snapshot: &GenericContextSnapshot,
         limits: &Limits,
     ) -> Result<(), GenericRegionError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { generic_region_spec::generic_snapshot_view_definition(); }
         if self.template != snapshot.template
             || self.extended_template != snapshot.extended_template
         {
@@ -152,11 +195,19 @@ impl GenericContexts {
             invariant
                 self.contexts@.len() == snapshot.contexts@.len(),
                 index <= self.contexts@.len(),
+                forall|completed: int| 0 <= completed < index ==>
+                    self.contexts@[completed] == snapshot.contexts@[completed],
+                generic_region_spec::contexts_valid(snapshot.contexts@),
             decreases self.contexts@.len() - index,
         ))]
         while index < self.contexts.len() {
             self.contexts[index] = snapshot.contexts[index];
             index += 1;
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(self.contexts@ == snapshot.contexts@);
+            generic_region_spec::generic_snapshot_view_definition();
         }
         Ok(())
     }
@@ -218,7 +269,11 @@ impl RefinementContexts {
         ensures match out {
             Ok(contexts) =>
                 contexts.template == template
-                && generic_region_spec::refinement_contexts_valid(&contexts),
+                && generic_region_spec::refinement_contexts_valid(&contexts)
+                && contexts.storage_bytes as nat == contexts.contexts@.len() * 2
+                && (forall|index: int| 0 <= index < contexts.contexts@.len() ==>
+                    contexts.contexts@[index].state_index == 0
+                        && contexts.contexts@[index].mps == 0),
             Err(_) => true,
         },
     ))]
@@ -238,7 +293,18 @@ impl RefinementContexts {
     }
 
     /// Reset all contexts to `I = 0, MPS = 0`.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).template == old(self).template,
+            final(self).storage_bytes == old(self).storage_bytes,
+            final(self).contexts@.len() == old(self).contexts@.len(),
+            match out {
+                Ok(()) => forall|index: int| 0 <= index < final(self).contexts@.len() ==>
+                    final(self).contexts@[index].state_index == 0
+                        && final(self).contexts@[index].mps == 0,
+                Err(_) => final(self).contexts@ == old(self).contexts@,
+            },
+    ))]
     pub(crate) fn reset(&mut self) -> Result<(), GenericRegionError> {
         validate_refinement_context_layout(self.template, &self.contexts)?;
         reset_contexts(&mut self.contexts);
@@ -246,11 +312,24 @@ impl RefinementContexts {
     }
 
     /// Fallibly retain the current statistics for later dictionary use.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(snapshot) =>
+                generic_region_spec::refinement_snapshot_view(&snapshot).0 == self.template
+                && generic_region_spec::refinement_snapshot_view(&snapshot).2 == self.storage_bytes
+                && generic_region_spec::refinement_snapshot_view(&snapshot).1 == self.contexts@
+                && generic_region_spec::contexts_valid(
+                    generic_region_spec::refinement_snapshot_view(&snapshot).1,
+                ),
+            Err(_) => true,
+        },
+    ))]
     pub(crate) fn try_snapshot(
         &self,
         limits: &Limits,
     ) -> Result<RefinementContextSnapshot, GenericRegionError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { generic_region_spec::refinement_snapshot_view_definition(); }
         validate_refinement_context_layout(self.template, &self.contexts)?;
         let contexts = try_copy_contexts(&self.contexts, self.storage_bytes, limits)?;
         Ok(RefinementContextSnapshot {
@@ -261,12 +340,24 @@ impl RefinementContexts {
     }
 
     /// Restore retained statistics, rejecting a snapshot for another template.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            final(self).template == old(self).template,
+            final(self).storage_bytes == old(self).storage_bytes,
+            final(self).contexts@.len() == old(self).contexts@.len(),
+            match out {
+                Ok(()) => final(self).contexts@ == generic_region_spec::refinement_snapshot_view(snapshot).1
+                    && generic_region_spec::contexts_valid(final(self).contexts@),
+                Err(_) => final(self).contexts@ == old(self).contexts@,
+            },
+    ))]
     pub(crate) fn restore(
         &mut self,
         snapshot: &RefinementContextSnapshot,
         limits: &Limits,
     ) -> Result<(), GenericRegionError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { generic_region_spec::refinement_snapshot_view_definition(); }
         if self.template != snapshot.template {
             return Err(GenericRegionError::InvalidFlags(refinement_template_code(
                 snapshot.template,
@@ -286,11 +377,19 @@ impl RefinementContexts {
             invariant
                 self.contexts@.len() == snapshot.contexts@.len(),
                 index <= self.contexts@.len(),
+                forall|completed: int| 0 <= completed < index ==>
+                    self.contexts@[completed] == snapshot.contexts@[completed],
+                generic_region_spec::contexts_valid(snapshot.contexts@),
             decreases self.contexts@.len() - index,
         ))]
         while index < self.contexts.len() {
             self.contexts[index] = snapshot.contexts[index];
             index += 1;
+        }
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            assert(self.contexts@ == snapshot.contexts@);
+            generic_region_spec::refinement_snapshot_view_definition();
         }
         Ok(())
     }
@@ -485,7 +584,7 @@ pub(super) fn validate_snapshot_limits(
 
 #[cfg_attr(verus_keep_ghost, verus_spec(out =>
     ensures match out {
-        Ok(copied) => copied@ == source@,
+        Ok(copied) => copied@ == source@ && generic_region_spec::contexts_valid(copied@),
         Err(_) => true,
     },
 ))]
