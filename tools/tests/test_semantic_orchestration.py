@@ -17,6 +17,11 @@ sys.path.insert(0, str(TOOLS))
 import run_semantic_proofs as runner
 
 
+LIVE_CHECKS = runner.CHECKS
+PRE_ENTROPY_PARTITION_CHECKS = tuple(
+    (name, script, 40 if name == "arithmetic-codec" else count, strong, weaker)
+    for name, script, count, strong, weaker in LIVE_CHECKS if name != "huffman-codec"
+)
 CURRENT_TOPOLOGY = {
     "CI_SHARDS": runner.CI_SHARDS,
     "WHOLE_GROUPS": runner.WHOLE_GROUPS,
@@ -97,7 +102,7 @@ PRE_PRODUCTION_CACHE_CHECKS = tuple(
         "huffman-assignment": 21, "arithmetic-codec": 33, "value-bridge": 12,
         "symbol-cardinality": 12,
     }.get(name, count), strong, weaker)
-    for name, script, count, strong, weaker in runner.CHECKS
+    for name, script, count, strong, weaker in PRE_ENTROPY_PARTITION_CHECKS
 )
 PRE_FALLBACK_STATE_CHECKS = tuple(
     (name, script, 15 if name == "huffman-assignment" else count, strong, weaker)
@@ -203,18 +208,64 @@ def evidence():
 
 
 class SemanticOrchestrationTests(unittest.TestCase):
+    def test_entropy_partition_preserves_every_recipe_and_valid_selected_baseline(self):
+        from check_arithmetic_codec_proofs import CASES, CASE_GROUPS, CASE_BASELINE_GROUPS
+
+        self.assertEqual({name: len(cases) for name, cases in CASE_GROUPS.items()}, {
+            "arithmetic-codec": 27, "huffman-codec": 13,
+        })
+        partitioned = [case for cases in CASE_GROUPS.values() for case in cases]
+        self.assertEqual(len(partitioned), len(CASES))
+        self.assertEqual(len({case["id"] for case in partitioned}), len(CASES))
+        self.assertEqual({case["id"] for case in partitioned}, {case["id"] for case in CASES})
+        original = {case["id"]: case for case in CASES}
+        for case in partitioned:
+            self.assertIs(case, original[case["id"]])
+        for name, cases in CASE_GROUPS.items():
+            targets = {(case["module"], case["function"]) for case in cases}
+            grouped = set()
+            for module, functions in CASE_BASELINE_GROUPS[name]:
+                group = {(module, function) for function in functions}
+                self.assertGreaterEqual(len(functions), 2)
+                self.assertEqual(len(group), len(functions))
+                self.assertTrue(group <= targets)
+                self.assertFalse(group & grouped)
+                grouped.update(group)
+        self.assertEqual({case["function"] for case in CASE_GROUPS["huffman-codec"]}, {
+            "HuffmanCodec::read_raw_bits", "HuffmanCodec::decode_integer",
+            "HuffmanCodec::decode_symbol_id", "SymbolCodec::decode_integer",
+            "SymbolCodec::decode_symbol_id",
+        })
+
+    @patch.object(runner, "CHECKS", LIVE_CHECKS)
+    @patch.multiple(runner, **CURRENT_TOPOLOGY)
+    def test_entropy_partition_keeps_all_queries_on_the_existing_sixteen_roles(self):
+        shards = runner.configured_shards()
+        whole = runner.configured_whole_checks()
+        collector = runner.configured_collector_checks()
+        assigned = [row for role in (whole, collector, *shards) for row in role]
+        self.assertEqual(len(shards), 14)
+        self.assertEqual(len(assigned), 50)
+        self.assertEqual(len({row[0] for row in assigned}), 50)
+        self.assertEqual(sum(row[2] for row in assigned), 405)
+        self.assertEqual({row[0]: row[2] for row in whole}, {"arithmetic-codec": 27})
+        self.assertIn("huffman-codec", {row[0] for row in shards[3]})
+        self.assertEqual(set(assigned), set(LIVE_CHECKS))
+
     def test_live_huffman_id_counts_match_the_executed_case_sets(self):
-        from check_arithmetic_codec_proofs import CASES as codec_cases
+        from check_arithmetic_codec_proofs import CASE_GROUPS as codec_cases
         from check_value_bridge_proofs import CASES as value_cases
         from check_symbol_cardinality_proofs import CASES as cardinality_cases
 
-        checks = runner.configured_checks()
+        with patch.object(runner, "CHECKS", LIVE_CHECKS):
+            checks = runner.configured_checks()
         counts = {row[0]: row[2] for row in checks}
-        self.assertEqual(counts["arithmetic-codec"], len(codec_cases))
+        for identity, cases in codec_cases.items():
+            self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
         self.assertEqual(sum(row[2] for row in checks), 405)
-        self.assertEqual(len(checks), 49)
+        self.assertEqual(len(checks), 50)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):
@@ -263,6 +314,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         legacy = patch.multiple(
             runner, CI_SHARDS=6, WHOLE_GROUPS=SIX_SHARD_WHOLE_GROUPS,
             COLLECTOR_GROUPS=SIX_SHARD_COLLECTOR_GROUPS, DEFAULT_SHARD_REBALANCE=SIX_SHARD_MOVES,
+            CHECKS=PRE_ENTROPY_PARTITION_CHECKS,
         )
         legacy.start()
         self.addCleanup(legacy.stop)
@@ -773,15 +825,20 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertLessEqual(max(measured), 1050)
         self.assertLessEqual(measured[0] + 208, 1200)
 
-    def test_default_group_selection_is_forwarded_to_its_shared_checker(self):
-        script = "check_default_proofs.py"
+    def test_group_selection_is_forwarded_to_its_shared_checker(self):
         for identity in (
             "default-limits-1", "default-limits-2", "default-limits-3",
             "default-limits-4", "default-limits-5",
             "default-decoder-1", "default-decoder-2", "default-decoder-3",
             "default-decoder-4", "default-decoder-5",
+            "arithmetic-codec", "huffman-codec",
         ):
             with self.subTest(group=identity):
+                script = (
+                    "check_arithmetic_codec_proofs.py"
+                    if identity in {"arithmetic-codec", "huffman-codec"}
+                    else "check_default_proofs.py"
+                )
                 (self.root / "tools" / script).write_text(
                     "CASES = ({'id':'case','module':'module','function':'function'},)\n"
                     f"CASE_GROUPS = {{{identity!r}: CASES}}\n"
