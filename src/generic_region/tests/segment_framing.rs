@@ -3,6 +3,179 @@
 
 use super::*;
 
+#[derive(Clone, Copy, Debug)]
+enum FramingOracle {
+    Accepted,
+    InvalidTail,
+    Unexpected { offset: usize, code: u8 },
+}
+
+fn scalar_terminator_oracle(data: &[u8]) -> FramingOracle {
+    if data.len() < 2 || data[data.len() - 2..] != [0xff, 0xac] {
+        return FramingOracle::InvalidTail;
+    }
+    for (offset, pair) in data.windows(2).take(data.len() - 2).enumerate() {
+        if pair[0] == 255 && (144..=255).contains(&pair[1]) {
+            return FramingOracle::Unexpected {
+                offset,
+                code: pair[1],
+            };
+        }
+    }
+    FramingOracle::Accepted
+}
+
+fn assert_framing_oracle<T: core::fmt::Debug>(
+    actual: &Result<T, GenericRegionError>,
+    expected: FramingOracle,
+) {
+    match (expected, actual) {
+        (FramingOracle::Accepted, Ok(_))
+        | (FramingOracle::InvalidTail, Err(GenericRegionError::InvalidArithmeticTerminator)) => {}
+        (
+            FramingOracle::Unexpected { offset, code },
+            Err(GenericRegionError::UnexpectedArithmeticMarker {
+                offset: actual_offset,
+                code: actual_code,
+            }),
+        ) => {
+            assert_eq!(offset, *actual_offset);
+            assert_eq!(code, *actual_code);
+        }
+        _ => panic!("framing result {actual:?}, expected {expected:?}"),
+    }
+}
+
+#[test]
+fn strict_terminator_matches_every_byte_pair_and_first_error_priority() {
+    let mut checked = 0;
+    for first in 0..=u8::MAX {
+        for second in 0..=u8::MAX {
+            for data in [&[first, second][..], &[first, second, 0x33, 0xff, 0xac]] {
+                assert_framing_oracle(
+                    &validate_arithmetic_terminator(data),
+                    scalar_terminator_oracle(data),
+                );
+                checked += 1;
+            }
+        }
+    }
+    assert_eq!(checked, 131_072);
+    for code in 0x90..=u8::MAX {
+        assert_framing_oracle(
+            &validate_arithmetic_terminator(&[0x21, 0xff, code, 0xff, 0x91, 0xff, 0xac]),
+            FramingOracle::Unexpected { offset: 1, code },
+        );
+        assert_framing_oracle(
+            &validate_arithmetic_terminator(&[0xff, code, 0xff, 0xab]),
+            FramingOracle::InvalidTail,
+        );
+    }
+}
+
+fn scalar_observed_oracle(
+    marker: Option<crate::arithmetic::ArithmeticMarker>,
+    length: usize,
+) -> FramingOracle {
+    match marker {
+        None => FramingOracle::Accepted,
+        Some(_) if length < 2 => FramingOracle::InvalidTail,
+        Some(marker) if marker.code == 172 && marker.offset == length - 2 => {
+            FramingOracle::Accepted
+        }
+        Some(marker) => FramingOracle::Unexpected {
+            offset: marker.offset,
+            code: marker.code,
+        },
+    }
+}
+
+#[test]
+fn session_queries_and_marker_results_match_stored_metadata_without_mutation() {
+    let limits = Limits::default();
+    let mut session =
+        GenericArithmeticSession::new(&[0xff, 0xac], GenericTemplate::Template3, false, &limits)
+            .unwrap();
+    let bank = session.contexts.contexts.clone();
+    for length in [0, 1, 2, 3, 7, usize::MAX] {
+        for position in [0, 1, 7, usize::MAX] {
+            for code in [0, 0x8f, 0x90, 0xac, 0xad, 0xff] {
+                for marker_offset in [
+                    None,
+                    Some(0),
+                    Some(1),
+                    Some(length.saturating_sub(2)),
+                    Some(usize::MAX),
+                ] {
+                    let marker = marker_offset
+                        .map(|offset| crate::arithmetic::ArithmeticMarker { offset, code });
+                    session.coded_length = length;
+                    session.decoder.byte_position = position;
+                    session.decoder.marker = marker;
+                    let before = format!("{:?}", session.decoder);
+                    assert_eq!(session.consumed_byte_offset(), position);
+                    assert_eq!(session.observed_marker_offset(), marker_offset);
+                    let observed = scalar_observed_oracle(marker, length);
+                    assert_framing_oracle(
+                        &validate_observed_marker(&session.decoder, length),
+                        observed,
+                    );
+                    let final_expected = if marker.is_none() && length < 2 {
+                        FramingOracle::InvalidTail
+                    } else {
+                        observed
+                    };
+                    let actual = session.validate_final_marker();
+                    assert_framing_oracle(&actual, final_expected);
+                    if let Ok(offset) = actual {
+                        assert_eq!(offset, length - 2);
+                    }
+                    assert_eq!(format!("{:?}", session.decoder), before);
+                    assert_eq!(session.coded_length, length);
+                    assert_eq!(session.work_used, 0);
+                    assert_eq!(session.contexts.contexts, bank);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn fresh_sessions_preserve_supplied_stream_configuration_and_limits() {
+    let limits = Limits {
+        max_stream_bytes: 97,
+        max_decoder_managed_memory_bytes: 300_000,
+        max_work_units: 12_345,
+        ..Limits::default()
+    };
+    for template in [
+        GenericTemplate::Template0,
+        GenericTemplate::Template1,
+        GenericTemplate::Template2,
+        GenericTemplate::Template3,
+    ] {
+        for extended in [false, true] {
+            for coded in [&[0xff, 0xac][..], &[0x12, 0xff, 0xac]] {
+                let session =
+                    GenericArithmeticSession::new(coded, template, extended, &limits).unwrap();
+                assert_eq!(session.decoder.bytes, coded);
+                assert_eq!(session.coded_length, coded.len());
+                assert_eq!(session.work_used, 0);
+                assert_eq!(session.contexts.template, template);
+                assert_eq!(session.contexts.extended_template, extended);
+                assert_eq!(
+                    (
+                        session.limits.max_stream_bytes,
+                        session.limits.max_decoder_managed_memory_bytes,
+                        session.limits.max_work_units
+                    ),
+                    (97, 300_000, 12_345),
+                );
+            }
+        }
+    }
+}
+
 #[test]
 fn arithmetic_marker_validation_is_bounded_and_strict() {
     assert!(validate_arithmetic_terminator(&[0x12, 0xff, 0xac]).is_ok());

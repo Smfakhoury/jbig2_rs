@@ -2152,6 +2152,14 @@ class TraceabilityTests(unittest.TestCase):
                         for owner in ("GenericContexts", "RefinementContexts")
                         for method in ("new", "reset", "try_snapshot", "restore")
                     }
+                    callers |= {
+                        "generic_region::generic::GenericArithmeticSession::" + method
+                        for method in ("new", "consumed_byte_offset",
+                                       "observed_marker_offset", "validate_final_marker")
+                    } | {
+                        "generic_region::segments::validate_arithmetic_terminator",
+                        "generic_region::segments::validate_observed_marker",
+                    }
                     self.assertTrue({
                         "generic-probability-validation-result",
                         "generic-probability-signal-error",
@@ -2168,6 +2176,37 @@ class TraceabilityTests(unittest.TestCase):
         self.assertEqual(rows["RESET-ONE"]["strength"], "functional_contract")
         self.assertEqual(rows["RESET-SET"]["strength"], "functional_contract")
         self.assertEqual(rows["DECISION"]["strength"], "state_preservation")
+
+    def test_session_framing_is_local_project_result_support_not_normative_closure(self):
+        ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")
+        row = next(row for row in ledger["requirements"]
+                   if row["id"] == "T88-ARITHMETIC-DRIVER-CONTEXT-SEQUENCE")
+        expected = {
+            "generic_region::generic::GenericArithmeticSession::" + method
+            for method in ("new", "consumed_byte_offset",
+                           "observed_marker_offset", "validate_final_marker")
+        } | {
+            "generic_region::segments::validate_arithmetic_terminator",
+            "generic_region::segments::validate_observed_marker",
+        }
+        self.assertTrue(expected <= {claim["runtime"] for claim in row["functional_evidence"]})
+        models = {
+            "generic-" + name for name in (
+                "bounded-arithmetic-tail", "early-arithmetic-marker",
+                "arithmetic-terminator-validation", "observed-marker-result", "final-marker-result",
+            )
+        }
+        self.assertTrue(models <= set(row["models"]))
+        self.assertTrue(all(ledger["definitions"][name]["file"] ==
+                            "specs/generic_region/framing.rs" for name in models))
+        family = next(f for f in ledger["model_classifications"]["families"]
+                      if f["file"] == "specs/generic_region/framing.rs")
+        self.assertEqual(family["classification"], "project-result-model")
+        self.assertEqual(row["strength"], "functional_contract")
+        self.assertEqual(row["review"], "provisional")
+        self.assertTrue(row["gaps"])
+        self.assertIn("not public", row["scope_of_formal_result"])
+        self.assertIn("not independent framing", row["scope_of_formal_result"])
 
     def test_context_api_baseline_is_functional_support_not_complete_driver_timing(self):
         ledger = load_json(TOOLS.parent / "validation/traceability/requirements.json")

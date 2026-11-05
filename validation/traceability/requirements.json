@@ -23,8 +23,8 @@
   },
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
-    "registry_sha256": "02e44b42f6034cdee0ceb24148cbe4009be74f587302326374f2da94e2c0f902",
-    "project_source_sha256": "de781c862c17a93eec1b454dadc5f9da5c8156900f37a624034266996845674e",
+    "registry_sha256": "6bc9065d1537f3c4193dbbcd7a17113d5bd2eb3c914147465b8db8afd6943c6f",
+    "project_source_sha256": "c33cce1ec6cd0d057edb555f31eff4248cc3b675183617a2c9b8cf5aa0589bcd",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -1217,6 +1217,20 @@
         "ambiguity": "",
         "justification": "The existing wrapped DecodeError or InvalidHuffman(kind) policy is factored into a closed pure result reused by FromSpecImpl and the exact executing From contract; a defining-module proof exposes its unchanged equation.",
         "caveats": "Typed project diagnostics, not an independent normative table/error classification."
+      },
+      {
+        "file": "specs/generic_region/framing.rs",
+        "members": [
+          "spec::bounded_arithmetic_tail",
+          "spec::early_arithmetic_marker",
+          "spec::arithmetic_terminator_validation",
+          "spec::observed_marker_result",
+          "spec::final_marker_result"
+        ],
+        "classification": "project-result-model",
+        "justification": "Bodies describe exact existing bounded FF AC tail acceptance, earliest interior strict-marker rejection, observed-marker code/offset/length priority and final-offset/error composition. Actual native helper/session postconditions consume these relations.",
+        "ambiguity": "",
+        "caveats": "Existing strict project policy, not an independently approved interpretation of every normative framing exception. Internal metadata states are not public compressed-image witnesses; no complete decoder or raster theorem."
       }
     ]
   },
@@ -1879,7 +1893,7 @@
     "specs/decode.rs": "acc5afe72a14eb8e48e3a193608a2a89bec966b97757201d6ce3d9bc9a404e24",
     "specs/document.rs": "1eab675da2cb26fbd23fdf8ef6a8995476587cf0d58062f71fad58558d789af6",
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
-    "specs/generic_region.rs": "4b979bce039717a9604e82fbf56e60740b5ae6c86476a39933f6ff057fa7f414",
+    "specs/generic_region.rs": "179767792743db1d346a5681af60eef35c383f653a9fe17410b0c0aa8c49ab33",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
     "specs/huffman.rs": "2d58cd9b77ebfaad2b432f0a2366b409582a4701b9dea067d69881545d446b3e",
     "specs/huffman_lookup.rs": "bd6fe3ee36de79103836d6fc9fc411b03ca0b304ce4915d0f730c2301b483766",
@@ -1919,14 +1933,14 @@
     "src/file_header.rs": "9011f761698f3772c953980e2d2d56ed5ece4f792c8e318ca89a0e0f8d326e11",
     "src/generic_region.rs": "4c753c336c16bb615977a1074edbb71ccb158b3fd4d8120876d9c24f21f4f0ef",
     "src/generic_region/contexts.rs": "3e86887633490b1d135db2f9b1f8aa9f92e097e43f22f8b29dd1ed3521ed66cb",
-    "src/generic_region/generic.rs": "7df85ea015071478a1f691f39d0ccdeb6581d110e650fdc172767c9fcd914076",
+    "src/generic_region/generic.rs": "c9649b2bf61e18a66069acb58f8ef1639d68d92e8f97d1834522db774682872b",
     "src/generic_region/headers.rs": "d116c691bcc2c0f94f4a39a0984b7576a492f9b4411159aaf00a901cce2d3ac8",
     "src/generic_region/refinement.rs": "defb4386d60cf2b85b7de320ce5c8a53e83d4483ee30668e0cc3ab5a54e7b35c",
     "src/generic_region/support.rs": "f564fa0bda614940d4592b8958b236a1c8978ed56cf1ee9102e745f20ce62f16",
     "src/generic_region/tests/diagnostics.rs": "53850441984da91d10fcff41c144041ddb2102d03742aeadfac62b1fb40b01db",
     "src/generic_region/tests/headers_and_prediction.rs": "8acb2f4b3dcb2858b67b1b95a822950c7dd2c2e05e93b10d514565d04f5f0997",
     "src/generic_region/tests/raster_parity.rs": "a10224aebcc8c0864ad093f51a6b9eb3a7c7de2af2e7e4865481d8c4e123bbd9",
-    "src/generic_region/tests/segment_framing.rs": "306d93b4bac38a15c3a733cc58d034b23ffcbe008039e6333d641bf3569c5cd3",
+    "src/generic_region/tests/segment_framing.rs": "e1b6223989d849ac9a5678952d49a1c5f8242d58365fc701abf29ef5525b492d",
     "src/halftone.rs": "006e5a831d3f09a8b3be41782424261a52bf375544befd7e45c522d0ab00ba36",
     "src/halftone/headers.rs": "363497a0fdf003435987f0fa64e793d7d61d7d9de4a65c58c0e66571394cdda0",
     "src/halftone/planes.rs": "563d5b285cad5af7644babe50c6f5103a1b914af52d0156098438fcd196f73b0",
@@ -1993,7 +2007,9 @@
     "src/symbol_text/tests/text_termination.rs": "3b629b51e16bdf7dfcedf2a6c46b99c95a2fe6042b8b0da4e74f069722789eeb",
     "src/symbol_text/dictionary.rs": "edf276aaf02772cda1a66d7b0a50f4a038086ddb41422225f902abc04faaabaa",
     "src/symbol_text/dictionary/huffman.rs": "d741f90a472575929b06b5b3b8bfa0c3078f05369519ba7810f846eb8e5c6984",
-    "src/generic_region/tests/sessions_and_snapshots.rs": "bd8218eef90ffc10ec9731e44669fe819bd87f194264dcb16ac077bddf371b12"
+    "src/generic_region/tests/sessions_and_snapshots.rs": "bd8218eef90ffc10ec9731e44669fe819bd87f194264dcb16ac077bddf371b12",
+    "specs/generic_region/framing.rs": "4cd4e9b1c381135ae89acdec59a7f9fda2a610625ed24ce0ffcbcb84fc5a02e7",
+    "src/generic_region/segments.rs": "d84e912d208b1dd85160d4e0065a0b682cc48f63fbcf53ada5488ccaf2a8e59a"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -4123,6 +4139,61 @@
       ],
       "name": "refinement_snapshot_view",
       "role": "Closed logical metadata/bank projection preserving private runtime snapshot fields; API result/frame support, not normative caller reset/retention timing."
+    },
+    "generic-bounded-arithmetic-tail": {
+      "kind": "spec",
+      "file": "specs/generic_region/framing.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec",
+        "framing"
+      ],
+      "name": "bounded_arithmetic_tail",
+      "role": "Exact existing project strict-framing/helper result policy; local driver support, not independent normative framing or full-stream/raster fidelity."
+    },
+    "generic-early-arithmetic-marker": {
+      "kind": "spec",
+      "file": "specs/generic_region/framing.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec",
+        "framing"
+      ],
+      "name": "early_arithmetic_marker",
+      "role": "Exact existing project strict-framing/helper result policy; local driver support, not independent normative framing or full-stream/raster fidelity."
+    },
+    "generic-arithmetic-terminator-validation": {
+      "kind": "spec",
+      "file": "specs/generic_region/framing.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec",
+        "framing"
+      ],
+      "name": "arithmetic_terminator_validation",
+      "role": "Exact existing project strict-framing/helper result policy; local driver support, not independent normative framing or full-stream/raster fidelity."
+    },
+    "generic-observed-marker-result": {
+      "kind": "spec",
+      "file": "specs/generic_region/framing.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec",
+        "framing"
+      ],
+      "name": "observed_marker_result",
+      "role": "Exact existing project strict-framing/helper result policy; local driver support, not independent normative framing or full-stream/raster fidelity."
+    },
+    "generic-final-marker-result": {
+      "kind": "spec",
+      "file": "specs/generic_region/framing.rs",
+      "module_path": [
+        "generic_region",
+        "generic_region_spec",
+        "framing"
+      ],
+      "name": "final_marker_result",
+      "role": "Exact existing project strict-framing/helper result policy; local driver support, not independent normative framing or full-stream/raster fidelity."
     }
   },
   "requirements": [
@@ -13464,7 +13535,13 @@
         "generic_region::contexts::RefinementContexts::new",
         "generic_region::contexts::RefinementContexts::reset",
         "generic_region::contexts::RefinementContexts::try_snapshot",
-        "generic_region::contexts::RefinementContexts::restore"
+        "generic_region::contexts::RefinementContexts::restore",
+        "generic_region::generic::GenericArithmeticSession::new",
+        "generic_region::generic::GenericArithmeticSession::consumed_byte_offset",
+        "generic_region::generic::GenericArithmeticSession::observed_marker_offset",
+        "generic_region::generic::GenericArithmeticSession::validate_final_marker",
+        "generic_region::segments::validate_arithmetic_terminator",
+        "generic_region::segments::validate_observed_marker"
       ],
       "models": [
         "decoder-state-valid",
@@ -13475,7 +13552,12 @@
         "arithmetic-signal-error",
         "arithmetic-decode-error",
         "generic-snapshot-view",
-        "refinement-snapshot-view"
+        "refinement-snapshot-view",
+        "generic-bounded-arithmetic-tail",
+        "generic-early-arithmetic-marker",
+        "generic-arithmetic-terminator-validation",
+        "generic-observed-marker-result",
+        "generic-final-marker-result"
       ],
       "proof_macros": [],
       "tests": [
@@ -13518,11 +13600,23 @@
         {
           "target": "lib",
           "name": "generic_region::tests::sessions_and_snapshots::raw_refinement_snapshots_preserve_all_states_and_failure_frames"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::segment_framing::strict_terminator_matches_every_byte_pair_and_first_error_priority"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::segment_framing::session_queries_and_marker_results_match_stored_metadata_without_mutation"
+        },
+        {
+          "target": "lib",
+          "name": "generic_region::tests::segment_framing::fresh_sessions_preserve_supplied_stream_configuration_and_limits"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "The decoder postcondition preserves decoder/context validity, not this row's normative context sequence or stopping relation. Auxiliary project contracts prove valid raw-bank acceptance, the first invalid state/MPS payload and exact context/signal/EOF/overflow diagnostic projection; those are not whole-stream selection, decoding or normative rejection theorems. Generic/refinement API support now proves fresh zero banks/canonical storage metadata, reset zeroing with length/configuration frames, exact independent snapshot contents/metadata and restore-to-snapshot results with rejection identity. Closed logical views and defining-module bridges preserve runtime privacy. These are local API guarantees without new preconditions, not complete E.3.8/caller reset-retention timing, allocator-capacity bounds or bitstream/raster semantics.",
+      "scope_of_formal_result": "The decoder postcondition preserves decoder/context validity, not this row's normative context sequence or stopping relation. Auxiliary project contracts prove valid raw-bank acceptance, the first invalid state/MPS payload and exact context/signal/EOF/overflow diagnostic projection; those are not whole-stream selection, decoding or normative rejection theorems. Generic/refinement API support now proves fresh zero banks/canonical storage metadata, reset zeroing with length/configuration frames, exact independent snapshot contents/metadata and restore-to-snapshot results with rejection identity. Closed logical views and defining-module bridges preserve runtime privacy. These are local API guarantees without new preconditions, not complete E.3.8/caller reset-retention timing, allocator-capacity bounds or bitstream/raster semantics. Local session/framing support additionally proves stored query offsets, successful constructor input/configuration/limits/zero-work metadata, exact observed-marker and final-offset/error composition, bad-tail-before-scan priority and the earliest strict interior marker payload. The observed helper intentionally accepts None even for a short coded length; the final session result still rejects that length. No new preconditions or executing changes. Five project-result models describe existing policy, not independent framing fidelity or complete driver/stream/raster semantics. Scalar native oracles cover all65536bytepairs both alone and before a valid tail, first-error/code boundaries and internal arbitrary stored metadata; these are not public compressed-image witnesses or an exhaustive standards denominator.",
       "assumptions": [
         "Source locator resolves to the hash-pinned T.88 edition in standards and source_consultations; this is an unapproved original paraphrase.",
         "Only the requires/ensures and explicitly identified bound lemmas are formal evidence; an existing test link is not an all-input semantic theorem."
@@ -13599,6 +13693,56 @@
             "final(self).contexts@ == generic_region_spec::refinement_snapshot_view(snapshot).1",
             "generic_region_spec::contexts_valid(final(self).contexts@)",
             "Err(_) => final(self).contexts@ == old(self).contexts@"
+          ]
+        },
+        {
+          "runtime": "generic_region::generic::GenericArithmeticSession::new",
+          "section": "ensures",
+          "tokens": [
+            "session.decoder.bytes@ == coded@",
+            "session.coded_length == coded@.len()",
+            "session.work_used == 0",
+            "session.limits == *limits",
+            "session.contexts.template == template",
+            "session.contexts.extended_template == extended_template",
+            "generic_region_spec::bounded_arithmetic_tail(coded@)"
+          ]
+        },
+        {
+          "runtime": "generic_region::generic::GenericArithmeticSession::consumed_byte_offset",
+          "section": "ensures",
+          "tokens": [
+            "out == self.decoder.byte_position"
+          ]
+        },
+        {
+          "runtime": "generic_region::generic::GenericArithmeticSession::observed_marker_offset",
+          "section": "ensures",
+          "tokens": [
+            "out == match self.decoder.marker",
+            "Some(marker) => Some(marker.offset)"
+          ]
+        },
+        {
+          "runtime": "generic_region::generic::GenericArithmeticSession::validate_final_marker",
+          "section": "ensures",
+          "tokens": [
+            "out == generic_region_spec::final_marker_result",
+            "self.decoder.marker, self.coded_length"
+          ]
+        },
+        {
+          "runtime": "generic_region::segments::validate_arithmetic_terminator",
+          "section": "ensures",
+          "tokens": [
+            "generic_region_spec::arithmetic_terminator_validation(data@, out)"
+          ]
+        },
+        {
+          "runtime": "generic_region::segments::validate_observed_marker",
+          "section": "ensures",
+          "tokens": [
+            "out == generic_region_spec::observed_marker_result(decoder.marker, coded_length)"
           ]
         }
       ],

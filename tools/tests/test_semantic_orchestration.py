@@ -18,8 +18,11 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_SESSION_FRAMING_CHECKS = tuple(
+    row for row in LIVE_CHECKS if row[0] != "session-framing"
+)
 PRE_CONTEXT_BASELINE_CHECKS = tuple(
-    row for row in LIVE_CHECKS if row[0] != "context-lifecycle"
+    row for row in PRE_SESSION_FRAMING_CHECKS if row[0] != "context-lifecycle"
 )
 PRE_IMPL_IDENTITY_CHECKS = tuple(
     (name, script, 6 if name == "error-wrappers-basic" else count, strong, weaker)
@@ -252,9 +255,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
         collector = runner.configured_collector_checks()
         assigned = [row for role in (whole, collector, *shards) for row in role]
         self.assertEqual(len(shards), 14)
-        self.assertEqual(len(assigned), 51)
-        self.assertEqual(len({row[0] for row in assigned}), 51)
-        self.assertEqual(sum(row[2] for row in assigned), 419)
+        self.assertEqual(len(assigned), 52)
+        self.assertEqual(len({row[0] for row in assigned}), 52)
+        self.assertEqual(sum(row[2] for row in assigned), 431)
         self.assertEqual({row[0]: row[2] for row in whole}, {"arithmetic-codec": 27})
         self.assertIn("huffman-codec", {row[0] for row in shards[3]})
         self.assertEqual(set(assigned), set(LIVE_CHECKS))
@@ -271,8 +274,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 419)
-        self.assertEqual(len(checks), 51)
+        self.assertEqual(sum(row[2] for row in checks), 431)
+        self.assertEqual(len(checks), 52)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):

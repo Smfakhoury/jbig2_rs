@@ -76,6 +76,21 @@ of standard-table fidelity. Procedure-bank placement, field selection, reset
 timing and full caller/stream interpretation require their own guarantees.
 The IAID 31-bit cap is project policy.
 
+Local generic/refinement framing contracts describe the existing strict policy:
+bad or short tails take priority over scanning; interior marker rejection reports
+the first matching pair and its exact code/offset. Session queries return stored
+decoder metadata, and final-marker results compose observed-marker validation
+with checked length subtraction. Successful session construction preserves the
+supplied bytes, configuration, limits and zero work counter.
+The [framing models](../specs/generic_region/framing.rs) are project-result
+relations, not independent approval of every normative framing exception.
+In particular, an unobserved marker is accepted by the observation helper even
+for a short internal coded length; final session validation still rejects that
+length. The [native oracles](../src/generic_region/tests/segment_framing.rs)
+exercise all byte pairs and arbitrary stored metadata without treating those
+internal states as public compressed-image witnesses. Full driver/raster
+composition and exhaustive source-statement coverage remain unfinished.
+
 ### Readers, bitmap and raster primitives
 
 Byte/bit readers have exact input/cursor/value/error frames. Packed copying,

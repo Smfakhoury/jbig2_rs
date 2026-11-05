@@ -5,6 +5,13 @@
 
 use vstd::prelude::*;
 
+#[path = "generic_region/framing.rs"]
+mod framing;
+pub(crate) use framing::{
+    arithmetic_terminator_validation, bounded_arithmetic_tail, early_arithmetic_marker,
+    final_marker_result, observed_marker_result,
+};
+
 verus! {
 
 // Model navigation: spec::contexts_valid [representation-invariant]
