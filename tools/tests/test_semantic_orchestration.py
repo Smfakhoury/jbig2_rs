@@ -18,8 +18,11 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_PUBLIC_CONTEXT_CHECKS = tuple(
+    row for row in LIVE_CHECKS if row[0] not in {"public-context", "context-callers"}
+)
 PRE_CLONE_RESULT_CHECKS = tuple(
-    row for row in LIVE_CHECKS if row[0] != "clone-results"
+    row for row in PRE_PUBLIC_CONTEXT_CHECKS if row[0] != "clone-results"
 )
 PRE_SESSION_FRAMING_CHECKS = tuple(
     row for row in PRE_CLONE_RESULT_CHECKS if row[0] != "session-framing"
@@ -43,7 +46,9 @@ LIVE_TOPOLOGY = {
 }
 CURRENT_TOPOLOGY = {
     **LIVE_TOPOLOGY,
-    "COLLECTOR_GROUPS": tuple(name for name in runner.COLLECTOR_GROUPS if name != "clone-results"),
+    "WHOLE_GROUPS": tuple(name for name in runner.WHOLE_GROUPS if name != "public-context"),
+    "COLLECTOR_GROUPS": tuple(name for name in runner.COLLECTOR_GROUPS
+                              if name not in {"clone-results", "context-callers"}),
 }
 CAPACITY_TOPOLOGY = {
     **CURRENT_TOPOLOGY,
@@ -262,11 +267,14 @@ class SemanticOrchestrationTests(unittest.TestCase):
         collector = runner.configured_collector_checks()
         assigned = [row for role in (whole, collector, *shards) for row in role]
         self.assertEqual(len(shards), 14)
-        self.assertEqual(len(assigned), 53)
-        self.assertEqual(len({row[0] for row in assigned}), 53)
-        self.assertEqual(sum(row[2] for row in assigned), 441)
+        self.assertEqual(len(assigned), 55)
+        self.assertEqual(len({row[0] for row in assigned}), 55)
+        self.assertEqual(sum(row[2] for row in assigned), 458)
         self.assertIn("clone-results", {row[0] for row in collector})
-        self.assertEqual({row[0]: row[2] for row in whole}, {"arithmetic-codec": 27})
+        self.assertEqual({row[0]: row[2] for row in whole}, {
+            "arithmetic-codec": 27, "public-context": 10,
+        })
+        self.assertIn("context-callers", {row[0] for row in collector})
         self.assertIn("huffman-codec", {row[0] for row in shards[3]})
         self.assertEqual(set(assigned), set(LIVE_CHECKS))
 
@@ -282,8 +290,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 441)
-        self.assertEqual(len(checks), 53)
+        self.assertEqual(sum(row[2] for row in checks), 458)
+        self.assertEqual(len(checks), 55)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):

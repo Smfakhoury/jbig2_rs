@@ -10,6 +10,11 @@ use crate::file_header::file_header_spec;
 mod policy;
 pub use policy::*;
 
+#[path = "document/context.rs"]
+mod context;
+pub use context::{decoder_context_finished, decoder_context_state};
+pub(crate) use context::decoder_context_fields;
+
 verus! {
 
 // Project metadata transitions; caller sequencing and raster semantics are separate.

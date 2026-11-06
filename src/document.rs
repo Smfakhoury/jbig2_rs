@@ -17,6 +17,10 @@ use vstd::prelude::*;
 #[rustfmt::skip]
 #[path = "../specs/document.rs"]
 mod document_spec;
+#[cfg(verus_keep_ghost)]
+pub(crate) use document_spec::{
+    decoder_context_fields, decoder_context_finished, decoder_context_state,
+};
 
 #[cfg(verus_keep_ghost)]
 #[rustfmt::skip]
@@ -151,12 +155,24 @@ pub struct DecoderContext<'a> {
 impl Decoder {
     /// Creates reusable scratch state tied to this decoder's limits.
     #[must_use]
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures
+            document_spec::decoder_context_state(&out).0 == document_spec::decoder_limits(self),
+            document_spec::decoder_context_state(&out).1.len() == 0,
+            document_spec::decoder_context_state(&out).2.len() == 0,
+            document_spec::decoder_context_state(&out).3 == 0,
+    ))]
     pub fn context(&self) -> DecoderContext<'_> {
-        DecoderContext {
+        let out = DecoderContext {
             decoder: self,
             mmr: MmrScratch::default(),
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            crate::mmr::scratch_view_definition();
+            document_spec::decoder_context_fields();
         }
+        out
     }
 
     /// Creates a decoder using the supplied resource limits.
@@ -178,32 +194,68 @@ impl Decoder {
 impl DecoderContext<'_> {
     /// Returns the limits governing this context.
     #[must_use]
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures *out == document_spec::decoder_context_state(self).0,
+    ))]
     pub const fn limits(&self) -> &Limits {
+        #[cfg(verus_keep_ghost)]
+        proof! { document_spec::decoder_context_fields(); }
         self.decoder.limits()
     }
 
     /// Exact bytes currently retained by reusable allocation capacities.
     #[must_use]
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures out == document_spec::decoder_context_state(self).3,
+    ))]
     pub fn retained_scratch_bytes(&self) -> u64 {
+        #[cfg(verus_keep_ghost)]
+        proof! { document_spec::decoder_context_fields(); }
         self.mmr.retained_bytes()
     }
 
     /// Clears all per-document scratch contents while retaining capacity.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        ensures
+            document_spec::decoder_context_state(final(self)).0 == document_spec::decoder_context_state(old(self)).0,
+            document_spec::decoder_context_state(final(self)).1.len() == 0,
+            document_spec::decoder_context_state(final(self)).2.len() == 0,
+            document_spec::decoder_context_state(final(self)).3 == document_spec::decoder_context_state(old(self)).3,
+    ))]
     pub fn reset(&mut self) {
+        #[cfg(verus_keep_ghost)]
+        proof! { document_spec::decoder_context_fields(); }
         self.mmr.clear();
     }
 
     /// Clears per-document state and releases every retained allocation.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        ensures
+            document_spec::decoder_context_state(final(self)).0 == document_spec::decoder_context_state(old(self)).0,
+            document_spec::decoder_context_state(final(self)).1.len() == 0,
+            document_spec::decoder_context_state(final(self)).2.len() == 0,
+            document_spec::decoder_context_state(final(self)).3 == 0,
+    ))]
     pub fn release_scratch(&mut self) {
+        #[cfg(verus_keep_ghost)]
+        proof! { document_spec::decoder_context_fields(); }
         self.mmr.release();
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(
+        ensures
+            document_spec::decoder_context_state(final(self)).0 == document_spec::decoder_context_state(old(self)).0,
+            document_spec::decoder_context_state(final(self)).1.len() == 0,
+            document_spec::decoder_context_state(final(self)).2.len() == 0,
+            document_spec::decoder_context_state(final(self)).3 ==
+                if document_spec::decoder_context_state(old(self)).3
+                    > document_spec::decoder_context_state(old(self)).0.max_retained_state_bytes {
+                    0u64
+                } else { document_spec::decoder_context_state(old(self)).3 },
+    ))]
     pub(crate) fn finish_call(&mut self) {
+        #[cfg(verus_keep_ghost)]
+        proof! { document_spec::decoder_context_fields(); }
         self.reset();
         if self.retained_scratch_bytes() > self.limits().max_retained_state_bytes {
             self.release_scratch();
@@ -216,10 +268,12 @@ impl DecoderContext<'_> {
     ///
     /// Returns the same typed errors as [`Decoder::inspect`].
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures match out {
-            Ok(info) => document_spec::standalone_metadata(input@, &info),
-            Err(_) => true,
-        },
+        ensures
+            document_spec::decoder_context_finished(old(self), final(self)),
+            match out {
+                Ok(info) => document_spec::standalone_metadata(input@, &info),
+                Err(_) => true,
+            },
     ))]
     pub fn inspect(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         let result = self.decoder.inspect(input);
@@ -233,10 +287,12 @@ impl DecoderContext<'_> {
     ///
     /// Returns the same typed errors as [`Decoder::inspect_embedded`].
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures match out {
-            Ok(info) => document_spec::embedded_metadata(&info),
-            Err(_) => true,
-        },
+        ensures
+            document_spec::decoder_context_finished(old(self), final(self)),
+            match out {
+                Ok(info) => document_spec::embedded_metadata(&info),
+                Err(_) => true,
+            },
     ))]
     pub fn inspect_embedded(&mut self, input: &[u8]) -> Result<DocumentInfo, DecodeError> {
         let result = self.decoder.inspect_embedded(input);
@@ -250,10 +306,12 @@ impl DecoderContext<'_> {
     ///
     /// Returns the same typed errors as [`Decoder::inspect_embedded_with_globals`].
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
-        ensures match out {
-            Ok(info) => document_spec::embedded_metadata(&info),
-            Err(_) => true,
-        },
+        ensures
+            document_spec::decoder_context_finished(old(self), final(self)),
+            match out {
+                Ok(info) => document_spec::embedded_metadata(&info),
+                Err(_) => true,
+            },
     ))]
     pub fn inspect_embedded_with_globals(
         &mut self,
@@ -270,7 +328,9 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::parse_globals`].
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures document_spec::decoder_context_finished(old(self), final(self)),
+    ))]
     pub fn parse_globals(&mut self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
         let result = self.decoder.parse_globals(input);
         self.finish_call();

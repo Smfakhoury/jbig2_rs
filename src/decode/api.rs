@@ -144,15 +144,22 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::decode`].
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures crate::document::decoder_context_finished(old(self), final(self)),
+    ))]
     pub fn decode(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
         let result = self.decode_internal(input);
         self.finish_call();
         result
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures crate::document::decoder_context_state(final(self)).0
+            == crate::document::decoder_context_state(old(self)).0,
+    ))]
     pub(super) fn decode_internal(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { crate::document::decoder_context_fields(); }
         let (info, segments) = parse_standalone_document(input, self.decoder.limits())?;
         let mut collector = PageCollector::new(self.decoder.limits());
         let initial_work = structural_work(input.len(), &segments)?;
@@ -177,8 +184,12 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::decode_embedded`].
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures crate::document::decoder_context_finished(old(self), final(self)),
+    ))]
     pub fn decode_embedded(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { crate::document::decoder_context_fields(); }
         let result = self
             .decoder
             .decode_embedded_internal(input, None, &mut self.mmr);
@@ -191,12 +202,16 @@ impl DecoderContext<'_> {
     /// # Errors
     ///
     /// Returns the same typed errors as [`Decoder::decode_embedded_with_globals`].
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures crate::document::decoder_context_finished(old(self), final(self)),
+    ))]
     pub fn decode_embedded_with_globals(
         &mut self,
         input: &[u8],
         globals: &GlobalSegments,
     ) -> Result<DecodedDocument, DecodeError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { crate::document::decoder_context_fields(); }
         let result = self
             .decoder
             .decode_embedded_internal(input, Some(globals), &mut self.mmr);

@@ -57,7 +57,7 @@
       "expected_error_exact": "Error: Malformed(UnexpectedEof { offset: 8, needed: 1, remaining: 0 })",
       "stream_sha256": "ea78ede485450ad3e5a2274ce05f81d9763ad232651642057c00b9b131cab493",
       "source_files_sha256": {
-        "src/mmr.rs": "c82fd282e7fb194576ea34b8f501b9ed5ecb56075e44c70bd8131a4ab4929ca9",
+        "src/mmr.rs": "939bdd232275bf07a8d776bacd891001dacdd49c828cfbb0abcbd40fa4adf5bb",
         "src/mmr/codes.rs": "46cf39eb4756da06aeb34aa32dbe75e13dcbd911b3a5b9d9afa80065966a7857",
         "src/mmr/memory.rs": "831beca92c98f7923b6548c2f93eb9edd77b24a63bf74d48a5050c3e28745ea2",
         "src/mmr/raster.rs": "bd03d34f4154e629fce76707fae6dc06c12d2077a3e56fafd0198b6ae8176e4b",

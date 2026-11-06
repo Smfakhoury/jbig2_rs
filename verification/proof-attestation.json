@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "eb34fda899902e36d4e97e3fd23cd63f26e7d118",
-  "scope": "Fresh exact-source whole verification/compilation proves result baselines for five formerly compiler-derived non-Copy Clone implementations: public Decoder configuration, generic/refinement header values, retention byte sequences and complete segment-header scalar/vector metadata. Explicit implementations preserve original field-value/Vec-cloning semantics and ordering. Closed associated logical views plus checked definition reveals preserve private runtime fields. No new preconditions, allocator promises, assumptions or normative-fidelity claim. Owning legacy result clauses are tracked separately from nested closure contracts.",
+  "source_revision": "0e7060c0836635d75fe18692c8a8799cb38e69d9",
+  "scope": "Fresh exact-source whole verification/compilation proves public reusable context fresh/limits/stored-byte/reset/release/strict-threshold state transitions and all seven public inspection/global-parsing/decoding success/error return cleanup frames, preserving previous metadata results. The actual fresh MmrScratch Default and stronger clear stored-metadata frame compose through real callers. Closed context/Scratch views and genuinely proved defining-module universal reference equations retain runtime privacy. No new preconditions, trust assumptions, physical allocator-capacity/process-memory or complete decoded-raster claim.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-clone-result-baseline-v02-20261105/target/clone-baseline/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-public-context-baseline-v02-20261106/target/public-context/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
-    "verified_obligations": 1304,
-    "verified_production_functions": 647,
+    "verified_obligations": 1307,
+    "verified_production_functions": 648,
     "errors": 0,
     "proof_build_compiles": true,
     "exact_production_source_compiles": true,
@@ -24,8 +24,8 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "0de1f4f8805a0baed053fa15f86e7b097867b5de5bd151727ab76424caa40c6f",
-  "proof_dispositions_sha256": "6841d94b9374e99e04a17f7193b3fd7e47a85ba4b17d5e5bf26f2dc5dffe2f89",
+  "production_proof_coverage_sha256": "4f9ba5d2c9526c351f0d11187bc68a0e3e00e48c6c8afbd886e79537b54f89bc",
+  "proof_dispositions_sha256": "12ab420cbe0658884e445504438194455b21cef445bb9fe2d822cdb476c6b3a2",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
     "manifest_sha256": "5f007f853c6caad16d6d318bde996373c6a6f886e8949cd0df62612e5408a92c",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1304 actual whole obligations/zeroerrors/nonemptylibrary;667explicit native declarations and647direct/20reviewed accounting. Five existing generated callable bodies become explicit and contracted; the native universe does not grow:966compiler items,1258MIR bodies plus1abstract=1259identities, with299remaining derives/202closures/91constructors/164separateCTFE/ 229markerimpls. These compiler-profile facts are not proof percentages. Ten actual compiling selected positives/strong/weak result contrasts and all254native compiled/detected faults pass. Independent field/array/vector oracles cover every current scalar/slot, all defined segment types, None/zero/max metadata, arbitrary retention bytes and independent owned storage. Internal header states are not public compressed-image witnesses. The same six native clone oracle tests pass on the original derived implementations. Exact body/side-effect controls isolate only5Clone bodies in3files; all145other native projections match. This is not a claim that all executing tokens or emitted machine code are identical. Real155-file MSRV extraction/offline/no-upload and numerical coverage floors pass. Live441contrasts/53groups/254native/405sourcebindings retain14shards/16roles/max4/1050s/jobcaps; new10cases use collector headroom, with old measured profiles frozen separately. Source-only localpostcondition surfaces rise512->517 because5formerly generated declarations become explicit; the raw130/no-local review and existing24Fromowners/106remaining review candidates are not silently reduced. All266selected/257gap-bearing requirements and218registry definitions remain provisional; no normative statement is added. Existing conformance executions/outcomes/approvals retain identities. No runtime/API defect needs a0.1backport; full statement/code/ reachability/generated semantic-quality readiness is not inferred. Approved standards processing and validator identity remain unresolved external inputs. These local receipts do not replace fresh hosted exact-head/original-artifact acceptance.",
+  "current_evidence_note": "1307 actual whole obligations/zeroerrors/nonemptylibrary;668explicit native declarations/648direct20reviewed. Only existing Default becomes explicit; native universe remains966items/1258bodies+1abstract=1259identities, with298derives/202closures/91constructors/164separateCTFE/229markerimpls. Seventeen actual compiling selected positives/strong/weak contrasts split10basic and7caller controls; all271final native faults compile and areactually detected. Controls preserve old result metadata and unrelatedconfiguration/state clauses. Independent native oracles cover freshconfiguration, both scratch vectors, arbitrary stored counters, reset/release frames, strict less/equal/greater thresholds including0/u64MAX, and all7actual error returns. Native capacities are observations/tests, not new allocator axioms; internal seeded counters are not publiccompressed-image witnesses. Same5oracles pass on original implementations. Exact body/side-effect controls isolate2native body rewrites in2files;all146other projections match. Real155-file MSRV/offline/no-upload and numerical coverage floors pass. Live458contrasts/55groups/271native/408bindings retain14shards/16roles/max4/all1050s/jobcaps; new10basic cases use whole headroom and7callers collector headroom, with historic measured profiles frozen. Owning local surfaces517->529, verifiedno-local review130->119;24previous inherited owners project106->95remaining candidates pending fresh same-run qualification, not missingproof counts. No normative row is added:266selected/257gap-bearingrequirements and218registered definitions remain provisional;2newAPI helper equations are separately purpose-classified with explicitunmapped requirement context. Original conformance executions/outcomes/approvals retain identities. No behaviour/API fix requires0.1backport. Source-processing/validator external inputs remain unresolved; fullstatement/code/reachability/generated semantic quality/readiness isnot inferred. Fresh exact-head hosted/original-artifact acceptance isstill required before protected integration.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -261,6 +261,26 @@
         "incomplete_functions": 0
       },
       "production_proof_coverage_sha256": "3fa923b5b5c63551d4a750e8398528617fd6c86ed2ed24178ae709bf8dfe2e06",
+      "scope_note": "Historical component evidence; not a new execution or approval."
+    },
+    {
+      "source_revision": "eb34fda899902e36d4e97e3fd23cd63f26e7d118",
+      "scope": "Fresh exact-source whole verification/compilation proves result baselines for five formerly compiler-derived non-Copy Clone implementations: public Decoder configuration, generic/refinement header values, retention byte sequences and complete segment-header scalar/vector metadata. Explicit implementations preserve original field-value/Vec-cloning semantics and ordering. Closed associated logical views plus checked definition reveals preserve private runtime fields. No new preconditions, allocator promises, assumptions or normative-fidelity claim. Owning legacy result clauses are tracked separately from nested closure contracts.",
+      "result": {
+        "verified_obligations": 1304,
+        "verified_production_functions": 647,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "0de1f4f8805a0baed053fa15f86e7b097867b5de5bd151727ab76424caa40c6f",
       "scope_note": "Historical component evidence; not a new execution or approval."
     }
   ]

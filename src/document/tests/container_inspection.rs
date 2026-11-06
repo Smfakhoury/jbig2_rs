@@ -3,6 +3,151 @@
 
 use super::*;
 
+fn seeded_public_context(decoder: &Decoder, retained: u64) -> DecoderContext<'_> {
+    let mut context = decoder.context();
+    context.mmr.transitions.extend_from_slice(&[0, 7, u32::MAX]);
+    context.mmr.row_transitions.extend_from_slice(&[13, 17]);
+    context.mmr.retained_bytes = retained;
+    context.mmr.reserve_events = 23;
+    context
+}
+
+#[test]
+fn public_context_starts_empty_with_exact_limits_and_retained_metadata() {
+    let decoder = Decoder::new(Limits {
+        max_width: 29,
+        max_work_units: 31,
+        max_retained_state_bytes: 37,
+        ..Limits::default()
+    });
+    let context = decoder.context();
+    assert!(std::ptr::eq(context.limits(), decoder.limits()));
+    assert_eq!(
+        format!("{:?}", context.limits()),
+        format!("{:?}", decoder.limits())
+    );
+    assert!(context.mmr.transitions.is_empty());
+    assert!(context.mmr.row_transitions.is_empty());
+    assert_eq!(context.retained_scratch_bytes(), 0);
+    assert_eq!(context.mmr.reserve_events, 0);
+    assert_eq!(context.mmr.transitions.capacity(), 0);
+    assert_eq!(context.mmr.row_transitions.capacity(), 0);
+}
+
+#[test]
+fn public_context_reset_keeps_configuration_capacity_and_arbitrary_stored_bytes() {
+    let decoder = Decoder::new(Limits::default());
+    for retained in [0, 1, 41, u64::MAX] {
+        let mut context = seeded_public_context(&decoder, retained);
+        let capacity = (
+            context.mmr.transitions.capacity(),
+            context.mmr.row_transitions.capacity(),
+        );
+        assert_eq!(context.retained_scratch_bytes(), retained);
+        context.reset();
+        assert!(context.mmr.transitions.is_empty());
+        assert!(context.mmr.row_transitions.is_empty());
+        assert_eq!(context.retained_scratch_bytes(), retained);
+        assert_eq!(
+            (
+                context.mmr.transitions.capacity(),
+                context.mmr.row_transitions.capacity()
+            ),
+            capacity,
+        );
+        assert_eq!(context.mmr.reserve_events, 23);
+        assert!(std::ptr::eq(context.limits(), decoder.limits()));
+    }
+}
+
+#[test]
+fn public_context_release_resets_all_storage_metadata_and_configuration_frame() {
+    let decoder = Decoder::new(Limits::default());
+    let mut context = seeded_public_context(&decoder, u64::MAX);
+    context.release_scratch();
+    assert!(context.mmr.transitions.is_empty());
+    assert!(context.mmr.row_transitions.is_empty());
+    assert_eq!(context.retained_scratch_bytes(), 0);
+    assert_eq!(context.mmr.transitions.capacity(), 0);
+    assert_eq!(context.mmr.row_transitions.capacity(), 0);
+    assert_eq!(context.mmr.reserve_events, 0);
+    assert!(std::ptr::eq(context.limits(), decoder.limits()));
+}
+
+#[test]
+fn public_context_finish_matches_strict_wide_threshold_and_empty_state() {
+    for limit in [0, 1, 47, u64::MAX] {
+        let decoder = Decoder::new(Limits {
+            max_retained_state_bytes: limit,
+            ..Limits::default()
+        });
+        for retained in [
+            0,
+            1,
+            limit.saturating_sub(1),
+            limit,
+            limit.saturating_add(1),
+            u64::MAX,
+        ] {
+            let mut context = seeded_public_context(&decoder, retained);
+            let capacity = (
+                context.mmr.transitions.capacity(),
+                context.mmr.row_transitions.capacity(),
+            );
+            context.finish_call();
+            let released = u128::from(retained) > u128::from(limit);
+            assert!(context.mmr.transitions.is_empty());
+            assert!(context.mmr.row_transitions.is_empty());
+            assert_eq!(
+                context.retained_scratch_bytes(),
+                if released { 0 } else { retained }
+            );
+            assert_eq!(
+                (
+                    context.mmr.transitions.capacity(),
+                    context.mmr.row_transitions.capacity()
+                ),
+                if released { (0, 0) } else { capacity },
+            );
+            assert_eq!(context.mmr.reserve_events, if released { 0 } else { 23 });
+            assert!(std::ptr::eq(context.limits(), decoder.limits()));
+        }
+    }
+}
+
+#[test]
+fn public_context_all_error_returns_clear_scratch_and_keep_limits() {
+    let decoder = Decoder::new(Limits {
+        max_retained_state_bytes: 53,
+        ..Limits::default()
+    });
+    let globals = decoder.parse_globals(&[]).unwrap();
+    let mut checked = 0;
+    for operation in 0..7 {
+        let mut context = seeded_public_context(&decoder, 59);
+        let rejected = match operation {
+            0 => context.inspect(&[0]).is_err(),
+            1 => context.inspect_embedded(&[0]).is_err(),
+            2 => context
+                .inspect_embedded_with_globals(&[0], &globals)
+                .is_err(),
+            3 => context.parse_globals(&[0]).is_err(),
+            4 => context.decode(&[0]).is_err(),
+            5 => context.decode_embedded(&[0]).is_err(),
+            _ => context
+                .decode_embedded_with_globals(&[0], &globals)
+                .is_err(),
+        };
+        assert!(rejected);
+        assert!(context.mmr.transitions.is_empty());
+        assert!(context.mmr.row_transitions.is_empty());
+        assert_eq!(context.retained_scratch_bytes(), 0);
+        assert!(std::ptr::eq(context.limits(), decoder.limits()));
+        checked += 1;
+    }
+    assert_eq!(checked, 7);
+}
+
 #[test]
 fn decoder_clone_preserves_all_supplied_limits_and_independent_configuration() {
     let limits = Limits {

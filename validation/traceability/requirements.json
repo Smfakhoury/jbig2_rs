@@ -24,7 +24,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "6bc9065d1537f3c4193dbbcd7a17113d5bd2eb3c914147465b8db8afd6943c6f",
-    "project_source_sha256": "450d0e1f2ba0493bfc128c2cbc134c6d25a2b0965795a8ea359e16db17ba929b",
+    "project_source_sha256": "e0a3e38ac6f75a462f8109b0a2f10a3076765c99b54e7930a001da2fa16d3634",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -1231,6 +1231,17 @@
         "justification": "Bodies describe exact existing bounded FF AC tail acceptance, earliest interior strict-marker rejection, observed-marker code/offset/length priority and final-offset/error composition. Actual native helper/session postconditions consume these relations.",
         "ambiguity": "",
         "caveats": "Existing strict project policy, not an independently approved interpretation of every normative framing exception. Internal metadata states are not public compressed-image witnesses; no complete decoder or raster theorem."
+      },
+      {
+        "file": "specs/document/context.rs",
+        "members": [
+          "spec::decoder_context_state",
+          "spec::decoder_context_finished"
+        ],
+        "classification": "project-result-model",
+        "justification": "Closed projection binds actual context limits, logical scratch vectors and stored-byte metadata. The public return relation preserves limits, clears both vectors and admits stored metadata under the configured retained-state limit. Actual public/helper contracts and checked defining-module bridges consume these equations.",
+        "ambiguity": "",
+        "caveats": "Existing project cleanup/API relation, not complete decoded output, actual allocator capacity/process-memory bounds, independent normative fidelity or external-validation readiness."
       }
     ]
   },
@@ -1891,7 +1902,7 @@
     "specs/arithmetic.rs": "0d576d753574c2b2412ce8442aa3a3e50cd1b7b95be18347a8e62a6832b9b94a",
     "specs/bitmap.rs": "9d4da6608d7ee55fdf0ab7d8d47f6105e75e656c1f31589610d47a67a61218cf",
     "specs/decode.rs": "acc5afe72a14eb8e48e3a193608a2a89bec966b97757201d6ce3d9bc9a404e24",
-    "specs/document.rs": "1eab675da2cb26fbd23fdf8ef6a8995476587cf0d58062f71fad58558d789af6",
+    "specs/document.rs": "709aff35171a5eca1683d91aa5667bfd837d58a59fc04bf47dc6ab434e107ce3",
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
     "specs/generic_region.rs": "179767792743db1d346a5681af60eef35c383f653a9fe17410b0c0aa8c49ab33",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
@@ -1923,12 +1934,12 @@
     "src/decode/tests/container_routes.rs": "3e8e84cae3d340c972f170914bbf61a2c944c0056a3201e1f192a135b7775bfe",
     "src/decode/tests/direct_and_reuse.rs": "d46a5cbd0ee0791141d8b6115f090faa7a0315dc51437dcfb643dce6b58e116c",
     "src/decode/tests/symbol_resources.rs": "f23d5ba103db106eed1cf7d9c8eef395ce060e7eedf2226d7eb38f923dff3431",
-    "src/document.rs": "754f746e84381b35b67d198c9616228fff74a7c88ec720da16a4c4ccf2296aa8",
+    "src/document.rs": "ab22e563203546e774cd94dc2c248cdd7f8784aa7637b7459bc80d9f41eacc5e",
     "src/document/pages.rs": "f11a042b00dfab74c94454999b7d3c9ba575ff3c77b8fafd54ec692b7c4649a0",
     "src/document/parsing.rs": "ce5a558c99b64b8d3ec7af95a35bd8c563ddcf09f65c760a7cb31eaebc93aa54",
     "src/document/references.rs": "211469b5b0d1e5b507459d718e3f97623897c9acb0a8639a077f2d7e12f5a80b",
     "src/document/tests.rs": "ecb5c496a4c564ca0e578e2eec861370a81661c6687399f0bfc671bc1c7c9e0c",
-    "src/document/tests/container_inspection.rs": "3443f885733eaabd4bea74b777cd7e4a9823061b8b4e55880b543ab6dc09d2db",
+    "src/document/tests/container_inspection.rs": "1fa75a95bed32d48418e06eacb4cb19c1a2fb7e819c1e07164576ae8901a72aa",
     "src/document/tests/payload_windows.rs": "a5ea365a525b36f3ca92894ab3157d8b03382419e3ca434e154b7cdc3000f02e",
     "src/file_header.rs": "9011f761698f3772c953980e2d2d56ed5ece4f792c8e318ca89a0e0f8d326e11",
     "src/generic_region.rs": "3c916de49adad814ed62bb8afc37f9051ab36b95b4e6b45034b4b071ca187f01",
@@ -1959,7 +1970,7 @@
     "src/huffman/validation.rs": "6af0c03adf3bce270657b3cb6975cb7eef9f8dd888220dcf684745714e446d5f",
     "src/huffman/wide.rs": "4f37abac40efc66f0c3eaa2637d211eaca5a5ea4fa7a14d7aadb07fbe2a8f0b0",
     "src/lib.rs": "c07d0d5e3327c136b08221c21b75c14c9b85a5eac265861942511d068ef2a8ff",
-    "src/mmr.rs": "c82fd282e7fb194576ea34b8f501b9ed5ecb56075e44c70bd8131a4ab4929ca9",
+    "src/mmr.rs": "939bdd232275bf07a8d776bacd891001dacdd49c828cfbb0abcbd40fa4adf5bb",
     "src/mmr/codes.rs": "46cf39eb4756da06aeb34aa32dbe75e13dcbd911b3a5b9d9afa80065966a7857",
     "src/mmr/raster.rs": "bd03d34f4154e629fce76707fae6dc06c12d2077a3e56fafd0198b6ae8176e4b",
     "src/mmr/reference.rs": "f188b7e27296b8449df1aa17d5d48678977ac195fe381824626618ce5da7c818",
