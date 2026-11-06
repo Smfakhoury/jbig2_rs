@@ -55,7 +55,7 @@ pub(crate) enum EofbPolicy {
     Optional,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct MmrScratch {
     pub(crate) transitions: Vec<u32>,
@@ -65,11 +65,57 @@ pub(crate) struct MmrScratch {
     pub(crate) reserve_events: u64,
 }
 
+#[cfg(verus_keep_ghost)]
+verus! {
+    impl View for MmrScratch {
+        type V = (Seq<u32>, Seq<u32>, u64);
+
+        closed spec fn view(&self) -> Self::V {
+            (self.transitions@, self.row_transitions@, self.retained_bytes)
+        }
+    }
+
+    pub(crate) proof fn scratch_view_definition()
+        ensures forall|scratch: &MmrScratch|
+            #[trigger] scratch.view() == (
+                scratch.transitions@, scratch.row_transitions@, scratch.retained_bytes,
+            ),
+    {
+        reveal(<MmrScratch as View>::view);
+    }
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+impl Default for MmrScratch {
+    fn default() -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| {
+            equal(
+                out.view(),
+                (Seq::<u32>::empty(), Seq::<u32>::empty(), 0_u64),
+            )
+        });
+        let out = Self {
+            transitions: Vec::new(),
+            row_transitions: Vec::new(),
+            retained_bytes: 0,
+            #[cfg(test)]
+            reserve_events: 0,
+        };
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            reveal(<MmrScratch as View>::view);
+        }
+        out
+    }
+}
+
 impl MmrScratch {
     #[cfg_attr(verus_keep_ghost, verus_spec(
         ensures
             final(self).transitions@.len() == 0,
             final(self).row_transitions@.len() == 0,
+            final(self).retained_bytes == old(self).retained_bytes,
     ))]
     pub(crate) fn clear(&mut self) {
         self.transitions.clear();

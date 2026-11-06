@@ -83,6 +83,16 @@ witnesses. New explicit source declarations are kept distinct from formerly
 compiler-derived methods; moving a clone into source is not an increase in the
 number of native callable bodies.
 
+Public reusable-context contracts additionally preserve the governing limits,
+describe fresh empty scratch, copy the stored retained-byte observation, and
+prove reset/release/strict-threshold cleanup. All seven existing inspection,
+global-parsing and decoding return paths now carry the cleanup frame on success
+and error, preserving their earlier metadata guarantees. The
+[state/return models](../specs/document/context.rs) are separately classified
+project API helpers without a fabricated normative requirement link.
+Stored-byte metadata is not a new proof of vector capacity or process memory;
+native capacity observations remain distinct tests.
+
 ### Source-only purpose inventory
 
 `model_classifications` identifies exact declaration families as project

@@ -19,8 +19,8 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 14
-WHOLE_GROUPS = ("arithmetic-codec",)
-COLLECTOR_GROUPS = ("arithmetic-decision", "reset", "clone-results")
+WHOLE_GROUPS = ("arithmetic-codec", "public-context")
+COLLECTOR_GROUPS = ("arithmetic-decision", "reset", "clone-results", "context-callers")
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
@@ -59,6 +59,8 @@ CHECKS = (
     ("context-lifecycle", "check_context_lifecycle_proofs.py", 12, "strong_contract", "weaker_control"),
     ("session-framing", "check_session_framing_proofs.py", 12, "strong_contract", "weaker_control"),
     ("clone-results", "check_clone_result_proofs.py", 10, "strong_contract", "weaker_control"),
+    ("public-context", "check_public_context_proofs.py", 10, "strong_contract", "weaker_control"),
+    ("context-callers", "check_public_context_proofs.py", 7, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 18, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),
@@ -491,6 +493,7 @@ def run_checks(
                 "check_error_wrapper_proofs.py",
                 "check_default_proofs.py",
                 "check_arithmetic_codec_proofs.py",
+                "check_public_context_proofs.py",
             } else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(

@@ -26,21 +26,21 @@
     {
       "id": "decode::api::Decoder::decode_reader",
       "file": "src/decode/api.rs",
-      "file_sha256": "f7235edf821d22342efd719dff05367ee0bb8fbdbe811df46ce92203d69c98ee",
+      "file_sha256": "c353206b9e21a3ff5f87f47df1a57a44f9f556dec2979caac223e30c5a64873d",
       "status": "reviewed-verifier-limitation",
       "reason": "This public or composed path depends on arbitrary caller-provided PageSink/FnMut callbacks and their error, side-effect and resource behavior. Those external implementations and the complete composed orchestration are not directly proved. Individually verified owned collection/allocation helpers do not remove this boundary; no blanket absence of fallible-allocation models is claimed."
     },
     {
       "id": "decode::api::Decoder::decode_with_sink",
       "file": "src/decode/api.rs",
-      "file_sha256": "f7235edf821d22342efd719dff05367ee0bb8fbdbe811df46ce92203d69c98ee",
+      "file_sha256": "c353206b9e21a3ff5f87f47df1a57a44f9f556dec2979caac223e30c5a64873d",
       "status": "reviewed-verifier-limitation",
       "reason": "This public or composed path depends on arbitrary caller-provided PageSink/FnMut callbacks and their error, side-effect and resource behavior. Those external implementations and the complete composed orchestration are not directly proved. Individually verified owned collection/allocation helpers do not remove this boundary; no blanket absence of fallible-allocation models is claimed."
     },
     {
       "id": "decode::api::Decoder::decode_reader_with_sink",
       "file": "src/decode/api.rs",
-      "file_sha256": "f7235edf821d22342efd719dff05367ee0bb8fbdbe811df46ce92203d69c98ee",
+      "file_sha256": "c353206b9e21a3ff5f87f47df1a57a44f9f556dec2979caac223e30c5a64873d",
       "status": "reviewed-verifier-limitation",
       "reason": "This public or composed path depends on arbitrary caller-provided PageSink/FnMut callbacks and their error, side-effect and resource behavior. Those external implementations and the complete composed orchestration are not directly proved. Individually verified owned collection/allocation helpers do not remove this boundary; no blanket absence of fallible-allocation models is claimed."
     },
@@ -61,7 +61,7 @@
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "754f746e84381b35b67d198c9616228fff74a7c88ec720da16a4c4ccf2296aa8",
+      "file_sha256": "ab22e563203546e774cd94dc2c248cdd7f8784aa7637b7459bc80d9f41eacc5e",
       "status": "reviewed-verifier-limitation",
       "reason": "The remaining path uses the standard Read interface and composed stream/collection behavior, which the pinned project proof does not directly specify. Numeric preflight, owned parsing and individual fallible-allocation helpers are accounted for separately."
     },
