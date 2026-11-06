@@ -167,10 +167,12 @@ instead of globally expanding adjacency quantifiers. Its original guarantees,
 preconditions and verifier resource limits are retained.
 The first hosted catalog profile passed all individual queries but rejected
 an existing shard at 1,103.60 seconds. Its complete original measurements
-drive four existing-group moves (`mmr-span`, `retention`, `default-limits-3`,
-`collector-sink`) into existing headroom. No case, producer, pin, concurrency
-or measurement/job limit is removed or raised; the rejected run is not
-acceptance evidence.
+and a second complete rejected profile drive conservative per-group maxima.
+Six existing groups (`mmr-span`, `retention`, `default-limits-3`,
+`collector-sink`, `arithmetic-initialization`, `default-decoder-4`) move into
+existing headroom. No case, producer, pin, concurrency or measurement/job
+limit is removed or raised. Combining timings predicts capacity only; neither
+rejected run is acceptance evidence.
 
 ### Source-only purpose inventory
 

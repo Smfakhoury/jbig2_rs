@@ -20,6 +20,7 @@ class ReferenceCatalogProofTests(unittest.TestCase):
         old_checks = tuple(row for row in runner.CHECKS if row[0] not in added)
         moved = {
             "retention": 3, "default-limits-3": 8, "collector-sink": 11, "mmr-span": 13,
+            "arithmetic-initialization": 7, "default-decoder-4": 4,
         }
         previous = {**runner.DEFAULT_SHARD_REBALANCE, **moved}
         with patch.object(runner, "CHECKS", old_checks), patch.object(
@@ -42,7 +43,8 @@ class ReferenceCatalogProofTests(unittest.TestCase):
         self.assertIn("reference-accounting", {row[0] for row in after[12]})
         self.assertIn("reference-catalog", {row[0] for row in after[14]})
         for name, shard in {
-            "retention": 5, "default-limits-3": 2, "collector-sink": 9, "mmr-span": 0,
+            "retention": 5, "default-limits-3": 5, "collector-sink": 9, "mmr-span": 1,
+            "arithmetic-initialization": 6, "default-decoder-4": 12,
         }.items():
             self.assertIn(name, {row[0] for row in after[shard + 2]})
 

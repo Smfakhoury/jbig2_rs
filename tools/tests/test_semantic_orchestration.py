@@ -55,6 +55,7 @@ PRE_REFERENCE_CATALOG_TOPOLOGY = {
     "DEFAULT_SHARD_REBALANCE": {
         **runner.DEFAULT_SHARD_REBALANCE,
         "retention": 3, "default-limits-3": 8, "collector-sink": 11, "mmr-span": 13,
+        "arithmetic-initialization": 7, "default-decoder-4": 4,
     },
 }
 CURRENT_TOPOLOGY = {
@@ -310,24 +311,24 @@ class SemanticOrchestrationTests(unittest.TestCase):
     @patch.object(runner, "CHECKS", LIVE_CHECKS)
     @patch.multiple(runner, **LIVE_TOPOLOGY)
     def test_rejected_catalog_profile_rebalances_complete_original_measurements(self):
-        # Original42244087583/attempt1, all59groups passed; seconds rounded up.
+        # Per-group maxima of complete42244087583/42259441787, rounded up; neither accepted.
         costs = {
             "arithmetic-codec": 745.498, "clone-results": 276.639,
             "context-callers": 205.625, "arithmetic-decision": 398.436, "reset": 81.797,
-            "mmr-run": 97.449, "mmr-reference": 263.412, "default-limits-1": 81.812,
-            "reader-error": 193.949, "document-count": 338.304,
+            "mmr-run": 137.043, "mmr-reference": 351.223, "default-limits-1": 117.461,
+            "reader-error": 266.655, "document-count": 338.304,
             "default-decoder-2": 102.568, "iaid-state": 225.386,
-            "default-limits-2": 87.746, "error-wrappers-symbol": 183.177,
-            "symbol-cardinality": 505.711, "retention": 112.754,
-            "arithmetic-refill": 184.242, "page-state": 361.915, "huffman-codec": 364.011,
-            "public-decode-results": 167.123, "public-global-results": 96.292,
-            "default-decoder-4": 79.390, "text-batch": 236.284,
-            "arithmetic-integer": 194.112, "error-wrappers-regions": 171.729,
+            "default-limits-2": 109.748, "error-wrappers-symbol": 225.275,
+            "symbol-cardinality": 595.849, "retention": 112.754,
+            "arithmetic-refill": 192.993, "page-state": 380.689, "huffman-codec": 382.086,
+            "public-decode-results": 222.404, "public-global-results": 124.907,
+            "default-decoder-4": 103.842, "text-batch": 289.504,
+            "arithmetic-integer": 246.702, "error-wrappers-regions": 172.945,
             "document-layout": 256.939, "default-decoder-3": 81.970,
             "halftone-header": 178.113, "mmr-horizontal": 225.362,
-            "black-span": 209.040, "segment-data": 315.899, "public-context": 235.202,
-            "error-wrappers-basic": 225.016, "arithmetic-initialization": 152.927,
-            "bitmap-copy": 199.048, "mmr-prefix": 141.710, "bitmap-chunk": 136.563,
+            "black-span": 209.040, "segment-data": 315.899, "public-context": 301.467,
+            "error-wrappers-basic": 283.911, "arithmetic-initialization": 194.041,
+            "bitmap-copy": 246.218, "mmr-prefix": 141.710, "bitmap-chunk": 136.563,
             "bitmap-compose": 217.094, "default-limits-3": 109.597,
             "context-lifecycle": 345.878, "huffman-assignment": 759.511,
             "reference-accounting": 185.181, "segment-header": 299.433,
@@ -345,6 +346,13 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 for name, seconds in costs.items()]
         with patch.object(runner, "DEFAULT_SHARD_REBALANCE",
                           PRE_REFERENCE_CATALOG_TOPOLOGY["DEFAULT_SHARD_REBALANCE"]):
+            with self.assertRaisesRegex(ValueError, "1050-second"):
+                runner.measured_shard_seconds(rows)
+        first_correction = {
+            **PRE_REFERENCE_CATALOG_TOPOLOGY["DEFAULT_SHARD_REBALANCE"],
+            "retention": 5, "default-limits-3": 2, "collector-sink": 9, "mmr-span": 0,
+        }
+        with patch.object(runner, "DEFAULT_SHARD_REBALANCE", first_correction):
             with self.assertRaisesRegex(ValueError, "1050-second"):
                 runner.measured_shard_seconds(rows)
         measured = runner.measured_shard_seconds(rows)
