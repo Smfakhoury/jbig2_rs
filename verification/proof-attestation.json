@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "2dd2b19d77424cd5999b40104b159b757ced64a6",
+  "source_revision": "01fb3bdf1a3b293fb051722c847dc1f2e76c5f2a",
   "scope": "Fresh exact-source whole verification/compilation proves exact concrete reference/work quota results, first-match lookup/absence, input-order type/number catalogs and successful depth cardinality/bounds, plus arbitrary incoming depth-prefix and partial-error frames. Both public global parser results retain coherent type/depth counts alongside every prior ownership/quota/error/frame guarantee. A checked concrete prefix-monotonicity lemma supports overflow, and checked per-window/header-length projections isolate existing adjacency quantifiers without changing their guarantees/preconditions or resource limits. No runtime implementation, field visibility, admitted entry-domain, trust, full graph/depth-algorithm or normative-fidelity claim changes.",
   "toolchain": {
     "manifest": "config/toolchain.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Actual whole1311/0/nonemptylibrary;668explicit/648direct20reviewed. Twelve real compiling positive/strong/weak contrasts split6accounting/6catalog, preserving previous lookup bounds/absence, existing index-rangepreconditions, depth prefix/error frames and all prior public globalownership/stream/retention/error guarantees. All295native faults compileand are actually detected. Four independent u128-accounting/first-key/catalog/prefix oracles also pass on original implementations; all148ordinary production executing projections are identical. Internal lengthmetadata/arbitrary prefixes are stated helper entry domains, not publiccompressed-image witnesses. No machine-code/allocator/full-graph ornormative equivalence follows. Actual155-file MSRV/offline/no-upload andnumerical coverage floors pass. Native1259identities/298derives unchanged. Live482contrasts/59groups/295native/414bindings retain14shards/16roles/max4/all1050s/jobcaps and every old case; new6+6cases useexisting shard10/12 headroom (accepted42221586471 measured515.818586s/547.002907s). Original42244087583attempt1 passed all59groups but rejected oldshard13=1103.601187s. Same complete preserved measurements drive four existing-group moves: mmr-span13->0,retention3->5,default-limits-3 8->2,collector-sink11->9. No case/producer/pin/concurrency/measurement/job guard is removed or raised, and the failed profile grants no acceptance. All other old assignments are retained; historical measured profiles remain frozen. Owningsurfaces534->540 and raw verified no-local114->108. Separatelyrequalifying24existing inherited owners projects90->84remaining reviewcandidates, not missing-proof counts. Concrete ParsedSegment countinghas a different domain from existing abstract Segment reference/workmodels; no unproved bridge or new normative owner is credited. Registry218/266selected/257gap-bearing rows remain provisional. Original conformance executions/outcomes/approvals retain identities;no runtime/API defect needs0.1backport. Approved standards-processing/inventory and validator executable/version/input requirements remainunresolved external inputs; generated/profile/domain/semantic qualityqualification and complete statement mapping remain open. Fresh exacthead hosted/original-artifact acceptance remains required beforeprotected integration.",
+  "current_evidence_note": "Actual whole1311/0/nonemptylibrary;668explicit/648direct20reviewed. Twelve real compiling positive/strong/weak contrasts split6accounting/6catalog, preserving previous lookup bounds/absence, existing index-rangepreconditions, depth prefix/error frames and all prior public globalownership/stream/retention/error guarantees. All295native faults compileand are actually detected. Four independent u128-accounting/first-key/catalog/prefix oracles also pass on original implementations; all148ordinary production executing projections are identical. Internal lengthmetadata/arbitrary prefixes are stated helper entry domains, not publiccompressed-image witnesses. No machine-code/allocator/full-graph ornormative equivalence follows. Actual155-file MSRV/offline/no-upload andnumerical coverage floors pass. Native1259identities/298derives unchanged. Live482contrasts/59groups/295native/414bindings retain14shards/16roles/max4/all1050s/jobcaps and every old case; new6+6cases useexisting shard10/12 headroom (accepted42221586471 measured515.818586s/547.002907s). Original42244087583attempt1 passed all59groups but rejected oldshard13=1103.601187s. Same complete preserved measurements and second42259441787attempt1 passed all59groups but rejectedshard0=1106.180176s. Complete compatible per-group maxima from both preserved runs drive six existing-group moves: mmr-span13->1,retention3->5,default-limits-3 8->5,collector-sink11->9,arithmetic-initialization7->6,default-decoder-4 4->12. No case/producer/pin/concurrency/measurement/job guard is removed or raised, and the failed profile grants no acceptance. All other old assignments are retained; historical measured profiles remain frozen. Owningsurfaces534->540 and raw verified no-local114->108. Separatelyrequalifying24existing inherited owners projects90->84remaining reviewcandidates, not missing-proof counts. Concrete ParsedSegment countinghas a different domain from existing abstract Segment reference/workmodels; no unproved bridge or new normative owner is credited. Registry218/266selected/257gap-bearing rows remain provisional. Original conformance executions/outcomes/approvals retain identities;no runtime/API defect needs0.1backport. Approved standards-processing/inventory and validator executable/version/input requirements remainunresolved external inputs; generated/profile/domain/semantic qualityqualification and complete statement mapping remain open. Fresh exacthead hosted/original-artifact acceptance remains required beforeprotected integration.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -365,6 +365,26 @@
     },
     {
       "source_revision": "1e5b95b97a71822accf694a12d1601a4858304fb",
+      "scope": "Fresh exact-source whole verification/compilation proves exact concrete reference/work quota results, first-match lookup/absence, input-order type/number catalogs and successful depth cardinality/bounds, plus arbitrary incoming depth-prefix and partial-error frames. Both public global parser results retain coherent type/depth counts alongside every prior ownership/quota/error/frame guarantee. A checked concrete prefix-monotonicity lemma supports overflow, and checked per-window/header-length projections isolate existing adjacency quantifiers without changing their guarantees/preconditions or resource limits. No runtime implementation, field visibility, admitted entry-domain, trust, full graph/depth-algorithm or normative-fidelity claim changes.",
+      "result": {
+        "verified_obligations": 1311,
+        "verified_production_functions": 648,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "ef67250b5cccc16bb9726f4943da69801403e3846ba5091df5c9b8e379ec29ae",
+      "scope_note": "Historical component evidence; not a new execution or approval."
+    },
+    {
+      "source_revision": "2dd2b19d77424cd5999b40104b159b757ced64a6",
       "scope": "Fresh exact-source whole verification/compilation proves exact concrete reference/work quota results, first-match lookup/absence, input-order type/number catalogs and successful depth cardinality/bounds, plus arbitrary incoming depth-prefix and partial-error frames. Both public global parser results retain coherent type/depth counts alongside every prior ownership/quota/error/frame guarantee. A checked concrete prefix-monotonicity lemma supports overflow, and checked per-window/header-length projections isolate existing adjacency quantifiers without changing their guarantees/preconditions or resource limits. No runtime implementation, field visibility, admitted entry-domain, trust, full graph/depth-algorithm or normative-fidelity claim changes.",
       "result": {
         "verified_obligations": 1311,
