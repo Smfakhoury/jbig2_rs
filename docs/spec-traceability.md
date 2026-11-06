@@ -135,6 +135,11 @@ The original hosted profile rejected an existing shard at 1,051.79 seconds;
 its framing group was moved from shard 12 to existing shard 13 using the same
 run's measurements. Every case and the 14-shard/16-role/max-four topology and
 1,050-second guards remain unchanged; the failed profile grants no acceptance.
+The next original run verified the whole crate but its two contrast groups
+finished at the unchanged 20-minute job cancellation. Their 1,047.40 seconds
+plus setup and whole verification exceeded that job's budget. The existing
+ten-case context group therefore moves from the whole role to shard 7;
+the whole proof itself, every query and all job/measurement caps remain.
 
 ### Source-only purpose inventory
 

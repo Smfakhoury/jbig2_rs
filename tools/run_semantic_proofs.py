@@ -19,9 +19,10 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 14
-WHOLE_GROUPS = ("arithmetic-codec", "public-context")
+WHOLE_GROUPS = ("arithmetic-codec",)
 COLLECTOR_GROUPS = ("arithmetic-decision", "reset", "clone-results", "context-callers")
 ADDED_SHARD_GROUPS = {
+    "public-context": 7,
     "public-decode-results": 4, "public-global-results": 4,
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,

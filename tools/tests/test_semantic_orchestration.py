@@ -275,8 +275,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertEqual(sum(row[2] for row in assigned), 470)
         self.assertIn("clone-results", {row[0] for row in collector})
         self.assertEqual({row[0]: row[2] for row in whole}, {
-            "arithmetic-codec": 27, "public-context": 10,
+            "arithmetic-codec": 27,
         })
+        self.assertIn("public-context", {row[0] for row in shards[7]})
         self.assertIn("context-callers", {row[0] for row in collector})
         self.assertIn("huffman-codec", {row[0] for row in shards[3]})
         self.assertEqual(set(assigned), set(LIVE_CHECKS))
@@ -303,6 +304,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
         }
         with patch.object(runner, "CHECKS", PRE_PUBLIC_RESULT_CHECKS), patch.object(
             runner, "DEFAULT_SHARD_REBALANCE", previous,
+        ), patch.object(
+            runner, "WHOLE_GROUPS", ("arithmetic-codec", "public-context"),
         ):
             before = (
                 runner.configured_whole_checks(), runner.configured_collector_checks(),
@@ -314,15 +317,33 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 *runner.configured_shards(),
             )
         added = {"public-decode-results", "public-global-results"}
+        moved = {"session-framing", "public-context"}
         self.assertEqual(len(after), 16)
         for old, current in zip(before, after):
             self.assertEqual(
-                tuple(row for row in old if row[0] != "session-framing"),
-                tuple(row for row in current if row[0] not in added | {"session-framing"}),
+                tuple(row for row in old if row[0] not in moved),
+                tuple(row for row in current if row[0] not in added | moved),
             )
         self.assertEqual({row[0] for row in after[6] if row[0] in added}, added)
         self.assertIn("session-framing", {row[0] for row in before[14]})
         self.assertIn("session-framing", {row[0] for row in after[15]})
+        self.assertIn("public-context", {row[0] for row in before[0]})
+        self.assertIn("public-context", {row[0] for row in after[9]})
+
+    @patch.object(runner, "CHECKS", LIVE_CHECKS)
+    @patch.multiple(runner, **LIVE_TOPOLOGY)
+    def test_completed_whole_queries_still_need_the_original_twenty_minute_job_headroom(self):
+        # Original42218240883/attempt1 finished both queries at the job cancellation.
+        completed = {"arithmetic-codec": 736.550, "public-context": 310.854}
+        setup_and_whole_proof = 35 + 121
+        previous_whole = sum(completed.values())
+        self.assertLess(previous_whole, 1050)
+        self.assertGreater(setup_and_whole_proof + previous_whole, 20 * 60)
+        whole = runner.configured_whole_checks()
+        self.assertEqual({row[0] for row in whole}, {"arithmetic-codec"})
+        self.assertLess(setup_and_whole_proof + sum(completed[row[0]] for row in whole), 20 * 60)
+        self.assertIn("public-context", {row[0] for row in runner.configured_shards()[7]})
+        self.assertLess(621.185 + completed["public-context"], 1050)
 
     @patch.object(runner, "CHECKS", LIVE_CHECKS)
     @patch.multiple(runner, **LIVE_TOPOLOGY)
