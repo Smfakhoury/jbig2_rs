@@ -58,7 +58,8 @@ type PageStates = Vec<(u32, PageState)>;
     ensures match out {
         Some(index) =>
             index < entries@.len()
-            && entries@[index as int].0 == number,
+            && entries@[index as int].0 == number
+            && forall|prior: int| 0 <= prior < index ==> entries@[prior].0 != number,
         None =>
             forall|index: int| 0 <= index < entries@.len() ==>
                 entries@[index].0 != number,
@@ -82,7 +83,16 @@ fn keyed_index<T>(entries: &[(u32, T)], number: u32) -> Option<usize> {
     None
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Some(value) => exists|index: int|
+            0 <= index < entries@.len()
+            && entries@[index].0 == number
+            && *value == entries@[index].1
+            && forall|prior: int| 0 <= prior < index ==> entries@[prior].0 != number,
+        None => forall|index: int| 0 <= index < entries@.len() ==> entries@[index].0 != number,
+    },
+))]
 fn keyed_get<T>(entries: &[(u32, T)], number: u32) -> Option<&T> {
     let index = keyed_index(entries, number)?;
     Some(&entries[index].1)
@@ -334,6 +344,11 @@ impl DecoderContext<'_> {
         document_spec::global_parse_result(
             input@, document_spec::decoder_context_state(old(self)).0, out,
         ),
+        match out {
+            Ok(globals) => document_spec::global_segment_count(&globals)
+                == document_spec::global_depth_count(&globals),
+            Err(_) => true,
+        },
     ))]
     pub fn parse_globals(&mut self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
         #[cfg(verus_keep_ghost)]
@@ -436,6 +451,11 @@ impl Decoder {
         ensures document_spec::global_parse_result(
             input@, document_spec::decoder_limits(self), out,
         ),
+        match out {
+            Ok(globals) => document_spec::global_segment_count(&globals)
+                == document_spec::global_depth_count(&globals),
+            Err(_) => true,
+        },
     ))]
     pub fn parse_globals(&self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
         #[cfg(verus_keep_ghost)]
@@ -487,6 +507,7 @@ impl Decoder {
             invariant
                 byte_index <= input@.len(),
                 bytes@ == input@.subrange(0, byte_index as int),
+                types@.len() == depths@.len(),
                 input@.len() <= self.limits.max_stream_bytes,
                 input@.len() <= self.limits.max_retained_state_bytes,
                 document_spec::decoder_limits(self) == self.limits,

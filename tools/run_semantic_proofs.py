@@ -22,6 +22,7 @@ CI_SHARDS = 14
 WHOLE_GROUPS = ("arithmetic-codec",)
 COLLECTOR_GROUPS = ("arithmetic-decision", "reset", "clone-results", "context-callers")
 ADDED_SHARD_GROUPS = {
+    "reference-accounting": 10, "reference-catalog": 12,
     "public-context": 7,
     "public-decode-results": 4, "public-global-results": 4,
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
@@ -39,20 +40,20 @@ DEFAULT_SHARD_REBALANCE = {
     "mmr-reference": 0, "default-limits-1": 0, "mmr-run": 0,
     "document-count": 1, "default-decoder-2": 1, "iaid-state": 1,
     "default-limits-2": 2, "error-wrappers-symbol": 2, "symbol-cardinality": 2,
-    "retention": 3, "arithmetic-refill": 3, "page-state": 3, "huffman-codec": 3,
-    "default-decoder-4": 4, "text-batch": 4, "arithmetic-integer": 4,
-    "error-wrappers-regions": 5, "document-layout": 5, "default-decoder-3": 5,
+    "retention": 5, "arithmetic-refill": 3, "page-state": 3, "huffman-codec": 3,
+    "default-decoder-4": 12, "text-batch": 4, "arithmetic-integer": 4,
+    "error-wrappers-regions": 5, "document-layout": 5, "default-decoder-3": 8,
     "mmr-horizontal": 6, "black-span": 6, "segment-data": 6,
-    "error-wrappers-basic": 7, "arithmetic-initialization": 7, "bitmap-copy": 7,
-    "bitmap-compose": 8, "mmr-prefix": 8, "bitmap-chunk": 8, "default-limits-3": 8,
+    "error-wrappers-basic": 7, "arithmetic-initialization": 6, "bitmap-copy": 7,
+    "bitmap-compose": 8, "mmr-prefix": 8, "bitmap-chunk": 8, "default-limits-3": 7,
     "context-lifecycle": 8,
     "reader-error": 0, "huffman-assignment": 9, "halftone-header": 5,
     "segment-header": 10, "region-dispatch": 10, "integer-state": 10,
-    "error-conversion": 11, "collector-sink": 11, "operator-bit": 11, "value-bridge": 11,
+    "error-conversion": 11, "collector-sink": 9, "operator-bit": 11, "value-bridge": 11,
     "page-public": 12, "default-decoder-1": 12, "default-decoder-5": 12,
     "arithmetic-normalization": 12,
     "session-framing": 13,
-    "mmr-span": 13, "default-limits-4": 13, "page-finish": 13, "default-limits-5": 13,
+    "mmr-span": 1, "default-limits-4": 13, "page-finish": 13, "default-limits-5": 13,
 }
 RECEIPT_SCHEMA = 3
 CHECKS = (
@@ -113,6 +114,8 @@ CHECKS = (
     ("collector-sink", "check_collector_sink_proof.py", 2, "strong_contract", "weaker_control"),
     ("public-decode-results", "check_public_result_proofs.py", 8, "strong_contract", "weaker_control"),
     ("public-global-results", "check_public_result_proofs.py", 4, "strong_contract", "weaker_control"),
+    ("reference-accounting", "check_reference_catalog_proofs.py", 6, "strong_contract", "weaker_control"),
+    ("reference-catalog", "check_reference_catalog_proofs.py", 6, "strong_contract", "weaker_control"),
 )
 
 SUMMARY = "semantic-proof-summary.json"
@@ -499,6 +502,7 @@ def run_checks(
                 "check_arithmetic_codec_proofs.py",
                 "check_public_context_proofs.py",
                 "check_public_result_proofs.py",
+                "check_reference_catalog_proofs.py",
             } else []
             with log.open("w", encoding="utf-8") as stream:
                 process = subprocess.run(

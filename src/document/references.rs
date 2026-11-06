@@ -9,7 +9,21 @@ use super::{document_shared, document_spec};
 #[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(catalogs) =>
+            catalogs.0@.len() == segments@.len()
+            && catalogs.1@.len() == segments@.len()
+            && document_spec::reference_total(segments@, segments@.len())
+                <= limits.max_total_references
+            && (forall|index: int| 0 <= index < segments@.len() ==>
+                catalogs.0@[index].0 == segments@[index].header.number
+                && catalogs.0@[index].1 == segments@[index].header.segment_type)
+            && (forall|entry: int| 0 <= entry < catalogs.1@.len() ==>
+                1 <= (#[trigger] catalogs.1@[entry]).1 <= limits.max_reference_graph_depth),
+        Err(_) => true,
+    },
+))]
 pub(super) fn validate_references(
     segments: &[ParsedSegment<'_>],
     globals: Option<&GlobalSegments>,
@@ -36,6 +50,8 @@ pub(super) fn validate_references(
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             segment_index <= segments@.len(),
+            document_spec::reference_total(segments@, segments@.len())
+                <= limits.max_total_references,
             forall|entry: int| 0 <= entry < indexes@.len() ==>
                 indexes@[entry].1 < segments@.len(),
         decreases segments@.len() - segment_index,
@@ -67,7 +83,17 @@ pub(super) fn validate_references(
     }
     let mut type_index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant type_index <= segments@.len(),
+        invariant
+            type_index <= segments@.len(),
+            types@.len() == type_index,
+            depths@.len() == segments@.len(),
+            document_spec::reference_total(segments@, segments@.len())
+                <= limits.max_total_references,
+            forall|index: int| 0 <= index < types@.len() ==>
+                types@[index].0 == segments@[index].header.number
+                && types@[index].1 == segments@[index].header.segment_type,
+            forall|index: int| 0 <= index < depths@.len() ==>
+                1 <= (#[trigger] depths@[index]).1 <= limits.max_reference_graph_depth,
         decreases segments@.len() - type_index,
     ))]
     while type_index < segments.len() {
@@ -84,15 +110,29 @@ pub(super) fn validate_references(
     Ok((types, depths))
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures match out {
+        Ok(total) => total as nat == document_spec::reference_total(segments@, segments@.len()),
+        Err(error) =>
+            document_spec::reference_total(segments@, segments@.len()) > u64::MAX
+            && error == DecodeError::Malformed(MalformedError::IntegerOverflow),
+    },
+))]
 pub(super) fn count_total_references(segments: &[ParsedSegment<'_>]) -> Result<u64, DecodeError> {
     let mut total = 0_u64;
     let mut index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant index <= segments@.len(),
+        invariant
+            index <= segments@.len(),
+            total as nat == document_spec::reference_total(segments@, index as nat),
         decreases segments@.len() - index,
     ))]
     while index < segments.len() {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            document_spec::reference_total_monotone(segments@, index as nat + 1, segments@.len());
+            reveal_with_fuel(document_spec::reference_total, 1);
+        }
         let Ok(count) = u64::try_from(segments[index].header.referred_segments.len()) else {
             return Err(MalformedError::IntegerOverflow.into());
         };
@@ -280,9 +320,16 @@ pub(super) fn validate_retention_flags(
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires forall|entry: int| 0 <= entry < indexes@.len() ==>
         indexes@[entry].1 < segments@.len(),
+    ensures match out {
+        Ok(depths) =>
+            depths@.len() == segments@.len()
+            && forall|entry: int| 0 <= entry < depths@.len() ==>
+                1 <= (#[trigger] depths@[entry]).1 <= limits.max_reference_graph_depth,
+        Err(_) => true,
+    },
 ))]
 pub(super) fn validate_reference_depth(
     segments: &[ParsedSegment<'_>],
@@ -301,6 +348,7 @@ pub(super) fn validate_reference_depth(
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             segment_index <= segments@.len(),
+            ordered@.len() == segment_index,
             forall|entry: int| 0 <= entry < ordered@.len() ==>
                 ordered@[entry].1 < segments@.len(),
         decreases segments@.len() - segment_index,
@@ -311,6 +359,7 @@ pub(super) fn validate_reference_depth(
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 position <= ordered@.len(),
+                ordered@.len() == segment_index,
                 forall|entry: int| 0 <= entry < ordered@.len() ==>
                     ordered@[entry].1 < segments@.len(),
             decreases ordered@.len() - position,
@@ -333,12 +382,20 @@ pub(super) fn validate_reference_depth(
     Ok(depths)
 }
 
-#[cfg_attr(verus_keep_ghost, verus_spec(
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
     requires
         forall|entry: int| 0 <= entry < ordered@.len() ==>
             ordered@[entry].1 < segments@.len(),
         forall|entry: int| 0 <= entry < indexes@.len() ==>
             indexes@[entry].1 < segments@.len(),
+    ensures
+        old(depths)@.len() <= final(depths)@.len()
+            <= old(depths)@.len() + ordered@.len(),
+        forall|entry: int| 0 <= entry < old(depths)@.len() ==>
+            final(depths)@[entry] == old(depths)@[entry],
+        forall|entry: int| old(depths)@.len() <= entry < final(depths)@.len() ==>
+            1 <= (#[trigger] final(depths)@[entry]).1 <= limits.max_reference_graph_depth,
+        out.is_ok() ==> final(depths)@.len() == old(depths)@.len() + ordered@.len(),
 ))]
 #[allow(clippy::manual_map)]
 pub(super) fn validate_reference_depth_ordered(
@@ -353,6 +410,11 @@ pub(super) fn validate_reference_depth_ordered(
     #[cfg_attr(verus_keep_ghost, verus_spec(
         invariant
             ordered_index <= ordered@.len(),
+            depths@.len() == old(depths)@.len() + ordered_index,
+            forall|entry: int| 0 <= entry < old(depths)@.len() ==>
+                depths@[entry] == old(depths)@[entry],
+            forall|entry: int| old(depths)@.len() <= entry < depths@.len() ==>
+                1 <= (#[trigger] depths@[entry]).1 <= limits.max_reference_graph_depth,
             forall|entry: int| 0 <= entry < ordered@.len() ==>
                 ordered@[entry].1 < segments@.len(),
             forall|entry: int| 0 <= entry < indexes@.len() ==>
@@ -367,6 +429,13 @@ pub(super) fn validate_reference_depth_ordered(
         #[cfg_attr(verus_keep_ghost, verus_spec(
             invariant
                 reference_index <= segment.referred_segments@.len(),
+                1 <= depth,
+                ordered_index <= ordered@.len(),
+                depths@.len() == old(depths)@.len() + ordered_index,
+                forall|entry: int| 0 <= entry < old(depths)@.len() ==>
+                    depths@[entry] == old(depths)@[entry],
+                forall|entry: int| old(depths)@.len() <= entry < depths@.len() ==>
+                    1 <= (#[trigger] depths@[entry]).1 <= limits.max_reference_graph_depth,
                 forall|entry: int| 0 <= entry < indexes@.len() ==>
                     indexes@[entry].1 < segments@.len(),
             decreases segment.referred_segments@.len() - reference_index,

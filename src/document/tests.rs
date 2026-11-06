@@ -10,8 +10,9 @@ use super::parsing::{
     find_unknown_generic_length, parse_known_segment_data, parse_random_access, read_payload,
 };
 use super::references::{
-    known_reference_type, validate_reference_depth, validate_reference_depth_ordered,
-    validate_reference_links, validate_reference_types, validate_retention_flags,
+    count_total_references, known_reference_type, validate_reference_depth,
+    validate_reference_depth_ordered, validate_reference_links, validate_reference_types,
+    validate_retention_flags,
 };
 use super::*;
 

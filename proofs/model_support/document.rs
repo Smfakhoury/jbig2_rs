@@ -123,6 +123,7 @@ pub(super) proof fn document_fields(document: &crate::document::DocumentInfo)
 pub(super) proof fn global_fields(globals: &crate::document::GlobalSegments)
     ensures
         global_segment_count(globals) == globals.types@.len(),
+        global_depth_count(globals) == globals.depths@.len(),
         global_bytes(globals) == globals.bytes@,
 {}
 
@@ -175,6 +176,18 @@ pub(super) proof fn sequential_window_append<'a>(
     }
 }
 
+pub(super) proof fn segment_header_window_length(
+    header: &crate::segment_header::SegmentHeader,
+    bytes: Seq<u8>,
+    start: int,
+    end: int,
+)
+    requires crate::spec::segments::segment_header_fields(header, bytes, start, end),
+    ensures header.byte_length == end - start,
+{
+    reveal(crate::spec::segments::segment_header_fields);
+}
+
 pub(super) proof fn sequential_offset_window(
     bytes: Seq<u8>,
     segments: Seq<crate::document::ParsedSegment<'_>>,
@@ -192,15 +205,65 @@ pub(super) proof fn sequential_offset_window(
     },
     decreases prefix,
 {
+    hide(crate::spec::segments::segment_header_fields);
     reveal_with_fuel(sequential_offset, 1);
     if prefix > 0 {
         sequential_offset_window(bytes, segments, windows, end, ordered, (prefix - 1) as nat);
         let segment = segments[(prefix - 1) as int];
         let window = windows[(prefix - 1) as int];
-        reveal(crate::spec::segments::segment_header_fields);
-        assert(segment.header.byte_length == window.1 - window.0);
+        segment_header_window_length(&segment.header, bytes, window.0, window.1);
         assert(segment.payload@.len() == window.2 - window.1);
     }
+}
+
+pub(super) proof fn sequential_segment_from_windows(
+    bytes: Seq<u8>,
+    segments: Seq<crate::document::ParsedSegment<'_>>,
+    windows: Seq<(int, int, int)>,
+    ordered: bool,
+    index: int,
+)
+    requires
+        sequential_windows(bytes, segments, windows, bytes.len() as int, ordered),
+        segment_metadata(segments),
+        0 <= index < segments.len(),
+    ensures {
+        let segment = segments[index];
+        let start = sequential_offset(segments, index as nat) as int;
+        let payload_start = start + segment.header.byte_length;
+        let end = sequential_offset(segments, (index + 1) as nat) as int;
+        &&& 0 <= start < payload_start <= end <= bytes.len()
+        &&& crate::spec::segments::segment_header_fields(
+            &segment.header, bytes, start, payload_start,
+        )
+        &&& payload_window(&segment.header, bytes, payload_start, end, segment.payload@)
+        &&& (ordered && index > 0 ==> segments[index - 1].header.number < segment.header.number)
+    },
+{
+    hide(crate::spec::segments::segment_header_fields);
+    hide(payload_window);
+    hide(sequential_windows);
+    hide(sequential_offset);
+    sequential_offset_window(bytes, segments, windows, bytes.len() as int, ordered, index as nat);
+    sequential_offset_window(bytes, segments, windows, bytes.len() as int, ordered, (index + 1) as nat);
+    assert(windows.len() == segments.len()) by {
+        reveal(sequential_windows);
+    }
+    let window = windows[index];
+    assert({
+        &&& 0 <= window.0 < window.1 <= window.2 <= bytes.len()
+        &&& window.0 == if index == 0 { 0 } else { windows[index - 1].2 }
+        &&& crate::spec::segments::segment_header_fields(
+            &segments[index].header, bytes, window.0, window.1,
+        )
+        &&& payload_window(&segments[index].header, bytes, window.1, window.2, segments[index].payload@)
+        &&& (ordered && index > 0 ==> segments[index - 1].header.number < segments[index].header.number)
+    }) by {
+        reveal(sequential_windows);
+    }
+    segment_header_window_length(&segments[index].header, bytes, window.0, window.1);
+    assert(sequential_offset(segments, index as nat) == window.0);
+    assert(sequential_offset(segments, (index + 1) as nat) == window.2);
 }
 
 pub(super) proof fn sequential_complete_fields(
@@ -227,11 +290,7 @@ pub(super) proof fn sequential_complete_fields(
         &&& payload_window(&segment.header, bytes, payload_start, end, segment.payload@)
         &&& (ordered && index > 0 ==> segments[index - 1].header.number < segment.header.number)
     } by {
-        sequential_offset_window(bytes, segments, windows, bytes.len() as int, ordered, index as nat);
-        sequential_offset_window(bytes, segments, windows, bytes.len() as int, ordered, (index + 1) as nat);
-        let window = windows[index];
-        reveal(crate::spec::segments::segment_header_fields);
-        assert(segments[index].header.byte_length == window.1 - window.0);
+        sequential_segment_from_windows(bytes, segments, windows, ordered, index);
     }
 }
 
