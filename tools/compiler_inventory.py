@@ -221,11 +221,49 @@ def compiler_items(document):
     return functions, constructors, parents
 
 
-def public_exports(document):
+def source_root_exports(root):
+    exports = []
+
+    def path(node):
+        if node.type in {"identifier", "crate", "self", "super"}:
+            return (node.text.decode(),)
+        if node.type == "scoped_identifier":
+            return path(node.child_by_field_name("path")) + path(node.child_by_field_name("name"))
+        raise ValueError("unqualified source reexport path")
+
+    def walk(node, prefix=()):
+        if node.type == "scoped_use_list":
+            walk(node.child_by_field_name("list"), prefix + path(node.child_by_field_name("path")))
+        elif node.type == "use_list":
+            for child in node.named_children:
+                if child.type not in {"line_comment", "block_comment"}:
+                    walk(child, prefix)
+        elif node.type == "use_as_clause":
+            target = prefix + path(node.child_by_field_name("path"))
+            exports.append(("::".join(target), node.child_by_field_name("alias").text.decode()))
+        else:
+            target = prefix + path(node)
+            exports.append(("::".join(target), target[-1]))
+
+    for node, _ in items(parse((root / "src/lib.rs").read_bytes())):
+        visibility = next((
+            child.text for child in node.named_children if child.type == "visibility_modifier"
+        ), None)
+        if visibility != b"pub":
+            continue
+        if node.type != "use_declaration":
+            raise ValueError("new source root public declaration needs export-domain review")
+        walk(node.child_by_field_name("argument"))
+    if len({name for _, name in exports}) != len(exports):
+        raise ValueError("ambiguous source root reexports")
+    return sorted(exports)
+
+
+def public_exports(document, root=None):
     index = document["index"]
     result = []
-    root = index[str(document["root"])]
-    for identity in root["inner"]["module"]["items"]:
+    module = index[str(document["root"])]
+    for identity in module["inner"]["module"]["items"]:
         item = index[str(identity)]
         if item["visibility"] != "public":
             continue
@@ -241,11 +279,115 @@ def public_exports(document):
         })
     if len({item["name"] for item in result}) != len(result):
         raise ValueError("ambiguous root public exports")
+    if root is not None and sorted(
+        (item["source"], item["name"]) for item in result
+    ) != source_root_exports(root):
+        raise ValueError("compiler root reexports differ from selected source reexports")
     return sorted(result, key=lambda item: item["name"])
+
+
+def declaration_surfaces(document, parents, records):
+    index = document["index"]
+    exports = public_exports(document)
+    aliases = defaultdict(list)
+    for export in exports:
+        if export["kind"] not in {"struct", "enum", "trait", "function"}:
+            raise ValueError("new root export kind needs declaration-surface review")
+        aliases[export["compiler_id"]].append(export["name"])
+    by_mir = {row["mir_identity"]: row for row in records if row.get("mir_identity")}
+    for row in records:
+        if row["origin"] == "compiler_closure":
+            continue
+        item = index[str(row["compiler_id"])]
+        owners = [
+            owner for owner in parents[str(item["id"])]
+            if {"impl", "trait", "enum"} & owner["inner"].keys()
+        ]
+        if len(owners) > 1:
+            raise ValueError("ambiguous callable declaration-surface owner")
+        owner = owners[0] if owners else None
+        target = item["id"]
+        category = "non_root_function_or_method"
+        if row["origin"] == "compiler_adt_constructor":
+            category = "non_root_or_private_adt_constructor"
+            if "variant" in item["inner"]:
+                if owner is None or "enum" not in owner["inner"]:
+                    raise ValueError("variant constructor lacks its owning enum")
+                target = owner["id"]
+                exposed = bool(aliases[target])
+            else:
+                fields = item["inner"]["struct"]["kind"]["tuple"]
+                exposed = bool(aliases[target]) and all(
+                    field is not None and index[str(field)]["visibility"] == "public"
+                    for field in fields
+                )
+            if exposed:
+                category = "root_type_adt_constructor"
+        elif owner is not None and "impl" in owner["inner"]:
+            implementation = owner["inner"]["impl"]
+            resolved = implementation["for"].get("resolved_path")
+            target = resolved["id"] if resolved else None
+            if aliases[target]:
+                if implementation["trait"] is not None:
+                    category = "trait_implementation_on_root_type"
+                elif item["visibility"] == "public":
+                    category = "public_inherent_method_on_root_type"
+        elif owner is not None and "trait" in owner["inner"]:
+            target = owner["id"]
+            if aliases[target]:
+                category = "root_trait_method"
+        elif aliases[item["id"]]:
+            category = "root_reexported_function"
+        surface = {
+            "category": category, "root_aliases": sorted(aliases[target]),
+            "owner_compiler_id": owner["id"] if owner else None,
+            "target_compiler_id": target,
+        }
+        if category not in {
+            "non_root_function_or_method", "non_root_or_private_adt_constructor",
+            "root_type_adt_constructor",
+        }:
+            function = item["inner"]["function"]
+            if any(not isinstance(function.get(key), dict) for key in ("sig", "generics", "header")):
+                raise ValueError("API declaration lacks a complete compiler signature")
+            surface["compiler_signature"] = {
+                key: function[key] for key in ("sig", "generics", "header")
+            }
+        row["declaration_surface"] = surface
+    closures = sorted(
+        (row for row in records if row["origin"] == "compiler_closure"),
+        key=lambda row: row["mir_identity"].count("::{closure#"),
+    )
+    for row in closures:
+        parent = by_mir[row["parent_mir_identity"]]["declaration_surface"]
+        row["declaration_surface"] = {
+            "category": "internal_closure_body", "root_aliases": [],
+            "enclosing_declaration_category": parent.get(
+                "enclosing_declaration_category", parent["category"],
+            ),
+        }
+    return {
+        "status": "compiler_root_declaration_surfaces_classified",
+        "classified_owned_identities": len(records),
+        "categories": dict(sorted(Counter(
+            row["declaration_surface"]["category"] for row in records
+        ).items())),
+        "call_graph_reachability_qualified": False,
+        "constructible_argument_domains_qualified": False,
+        "claim_boundary": (
+            "Declaration exposure in the isolated native compiler profile, not call-graph "
+            "reachability or a proof that trait arguments are publicly constructible. "
+            "Private helpers and closures can execute under public callers. Compiler signatures "
+            "retain generic bounds but do not qualify semantic preconditions or input domains. "
+            "Public data fields, associated constants, external blanket implementations and "
+            "other compiler/platform/proof profiles are not a complete API/domain inventory."
+        ),
+    }
 
 
 def reconcile(root, document, mir_text):
     functions, constructors, parents = compiler_items(document)
+    exports = public_exports(document, root)
     bodies, ctfe = mir_bodies(mir_text)
     runtime = runtime_inventory(root)
     datatypes, expected_derives, expected_constructors = source_datatypes(root)
@@ -298,6 +440,13 @@ def reconcile(root, document, mir_text):
             identity = matches[0]
             if identity in source_matches or derived:
                 raise ValueError("duplicate or misclassified explicit compiler declaration")
+            trait_method = any("trait" in owner["inner"] for owner in owners) or bool(
+                impls and impls[0]["inner"]["impl"]["trait"] is not None
+            )
+            if not trait_method and (
+                (item["visibility"] == "public") != (runtime[identity]["visibility"] == "pub")
+            ):
+                raise ValueError("compiler public function visibility differs from selected source")
             source_matches.add(identity)
             kind = "explicit_source_declaration"
         elif derived:
@@ -399,6 +548,7 @@ def reconcile(root, document, mir_text):
     records.extend(closures)
     if len({record["id"] for record in records}) != len(records):
         raise ValueError("compiled inventory source identities collide")
+    surfaces = declaration_surfaces(document, parents, records)
     return {
         "schema_version": 1, "status": "compiler_native_profile_inventory_reconciled",
         "rustdoc_format": RUSTDOC_FORMAT,
@@ -415,7 +565,8 @@ def reconcile(root, document, mir_text):
         "derived_traits": dict(sorted(Counter(
             row["impl_trait"] for row in records if row["origin"] == "compiler_derived_method"
         ).items())),
-        "public_root_exports": public_exports(document),
+        "public_root_exports": exports,
+        "api_declaration_surfaces": surfaces,
         "marker_implementations": sorted(marker_impls, key=lambda row: row["compiler_id"]),
         "records": sorted(records, key=lambda row: row["id"]),
         "ready_for_external_validation": False,
