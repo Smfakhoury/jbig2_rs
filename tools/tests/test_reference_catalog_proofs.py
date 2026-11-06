@@ -18,7 +18,13 @@ class ReferenceCatalogProofTests(unittest.TestCase):
     def test_new_groups_use_only_existing_shard_ten_and_twelve_headroom(self):
         added = set(CASE_GROUPS)
         old_checks = tuple(row for row in runner.CHECKS if row[0] not in added)
-        with patch.object(runner, "CHECKS", old_checks):
+        moved = {
+            "retention": 3, "default-limits-3": 8, "collector-sink": 11, "mmr-span": 13,
+        }
+        previous = {**runner.DEFAULT_SHARD_REBALANCE, **moved}
+        with patch.object(runner, "CHECKS", old_checks), patch.object(
+            runner, "DEFAULT_SHARD_REBALANCE", previous,
+        ):
             before = (
                 runner.configured_whole_checks(), runner.configured_collector_checks(),
                 *runner.configured_shards(),
@@ -29,9 +35,16 @@ class ReferenceCatalogProofTests(unittest.TestCase):
         )
         self.assertEqual(len(after), 16)
         for old, current in zip(before, after):
-            self.assertEqual(old, tuple(row for row in current if row[0] not in added))
+            self.assertEqual(
+                tuple(row for row in old if row[0] not in moved),
+                tuple(row for row in current if row[0] not in added | moved.keys()),
+            )
         self.assertIn("reference-accounting", {row[0] for row in after[12]})
         self.assertIn("reference-catalog", {row[0] for row in after[14]})
+        for name, shard in {
+            "retention": 5, "default-limits-3": 2, "collector-sink": 9, "mmr-span": 0,
+        }.items():
+            self.assertIn(name, {row[0] for row in after[shard + 2]})
 
     def test_twelve_actual_scoped_sites_have_native_and_weaker_controls(self):
         self.assertEqual({name: len(cases) for name, cases in CASE_GROUPS.items()}, {

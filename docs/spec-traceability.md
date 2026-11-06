@@ -165,6 +165,12 @@ and seeded prefixes are not public compressed-image witnesses. An affected
 window-composition proof uses checked per-window/header-length projections
 instead of globally expanding adjacency quantifiers. Its original guarantees,
 preconditions and verifier resource limits are retained.
+The first hosted catalog profile passed all individual queries but rejected
+an existing shard at 1,103.60 seconds. Its complete original measurements
+drive four existing-group moves (`mmr-span`, `retention`, `default-limits-3`,
+`collector-sink`) into existing headroom. No case, producer, pin, concurrency
+or measurement/job limit is removed or raised; the rejected run is not
+acceptance evidence.
 
 ### Source-only purpose inventory
 
