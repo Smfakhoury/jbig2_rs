@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "acd67d2ae2f461b9eee6b1df81420c5c152cf958",
+  "source_revision": "f6dd5f9b62a35f3a7cd043021d90b355ff8f694c",
   "scope": "Fresh exact-source whole verification/compilation proves all eight owning standalone/embedded Decoder/helper/DecoderContext metadata result paths, preserving earlier cleanup/configuration frames. Both public global parser returns prove exact owned input, successful stream/retention admission and first stream-quota error priority. Existing metadata equations and checked private-field bridges are reused. One global result helper is separately classified API support, not a normative requirement. No new preconditions, trust, runtime field visibility or full decoded raster/entropy/domain/readiness claim.",
   "toolchain": {
     "manifest": "config/toolchain.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Actual whole1307/0/nonemptylibrary;668explicit/648direct20reviewed. Twelve real compiling positive/strong/weak contrasts split8decode/4global; quota bypass faults remove only their new invalid preservation invariants so the owning result contract, not loop proof failure, detects them. All283native faults compile and are actually detected. Four new native metadata/ownership/error-priority/admission oracles pass; all12public oracles including these4 also pass on original implementations. Global positives are accepted metadata containers, not entropy-valid dictionaries. Exact three move-only return-binding deltas in2files plus146other identical native projections are checked, not claimed as machine-code or allocator equivalence. Actual155-file MSRV/offline/no-upload and coverage floors pass. Live470contrasts/57groups/283native/411bindings retain14shards/16roles/max4/all1050s/jobcaps and every old case. New12cases use existing shard4headroom (original42190394135 measured475.148531s). Original42206783028/attempt1 failed collection: all57group queries passed but old shard12 measured1051.787748s. Existing session-framing moves12->13 using that same run's raw profile; rounded-up replay rejects the old assignment and fits the new one without changing any guard. No failed-profile acceptance or randomized remeasurement is credited. All other old assignments remain unchanged. Historical measured profiles remain frozen. Native1259identities/298derives unchanged;owning surfaces529->534 and raw verified no-local119->114. Separately requalifying24existing inherited owners projects95->90remaining review candidates, not missing-proof counts. Eight actualmetadata consumers are traced in the existing document-count record;no normative row added or gap/fidelity/readiness denominator cut. Registry218/266selected/257gap-bearing rows remain provisional. Original conformance executions/outcomes/approvals retain identities;no runtime/API defect needs0.1backport. Approved standards-processing/inventory and validator executable/version/input requirements remainunresolved external inputs; generated/profile/domain/semantic qualityqualification and complete statement mapping remain open. Fresh exacthead hosted/original-artifact acceptance is still required beforeprotected integration.",
+  "current_evidence_note": "Actual whole1307/0/nonemptylibrary;668explicit/648direct20reviewed. Twelve real compiling positive/strong/weak contrasts split8decode/4global; quota bypass faults remove only their new invalid preservation invariants so the owning result contract, not loop proof failure, detects them. All283native faults compile and are actually detected. Four new native metadata/ownership/error-priority/admission oracles pass; all12public oracles including these4 also pass on original implementations. Global positives are accepted metadata containers, not entropy-valid dictionaries. Exact three move-only return-binding deltas in2files plus146other identical native projections are checked, not claimed as machine-code or allocator equivalence. Actual155-file MSRV/offline/no-upload and coverage floors pass. Live470contrasts/57groups/283native/411bindings retain14shards/16roles/max4/all1050s/jobcaps and every old case. New12cases use existing shard4headroom (original42190394135 measured475.148531s). Original42206783028/attempt1 failed collection: all57group queries passed but old shard12 measured1051.787748s. Existing session-framing moves12->13 using that same run's raw profile; rounded-up replay rejects the old assignment and fits the new one without changing any guard. No failed-profile acceptance or randomized remeasurement is credited. Corrected42218240883/attempt1 verified the whole crate but its two completed contrast groups consumed1047.403222s; with35ssetup and121swhole verification the unchanged20min job was cancelled before matrix enumeration. That run grants no acceptance. Existing10case public-context moveswhole->shard7; whole verification and everyquery/cap remain. All other old assignments remain unchanged. Historical measured profiles remain frozen. Native1259identities/298derives unchanged;owning surfaces529->534 and raw verified no-local119->114. Separately requalifying24existing inherited owners projects95->90remaining review candidates, not missing-proof counts. Eight actualmetadata consumers are traced in the existing document-count record;no normative row added or gap/fidelity/readiness denominator cut. Registry218/266selected/257gap-bearing rows remain provisional. Original conformance executions/outcomes/approvals retain identities;no runtime/API defect needs0.1backport. Approved standards-processing/inventory and validator executable/version/input requirements remainunresolved external inputs; generated/profile/domain/semantic qualityqualification and complete statement mapping remain open. Fresh exacthead hosted/original-artifact acceptance is still required beforeprotected integration.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -305,6 +305,26 @@
     },
     {
       "source_revision": "da12b5fd387ca4406e4e9da89bd81d4bc539534b",
+      "scope": "Fresh exact-source whole verification/compilation proves all eight owning standalone/embedded Decoder/helper/DecoderContext metadata result paths, preserving earlier cleanup/configuration frames. Both public global parser returns prove exact owned input, successful stream/retention admission and first stream-quota error priority. Existing metadata equations and checked private-field bridges are reused. One global result helper is separately classified API support, not a normative requirement. No new preconditions, trust, runtime field visibility or full decoded raster/entropy/domain/readiness claim.",
+      "result": {
+        "verified_obligations": 1307,
+        "verified_production_functions": 648,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "6204b557383e200a484d869b243985a577294a8882f36a3780a222c536643ca0",
+      "scope_note": "Historical component evidence; not a new execution or approval."
+    },
+    {
+      "source_revision": "acd67d2ae2f461b9eee6b1df81420c5c152cf958",
       "scope": "Fresh exact-source whole verification/compilation proves all eight owning standalone/embedded Decoder/helper/DecoderContext metadata result paths, preserving earlier cleanup/configuration frames. Both public global parser returns prove exact owned input, successful stream/retention admission and first stream-quota error priority. Existing metadata equations and checked private-field bridges are reused. One global result helper is separately classified API support, not a normative requirement. No new preconditions, trust, runtime field visibility or full decoded raster/entropy/domain/readiness claim.",
       "result": {
         "verified_obligations": 1307,
