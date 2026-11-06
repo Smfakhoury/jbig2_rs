@@ -141,6 +141,31 @@ plus setup and whole verification exceeded that job's budget. The existing
 ten-case context group therefore moves from the whole role to shard 7;
 the whole proof itself, every query and all job/measurement caps remain.
 
+### Reference catalogs and project work
+
+The concrete catalog baseline counts actual `ParsedSegment` referred-entry
+lengths and proves exact checked work-quota outcomes. Its prefix fold has a
+different input domain from the existing abstract `Segment` reference/work
+models; no native-to-abstract correspondence is credited without a bridge.
+Lookups retain first-match values and exact absence, including duplicate keys.
+
+Successful reference validation returns the input-order type/number catalog
+and equally sized depth metadata with positive, admitted new depths.
+Ordered depth processing preserves arbitrary incoming prefixes on success and
+error, and describes bounded partial appends without requiring the incoming
+prefix itself to satisfy the new-depth limit. Existing index-range
+preconditions remain unchanged. Both global parsers retain matching type/depth
+counts in addition to their earlier owned-byte and quota/error guarantees.
+
+These are structural value/state/accounting guarantees, not complete graph
+depth, reference-class, retention, raster or normative-fidelity proofs.
+The [catalog contrasts](../tools/check_reference_catalog_proofs.py) and wide
+scalar native oracles keep these domains explicit; internal length metadata
+and seeded prefixes are not public compressed-image witnesses. An affected
+window-composition proof uses checked per-window/header-length projections
+instead of globally expanding adjacency quantifiers. Its original guarantees,
+preconditions and verifier resource limits are retained.
+
 ### Source-only purpose inventory
 
 `model_classifications` identifies exact declaration families as project

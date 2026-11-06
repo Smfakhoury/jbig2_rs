@@ -118,7 +118,14 @@ pub(super) fn enforce_page_limit(count: usize, limits: &Limits) -> Result<(), De
     Ok(())
 }
 
-#[cfg_attr(verus_keep_ghost, verus_verify)]
+#[cfg_attr(verus_keep_ghost, verus_spec(out =>
+    ensures out == document_spec::quota_result(
+        input_length as nat + segments@.len()
+            + document_spec::reference_total(segments@, segments@.len()),
+        limits.max_work_units,
+        LimitKind::Work,
+    ),
+))]
 pub(super) fn enforce_work_limit(
     input_length: usize,
     segments: &[ParsedSegment<'_>],
@@ -133,10 +140,19 @@ pub(super) fn enforce_work_limit(
     let mut reference_work = 0_u64;
     let mut index = 0_usize;
     #[cfg_attr(verus_keep_ghost, verus_spec(
-        invariant index <= segments@.len(),
+        invariant
+            index <= segments@.len(),
+            input_work as nat == input_length as nat,
+            segment_work as nat == segments@.len(),
+            reference_work as nat == document_spec::reference_total(segments@, index as nat),
         decreases segments@.len() - index,
     ))]
     while index < segments.len() {
+        #[cfg(verus_keep_ghost)]
+        proof! {
+            document_spec::reference_total_monotone(segments@, index as nat + 1, segments@.len());
+            reveal_with_fuel(document_spec::reference_total, 1);
+        }
         let Ok(count) = u64::try_from(segments[index].header.referred_segments.len()) else {
             return Err(MalformedError::IntegerOverflow.into());
         };

@@ -19,6 +19,10 @@ pub(crate) use context::decoder_context_fields;
 mod results;
 pub use results::global_parse_result;
 
+#[path = "document/catalogs.rs"]
+mod catalogs;
+pub(crate) use catalogs::{reference_total, reference_total_monotone};
+
 verus! {
 
 // Project metadata transitions; caller sequencing and raster semantics are separate.
@@ -531,6 +535,16 @@ pub closed spec fn global_segment_count(
     globals: &crate::document::GlobalSegments,
 ) -> nat {
     globals.types@.len()
+}
+
+// Model navigation: spec::global_depth_count [proof-support]
+// Purpose: Private retained reference-depth catalog cardinality.
+// Mapping: no registered requirement/locator mapping.
+// Fidelity: unresolved; no independent normative approval.
+pub closed spec fn global_depth_count(
+    globals: &crate::document::GlobalSegments,
+) -> nat {
+    globals.depths@.len()
 }
 
 // Model navigation: spec::global_bytes [proof-support]

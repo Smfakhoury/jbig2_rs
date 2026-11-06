@@ -18,8 +18,11 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_REFERENCE_CATALOG_CHECKS = tuple(
+    row for row in LIVE_CHECKS if row[0] not in {"reference-accounting", "reference-catalog"}
+)
 PRE_PUBLIC_RESULT_CHECKS = tuple(
-    row for row in LIVE_CHECKS if row[0] not in {"public-decode-results", "public-global-results"}
+    row for row in PRE_REFERENCE_CATALOG_CHECKS if row[0] not in {"public-decode-results", "public-global-results"}
 )
 PRE_PUBLIC_CONTEXT_CHECKS = tuple(
     row for row in PRE_PUBLIC_RESULT_CHECKS if row[0] not in {"public-context", "context-callers"}
@@ -270,9 +273,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
         collector = runner.configured_collector_checks()
         assigned = [row for role in (whole, collector, *shards) for row in role]
         self.assertEqual(len(shards), 14)
-        self.assertEqual(len(assigned), 57)
-        self.assertEqual(len({row[0] for row in assigned}), 57)
-        self.assertEqual(sum(row[2] for row in assigned), 470)
+        self.assertEqual(len(assigned), 59)
+        self.assertEqual(len({row[0] for row in assigned}), 59)
+        self.assertEqual(sum(row[2] for row in assigned), 482)
         self.assertIn("clone-results", {row[0] for row in collector})
         self.assertEqual({row[0]: row[2] for row in whole}, {
             "arithmetic-codec": 27,
@@ -294,8 +297,8 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 470)
-        self.assertEqual(len(checks), 57)
+        self.assertEqual(sum(row[2] for row in checks), 482)
+        self.assertEqual(len(checks), 59)
 
     @patch.multiple(runner, **LIVE_TOPOLOGY)
     def test_public_results_keep_every_old_role_and_use_existing_shard_four_headroom(self):
@@ -311,7 +314,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
                 runner.configured_whole_checks(), runner.configured_collector_checks(),
                 *runner.configured_shards(),
             )
-        with patch.object(runner, "CHECKS", LIVE_CHECKS):
+        with patch.object(runner, "CHECKS", PRE_REFERENCE_CATALOG_CHECKS):
             after = (
                 runner.configured_whole_checks(), runner.configured_collector_checks(),
                 *runner.configured_shards(),
@@ -330,7 +333,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("public-context", {row[0] for row in before[0]})
         self.assertIn("public-context", {row[0] for row in after[9]})
 
-    @patch.object(runner, "CHECKS", LIVE_CHECKS)
+    @patch.object(runner, "CHECKS", PRE_REFERENCE_CATALOG_CHECKS)
     @patch.multiple(runner, **LIVE_TOPOLOGY)
     def test_completed_whole_queries_still_need_the_original_twenty_minute_job_headroom(self):
         # Original42218240883/attempt1 finished both queries at the job cancellation.
@@ -345,7 +348,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
         self.assertIn("public-context", {row[0] for row in runner.configured_shards()[7]})
         self.assertLess(621.185 + completed["public-context"], 1050)
 
-    @patch.object(runner, "CHECKS", LIVE_CHECKS)
+    @patch.object(runner, "CHECKS", PRE_REFERENCE_CATALOG_CHECKS)
     @patch.multiple(runner, **LIVE_TOPOLOGY)
     def test_failed_public_result_profile_requires_measured_framing_redistribution(self):
         # Original run42206783028/attempt1, all57groups; seconds rounded up.
@@ -376,7 +379,7 @@ class SemanticOrchestrationTests(unittest.TestCase):
             "session-framing": 353.560, "mmr-span": 167.583,
             "default-limits-4": 75.452, "page-finish": 155.786, "default-limits-5": 76.329,
         }
-        self.assertEqual(set(costs), {row[0] for row in LIVE_CHECKS})
+        self.assertEqual(set(costs), {row[0] for row in PRE_REFERENCE_CATALOG_CHECKS})
         rows = [{"id": name, "status": "passed", "seconds": seconds} for name, seconds in costs.items()]
         previous = {**runner.DEFAULT_SHARD_REBALANCE, "session-framing": 12}
         with patch.object(runner, "DEFAULT_SHARD_REBALANCE", previous):

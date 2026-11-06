@@ -61,14 +61,14 @@
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "12a800e5e5752483a25e1094f69166636e16399e860dd52274c500f30c760e28",
+      "file_sha256": "e6e29aef93b7fa08abbb4f3b4d6cdbd3bdbaddff4242cd6596e35d0ff640b9cc",
       "status": "reviewed-verifier-limitation",
       "reason": "The remaining path uses the standard Read interface and composed stream/collection behavior, which the pinned project proof does not directly specify. Numeric preflight, owned parsing and individual fallible-allocation helpers are accounted for separately."
     },
     {
       "id": "document::input::read_bounded_input",
       "file": "src/document/input.rs",
-      "file_sha256": "f0ceeff7566058b8ad1f83709b32cfa513b0de506020fdc2e5dd24c63ef9f860",
+      "file_sha256": "cd2d90bb5effc07e557ac05970aba16846c5ec01eb59451b76c3d1d1aa787121",
       "status": "reviewed-verifier-limitation",
       "reason": "The remaining path uses the standard Read interface and composed stream/collection behavior, which the pinned project proof does not directly specify. Numeric preflight, owned parsing and individual fallible-allocation helpers are accounted for separately."
     },

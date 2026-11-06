@@ -4,6 +4,184 @@
 use super::*;
 
 #[test]
+fn reference_catalog_totals_and_work_match_u128_admission() {
+    // Length metadata here is an internal entry domain, not an allocated input witness.
+    for count in [0_u32, 1, 2, 7, 31] {
+        for size in [0_usize, 1, 3] {
+            let segments: Vec<_> = (0..size)
+                .map(|index| {
+                    let mut segment =
+                        reference_validation_segment(u32::try_from(index).unwrap(), &[], 1);
+                    segment.header.referred_segments = (0..count).collect();
+                    segment
+                })
+                .collect();
+            let references = u128::from(count) * u128::try_from(size).unwrap();
+            assert_eq!(
+                u128::from(count_total_references(&segments).unwrap()),
+                references
+            );
+            for input in [0_usize, 1, 7, usize::MAX - 1, usize::MAX] {
+                let actual = input as u128 + size as u128 + references;
+                let mut limits = vec![0, 1, u64::MAX - 1, u64::MAX];
+                if let Ok(value) = u64::try_from(actual) {
+                    limits.extend([value.saturating_sub(1), value, value.saturating_add(1)]);
+                }
+                for limit in limits {
+                    let settings = Limits {
+                        max_work_units: limit,
+                        ..Limits::default()
+                    };
+                    assert_eq!(
+                        quota_view(enforce_work_limit(input, &segments, &settings)),
+                        wide_quota(actual, u128::from(u64::MAX), limit, LimitKind::Work),
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn reference_catalog_ordered_depth_keeps_arbitrary_prefix_and_partial_errors() {
+    let segments = [
+        reference_validation_segment(7, &[], 1),
+        reference_validation_segment(19, &[7], 1),
+        reference_validation_segment(29, &[19], 1),
+    ];
+    let indexes = vec![(7, 0), (19, 1), (29, 2)];
+    let ordered = indexes.clone();
+    let prefix = vec![(99, 0), (100, u32::MAX)];
+    for limit in [0_u32, 1, 2, 3, u32::MAX] {
+        let limits = Limits {
+            max_reference_graph_depth: limit,
+            ..Limits::default()
+        };
+        let appended: Vec<_> = [(7, 1), (19, 2), (29, 3)]
+            .into_iter()
+            .take_while(|(_, depth)| *depth <= limit)
+            .collect();
+        let mut expected = prefix.clone();
+        expected.extend_from_slice(&appended);
+        let mut depths = prefix.clone();
+        let result = validate_reference_depth_ordered(
+            &ordered,
+            &segments,
+            &indexes,
+            None,
+            &limits,
+            &mut depths,
+        );
+        assert_eq!(depths, expected);
+        if limit >= 3 {
+            assert!(result.is_ok());
+        } else {
+            assert!(matches!(
+                result,
+                Err(DecodeError::LimitExceeded(LimitExceeded {
+                    kind: LimitKind::ReferenceDepth, limit: observed_limit, actual,
+                })) if observed_limit == u64::from(limit) && actual == u64::from(limit) + 1
+            ));
+        }
+    }
+    let limits = Limits::default();
+    let mut missing = Vec::new();
+    assert!(matches!(
+        validate_reference_depth_ordered(
+            &ordered[1..2],
+            &segments,
+            &indexes,
+            None,
+            &limits,
+            &mut missing
+        ),
+        Err(DecodeError::Malformed(
+            MalformedError::MissingReferredSegment {
+                segment: 19,
+                referred: 7
+            }
+        ))
+    ));
+    assert!(missing.is_empty());
+    let mut overflow = vec![(7, u32::MAX)];
+    assert!(matches!(
+        validate_reference_depth_ordered(
+            &ordered[1..2],
+            &segments,
+            &indexes,
+            None,
+            &limits,
+            &mut overflow
+        ),
+        Err(DecodeError::Malformed(MalformedError::IntegerOverflow))
+    ));
+    assert_eq!(overflow, vec![(7, u32::MAX)]);
+    let mut duplicate = vec![(7, 0)];
+    assert!(matches!(
+        validate_reference_depth_ordered(
+            &ordered[..1],
+            &segments,
+            &indexes,
+            None,
+            &limits,
+            &mut duplicate
+        ),
+        Err(DecodeError::Malformed(
+            MalformedError::DuplicateSegmentNumber(7)
+        ))
+    ));
+    assert_eq!(duplicate, vec![(7, 0)]);
+}
+
+#[test]
+fn reference_catalog_keyed_get_keeps_first_duplicate_value_and_absence() {
+    let adjacent = [(7, 11_u64), (7, 29)];
+    assert_eq!(keyed_index(&adjacent, 7), Some(0));
+    assert_eq!(keyed_get(&adjacent, 7), Some(&11));
+    let entries = [(7, 11_u64), (0, u64::MAX), (7, 29), (u32::MAX, 42)];
+    for (number, expected) in [(0, Some(1)), (7, Some(0)), (u32::MAX, Some(3)), (9, None)] {
+        assert_eq!(keyed_index(&entries, number), expected);
+        let actual = keyed_get(&entries, number);
+        assert_eq!(actual.copied(), expected.map(|index| entries[index].1));
+        if let Some(index) = expected {
+            assert!(std::ptr::eq(
+                actual.unwrap(),
+                std::ptr::from_ref(&entries[index].1)
+            ));
+        }
+    }
+    let owned = [(7, vec![1, 2, 3]), (7, vec![5, 8])];
+    assert_eq!(keyed_get(&owned, 7), Some(&vec![1, 2, 3]));
+    assert!(keyed_get::<Vec<u8>>(&[], 7).is_none());
+}
+
+#[test]
+fn reference_catalog_public_globals_keep_matching_type_and_depth_counts() {
+    let mut input = Vec::new();
+    for number in [7, 19, 29] {
+        input.extend_from_slice(&header(number, 0, 0, 0));
+    }
+    let decoder = Decoder::default();
+    for result in [
+        decoder.parse_globals(&input),
+        decoder.context().parse_globals(&input),
+    ] {
+        let globals = result.unwrap();
+        assert_eq!(globals.segment_count(), 3);
+        assert_eq!(
+            globals.types,
+            vec![
+                (7, SegmentType::SymbolDictionary),
+                (19, SegmentType::SymbolDictionary),
+                (29, SegmentType::SymbolDictionary),
+            ]
+        );
+        assert_eq!(globals.depths, vec![(7, 1), (19, 1), (29, 1)]);
+        assert_eq!(globals.bytes(), input);
+    }
+}
+
+#[test]
 fn numeric_preflight_quotas_match_wide_results_and_priority() {
     let counts = [
         0_usize,

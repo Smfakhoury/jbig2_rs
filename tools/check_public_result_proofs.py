@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FILES = (
     "src/document.rs", "src/decode.rs", "specs/document.rs",
     "specs/document/results.rs", "specs/document/context.rs", "specs/decode.rs",
+    "specs/document/catalogs.rs",
     "proofs/shared/document.rs", "proofs/shared/decode.rs",
 )
 DECODE_TEST = "decode::tests::container_routes::public_results_preserve_exact_standalone_and_embedded_metadata"
@@ -97,8 +98,8 @@ GLOBAL_CASES = (
          support_edits=(
           ("segment_index <= segments@.len(),\n                input@.len() <= self.limits.max_stream_bytes,",
            "segment_index <= segments@.len(),"),
-          ("bytes@ == input@.subrange(0, byte_index as int),\n                input@.len() <= self.limits.max_stream_bytes,",
-           "bytes@ == input@.subrange(0, byte_index as int),"))),
+          ("bytes@ == input@.subrange(0, byte_index as int),\n                types@.len() == depths@.len(),\n                input@.len() <= self.limits.max_stream_bytes,",
+           "bytes@ == input@.subrange(0, byte_index as int),\n                types@.len() == depths@.len(),"))),
     case("document", "Decoder::parse_globals", "global_retention_guard_omitted",
          "input_bytes > self.limits.max_retained_state_bytes", "false",
          ((GLOBAL_DECODER, "true"),),
