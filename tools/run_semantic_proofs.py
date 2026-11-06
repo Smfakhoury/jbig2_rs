@@ -50,7 +50,7 @@ DEFAULT_SHARD_REBALANCE = {
     "error-conversion": 11, "collector-sink": 11, "operator-bit": 11, "value-bridge": 11,
     "page-public": 12, "default-decoder-1": 12, "default-decoder-5": 12,
     "arithmetic-normalization": 12,
-    "session-framing": 12,
+    "session-framing": 13,
     "mmr-span": 13, "default-limits-4": 13, "page-finish": 13, "default-limits-5": 13,
 }
 RECEIPT_SCHEMA = 3

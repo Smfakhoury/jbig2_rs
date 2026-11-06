@@ -131,6 +131,10 @@ compiling [result contrasts](../tools/check_public_result_proofs.py) preserve
 existing context frames; quota-bypass controls also remove the now-invalid
 new quota-preservation invariants, so rejection comes from the actual result
 guarantee rather than an unrelated loop-proof failure.
+The original hosted profile rejected an existing shard at 1,051.79 seconds;
+its framing group was moved from shard 12 to existing shard 13 using the same
+run's measurements. Every case and the 14-shard/16-role/max-four topology and
+1,050-second guards remain unchanged; the failed profile grants no acceptance.
 
 ### Source-only purpose inventory
 
