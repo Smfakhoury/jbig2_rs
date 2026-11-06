@@ -6,6 +6,8 @@ use super::{
 };
 
 #[cfg(verus_keep_ghost)]
+use super::decode_spec;
+#[cfg(verus_keep_ghost)]
 use vstd::prelude::*;
 
 impl Decoder {
@@ -15,7 +17,14 @@ impl Decoder {
     ///
     /// Returns a typed malformed, unsupported, resource, allocation, I/O, or
     /// sink error.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(document) => crate::document::standalone_metadata(
+                input@, decode_spec::document_info(&document),
+            ),
+            Err(_) => true,
+        },
+    ))]
     pub fn decode(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
         self.context().decode(input)
     }
@@ -37,7 +46,12 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unresolved, unsupported, or
     /// over-limit input.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),
+            Err(_) => true,
+        },
+    ))]
     pub fn decode_embedded(&self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
         self.context().decode_embedded(input)
     }
@@ -48,7 +62,12 @@ impl Decoder {
     ///
     /// Returns a typed error for malformed, unresolved, unsupported, or
     /// over-limit input.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),
+            Err(_) => true,
+        },
+    ))]
     pub fn decode_embedded_with_globals(
         &self,
         input: &[u8],
@@ -99,7 +118,12 @@ impl Decoder {
         self.decode_with_sink(&bytes, sink)
     }
 
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures match out {
+            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),
+            Err(_) => true,
+        },
+    ))]
     pub(super) fn decode_embedded_internal(
         &self,
         input: &[u8],
@@ -131,10 +155,13 @@ impl Decoder {
             global_resources,
             &mut collector,
         )?;
-        Ok(DecodedDocument {
+        let out = DecodedDocument {
             info,
             pages: collector.pages,
-        })
+        };
+        #[cfg(verus_keep_ghost)]
+        production_decode_document_fields!(&out);
+        Ok(out)
     }
 }
 
@@ -146,8 +173,16 @@ impl DecoderContext<'_> {
     /// Returns the same typed errors as [`Decoder::decode`].
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures crate::document::decoder_context_finished(old(self), final(self)),
+        match out {
+            Ok(document) => crate::document::standalone_metadata(
+                input@, decode_spec::document_info(&document),
+            ),
+            Err(_) => true,
+        },
     ))]
     pub fn decode(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { crate::document::decoder_context_fields(); }
         let result = self.decode_internal(input);
         self.finish_call();
         result
@@ -156,6 +191,12 @@ impl DecoderContext<'_> {
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures crate::document::decoder_context_state(final(self)).0
             == crate::document::decoder_context_state(old(self)).0,
+        match out {
+            Ok(document) => crate::document::standalone_metadata(
+                input@, decode_spec::document_info(&document),
+            ),
+            Err(_) => true,
+        },
     ))]
     pub(super) fn decode_internal(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
         #[cfg(verus_keep_ghost)]
@@ -173,10 +214,13 @@ impl DecoderContext<'_> {
             None,
             &mut collector,
         )?;
-        Ok(DecodedDocument {
+        let out = DecodedDocument {
             info,
             pages: collector.pages,
-        })
+        };
+        #[cfg(verus_keep_ghost)]
+        production_decode_document_fields!(&out);
+        Ok(out)
     }
 
     /// Decodes one embedded page stream using retained scratch capacity.
@@ -186,6 +230,10 @@ impl DecoderContext<'_> {
     /// Returns the same typed errors as [`Decoder::decode_embedded`].
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures crate::document::decoder_context_finished(old(self), final(self)),
+        match out {
+            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),
+            Err(_) => true,
+        },
     ))]
     pub fn decode_embedded(&mut self, input: &[u8]) -> Result<DecodedDocument, DecodeError> {
         #[cfg(verus_keep_ghost)]
@@ -204,6 +252,10 @@ impl DecoderContext<'_> {
     /// Returns the same typed errors as [`Decoder::decode_embedded_with_globals`].
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures crate::document::decoder_context_finished(old(self), final(self)),
+        match out {
+            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),
+            Err(_) => true,
+        },
     ))]
     pub fn decode_embedded_with_globals(
         &mut self,

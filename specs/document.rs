@@ -15,6 +15,10 @@ mod context;
 pub use context::{decoder_context_finished, decoder_context_state};
 pub(crate) use context::decoder_context_fields;
 
+#[path = "document/results.rs"]
+mod results;
+pub use results::global_parse_result;
+
 verus! {
 
 // Project metadata transitions; caller sequencing and raster semantics are separate.

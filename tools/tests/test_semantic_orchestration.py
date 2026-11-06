@@ -18,8 +18,11 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_PUBLIC_RESULT_CHECKS = tuple(
+    row for row in LIVE_CHECKS if row[0] not in {"public-decode-results", "public-global-results"}
+)
 PRE_PUBLIC_CONTEXT_CHECKS = tuple(
-    row for row in LIVE_CHECKS if row[0] not in {"public-context", "context-callers"}
+    row for row in PRE_PUBLIC_RESULT_CHECKS if row[0] not in {"public-context", "context-callers"}
 )
 PRE_CLONE_RESULT_CHECKS = tuple(
     row for row in PRE_PUBLIC_CONTEXT_CHECKS if row[0] != "clone-results"
@@ -267,13 +270,14 @@ class SemanticOrchestrationTests(unittest.TestCase):
         collector = runner.configured_collector_checks()
         assigned = [row for role in (whole, collector, *shards) for row in role]
         self.assertEqual(len(shards), 14)
-        self.assertEqual(len(assigned), 55)
-        self.assertEqual(len({row[0] for row in assigned}), 55)
-        self.assertEqual(sum(row[2] for row in assigned), 458)
+        self.assertEqual(len(assigned), 57)
+        self.assertEqual(len({row[0] for row in assigned}), 57)
+        self.assertEqual(sum(row[2] for row in assigned), 470)
         self.assertIn("clone-results", {row[0] for row in collector})
         self.assertEqual({row[0]: row[2] for row in whole}, {
-            "arithmetic-codec": 27, "public-context": 10,
+            "arithmetic-codec": 27,
         })
+        self.assertIn("public-context", {row[0] for row in shards[7]})
         self.assertIn("context-callers", {row[0] for row in collector})
         self.assertIn("huffman-codec", {row[0] for row in shards[3]})
         self.assertEqual(set(assigned), set(LIVE_CHECKS))
@@ -290,8 +294,99 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 458)
-        self.assertEqual(len(checks), 55)
+        self.assertEqual(sum(row[2] for row in checks), 470)
+        self.assertEqual(len(checks), 57)
+
+    @patch.multiple(runner, **LIVE_TOPOLOGY)
+    def test_public_results_keep_every_old_role_and_use_existing_shard_four_headroom(self):
+        previous = {
+            **runner.DEFAULT_SHARD_REBALANCE, "session-framing": 12,
+        }
+        with patch.object(runner, "CHECKS", PRE_PUBLIC_RESULT_CHECKS), patch.object(
+            runner, "DEFAULT_SHARD_REBALANCE", previous,
+        ), patch.object(
+            runner, "WHOLE_GROUPS", ("arithmetic-codec", "public-context"),
+        ):
+            before = (
+                runner.configured_whole_checks(), runner.configured_collector_checks(),
+                *runner.configured_shards(),
+            )
+        with patch.object(runner, "CHECKS", LIVE_CHECKS):
+            after = (
+                runner.configured_whole_checks(), runner.configured_collector_checks(),
+                *runner.configured_shards(),
+            )
+        added = {"public-decode-results", "public-global-results"}
+        moved = {"session-framing", "public-context"}
+        self.assertEqual(len(after), 16)
+        for old, current in zip(before, after):
+            self.assertEqual(
+                tuple(row for row in old if row[0] not in moved),
+                tuple(row for row in current if row[0] not in added | moved),
+            )
+        self.assertEqual({row[0] for row in after[6] if row[0] in added}, added)
+        self.assertIn("session-framing", {row[0] for row in before[14]})
+        self.assertIn("session-framing", {row[0] for row in after[15]})
+        self.assertIn("public-context", {row[0] for row in before[0]})
+        self.assertIn("public-context", {row[0] for row in after[9]})
+
+    @patch.object(runner, "CHECKS", LIVE_CHECKS)
+    @patch.multiple(runner, **LIVE_TOPOLOGY)
+    def test_completed_whole_queries_still_need_the_original_twenty_minute_job_headroom(self):
+        # Original42218240883/attempt1 finished both queries at the job cancellation.
+        completed = {"arithmetic-codec": 736.550, "public-context": 310.854}
+        setup_and_whole_proof = 35 + 121
+        previous_whole = sum(completed.values())
+        self.assertLess(previous_whole, 1050)
+        self.assertGreater(setup_and_whole_proof + previous_whole, 20 * 60)
+        whole = runner.configured_whole_checks()
+        self.assertEqual({row[0] for row in whole}, {"arithmetic-codec"})
+        self.assertLess(setup_and_whole_proof + sum(completed[row[0]] for row in whole), 20 * 60)
+        self.assertIn("public-context", {row[0] for row in runner.configured_shards()[7]})
+        self.assertLess(621.185 + completed["public-context"], 1050)
+
+    @patch.object(runner, "CHECKS", LIVE_CHECKS)
+    @patch.multiple(runner, **LIVE_TOPOLOGY)
+    def test_failed_public_result_profile_requires_measured_framing_redistribution(self):
+        # Original run42206783028/attempt1, all57groups; seconds rounded up.
+        costs = {
+            "arithmetic-codec": 585.286, "public-context": 233.702,
+            "clone-results": 236.057, "context-callers": 175.428,
+            "arithmetic-decision": 341.531, "reset": 66.723,
+            "mmr-run": 138.161, "mmr-reference": 339.983,
+            "default-limits-1": 106.768, "reader-error": 260.346,
+            "document-count": 347.816, "default-decoder-2": 105.893, "iaid-state": 232.553,
+            "default-limits-2": 69.961, "error-wrappers-symbol": 137.611,
+            "symbol-cardinality": 383.246, "retention": 96.322,
+            "arithmetic-refill": 154.483, "page-state": 310.099, "huffman-codec": 330.024,
+            "public-decode-results": 172.496, "public-global-results": 98.134,
+            "default-decoder-4": 81.900, "text-batch": 225.435, "arithmetic-integer": 175.385,
+            "error-wrappers-regions": 169.028, "document-layout": 229.495,
+            "default-decoder-3": 72.984, "halftone-header": 165.258,
+            "mmr-horizontal": 212.305, "black-span": 194.358, "segment-data": 288.289,
+            "error-wrappers-basic": 242.081, "arithmetic-initialization": 164.230,
+            "bitmap-copy": 214.874, "mmr-prefix": 110.864, "bitmap-chunk": 108.928,
+            "bitmap-compose": 170.383, "default-limits-3": 86.152,
+            "context-lifecycle": 272.088, "huffman-assignment": 783.528,
+            "segment-header": 289.914, "region-dispatch": 111.824, "integer-state": 288.828,
+            "operator-bit": 91.178, "error-conversion": 195.742,
+            "collector-sink": 59.713, "value-bridge": 332.749,
+            "page-public": 277.047, "default-decoder-1": 116.105,
+            "default-decoder-5": 114.585, "arithmetic-normalization": 190.493,
+            "session-framing": 353.560, "mmr-span": 167.583,
+            "default-limits-4": 75.452, "page-finish": 155.786, "default-limits-5": 76.329,
+        }
+        self.assertEqual(set(costs), {row[0] for row in LIVE_CHECKS})
+        rows = [{"id": name, "status": "passed", "seconds": seconds} for name, seconds in costs.items()]
+        previous = {**runner.DEFAULT_SHARD_REBALANCE, "session-framing": 12}
+        with patch.object(runner, "DEFAULT_SHARD_REBALANCE", previous):
+            with self.assertRaisesRegex(ValueError, "1050-second"):
+                runner.measured_shard_seconds(rows)
+        measured = runner.measured_shard_seconds(rows)
+        self.assertEqual(len(measured), 14)
+        self.assertLess(max(measured), 1000)
+        self.assertAlmostEqual(measured[12], 698.230)
+        self.assertAlmostEqual(measured[13], 828.710)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):

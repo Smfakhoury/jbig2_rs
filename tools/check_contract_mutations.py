@@ -16,6 +16,7 @@ from check_context_lifecycle_proofs import CASES as CONTEXT_LIFECYCLE_CASES
 from check_session_framing_proofs import CASES as SESSION_FRAMING_CASES
 from check_clone_result_proofs import CASES as CLONE_RESULT_CASES
 from check_public_context_proofs import CASES as PUBLIC_CONTEXT_CASES
+from check_public_result_proofs import CASES as PUBLIC_RESULT_CASES
 from check_document_count_proof import CASES as DOCUMENT_CASES
 from check_huffman_assignment_proofs import CASES as HUFFMAN_ASSIGNMENT_CASES
 from check_iaid_state_proofs import CASES as IAID_STATE_CASES
@@ -65,6 +66,13 @@ DOCUMENT_WINDOW_TESTS = {
     "embedded_discards_first_input_byte": "raw_sequential_and_embedded_layouts_match_literal_windows_and_order_policy",
 }
 MUTATIONS = tuple(
+    {
+        "id": "public-results-" + case["id"],
+        "file": case["file"], "before": case["site"], "after": case["replacement"],
+        "target": "lib", "test": case["native_test"], "whitespace_flexible": True,
+    }
+    for case in PUBLIC_RESULT_CASES
+) + tuple(
     {
         "id": "public-context-" + case["id"],
         "file": case["file"], "before": case["site"], "after": case["replacement"],
