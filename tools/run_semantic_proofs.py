@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WORKERS = 2
 CI_SHARDS = 14
 WHOLE_GROUPS = ("arithmetic-codec",)
-COLLECTOR_GROUPS = ("arithmetic-decision", "reset")
+COLLECTOR_GROUPS = ("arithmetic-decision", "reset", "clone-results")
 ADDED_SHARD_GROUPS = {
     "error-wrappers-symbol": 4, "error-wrappers-basic": 5,
     "default-limits-2": 0, "default-limits-3": 1,
@@ -58,6 +58,7 @@ CHECKS = (
     ("huffman-codec", "check_arithmetic_codec_proofs.py", 13, "strong_contract", "weaker_control"),
     ("context-lifecycle", "check_context_lifecycle_proofs.py", 12, "strong_contract", "weaker_control"),
     ("session-framing", "check_session_framing_proofs.py", 12, "strong_contract", "weaker_control"),
+    ("clone-results", "check_clone_result_proofs.py", 10, "strong_contract", "weaker_control"),
     ("value-bridge", "check_value_bridge_proofs.py", 18, "strong_contract", "weaker_control"),
     ("arithmetic-decision", "check_arithmetic_decision_proofs.py", 15, "strong_contract", "weaker_control"),
     ("document-count", "check_document_count_proof.py", 13, "strong_count_contract", "weaker_control"),

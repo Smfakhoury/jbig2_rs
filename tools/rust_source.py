@@ -19,7 +19,7 @@ def parse(source: bytes):
     return tree.root_node
 
 
-def contract_sections(record, section):
+def contract_sections(record, section, *, include_legacy=False):
     if section not in {"requires", "ensures", "recommends", "decreases", "returns"}:
         raise ValueError(f"unknown contract section: {section}")
     sections = []
@@ -52,6 +52,48 @@ def contract_sections(record, section):
             )
             stop = start.end() + end.start() if end else len(source)
             sections.append(bytes(clean[start.end():stop]).decode("utf-8"))
+    if include_legacy and "body_text" in record:
+        sections.extend(direct_contract_sections(record, section))
+    return sections
+
+
+def direct_contract_sections(record, section):
+    if section not in {"requires", "ensures", "recommends", "decreases", "returns"}:
+        raise ValueError(f"unknown contract section: {section}")
+    declarations = [
+        node for node, _ in items(parse(record["body_text"].encode()))
+        if node.type in {"function_item", "function_signature_item"}
+    ]
+    if len(declarations) != 1:
+        raise ValueError(f"missing or ambiguous function body: {record['id']}")
+    body = declarations[0].child_by_field_name("body")
+    if body is None:
+        return []
+    sections = []
+    for node, _ in items(body, exclude_proofs=False):
+        if node.type == "expression_statement" and node.named_children:
+            node = node.named_children[0]
+        if node.type != "call_expression":
+            continue
+        function = node.child_by_field_name("function")
+        if function is not None and function.text == section.encode():
+            arguments = node.child_by_field_name("arguments")
+            if arguments is None:
+                raise ValueError("direct owning contract lacks arguments")
+            clean = bytearray(arguments.text)
+            pending = [arguments]
+            while pending:
+                child = pending.pop()
+                if child.type in {"line_comment", "block_comment"}:
+                    for index in range(
+                        child.start_byte - arguments.start_byte,
+                        child.end_byte - arguments.start_byte,
+                    ):
+                        if clean[index] not in (10, 13):
+                            clean[index] = 32
+                else:
+                    pending.extend(child.named_children)
+            sections.append(clean.decode("utf-8"))
     return sections
 
 

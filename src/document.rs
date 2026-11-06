@@ -107,10 +107,32 @@ fn keyed_insert<T>(entries: &mut Vec<(u32, T)>, number: u32, value: T) -> bool {
 }
 
 /// High-level decoder configuration.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub struct Decoder {
     limits: Limits,
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+impl Clone for Decoder {
+    fn clone(&self) -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| {
+            equal(
+                document_spec::decoder_limits(&out),
+                document_spec::decoder_limits(self),
+            )
+        });
+        let out = Self {
+            limits: self.limits,
+        };
+        #[cfg(verus_keep_ghost)]
+        {
+            production_decoder_fields!(self);
+            production_decoder_fields!(&out);
+        }
+        out
+    }
 }
 
 /// Reusable decoding state for repeated documents with one [`Decoder`].

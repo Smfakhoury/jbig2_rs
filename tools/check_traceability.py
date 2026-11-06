@@ -775,7 +775,7 @@ def check_contract(record, section, tokens):
         raise ValueError(f"tautological contract evidence on {record['id']}")
     if len({compact(token) for token in tokens}) != len(tokens):
         raise ValueError(f"duplicate contract token on {record['id']}")
-    sections = [compact(text) for text in contract_sections(record, section)]
+    sections = [compact(text) for text in contract_sections(record, section, include_legacy=True)]
     if not sections or not all(any(compact(token) in text for text in sections) for token in tokens):
         raise ValueError(f"claimed {section} evidence is not present on {record['id']}")
 

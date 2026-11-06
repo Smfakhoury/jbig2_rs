@@ -294,7 +294,7 @@ pub(crate) enum GenericTemplate {
 }
 
 /// Parsed generic-region data header.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct GenericRegionHeader {
     pub(crate) region: RegionInfo,
@@ -303,6 +303,22 @@ pub(crate) struct GenericRegionHeader {
     pub(crate) typical_prediction: bool,
     pub(crate) extended_template: bool,
     pub(crate) adaptive: [TemplateOffset; 12],
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+impl Clone for GenericRegionHeader {
+    fn clone(&self) -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| equal(&out, self));
+        Self {
+            region: self.region,
+            mmr: self.mmr,
+            template: self.template,
+            typical_prediction: self.typical_prediction,
+            extended_template: self.extended_template,
+            adaptive: self.adaptive,
+        }
+    }
 }
 
 /// The decoded bitmap and number of data bytes consumed.
@@ -488,13 +504,27 @@ pub(crate) struct RefinementArithmeticCall {
 }
 
 /// Parsed generic-refinement region header.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(verus_keep_ghost, verus_verify)]
 pub(crate) struct RefinementRegionHeader {
     pub(crate) region: RegionInfo,
     pub(crate) template: RefinementTemplate,
     pub(crate) typical_prediction: bool,
     pub(crate) adaptive: [TemplateOffset; 2],
+}
+
+#[cfg_attr(verus_keep_ghost, verus_verify)]
+impl Clone for RefinementRegionHeader {
+    fn clone(&self) -> Self {
+        #[cfg(verus_keep_ghost)]
+        ensures(|out: Self| equal(&out, self));
+        Self {
+            region: self.region,
+            template: self.template,
+            typical_prediction: self.typical_prediction,
+            adaptive: self.adaptive,
+        }
+    }
 }
 
 /// Runtime parameters not carried by a standalone refinement data header.

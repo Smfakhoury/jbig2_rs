@@ -61,7 +61,7 @@
     {
       "id": "document::Decoder::inspect_reader",
       "file": "src/document.rs",
-      "file_sha256": "86ab2d38d7c07f09d443e5b9d658f90503ae0c071640560ad5e5c477cfb6ed36",
+      "file_sha256": "754f746e84381b35b67d198c9616228fff74a7c88ec720da16a4c4ccf2296aa8",
       "status": "reviewed-verifier-limitation",
       "reason": "The remaining path uses the standard Read interface and composed stream/collection behavior, which the pinned project proof does not directly specify. Numeric preflight, owned parsing and individual fallible-allocation helpers are accounted for separately."
     },
@@ -131,14 +131,14 @@
     {
       "id": "generic_region::GenericRegionError::fmt",
       "file": "src/generic_region.rs",
-      "file_sha256": "4c753c336c16bb615977a1074edbb71ccb158b3fd4d8120876d9c24f21f4f0ef",
+      "file_sha256": "3c916de49adad814ed62bb8afc37f9051ab36b95b4e6b45034b4b071ca187f01",
       "status": "reviewed-verifier-limitation",
       "reason": "The remaining standard Formatter operations used by this Display body are unsupported by the pin. Formatting trait precondition models exist; this is not a claim that every formatting model is absent. No standard formatting behavior or complete diagnostic text is inferred from codec proofs."
     },
     {
       "id": "generic_region::GenericRegionError::source",
       "file": "src/generic_region.rs",
-      "file_sha256": "4c753c336c16bb615977a1074edbb71ccb158b3fd4d8120876d9c24f21f4f0ef",
+      "file_sha256": "3c916de49adad814ed62bb8afc37f9051ab36b95b4e6b45034b4b071ca187f01",
       "status": "reviewed-verifier-limitation",
       "reason": "The pinned verifier does not declare the remaining core::error::Error source interface used here. This is a standard diagnostic trait boundary, not a raster or allocation-kernel limitation."
     }
