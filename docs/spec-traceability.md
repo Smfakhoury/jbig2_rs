@@ -65,6 +65,28 @@ python -B tools/collect_compiler_inventory.py \
   --output-dir target/traceability/compiler-inventory --check-existing
 ```
 
+The report's `api_declaration_surfaces` classifies every owned native callable
+or abstract identity against the actual root reexports: reexported free
+functions, public inherent methods, trait callbacks, trait implementations,
+ADT constructors, other functions/methods and internal closures. Root aliases
+and exact compiler owners are retained. Exposed function records also retain
+the compiler signature, generic bounds and function header. Native-cfg source
+reexports must match the compiler export list; omitted exports, new public
+declaration forms and unsupported glob forms require explicit review.
+
+A public method on a private type is not thereby a root declaration. A tuple
+struct's exported name does not expose a constructor with private fields.
+Conversely, an enum variant constructor or trait implementation may be exposed
+without having publicly constructible arguments. Closures remain internal
+bodies even beneath exported functions; their enclosing declaration category
+does not assert runtime reachability.
+
+These are declaration-surface classifications, not admissible input domains
+or a public call graph. Private helpers may execute under public callers.
+Public data fields, associated constants, external blanket implementations and
+other platform/proof profiles still need separate inventory/domain review.
+Both reachability and constructible-domain qualification flags remain false.
+
 This complements the conservative explicit-source inventory; it does not replace
 it with an obligation count. Native compiler ownership is not proof-mode identity,
 semantic contract quality, a public call graph or an admissible stage domain.
