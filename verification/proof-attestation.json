@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "0e7060c0836635d75fe18692c8a8799cb38e69d9",
-  "scope": "Fresh exact-source whole verification/compilation proves public reusable context fresh/limits/stored-byte/reset/release/strict-threshold state transitions and all seven public inspection/global-parsing/decoding success/error return cleanup frames, preserving previous metadata results. The actual fresh MmrScratch Default and stronger clear stored-metadata frame compose through real callers. Closed context/Scratch views and genuinely proved defining-module universal reference equations retain runtime privacy. No new preconditions, trust assumptions, physical allocator-capacity/process-memory or complete decoded-raster claim.",
+  "source_revision": "da12b5fd387ca4406e4e9da89bd81d4bc539534b",
+  "scope": "Fresh exact-source whole verification/compilation proves all eight owning standalone/embedded Decoder/helper/DecoderContext metadata result paths, preserving earlier cleanup/configuration frames. Both public global parser returns prove exact owned input, successful stream/retention admission and first stream-quota error priority. Existing metadata equations and checked private-field bridges are reused. One global result helper is separately classified API support, not a normative requirement. No new preconditions, trust, runtime field visibility or full decoded raster/entropy/domain/readiness claim.",
   "toolchain": {
     "manifest": "config/toolchain.json",
     "verus_version": "0.2026.10.04.426d8b0",
     "verus_commit": "426d8b01e7ffb910a36c15e1f870ff985bb61eef",
     "archive_sha256": "624018662868563a7bec0dd07be5e4dd0c3d61124b4b55105765884bf2d4d1a0"
   },
-  "command": "CARGO_BUILD_JOBS=1 CARGO_NET_OFFLINE=true PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-public-context-baseline-v02-20261106/target/public-context/whole-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
+  "command": "CARGO_BUILD_JOBS=1 PATH=/workspace/jbig2-pinned-verus:$PATH CARGO_TARGET_DIR=/workspace/jbig2-public-result-baseline-v02-20261106/target/public-result/whole-final3-target cargo +1.98.1 verus build --manifest-path verification/Cargo.toml --locked --offline -- --num-threads 1 --rlimit 30 --triggers-mode silent --output-json",
   "result": {
     "verified_obligations": 1307,
     "verified_production_functions": 648,
@@ -24,8 +24,8 @@
     "runtime_proof_divergences": 0,
     "incomplete_functions": 0
   },
-  "production_proof_coverage_sha256": "4f9ba5d2c9526c351f0d11187bc68a0e3e00e48c6c8afbd886e79537b54f89bc",
-  "proof_dispositions_sha256": "12ab420cbe0658884e445504438194455b21cef445bb9fe2d822cdb476c6b3a2",
+  "production_proof_coverage_sha256": "6204b557383e200a484d869b243985a577294a8882f36a3780a222c536643ca0",
+  "proof_dispositions_sha256": "c123e37b410330042f085e9363f56cd7f5134f8779e20b1fbe98c902f49c2c10",
   "standard_library_boundary": {
     "manifest": "verification/stdlib/review.json",
     "manifest_sha256": "5f007f853c6caad16d6d318bde996373c6a6f886e8949cd0df62612e5408a92c",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "1307 actual whole obligations/zeroerrors/nonemptylibrary;668explicit native declarations/648direct20reviewed. Only existing Default becomes explicit; native universe remains966items/1258bodies+1abstract=1259identities, with298derives/202closures/91constructors/164separateCTFE/229markerimpls. Seventeen actual compiling selected positives/strong/weak contrasts split10basic and7caller controls; all271final native faults compile and areactually detected. Controls preserve old result metadata and unrelatedconfiguration/state clauses. Independent native oracles cover freshconfiguration, both scratch vectors, arbitrary stored counters, reset/release frames, strict less/equal/greater thresholds including0/u64MAX, and all7actual error returns. Native capacities are observations/tests, not new allocator axioms; internal seeded counters are not publiccompressed-image witnesses. Same5oracles pass on original implementations. Exact body/side-effect controls isolate2native body rewrites in2files;all146other projections match. Real155-file MSRV/offline/no-upload and numerical coverage floors pass. Live458contrasts/55groups/271native/408bindings retain14shards/16roles/max4/all1050s/jobcaps; new10basic cases use whole headroom and7callers collector headroom, with historic measured profiles frozen. Owning local surfaces517->529, verifiedno-local review130->119;24previous inherited owners project106->95remaining candidates pending fresh same-run qualification, not missingproof counts. No normative row is added:266selected/257gap-bearingrequirements and218registered definitions remain provisional;2newAPI helper equations are separately purpose-classified with explicitunmapped requirement context. Original conformance executions/outcomes/approvals retain identities. No behaviour/API fix requires0.1backport. Source-processing/validator external inputs remain unresolved; fullstatement/code/reachability/generated semantic quality/readiness isnot inferred. Fresh exact-head hosted/original-artifact acceptance isstill required before protected integration.",
+  "current_evidence_note": "Actual whole1307/0/nonemptylibrary;668explicit/648direct20reviewed. Twelve real compiling positive/strong/weak contrasts split8decode/4global; quota bypass faults remove only their new invalid preservation invariants so the owning result contract, not loop proof failure, detects them. All283native faults compile and are actually detected. Four new native metadata/ownership/error-priority/admission oracles pass; all12public oracles including these4 also pass on original implementations. Global positives are accepted metadata containers, not entropy-valid dictionaries. Exact three move-only return-binding deltas in2files plus146other identical native projections are checked, not claimed as machine-code or allocator equivalence. Actual155-file MSRV/offline/no-upload and coverage floors pass. Live470contrasts/57groups/283native/411bindings retain14shards/16roles/max4/all1050s/jobcaps and every old case/assignment; new12cases use existing shard4headroom (original42190394135 measured475.148531s). Historical measured profiles remain frozen. Native1259identities/298derives unchanged;owning surfaces529->534 and raw verified no-local119->114. Separately requalifying24existing inherited owners projects95->90remaining review candidates, not missing-proof counts. Eight actualmetadata consumers are traced in the existing document-count record;no normative row added or gap/fidelity/readiness denominator cut. Registry218/266selected/257gap-bearing rows remain provisional. Original conformance executions/outcomes/approvals retain identities;no runtime/API defect needs0.1backport. Approved standards-processing/inventory and validator executable/version/input requirements remainunresolved external inputs; generated/profile/domain/semantic qualityqualification and complete statement mapping remain open. Fresh exacthead hosted/original-artifact acceptance is still required beforeprotected integration.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -281,6 +281,26 @@
         "incomplete_functions": 0
       },
       "production_proof_coverage_sha256": "0de1f4f8805a0baed053fa15f86e7b097867b5de5bd151727ab76424caa40c6f",
+      "scope_note": "Historical component evidence; not a new execution or approval."
+    },
+    {
+      "source_revision": "0e7060c0836635d75fe18692c8a8799cb38e69d9",
+      "scope": "Fresh exact-source whole verification/compilation proves public reusable context fresh/limits/stored-byte/reset/release/strict-threshold state transitions and all seven public inspection/global-parsing/decoding success/error return cleanup frames, preserving previous metadata results. The actual fresh MmrScratch Default and stronger clear stored-metadata frame compose through real callers. Closed context/Scratch views and genuinely proved defining-module universal reference equations retain runtime privacy. No new preconditions, trust assumptions, physical allocator-capacity/process-memory or complete decoded-raster claim.",
+      "result": {
+        "verified_obligations": 1307,
+        "verified_production_functions": 648,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "4f9ba5d2c9526c351f0d11187bc68a0e3e00e48c6c8afbd886e79537b54f89bc",
       "scope_note": "Historical component evidence; not a new execution or approval."
     }
   ]
