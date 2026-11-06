@@ -4,6 +4,76 @@
 use super::*;
 
 #[test]
+fn public_results_preserve_exact_standalone_and_embedded_metadata() {
+    let decoder = Decoder::default();
+    let sequential = all_white_mmr_document(9, 3);
+    let mut unknown_count = SIGNATURE.to_vec();
+    unknown_count.push(0x03);
+    unknown_count.extend_from_slice(&sequential[13..]);
+    let generic = generic_data(&[0x80]);
+    let mut random = SIGNATURE.to_vec();
+    random.push(0);
+    random.extend_from_slice(&1_u32.to_be_bytes());
+    random.extend_from_slice(&segment_header(0, 48, 1, 19));
+    random.extend_from_slice(&segment_header(
+        1,
+        38,
+        1,
+        u32::try_from(generic.len()).unwrap(),
+    ));
+    random.extend_from_slice(&segment_header(2, 49, 1, 0));
+    random.extend_from_slice(&segment_header(3, 51, 0, 0));
+    random.extend_from_slice(&page_data());
+    random.extend_from_slice(&generic);
+    let check = |document: &DecodedDocument, organization, count, width, height| {
+        let info = document.info();
+        assert_eq!(info.organization(), organization);
+        assert_eq!(info.declared_page_count(), count);
+        assert_eq!(info.segment_count(), 4);
+        assert_eq!(info.pages().len(), 1);
+        assert_eq!(info.pages()[0].number(), 1);
+        assert_eq!(info.pages()[0].width(), width);
+        assert_eq!(info.pages()[0].height(), height);
+        assert_eq!(document.pages().len(), 1);
+        assert_eq!(document.pages()[0].number(), 1);
+        assert_eq!(document.pages()[0].bitmap().width(), width);
+        assert_eq!(document.pages()[0].bitmap().height(), height);
+    };
+    for (input, organization, count, width, height) in [
+        (&sequential, crate::Organization::Sequential, Some(1), 9, 3),
+        (&unknown_count, crate::Organization::Sequential, None, 9, 3),
+        (&random, crate::Organization::RandomAccess, Some(1), 8, 1),
+    ] {
+        for result in [
+            decoder.decode(input),
+            decoder.context().decode(input),
+            decoder.context().decode_internal(input),
+        ] {
+            check(&result.unwrap(), organization, count, width, height);
+        }
+    }
+    let globals = decoder.parse_globals(&[]).unwrap();
+    let embedded = &sequential[13..];
+    for result in [
+        decoder.decode_embedded(embedded),
+        decoder.decode_embedded_with_globals(embedded, &globals),
+        decoder.context().decode_embedded(embedded),
+        decoder
+            .context()
+            .decode_embedded_with_globals(embedded, &globals),
+        decoder.decode_embedded_internal(embedded, Some(&globals), &mut MmrScratch::default()),
+    ] {
+        check(
+            &result.unwrap(),
+            crate::Organization::Sequential,
+            None,
+            9,
+            3,
+        );
+    }
+}
+
+#[test]
 fn page_sink_receives_completed_page() {
     let mut pages = 0;
     let mut sink = |page: Page| {

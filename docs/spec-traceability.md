@@ -115,6 +115,23 @@ project API helpers without a fabricated normative requirement link.
 Stored-byte metadata is not a new proof of vector capacity or process memory;
 native capacity observations remain distinct tests.
 
+All eight owning standalone/embedded decode, helper and context result paths
+also retain the existing header/envelope `DocumentInfo` guarantees. Context
+cleanup and configuration frames remain intact. This is not a proof that the
+decoded page/raster list corresponds to all document metadata or source bits.
+The existing document-count record traces these actual consumers without
+claiming a new normative statement or completed normative review.
+
+Both global-parser APIs prove exact owned input bytes and successful
+stream/retention admission, with the exact first stream-quota error. The
+[global result relation](../specs/document/results.rs) is separately classified
+project API support, not a normative requirement. Global native positives are
+accepted metadata containers, not entropy-valid dictionary witnesses. Real
+compiling [result contrasts](../tools/check_public_result_proofs.py) preserve
+existing context frames; quota-bypass controls also remove the now-invalid
+new quota-preservation invariants, so rejection comes from the actual result
+guarantee rather than an unrelated loop-proof failure.
+
 ### Source-only purpose inventory
 
 `model_classifications` identifies exact declaration families as project

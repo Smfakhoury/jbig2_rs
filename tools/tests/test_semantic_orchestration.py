@@ -18,8 +18,11 @@ import run_semantic_proofs as runner
 
 
 LIVE_CHECKS = runner.CHECKS
+PRE_PUBLIC_RESULT_CHECKS = tuple(
+    row for row in LIVE_CHECKS if row[0] not in {"public-decode-results", "public-global-results"}
+)
 PRE_PUBLIC_CONTEXT_CHECKS = tuple(
-    row for row in LIVE_CHECKS if row[0] not in {"public-context", "context-callers"}
+    row for row in PRE_PUBLIC_RESULT_CHECKS if row[0] not in {"public-context", "context-callers"}
 )
 PRE_CLONE_RESULT_CHECKS = tuple(
     row for row in PRE_PUBLIC_CONTEXT_CHECKS if row[0] != "clone-results"
@@ -267,9 +270,9 @@ class SemanticOrchestrationTests(unittest.TestCase):
         collector = runner.configured_collector_checks()
         assigned = [row for role in (whole, collector, *shards) for row in role]
         self.assertEqual(len(shards), 14)
-        self.assertEqual(len(assigned), 55)
-        self.assertEqual(len({row[0] for row in assigned}), 55)
-        self.assertEqual(sum(row[2] for row in assigned), 458)
+        self.assertEqual(len(assigned), 57)
+        self.assertEqual(len({row[0] for row in assigned}), 57)
+        self.assertEqual(sum(row[2] for row in assigned), 470)
         self.assertIn("clone-results", {row[0] for row in collector})
         self.assertEqual({row[0]: row[2] for row in whole}, {
             "arithmetic-codec": 27, "public-context": 10,
@@ -290,8 +293,26 @@ class SemanticOrchestrationTests(unittest.TestCase):
             self.assertEqual(counts[identity], len(cases))
         self.assertEqual(counts["value-bridge"], len(value_cases))
         self.assertEqual(counts["symbol-cardinality"], len(cardinality_cases))
-        self.assertEqual(sum(row[2] for row in checks), 458)
-        self.assertEqual(len(checks), 55)
+        self.assertEqual(sum(row[2] for row in checks), 470)
+        self.assertEqual(len(checks), 57)
+
+    @patch.multiple(runner, **LIVE_TOPOLOGY)
+    def test_public_results_keep_every_old_role_and_use_existing_shard_four_headroom(self):
+        with patch.object(runner, "CHECKS", PRE_PUBLIC_RESULT_CHECKS):
+            before = (
+                runner.configured_whole_checks(), runner.configured_collector_checks(),
+                *runner.configured_shards(),
+            )
+        with patch.object(runner, "CHECKS", LIVE_CHECKS):
+            after = (
+                runner.configured_whole_checks(), runner.configured_collector_checks(),
+                *runner.configured_shards(),
+            )
+        added = {"public-decode-results", "public-global-results"}
+        self.assertEqual(len(after), 16)
+        for old, current in zip(before, after):
+            self.assertEqual(old, tuple(row for row in current if row[0] not in added))
+        self.assertEqual({row[0] for row in after[6] if row[0] in added}, added)
 
     @patch.multiple(runner, **CURRENT_TOPOLOGY)
     def test_complete_rejected_huffman_state_profile_keeps_original_guards_and_roles(self):

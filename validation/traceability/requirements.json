@@ -24,7 +24,7 @@
   "model_classifications": {
     "review": "author-navigation-only-not-independent-normative-approval",
     "registry_sha256": "6bc9065d1537f3c4193dbbcd7a17113d5bd2eb3c914147465b8db8afd6943c6f",
-    "project_source_sha256": "e0a3e38ac6f75a462f8109b0a2f10a3076765c99b54e7930a001da2fa16d3634",
+    "project_source_sha256": "409d2590ef5ff1bd389b32e25f486867f23c7305a43d993f30a5422099b018e2",
     "families": [
       {
         "file": "specs/huffman_lookup.rs",
@@ -1242,6 +1242,16 @@
         "justification": "Closed projection binds actual context limits, logical scratch vectors and stored-byte metadata. The public return relation preserves limits, clears both vectors and admits stored metadata under the configured retained-state limit. Actual public/helper contracts and checked defining-module bridges consume these equations.",
         "ambiguity": "",
         "caveats": "Existing project cleanup/API relation, not complete decoded output, actual allocator capacity/process-memory bounds, independent normative fidelity or external-validation readiness."
+      },
+      {
+        "file": "specs/document/results.rs",
+        "members": [
+          "spec::global_parse_result"
+        ],
+        "classification": "project-result-model",
+        "justification": "Actual owned global bytes and configured successful stream/retention admission, with exact first stream-quota error; consumed by both owning public parser returns while preserving context cleanup.",
+        "ambiguity": "",
+        "caveats": "Project API ownership/admission/error-priority relation only; global positives are metadata containers, not entropy-valid dictionaries. Not a normative requirement or full decoded-output/fidelity/readiness claim."
       }
     ]
   },
@@ -1902,7 +1912,7 @@
     "specs/arithmetic.rs": "0d576d753574c2b2412ce8442aa3a3e50cd1b7b95be18347a8e62a6832b9b94a",
     "specs/bitmap.rs": "9d4da6608d7ee55fdf0ab7d8d47f6105e75e656c1f31589610d47a67a61218cf",
     "specs/decode.rs": "acc5afe72a14eb8e48e3a193608a2a89bec966b97757201d6ce3d9bc9a404e24",
-    "specs/document.rs": "709aff35171a5eca1683d91aa5667bfd837d58a59fc04bf47dc6ab434e107ce3",
+    "specs/document.rs": "77afaeca6686d79ca03cb26a45dde2d357f4786f6144937abfd8c73182fdc795",
     "specs/file_header.rs": "d7bfe82359473ce879ac27879ccdac8130a401bacb8a9fd69fe1b3571e86d599",
     "specs/generic_region.rs": "179767792743db1d346a5681af60eef35c383f653a9fe17410b0c0aa8c49ab33",
     "specs/halftone.rs": "8bf3a8c46f5ff5f85f91e464cac5e3dbfedeff3ffb2568528525c744ee2130f6",
@@ -1931,15 +1941,15 @@
     "src/decode/dispatch/references.rs": "52e7500e0cef622729c3b19f535c8d0824644b5a954dd373ffeadeb34e649c67",
     "src/decode/rendering.rs": "fa259425d937b3933ee01ccffdd2ddfe55d11097c5e5881645b1e09cf6ab3bad",
     "src/decode/resources.rs": "55f9ee8e2daa02d57b3778847780e98dd8e2b7cf0b7331d45f76e429011dfd1a",
-    "src/decode/tests/container_routes.rs": "3e8e84cae3d340c972f170914bbf61a2c944c0056a3201e1f192a135b7775bfe",
+    "src/decode/tests/container_routes.rs": "7835eb46892ce1006564c570535694fe957f72af6ab4a9aa43780580b472e853",
     "src/decode/tests/direct_and_reuse.rs": "d46a5cbd0ee0791141d8b6115f090faa7a0315dc51437dcfb643dce6b58e116c",
     "src/decode/tests/symbol_resources.rs": "f23d5ba103db106eed1cf7d9c8eef395ce060e7eedf2226d7eb38f923dff3431",
-    "src/document.rs": "ab22e563203546e774cd94dc2c248cdd7f8784aa7637b7459bc80d9f41eacc5e",
+    "src/document.rs": "12a800e5e5752483a25e1094f69166636e16399e860dd52274c500f30c760e28",
     "src/document/pages.rs": "f11a042b00dfab74c94454999b7d3c9ba575ff3c77b8fafd54ec692b7c4649a0",
     "src/document/parsing.rs": "ce5a558c99b64b8d3ec7af95a35bd8c563ddcf09f65c760a7cb31eaebc93aa54",
     "src/document/references.rs": "211469b5b0d1e5b507459d718e3f97623897c9acb0a8639a077f2d7e12f5a80b",
     "src/document/tests.rs": "ecb5c496a4c564ca0e578e2eec861370a81661c6687399f0bfc671bc1c7c9e0c",
-    "src/document/tests/container_inspection.rs": "1fa75a95bed32d48418e06eacb4cb19c1a2fb7e819c1e07164576ae8901a72aa",
+    "src/document/tests/container_inspection.rs": "628cc9ab90a757d151893f851c9593fe51d6a456aeca07131e0d01ae41c06b94",
     "src/document/tests/payload_windows.rs": "a5ea365a525b36f3ca92894ab3157d8b03382419e3ca434e154b7cdc3000f02e",
     "src/file_header.rs": "9011f761698f3772c953980e2d2d56ed5ece4f792c8e318ca89a0e0f8d326e11",
     "src/generic_region.rs": "3c916de49adad814ed62bb8afc37f9051ab36b95b4e6b45034b4b071ca187f01",
@@ -2020,7 +2030,8 @@
     "src/symbol_text/dictionary/huffman.rs": "d741f90a472575929b06b5b3b8bfa0c3078f05369519ba7810f846eb8e5c6984",
     "src/generic_region/tests/sessions_and_snapshots.rs": "bd8218eef90ffc10ec9731e44669fe819bd87f194264dcb16ac077bddf371b12",
     "specs/generic_region/framing.rs": "4cd4e9b1c381135ae89acdec59a7f9fda2a610625ed24ce0ffcbcb84fc5a02e7",
-    "src/generic_region/segments.rs": "d84e912d208b1dd85160d4e0065a0b682cc48f63fbcf53ada5488ccaf2a8e59a"
+    "src/generic_region/segments.rs": "d84e912d208b1dd85160d4e0065a0b682cc48f63fbcf53ada5488ccaf2a8e59a",
+    "src/decode/api.rs": "d463529a1b0fe2952951ac476d4b97bce905234a189d5e59869625b1228070f5"
   },
   "definitions": {
     "mmr-mode-table-entry": {
@@ -10324,7 +10335,15 @@
         "document::Decoder::inspect_embedded",
         "document::Decoder::inspect_embedded_with_globals",
         "document::DecoderContext::inspect_embedded",
-        "document::DecoderContext::inspect_embedded_with_globals"
+        "document::DecoderContext::inspect_embedded_with_globals",
+        "decode::api::Decoder::decode",
+        "decode::api::Decoder::decode_embedded",
+        "decode::api::Decoder::decode_embedded_with_globals",
+        "decode::api::Decoder::decode_embedded_internal",
+        "decode::api::DecoderContext::decode_internal",
+        "decode::api::DecoderContext::decode",
+        "decode::api::DecoderContext::decode_embedded",
+        "decode::api::DecoderContext::decode_embedded_with_globals"
       ],
       "models": [
         "document-pages",
@@ -10366,11 +10385,15 @@
         {
           "target": "spec_header",
           "name": "colour_header_is_not_accepted_as_document_metadata"
+        },
+        {
+          "target": "lib",
+          "name": "decode::tests::container_routes::public_results_preserve_exact_standalone_and_embedded_metadata"
         }
       ],
       "strength": "functional_contract",
       "review": "provisional",
-      "scope_of_formal_result": "On success, standalone Decoder/DecoderContext slice inspection metadata preserves organization and declared count from the original header-byte model; any known declaration equals public page-vector length. Both parsers expose segment count and positive PageInformation cardinality against their returned parsed segments. Collection maintains prefix cardinality and finalization preserves order length. Embedded inspection's sequential/unknown-declaration shape is an auxiliary project API invariant, not an added D.4.3 interpretation.",
+      "scope_of_formal_result": "On success, standalone Decoder/DecoderContext slice inspection metadata preserves organization and declared count from the original header-byte model; any known declaration equals public page-vector length. Both parsers expose segment count and positive PageInformation cardinality against their returned parsed segments. Collection maintains prefix cardinality and finalization preserves order length. Embedded inspection's sequential/unknown-declaration shape is an auxiliary project API invariant, not an added D.4.3 interpretation. The same standalone/embedded metadata relation now propagates through all eight owning decode/helper/context result paths. This concerns the retained DocumentInfo, not a proof of decoded page/raster-list correspondence.",
       "assumptions": [
         "Header fields are linked to raw header bytes, but correspondence between body bytes and parsed segments remains unproved. Called helpers satisfy their verified contracts.",
         "The private collection helper starts with empty vectors; its verified wrapper discharges those preconditions.",
@@ -10378,7 +10401,7 @@
       ],
       "gaps": [
         "Prove the raw body-byte parser to parsed-segment correspondence, including page identity/lifecycle semantics.",
-        "Reader I/O remains a reviewed boundary; decoded output-page metadata contracts are not strengthened by this tranche.",
+        "Reader I/O remains a reviewed boundary. Owning decoded DocumentInfo now preserves envelope/header metadata; correspondence to the decoded page/raster list remains separate.",
         "Finish normative/model review; successful-result contracts do not establish rejection completeness."
       ],
       "functional_evidence": [
@@ -10479,6 +10502,62 @@
           "section": "ensures",
           "tokens": [
             "Ok(info) => document_spec::embedded_metadata(&info)"
+          ]
+        },
+        {
+          "runtime": "decode::api::Decoder::decode",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::standalone_metadata(\n                input@, decode_spec::document_info(&document),\n            ),\n            Err(_) => true,\n        }"
+          ]
+        },
+        {
+          "runtime": "decode::api::Decoder::decode_embedded",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),\n            Err(_) => true,\n        }"
+          ]
+        },
+        {
+          "runtime": "decode::api::Decoder::decode_embedded_with_globals",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),\n            Err(_) => true,\n        }"
+          ]
+        },
+        {
+          "runtime": "decode::api::Decoder::decode_embedded_internal",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),\n            Err(_) => true,\n        }"
+          ]
+        },
+        {
+          "runtime": "decode::api::DecoderContext::decode_internal",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::standalone_metadata(\n                input@, decode_spec::document_info(&document),\n            ),\n            Err(_) => true,\n        }"
+          ]
+        },
+        {
+          "runtime": "decode::api::DecoderContext::decode",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::standalone_metadata(\n                input@, decode_spec::document_info(&document),\n            ),\n            Err(_) => true,\n        }"
+          ]
+        },
+        {
+          "runtime": "decode::api::DecoderContext::decode_embedded",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),\n            Err(_) => true,\n        }"
+          ]
+        },
+        {
+          "runtime": "decode::api::DecoderContext::decode_embedded_with_globals",
+          "section": "ensures",
+          "tokens": [
+            "match out {\n            Ok(document) => crate::document::embedded_metadata(decode_spec::document_info(&document)),\n            Err(_) => true,\n        }"
           ]
         }
       ],

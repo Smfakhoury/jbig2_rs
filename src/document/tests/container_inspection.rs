@@ -3,6 +3,87 @@
 
 use super::*;
 
+#[test]
+fn public_global_results_own_complete_metadata_input_for_decoder_and_context() {
+    // These are accepted metadata containers, not entropy-valid dictionary witnesses.
+    let payload: Vec<u8> = (0..=u8::MAX).collect();
+    let mut input = header(7, 0, 0, u32::try_from(payload.len()).unwrap());
+    input.extend_from_slice(&payload);
+    input.extend_from_slice(&header(19, 0, 0, 0));
+    let expected = input.clone();
+    let decoder = Decoder::default();
+    let direct = decoder.parse_globals(&input).unwrap();
+    let mut context = decoder.context();
+    let reused = context.parse_globals(&input).unwrap();
+    for byte in &mut input {
+        *byte ^= 0xff;
+    }
+    for globals in [direct, reused] {
+        assert_eq!(globals.segment_count(), 2);
+        assert_eq!(globals.bytes(), expected);
+    }
+    assert_eq!(context.retained_scratch_bytes(), 0);
+    assert!(std::ptr::eq(context.limits(), decoder.limits()));
+}
+
+#[test]
+fn public_global_results_preserve_first_stream_error_even_for_malformed_input() {
+    for length in [1_usize, 2, 7, 64] {
+        let input = vec![0xff; length];
+        let actual = u64::try_from(length).unwrap();
+        let decoder = Decoder::new(Limits {
+            max_stream_bytes: actual - 1,
+            max_work_units: 0,
+            max_retained_state_bytes: 0,
+            ..Limits::default()
+        });
+        for result in [
+            decoder.parse_globals(&input),
+            decoder.context().parse_globals(&input),
+        ] {
+            assert!(matches!(
+                result,
+                Err(DecodeError::LimitExceeded(LimitExceeded {
+                    kind: LimitKind::StreamBytes,
+                    limit,
+                    actual: observed,
+                })) if limit == actual - 1 && observed == actual
+            ));
+        }
+    }
+}
+
+#[test]
+fn public_global_results_match_exact_retained_admission_boundaries() {
+    let mut input = header(7, 0, 0, 4);
+    input.extend_from_slice(&[0, 0x7f, 0x80, 0xff]);
+    let actual = u64::try_from(input.len()).unwrap();
+    for limit in [0, actual - 1, actual, actual + 1, u64::MAX] {
+        let decoder = Decoder::new(Limits {
+            max_stream_bytes: actual,
+            max_retained_state_bytes: limit,
+            ..Limits::default()
+        });
+        for result in [
+            decoder.parse_globals(&input),
+            decoder.context().parse_globals(&input),
+        ] {
+            if limit < actual {
+                assert!(matches!(
+                    result,
+                    Err(DecodeError::LimitExceeded(LimitExceeded {
+                        kind: LimitKind::RetainedState,
+                        limit: observed_limit,
+                        actual: observed_actual,
+                    })) if observed_limit == limit && observed_actual == actual
+                ));
+            } else {
+                assert_eq!(result.unwrap().bytes(), input);
+            }
+        }
+    }
+}
+
 fn seeded_public_context(decoder: &Decoder, retained: u64) -> DecoderContext<'_> {
     let mut context = decoder.context();
     context.mmr.transitions.extend_from_slice(&[0, 7, u32::MAX]);

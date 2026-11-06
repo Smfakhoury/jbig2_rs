@@ -19,7 +19,8 @@ use vstd::prelude::*;
 mod document_spec;
 #[cfg(verus_keep_ghost)]
 pub(crate) use document_spec::{
-    decoder_context_fields, decoder_context_finished, decoder_context_state,
+    decoder_context_fields, decoder_context_finished, decoder_context_state, embedded_metadata,
+    standalone_metadata,
 };
 
 #[cfg(verus_keep_ghost)]
@@ -330,8 +331,13 @@ impl DecoderContext<'_> {
     /// Returns the same typed errors as [`Decoder::parse_globals`].
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
         ensures document_spec::decoder_context_finished(old(self), final(self)),
+        document_spec::global_parse_result(
+            input@, document_spec::decoder_context_state(old(self)).0, out,
+        ),
     ))]
     pub fn parse_globals(&mut self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
+        #[cfg(verus_keep_ghost)]
+        proof! { document_spec::decoder_context_fields(); }
         let result = self.decoder.parse_globals(input);
         self.finish_call();
         result
@@ -426,14 +432,23 @@ impl Decoder {
     ///
     /// Returns a typed error if a global segment is malformed, associated with
     /// a page, unresolved, unsupported, over-limit, or cannot be allocated.
-    #[cfg_attr(verus_keep_ghost, verus_verify)]
+    #[cfg_attr(verus_keep_ghost, verus_spec(out =>
+        ensures document_spec::global_parse_result(
+            input@, document_spec::decoder_limits(self), out,
+        ),
+    ))]
     pub fn parse_globals(&self, input: &[u8]) -> Result<GlobalSegments, DecodeError> {
+        #[cfg(verus_keep_ghost)]
+        production_decoder_fields!(self);
         enforce_stream_limit(input.len(), &self.limits)?;
         enforce_input_work(input.len(), &self.limits)?;
         let segments = parse_sequential(input, &self.limits, false)?;
         let mut segment_index = 0_usize;
         #[cfg_attr(verus_keep_ghost, verus_spec(
-            invariant segment_index <= segments@.len(),
+            invariant
+                segment_index <= segments@.len(),
+                input@.len() <= self.limits.max_stream_bytes,
+                document_spec::decoder_limits(self) == self.limits,
             decreases segments@.len() - segment_index,
         ))]
         while segment_index < segments.len() {
@@ -472,17 +487,25 @@ impl Decoder {
             invariant
                 byte_index <= input@.len(),
                 bytes@ == input@.subrange(0, byte_index as int),
+                input@.len() <= self.limits.max_stream_bytes,
+                input@.len() <= self.limits.max_retained_state_bytes,
+                document_spec::decoder_limits(self) == self.limits,
             decreases input@.len() - byte_index,
         ))]
         while byte_index < input.len() {
             bytes.push(input[byte_index]);
             byte_index += 1;
         }
-        Ok(GlobalSegments {
+        #[cfg(verus_keep_ghost)]
+        proof! { vstd::assert_seqs_equal!(input@.subrange(0, input@.len() as int), input@); }
+        let out = GlobalSegments {
             types,
             depths,
             bytes,
-        })
+        };
+        #[cfg(verus_keep_ghost)]
+        production_global_fields!(&out);
+        Ok(out)
     }
 
     #[cfg_attr(verus_keep_ghost, verus_spec(out =>
