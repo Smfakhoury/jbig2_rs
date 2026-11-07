@@ -243,6 +243,11 @@ Nested closures, constructors, marker implementations and duplicate CTFE bodies
 retain their separate native stages; this function inventory is not a call
 graph, platform-wide proof or complete admitted-domain/contract qualification.
 Spec/proof forms are not additional native functions or counts of new theorems.
+The first complete expanded-evidence profile rejected shard 3 at 1,071.87
+seconds although every individual group passed. The existing lookup group
+moves from shard 3 to existing shard 9 using original compatible measurements;
+all other assignments/cases and every resource guard remain. The rejected
+profile and planning-only maxima do not grant acceptance.
 
 Replay using paths to the original whole and compiler artifacts at the same
 source revision:

@@ -245,6 +245,44 @@ class ProofModeInventoryTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 check_workflows.check_verus_sharding(check_workflows.load_workflow(changed))
 
+    def test_original_complete_expanded_profile_requires_lookup_redistribution(self):
+        # Original42415916073/attempt1: all61groups passed; seconds rounded up.
+        costs = {
+            "arithmetic-codec": 590.389, "clone-results": 247.915, "context-callers": 183.265,
+            "arithmetic-decision": 359.586, "reset": 72.231, "mmr-run": 138.329,
+            "mmr-reference": 346.353, "default-limits-1": 108.217, "reader-error": 255.664,
+            "document-count": 391.525, "default-decoder-2": 116.947, "iaid-state": 254.657,
+            "mmr-span": 245.303, "default-limits-2": 106.973, "error-wrappers-symbol": 218.833,
+            "symbol-cardinality": 583.240, "reference-type-lookup": 186.530,
+            "arithmetic-refill": 180.474, "page-state": 352.121, "huffman-codec": 352.743,
+            "public-decode-results": 204.091, "public-global-results": 118.596,
+            "text-batch": 272.449, "arithmetic-integer": 228.351, "retention": 110.003,
+            "error-wrappers-regions": 249.644, "document-layout": 360.266,
+            "halftone-header": 258.702, "mmr-horizontal": 202.297, "black-span": 201.375,
+            "segment-data": 306.882, "arithmetic-initialization": 177.870,
+            "public-context": 285.289, "error-wrappers-basic": 273.962, "bitmap-copy": 236.572,
+            "default-limits-3": 107.569, "mmr-prefix": 113.776, "bitmap-chunk": 110.378,
+            "default-decoder-3": 90.663, "bitmap-compose": 177.189, "context-lifecycle": 280.723,
+            "huffman-assignment": 727.676, "collector-sink": 68.361,
+            "reference-accounting": 180.413, "segment-header": 280.299,
+            "region-dispatch": 107.206, "integer-state": 274.476, "operator-bit": 136.280,
+            "error-conversion": 303.274, "value-bridge": 487.596,
+            "reference-catalog": 181.067, "default-decoder-4": 105.668, "page-public": 252.888,
+            "default-decoder-1": 107.687, "default-decoder-5": 106.383,
+            "arithmetic-normalization": 177.008, "reference-type-classes": 165.525,
+            "session-framing": 291.233, "default-limits-4": 93.455,
+            "page-finish": 181.860, "default-limits-5": 92.766,
+        }
+        self.assertEqual(set(costs), {row[0] for row in runner.CHECKS})
+        rows = [{"id": name, "status": "passed", "seconds": seconds}
+                for name, seconds in costs.items()]
+        with patch.dict(runner.ADDED_SHARD_GROUPS, {"reference-type-lookup": 3}):
+            with self.assertRaisesRegex(ValueError, "1050-second"):
+                runner.measured_shard_seconds(rows)
+        measured = runner.measured_shard_seconds(rows)
+        self.assertEqual(len(measured), 14)
+        self.assertLess(max(measured), 1050)
+
 
 if __name__ == "__main__":
     unittest.main()

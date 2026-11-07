@@ -52,9 +52,10 @@ class ReferenceTypeProofTests(unittest.TestCase):
         self.assertEqual(len(after), 16)
         for old, current in zip(before, after):
             self.assertEqual(old, tuple(row for row in current if row[0] not in added))
-        self.assertIn("reference-type-lookup", {row[0] for row in after[5]})
+        self.assertIn("reference-type-lookup", {row[0] for row in after[11]})
         self.assertIn("reference-type-classes", {row[0] for row in after[15]})
 
+    @patch.dict(runner.ADDED_SHARD_GROUPS, {"reference-type-lookup": 3})
     def test_complete_original_timing_profile_rejects_first_assignment_and_fits_corrected_one(self):
         # Same-run42310047778/attempt1 passed all61groups; seconds rounded up.
         costs = {
