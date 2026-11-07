@@ -36,8 +36,9 @@ The [internal-profile checker](../tools/check_internal_profile.py) snapshots
 all approved scope rows, policy and edition metadata with exact source/tool
 hashes, then derives exposed free/inherent/trait declarations from an actually
 replayed compiler export. The approved support/provenance byte identities are
-frozen: changing rows while reusing the approval label requires an explicit
-reviewed profile update. Original constructors, trait implementations and
+frozen, allowing only LF/CRLF checkout equivalence in that comparison. Evidence
+still binds exact raw bytes. Changing rows while reusing the approval label
+requires an explicit reviewed profile update. Original constructors, trait implementations and
 internal bodies remain in that bound compiler inventory. Linux CI publishes
 the snapshot with its original compiler artifacts; replay it using:
 

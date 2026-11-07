@@ -11,9 +11,22 @@ from unittest.mock import patch
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 import check_internal_profile as checker
+import check_workflows
 
 
 class InternalProfileTests(unittest.TestCase):
+    def test_ci_requires_original_compiler_and_profile_before_raw_artifact_upload(self):
+        workflow = check_workflows.load_workflow((TOOLS.parent / ".github/workflows/ci.yml").read_text())
+        check_workflows.check_native_mutation_lane(workflow)
+        for name in ("Freeze approved internal declaration profile",
+                     "Reconcile actual production compiler inventory"):
+            changed = copy.deepcopy(workflow)
+            changed["jobs"]["cargo"]["steps"] = [
+                row for row in changed["jobs"]["cargo"]["steps"] if row.get("name") != name
+            ]
+            with self.subTest(step=name), self.assertRaisesRegex(ValueError, "pinned Linux"):
+                check_workflows.check_native_mutation_lane(changed)
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -113,6 +126,20 @@ class InternalProfileTests(unittest.TestCase):
         matrix["rows"].pop()
         path.write_text(json.dumps(matrix))
         with self.assertRaisesRegex(ValueError, "explicit reviewed profile update"):
+            checker.snapshot(self.root, self.directory)
+
+    def test_crlf_scope_checkout_keeps_exact_raw_binding_and_same_approved_content(self):
+        for name in checker.FROZEN_SCOPE_INPUTS:
+            path = self.root / name
+            path.write_bytes(path.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        report = checker.snapshot(self.root, self.directory)
+        for name, expected in checker.FROZEN_SCOPE_INPUTS.items():
+            self.assertEqual(checker.scope_digest(self.root / name), expected)
+            self.assertEqual(report["source_bindings"][name], checker.digest(self.root / name))
+        matrix = report["approved_support_matrix"]
+        matrix["rows"].pop()
+        (self.root / "config/support-matrix.json").write_text(json.dumps(matrix))
+        with self.assertRaisesRegex(ValueError, "reviewed profile update"):
             checker.snapshot(self.root, self.directory)
 
     def test_missing_or_duplicate_api_declarations_are_rejected(self):

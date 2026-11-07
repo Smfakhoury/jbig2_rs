@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INPUTS = (
     "config/support-matrix.json", "config/toolchain.json", "validation/source-provenance.json",
     "Cargo.toml", "verification/Cargo.toml", "tools/check_internal_profile.py",
+    ".github/workflows/ci.yml", "tools/check_workflows.py",
 )
 API_CATEGORIES = {
     "root_reexported_function", "public_inherent_method_on_root_type", "root_trait_method",
@@ -28,6 +29,9 @@ FROZEN_SCOPE_INPUTS = {
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def scope_digest(path):
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def snapshot(root, compiler_directory):
@@ -67,7 +71,7 @@ def snapshot(root, compiler_directory):
         or len(references) != len(provenance["normative_references"])
     ):
         raise ValueError("internal scope must preserve distinct T.88/ISO/T.6 edition metadata")
-    if any(digest(root / name) != expected for name, expected in FROZEN_SCOPE_INPUTS.items()):
+    if any(scope_digest(root / name) != expected for name, expected in FROZEN_SCOPE_INPUTS.items()):
         raise ValueError("approved scope metadata changed; an explicit reviewed profile update is required")
     compiler = validate_existing(root, compiler_directory)
     entries = []
