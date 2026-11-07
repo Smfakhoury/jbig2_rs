@@ -537,9 +537,16 @@ def check_native_mutation_lane(document):
     expected = (
         ("Install pinned native mutation compiler",
          f"rustup toolchain install {nightly} --profile minimal"),
+        ("Reconcile actual production compiler inventory",
+         "python -B tools/collect_compiler_inventory.py "
+         "--output-dir target/traceability/compiler-inventory"),
         ("Check critical public-API mutation sensitivity",
          f"python -B tools/check_contract_mutations.py --toolchain {nightly} "
          "--output target/traceability/mutations.json"),
+        ("Freeze approved internal declaration profile",
+         "python -B tools/check_internal_profile.py "
+         "--compiler-inventory target/traceability/compiler-inventory "
+         "--output target/traceability/internal-profile.json"),
     )
     positions = []
     for name, command in expected:
@@ -560,7 +567,8 @@ def check_native_mutation_lane(document):
         or uploads[0][1].get("with") != {
             "name": "traceability-${{ matrix.os }}", "path": "target/traceability/",
         }
-        or not positions[0] < positions[1] < uploads[0][0]
+        or positions != sorted(set(positions))
+        or positions[-1] >= uploads[0][0]
     ):
         raise ValueError("native mutations require the existing 20-minute job and retained raw artifact")
 
