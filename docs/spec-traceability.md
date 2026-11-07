@@ -32,6 +32,24 @@ is needed for exhaustive enumeration. That dependency is distinct from
 selecting, invoking and adapting inputs to an external validator.
 
 Generic reproducibility evidence can be prepared before a validator is chosen.
+The [internal-profile checker](../tools/check_internal_profile.py) snapshots
+all approved scope rows, policy and edition metadata with exact source/tool
+hashes, then derives exposed free/inherent/trait declarations from an actually
+replayed compiler export. The approved support/provenance byte identities are
+frozen: changing rows while reusing the approval label requires an explicit
+reviewed profile update. Original constructors, trait implementations and
+internal bodies remain in that bound compiler inventory. Linux CI publishes
+the snapshot with its original compiler artifacts; replay it using:
+
+```sh
+python -B tools/check_internal_profile.py \
+  --compiler-inventory target/traceability/compiler-inventory \
+  --output target/traceability/internal-profile.json --check-existing
+```
+
+This freezes a reproducible declaration/profile snapshot, not complete
+constructible domains, platform/proof identity reconciliation, source-statement
+coverage or full readiness. Standards hashes are metadata, not text review.
 Validator identity/version/input adaptation, execution and adjudication are
 separate work. The stronger full external-readiness and independent-review
 claims remain false until their own requirements are met; internal preparation
