@@ -218,6 +218,10 @@ selected owning result guarantee; table/class faults also remove invalid
 new preservation invariants while keeping existing domains. These are
 implementation-stage results, not independent normative approval or a proved
 bridge to the distinct abstract reference-class model.
+The first complete hosted profile passed all individual groups but rejected
+shard 11 at 1,083.08 seconds. Only the new class group moves to existing shard
+13; maxima with the accepted baseline fit the unchanged guards. The original
+failed profile is preserved and gives no acceptance credit.
 
 `model_classifications` identifies exact declaration families as project
 results, policies, representation invariants, proof support or candidate
