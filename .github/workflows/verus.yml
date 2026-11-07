@@ -39,7 +39,7 @@ jobs:
       - name: Verify proof build and audit production coverage
         run: |
           set -o pipefail
-          mkdir -p target/verus-production target/verification
+          mkdir -p target/verus-production target/verification target/verus-expanded-raw
           export PATH="$PWD/verus-x86-linux:$PATH"
           export CARGO_TARGET_DIR="$PWD/target/verus-cargo"
           cargo fetch --manifest-path verification/Cargo.toml --locked
@@ -47,6 +47,7 @@ jobs:
             --num-threads 4 \
             --rlimit 30 \
             --triggers-mode silent \
+            --log vir --log-dir target/verus-expanded-raw \
             --output-json > target/verus-production/cargo-reports.jsons
           python tools/extract_cargo_verus_report.py \
             --input target/verus-production/cargo-reports.jsons \
@@ -59,6 +60,12 @@ jobs:
             --require-complete --require-exact
           diff -u verification/production-proof-coverage.json \
             target/verification/production-proof-coverage-ci.json
+          python tools/collect_proof_mode_inventory.py \
+            --vir target/verus-expanded-raw/crate.vir \
+            --verus-json target/verification/verus-production.json \
+            --coverage-json target/verification/production-proof-coverage-ci.json \
+            --compiled-library target/verus-cargo/debug/libjbig2_rs_production.rlib \
+            --output-dir target/traceability/expanded-verifier
           python tools/check_traceability.py \
             --verus-json target/verification/verus-production.json \
             --discover-tests --require-development-scope \
