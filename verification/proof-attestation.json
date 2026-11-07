@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "status": "verified_exact_project_scope_with_reviewed_limits",
-  "source_revision": "f50f4d97b4bbe2be61cb0ea0efecac32f3670946",
+  "source_revision": "5d362a82051c875d09d1528a42c7ab08890cb85a",
   "scope": "Exact-source whole verification/compilation proves all four concrete reference-type helpers: first local/global resolution and out-of-range absence; intermediate classification; symbol/table eligibility and owner-specific accepted/error result. Unresolved symbol/text references deliberately remain skipped here because preceding link validation owns missing-reference rejection. Existing index-range domains, native behavior, field privacy and trust are unchanged. Checked first-index uniqueness and prefix-table monotonicity support the owning contracts, not a normative bridge.",
   "toolchain": {
     "manifest": "config/toolchain.json",
@@ -33,7 +33,7 @@
     "review_kind": "delegated_engineering_review",
     "normative_approval": false
   },
-  "current_evidence_note": "Actual unfiltered whole1314/0/nonemptylibrary,668explicit/648direct20reviewed. Twelve real compiling positives/strong/weak contrasts split6lookup/6classes; all307native faults compile and are detected, including every old case. Four independent native oracles cover all22owner and22resolved kinds, selected cardinalities including4/8table boundaries, duplicate lookup precedence, local/global override and staged missing-reference policy. Same4oracles pass on original production; all148existing ordinary native projections match and the new source file is test-only. No runtime/domain/privacy/trust change, machine-code/allocator or independent normative fidelity claim. Native1259identities298derives andAPIdeclaration categories unchanged. Actual156-file MSRV/offline/no-upload and numericalcoveragefloors pass. Live494contrasts/61groups/307native/418bindings retain14shards/16roles/max4/all1050s/jobcaps/pins andeveryoldcase/assignment; new6+6groups use existing3/11headroom. Owning surfaces540->544, rawverifiednoLocal108->104, minus24existing separatelyqualifiedowners projects84->80reviewcandidates,notmissingproofs/readinesspercentage. Registry218/266selected/257gaprows remainprovisional; sixconcretestagedmodels/globalprojection are separatelypurposeclassified unregistered support/results, no normativeowner invented. Statements-processing handoff remains blocked; validatorexecution/version/input adaptation is separate from internal plan. Native/Verus/generated/platform/domain/semanticquality qualification and complete statement mapping remainopen. Freshoriginalexactheadhostedacceptance/protectedintegration stillrequired.",
+  "current_evidence_note": "Actual unfiltered whole1314/0/nonemptylibrary,668explicit/648direct20reviewed. Twelve real compiling positives/strong/weak contrasts split6lookup/6classes; all307native faults compile and are detected, including every old case. Four independent native oracles cover all22owner and22resolved kinds, selected cardinalities including4/8table boundaries, duplicate lookup precedence, local/global override and staged missing-reference policy. Same4oracles pass on original production; all148existing ordinary native projections match and the new source file is test-only. No runtime/domain/privacy/trust change, machine-code/allocator or independent normative fidelity claim. Native1259identities298derives andAPIdeclaration categories unchanged. Actual156-file MSRV/offline/no-upload and numericalcoveragefloors pass. Live494contrasts/61groups/307native/418bindings retain14shards/16roles/max4/all1050s/jobcaps/pins andeveryoldcase/assignment; new6+6groups use existing3/13headroom. Original42310047778attempt1 passedall61groups but rejectedshard11=1083.081350s. Onlynewreference-type-classes moves11->13;pergroupmaxima withacceptedbaseline predictmax967.594566s,planningonlynotacceptance. Failedprofile retainednofailed-headcredit. Owning surfaces540->544, rawverifiednoLocal108->104, minus24existing separatelyqualifiedowners projects84->80reviewcandidates,notmissingproofs/readinesspercentage. Registry218/266selected/257gaprows remainprovisional; sixconcretestagedmodels/globalprojection are separatelypurposeclassified unregistered support/results, no normativeowner invented. Statements-processing handoff remains blocked; validatorexecution/version/input adaptation is separate from internal plan. Native/Verus/generated/platform/domain/semanticquality qualification and complete statement mapping remainopen. Freshoriginalexactheadhostedacceptance/protectedintegration stillrequired.",
   "duplicate_executable_proof_source": false,
   "normative_approval": false,
   "release_gate": "blocked",
@@ -441,6 +441,26 @@
         "incomplete_functions": 0
       },
       "production_proof_coverage_sha256": "ef67250b5cccc16bb9726f4943da69801403e3846ba5091df5c9b8e379ec29ae",
+      "scope_note": "Historical evidence, not a new execution or approval."
+    },
+    {
+      "source_revision": "f50f4d97b4bbe2be61cb0ea0efecac32f3670946",
+      "scope": "Exact-source whole verification/compilation proves all four concrete reference-type helpers: first local/global resolution and out-of-range absence; intermediate classification; symbol/table eligibility and owner-specific accepted/error result. Unresolved symbol/text references deliberately remain skipped here because preceding link validation owns missing-reference rejection. Existing index-range domains, native behavior, field privacy and trust are unchanged. Checked first-index uniqueness and prefix-table monotonicity support the owning contracts, not a normative bridge.",
+      "result": {
+        "verified_obligations": 1314,
+        "verified_production_functions": 648,
+        "errors": 0,
+        "proof_build_compiles": true,
+        "exact_production_source_compiles": true,
+        "algorithm_bodies_verified": false,
+        "production_coverage_complete": true,
+        "native_assumptions": [],
+        "reviewed_verifier_limitations": 20,
+        "audited_forwarders": 0,
+        "runtime_proof_divergences": 0,
+        "incomplete_functions": 0
+      },
+      "production_proof_coverage_sha256": "32c871395b0efcd11d621ebc88b0be0debe90b775c89f12bcaa4aff3b40b9ccd",
       "scope_note": "Historical evidence, not a new execution or approval."
     }
   ]
