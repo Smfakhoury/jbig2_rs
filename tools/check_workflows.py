@@ -387,7 +387,7 @@ def check_verus_sharding(document):
     if cargo_invocations != [[
         "cargo", "verus", "build", "--manifest-path", "verification/Cargo.toml",
         "--locked", "--offline", "--", "--num-threads", "4", "--rlimit", "30",
-        "--triggers-mode", "silent", "--log", "vir", "--log-dir", "target/verus-expanded-raw",
+        "--triggers-mode", "silent", "--log", "vir", "--log-dir", "$PWD/target/verus-expanded-raw",
         "--output-json", ">",
         "target/verus-production/cargo-reports.jsons",
     ]]:

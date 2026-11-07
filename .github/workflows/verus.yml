@@ -47,7 +47,7 @@ jobs:
             --num-threads 4 \
             --rlimit 30 \
             --triggers-mode silent \
-            --log vir --log-dir target/verus-expanded-raw \
+            --log vir --log-dir "$PWD/target/verus-expanded-raw" \
             --output-json > target/verus-production/cargo-reports.jsons
           python tools/extract_cargo_verus_report.py \
             --input target/verus-production/cargo-reports.jsons \

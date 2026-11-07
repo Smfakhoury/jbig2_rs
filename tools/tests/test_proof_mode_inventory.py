@@ -239,7 +239,7 @@ class ProofModeInventoryTests(unittest.TestCase):
     def test_workflow_requires_original_logging_and_source_bound_extraction(self):
         text = (TOOLS.parent / ".github/workflows/verus.yml").read_text()
         for changed in (
-            text.replace("--log vir --log-dir target/verus-expanded-raw", ""),
+            text.replace('--log vir --log-dir "$PWD/target/verus-expanded-raw"', ""),
             text.replace("python tools/collect_proof_mode_inventory.py", "python missing_collector.py"),
         ):
             with self.assertRaises(ValueError):
