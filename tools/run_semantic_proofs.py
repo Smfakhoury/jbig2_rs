@@ -22,7 +22,7 @@ CI_SHARDS = 14
 WHOLE_GROUPS = ("arithmetic-codec",)
 COLLECTOR_GROUPS = ("arithmetic-decision", "reset", "clone-results", "context-callers")
 ADDED_SHARD_GROUPS = {
-    "reference-type-lookup": 3, "reference-type-classes": 13,
+    "reference-type-lookup": 9, "reference-type-classes": 13,
     "reference-accounting": 10, "reference-catalog": 12,
     "public-context": 7,
     "public-decode-results": 4, "public-global-results": 4,
@@ -634,12 +634,27 @@ def seal_whole(root, directory):
     (directory / WHOLE_SUMMARY).unlink(missing_ok=True)
     current = manifest(root)
     files = validate_whole(root, directory)
+    validate_expanded_inventory(root, directory)
     summary = {
         "schema_version": RECEIPT_SCHEMA, "status": "passed", "manifest": current,
         "run_identity": run_identity(), "files": files,
     }
     write_json(directory / WHOLE_SUMMARY, summary)
     return summary
+
+
+def validate_expanded_inventory(root, directory):
+    if not (root / "tools/collect_proof_mode_inventory.py").is_file():
+        return
+    from collect_proof_mode_inventory import validate_existing
+    libraries = list((directory / "target/verus-production").glob("*.rlib"))
+    if len(libraries) != 1:
+        raise ValueError("expanded proof inventory needs one original production library")
+    validate_existing(
+        root, directory / TRACE / "expanded-verifier",
+        directory / "verus-production.json", directory / "production-proof-coverage-ci.json",
+        libraries[0],
+    )
 
 
 def require_summary(summary, current):
@@ -726,6 +741,7 @@ def aggregate(root, inputs, output, whole_result, semantic_result):
     require_summary(whole_summary, current)
     if whole_summary.get("files") != validate_whole(root, whole):
         raise ValueError("stale or modified whole-crate evidence")
+    validate_expanded_inventory(root, whole)
     positive = load_whole_baseline(root, whole)
     rows_by_id = {}
     directories = {}

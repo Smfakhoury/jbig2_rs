@@ -387,11 +387,20 @@ def check_verus_sharding(document):
     if cargo_invocations != [[
         "cargo", "verus", "build", "--manifest-path", "verification/Cargo.toml",
         "--locked", "--offline", "--", "--num-threads", "4", "--rlimit", "30",
-        "--triggers-mode", "silent", "--output-json", ">",
+        "--triggers-mode", "silent", "--log", "vir", "--log-dir", "$PWD/target/verus-expanded-raw",
+        "--output-json", ">",
         "target/verus-production/cargo-reports.jsons",
     ]]:
         raise ValueError("whole-crate gate requires the exact pinned Cargo verification-and-build invocation")
     report_commands = {
+        "tools/collect_proof_mode_inventory.py": [
+            "python", "tools/collect_proof_mode_inventory.py",
+            "--vir", "target/verus-expanded-raw/crate.vir",
+            "--verus-json", "target/verification/verus-production.json",
+            "--coverage-json", "target/verification/production-proof-coverage-ci.json",
+            "--compiled-library", "target/verus-cargo/debug/libjbig2_rs_production.rlib",
+            "--output-dir", "target/traceability/expanded-verifier",
+        ],
         "tools/extract_cargo_verus_report.py": [
             "python", "tools/extract_cargo_verus_report.py",
             "--input", "target/verus-production/cargo-reports.jsons",

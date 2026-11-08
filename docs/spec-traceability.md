@@ -219,6 +219,48 @@ existing headroom. No case, producer, pin, concurrency or measurement/job
 limit is removed or raised. Combining timings predicts capacity only; neither
 rejected run is acceptance evidence.
 
+### Actual expanded proof-mode functions
+
+The pinned unfiltered whole build emits expanded Verus IR. The
+[collector](../tools/collect_proof_mode_inventory.py) retains exact project
+function forms, not dependency function bodies, and binds the original whole
+report, production library, accounting and source/tool identities. Whole
+sealing and final aggregation replay those forms; contrast workers continue
+using the existing hashed whole baseline without repeatedly parsing the IR.
+
+The [reconciler](../tools/proof_mode_inventory.py) distinguishes original
+implementation paths/spans and lexical modules from canonical verifier names.
+An implementation may be in a different module from its datatype owner.
+Generic signatures and owning precondition/postcondition counts and hashes
+remain attached; body or result-clause presence alone is not semantic quality.
+Existing trait-provider contracts can enter after this IR stage, so absent
+expanded local guarantees do not mean an absent effective trait contract.
+
+Native reconciliation uses the separately produced, same-source compiler
+artifact. It keeps native-only declarations, generated methods and reviewed
+boundaries visible rather than granting proof credit from matching names.
+Nested closures, constructors, marker implementations and duplicate CTFE bodies
+retain their separate native stages; this function inventory is not a call
+graph, platform-wide proof or complete admitted-domain/contract qualification.
+Spec/proof forms are not additional native functions or counts of new theorems.
+The first complete expanded-evidence profile rejected shard 3 at 1,071.87
+seconds although every individual group passed. The existing lookup group
+moves from shard 3 to existing shard 9 using original compatible measurements;
+all other assignments/cases and every resource guard remain. The rejected
+profile and planning-only maxima do not grant acceptance.
+
+Replay using paths to the original whole and compiler artifacts at the same
+source revision:
+
+```sh
+python -B tools/collect_proof_mode_inventory.py --check-existing \
+  --output-dir target/traceability/expanded-verifier \
+  --verus-json target/verification/verus-production.json \
+  --coverage-json target/verification/production-proof-coverage-ci.json \
+  --compiled-library target/verus-cargo/debug/libjbig2_rs_production.rlib \
+  --native-inventory target/traceability/compiler-inventory
+```
+
 ### Source-only purpose inventory
 
 The [concrete reference-type models](../specs/document/reference_types.rs)
