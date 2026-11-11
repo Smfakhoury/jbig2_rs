@@ -1,0 +1,217 @@
+{
+  "mappings": [
+    {
+      "item_id": "cf94e7baaee3eb514973fe47",
+      "result": {
+        "findings": [
+          {
+            "code_quotes": [
+              {
+                "path": "src/symbol_text/dictionary/huffman.rs",
+                "quote": "                if instances > 1 {\n                    let SymbolCodec::Huffman(huffman) = &mut codec else {\n                        return Err(SymbolTextError::InvalidState(\n                            \"Huffman dictionary has non-Huffman state\",\n                        ));\n                    };\n                    prepare_symbol_ids!(huffman, total_symbols, limits)?;"
+              },
+              {
+                "path": "src/symbol_text/macros.rs",
+                "quote": "        let runcode_lines = read_symbol_id_runcode_lines(&mut codec.reader)?;\n        let runcode_table = HuffmanTable::new(&runcode_lines, limits)?;\n        let lengths =\n            decode_symbol_id_code_lengths(&mut codec.reader, &runcode_table, symbol_count, limits)?;\n        codec.symbol_id_table = Some(HuffmanTable::new_symbol_ids(&lengths, limits)?);\n        byte_align(&mut codec.reader)?;"
+              },
+              {
+                "path": "src/symbol_text/dictionary/arithmetic.rs",
+                "quote": "            let bitmap = decode_text_region_body(\n                codec,\n                SymbolCodebook::Borrowed(&symbol_refs),\n                code_length,\n                width,\n                height,\n                instances,\n                &nested_config,\n                refinement_adaptive,\n                limits,\n                resources,\n            )?;"
+              }
+            ],
+            "component_ids": [
+              "src/symbol_text/dictionary/huffman.rs:88:symbol_text::dictionary::huffman::decode_symbol_dictionary_huffman"
+            ],
+            "disposition": "undocumented_deviation",
+            "document_quote": {
+              "anchor": "67c6f54064acd72c7d4168c6b840ee9245cdcd9fa29cbec60546949e4e832274",
+              "document": "external/c2b4d37511dc/t88-201808.txt",
+              "quote": "When SDHUFF \uf03d 1, set SBSYMCODES to an array of SBNUMSYMS codes, where the length of each code is:\n\n                                max(\uf0e9log2 (SDNUMINSYMS \uf02b SDNUMNEWSYMS)\uf0f9, 1)\n\nand the code SBSYMCODES[I] is I (for I between 0 and SBNUMSYMS \u2013 1)."
+            },
+            "document_section": "6.5.8.2.3",
+            "document_version": "0caacf3891e7b059ef8090ec96029768b2621aa366ce4b37a3a56f743ec475c6",
+            "documentation_quotes": [
+              {
+                "path": "config/support-matrix.json",
+                "quote": "      \"feature\": \"refinement_aggregation\",\n      \"status\": \"required\",\n      \"clauses\": [\"6.4\", \"6.5\"]"
+              }
+            ],
+            "finding_id": "3ca0db7344b1bd7143c6c5fa0ad21ec73ccc524ae78e1b9ec37c9b393fcd0bf6",
+            "passage_id": "4d6cb25fcb72a283de2fe4c3f4462c64c3d58422efc412f747eeb9db3038e618",
+            "rationale": "The Huffman dictionary loop unconditionally invokes prepare_symbol_ids on every instances>1 step before invoking the nested symbol decoder. That macro consumes 35 four-bit run-code lengths and a transmitted run description, installs a variable-length symbol table, and byte-aligns the reader. These are normal text-region table-header operations; the dictionary procedure instead already supplies equal-length index codes and contains no such header at that location. Thus an extra wire-level table read is present on the inspected branch, independently of whether a particular conforming input happens to fail early or resemble such a header. Project configuration requires refinement aggregation and the adapter documents dictionary IDs as fixed-width; inspected project documentation supplies no intentional exception for this extra table. Review-marked contracts were used with their stated assumptions, not discarded for their human review label. This is a source-grounded format deviation, not an executed encoded-body witness, semantic proof, or whole-component conformance result. Persistent table reuse on later single-instance symbols is separately left uncertain.",
+            "related_spec_ids": [
+              "4b7a7eb4791853b1a951654f",
+              "912146d3f28042a59e7a1a93"
+            ],
+            "relevance": "Applies to decoder-side Huffman symbol dictionaries with SDREFAGG=1 and REFAGGNINST>1, not ordinary Huffman text segments. Read 6.5.8.2 and Table 17 in the adjacent 6.5.8.2.2 anchor: the nested text decoder receives SBSYMCODES from 6.5.8.2.3. These are implicit equal-length index codes derived from the declared total, not a transmitted table decoded under 7.4.3.1.7. Assumes the parser reaches a nonempty multi-instance aggregation with valid imported symbol storage and adequate resources.",
+            "spec": {
+              "assumptions": [
+                "The applicable role is a Huffman symbol dictionary with refinement aggregation enabled, not a standalone text region. Imported bitmap storage and delegated decoder states satisfy their existing contracts."
+              ],
+              "evidence": [
+                {
+                  "path": "src/symbol_text/dictionary.rs",
+                  "quote": "/// Decodes one complete symbol-dictionary segment payload (T.88 6.5, 7.4.3)."
+                },
+                {
+                  "path": "src/symbol_text/codec/huffman.rs",
+                  "quote": "        // When a symbol-ID Huffman table has been prepared (T.88 7.4.3.1.7,\n        // normal text-region decoding), decode through it. Otherwise this is\n        // the symbol dictionary's own single-instance aggregate refinement ID\n        // (T.88 6.5.8.2.2), which T.88 specifies as a literal fixed-width\n        // field of `code_length` bits, not a Huffman code."
+                }
+              ],
+              "family": "functional",
+              "intent": "documented",
+              "nl": "Huffman symbol-dictionary refinement/aggregation decoding is intended to preserve the dictionary-specific fixed-width symbol-ID interpretation supplied by T.88 6.5.8.2.3, rather than substituting the transmitted symbol-ID table header used by an ordinary text-region segment.",
+              "subject": "src/symbol_text/dictionary/huffman.rs:88:symbol_text::dictionary::huffman::decode_symbol_dictionary_huffman"
+            },
+            "spec_id": "43484d881cf32e9dce8d6d94"
+          }
+        ]
+      },
+      "state": "accepted"
+    }
+  ],
+  "qualification": "Host-checked references and quotations, not semantic conformance or proof.",
+  "review": {
+    "excluded": {
+      "missing_spec": 0,
+      "missing_test": 0,
+      "not_reproduced": 7,
+      "unmapped_spec": 0
+    },
+    "included": 1,
+    "qualification": "Rows are reproduced Core deviations joined to accepted standards mappings. Exact standards quotations remain in the retained mapping records; the Markdown uses clause references and short derived requirements.",
+    "rows": [
+      {
+        "class": "Code deviation",
+        "deviation_id": "a5a619ad7186ad24fc88ddb1",
+        "finding_id": "3ca0db7344b1bd7143c6c5fa0ad21ec73ccc524ae78e1b9ec37c9b393fcd0bf6",
+        "id": "DEV-952C7B7561",
+        "implementation_link": "[`symbol_text::dictionary::decode_symbol_dictionary`](../src/symbol_text/dictionary.rs#L43)",
+        "mapping_item": "cf94e7baaee3eb514973fe47",
+        "materialized_test_sources": [
+          {
+            "file": "tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs",
+            "locations": [
+              {
+                "end_line": 252,
+                "markdown": "[`src/symbol_text/tests/dictionary_dispatch.rs:L252`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L252)",
+                "quote": "let result = decode_symbol_dictionary(&SymbolDictionaryInput {",
+                "start_line": 252
+              },
+              {
+                "end_line": 231,
+                "markdown": "[`src/symbol_text/tests/dictionary_dispatch.rs:L231`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L231)",
+                "quote": "assert_eq!(bitmap.bytes().len(), 1);",
+                "start_line": 231
+              },
+              {
+                "end_line": 286,
+                "markdown": "[`src/symbol_text/tests/dictionary_dispatch.rs:L286`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L286)",
+                "quote": "assert_eq!(checked, 119);",
+                "start_line": 286
+              }
+            ],
+            "markdown": "[`src/symbol_text/tests/dictionary_dispatch.rs:L252`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L252)<br>[`src/symbol_text/tests/dictionary_dispatch.rs:L231`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L231)<br>[`src/symbol_text/tests/dictionary_dispatch.rs:L286`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L286)",
+            "path": "src/symbol_text/tests/dictionary_dispatch.rs",
+            "sha256": "8d000b5d056656ba74764cfa957c3017fa940149456c3b94795ac578659fc2bf"
+          },
+          {
+            "file": "tests/DEV-952C7B7561/files/tools/deepspec_fixed_dictionary_ids.py",
+            "locations": [],
+            "markdown": "[`tools/deepspec_fixed_dictionary_ids.py`](tests/DEV-952C7B7561/files/tools/deepspec_fixed_dictionary_ids.py)",
+            "path": "tools/deepspec_fixed_dictionary_ids.py",
+            "sha256": "a1a90219df2a28986a93da30afb0be1a6b05487eed1516614351a2cc18222fc6"
+          }
+        ],
+        "observed_deviation": "T.88 (08/2018) 6.5.8.2 sends multi-instance dictionary aggregates to the text decoder with Table 17 parameters. Section 6.5.8.2.3 supplies implicit equal-width index codes, not a 7.4.3.1.7 transmitted table header. Independent inspection of Tables B.1/B.2/B.4/B.6/B.8/B.11 confirms the fixture's DH=1, DW=16, aggregation count=2, initial and strip DT=1, FS=0, DS=1, OOB markers and export runs. The declared imported+new symbol total determines the fixed ID width; both instance IDs address already available imported bitmaps. RI=0 means no refinement arithmetic payload is needed. The expected output is the concatenation of the two original eight-pixel rows, derived from pre-state, not production output. Host replay reaches instances>1 and prepare_symbol_ids! on all 119 inputs (the retained LLVM branch receipt counts 119 true, 0 false at line 178). It rejects every complete encoded challenge as UnexpectedEof while trying to consume the extra table. The import-only control passes. This is a finite reproduced decoder deviation, not an oracle derived from agreement between implementation and its Verus model. The original per-case route marker was truncated from the host's output tail; the retained failure lines, exact native case and branch-coverage receipt still attribute the executed failure. Successful downstream aggregation is not observed, and removing this read alone is not claimed to repair all table bindings.",
+        "primary_test_link": "[Cited check in `dictionary_dispatch.rs`](support/tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L231)",
+        "production_code": [
+          "src/symbol_text/dictionary/huffman.rs",
+          "src/symbol_text/macros.rs",
+          "src/symbol_text/dictionary/arithmetic.rs"
+        ],
+        "production_code_markdown": "[`src/symbol_text/dictionary/huffman.rs:L184`](../../src/symbol_text/dictionary/huffman.rs#L184)<br>[`src/symbol_text/macros.rs:L77`](../../src/symbol_text/macros.rs#L77)<br>[`src/symbol_text/dictionary/huffman.rs:L178-L184`](../../src/symbol_text/dictionary/huffman.rs#L178-L184)<br>[`src/symbol_text/macros.rs:L77-L82`](../../src/symbol_text/macros.rs#L77-L82)<br>[`src/symbol_text/dictionary/arithmetic.rs:L203-L214`](../../src/symbol_text/dictionary/arithmetic.rs#L203-L214)",
+        "production_evidence": [
+          {
+            "path": "src/symbol_text/dictionary/huffman.rs",
+            "quote": "prepare_symbol_ids!(huffman, total_symbols, limits)?;"
+          },
+          {
+            "path": "src/symbol_text/macros.rs",
+            "quote": "let runcode_lines = read_symbol_id_runcode_lines(&mut codec.reader)?;"
+          },
+          {
+            "path": "src/symbol_text/dictionary/huffman.rs",
+            "quote": "                if instances > 1 {\n                    let SymbolCodec::Huffman(huffman) = &mut codec else {\n                        return Err(SymbolTextError::InvalidState(\n                            \"Huffman dictionary has non-Huffman state\",\n                        ));\n                    };\n                    prepare_symbol_ids!(huffman, total_symbols, limits)?;"
+          },
+          {
+            "path": "src/symbol_text/macros.rs",
+            "quote": "        let runcode_lines = read_symbol_id_runcode_lines(&mut codec.reader)?;\n        let runcode_table = HuffmanTable::new(&runcode_lines, limits)?;\n        let lengths =\n            decode_symbol_id_code_lengths(&mut codec.reader, &runcode_table, symbol_count, limits)?;\n        codec.symbol_id_table = Some(HuffmanTable::new_symbol_ids(&lengths, limits)?);\n        byte_align(&mut codec.reader)?;"
+          },
+          {
+            "path": "src/symbol_text/dictionary/arithmetic.rs",
+            "quote": "            let bitmap = decode_text_region_body(\n                codec,\n                SymbolCodebook::Borrowed(&symbol_refs),\n                code_length,\n                width,\n                height,\n                instances,\n                &nested_config,\n                refinement_adaptive,\n                limits,\n                resources,\n            )?;"
+          }
+        ],
+        "required_behavior": "Huffman symbol-dictionary refinement/aggregation decoding is intended to preserve the dictionary-specific fixed-width symbol-ID interpretation supplied by T.88 6.5.8.2.3, rather than substituting the transmitted symbol-ID table header used by an ordinary text-region segment.",
+        "spec_id": "43484d881cf32e9dce8d6d94",
+        "standard": "t88-201808.txt \u00a7 6.5.8.2.3<br>[exact quote](evidence.md#dev-952c7b7561)",
+        "standard_anchor": "6.5.8.2.3",
+        "standard_document": "external/c2b4d37511dc/t88-201808.txt",
+        "standard_quote": "When SDHUFF \uf03d 1, set SBSYMCODES to an array of SBNUMSYMS codes, where the length of each code is:\n\n                                max(\uf0e9log2 (SDNUMINSYMS \uf02b SDNUMNEWSYMS)\uf0f9, 1)\n\nand the code SBSYMCODES[I] is I (for I between 0 and SBNUMSYMS \u2013 1).",
+        "test_evidence": {
+          "assertion": "All imported Bitmap values are constructed by production bitmap_from_packed_bytes as 8x1 images with stride=1 and length=1, asserted before each call. Counts range from 1 through 32 with valid in-range IDs, one new/exported 16x1 symbol, two unrefined instances, default resource limits and no context reuse/custom tables. The symbol-dictionary payload is an API-level input; no file/transport wrapper is required by this entry. No private storage mutation, out-of-contract helper invocation or production source edit is used. Harness: let result = decode_symbol_dictionary(&SymbolDictionaryInput {; assert_eq!(bitmap.bytes().len(), 1);; assert_eq!(checked, 119); Assertion: count=32 ids=[31, 12]: expected 16x1 [de, 19], got Decode(Malformed(UnexpectedEof { offset: 69, needed: 4, remaining: 3 }))",
+          "build": [
+            [
+              "python3",
+              "tools/deepspec_fixed_dictionary_ids.py",
+              "build"
+            ]
+          ],
+          "case_id": "21ca4f10d5d8af3cd1d4d14e",
+          "command": [
+            "python3",
+            "tools/deepspec_fixed_dictionary_ids.py",
+            "run"
+          ],
+          "entry": "src/symbol_text/dictionary.rs:43:symbol_text::dictionary::decode_symbol_dictionary",
+          "failure_quote": "count=32 ids=[31, 12]: expected 16x1 [de, 19], got Decode(Malformed(UnexpectedEof { offset: 69, needed: 4, remaining: 3 }))",
+          "harness_evidence": [
+            {
+              "path": "src/symbol_text/tests/dictionary_dispatch.rs",
+              "quote": "let result = decode_symbol_dictionary(&SymbolDictionaryInput {"
+            },
+            {
+              "path": "src/symbol_text/tests/dictionary_dispatch.rs",
+              "quote": "assert_eq!(bitmap.bytes().len(), 1);"
+            },
+            {
+              "path": "src/symbol_text/tests/dictionary_dispatch.rs",
+              "quote": "assert_eq!(checked, 119);"
+            }
+          ],
+          "route": "The additive native dictionary_dispatch regression invokes production decode_symbol_dictionary with SDHUFF=1/SDREFAGG=1 and two instances, reaching decode_symbol_dictionary_huffman and its extra table read. Host-observed branch coverage reaches that exact branch 119 times.",
+          "setup": "All imported Bitmap values are constructed by production bitmap_from_packed_bytes as 8x1 images with stride=1 and length=1, asserted before each call. Counts range from 1 through 32 with valid in-range IDs, one new/exported 16x1 symbol, two unrefined instances, default resource limits and no context reuse/custom tables. The symbol-dictionary payload is an API-level input; no file/transport wrapper is required by this entry. No private storage mutation, out-of-contract helper invocation or production source edit is used.",
+          "source_hashes": {
+            "src/symbol_text/tests/dictionary_dispatch.rs": "8d000b5d056656ba74764cfa957c3017fa940149456c3b94795ac578659fc2bf",
+            "tools/deepspec_fixed_dictionary_ids.py": "a1a90219df2a28986a93da30afb0be1a6b05487eed1516614351a2cc18222fc6"
+          },
+          "source_paths": [
+            "src/symbol_text/tests/dictionary_dispatch.rs",
+            "tools/deepspec_fixed_dictionary_ids.py"
+          ],
+          "test_item": "7e3fa4bb784ec0e77b3a6344"
+        },
+        "test_input_assertion": "All imported Bitmap values are constructed by production bitmap_from_packed_bytes as 8x1 images with stride=1 and length=1, asserted before each call. Counts range from 1 through 32 with valid in-range IDs, one new/exported 16x1 symbol, two unrefined instances, default resource limits and no context reuse/custom tables. The symbol-dictionary payload is an API-level input; no file/transport wrapper is required by this entry. No private storage mutation, out-of-contract helper invocation or production source edit is used. Harness: let result = decode_symbol_dictionary(&SymbolDictionaryInput {; assert_eq!(bitmap.bytes().len(), 1);; assert_eq!(checked, 119); Assertion: count=32 ids=[31, 12]: expected 16x1 [de, 19], got Decode(Malformed(UnexpectedEof { offset: 69, needed: 4, remaining: 3 }))",
+        "test_recipe": {
+          "file": "tests/DEV-952C7B7561/recipe.json",
+          "markdown": "[recipe](tests/DEV-952C7B7561/recipe.json)"
+        },
+        "test_source_markdown": "[`src/symbol_text/tests/dictionary_dispatch.rs:L252`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L252)<br>[`src/symbol_text/tests/dictionary_dispatch.rs:L231`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L231)<br>[`src/symbol_text/tests/dictionary_dispatch.rs:L286`](tests/DEV-952C7B7561/files/src/symbol_text/tests/dictionary_dispatch.rs#L286)<br>[`tools/deepspec_fixed_dictionary_ids.py`](tests/DEV-952C7B7561/files/tools/deepspec_fixed_dictionary_ids.py)",
+        "title": "Huffman aggregate dictionaries read an untransmitted symbol-ID table"
+      }
+    ],
+    "schema": "rfc-deviation-review/1"
+  },
+  "source": "jbig2-rfc-20261103-1801@862678817494"
+}

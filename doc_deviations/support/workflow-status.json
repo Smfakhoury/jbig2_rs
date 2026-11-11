@@ -1,0 +1,86 @@
+{
+  "at": "2026-11-04T04:59:58.947809+00:00",
+  "commit": "8626788174944e2fa9be0dbf1c3d877c36218fc1",
+  "inference": {
+    "planned": 660,
+    "attempted_subjects": 660,
+    "states": {
+      "accepted": 660
+    },
+    "retained_source_specs": 1348,
+    "grounded_mapping_eligible_specs": 1341,
+    "subjects_with_grounded_specs": 650
+  },
+  "inference_review_marked": 216,
+  "ungrounded_specs_excluded": 7,
+  "subjects_without_grounded_specs": 10,
+  "mapping": {
+    "mapping_assignments": 25,
+    "mapping_states": {
+      "accepted": 25
+    },
+    "assigned_eligible_source_clauses": 1341,
+    "published_findings": 248,
+    "dispositions": {
+      "implemented": 223,
+      "intentional_deviation": 7,
+      "uncertain": 17,
+      "undocumented_deviation": 1
+    },
+    "source_clauses_with_published_associations": 323,
+    "source_subjects_with_published_associations": 245
+  },
+  "host_validation": {
+    "accepted_test_items": 5,
+    "clause_verdicts": [
+      "observed_pass",
+      "observed_pass",
+      "observed_pass",
+      "observed_pass",
+      "observed_fail"
+    ],
+    "reproduced_findings": 1,
+    "finding": "DEV-952C7B7561",
+    "candidate_challenge_fixtures": 119
+  },
+  "standalone_replay": {
+    "reproduced": 1,
+    "total": 1,
+    "python_isolated": true,
+    "deepspec_required": false
+  },
+  "remaining_open_work_items": 0,
+  "pilot_database_unchanged": true,
+  "production_sources_unchanged": true,
+  "limitations": [
+    "660 accepted inference items means recorded findings, not complete contracts or proofs.",
+    "216 inference items retain review qualifications; 7 ungrounded specs were excluded and 10 subjects have no grounded contract.",
+    "All 1341 eligible specs were assigned to mapping, but only 323 have published associations; this is not an exhaustive standard/repository audit.",
+    "223 implemented, 7 intentional and 17 uncertain mapping dispositions remain source-analysis classifications, not all independently tested verdicts.",
+    "Native replay covers four finite baseline source clauses and one mapped deviation clause; it does not execute all 219 standards-derived clauses.",
+    "The 119 failing fixtures are one underlying Huffman aggregation issue, not 119 independent bugs.",
+    "This finding does not establish that removing the extra table read alone repairs all aggregation behavior."
+  ],
+  "states_by_kind": [
+    [
+      "diagnose",
+      "accepted",
+      1
+    ],
+    [
+      "infer",
+      "accepted",
+      660
+    ],
+    [
+      "rfc_map",
+      "accepted",
+      25
+    ],
+    [
+      "test",
+      "accepted",
+      5
+    ]
+  ]
+}

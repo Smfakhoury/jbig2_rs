@@ -1,0 +1,21 @@
+{
+  "validated_at": "2026-11-04T23:57:48.944675+00:00",
+  "revision": "8626788174944e2fa9be0dbf1c3d877c36218fc1",
+  "clean_git_archive": true,
+  "deepstar_directory_present": false,
+  "deepspec_required": false,
+  "soma_required": false,
+  "spec_database_required": false,
+  "documentation_links_valid": true,
+  "recipe_hashes_valid": true,
+  "standalone_runner": {
+    "python_isolated": true,
+    "reproduced": 1,
+    "total": 1,
+    "exit_code": 0
+  },
+  "native_cargo": {
+    "exit_code": 101,
+    "recorded_failure_matched": true
+  }
+}

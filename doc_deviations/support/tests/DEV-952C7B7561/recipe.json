@@ -1,0 +1,35 @@
+{
+  "build": [
+    [
+      "python3",
+      "tools/deepspec_fixed_dictionary_ids.py",
+      "build"
+    ]
+  ],
+  "case_id": "21ca4f10d5d8af3cd1d4d14e",
+  "deviation_id": "a5a619ad7186ad24fc88ddb1",
+  "entry": "src/symbol_text/dictionary.rs:43:symbol_text::dictionary::decode_symbol_dictionary",
+  "expected": {
+    "exit": "nonzero",
+    "output_contains": "count=32 ids=[31, 12]: expected 16x1 [de, 19], got Decode(Malformed(UnexpectedEof { offset: 69, needed: 4, remaining: 3 }))"
+  },
+  "files": [
+    {
+      "path": "src/symbol_text/tests/dictionary_dispatch.rs",
+      "sha256": "8d000b5d056656ba74764cfa957c3017fa940149456c3b94795ac578659fc2bf"
+    },
+    {
+      "path": "tools/deepspec_fixed_dictionary_ids.py",
+      "sha256": "a1a90219df2a28986a93da30afb0be1a6b05487eed1516614351a2cc18222fc6"
+    }
+  ],
+  "id": "DEV-952C7B7561",
+  "schema": "rfc-deviation-test/1",
+  "spec_id": "43484d881cf32e9dce8d6d94",
+  "test": [
+    "python3",
+    "tools/deepspec_fixed_dictionary_ids.py",
+    "run"
+  ],
+  "test_item": "7e3fa4bb784ec0e77b3a6344"
+}
